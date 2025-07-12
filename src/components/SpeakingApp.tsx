@@ -215,7 +215,10 @@ export default function SpeakingApp() {
         </div>
 
         {/* Chat Area */}
-        <div className="space-y-2 mb-8">
+        <div 
+          className="space-y-2 mb-8 overflow-y-auto px-2"
+          style={{ height: '300px' }}
+        >
           {messages.map((message, index) => (
             <ChatBubble 
               key={index}
