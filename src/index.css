@@ -8,7 +8,7 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 222 72% 16%;
+    --background: 238 63% 25%;
     --foreground: 0 0% 100%;
 
     --card: 0 0% 100%;
@@ -17,7 +17,7 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 222 72% 16%;
+    --primary: 238 63% 25%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 210 40% 96.1%;
@@ -36,20 +36,23 @@ All colors MUST be HSL.
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
 
-    /* Gamified app colors */
-    --app-bg: 222 72% 16%;
-    --chat-bubble-ai: 196 100% 85%;
-    --chat-bubble-user: 45 100% 70%;
-    --xp-bar: 45 100% 60%;
-    --mic-button: 330 70% 65%;
+    /* Exact colors from the reference */
+    --app-bg: 238 63% 25%;
+    --avatar-bg: 35 100% 65%;
+    --chat-bubble-ai: 191 100% 65%;
+    --chat-bubble-user: 45 100% 65%;
+    --xp-bar: 45 100% 55%;
+    --xp-bar-bg: 240 35% 20%;
+    --mic-button: 350 85% 65%;
     --text-white: 0 0% 100%;
-    --text-dark: 222 72% 16%;
+    --text-dark: 240 35% 20%;
     
     /* Shadows and effects */
-    --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.15);
-    --shadow-button: 0 6px 20px rgba(330, 70%, 65%, 0.3);
+    --shadow-soft: 0 8px 25px rgba(0, 0, 0, 0.15);
+    --shadow-button: 0 8px 25px rgba(0, 0, 0, 0.25);
+    --shadow-bubble: 0 4px 15px rgba(0, 0, 0, 0.1);
 
-    --radius: 1rem;
+    --radius: 1.5rem;
 
     --sidebar-background: 0 0% 98%;
 

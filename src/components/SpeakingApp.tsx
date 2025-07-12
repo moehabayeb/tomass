@@ -6,9 +6,10 @@ import avatarImage from '@/assets/avatar.png';
 // Sparkle component for background decoration
 const Sparkle = ({ className, delayed = false }: { className?: string; delayed?: boolean }) => (
   <div 
-    className={`absolute w-1 h-1 bg-yellow-300 rounded-full ${delayed ? 'sparkle-delayed' : 'sparkle'} ${className}`}
+    className={`absolute w-2 h-2 bg-yellow-300 rounded-full ${delayed ? 'sparkle-delayed' : 'sparkle'} ${className}`}
     style={{ 
-      boxShadow: '0 0 4px currentColor'
+      boxShadow: '0 0 8px currentColor',
+      clipPath: 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)'
     }}
   />
 );
@@ -19,13 +20,16 @@ const XPProgressBar = ({ current, max, className }: { current: number; max: numb
   
   return (
     <div className={`relative ${className}`}>
-      <div className="w-full h-3 xp-bar-bg rounded-full border border-slate-700">
+      <div className="w-full h-4 rounded-full border-2 border-black/20" style={{ backgroundColor: 'hsl(var(--xp-bar-bg))' }}>
         <div 
-          className="h-full xp-bar-fill rounded-full transition-all duration-500 ease-out"
-          style={{ width: `${percentage}%` }}
+          className="h-full rounded-full transition-all duration-500 ease-out"
+          style={{ 
+            width: `${percentage}%`,
+            backgroundColor: 'hsl(var(--xp-bar))'
+          }}
         />
       </div>
-      <span className="absolute right-0 top-4 text-xs text-white font-medium">
+      <span className="absolute right-0 top-5 text-xs text-yellow-300 font-bold">
         XP {current} / {max}
       </span>
     </div>
@@ -42,11 +46,14 @@ const ChatBubble = ({
   isUser?: boolean; 
   className?: string; 
 }) => (
-  <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4 ${className}`}>
+  <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-6 ${className}`}>
     <div 
-      className={`max-w-[80%] px-4 py-3 rounded-2xl shadow-soft font-medium ${
+      className={`max-w-[85%] px-6 py-4 rounded-3xl font-bold text-lg leading-relaxed ${
         isUser ? 'chat-bubble-user' : 'chat-bubble-ai'
       }`}
+      style={{
+        boxShadow: 'var(--shadow-bubble)'
+      }}
     >
       {message}
     </div>
@@ -72,54 +79,75 @@ export default function SpeakingApp() {
       <Sparkle className="bottom-64 left-28" />
       <Sparkle className="bottom-80 right-24" delayed />
 
-      <div className="relative z-10 p-4 max-w-md mx-auto">
+      <div className="relative z-10 p-6 max-w-md mx-auto">
         {/* Header Section */}
-        <div className="flex items-center justify-between mb-6 pt-4">
-          <div className="flex items-center space-x-3">
-            <img 
-              src={avatarImage} 
-              alt="Avatar" 
-              className="w-12 h-12 rounded-full border-2 border-white shadow-soft"
-            />
-            <h1 className="text-white font-bold text-lg">Tomas Hoca</h1>
+        <div className="flex items-center justify-between mb-8 pt-8">
+          <div className="flex items-center space-x-4">
+            <div 
+              className="w-20 h-20 rounded-full flex items-center justify-center border-4 border-black/10"
+              style={{ backgroundColor: 'hsl(var(--avatar-bg))' }}
+            >
+              <img 
+                src={avatarImage} 
+                alt="Avatar" 
+                className="w-16 h-16 rounded-full object-cover"
+              />
+            </div>
+            <h1 className="text-white font-extrabold text-2xl">Tomas<br />Hoca</h1>
           </div>
           
           <div className="flex flex-col items-end">
-            <span className="text-white font-bold text-sm mb-1">Level 5</span>
+            <span className="text-white font-extrabold text-xl mb-2">Level 5</span>
             <XPProgressBar current={230} max={500} />
           </div>
         </div>
 
         {/* Chat Area */}
-        <div className="space-y-4 mb-6">
+        <div className="space-y-2 mb-8">
           <ChatBubble message="Hello! Ready to practice today? 🎤" />
           <ChatBubble message="Yes, I had pizza today!" isUser />
-          <ChatBubble message="Great! You can also say: &quot;I had a delicious pizza with friends.&quot; 🍕" />
+          <ChatBubble message={'Great! You can also say: "I had a delicious pizza with friends." 🍕'} />
           <ChatBubble message="Next question: What do you usually eat for breakfast?" />
         </div>
 
         {/* XP Progress Bar (horizontal) */}
         <div className="mb-8">
-          <XPProgressBar current={350} max={500} className="w-full" />
+          <div className="w-full h-5 rounded-full border-2 border-black/20" style={{ backgroundColor: 'hsl(var(--xp-bar-bg))' }}>
+            <div 
+              className="h-full rounded-full transition-all duration-500 ease-out"
+              style={{ 
+                width: '70%',
+                backgroundColor: 'hsl(var(--xp-bar))'
+              }}
+            />
+          </div>
         </div>
 
         {/* Speaking Button */}
-        <div className="flex flex-col items-center space-y-4">
+        <div className="flex flex-col items-center space-y-6">
           <Button 
-            className="mic-button shadow-button w-full max-w-xs py-4 text-lg font-bold rounded-full border-none hover:scale-105 transition-transform duration-200"
+            className="w-full max-w-sm py-6 text-xl font-extrabold rounded-full border-4 border-black/20 hover:scale-105 transition-transform duration-200"
             size="lg"
+            style={{
+              backgroundColor: 'hsl(var(--mic-button))',
+              color: 'hsl(var(--text-white))',
+              boxShadow: 'var(--shadow-button)'
+            }}
           >
-            <Mic className="w-6 h-6 mr-2" />
+            <Mic className="w-7 h-7 mr-3" />
             Start Speaking
           </Button>
 
           {/* Sound Toggle */}
           <div 
-            className="flex items-center space-x-2 bg-white rounded-full px-4 py-2 cursor-pointer shadow-soft hover:scale-105 transition-transform duration-200"
+            className="flex items-center space-x-3 bg-white rounded-full px-6 py-3 cursor-pointer transition-transform duration-200 hover:scale-105"
             onClick={() => setSoundOn(!soundOn)}
+            style={{
+              boxShadow: 'var(--shadow-soft)'
+            }}
           >
-            <Volume2 className="w-4 h-4 text-gray-700" />
-            <span className="text-gray-700 font-medium text-sm">
+            <Volume2 className="w-5 h-5 text-gray-700" />
+            <span className="text-gray-700 font-bold text-lg">
               Sound {soundOn ? 'ON' : 'OFF'}
             </span>
           </div>
