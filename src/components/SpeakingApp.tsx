@@ -236,15 +236,16 @@ export default function SpeakingApp() {
           position: 'fixed',
           top: '40%',
           left: '50%',
-          transform: 'translate(-50%, -50%) scale(1.1)',
+          transform: 'translate(-50%, -50%) scale(1)',
           fontSize: '32px',
           background: 'yellow',
-          padding: '20px',
+          color: 'black',
+          padding: '20px 30px',
           borderRadius: '20px',
           fontWeight: 'bold',
           zIndex: 999,
           opacity: '1',
-          transition: 'opacity 0.5s ease, transform 0.5s ease'
+          transition: 'all 0.4s ease'
         }}
       >
         🌟 Level Up!
