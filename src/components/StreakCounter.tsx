@@ -6,13 +6,19 @@ interface StreakCounterProps {
 
 export const StreakCounter = ({ currentStreak, message, bestStreak }: StreakCounterProps) => {
   return (
-    <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 mb-4 shadow-soft">
+    <div 
+      className="rounded-2xl p-5 mb-6 transition-all duration-300 hover:scale-105"
+      style={{
+        background: 'var(--gradient-streak)',
+        boxShadow: 'var(--shadow-medium)'
+      }}
+    >
       <div className="text-center">
-        <div className="text-2xl font-bold mb-1" style={{ color: 'hsl(var(--text-dark))' }}>
+        <div className="text-xl font-bold mb-1" style={{ color: 'hsl(var(--text-dark))' }}>
           {message}
         </div>
         {bestStreak > currentStreak && (
-          <div className="text-sm opacity-75" style={{ color: 'hsl(var(--text-dark))' }}>
+          <div className="text-sm opacity-75 font-medium" style={{ color: 'hsl(var(--text-dark))' }}>
             Best: {bestStreak} days
           </div>
         )}

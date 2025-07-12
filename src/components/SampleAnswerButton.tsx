@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from './ui/button';
-import { Eye, EyeOff } from 'lucide-react';
+import { Lightbulb, X } from 'lucide-react';
 
 interface SampleAnswerButtonProps {
   question: string;
@@ -53,33 +53,42 @@ export const SampleAnswerButton = ({ question, onSpeak }: SampleAnswerButtonProp
   const sampleAnswers = generateSampleAnswers(question);
 
   return (
-    <div className="mb-4">
+    <div className="mb-6">
       <Button
-        variant="outline"
-        size="sm"
         onClick={() => setShowSamples(!showSamples)}
-        className="bg-white/80 backdrop-blur-sm hover:bg-white/90 transition-all"
+        className="w-full bg-white/90 hover:bg-white text-gray-700 hover:text-gray-900 border-0 rounded-full py-3 px-6 font-semibold transition-all duration-300 hover:scale-105"
+        style={{ boxShadow: 'var(--shadow-soft)' }}
       >
-        {showSamples ? <EyeOff className="w-4 h-4 mr-2" /> : <Eye className="w-4 h-4 mr-2" />}
-        {showSamples ? 'Hide' : 'See'} Sample Answers
+        {showSamples ? (
+          <>
+            <X className="w-5 h-5 mr-2" />
+            Hide Sample Answers
+          </>
+        ) : (
+          <>
+            <Lightbulb className="w-5 h-5 mr-2" />
+            💡 See Sample Answers
+          </>
+        )}
       </Button>
       
       {showSamples && (
-        <div className="mt-3 space-y-2">
+        <div className="mt-4 space-y-3 animate-in slide-in-from-top duration-300">
           {sampleAnswers.map((answer, index) => (
             <div 
               key={index}
-              className="bg-blue-50 p-3 rounded-lg border-l-4 border-blue-300"
+              className="bg-white/95 backdrop-blur-sm p-4 rounded-xl border border-blue-100"
+              style={{ boxShadow: 'var(--shadow-soft)' }}
             >
               <div className="flex justify-between items-center">
-                <span className="text-gray-700 text-sm">{answer}</span>
+                <span className="text-gray-700 font-medium">{answer}</span>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => onSpeak(answer)}
-                  className="text-blue-600 hover:text-blue-800"
+                  className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-full px-3 py-1 transition-all"
                 >
-                  🔊 Hear it
+                  🔊
                 </Button>
               </div>
             </div>
