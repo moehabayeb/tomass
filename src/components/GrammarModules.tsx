@@ -211,16 +211,15 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
     }
   }, []);
 
-  // Check for A1 completion
+  // Check for A1 completion based on module completion
   useEffect(() => {
-    const completed = JSON.parse(localStorage.getItem("completedA1") || "[]");
-
-    const allDone = A1Lessons.every(lesson => completed.includes(lesson));
-
-    if (allDone) {
+    const a1ModuleIds = [1, 2, 3, 4, 5, 6]; // All 6 A1 modules
+    const completedA1Modules = completedModules.filter(id => a1ModuleIds.includes(id));
+    
+    if (completedA1Modules.length === a1ModuleIds.length && !showCongrats) {
       setShowCongrats(true);
     }
-  }, []);
+  }, [completedModules, showCongrats]);
 
   const markModuleComplete = (moduleId: number) => {
     if (!completedModules.includes(moduleId)) {
@@ -254,6 +253,7 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
         module={selectedTopic!}
         onComplete={() => {
           markModuleComplete(selectedModule);
+          // Also keep lesson tracking for backward compatibility
           markLessonComplete(selectedTopic!.title);
         }}
         onBack={() => setSelectedModule(null)}
@@ -282,14 +282,17 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
             <div className="w-10" /> {/* Spacer */}
           </div>
           
-          <div className="text-center">
-            <p className="text-white/80 text-sm">
-              Master A1 grammar step by step
-            </p>
-            <div className="mt-3 text-white/60 text-xs">
-              {completedModules.length} / {grammarTopics.length} completed
+            <div className="text-center">
+              <p className="text-white/80 text-sm">
+                Master A1 grammar step by step
+              </p>
+              <div className="mt-3 text-white/60 text-xs">
+                {completedModules.length} / {grammarTopics.length} completed
+                {completedModules.length === grammarTopics.length && (
+                  <span className="ml-2 text-green-300 font-bold">🎉 All Complete!</span>
+                )}
+              </div>
             </div>
-          </div>
         </div>
 
         {/* Modules Grid */}
