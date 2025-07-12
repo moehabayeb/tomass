@@ -316,26 +316,33 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
         </div>
       </div>
 
-      {/* Congratulations Modal with Confetti */}
+      {/* Congratulations Modal */}
       {showCongrats && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
           <div className="bg-white text-center p-6 rounded-2xl shadow-xl max-w-md">
             <h2 className="text-2xl font-bold mb-2 text-green-600">🎉 Congratulations!</h2>
-            <p className="mb-4 text-gray-700">You've completed all A1 grammar lessons.</p>
-            <Lottie animationData={confettiAnimation} loop={false} />
+            <p className="mb-4 text-gray-700">
+              You've completed all A1 grammar lessons.
+            </p>
+
             <div className="mt-4 flex justify-center space-x-4">
               <button
                 className="bg-blue-600 text-white px-4 py-2 rounded-xl"
                 onClick={() => {
                   setShowCongrats(false);
-                  unlockA2Modules();
+                  setCurrentLevel("A2");
+                  scrollToTop();
                 }}
               >
                 Continue to A2
               </button>
               <button
                 className="bg-gray-200 text-gray-800 px-4 py-2 rounded-xl"
-                onClick={() => setShowCongrats(false)}
+                onClick={() => {
+                  setShowCongrats(false);
+                  setCurrentLevel("A1");
+                  scrollToTop();
+                }}
               >
                 Review A1
               </button>
