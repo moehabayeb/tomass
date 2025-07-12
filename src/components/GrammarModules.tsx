@@ -156,36 +156,35 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
             return (
               <Card 
                 key={topic.id}
-                className="bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-sm border-white/20 hover:from-white/15 hover:to-white/8 transition-all duration-300 cursor-pointer hover:scale-[1.02]"
+                className="bg-white/20 backdrop-blur-sm border border-white/30 hover:bg-white/25 transition-all duration-300 cursor-pointer hover:scale-[1.02] shadow-lg"
                 onClick={() => setSelectedModule(topic.id)}
-                style={{ boxShadow: 'var(--shadow-soft)' }}
               >
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center space-x-2">
-                      <BookOpen className="h-5 w-5 text-blue-300" />
-                      {isCompleted && <CheckCircle className="h-4 w-4 text-green-400" />}
+                      <BookOpen className="h-5 w-5 text-blue-200" />
+                      {isCompleted && <CheckCircle className="h-4 w-4 text-green-300" />}
                     </div>
-                    <span className="text-white/60 text-xs">📚</span>
+                    <span className="text-white text-lg">📚</span>
                   </div>
-                  <CardTitle className="text-white text-base font-semibold leading-tight">
+                  <CardTitle className="text-white text-lg font-bold leading-tight mt-2">
                     {topic.title}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <p className="text-white/70 text-sm mb-3 leading-relaxed">
+                  <p className="text-white/90 text-sm mb-4 leading-relaxed">
                     {topic.description}
                   </p>
                   <div className="flex items-center justify-between">
-                    <span className="text-white/50 text-xs">
+                    <span className="text-white/80 text-xs font-medium">
                       {topic.exercises.length} exercises
                     </span>
                     {isCompleted ? (
-                      <span className="text-green-400 text-xs font-medium">
+                      <span className="text-green-300 text-xs font-bold bg-green-500/20 px-2 py-1 rounded-full">
                         ✅ Completed
                       </span>
                     ) : (
-                      <span className="text-blue-300 text-xs font-medium">
+                      <span className="text-blue-200 text-xs font-bold bg-blue-500/20 px-2 py-1 rounded-full">
                         Start →
                       </span>
                     )}
