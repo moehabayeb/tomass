@@ -33,6 +33,84 @@ const grammarTopics = [
   },
   {
     id: 2,
+    title: "The Verb 'To Be' - Negative Sentences",
+    description: "Learn how to make negative sentences with 'to be'",
+    lesson: "To make negative sentences with 'to be', we add 'not' after the verb.\n\n✓ I am not tired\n✓ She is not (isn't) ready\n✓ They are not (aren't) here\n\nWe can use contractions: isn't, aren't\nNote: 'I am not' doesn't contract to 'I amn't'",
+    exercises: [
+      {
+        question: "Choose the correct negative form: I ___ not tired.",
+        options: ["am", "isn't", "aren't"],
+        correct: 0,
+        explanation: "With 'I', we use 'am not' for negatives. We don't contract 'am not' to 'amn't'."
+      },
+      {
+        question: "Select the right negative: She ___ ready yet.",
+        options: ["am not", "isn't", "aren't"],
+        correct: 1,
+        explanation: "'She isn't' or 'She is not' - both are correct for third person singular negatives."
+      },
+      {
+        question: "Complete the negative sentence: We ___ late for class.",
+        options: ["am not", "isn't", "aren't"],
+        correct: 2,
+        explanation: "'We aren't' or 'We are not' - use 'aren't' for plural subjects."
+      }
+    ]
+  },
+  {
+    id: 3,
+    title: "The Verb 'To Be' - Questions and Short Answers",
+    description: "Learn to form questions and give short answers with 'to be'",
+    lesson: "To make questions with 'to be', we put the verb before the subject.\n\n✓ Am I right?\n✓ Is she happy?\n✓ Are they coming?\n\nShort answers use the auxiliary verb:\n- Yes, I am. / No, I'm not.\n- Yes, she is. / No, she isn't.\n- Yes, they are. / No, they aren't.",
+    exercises: [
+      {
+        question: "Form a question: ___ you ready?",
+        options: ["Am", "Is", "Are"],
+        correct: 2,
+        explanation: "In questions, we invert the subject and verb: 'Are you ready?'"
+      },
+      {
+        question: "What's the correct short answer to 'Is she a teacher?' (Yes)",
+        options: ["Yes, she's", "Yes, she is", "Yes, is she"],
+        correct: 1,
+        explanation: "Short answers use the auxiliary verb: 'Yes, she is' or 'No, she isn't'."
+      },
+      {
+        question: "Choose the question form: ___ they from Spain?",
+        options: ["Am", "Is", "Are"],
+        correct: 2,
+        explanation: "For plural subjects like 'they', we use 'Are they from Spain?'"
+      }
+    ]
+  },
+  {
+    id: 4,
+    title: "Contractions (I'm, you're, etc.)",
+    description: "Master common contractions with 'to be'",
+    lesson: "Contractions make speaking more natural by combining words.\n\n✓ I am → I'm\n✓ You are → You're\n✓ He is → He's\n✓ She is → She's\n✓ It is → It's\n✓ We are → We're\n✓ They are → They're\n\nThe apostrophe (') replaces the missing letters!",
+    exercises: [
+      {
+        question: "What's the contraction for 'I am'?",
+        options: ["I'm", "I's", "Im"],
+        correct: 0,
+        explanation: "'I am' contracts to 'I'm'. The apostrophe replaces the 'a' in 'am'."
+      },
+      {
+        question: "Choose the correct contraction: 'She is happy' = ___",
+        options: ["She'm happy", "She's happy", "Shes happy"],
+        correct: 1,
+        explanation: "'She is' contracts to 'She's'. The apostrophe replaces the 'i' in 'is'."
+      },
+      {
+        question: "What's the contraction for 'They are students'?",
+        options: ["They'm students", "They's students", "They're students"],
+        correct: 2,
+        explanation: "'They are' contracts to 'They're'. The apostrophe replaces the 'a' in 'are'."
+      }
+    ]
+  },
+  {
+    id: 5,
     title: "Personal Pronouns",
     description: "Master I, you, he, she, it, we, they",
     lesson: "Personal pronouns replace nouns to avoid repetition.\n\n📝 Subject pronouns: I, you, he, she, it, we, they\n📝 Object pronouns: me, you, him, her, it, us, them\n\nExample: John likes pizza → He likes pizza",
@@ -58,7 +136,7 @@ const grammarTopics = [
     ]
   },
   {
-    id: 3,
+    id: 6,
     title: "Articles (a, an, the)",
     description: "When to use a, an, and the correctly",
     lesson: "Articles help us specify nouns.\n\n🔹 Use 'a' before consonant sounds (a car, a house)\n🔹 Use 'an' before vowel sounds (an apple, an elephant)\n🔹 Use 'the' for specific things (the sun, the book on the table)\n\nTip: It's about the SOUND, not just the letter!",
