@@ -1,18 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ArrowLeft, ArrowRight, CheckCircle, BookOpen, Target, Trophy, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Lottie from 'lottie-react';
 import { supabase } from '@/integrations/supabase/client';
-
-const A1Lessons = [
-  "The Verb 'To Be' (Present)",
-  "The Verb 'To Be' – Negative Sentences",
-  "The Verb 'To Be' – Questions and Short Answers",
-  "Personal Pronouns",
-  "Subject Pronouns",
-  "Contractions",
-];
 
 // Simple confetti animation data (placeholder)
 const confettiAnimation = {
@@ -210,14 +201,14 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
 
   // Check for A1 completion
   useEffect(() => {
-    const completed = JSON.parse(localStorage.getItem("completedA1") || "[]");
-
-    const allDone = A1Lessons.every(lesson => completed.includes(lesson));
-
-    if (allDone) {
+    const a1ModuleIds = [1, 2, 3, 4]; // First 4 modules are A1
+    const completedA1Modules = completedModules.filter(id => a1ModuleIds.includes(id));
+    
+    if (completedA1Modules.length === a1ModuleIds.length && !showCongrats) {
       setShowCongrats(true);
+      unlockA2Modules();
     }
-  }, []);
+  }, [completedModules, showCongrats]);
 
   const markModuleComplete = (moduleId: number) => {
     if (!completedModules.includes(moduleId)) {
@@ -325,26 +316,33 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
         </div>
       </div>
 
-      {/* Congratulations Modal with Confetti */}
+      {/* Congratulations Modal */}
       {showCongrats && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
           <div className="bg-white text-center p-6 rounded-2xl shadow-xl max-w-md">
             <h2 className="text-2xl font-bold mb-2 text-green-600">🎉 Congratulations!</h2>
-            <p className="mb-4 text-gray-700">You've completed all A1 grammar lessons.</p>
-            <Lottie animationData={confettiAnimation} loop={false} />
+            <p className="mb-4 text-gray-700">
+              You've completed all A1 grammar lessons.
+            </p>
+
             <div className="mt-4 flex justify-center space-x-4">
               <button
                 className="bg-blue-600 text-white px-4 py-2 rounded-xl"
                 onClick={() => {
                   setShowCongrats(false);
-                  unlockA2Modules();
+                  setCurrentLevel("A2");
+                  scrollToTop();
                 }}
               >
                 Continue to A2
               </button>
               <button
                 className="bg-gray-200 text-gray-800 px-4 py-2 rounded-xl"
-                onClick={() => setShowCongrats(false)}
+                onClick={() => {
+                  setShowCongrats(false);
+                  setCurrentLevel("A1");
+                  scrollToTop();
+                }}
               >
                 Review A1
               </button>
