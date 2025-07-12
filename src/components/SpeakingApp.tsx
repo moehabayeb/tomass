@@ -179,12 +179,21 @@ export default function SpeakingApp() {
       const formData = new FormData();
       formData.append("audio", audioBlob, "recording.wav");
 
-      const { data: transcribeData, error: transcribeError } = await supabase.functions.invoke('transcribe', {
+      const transcribeRes = await fetch("https://sgzhbiknaiqsuknwgvjr.supabase.co/functions/v1/transcribe", {
+        method: "POST",
+        headers: {
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNnemhiaWtuYWlxc3VrbndndmpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIzNDkyNTUsImV4cCI6MjA2NzkyNTI1NX0.zi3agHTlckDVeDOQ-rFvC9X_TI21QOxiXzqbNs2UrG4',
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNnemhiaWtuYWlxc3VrbndndmpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIzNDkyNTUsImV4cCI6MjA2NzkyNTI1NX0.zi3agHTlckDVeDOQ-rFvC9X_TI21QOxiXzqbNs2UrG4'
+        },
         body: formData
       });
 
-      if (transcribeError) throw transcribeError;
+      if (!transcribeRes.ok) {
+        const errorData = await transcribeRes.json();
+        throw new Error(errorData.error || 'Transcription failed');
+      }
 
+      const transcribeData = await transcribeRes.json();
       const transcript = transcribeData.transcript;
 
       // Show user's transcribed text
