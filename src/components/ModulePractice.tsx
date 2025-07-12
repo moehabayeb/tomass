@@ -113,95 +113,114 @@ export default function ModulePractice({ module, onBackToModules, onStartChat }:
           </CardHeader>
         </Card>
 
-        {/* Instructions */}
-        <Card className="border-0 bg-white/60 backdrop-blur-sm shadow-soft">
-          <CardContent className="p-6">
+        {/* Instructions - Friendly Tutor Style */}
+        <Card className="border-0 bg-gradient-to-r from-blue-50 to-cyan-50 shadow-soft rounded-2xl">
+          <CardContent className="p-5">
             <div className="flex items-start gap-3">
               <Lightbulb className="h-5 w-5 text-primary mt-1" />
               <div className="space-y-2">
-                <h3 className="font-semibold text-foreground">How to Practice</h3>
-                <p className="text-muted-foreground">
-                  Click on any prompt below to start speaking practice. You can view sample answers for guidance, 
-                  then record your own response. The AI will provide feedback and ask follow-up questions to keep the conversation flowing naturally.
+                <h3 className="font-semibold text-foreground">🎯 Your Learning Journey</h3>
+                <p className="text-muted-foreground text-sm">
+                  I'm here to help you practice speaking! Choose any topic below to start a conversation. 
+                  Don't worry about making mistakes - that's how we learn! I'll give you gentle feedback and ask follow-up questions to keep our chat flowing naturally.
                 </p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Prompts Grid */}
-        <div className="grid gap-4">
+        {/* Prompts List - One at a Time Flow */}
+        <div className="space-y-4">
           {module.prompts.map((prompt, index) => {
             const isCompleted = completedPrompts.includes(prompt.id);
+            const isCurrentPrompt = index === 0 || completedPrompts.includes(module.prompts[index - 1]?.id);
+            const isLocked = index > 0 && !completedPrompts.includes(module.prompts[index - 1]?.id);
             
             return (
               <Card 
                 key={prompt.id}
-                className={`border-0 shadow-soft transition-all duration-300 hover:shadow-elegant ${
+                className={`border-0 shadow-soft transition-all duration-300 rounded-2xl ${
                   isCompleted 
                     ? 'bg-green-50 border-green-200' 
-                    : 'bg-white/60 backdrop-blur-sm hover:scale-[1.01]'
+                    : isLocked
+                    ? 'bg-gray-50 opacity-60'
+                    : 'bg-white/70 backdrop-blur-md hover:shadow-elegant hover:scale-[1.01]'
                 }`}
               >
-                <CardHeader>
+                <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
                     <div className="space-y-2">
                       <div className="flex items-center gap-3">
-                        <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
+                        <Badge variant="outline" className={`px-2 py-1 text-xs ${
+                          isCompleted ? 'bg-green-100 text-green-700 border-green-300' :
+                          isLocked ? 'bg-gray-100 text-gray-500 border-gray-300' :
+                          'bg-primary/10 text-primary border-primary/20'
+                        }`}>
                           #{index + 1}
                         </Badge>
-                        {isCompleted && <CheckCircle className="h-5 w-5 text-green-500" />}
+                        {isCompleted && <CheckCircle className="h-4 w-4 text-green-500" />}
+                        {isLocked && <span className="text-gray-400 text-xs">🔒 Complete previous task first</span>}
                       </div>
-                      <CardTitle className="text-lg text-foreground">
+                      <CardTitle className={`text-lg ${isLocked ? 'text-gray-400' : 'text-foreground'}`}>
                         {prompt.text}
                       </CardTitle>
                     </div>
                   </div>
                 </CardHeader>
                 
-                <CardContent className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <SampleAnswerButtonNew 
-                      sampleAnswers={prompt.sampleAnswers}
-                      variant="outline"
-                      className="bg-white/50 hover:bg-white/70"
-                    />
-                    <Button
-                      onClick={() => {
-                        onStartChat(prompt.text, prompt.sampleAnswers);
-                        if (!isCompleted) {
-                          markPromptCompleted(prompt.id);
-                        }
-                      }}
-                      className="flex-1 bg-gradient-primary hover:shadow-glow transition-all duration-300"
-                    >
-                      {isCompleted ? 'Practice Again' : 'Start Speaking'}
-                    </Button>
-                  </div>
+                <CardContent className="space-y-4 pt-0">
+                  {!isLocked && (
+                    <div className="flex items-center gap-3">
+                      <SampleAnswerButtonNew 
+                        sampleAnswers={prompt.sampleAnswers}
+                        variant="outline"
+                        className="bg-white/50 hover:bg-white/80 text-xs"
+                      />
+                      <Button 
+                        onClick={() => {
+                          onStartChat(prompt.text, prompt.sampleAnswers);
+                          if (!isCompleted) {
+                            markPromptCompleted(prompt.id);
+                          }
+                        }}
+                        className="flex-1 bg-gradient-primary hover:shadow-glow transition-all duration-300 text-sm py-2"
+                        disabled={isLocked}
+                      >
+                        {isCompleted ? '🔄 Practice Again' : '🎤 Start Speaking'}
+                      </Button>
+                    </div>
+                  )}
+                  
+                  {isLocked && (
+                    <div className="text-center py-2">
+                      <p className="text-gray-500 text-sm">Complete the previous speaking task to unlock this one! 😊</p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             );
           })}
         </div>
 
-        {/* Completion Message */}
+        {/* Completion Celebration - Motivational */}
         {isModuleCompleted && (
-          <Card className="border-0 bg-gradient-to-r from-green-100 to-emerald-100 shadow-elegant">
+          <Card className="border-0 bg-gradient-to-r from-green-100 to-emerald-100 shadow-elegant rounded-2xl">
             <CardContent className="p-6 text-center">
               <div className="space-y-4">
-                <div className="text-6xl">🎉</div>
+                <div className="text-5xl">🎉</div>
                 <div>
-                  <h3 className="text-2xl font-bold text-green-800">Congratulations!</h3>
-                  <p className="text-green-700 mt-2">
-                    You've completed all prompts in the {module.title} module. 
-                    Keep practicing by repeating prompts or exploring other modules!
+                  <h3 className="text-2xl font-bold text-green-800">Amazing Work!</h3>
+                  <p className="text-green-700 mt-2 text-sm">
+                    You've completed all speaking tasks in the <strong>{module.title}</strong> module! 
+                    Your English speaking skills are getting stronger every day. 
+                    Keep exploring more modules to continue your learning journey! 🌟
                   </p>
                 </div>
                 <Button 
                   onClick={onBackToModules}
-                  className="bg-green-600 hover:bg-green-700 text-white"
+                  className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 text-sm"
                 >
-                  Explore More Modules
+                  🚀 Explore More Modules
                 </Button>
               </div>
             </CardContent>

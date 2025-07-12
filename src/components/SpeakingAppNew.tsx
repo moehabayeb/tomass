@@ -91,7 +91,7 @@ export default function SpeakingAppNew() {
   // Main chat interface here...
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20 p-4">
-      <div className="max-w-sm mx-auto space-y-6">
+      <div className="max-w-sm mx-auto space-y-4">{/* Reduced from space-y-6 to space-y-4 for better spacing */}
         {/* XP Boost Animations */}
         <XPBoostAnimation boosts={xpBoosts} />
         
@@ -111,47 +111,47 @@ export default function SpeakingAppNew() {
           </div>
         )}
 
-        {/* Header with Profile */}
-        <Card className="border-0 bg-white/60 backdrop-blur-sm shadow-soft">
-          <CardContent className="p-6">
+        {/* Header with Profile - Restored Premium Design */}
+        <Card className="border-0 bg-white/70 backdrop-blur-md shadow-elegant rounded-3xl">
+          <CardContent className="p-5">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3">
                 <div className="relative">
-                  <Avatar className="h-16 w-16 border-4 border-white shadow-elegant">
+                  <Avatar className="h-14 w-14 border-3 border-white/50 shadow-elegant rounded-full">
                     <AvatarImage src={avatarImage} alt="User" />
-                    <AvatarFallback className="bg-gradient-primary text-white text-xl font-bold">
-                      U
+                    <AvatarFallback className="bg-gradient-primary text-white text-lg font-bold">
+                      EL
                     </AvatarFallback>
                   </Avatar>
-                  <div className="absolute -bottom-1 -right-1 bg-gradient-primary rounded-full p-1">
+                  <div className="absolute -bottom-1 -right-1 bg-gradient-primary rounded-full p-1.5 border-2 border-white">
                     <Sparkles className="h-3 w-3 text-white" />
                   </div>
                 </div>
                 
                 <div className="space-y-1">
-                  <h2 className="text-xl font-bold text-foreground">English Learner</h2>
-                  <div className="flex items-center gap-3">
-                    <Badge variant="secondary" className="bg-gradient-primary text-white font-medium">
+                  <h2 className="text-lg font-bold text-foreground">English Learner</h2>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary" className="bg-gradient-primary text-white font-medium px-2 py-0.5 text-xs">
                       <Trophy className="h-3 w-3 mr-1" />
                       Level {level}
                     </Badge>
-                    <span className="text-sm text-muted-foreground font-medium">
-                      ⚡ {xp} / {xpForNextLevel} XP
+                    <span className="text-xs text-muted-foreground font-medium">
+                      ⚡ {xp}/{xpForNextLevel} XP
                     </span>
                   </div>
                 </div>
               </div>
               
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
                 {/* Learning Paths Button */}
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setCurrentView('learning')}
-                  className="bg-white/50 hover:bg-white/70 border-primary/20 text-primary"
+                  className="bg-white/50 hover:bg-white/80 border-primary/20 text-primary px-3 py-1.5 text-xs rounded-full"
                 >
-                  <BookOpen className="h-4 w-4 mr-2" />
-                  Learning Paths
+                  <BookOpen className="h-3 w-3 mr-1" />
+                  Paths
                 </Button>
                 
                 {/* Sound Toggle */}
@@ -159,12 +159,12 @@ export default function SpeakingAppNew() {
                   variant="outline"
                   size="sm"
                   onClick={toggleSound}
-                  className="bg-white/50 hover:bg-white/70 border-primary/20"
+                  className="bg-white/50 hover:bg-white/80 border-primary/20 p-2 rounded-full"
                 >
                   {soundEnabled ? (
-                    <Volume2 className="h-4 w-4 text-primary" />
+                    <Volume2 className="h-3 w-3 text-primary" />
                   ) : (
-                    <VolumeX className="h-4 w-4 text-muted-foreground" />
+                    <VolumeX className="h-3 w-3 text-muted-foreground" />
                   )}
                 </Button>
               </div>
@@ -172,30 +172,30 @@ export default function SpeakingAppNew() {
           </CardContent>
         </Card>
 
-        {/* XP Progress Bar */}
-        <Card className="border-0 bg-white/60 backdrop-blur-sm shadow-soft">
-          <CardContent className="p-6">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground font-medium">Progress to Level {level + 1}</span>
+        {/* XP Progress Bar - Compact Design */}
+        <Card className="border-0 bg-white/70 backdrop-blur-md shadow-soft rounded-2xl">
+          <CardContent className="p-4">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground font-medium">Level {level} Progress</span>
                 <span className="text-primary font-bold">{xp}/{xpForNextLevel} XP</span>
               </div>
               <div className="relative">
                 <Progress 
                   value={(xp / xpForNextLevel) * 100} 
-                  className="h-3 bg-muted border border-white/50"
+                  className="h-2 bg-muted/50 border border-white/30 rounded-full"
                 />
-                <div className="absolute inset-0 bg-gradient-to-r from-primary to-primary-glow rounded-full opacity-75" 
+                <div className="absolute inset-0 bg-gradient-to-r from-primary to-primary-glow rounded-full opacity-80 transition-all duration-700" 
                      style={{ width: `${(xp / xpForNextLevel) * 100}%` }} />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Streak Counter */}
+        {/* Streak Counter - Compact Design */}
         <StreakCounter 
           currentStreak={streakData.currentStreak}
-          message="🔥 Keep your streak going!"
+          message="🔥 Keep your streak alive!"
           bestStreak={streakData.bestStreak}
         />
 
