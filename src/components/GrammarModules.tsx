@@ -332,32 +332,48 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
     const a1ModuleIds = [1, 2, 3, 4, 5, 6]; // All 6 A1 modules
     const completedA1Modules = completedModules.filter(id => a1ModuleIds.includes(id));
     
+    console.log('🎯 A1 Completion Check:', {
+      completedModules,
+      completedA1Modules,
+      isA1Complete: completedA1Modules.length === a1ModuleIds.length,
+      availableLevels,
+      currentLevel
+    });
+    
     if (completedA1Modules.length === a1ModuleIds.length) {
       // Unlock A2 if not already available
       if (!availableLevels.includes("A2")) {
+        console.log('🚀 Unlocking A2!');
         setAvailableLevels(prev => [...prev, "A2"]);
       }
       
-      // Check if this is the first time completing A1
-      const hasSeenA1Completion = localStorage.getItem('hasSeenA1Completion');
-      
-      if (!hasSeenA1Completion) {
-        // Mark as seen to prevent showing multiple times
-        localStorage.setItem('hasSeenA1Completion', 'true');
+      // Always show modal/progression if A1 is complete and user is still on A1
+      if (currentLevel === "A1") {
+        // Check if this is the first time completing A1 (reset check for debugging)
+        const hasSeenA1Completion = localStorage.getItem('hasSeenA1Completion');
         
-        if (autoProgressEnabled) {
-          // Automatic progression to A2
-          setTimeout(() => {
-            setCurrentLevel("A2");
-            scrollToTop();
-          }, 1000); // Brief delay to show completion
-        } else {
-          // Show congratulations modal
-          setShowCongrats(true);
+        console.log('🎉 A1 Complete! HasSeen:', hasSeenA1Completion);
+        
+        if (!hasSeenA1Completion) {
+          // Mark as seen to prevent showing multiple times
+          localStorage.setItem('hasSeenA1Completion', 'true');
+          
+          if (autoProgressEnabled) {
+            // Automatic progression to A2
+            console.log('🤖 Auto-progressing to A2...');
+            setTimeout(() => {
+              setCurrentLevel("A2");
+              scrollToTop();
+            }, 1000); // Brief delay to show completion
+          } else {
+            // Show congratulations modal
+            console.log('🎊 Showing congratulations modal');
+            setShowCongrats(true);
+          }
         }
       }
     }
-  }, [completedModules, availableLevels, autoProgressEnabled]);
+  }, [completedModules, availableLevels, autoProgressEnabled, currentLevel]);
 
   const markModuleComplete = (moduleId: number) => {
     if (!completedModules.includes(moduleId)) {
@@ -463,12 +479,34 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
             {currentLevel === "A1" && completedModules.filter(id => id <= 6).length === 6 && (
               <Button
                 onClick={() => {
+                  console.log('🚀 Manual A2 progression clicked');
                   setCurrentLevel("A2");
                   scrollToTop();
+                  // Also clear the completion flag to allow showing modal again if needed
+                  localStorage.removeItem('hasSeenA1Completion');
                 }}
                 className="mt-4 bg-gradient-to-r from-green-500 to-blue-500 text-white font-bold px-6 py-2 rounded-full hover:from-green-600 hover:to-blue-600 transition-all duration-300 shadow-lg"
               >
                 🚀 Start A2 Lessons
+              </Button>
+            )}
+            
+            {/* Debug info for troubleshooting */}
+            <div className="mt-2 text-white/30 text-xs">
+              Debug: Completed modules: [{completedModules.join(', ')}]
+            </div>
+            
+            {/* Force completion modal for testing */}
+            {currentLevel === "A1" && completedModules.filter(id => id <= 6).length === 6 && (
+              <Button
+                onClick={() => {
+                  console.log('🔧 Force showing modal for testing');
+                  localStorage.removeItem('hasSeenA1Completion');
+                  setShowCongrats(true);
+                }}
+                className="mt-2 bg-yellow-500 text-black font-bold px-4 py-1 rounded text-xs hover:bg-yellow-600 transition-all duration-300"
+              >
+                🔧 Test Modal
               </Button>
             )}
           </div>
