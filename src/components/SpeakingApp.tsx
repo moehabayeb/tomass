@@ -258,8 +258,7 @@ export default function SpeakingApp() {
               boxShadow: isRecording ? '0 0 30px hsl(var(--mic-button))' : 'var(--shadow-button)'
             }}
           >
-            <Mic className="w-7 h-7 mr-3" />
-            {isRecording ? "Recording..." : "Start Speaking"}
+            {isRecording ? "🎙️ Recording..." : "🎤 Start Speaking"}
           </Button>
 
           {/* Sound Toggle */}
