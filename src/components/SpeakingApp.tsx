@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Mic, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import avatarImage from '@/assets/avatar.png';
+const avatarImage = '/lovable-uploads/dbfb3a2b-8dc9-44ae-8c2f-c0b3094f054f.png';
 import { supabase } from '@/integrations/supabase/client';
 import { useTextToSpeech } from '@/hooks/useTextToSpeech';
 import { useStreakTracker } from '@/hooks/useStreakTracker';
