@@ -96,10 +96,10 @@ export default function SpeakingApp() {
   };
   const showLevelUp = () => {
     setShowLevelUpPopup(true);
-    // Auto-hide after 3 seconds
+    // Auto-hide after 2 seconds
     setTimeout(() => {
       setShowLevelUpPopup(false);
-    }, 3000);
+    }, 2000);
   };
 
   const addXP = (points: number) => {
