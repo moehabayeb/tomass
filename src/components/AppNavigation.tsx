@@ -13,14 +13,6 @@ export default function AppNavigation() {
   const [currentMode, setCurrentMode] = useState<AppMode>('speaking');
   const [showDailyTips, setShowDailyTips] = useState(false);
 
-  if (currentMode === 'grammar') {
-    return <GrammarModules onBack={() => setCurrentMode('speaking')} />;
-  }
-
-  if (currentMode === 'bookmarks') {
-    return <BookmarksView onBack={() => setCurrentMode('speaking')} />;
-  }
-
   return (
     <div className="relative">
       {/* Daily Tips Modal */}
@@ -28,7 +20,7 @@ export default function AppNavigation() {
         <DailyTips onClose={() => setShowDailyTips(false)} />
       )}
 
-      {/* Navigation Tab */}
+      {/* Navigation Tab - Always visible */}
       <div 
         className="fixed top-4 right-4 z-20 bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-2xl border border-white/20"
         style={{ boxShadow: 'var(--shadow-medium)' }}
@@ -76,13 +68,25 @@ export default function AppNavigation() {
         </div>
       </div>
 
-      {/* Daily Tips Badge */}
-      <div className="fixed top-20 right-4 z-20">
-        <DailyTipsBadge onClick={() => setShowDailyTips(true)} />
-      </div>
+      {/* Daily Tips Badge - Only show in speaking mode */}
+      {currentMode === 'speaking' && (
+        <div className="fixed top-20 right-4 z-20">
+          <DailyTipsBadge onClick={() => setShowDailyTips(true)} />
+        </div>
+      )}
 
-      {/* Current Mode Content */}
-      <SpeakingApp />
+      {/* Content based on current mode */}
+      {currentMode === 'grammar' && (
+        <GrammarModules onBack={() => setCurrentMode('speaking')} />
+      )}
+      
+      {currentMode === 'bookmarks' && (
+        <BookmarksView onBack={() => setCurrentMode('speaking')} />
+      )}
+      
+      {currentMode === 'speaking' && (
+        <SpeakingApp />
+      )}
     </div>
   );
 }
