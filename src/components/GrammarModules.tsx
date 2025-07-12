@@ -361,10 +361,10 @@ function ModulePractice({ module, onComplete, onBack }: ModulePracticeProps) {
         </div>
 
         {/* Exercise Card */}
-        <Card className="bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-sm border-white/20 mb-6">
+        <Card className="bg-white backdrop-blur-sm border-white/20 mb-6 shadow-lg">
           <CardContent className="p-6">
             <div className="text-center mb-6">
-              <h2 className="text-white font-semibold text-base mb-2">
+              <h2 className="text-gray-800 font-semibold text-base mb-2">
                 {exercise.question}
               </h2>
             </div>
@@ -380,11 +380,11 @@ function ModulePractice({ module, onComplete, onBack }: ModulePracticeProps) {
                   className={`w-full p-4 text-left justify-start rounded-xl transition-all duration-200 ${
                     showExplanation 
                       ? index === exercise.correct
-                        ? 'bg-green-500/20 border-green-400 text-green-100'
+                        ? 'bg-green-500/20 border-green-400 text-green-800'
                         : selectedAnswer === index && index !== exercise.correct
-                        ? 'bg-red-500/20 border-red-400 text-red-100'
-                        : 'bg-white/5 border-white/20 text-white/60'
-                      : 'bg-white/10 border-white/30 text-white hover:bg-white/20'
+                        ? 'bg-red-500/20 border-red-400 text-red-800'
+                        : 'bg-gray-50 border-gray-200 text-gray-600'
+                      : 'bg-gray-50 border-gray-300 text-gray-800 hover:bg-gray-100'
                   }`}
                 >
                   {option}
@@ -395,16 +395,16 @@ function ModulePractice({ module, onComplete, onBack }: ModulePracticeProps) {
             {/* Explanation */}
             {showExplanation && (
               <div className={`p-4 rounded-xl mb-4 ${
-                isCorrect ? 'bg-green-500/10 border border-green-400/30' : 'bg-red-500/10 border border-red-400/30'
+                isCorrect ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'
               }`}>
                 <div className="flex items-center mb-2">
                   {isCorrect ? (
-                    <span className="text-green-400 text-sm font-medium">✅ Correct!</span>
+                    <span className="text-green-700 text-sm font-medium">✅ Correct!</span>
                   ) : (
-                    <span className="text-red-400 text-sm font-medium">❌ Not quite</span>
+                    <span className="text-red-700 text-sm font-medium">❌ Not quite</span>
                   )}
                 </div>
-                <p className="text-white/90 text-sm">
+                <p className="text-gray-800 text-sm">
                   {exercise.explanation}
                 </p>
               </div>
