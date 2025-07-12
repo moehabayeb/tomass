@@ -24,11 +24,11 @@ const confettiAnimation = {
 
 const A1Lessons = [
   "The Verb 'To Be' (Present)",
-  "The Verb 'To Be' – Negative Sentences",
-  "The Verb 'To Be' – Questions and Short Answers",
+  "The Verb 'To Be' - Negative Sentences",
+  "The Verb 'To Be' - Questions and Short Answers",
+  "Contractions (I'm, you're, etc.)",
   "Personal Pronouns",
-  "Subject Pronouns",
-  "Contractions",
+  "Articles (a, an, the)",
 ];
 
 // A1 Grammar Topics
@@ -388,7 +388,9 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
                     cursor: 'pointer',
                   }}
                   onClick={() => {
-                    console.log("Continue to A2");
+                    setShowCongrats(false);
+                    // Navigate to A2 levels (you can implement routing here)
+                    window.location.href = '/levels/A2';
                   }}
                 >
                   Continue to A2
@@ -404,7 +406,9 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
                     cursor: 'pointer',
                   }}
                   onClick={() => {
-                    console.log("Review A1");
+                    setShowCongrats(false);
+                    // Navigate to A1 levels (you can implement routing here)
+                    window.location.href = '/levels/A1';
                   }}
                 >
                   Review A1
