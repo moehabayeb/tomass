@@ -213,9 +213,12 @@ function ModulePractice({ module, onComplete, onBack }: ModulePracticeProps) {
   const [showLesson, setShowLesson] = useState(true);
   const [correctAnswers, setCorrectAnswers] = useState(0);
 
-  // Debug logging
-  console.log('ModulePractice - module:', module);
-  console.log('ModulePractice - exercises:', module?.exercises);
+  // ENHANCED DEBUG LOGGING
+  console.log('🚨🚨🚨 MODULEPRACTICE COMPONENT IS LOADING! 🚨🚨🚨');
+  console.log('🔍 Module data:', module);
+  console.log('🔍 Module exercises:', module?.exercises);
+  console.log('🔍 Module lesson length:', module?.lesson?.length);
+  console.log('🔍 Show lesson state:', showLesson);
 
   if (!module || !module.exercises || module.exercises.length === 0) {
     return (
@@ -258,6 +261,10 @@ function ModulePractice({ module, onComplete, onBack }: ModulePracticeProps) {
   if (showLesson) {
     return (
       <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: 'hsl(var(--app-bg))' }}>
+        {/* SUPER OBVIOUS DEBUG INDICATOR */}
+        <div className="bg-red-600 text-white text-center p-2 font-bold">
+          🚨 DEBUG: MODULEPRACTICE COMPONENT IS ACTIVE! 🚨
+        </div>
         <div className="relative z-10 p-4 max-w-sm mx-auto">
           {/* Header */}
           <div 
