@@ -283,27 +283,22 @@ export default function SpeakingApp() {
       {/* XP Boost Animations */}
       <XPBoostAnimation boosts={xpBoosts} />
       
-      {/* Level Up Popup */}
+      {/* Premium Level Up Popup */}
       <div 
         data-level-popup
+        className={`fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 transition-all duration-500 ${showLevelUpPopup ? 'opacity-100 scale-100' : 'opacity-0 scale-75 pointer-events-none'}`}
         style={{
-          display: showLevelUpPopup ? 'block' : 'none',
-          position: 'fixed',
-          top: '40%',
-          left: '50%',
-          transform: 'translate(-50%, -50%) scale(1)',
-          fontSize: '32px',
-          background: 'yellow',
-          color: 'black',
-          padding: '20px 30px',
-          borderRadius: '20px',
-          fontWeight: 'bold',
-          zIndex: 999,
-          opacity: '1',
-          transition: 'all 0.4s ease'
+          background: 'linear-gradient(135deg, #ffd700, #ff6b9d)',
+          borderRadius: '24px',
+          padding: '32px 40px',
+          boxShadow: '0 20px 60px rgba(255, 215, 0, 0.4)',
+          border: '3px solid rgba(255, 255, 255, 0.3)'
         }}
       >
-        🌟 Level Up!
+        <div className="text-center">
+          <div className="text-4xl font-black text-white mb-2">🌟 LEVEL UP! 🌟</div>
+          <div className="text-lg font-semibold text-white/90">You reached Level {level}!</div>
+        </div>
       </div>
       
       {/* Sparkly stars background */}
@@ -320,11 +315,11 @@ export default function SpeakingApp() {
       <Sparkle className="bottom-64 left-28" />
       <Sparkle className="bottom-80 right-24" delayed />
 
-      <div className="relative z-10 p-6 max-w-md mx-auto">
+      <div className="relative z-10 p-4 max-w-sm mx-auto min-h-screen">
         {/* Premium Header & Profile Section */}
         <div 
-          className="bg-white/10 backdrop-blur-lg rounded-3xl p-6 mb-6 mt-8"
-          style={{ boxShadow: 'var(--shadow-medium)' }}
+          className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-3xl p-6 mb-6 mt-safe-area-inset-top"
+          style={{ boxShadow: 'var(--shadow-medium), inset 0 1px 0 rgba(255,255,255,0.1)' }}
         >
           <div className="flex items-center justify-center mb-6">
             <div 
@@ -342,9 +337,9 @@ export default function SpeakingApp() {
             </div>
           </div>
           
-          <div className="text-center mb-6">
-            <h1 className="text-white font-bold text-2xl mb-2">Tomas Hoca</h1>
-            <div className="inline-flex items-center bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 mb-4">
+          <div className="text-center mb-4">
+            <h1 className="text-white font-bold text-2xl mb-3 tracking-wide">Tomas Hoca</h1>
+            <div className="inline-flex items-center bg-gradient-to-r from-white/25 to-white/15 backdrop-blur-sm rounded-full px-5 py-2.5 mb-5 border border-white/20">
               <span className="text-white font-bold text-lg">Level {level}</span>
             </div>
             <XPProgressBar current={xp} max={500} />
@@ -366,10 +361,10 @@ export default function SpeakingApp() {
 
         {/* Premium Chat Area */}
         <div 
-          className="bg-white/5 backdrop-blur-sm rounded-3xl p-4 mb-6 overflow-y-auto"
+          className="bg-gradient-to-b from-white/8 to-white/3 backdrop-blur-sm rounded-3xl p-5 mb-6 overflow-y-auto border border-white/10"
           style={{ 
-            height: '320px',
-            boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.1)'
+            height: '300px',
+            boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.1), var(--shadow-soft)'
           }}
         >
           {messages.map((message, index) => (
@@ -383,31 +378,34 @@ export default function SpeakingApp() {
         </div>
 
         {/* Premium Speaking Button */}
-        <div className="flex flex-col items-center space-y-6">
+        <div className="flex flex-col items-center space-y-5 pb-8">
           <Button 
             onClick={startSpeaking}
             disabled={isRecording}
-            className={`w-full max-w-sm py-8 text-xl font-bold rounded-full border-0 hover:scale-105 transition-all duration-300 disabled:opacity-50 ${isRecording ? 'animate-pulse' : ''}`}
+            className={`w-full max-w-xs py-8 text-xl font-bold rounded-full border-0 hover:scale-105 transition-all duration-300 disabled:opacity-50 shadow-xl ${isRecording ? 'animate-pulse' : ''}`}
             size="lg"
             style={{
               backgroundColor: 'hsl(var(--mic-button))',
               color: 'hsl(var(--text-white))',
-              background: isRecording ? 'linear-gradient(45deg, hsl(var(--mic-button)), hsl(350, 85%, 75%))' : 'hsl(var(--mic-button))',
-              boxShadow: isRecording ? '0 0 40px hsl(var(--mic-button))' : 'var(--shadow-strong)'
+              background: isRecording 
+                ? 'linear-gradient(45deg, hsl(var(--mic-button)), hsl(350, 85%, 75%))' 
+                : 'linear-gradient(45deg, hsl(var(--mic-button)), hsl(350, 85%, 70%))',
+              boxShadow: isRecording ? '0 0 40px hsl(var(--mic-button))' : 'var(--shadow-strong)',
+              minHeight: '64px'
             }}
           >
             {isRecording ? "🎙️ Recording..." : "🎤 Start Speaking"}
           </Button>
 
           {/* Premium Controls */}
-          <div className="flex flex-col items-center space-y-4">
+          <div className="flex flex-col items-center space-y-3">
             <div 
-              className="flex items-center space-x-3 bg-white/90 backdrop-blur-sm rounded-full px-6 py-3 cursor-pointer transition-all duration-300 hover:scale-105 hover:bg-white"
+              className="flex items-center space-x-3 bg-white/95 backdrop-blur-sm rounded-full px-6 py-3 cursor-pointer transition-all duration-300 hover:scale-105 hover:bg-white border border-white/50"
               onClick={toggleSound}
               style={{ boxShadow: 'var(--shadow-medium)' }}
             >
               <Volume2 className="w-5 h-5 text-gray-700" />
-              <span className="text-gray-700 font-semibold">
+              <span className="text-gray-700 font-semibold text-base">
                 Sound {soundEnabled ? 'ON' : 'OFF'}
               </span>
             </div>
@@ -415,7 +413,7 @@ export default function SpeakingApp() {
             <select 
               value={userLevel}
               onChange={(e) => setUserLevel(e.target.value as typeof userLevel)}
-              className="bg-white/90 backdrop-blur-sm rounded-full px-6 py-3 text-gray-700 font-semibold border-none outline-none cursor-pointer transition-all duration-300 hover:bg-white hover:scale-105"
+              className="bg-white/95 backdrop-blur-sm rounded-full px-6 py-3 text-gray-700 font-semibold border border-white/50 outline-none cursor-pointer transition-all duration-300 hover:bg-white hover:scale-105 text-base"
               style={{ boxShadow: 'var(--shadow-medium)' }}
             >
               <option value="beginner">🌱 Beginner</option>
