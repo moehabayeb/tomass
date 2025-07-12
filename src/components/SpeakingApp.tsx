@@ -96,10 +96,18 @@ export default function SpeakingApp() {
   };
   const showLevelUp = () => {
     setShowLevelUpPopup(true);
-    // Auto-hide after 2 seconds
+    // Start fade out after 1.5 seconds
     setTimeout(() => {
-      setShowLevelUpPopup(false);
-    }, 2000);
+      const popup = document.querySelector('[data-level-popup]') as HTMLElement;
+      if (popup) {
+        popup.style.opacity = "0";
+        popup.style.transform = "translate(-50%, -50%) scale(0.9)";
+        // Hide completely after fade animation
+        setTimeout(() => {
+          setShowLevelUpPopup(false);
+        }, 500);
+      }
+    }, 1500);
   };
 
   const addXP = (points: number) => {
@@ -222,18 +230,21 @@ export default function SpeakingApp() {
     <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: 'hsl(var(--app-bg))' }}>
       {/* Level Up Popup */}
       <div 
+        data-level-popup
         style={{
           display: showLevelUpPopup ? 'block' : 'none',
           position: 'fixed',
           top: '40%',
           left: '50%',
-          transform: 'translate(-50%, -50%)',
+          transform: 'translate(-50%, -50%) scale(1.1)',
           fontSize: '32px',
           background: 'yellow',
           padding: '20px',
           borderRadius: '20px',
           fontWeight: 'bold',
-          zIndex: 999
+          zIndex: 999,
+          opacity: '1',
+          transition: 'opacity 0.5s ease, transform 0.5s ease'
         }}
       >
         🌟 Level Up!
