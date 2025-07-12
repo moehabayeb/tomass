@@ -317,6 +317,7 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
   const [showCongrats, setShowCongrats] = useState(false);
   const [availableLevels, setAvailableLevels] = useState<string[]>(["A1"]);
   const [currentLevel, setCurrentLevel] = useState("A1");
+  const [autoProgressEnabled, setAutoProgressEnabled] = useState(false); // Option for auto-progression
 
   // Load completed modules from localStorage
   useEffect(() => {
@@ -336,12 +337,27 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
       if (!availableLevels.includes("A2")) {
         setAvailableLevels(prev => [...prev, "A2"]);
       }
-      // Show congrats modal if not shown yet
-      if (!showCongrats) {
-        setShowCongrats(true);
+      
+      // Check if this is the first time completing A1
+      const hasSeenA1Completion = localStorage.getItem('hasSeenA1Completion');
+      
+      if (!hasSeenA1Completion) {
+        // Mark as seen to prevent showing multiple times
+        localStorage.setItem('hasSeenA1Completion', 'true');
+        
+        if (autoProgressEnabled) {
+          // Automatic progression to A2
+          setTimeout(() => {
+            setCurrentLevel("A2");
+            scrollToTop();
+          }, 1000); // Brief delay to show completion
+        } else {
+          // Show congratulations modal
+          setShowCongrats(true);
+        }
       }
     }
-  }, [completedModules, showCongrats, availableLevels]);
+  }, [completedModules, availableLevels, autoProgressEnabled]);
 
   const markModuleComplete = (moduleId: number) => {
     if (!completedModules.includes(moduleId)) {
@@ -436,9 +452,25 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
                 currentLevel === "A1" ? id <= 6 : id > 6
               ).length} / {currentTopics.length} completed
               {currentLevel === "A1" && completedModules.filter(id => id <= 6).length === 6 && (
-                <span className="ml-2 text-green-300 font-bold">🎉 A1 Complete!</span>
+                <span className="ml-2 text-green-300 font-bold">🎉 A1 Complete! A2 Unlocked!</span>
+              )}
+              {currentLevel === "A2" && completedModules.filter(id => id > 6).length === 4 && (
+                <span className="ml-2 text-green-300 font-bold">🎉 A2 Complete!</span>
               )}
             </div>
+            
+            {/* Quick Progress to A2 button when A1 is complete */}
+            {currentLevel === "A1" && completedModules.filter(id => id <= 6).length === 6 && (
+              <Button
+                onClick={() => {
+                  setCurrentLevel("A2");
+                  scrollToTop();
+                }}
+                className="mt-4 bg-gradient-to-r from-green-500 to-blue-500 text-white font-bold px-6 py-2 rounded-full hover:from-green-600 hover:to-blue-600 transition-all duration-300 shadow-lg"
+              >
+                🚀 Start A2 Lessons
+              </Button>
+            )}
           </div>
         </div>
 
@@ -523,45 +555,67 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
               <h2 style={{ fontSize: '1.8rem', color: 'green', marginBottom: '1rem' }}>
                 🎉 Congratulations!
               </h2>
-              <p style={{ fontSize: '1.1rem', marginBottom: '2rem', color: '#333' }}>
-                You've completed all A1 grammar lessons.
+              <p style={{ fontSize: '1.1rem', marginBottom: '1rem', color: '#333' }}>
+                You've completed all A1 grammar lessons!
+              </p>
+              <p style={{ fontSize: '0.9rem', marginBottom: '2rem', color: '#666', fontStyle: 'italic' }}>
+                🚀 Ready to advance to intermediate level?
               </p>
               <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
                 <button
                   style={{
-                    backgroundColor: '#3B82F6',
+                    backgroundColor: '#10B981',
                     color: 'white',
-                    padding: '0.6rem 1.2rem',
-                    borderRadius: '10px',
-                    fontWeight: '600',
+                    padding: '0.8rem 1.5rem',
+                    borderRadius: '12px',
+                    fontWeight: '700',
                     border: 'none',
                     cursor: 'pointer',
+                    fontSize: '1rem',
+                    boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
+                    transition: 'all 0.3s ease',
                   }}
                   onClick={() => {
                     setShowCongrats(false);
                     setCurrentLevel("A2");
                     scrollToTop();
                   }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.backgroundColor = '#059669';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.backgroundColor = '#10B981';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                  }}
                 >
-                  Continue to A2
+                  🚀 Continue to A2
                 </button>
                 <button
                   style={{
-                    backgroundColor: '#E5E7EB',
-                    color: '#111827',
-                    padding: '0.6rem 1.2rem',
-                    borderRadius: '10px',
+                    backgroundColor: '#6B7280',
+                    color: 'white',
+                    padding: '0.8rem 1.5rem',
+                    borderRadius: '12px',
                     fontWeight: '600',
                     border: 'none',
                     cursor: 'pointer',
+                    fontSize: '1rem',
+                    transition: 'all 0.3s ease',
                   }}
                   onClick={() => {
                     setShowCongrats(false);
                     setCurrentLevel("A1");
                     scrollToTop();
                   }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.backgroundColor = '#4B5563';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.backgroundColor = '#6B7280';
+                  }}
                 >
-                  Review A1
+                  📚 Review A1
                 </button>
               </div>
             </div>
