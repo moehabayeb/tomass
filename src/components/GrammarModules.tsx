@@ -269,15 +269,15 @@ function ModulePractice({ module, onComplete, onBack }: ModulePracticeProps) {
           </div>
 
           {/* Lesson Content */}
-          <Card className="bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-sm border-white/20 mb-6">
+          <Card className="bg-white/20 backdrop-blur-sm border border-white/30 mb-6 shadow-lg">
             <CardContent className="p-6">
               <div className="text-center mb-4">
                 <Target className="h-8 w-8 text-yellow-300 mx-auto mb-2" />
-                <h2 className="text-white font-semibold text-base">Let's Learn!</h2>
+                <h2 className="text-white font-bold text-lg">Let's Learn!</h2>
               </div>
-               <div className="text-white/90 text-sm leading-relaxed whitespace-pre-line">
-                 {module.lesson}
-               </div>
+              <div className="text-white text-base leading-relaxed whitespace-pre-line bg-white/10 p-4 rounded-xl border border-white/20">
+                {module.lesson}
+              </div>
             </CardContent>
           </Card>
 
