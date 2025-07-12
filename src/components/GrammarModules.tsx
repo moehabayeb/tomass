@@ -227,6 +227,14 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
     }
   };
 
+  const markLessonComplete = (lessonTitle: string) => {
+    const current = JSON.parse(localStorage.getItem("completedA1") || "[]");
+    if (!current.includes(lessonTitle)) {
+      const updated = [...current, lessonTitle];
+      localStorage.setItem("completedA1", JSON.stringify(updated));
+    }
+  };
+
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -237,10 +245,14 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
   };
 
   if (selectedModule !== null) {
+    const selectedTopic = grammarTopics.find(m => m.id === selectedModule);
     return (
       <ModulePractice 
-        module={grammarTopics.find(m => m.id === selectedModule)!}
-        onComplete={() => markModuleComplete(selectedModule)}
+        module={selectedTopic!}
+        onComplete={() => {
+          markModuleComplete(selectedModule);
+          markLessonComplete(selectedTopic!.title);
+        }}
         onBack={() => setSelectedModule(null)}
       />
     );
