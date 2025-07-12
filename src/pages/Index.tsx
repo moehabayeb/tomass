@@ -1,7 +1,7 @@
-import SpeakingAppNew from '@/components/SpeakingAppNew';
+import SpeakingApp from '@/components/SpeakingApp';
 
 const Index = () => {
-  return <SpeakingAppNew />;
+  return <SpeakingApp />;
 };
 
 export default Index;
