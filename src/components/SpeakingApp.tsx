@@ -200,12 +200,22 @@ export default function SpeakingApp() {
       addChatBubble(transcript, "user");
 
       // Step 3: Send to GPT Grammar Feedback
-      const { data: feedbackData, error: feedbackError } = await supabase.functions.invoke('feedback', {
-        body: { text: transcript }
+      const feedbackRes = await fetch("https://sgzhbiknaiqsuknwgvjr.supabase.co/functions/v1/feedback", {
+        method: "POST",
+        headers: {
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNnemhiaWtuYWlxc3VrbndndmpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIzNDkyNTUsImV4cCI6MjA2NzkyNTI1NX0.zi3agHTlckDVeDOQ-rFvC9X_TI21QOxiXzqbNs2UrG4',
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNnemhiaWtuYWlxc3VrbndndmpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIzNDkyNTUsImV4cCI6MjA2NzkyNTI1NX0.zi3agHTlckDVeDOQ-rFvC9X_TI21QOxiXzqbNs2UrG4',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ text: transcript })
       });
 
-      if (feedbackError) throw feedbackError;
+      if (!feedbackRes.ok) {
+        const errorData = await feedbackRes.json();
+        throw new Error(errorData.error || 'Feedback failed');
+      }
 
+      const feedbackData = await feedbackRes.json();
       const corrected = feedbackData.corrected;
 
       // Step 4: Split correction and follow-up
