@@ -218,6 +218,10 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
     }
   };
 
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const unlockA2Modules = () => {
     setAvailableLevels((prev) => [...prev, "A2"]);
     setCurrentLevel("A2");
