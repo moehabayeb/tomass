@@ -3,7 +3,6 @@ import { Mic, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import avatarImage from '@/assets/avatar.png';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 
 // Sparkle component for background decoration
 const Sparkle = ({ className, delayed = false }: { className?: string; delayed?: boolean }) => (
@@ -77,7 +76,7 @@ export default function SpeakingApp() {
   ]);
   const [isRecording, setIsRecording] = useState(false);
   const [history, setHistory] = useState<Array<{input: string; corrected: string; time: string}>>([]);
-  const { toast } = useToast();
+  const [showLevelUpPopup, setShowLevelUpPopup] = useState(false);
   
   // Load chat history from localStorage on component mount
   useEffect(() => {
@@ -96,11 +95,11 @@ export default function SpeakingApp() {
     localStorage.setItem("chatHistory", JSON.stringify(updatedHistory));
   };
   const showLevelUp = () => {
-    toast({
-      title: "🎉 Level Up!",
-      description: `Congratulations! You've reached Level ${level + 1}!`,
-      duration: 4000,
-    });
+    setShowLevelUpPopup(true);
+    // Auto-hide after 3 seconds
+    setTimeout(() => {
+      setShowLevelUpPopup(false);
+    }, 3000);
   };
 
   const addXP = (points: number) => {
@@ -221,6 +220,25 @@ export default function SpeakingApp() {
 
   return (
     <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: 'hsl(var(--app-bg))' }}>
+      {/* Level Up Popup */}
+      <div 
+        style={{
+          display: showLevelUpPopup ? 'block' : 'none',
+          position: 'fixed',
+          top: '40%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          fontSize: '32px',
+          background: 'yellow',
+          padding: '20px',
+          borderRadius: '20px',
+          fontWeight: 'bold',
+          zIndex: 999
+        }}
+      >
+        🌟 Level Up!
+      </div>
+      
       {/* Sparkly stars background */}
       <Sparkle className="top-16 left-8" />
       <Sparkle className="top-32 right-12" delayed />
