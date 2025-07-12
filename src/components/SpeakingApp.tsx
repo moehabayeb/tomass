@@ -3,6 +3,7 @@ import { Mic, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import avatarImage from '@/assets/avatar.png';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 // Sparkle component for background decoration
 const Sparkle = ({ className, delayed = false }: { className?: string; delayed?: boolean }) => (
@@ -67,6 +68,7 @@ const ChatBubble = ({
 export default function SpeakingApp() {
   const [soundOn, setSoundOn] = useState(true);
   const [xp, setXp] = useState(230);
+  const [level, setLevel] = useState(5);
   const [messages, setMessages] = useState([
     { text: "Hello! Ready to practice today? 🎤", isUser: false, isSystem: false },
     { text: "Yes, I had pizza today!", isUser: true, isSystem: false },
@@ -75,6 +77,7 @@ export default function SpeakingApp() {
   ]);
   const [isRecording, setIsRecording] = useState(false);
   const [history, setHistory] = useState<Array<{input: string; corrected: string; time: string}>>([]);
+  const { toast } = useToast();
   
   // Load chat history from localStorage on component mount
   useEffect(() => {
@@ -92,8 +95,29 @@ export default function SpeakingApp() {
     setHistory(updatedHistory);
     localStorage.setItem("chatHistory", JSON.stringify(updatedHistory));
   };
+  const showLevelUp = () => {
+    toast({
+      title: "🎉 Level Up!",
+      description: `Congratulations! You've reached Level ${level + 1}!`,
+      duration: 4000,
+    });
+  };
+
   const addXP = (points: number) => {
-    setXp(prev => Math.min(prev + points, 500));
+    setXp(prevXp => {
+      const newXp = prevXp + points;
+      
+      if (newXp >= 500) {
+        setLevel(prevLevel => {
+          const newLevel = prevLevel + 1;
+          showLevelUp();
+          return newLevel;
+        });
+        return 0; // Reset XP to 0 after level up
+      }
+      
+      return newXp;
+    });
   };
 
   const addChatBubble = (text: string, type: "user" | "bot" | "system") => {
@@ -229,7 +253,7 @@ export default function SpeakingApp() {
           </div>
           
           <div className="flex flex-col items-end">
-            <span className="text-white font-extrabold text-xl mb-2">Level 5</span>
+            <span className="text-white font-extrabold text-xl mb-2">Level {level}</span>
             <XPProgressBar current={xp} max={500} />
           </div>
         </div>

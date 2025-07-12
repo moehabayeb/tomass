@@ -180,4 +180,17 @@ All colors MUST be HSL.
     50% { box-shadow: 0 0 20px #ff4f80; }
     100% { box-shadow: 0 0 5px #ff4f80; }
   }
+  
+  /* Level up celebration animation */
+  .level-up {
+    animation: levelUp 0.8s ease-out;
+  }
+
+  @keyframes levelUp {
+    0% { transform: scale(1); }
+    25% { transform: scale(1.2); color: #ffd700; }
+    50% { transform: scale(1.1); }
+    75% { transform: scale(1.15); color: #ff6b9d; }
+    100% { transform: scale(1); }
+  }
 }
