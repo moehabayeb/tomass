@@ -191,6 +191,121 @@ const grammarTopics = [
   }
 ];
 
+// A2 Grammar Topics
+const a2GrammarTopics = [
+  {
+    id: 7,
+    title: "Simple Past Tense",
+    description: "Learn how to talk about completed actions in the past",
+    lesson: "The simple past tense is used for completed actions in the past.\n\n✓ Regular verbs: add -ed (walk → walked)\n✓ Irregular verbs: memorize forms (go → went)\n✓ Questions: Did + subject + base verb?\n✓ Negatives: didn't + base verb\n\nExamples:\n- I walked to school yesterday.\n- She didn't eat breakfast.\n- Did you see the movie?",
+    exercises: [
+      {
+        question: "Complete: Yesterday, I ___ to the store.",
+        options: ["walk", "walked", "walking"],
+        correct: 1,
+        explanation: "Use 'walked' for a completed past action"
+      },
+      {
+        question: "Choose the correct negative: She ___ watch TV last night.",
+        options: ["didn't", "doesn't", "don't"],
+        correct: 0,
+        explanation: "Use 'didn't' for past tense negatives"
+      },
+      {
+        question: "Form a question: ___ you ___ your homework?",
+        options: ["Do/finish", "Did/finish", "Did/finished"],
+        correct: 1,
+        explanation: "Use 'Did + base verb' for past tense questions"
+      }
+    ]
+  },
+  {
+    id: 8,
+    title: "Past Continuous Tense",
+    description: "Express ongoing actions in the past",
+    lesson: "Past continuous shows actions that were in progress at a specific time in the past.\n\n✓ Form: was/were + verb-ing\n✓ Use 'was' with I/he/she/it\n✓ Use 'were' with you/we/they\n\nExamples:\n- I was reading when you called.\n- They were playing football at 3 PM.\n- What were you doing yesterday?",
+    exercises: [
+      {
+        question: "Complete: At 8 PM, I ___ dinner.",
+        options: ["was eating", "were eating", "ate"],
+        correct: 0,
+        explanation: "Use 'was eating' for ongoing past action with 'I'"
+      },
+      {
+        question: "Choose: They ___ when it started to rain.",
+        options: ["was playing", "were playing", "played"],
+        correct: 1,
+        explanation: "Use 'were playing' with 'they' for ongoing past action"
+      },
+      {
+        question: "What ___ you ___ at midnight?",
+        options: ["was/doing", "were/doing", "did/do"],
+        correct: 1,
+        explanation: "Use 'were you doing' for past continuous questions"
+      }
+    ]
+  },
+  {
+    id: 9,
+    title: "Comparative and Superlative",
+    description: "Compare things and express extremes",
+    lesson: "Use comparatives to compare two things, superlatives for three or more.\n\n✓ Short adjectives: add -er/-est (tall → taller → tallest)\n✓ Long adjectives: more/most + adjective (beautiful → more beautiful → most beautiful)\n✓ Irregular forms: good → better → best, bad → worse → worst\n\nExamples:\n- This book is more interesting than that one.\n- She is the tallest in the class.",
+    exercises: [
+      {
+        question: "Complete: This car is ___ than that one.",
+        options: ["fast", "faster", "fastest"],
+        correct: 1,
+        explanation: "Use 'faster' to compare two cars"
+      },
+      {
+        question: "Choose: She is the ___ student in class.",
+        options: ["more intelligent", "most intelligent", "intelligenter"],
+        correct: 1,
+        explanation: "Use 'most intelligent' for superlative with long adjectives"
+      },
+      {
+        question: "Which is correct for comparing two books?",
+        options: ["This book is good", "This book is better", "This book is best"],
+        correct: 1,
+        explanation: "Use 'better' to compare two things"
+      }
+    ]
+  },
+  {
+    id: 10,
+    title: "Present Perfect Tense",
+    description: "Connect past actions to the present",
+    lesson: "Present perfect connects past actions to now.\n\n✓ Form: have/has + past participle\n✓ Use 'have' with I/you/we/they\n✓ Use 'has' with he/she/it\n✓ Common uses: experience, unfinished time, recent past\n\nExamples:\n- I have visited Paris. (experience)\n- She has lived here for 5 years. (unfinished time)\n- They have just arrived. (recent past)",
+    exercises: [
+      {
+        question: "Complete: I ___ never ___ sushi.",
+        options: ["have/eat", "have/eaten", "has/eaten"],
+        correct: 1,
+        explanation: "Use 'have eaten' for past experience with 'I'"
+      },
+      {
+        question: "Choose: She ___ in London since 2010.",
+        options: ["has lived", "have lived", "lived"],
+        correct: 0,
+        explanation: "Use 'has lived' with 'she' for unfinished time period"
+      },
+      {
+        question: "Form the question: ___ you ___ your homework?",
+        options: ["Do/finish", "Have/finished", "Did/finish"],
+        correct: 1,
+        explanation: "Use 'Have you finished' for present perfect questions"
+      }
+    ]
+  }
+];
+
+// Combined topics based on current level
+const getTopicsForLevel = (level: string) => {
+  if (level === "A1") return grammarTopics;
+  if (level === "A2") return a2GrammarTopics;
+  return grammarTopics; // default to A1
+};
+
 interface GrammarModulesProps {
   onBack: () => void;
 }
@@ -211,15 +326,22 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
     }
   }, []);
 
-  // Check for A1 completion based on module completion
+  // Check for A1 completion and unlock A2
   useEffect(() => {
     const a1ModuleIds = [1, 2, 3, 4, 5, 6]; // All 6 A1 modules
     const completedA1Modules = completedModules.filter(id => a1ModuleIds.includes(id));
     
-    if (completedA1Modules.length === a1ModuleIds.length && !showCongrats) {
-      setShowCongrats(true);
+    if (completedA1Modules.length === a1ModuleIds.length) {
+      // Unlock A2 if not already available
+      if (!availableLevels.includes("A2")) {
+        setAvailableLevels(prev => [...prev, "A2"]);
+      }
+      // Show congrats modal if not shown yet
+      if (!showCongrats) {
+        setShowCongrats(true);
+      }
     }
-  }, [completedModules, showCongrats]);
+  }, [completedModules, showCongrats, availableLevels]);
 
   const markModuleComplete = (moduleId: number) => {
     if (!completedModules.includes(moduleId)) {
@@ -247,7 +369,8 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
   };
 
   if (selectedModule !== null) {
-    const selectedTopic = grammarTopics.find(m => m.id === selectedModule);
+    const currentTopics = getTopicsForLevel(currentLevel);
+    const selectedTopic = currentTopics.find(m => m.id === selectedModule);
     return (
       <ModulePractice 
         module={selectedTopic!}
@@ -260,6 +383,8 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
       />
     );
   }
+
+  const currentTopics = getTopicsForLevel(currentLevel);
 
   return (
     <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: 'hsl(var(--app-bg))' }}>
@@ -278,26 +403,48 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <h1 className="text-white font-bold text-xl">Grammar Lessons</h1>
+            <h1 className="text-white font-bold text-xl">Grammar Lessons - {currentLevel}</h1>
             <div className="w-10" /> {/* Spacer */}
           </div>
           
-            <div className="text-center">
-              <p className="text-white/80 text-sm">
-                Master A1 grammar step by step
-              </p>
-              <div className="mt-3 text-white/60 text-xs">
-                {completedModules.length} / {grammarTopics.length} completed
-                {completedModules.length === grammarTopics.length && (
-                  <span className="ml-2 text-green-300 font-bold">🎉 All Complete!</span>
-                )}
-              </div>
+          {/* Level Switcher */}
+          {availableLevels.length > 1 && (
+            <div className="flex justify-center space-x-2 mb-4">
+              {availableLevels.map(level => (
+                <Button
+                  key={level}
+                  onClick={() => setCurrentLevel(level)}
+                  variant={currentLevel === level ? "default" : "outline"}
+                  size="sm"
+                  className={currentLevel === level 
+                    ? "bg-white text-blue-900 font-bold" 
+                    : "bg-white/20 text-white border-white/30 hover:bg-white/30"
+                  }
+                >
+                  {level}
+                </Button>
+              ))}
             </div>
+          )}
+          
+          <div className="text-center">
+            <p className="text-white/80 text-sm">
+              Master {currentLevel} grammar step by step
+            </p>
+            <div className="mt-3 text-white/60 text-xs">
+              {completedModules.filter(id => 
+                currentLevel === "A1" ? id <= 6 : id > 6
+              ).length} / {currentTopics.length} completed
+              {currentLevel === "A1" && completedModules.filter(id => id <= 6).length === 6 && (
+                <span className="ml-2 text-green-300 font-bold">🎉 A1 Complete!</span>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Modules Grid */}
         <div className="space-y-4 pb-8">
-          {grammarTopics.map((topic) => {
+          {currentTopics.map((topic) => {
             const isCompleted = completedModules.includes(topic.id);
             
             return (
@@ -392,8 +539,8 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
                   }}
                   onClick={() => {
                     setShowCongrats(false);
-                    // Navigate to A2 levels (you can implement routing here)
-                    window.location.href = '/levels/A2';
+                    setCurrentLevel("A2");
+                    scrollToTop();
                   }}
                 >
                   Continue to A2
@@ -410,8 +557,8 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
                   }}
                   onClick={() => {
                     setShowCongrats(false);
-                    // Navigate to A1 levels (you can implement routing here)
-                    window.location.href = '/levels/A1';
+                    setCurrentLevel("A1");
+                    scrollToTop();
                   }}
                 >
                   Review A1
