@@ -3,11 +3,14 @@ import { Mic, BookOpen, GraduationCap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import SpeakingApp from './SpeakingApp';
 import GrammarModules from './GrammarModules';
+import DailyTips from './DailyTips';
+import DailyTipsBadge from './DailyTipsBadge';
 
 type AppMode = 'speaking' | 'grammar';
 
 export default function AppNavigation() {
   const [currentMode, setCurrentMode] = useState<AppMode>('speaking');
+  const [showDailyTips, setShowDailyTips] = useState(false);
 
   if (currentMode === 'grammar') {
     return <GrammarModules onBack={() => setCurrentMode('speaking')} />;
@@ -15,6 +18,11 @@ export default function AppNavigation() {
 
   return (
     <div className="relative">
+      {/* Daily Tips Modal */}
+      {showDailyTips && (
+        <DailyTips onClose={() => setShowDailyTips(false)} />
+      )}
+
       {/* Navigation Tab */}
       <div 
         className="fixed top-4 right-4 z-20 bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-2xl border border-white/20"
@@ -48,6 +56,11 @@ export default function AppNavigation() {
             Grammar
           </Button>
         </div>
+      </div>
+
+      {/* Daily Tips Badge */}
+      <div className="fixed top-20 right-4 z-20">
+        <DailyTipsBadge onClick={() => setShowDailyTips(true)} />
       </div>
 
       {/* Current Mode Content */}
