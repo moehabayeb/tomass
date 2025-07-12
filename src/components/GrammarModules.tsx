@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { ArrowLeft, ArrowRight, CheckCircle, BookOpen, Target, Trophy, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,6 +19,15 @@ const confettiAnimation = {
   layers: [],
   markers: []
 };
+
+const A1Lessons = [
+  "The Verb 'To Be' (Present)",
+  "The Verb 'To Be' – Negative Sentences",
+  "The Verb 'To Be' – Questions and Short Answers",
+  "Personal Pronouns",
+  "Subject Pronouns",
+  "Contractions",
+];
 
 // A1 Grammar Topics
 const grammarTopics = [
@@ -201,14 +210,14 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
 
   // Check for A1 completion
   useEffect(() => {
-    const a1ModuleIds = [1, 2, 3, 4]; // First 4 modules are A1
-    const completedA1Modules = completedModules.filter(id => a1ModuleIds.includes(id));
-    
-    if (completedA1Modules.length === a1ModuleIds.length && !showCongrats) {
+    const completed = JSON.parse(localStorage.getItem("completedA1") || "[]");
+
+    const allDone = A1Lessons.every(lesson => completed.includes(lesson));
+
+    if (allDone) {
       setShowCongrats(true);
-      unlockA2Modules();
     }
-  }, [completedModules, showCongrats]);
+  }, []);
 
   const markModuleComplete = (moduleId: number) => {
     if (!completedModules.includes(moduleId)) {
