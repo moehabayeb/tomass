@@ -2,8 +2,23 @@ import { useState, useEffect } from 'react';
 import { ArrowLeft, ArrowRight, CheckCircle, BookOpen, Target, Trophy, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import Lottie from 'lottie-react';
 import { supabase } from '@/integrations/supabase/client';
+
+// Simple confetti animation data (placeholder)
+const confettiAnimation = {
+  v: "5.7.4",
+  fr: 60,
+  ip: 0,
+  op: 120,
+  w: 400,
+  h: 400,
+  nm: "Confetti",
+  ddd: 0,
+  assets: [],
+  layers: [],
+  markers: []
+};
 
 // A1 Grammar Topics
 const grammarTopics = [
@@ -295,39 +310,33 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
         </div>
       </div>
 
-      {/* Congratulations Modal */}
-      <Dialog open={showCongrats} onOpenChange={setShowCongrats}>
-        <DialogContent className="max-w-sm mx-auto">
-          <DialogHeader className="text-center">
-            <div className="flex justify-center mb-4">
-              <Trophy className="h-16 w-16 text-yellow-500" />
+      {/* Congratulations Modal with Confetti */}
+      {showCongrats && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+          <div className="bg-white text-center p-6 rounded-2xl shadow-xl max-w-md">
+            <h2 className="text-2xl font-bold mb-2 text-green-600">🎉 Congratulations!</h2>
+            <p className="mb-4 text-gray-700">You've completed all A1 grammar lessons.</p>
+            <Lottie animationData={confettiAnimation} loop={false} />
+            <div className="mt-4 flex justify-center space-x-4">
+              <button
+                className="bg-blue-600 text-white px-4 py-2 rounded-xl"
+                onClick={() => {
+                  setShowCongrats(false);
+                  unlockA2Modules();
+                }}
+              >
+                Continue to A2
+              </button>
+              <button
+                className="bg-gray-200 text-gray-800 px-4 py-2 rounded-xl"
+                onClick={() => setShowCongrats(false)}
+              >
+                Review A1
+              </button>
             </div>
-            <DialogTitle className="text-2xl font-bold text-gray-800">
-              🎉 Congratulations!
-            </DialogTitle>
-            <DialogDescription className="text-gray-600 text-base mt-4">
-              You've completed all A1 grammar modules! You're ready to move on to A2 level.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="text-center mt-6">
-            <div className="flex justify-center space-x-2 mb-4">
-              <Star className="h-6 w-6 text-yellow-500 fill-current" />
-              <Star className="h-6 w-6 text-yellow-500 fill-current" />
-              <Star className="h-6 w-6 text-yellow-500 fill-current" />
-            </div>
-            <Button
-              onClick={() => setShowCongrats(false)}
-              className="w-full py-3 text-lg font-bold"
-              style={{
-                background: 'linear-gradient(45deg, hsl(var(--primary)), hsl(var(--primary-variant)))',
-                color: 'white',
-              }}
-            >
-              Continue Learning! 🚀
-            </Button>
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
     </div>
   );
 }
