@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Mic, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import avatarImage from '@/assets/avatar.png';
+import { supabase } from '@/integrations/supabase/client';
 
 // Sparkle component for background decoration
 const Sparkle = ({ className, delayed = false }: { className?: string; delayed?: boolean }) => (
@@ -62,6 +63,95 @@ const ChatBubble = ({
 
 export default function SpeakingApp() {
   const [soundOn, setSoundOn] = useState(true);
+  const [messages, setMessages] = useState([
+    { text: "Hello! Ready to practice today? 🎤", isUser: false, isSystem: false },
+    { text: "Yes, I had pizza today!", isUser: true, isSystem: false },
+    { text: 'Great! You can also say: "I had a delicious pizza with friends." 🍕', isUser: false, isSystem: false },
+    { text: "Next question: What do you usually eat for breakfast?", isUser: false, isSystem: false }
+  ]);
+  const [isRecording, setIsRecording] = useState(false);
+
+  const addChatBubble = (text: string, type: "user" | "bot" | "system") => {
+    const newMessage = { 
+      text, 
+      isUser: type === "user",
+      isSystem: type === "system"
+    };
+    setMessages(prev => [...prev, newMessage]);
+  };
+
+  const startSpeaking = async () => {
+    try {
+      setIsRecording(true);
+      
+      // Step 1: Record Audio from Mic
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      const audioChunks: Blob[] = [];
+
+      mediaRecorder.ondataavailable = event => {
+        audioChunks.push(event.data);
+      };
+
+      mediaRecorder.start();
+
+      // Show recording message
+      addChatBubble("🎙️ Listening...", "system");
+
+      await new Promise(resolve => setTimeout(resolve, 5000)); // Record 5 seconds
+      mediaRecorder.stop();
+
+      const audioBlob = await new Promise<Blob>(resolve => {
+        mediaRecorder.onstop = () => {
+          const blob = new Blob(audioChunks, { type: 'audio/wav' });
+          resolve(blob);
+        };
+      });
+
+      // Stop all tracks to release microphone
+      stream.getTracks().forEach(track => track.stop());
+
+      // Step 2: Send Audio to Whisper Transcription
+      const formData = new FormData();
+      formData.append("audio", audioBlob, "recording.wav");
+
+      const { data: transcribeData, error: transcribeError } = await supabase.functions.invoke('transcribe', {
+        body: formData
+      });
+
+      if (transcribeError) throw transcribeError;
+
+      const transcript = transcribeData.transcript;
+
+      // Show user's transcribed text
+      addChatBubble(transcript, "user");
+
+      // Step 3: Send to GPT Grammar Feedback
+      const { data: feedbackData, error: feedbackError } = await supabase.functions.invoke('feedback', {
+        body: { text: transcript }
+      });
+
+      if (feedbackError) throw feedbackError;
+
+      const corrected = feedbackData.corrected;
+
+      // Step 4: Show grammar feedback
+      addChatBubble(corrected, "bot");
+
+      // Step 5: Optional voice output
+      if (soundOn) {
+        const utterance = new SpeechSynthesisUtterance(corrected);
+        utterance.lang = "en-US";
+        speechSynthesis.speak(utterance);
+      }
+
+    } catch (error) {
+      console.error('Error in startSpeaking:', error);
+      addChatBubble("Sorry, there was an error. Please try again.", "system");
+    } finally {
+      setIsRecording(false);
+    }
+  };
 
   return (
     <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: 'hsl(var(--app-bg))' }}>
@@ -104,10 +194,14 @@ export default function SpeakingApp() {
 
         {/* Chat Area */}
         <div className="space-y-2 mb-8">
-          <ChatBubble message="Hello! Ready to practice today? 🎤" />
-          <ChatBubble message="Yes, I had pizza today!" isUser />
-          <ChatBubble message={'Great! You can also say: "I had a delicious pizza with friends." 🍕'} />
-          <ChatBubble message="Next question: What do you usually eat for breakfast?" />
+          {messages.map((message, index) => (
+            <ChatBubble 
+              key={index}
+              message={message.text} 
+              isUser={message.isUser}
+              className={message.isSystem ? "opacity-75 italic" : ""}
+            />
+          ))}
         </div>
 
         {/* XP Progress Bar (horizontal) */}
@@ -126,7 +220,9 @@ export default function SpeakingApp() {
         {/* Speaking Button */}
         <div className="flex flex-col items-center space-y-6">
           <Button 
-            className="w-full max-w-sm py-6 text-xl font-extrabold rounded-full border-4 border-black/20 hover:scale-105 transition-transform duration-200"
+            onClick={startSpeaking}
+            disabled={isRecording}
+            className="w-full max-w-sm py-6 text-xl font-extrabold rounded-full border-4 border-black/20 hover:scale-105 transition-transform duration-200 disabled:opacity-50"
             size="lg"
             style={{
               backgroundColor: 'hsl(var(--mic-button))',
@@ -135,7 +231,7 @@ export default function SpeakingApp() {
             }}
           >
             <Mic className="w-7 h-7 mr-3" />
-            Start Speaking
+            {isRecording ? "Recording..." : "Start Speaking"}
           </Button>
 
           {/* Sound Toggle */}
