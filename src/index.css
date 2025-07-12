@@ -6,6 +6,8 @@
 All colors MUST be HSL.
 */
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
 @layer base {
   :root {
     --background: 238 63% 25%;
@@ -36,66 +38,78 @@ All colors MUST be HSL.
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
 
-    /* Exact colors from the reference */
+    /* Premium App Colors */
     --app-bg: 238 63% 25%;
-    --avatar-bg: 35 100% 65%;
-    --chat-bubble-ai: 191 100% 65%;
-    --chat-bubble-user: 45 100% 65%;
-    --xp-bar: 45 100% 55%;
-    --xp-bar-bg: 240 35% 20%;
-    --mic-button: 350 85% 65%;
-    --text-white: 0 0% 100%;
-    --text-dark: 240 35% 20%;
+    --profile-card-bg: 0 0% 100%;
+    --profile-card-shadow: 0 0% 0%;
     
-    /* Shadows and effects */
-    --shadow-soft: 0 8px 25px rgba(0, 0, 0, 0.15);
-    --shadow-button: 0 8px 25px rgba(0, 0, 0, 0.25);
-    --shadow-bubble: 0 4px 15px rgba(0, 0, 0, 0.1);
+    /* Avatar & Profile */
+    --avatar-bg: 35 100% 65%;
+    --avatar-ring: 0 0% 100%;
+    
+    /* Chat Bubbles - Premium Design */
+    --chat-bubble-ai: 194 100% 94%;  /* Light blue #e0f7ff */
+    --chat-bubble-user: 0 0% 100%;   /* Pure white */
+    --chat-bubble-user-border: 220 13% 91%;
+    
+    /* XP System - Premium Gradients */
+    --xp-gradient-start: 45 96% 53%;  /* #facc15 */
+    --xp-gradient-end: 36 100% 50%;   /* #f59e0b */
+    --xp-bar-bg: 240 5% 15%;
+    --xp-text: 240 10% 30%;
+    
+    /* Streak System */
+    --streak-bg-start: 45 100% 85%;   /* Light yellow */
+    --streak-bg-end: 36 100% 80%;     /* Light orange */
+    --streak-text: 36 100% 25%;
+    
+    /* Buttons */
+    --mic-button: 350 85% 65%;
+    --sample-button-bg: 0 0% 100%;
+    --sample-button-border: 220 13% 91%;
+    --sample-button-hover: 220 14% 96%;
+    
+    /* Text */
+    --text-white: 0 0% 100%;
+    --text-dark: 240 10% 30%;
+    --text-premium: 240 10% 15%;
+    
+    /* Shadows - Premium Elevation */
+    --shadow-soft: 0 8px 25px -5px rgba(0, 0, 0, 0.15);
+    --shadow-card: 0 20px 40px -12px rgba(0, 0, 0, 0.25);
+    --shadow-button: 0 8px 20px -8px rgba(0, 0, 0, 0.25);
+    --shadow-bubble: 0 4px 15px -3px rgba(0, 0, 0, 0.1);
+    --shadow-streak: 0 8px 25px -8px rgba(251, 191, 36, 0.25);
 
     --radius: 1.5rem;
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
   .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
-
     --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
-
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-
     --primary: 210 40% 98%;
     --primary-foreground: 222.2 47.4% 11.2%;
-
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
-
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
-
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
-
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
@@ -117,6 +131,7 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
 }
 
@@ -135,50 +150,126 @@ All colors MUST be HSL.
     50% { opacity: 1; transform: scale(1.2); }
   }
   
-  /* Custom shadows */
-  .shadow-soft {
+  /* Premium Profile Card */
+  .profile-card {
+    background: hsl(var(--profile-card-bg));
+    box-shadow: var(--shadow-card);
+    border-radius: 24px;
+  }
+  
+  /* Premium Avatar */
+  .avatar-premium {
+    background: hsl(var(--avatar-bg));
+    border: 4px solid hsl(var(--avatar-ring));
     box-shadow: var(--shadow-soft);
   }
   
-  .shadow-button {
-    box-shadow: var(--shadow-button);
-  }
-  
-  /* Chat bubble styles */
+  /* Premium Chat Bubbles */
   .chat-bubble-ai {
-    background-color: hsl(var(--chat-bubble-ai));
-    color: hsl(var(--text-dark));
+    background: hsl(var(--chat-bubble-ai));
+    color: hsl(var(--text-premium));
+    box-shadow: var(--shadow-bubble);
+    border-radius: 20px 20px 20px 4px;
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.5;
   }
   
   .chat-bubble-user {
-    background-color: hsl(var(--chat-bubble-user));
-    color: hsl(var(--text-dark));
+    background: hsl(var(--chat-bubble-user));
+    color: hsl(var(--text-premium));
+    border: 2px solid hsl(var(--chat-bubble-user-border));
+    box-shadow: var(--shadow-bubble);
+    border-radius: 20px 20px 4px 20px;
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.5;
   }
   
-  /* XP bar styles */
-  .xp-bar-bg {
-    background-color: hsl(var(--text-dark) / 0.3);
+  /* Premium XP Progress Bar */
+  .xp-progress-container {
+    background: hsl(var(--xp-bar-bg));
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
   }
   
-  .xp-bar-fill {
-    background-color: hsl(var(--xp-bar));
+  .xp-progress-fill {
+    background: linear-gradient(to right, hsl(var(--xp-gradient-start)), hsl(var(--xp-gradient-end)));
+    border-radius: 12px;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
   }
   
-  /* Mic button */
+  .xp-progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    animation: shimmer 2s infinite;
+  }
+  
+  @keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+  }
+  
+  /* Premium Streak Box */
+  .streak-container {
+    background: linear-gradient(135deg, hsl(var(--streak-bg-start)), hsl(var(--streak-bg-end)));
+    color: hsl(var(--streak-text));
+    border-radius: 16px;
+    box-shadow: var(--shadow-streak);
+  }
+  
+  /* Premium Sample Button */
+  .sample-button {
+    background: hsl(var(--sample-button-bg));
+    border: 2px solid hsl(var(--sample-button-border));
+    color: hsl(var(--text-premium));
+    border-radius: 25px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+  }
+  
+  .sample-button:hover {
+    background: hsl(var(--sample-button-hover));
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-button);
+  }
+  
+  /* Premium Mic Button */
   .mic-button {
-    background-color: hsl(var(--mic-button));
+    background: hsl(var(--mic-button));
     color: hsl(var(--text-white));
+    border-radius: 25px;
+    box-shadow: var(--shadow-button);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
   }
   
-  /* Glow animation for microphone button */
+  .mic-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.3);
+  }
+  
+  /* Glow animation for recording */
   .glow {
     animation: glow 1.5s infinite;
   }
 
   @keyframes glow {
-    0% { box-shadow: 0 0 5px #ff4f80; }
-    50% { box-shadow: 0 0 20px #ff4f80; }
-    100% { box-shadow: 0 0 5px #ff4f80; }
+    0% { box-shadow: 0 0 5px hsl(var(--mic-button)), var(--shadow-button); }
+    50% { box-shadow: 0 0 25px hsl(var(--mic-button)), var(--shadow-button); }
+    100% { box-shadow: 0 0 5px hsl(var(--mic-button)), var(--shadow-button); }
   }
   
   /* Level up celebration animation */
@@ -192,5 +283,21 @@ All colors MUST be HSL.
     50% { transform: scale(1.1); }
     75% { transform: scale(1.15); color: #ff6b9d; }
     100% { transform: scale(1); }
+  }
+  
+  /* Premium animations */
+  .fade-in-up {
+    animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }
