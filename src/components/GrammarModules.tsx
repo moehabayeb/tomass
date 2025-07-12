@@ -1,9 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { ArrowLeft, ArrowRight, CheckCircle, BookOpen, Target, Trophy, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Lottie from 'lottie-react';
 import { supabase } from '@/integrations/supabase/client';
+
+const A1Lessons = [
+  "The Verb 'To Be' (Present)",
+  "The Verb 'To Be' – Negative Sentences",
+  "The Verb 'To Be' – Questions and Short Answers",
+  "Personal Pronouns",
+  "Subject Pronouns",
+  "Contractions",
+];
 
 // Simple confetti animation data (placeholder)
 const confettiAnimation = {
@@ -201,14 +210,14 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
 
   // Check for A1 completion
   useEffect(() => {
-    const a1ModuleIds = [1, 2, 3, 4]; // First 4 modules are A1
-    const completedA1Modules = completedModules.filter(id => a1ModuleIds.includes(id));
-    
-    if (completedA1Modules.length === a1ModuleIds.length && !showCongrats) {
+    const completed = JSON.parse(localStorage.getItem("completedA1") || "[]");
+
+    const allDone = A1Lessons.every(lesson => completed.includes(lesson));
+
+    if (allDone) {
       setShowCongrats(true);
-      unlockA2Modules();
     }
-  }, [completedModules, showCongrats]);
+  }, []);
 
   const markModuleComplete = (moduleId: number) => {
     if (!completedModules.includes(moduleId)) {
@@ -216,6 +225,10 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
       setCompletedModules(updated);
       localStorage.setItem('grammarModulesCompleted', JSON.stringify(updated));
     }
+  };
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const unlockA2Modules = () => {
