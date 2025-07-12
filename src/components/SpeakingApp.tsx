@@ -21,16 +21,19 @@ const XPProgressBar = ({ current, max, className }: { current: number; max: numb
   
   return (
     <div className={`relative ${className}`}>
-      <div className="w-full h-4 rounded-full border-2 border-black/20" style={{ backgroundColor: 'hsl(var(--xp-bar-bg))' }}>
+      <div 
+        className="w-full h-2.5 rounded-lg overflow-hidden" 
+        style={{ background: '#111' }}
+      >
         <div 
-          className="h-full rounded-full transition-all duration-500 ease-out"
+          className="h-full transition-all duration-500 ease-out"
           style={{ 
             width: `${percentage}%`,
-            backgroundColor: 'hsl(var(--xp-bar))'
+            background: 'yellow'
           }}
         />
       </div>
-      <span className="absolute right-0 top-5 text-xs text-yellow-300 font-bold">
+      <span className="absolute right-0 top-3 text-xs text-yellow-300 font-bold">
         XP {current} / {max}
       </span>
     </div>
@@ -225,12 +228,15 @@ export default function SpeakingApp() {
 
         {/* XP Progress Bar (horizontal) */}
         <div className="mb-8">
-          <div className="w-full h-5 rounded-full border-2 border-black/20" style={{ backgroundColor: 'hsl(var(--xp-bar-bg))' }}>
+          <div 
+            className="w-full h-2.5 rounded-lg overflow-hidden" 
+            style={{ background: '#111' }}
+          >
             <div 
-              className="h-full rounded-full transition-all duration-500 ease-out"
+              className="h-full transition-all duration-500 ease-out"
               style={{ 
                 width: `${Math.min((xp / 500) * 100, 100)}%`,
-                backgroundColor: 'hsl(var(--xp-bar))'
+                background: 'yellow'
               }}
             />
           </div>
