@@ -218,10 +218,6 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
     }
   };
 
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
   const unlockA2Modules = () => {
     setAvailableLevels((prev) => [...prev, "A2"]);
     setCurrentLevel("A2");
@@ -316,33 +312,26 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
         </div>
       </div>
 
-      {/* Congratulations Modal */}
+      {/* Congratulations Modal with Confetti */}
       {showCongrats && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
           <div className="bg-white text-center p-6 rounded-2xl shadow-xl max-w-md">
             <h2 className="text-2xl font-bold mb-2 text-green-600">🎉 Congratulations!</h2>
-            <p className="mb-4 text-gray-700">
-              You've completed all A1 grammar lessons.
-            </p>
-
+            <p className="mb-4 text-gray-700">You've completed all A1 grammar lessons.</p>
+            <Lottie animationData={confettiAnimation} loop={false} />
             <div className="mt-4 flex justify-center space-x-4">
               <button
                 className="bg-blue-600 text-white px-4 py-2 rounded-xl"
                 onClick={() => {
                   setShowCongrats(false);
-                  setCurrentLevel("A2");
-                  scrollToTop();
+                  unlockA2Modules();
                 }}
               >
                 Continue to A2
               </button>
               <button
                 className="bg-gray-200 text-gray-800 px-4 py-2 rounded-xl"
-                onClick={() => {
-                  setShowCongrats(false);
-                  setCurrentLevel("A1");
-                  scrollToTop();
-                }}
+                onClick={() => setShowCongrats(false)}
               >
                 Review A1
               </button>
