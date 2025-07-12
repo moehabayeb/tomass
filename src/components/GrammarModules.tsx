@@ -6,6 +6,7 @@ import Lottie from 'lottie-react';
 import { supabase } from '@/integrations/supabase/client';
 import Confetti from 'react-confetti';
 import { useWindowSize } from '@react-hook/window-size';
+import BookmarkButton from './BookmarkButton';
 
 // Simple confetti animation data (placeholder)
 const confettiAnimation = {
@@ -795,7 +796,15 @@ function ModulePractice({ module, onComplete, onBack }: ModulePracticeProps) {
           <Card className="bg-white/20 backdrop-blur-sm border border-white/30 mb-6 shadow-lg">
             <CardContent className="p-6">
               <div className="text-center mb-4">
-                <Target className="h-8 w-8 text-yellow-300 mx-auto mb-2" />
+                <div className="flex items-center justify-center space-x-2 mb-2">
+                  <Target className="h-8 w-8 text-yellow-300" />
+                  <BookmarkButton
+                    content={module?.lesson || ''}
+                    type="lesson"
+                    title={module?.title}
+                    className="text-white hover:text-yellow-300"
+                  />
+                </div>
                 <h2 className="text-white font-bold text-lg">Let's Learn!</h2>
                 {/* Debug info */}
                 <div className="text-white/50 text-xs mt-1">

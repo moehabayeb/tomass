@@ -9,6 +9,7 @@ import { useXPSystem } from '@/hooks/useXPSystem';
 import { XPBoostAnimation } from './XPBoostAnimation';
 import { StreakCounter } from './StreakCounter';
 import { SampleAnswerButton } from './SampleAnswerButton';
+import BookmarkButton from './BookmarkButton';
 
 // Sparkle component for background decoration
 const Sparkle = ({ className, delayed = false }: { className?: string; delayed?: boolean }) => (
@@ -63,18 +64,29 @@ const ChatBubble = ({
   className?: string; 
 }) => (
   <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-5 ${className}`}>
-    <div 
-      className={`max-w-[85%] px-5 py-4 rounded-2xl font-medium text-base leading-relaxed transition-all duration-200 hover:scale-[1.02] ${
-        isUser 
-          ? 'bg-white/95 text-gray-800 border border-yellow-200' 
-          : 'text-gray-800'
-      }`}
-      style={{
-        background: isUser ? 'var(--gradient-card)' : 'hsl(var(--chat-bubble-ai))',
-        boxShadow: 'var(--shadow-bubble)'
-      }}
-    >
-      {message}
+    <div className="flex items-start space-x-2 max-w-[85%]">
+      <div 
+        className={`px-5 py-4 rounded-2xl font-medium text-base leading-relaxed transition-all duration-200 hover:scale-[1.02] flex-1 ${
+          isUser 
+            ? 'bg-white/95 text-gray-800 border border-yellow-200' 
+            : 'text-gray-800'
+        }`}
+        style={{
+          background: isUser ? 'var(--gradient-card)' : 'hsl(var(--chat-bubble-ai))',
+          boxShadow: 'var(--shadow-bubble)'
+        }}
+      >
+        {message}
+      </div>
+      
+      {/* Bookmark button for non-user messages (AI responses) */}
+      {!isUser && (
+        <BookmarkButton
+          content={message}
+          type="message"
+          className="mt-2 opacity-60 hover:opacity-100"
+        />
+      )}
     </div>
   </div>
 );

@@ -1,12 +1,13 @@
 import { useState } from 'react';
-import { Mic, BookOpen, GraduationCap } from 'lucide-react';
+import { Mic, BookOpen, Bookmark } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import SpeakingApp from './SpeakingApp';
 import GrammarModules from './GrammarModules';
 import DailyTips from './DailyTips';
 import DailyTipsBadge from './DailyTipsBadge';
+import BookmarksView from './BookmarksView';
 
-type AppMode = 'speaking' | 'grammar';
+type AppMode = 'speaking' | 'grammar' | 'bookmarks';
 
 export default function AppNavigation() {
   const [currentMode, setCurrentMode] = useState<AppMode>('speaking');
@@ -14,6 +15,10 @@ export default function AppNavigation() {
 
   if (currentMode === 'grammar') {
     return <GrammarModules onBack={() => setCurrentMode('speaking')} />;
+  }
+
+  if (currentMode === 'bookmarks') {
+    return <BookmarksView onBack={() => setCurrentMode('speaking')} />;
   }
 
   return (
@@ -47,13 +52,26 @@ export default function AppNavigation() {
             variant="ghost"
             size="sm"
             className={`rounded-xl transition-all duration-200 ${
-              currentMode !== 'speaking' 
+              currentMode === 'grammar' 
                 ? 'bg-white/20 text-white shadow-sm' 
                 : 'text-white/70 hover:bg-white/10 hover:text-white'
             }`}
           >
             <BookOpen className="h-4 w-4 mr-2" />
             Grammar
+          </Button>
+          <Button
+            onClick={() => setCurrentMode('bookmarks')}
+            variant="ghost"
+            size="sm"
+            className={`rounded-xl transition-all duration-200 ${
+              currentMode === 'bookmarks' 
+                ? 'bg-white/20 text-white shadow-sm' 
+                : 'text-white/70 hover:bg-white/10 hover:text-white'
+            }`}
+          >
+            <Bookmark className="h-4 w-4 mr-2" />
+            Saved
           </Button>
         </div>
       </div>

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Lightbulb, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import BookmarkButton from './BookmarkButton';
 
 // Collection of daily tips for A1-A2 learners
 const dailyTips = [
@@ -185,9 +186,17 @@ export default function DailyTips({ onClose }: DailyTipsProps) {
           <div className="p-6">
             <div className="text-center mb-4">
               <div className="text-4xl mb-3">{currentTip.emoji}</div>
-              <h3 className="text-xl font-bold text-gray-800 mb-3">
-                {currentTip.title}
-              </h3>
+              <div className="flex items-center justify-center space-x-2 mb-3">
+                <h3 className="text-xl font-bold text-gray-800">
+                  {currentTip.title}
+                </h3>
+                <BookmarkButton
+                  content={currentTip.content}
+                  type="tip"
+                  title={currentTip.title}
+                  className="text-gray-600 hover:text-yellow-500"
+                />
+              </div>
               <p className="text-gray-600 text-base leading-relaxed">
                 {currentTip.content}
               </p>
