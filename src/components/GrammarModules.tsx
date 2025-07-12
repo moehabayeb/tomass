@@ -459,6 +459,43 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
             </div>
           )}
           
+          {/* Visual Level Progress Indicator */}
+          <div className="flex items-center justify-center space-x-3 mb-4">
+            {["A1", "A2", "A3"].map((level, index) => {
+              const isCompleted = level === "A1" && completedModules.filter(id => id <= 6).length === 6 ||
+                                level === "A2" && completedModules.filter(id => id > 6).length === 4;
+              const isAvailable = availableLevels.includes(level);
+              const isCurrent = currentLevel === level;
+              
+              return (
+                <div key={level} className="flex items-center">
+                  <div 
+                    className={`
+                      flex items-center justify-center w-12 h-8 rounded-full text-sm font-bold transition-all duration-300
+                      ${isCurrent 
+                        ? 'bg-white text-blue-900 ring-2 ring-white/50 shadow-lg' 
+                        : isCompleted 
+                        ? 'bg-green-500 text-white shadow-md' 
+                        : isAvailable 
+                        ? 'bg-white/20 text-white border border-white/30' 
+                        : 'bg-white/10 text-white/40 border border-white/20'
+                      }
+                    `}
+                  >
+                    {isCompleted ? '✅' : level}
+                  </div>
+                  {index < 2 && (
+                    <div className={`mx-2 w-6 h-0.5 transition-all duration-300 ${
+                      (level === "A1" && isCompleted) || (level === "A2" && isCompleted) 
+                        ? 'bg-green-400' 
+                        : 'bg-white/30'
+                    }`} />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          
           <div className="text-center">
             <p className="text-white/80 text-sm">
               Master {currentLevel} grammar step by step
