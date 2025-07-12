@@ -323,8 +323,17 @@ function ModulePractice({ module, onComplete, onBack }: ModulePracticeProps) {
     );
   }
 
+  // MORE DEBUG LOGGING FOR EXERCISE VIEW
+  console.log('🎯 SHOWING EXERCISE VIEW! Current exercise:', currentExercise);
+  console.log('🎯 Exercise data:', exercise);
+  console.log('🎯 Show explanation:', showExplanation);
+
   return (
     <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: 'hsl(var(--app-bg))' }}>
+      {/* EXERCISE DEBUG INDICATOR */}
+      <div className="bg-blue-600 text-white text-center p-2 font-bold">
+        🎯 DEBUG: EXERCISE VIEW ACTIVE! Ex: {currentExercise + 1}/{module.exercises.length}
+      </div>
       <div className="relative z-10 p-4 max-w-sm mx-auto">
         {/* Header */}
         <div 
