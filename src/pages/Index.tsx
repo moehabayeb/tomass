@@ -1,7 +1,7 @@
-import SpeakingApp from '@/components/SpeakingApp';
+import AppNavigation from '@/components/AppNavigation';
 
 const Index = () => {
-  return <SpeakingApp />;
+  return <AppNavigation />;
 };
 
 export default Index;
