@@ -63,6 +63,7 @@ const ChatBubble = ({
 
 export default function SpeakingApp() {
   const [soundOn, setSoundOn] = useState(true);
+  const [xp, setXp] = useState(230);
   const [messages, setMessages] = useState([
     { text: "Hello! Ready to practice today? 🎤", isUser: false, isSystem: false },
     { text: "Yes, I had pizza today!", isUser: true, isSystem: false },
@@ -71,6 +72,10 @@ export default function SpeakingApp() {
   ]);
   const [isRecording, setIsRecording] = useState(false);
 
+  const addXP = (points: number) => {
+    setXp(prev => Math.min(prev + points, 500));
+  };
+
   const addChatBubble = (text: string, type: "user" | "bot" | "system") => {
     const newMessage = { 
       text, 
@@ -78,6 +83,14 @@ export default function SpeakingApp() {
       isSystem: type === "system"
     };
     setMessages(prev => [...prev, newMessage]);
+  };
+
+  const speak = (text: string) => {
+    if (soundOn) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "en-US";
+      speechSynthesis.speak(utterance);
+    }
   };
 
   const startSpeaking = async () => {
@@ -135,15 +148,21 @@ export default function SpeakingApp() {
 
       const corrected = feedbackData.corrected;
 
-      // Step 4: Show grammar feedback
-      addChatBubble(corrected, "bot");
+      // Step 4: Split correction and follow-up
+      const parts = corrected.split("Next question:");
+      const correction = parts[0].trim();
+      const followup = parts[1]?.trim();
 
-      // Step 5: Optional voice output
-      if (soundOn) {
-        const utterance = new SpeechSynthesisUtterance(corrected);
-        utterance.lang = "en-US";
-        speechSynthesis.speak(utterance);
+      addChatBubble(correction, "bot");
+      if (followup) {
+        addChatBubble("Next question: " + followup, "bot");
       }
+
+      // Step 5: Speak correction aloud
+      speak(correction);
+
+      // Step 6: Gain XP!
+      addXP(20);
 
     } catch (error) {
       console.error('Error in startSpeaking:', error);
@@ -188,7 +207,7 @@ export default function SpeakingApp() {
           
           <div className="flex flex-col items-end">
             <span className="text-white font-extrabold text-xl mb-2">Level 5</span>
-            <XPProgressBar current={230} max={500} />
+            <XPProgressBar current={xp} max={500} />
           </div>
         </div>
 
@@ -210,7 +229,7 @@ export default function SpeakingApp() {
             <div 
               className="h-full rounded-full transition-all duration-500 ease-out"
               style={{ 
-                width: '70%',
+                width: `${Math.min((xp / 500) * 100, 100)}%`,
                 backgroundColor: 'hsl(var(--xp-bar))'
               }}
             />
@@ -222,12 +241,12 @@ export default function SpeakingApp() {
           <Button 
             onClick={startSpeaking}
             disabled={isRecording}
-            className="w-full max-w-sm py-6 text-xl font-extrabold rounded-full border-4 border-black/20 hover:scale-105 transition-transform duration-200 disabled:opacity-50"
+            className={`w-full max-w-sm py-6 text-xl font-extrabold rounded-full border-4 border-black/20 hover:scale-105 transition-all duration-200 disabled:opacity-50 ${isRecording ? 'animate-pulse' : ''}`}
             size="lg"
             style={{
               backgroundColor: 'hsl(var(--mic-button))',
               color: 'hsl(var(--text-white))',
-              boxShadow: 'var(--shadow-button)'
+              boxShadow: isRecording ? '0 0 30px hsl(var(--mic-button))' : 'var(--shadow-button)'
             }}
           >
             <Mic className="w-7 h-7 mr-3" />
