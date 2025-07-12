@@ -144,97 +144,125 @@ export default function SpeakingApp() {
     }
   };
 
+  // Helper function to record and transcribe audio
+  const sendToTranscribe = async (): Promise<string> => {
+    // Step 1: Record Audio from Mic
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const mediaRecorder = new MediaRecorder(stream);
+    const audioChunks: Blob[] = [];
+
+    mediaRecorder.ondataavailable = event => {
+      audioChunks.push(event.data);
+    };
+
+    mediaRecorder.start();
+
+    // Show recording message
+    addChatBubble("🎙️ Listening...", "system");
+
+    await new Promise(resolve => setTimeout(resolve, 5000)); // Record 5 seconds
+    mediaRecorder.stop();
+
+    const audioBlob = await new Promise<Blob>(resolve => {
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(audioChunks, { type: 'audio/wav' });
+        resolve(blob);
+      };
+    });
+
+    // Stop all tracks to release microphone
+    stream.getTracks().forEach(track => track.stop());
+
+    // Step 2: Send Audio to Whisper Transcription
+    const formData = new FormData();
+    formData.append("audio", audioBlob, "recording.wav");
+
+    const transcribeRes = await fetch("https://sgzhbiknaiqsuknwgvjr.supabase.co/functions/v1/transcribe", {
+      method: "POST",
+      headers: {
+        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNnemhiaWtuYWlxc3VrbndndmpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIzNDkyNTUsImV4cCI6MjA2NzkyNTI1NX0.zi3agHTlckDVeDOQ-rFvC9X_TI21QOxiXzqbNs2UrG4',
+        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNnemhiaWtuYWlxc3VrbndndmpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIzNDkyNTUsImV4cCI6MjA2NzkyNTI1NX0.zi3agHTlckDVeDOQ-rFvC9X_TI21QOxiXzqbNs2UrG4'
+      },
+      body: formData
+    });
+
+    if (!transcribeRes.ok) {
+      const errorData = await transcribeRes.json();
+      throw new Error(errorData.error || 'Transcription failed');
+    }
+
+    const transcribeData = await transcribeRes.json();
+    return transcribeData.transcript;
+  };
+
+  // Helper function to send text for grammar feedback
+  const sendToFeedback = async (text: string): Promise<{ message: string; corrected: string }> => {
+    const feedbackRes = await fetch("https://sgzhbiknaiqsuknwgvjr.supabase.co/functions/v1/feedback", {
+      method: "POST",
+      headers: {
+        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNnemhiaWtuYWlxc3VrbndndmpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIzNDkyNTUsImV4cCI6MjA2NzkyNTI1NX0.zi3agHTlckDVeDOQ-rFvC9X_TI21QOxiXzqbNs2UrG4',
+        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNnemhiaWtuYWlxc3VrbndndmpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIzNDkyNTUsImV4cCI6MjA2NzkyNTI1NX0.zi3agHTlckDVeDOQ-rFvC9X_TI21QOxiXzqbNs2UrG4',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ text })
+    });
+
+    if (!feedbackRes.ok) {
+      const errorData = await feedbackRes.json();
+      throw new Error(errorData.error || 'Feedback failed');
+    }
+
+    const feedbackData = await feedbackRes.json();
+    return {
+      message: feedbackData.corrected,
+      corrected: feedbackData.corrected
+    };
+  };
+
+  // Helper function to display bot messages
+  const showBotMessage = (message: string) => {
+    addChatBubble(message, "bot");
+    speak(message);
+  };
+
+  // Helper function to generate follow-up questions
+  const generateFollowUpQuestion = async (transcript: string): Promise<string> => {
+    // Simple follow-up questions based on context
+    const questions = [
+      "What do you usually eat for breakfast?",
+      "Tell me about your favorite hobby.",
+      "What did you do last weekend?",
+      "Describe your daily routine.",
+      "What's your favorite book or movie?",
+      "How do you like to spend your free time?"
+    ];
+    
+    // Return a random question for now
+    return questions[Math.floor(Math.random() * questions.length)];
+  };
+
   const startSpeaking = async () => {
     try {
       setIsRecording(true);
       
-      // Step 1: Record Audio from Mic
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
-      const audioChunks: Blob[] = [];
-
-      mediaRecorder.ondataavailable = event => {
-        audioChunks.push(event.data);
-      };
-
-      mediaRecorder.start();
-
-      // Show recording message
-      addChatBubble("🎙️ Listening...", "system");
-
-      await new Promise(resolve => setTimeout(resolve, 5000)); // Record 5 seconds
-      mediaRecorder.stop();
-
-      const audioBlob = await new Promise<Blob>(resolve => {
-        mediaRecorder.onstop = () => {
-          const blob = new Blob(audioChunks, { type: 'audio/wav' });
-          resolve(blob);
-        };
-      });
-
-      // Stop all tracks to release microphone
-      stream.getTracks().forEach(track => track.stop());
-
-      // Step 2: Send Audio to Whisper Transcription
-      const formData = new FormData();
-      formData.append("audio", audioBlob, "recording.wav");
-
-      const transcribeRes = await fetch("https://sgzhbiknaiqsuknwgvjr.supabase.co/functions/v1/transcribe", {
-        method: "POST",
-        headers: {
-          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNnemhiaWtuYWlxc3VrbndndmpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIzNDkyNTUsImV4cCI6MjA2NzkyNTI1NX0.zi3agHTlckDVeDOQ-rFvC9X_TI21QOxiXzqbNs2UrG4',
-          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNnemhiaWtuYWlxc3VrbndndmpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIzNDkyNTUsImV4cCI6MjA2NzkyNTI1NX0.zi3agHTlckDVeDOQ-rFvC9X_TI21QOxiXzqbNs2UrG4'
-        },
-        body: formData
-      });
-
-      if (!transcribeRes.ok) {
-        const errorData = await transcribeRes.json();
-        throw new Error(errorData.error || 'Transcription failed');
-      }
-
-      const transcribeData = await transcribeRes.json();
-      const transcript = transcribeData.transcript;
-
-      // Show user's transcribed text
+      // Step 1: Record and transcribe
+      const transcript = await sendToTranscribe();
       addChatBubble(transcript, "user");
 
-      // Step 3: Send to GPT Grammar Feedback
-      const feedbackRes = await fetch("https://sgzhbiknaiqsuknwgvjr.supabase.co/functions/v1/feedback", {
-        method: "POST",
-        headers: {
-          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNnemhiaWtuYWlxc3VrbndndmpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIzNDkyNTUsImV4cCI6MjA2NzkyNTI1NX0.zi3agHTlckDVeDOQ-rFvC9X_TI21QOxiXzqbNs2UrG4',
-          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNnemhiaWtuYWlxc3VrbndndmpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIzNDkyNTUsImV4cCI6MjA2NzkyNTI1NX0.zi3agHTlckDVeDOQ-rFvC9X_TI21QOxiXzqbNs2UrG4',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ text: transcript })
-      });
+      // Step 2: Get grammar feedback
+      const feedback = await sendToFeedback(transcript);
 
-      if (!feedbackRes.ok) {
-        const errorData = await feedbackRes.json();
-        throw new Error(errorData.error || 'Feedback failed');
-      }
+      // Step 3: Display feedback in chat
+      showBotMessage(feedback.message);
 
-      const feedbackData = await feedbackRes.json();
-      const corrected = feedbackData.corrected;
+      // Step 4: Immediately ask another question based on response
+      const nextQuestion = await generateFollowUpQuestion(transcript);
+      showBotMessage(nextQuestion);
 
-      // Step 4: Split correction and follow-up
-      const parts = corrected.split("Next question:");
-      const correction = parts[0].trim();
-      const followup = parts[1]?.trim();
+      // Step 5: Log the session to history
+      logSession(transcript, feedback.corrected);
 
-      addChatBubble(correction, "bot");
-      if (followup) {
-        addChatBubble("Next question: " + followup, "bot");
-      }
-
-      // Step 5: Speak correction aloud
-      speak(correction);
-
-      // Step 6: Log the session to history
-      logSession(transcript, correction);
-
-      // Step 7: Gain XP!
+      // Step 6: Gain XP!
       addXP(20);
 
     } catch (error) {
