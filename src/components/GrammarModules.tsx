@@ -9,7 +9,7 @@ const grammarTopics = [
     id: 1,
     title: "The Verb 'To Be' (Present)",
     description: "Learn how to use am, is, and are correctly",
-    lesson: "The verb 'to be' is one of the most important verbs in English. Use 'am' with 'I', 'is' with he/she/it, and 'are' with you/we/they.",
+    lesson: "The verb 'to be' is one of the most important verbs in English.\n\n✓ Use 'am' with 'I' (I am happy)\n✓ Use 'is' with he/she/it (She is a teacher)\n✓ Use 'are' with you/we/they (They are students)\n\nThis verb helps us describe people, places, and things!",
     exercises: [
       {
         question: "Complete: I ___ happy today.",
@@ -35,7 +35,7 @@ const grammarTopics = [
     id: 2,
     title: "Personal Pronouns",
     description: "Master I, you, he, she, it, we, they",
-    lesson: "Personal pronouns replace nouns. Subject pronouns: I, you, he, she, it, we, they. Object pronouns: me, you, him, her, it, us, them.",
+    lesson: "Personal pronouns replace nouns to avoid repetition.\n\n📝 Subject pronouns: I, you, he, she, it, we, they\n📝 Object pronouns: me, you, him, her, it, us, them\n\nExample: John likes pizza → He likes pizza",
     exercises: [
       {
         question: "Replace 'John': ___ is my friend.",
@@ -61,7 +61,7 @@ const grammarTopics = [
     id: 3,
     title: "Articles (a, an, the)",
     description: "When to use a, an, and the correctly",
-    lesson: "Use 'a' before consonant sounds, 'an' before vowel sounds, and 'the' for specific things both speaker and listener know about.",
+    lesson: "Articles help us specify nouns.\n\n🔹 Use 'a' before consonant sounds (a car, a house)\n🔹 Use 'an' before vowel sounds (an apple, an elephant)\n🔹 Use 'the' for specific things (the sun, the book on the table)\n\nTip: It's about the SOUND, not just the letter!",
     exercises: [
       {
         question: "Choose: I have ___ apple.",
@@ -276,9 +276,9 @@ function ModulePractice({ module, onComplete, onBack }: ModulePracticeProps) {
                 <Target className="h-8 w-8 text-yellow-300 mx-auto mb-2" />
                 <h2 className="text-white font-semibold text-base">Let's Learn!</h2>
               </div>
-              <p className="text-white/90 text-sm leading-relaxed">
-                {module.lesson}
-              </p>
+               <div className="text-white/90 text-sm leading-relaxed whitespace-pre-line">
+                 {module.lesson}
+               </div>
             </CardContent>
           </Card>
 
