@@ -213,9 +213,23 @@ function ModulePractice({ module, onComplete, onBack }: ModulePracticeProps) {
   const [showLesson, setShowLesson] = useState(true);
   const [correctAnswers, setCorrectAnswers] = useState(0);
 
+  // Debug logging
+  console.log('ModulePractice - module:', module);
+  console.log('ModulePractice - exercises:', module?.exercises);
+
+  if (!module || !module.exercises || module.exercises.length === 0) {
+    return (
+      <div className="min-h-screen bg-red-500 text-white p-4">
+        <div>Error: Module data is missing</div>
+        <div>Module: {JSON.stringify(module)}</div>
+        <Button onClick={onBack} className="mt-4">Go Back</Button>
+      </div>
+    );
+  }
+
   const exercise = module.exercises[currentExercise];
   const isLastExercise = currentExercise === module.exercises.length - 1;
-  const isCorrect = selectedAnswer === exercise.correct;
+  const isCorrect = selectedAnswer === exercise?.correct;
 
   const handleAnswer = (answerIndex: number) => {
     setSelectedAnswer(answerIndex);
@@ -274,9 +288,13 @@ function ModulePractice({ module, onComplete, onBack }: ModulePracticeProps) {
               <div className="text-center mb-4">
                 <Target className="h-8 w-8 text-yellow-300 mx-auto mb-2" />
                 <h2 className="text-white font-bold text-lg">Let's Learn!</h2>
+                {/* Debug info */}
+                <div className="text-white/50 text-xs mt-1">
+                  Module: {module?.title || 'No module'} | Lesson: {module?.lesson ? 'Found' : 'Missing'}
+                </div>
               </div>
-              <div className="text-white text-base leading-relaxed whitespace-pre-line bg-white/10 p-4 rounded-xl border border-white/20">
-                {module.lesson}
+              <div className="text-white text-base leading-relaxed whitespace-pre-line bg-white/10 p-4 rounded-xl border border-white/20 min-h-[100px]">
+                {module?.lesson || 'No lesson content available'}
               </div>
             </CardContent>
           </Card>
