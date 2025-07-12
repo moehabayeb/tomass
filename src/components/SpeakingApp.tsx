@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Mic, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import avatarImage from '@/assets/avatar.png';
@@ -74,7 +74,24 @@ export default function SpeakingApp() {
     { text: "Next question: What do you usually eat for breakfast?", isUser: false, isSystem: false }
   ]);
   const [isRecording, setIsRecording] = useState(false);
+  const [history, setHistory] = useState<Array<{input: string; corrected: string; time: string}>>([]);
+  
+  // Load chat history from localStorage on component mount
+  useEffect(() => {
+    const savedHistory = JSON.parse(localStorage.getItem("chatHistory") || "[]");
+    setHistory(savedHistory);
+  }, []);
 
+  const logSession = (input: string, corrected: string) => {
+    const newSession = {
+      input,
+      corrected,
+      time: new Date().toLocaleString()
+    };
+    const updatedHistory = [...history, newSession];
+    setHistory(updatedHistory);
+    localStorage.setItem("chatHistory", JSON.stringify(updatedHistory));
+  };
   const addXP = (points: number) => {
     setXp(prev => Math.min(prev + points, 500));
   };
@@ -164,7 +181,10 @@ export default function SpeakingApp() {
       // Step 5: Speak correction aloud
       speak(correction);
 
-      // Step 6: Gain XP!
+      // Step 6: Log the session to history
+      logSession(transcript, correction);
+
+      // Step 7: Gain XP!
       addXP(20);
 
     } catch (error) {
