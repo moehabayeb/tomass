@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import Confetti from 'react-confetti';
 import { useWindowSize } from '@react-hook/window-size';
 import BookmarkButton from './BookmarkButton';
+import { useGamification } from '@/hooks/useGamification';
 
 // Simple confetti animation data (placeholder)
 const confettiAnimation = {
@@ -319,6 +320,7 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
   const [availableLevels, setAvailableLevels] = useState<string[]>(["A1"]);
   const [currentLevel, setCurrentLevel] = useState("A1");
   const [autoProgressEnabled, setAutoProgressEnabled] = useState(false); // Option for auto-progression
+  const { earnXPForGrammarLesson } = useGamification();
 
   // Load completed modules from localStorage
   useEffect(() => {
@@ -376,11 +378,14 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
     }
   }, [completedModules, availableLevels, autoProgressEnabled, currentLevel]);
 
-  const markModuleComplete = (moduleId: number) => {
+  const markModuleComplete = async (moduleId: number) => {
     if (!completedModules.includes(moduleId)) {
       const updated = [...completedModules, moduleId];
       setCompletedModules(updated);
       localStorage.setItem('grammarModulesCompleted', JSON.stringify(updated));
+      
+      // Award XP for completing grammar lesson
+      await earnXPForGrammarLesson(true);
     }
   };
 

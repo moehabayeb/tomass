@@ -216,4 +216,18 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+
+  /* Slow spin animation for decorative elements */
+  @keyframes spin-slow {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .animate-spin-slow {
+    animation: spin-slow 3s linear infinite;
+  }
 }

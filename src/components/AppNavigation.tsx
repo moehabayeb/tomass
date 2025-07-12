@@ -6,15 +6,32 @@ import GrammarModules from './GrammarModules';
 import DailyTips from './DailyTips';
 import DailyTipsBadge from './DailyTipsBadge';
 import BookmarksView from './BookmarksView';
+import { AvatarDisplay } from './AvatarDisplay';
+import { LevelUpPopup } from './LevelUpPopup';
+import { XPBoostAnimation } from './XPBoostAnimation';
+import { useGamification } from '@/hooks/useGamification';
 
 type AppMode = 'speaking' | 'grammar' | 'bookmarks';
 
 export default function AppNavigation() {
   const [currentMode, setCurrentMode] = useState<AppMode>('speaking');
   const [showDailyTips, setShowDailyTips] = useState(false);
+  const { userProfile, xpBoosts, showLevelUpPopup, pendingLevelUp, closeLevelUpPopup, getXPProgress } = useGamification();
+
+  const xpProgress = getXPProgress();
 
   return (
     <div className="relative">
+      {/* XP Boost Animations */}
+      <XPBoostAnimation boosts={xpBoosts} />
+      
+      {/* Level Up Popup */}
+      <LevelUpPopup 
+        show={showLevelUpPopup} 
+        newLevel={pendingLevelUp || 1} 
+        onClose={closeLevelUpPopup} 
+      />
+
       {/* Daily Tips Modal */}
       {showDailyTips && (
         <DailyTips onClose={() => setShowDailyTips(false)} />
@@ -67,6 +84,20 @@ export default function AppNavigation() {
           </Button>
         </div>
       </div>
+
+      {/* Avatar Display - Only show in speaking mode */}
+      {currentMode === 'speaking' && userProfile && (
+        <div className="fixed top-4 left-4 z-20">
+          <AvatarDisplay
+            level={userProfile.level}
+            xp={xpProgress.current}
+            maxXP={xpProgress.max}
+            userName={userProfile.name}
+            showXPBar={true}
+            size="md"
+          />
+        </div>
+      )}
 
       {/* Daily Tips Badge - Only show in speaking mode */}
       {currentMode === 'speaking' && (

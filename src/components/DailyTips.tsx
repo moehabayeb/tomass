@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, Lightbulb, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import BookmarkButton from './BookmarkButton';
+import { useGamification } from '@/hooks/useGamification';
 
 // Collection of daily tips for A1-A2 learners
 const dailyTips = [
@@ -105,6 +106,7 @@ interface DailyTipsProps {
 export default function DailyTips({ onClose }: DailyTipsProps) {
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
   const [viewedTips, setViewedTips] = useState<number[]>([]);
+  const { earnXPForDailyTip } = useGamification();
 
   // Get today's tip based on date
   useEffect(() => {
@@ -120,15 +122,18 @@ export default function DailyTips({ onClose }: DailyTipsProps) {
     }
   }, []);
 
-  // Mark current tip as viewed
+  // Mark current tip as viewed and award XP
   useEffect(() => {
     const currentTipId = dailyTips[currentTipIndex]?.id;
     if (currentTipId && !viewedTips.includes(currentTipId)) {
       const updated = [...viewedTips, currentTipId];
       setViewedTips(updated);
       localStorage.setItem('viewedDailyTips', JSON.stringify(updated));
+      
+      // Award XP for viewing daily tip
+      earnXPForDailyTip();
     }
-  }, [currentTipIndex, viewedTips]);
+  }, [currentTipIndex, viewedTips, earnXPForDailyTip]);
 
   const currentTip = dailyTips[currentTipIndex];
   const isFirstTip = currentTipIndex === 0;
