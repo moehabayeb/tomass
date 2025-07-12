@@ -339,13 +339,73 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
 
       {/* Congratulations Modal */}
       {showCongrats && (
-        <div className="modal">
-          <div className="modal-content">
-            <h2>🎉 Congratulations!</h2>
-            <p>You've completed all A1 grammar lessons.</p>
-            <div style={{ display: "flex", gap: "1rem", marginTop: "1rem" }}>
-              <button onClick={() => console.log("Move to A2")}>Continue to A2</button>
-              <button onClick={() => console.log("Review A1")}>Review A1</button>
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <div
+            style={{
+              background: 'white',
+              borderRadius: '20px',
+              padding: '2rem',
+              textAlign: 'center',
+              maxWidth: '400px',
+              width: '90%',
+              boxShadow: '0 8px 30px rgba(0,0,0,0.2)',
+              animation: 'pop 0.3s ease-out',
+            }}
+          >
+            <h2 style={{ fontSize: '1.8rem', color: 'green', marginBottom: '1rem' }}>
+              🎉 Congratulations!
+            </h2>
+            <p style={{ fontSize: '1.1rem', marginBottom: '2rem', color: '#333' }}>
+              You've completed all A1 grammar lessons.
+            </p>
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+              <button
+                style={{
+                  backgroundColor: '#3B82F6',
+                  color: 'white',
+                  padding: '0.6rem 1.2rem',
+                  borderRadius: '10px',
+                  fontWeight: '600',
+                  border: 'none',
+                  cursor: 'pointer',
+                }}
+                onClick={() => {
+                  // 👉 Replace with your real route
+                  console.log("Continue to A2");
+                }}
+              >
+                Continue to A2
+              </button>
+              <button
+                style={{
+                  backgroundColor: '#E5E7EB',
+                  color: '#111827',
+                  padding: '0.6rem 1.2rem',
+                  borderRadius: '10px',
+                  fontWeight: '600',
+                  border: 'none',
+                  cursor: 'pointer',
+                }}
+                onClick={() => {
+                  // 👉 Replace with your real logic
+                  console.log("Review A1");
+                }}
+              >
+                Review A1
+              </button>
             </div>
           </div>
         </div>
