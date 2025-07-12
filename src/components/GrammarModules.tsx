@@ -188,6 +188,8 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
   const [selectedModule, setSelectedModule] = useState<number | null>(null);
   const [completedModules, setCompletedModules] = useState<number[]>([]);
   const [showCongrats, setShowCongrats] = useState(false);
+  const [availableLevels, setAvailableLevels] = useState<string[]>(["A1"]);
+  const [currentLevel, setCurrentLevel] = useState("A1");
 
   // Load completed modules from localStorage
   useEffect(() => {
@@ -217,8 +219,8 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
   };
 
   const unlockA2Modules = () => {
-    // Future A2 modules will be unlocked here
-    console.log('A2 modules unlocked!');
+    setAvailableLevels((prev) => [...prev, "A2"]);
+    setCurrentLevel("A2");
   };
 
   if (selectedModule !== null) {
