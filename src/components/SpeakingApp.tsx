@@ -3,6 +3,12 @@ import { Mic, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import avatarImage from '@/assets/avatar.png';
 import { supabase } from '@/integrations/supabase/client';
+import { useTextToSpeech } from '@/hooks/useTextToSpeech';
+import { useStreakTracker } from '@/hooks/useStreakTracker';
+import { useXPSystem } from '@/hooks/useXPSystem';
+import { XPBoostAnimation } from './XPBoostAnimation';
+import { StreakCounter } from './StreakCounter';
+import { SampleAnswerButton } from './SampleAnswerButton';
 
 // Sparkle component for background decoration
 const Sparkle = ({ className, delayed = false }: { className?: string; delayed?: boolean }) => (
@@ -65,9 +71,10 @@ const ChatBubble = ({
 );
 
 export default function SpeakingApp() {
-  const [soundOn, setSoundOn] = useState(true);
-  const [xp, setXp] = useState(230);
-  const [level, setLevel] = useState(5);
+  const { speak, stopSpeaking, toggleSound, isSpeaking, soundEnabled } = useTextToSpeech();
+  const { streakData, getStreakMessage } = useStreakTracker();
+  const { xp, level, xpBoosts, showLevelUpPopup, addXP } = useXPSystem();
+  
   const [messages, setMessages] = useState([
     { text: "Hello! Ready to practice today? 🎤", isUser: false, isSystem: false },
     { text: "Yes, I had pizza today!", isUser: true, isSystem: false },
@@ -76,7 +83,10 @@ export default function SpeakingApp() {
   ]);
   const [isRecording, setIsRecording] = useState(false);
   const [history, setHistory] = useState<Array<{input: string; corrected: string; time: string}>>([]);
-  const [showLevelUpPopup, setShowLevelUpPopup] = useState(false);
+  const [currentQuestion, setCurrentQuestion] = useState("What do you usually eat for breakfast?");
+  const [conversationContext, setConversationContext] = useState("");
+  const [userLevel, setUserLevel] = useState<'beginner' | 'intermediate' | 'advanced'>('beginner');
+  const [recordingStartTime, setRecordingStartTime] = useState<number | null>(null);
   
   // Load chat history from localStorage on component mount
   useEffect(() => {
@@ -94,38 +104,6 @@ export default function SpeakingApp() {
     setHistory(updatedHistory);
     localStorage.setItem("chatHistory", JSON.stringify(updatedHistory));
   };
-  const showLevelUp = () => {
-    setShowLevelUpPopup(true);
-    // Start fade out after 1.5 seconds
-    setTimeout(() => {
-      const popup = document.querySelector('[data-level-popup]') as HTMLElement;
-      if (popup) {
-        popup.style.opacity = "0";
-        popup.style.transform = "translate(-50%, -50%) scale(0.9)";
-        // Hide completely after fade animation
-        setTimeout(() => {
-          setShowLevelUpPopup(false);
-        }, 500);
-      }
-    }, 1500);
-  };
-
-  const addXP = (points: number) => {
-    setXp(prevXp => {
-      const newXp = prevXp + points;
-      
-      if (newXp >= 500) {
-        setLevel(prevLevel => {
-          const newLevel = prevLevel + 1;
-          showLevelUp();
-          return newLevel;
-        });
-        return 0; // Reset XP to 0 after level up
-      }
-      
-      return newXp;
-    });
-  };
 
   const addChatBubble = (text: string, type: "user" | "bot" | "system") => {
     const newMessage = { 
@@ -134,14 +112,6 @@ export default function SpeakingApp() {
       isSystem: type === "system"
     };
     setMessages(prev => [...prev, newMessage]);
-  };
-
-  const speak = (text: string) => {
-    if (soundOn) {
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = "en-US";
-      speechSynthesis.speak(utterance);
-    }
   };
 
   // Helper function to record and transcribe audio
@@ -219,17 +189,21 @@ export default function SpeakingApp() {
     };
   };
 
-  // Helper function to display bot messages
+  // Helper function to display bot messages with text-to-speech
   const showBotMessage = (message: string) => {
     addChatBubble(message, "bot");
     speak(message);
   };
 
-  // Helper function to generate follow-up questions
+  // Helper function to generate contextual follow-up questions
   const generateFollowUpQuestion = async (transcript: string): Promise<string> => {
     try {
       const response = await supabase.functions.invoke('follow-up-question', {
-        body: { text: transcript }
+        body: { 
+          text: transcript,
+          previousContext: conversationContext,
+          userLevel: userLevel
+        }
       });
 
       if (response.error) {
@@ -237,7 +211,15 @@ export default function SpeakingApp() {
         return "Can you tell me more about that?";
       }
 
-      return response.data?.followUpQuestion || "Can you tell me more about that?";
+      const followUpQuestion = response.data?.followUpQuestion || "Can you tell me more about that?";
+      setCurrentQuestion(followUpQuestion);
+      
+      // Update conversation context
+      setConversationContext(prev => 
+        prev + ` User said: "${transcript}". AI asked: "${followUpQuestion}".`
+      );
+      
+      return followUpQuestion;
     } catch (error) {
       console.error('Error generating follow-up question:', error);
       return "Can you tell me more about that?";
@@ -247,37 +229,51 @@ export default function SpeakingApp() {
   const startSpeaking = async () => {
     try {
       setIsRecording(true);
+      setRecordingStartTime(Date.now());
       
       // Step 1: Record and transcribe
       const transcript = await sendToTranscribe();
       addChatBubble(transcript, "user");
 
+      // Calculate response time for XP bonus
+      const responseTime = recordingStartTime ? Date.now() - recordingStartTime : 0;
+
       // Step 2: Get grammar feedback
       const feedback = await sendToFeedback(transcript);
 
-      // Step 3: Display feedback in chat
+      // Step 3: Display feedback with text-to-speech
       showBotMessage(feedback.message);
 
-      // Step 4: Immediately ask another question based on response
+      // Step 4: Generate natural follow-up question
       const nextQuestion = await generateFollowUpQuestion(transcript);
-      showBotMessage(nextQuestion);
+      
+      // Add delay before asking follow-up to feel more natural
+      setTimeout(() => {
+        showBotMessage(nextQuestion);
+      }, 2000);
 
       // Step 5: Log the session to history
       logSession(transcript, feedback.corrected);
 
-      // Step 6: Gain XP!
-      addXP(20);
+      // Step 6: Award XP with bonuses for speed and accuracy
+      const isCorrect = !feedback.message.toLowerCase().includes('mistake') && 
+                       !feedback.message.toLowerCase().includes('error');
+      addXP(20, responseTime, isCorrect);
 
     } catch (error) {
       console.error('Error in startSpeaking:', error);
       addChatBubble("Sorry, there was an error. Please try again.", "system");
     } finally {
       setIsRecording(false);
+      setRecordingStartTime(null);
     }
   };
 
   return (
     <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: 'hsl(var(--app-bg))' }}>
+      {/* XP Boost Animations */}
+      <XPBoostAnimation boosts={xpBoosts} />
+      
       {/* Level Up Popup */}
       <div 
         data-level-popup
@@ -317,7 +313,7 @@ export default function SpeakingApp() {
 
       <div className="relative z-10 p-6 max-w-md mx-auto">
         {/* Header Section */}
-        <div className="flex items-center justify-between mb-8 pt-8">
+        <div className="flex items-center justify-between mb-6 pt-8">
           <div className="flex items-center space-x-4">
             <div 
               className="w-20 h-20 rounded-full flex items-center justify-center border-4 border-black/10"
@@ -337,6 +333,19 @@ export default function SpeakingApp() {
             <XPProgressBar current={xp} max={500} />
           </div>
         </div>
+
+        {/* Streak Counter */}
+        <StreakCounter 
+          currentStreak={streakData.currentStreak}
+          message={getStreakMessage()}
+          bestStreak={streakData.bestStreak}
+        />
+
+        {/* Sample Answer Button */}
+        <SampleAnswerButton 
+          question={currentQuestion}
+          onSpeak={speak}
+        />
 
         {/* Chat Area */}
         <div 
@@ -385,18 +394,32 @@ export default function SpeakingApp() {
             {isRecording ? "🎙️ Recording..." : "🎤 Start Speaking"}
           </Button>
 
-          {/* Sound Toggle */}
-          <div 
-            className="flex items-center space-x-3 bg-white rounded-full px-6 py-3 cursor-pointer transition-transform duration-200 hover:scale-105"
-            onClick={() => setSoundOn(!soundOn)}
-            style={{
-              boxShadow: 'var(--shadow-soft)'
-            }}
-          >
-            <Volume2 className="w-5 h-5 text-gray-700" />
-            <span className="text-gray-700 font-bold text-lg">
-              Sound {soundOn ? 'ON' : 'OFF'}
-            </span>
+          {/* Sound Toggle & Level Selector */}
+          <div className="flex flex-col items-center space-y-3">
+            <div 
+              className="flex items-center space-x-3 bg-white rounded-full px-6 py-3 cursor-pointer transition-transform duration-200 hover:scale-105"
+              onClick={toggleSound}
+              style={{
+                boxShadow: 'var(--shadow-soft)'
+              }}
+            >
+              <Volume2 className="w-5 h-5 text-gray-700" />
+              <span className="text-gray-700 font-bold text-lg">
+                Sound {soundEnabled ? 'ON' : 'OFF'}
+              </span>
+            </div>
+            
+            {/* Level Selector */}
+            <select 
+              value={userLevel}
+              onChange={(e) => setUserLevel(e.target.value as typeof userLevel)}
+              className="bg-white rounded-full px-4 py-2 text-gray-700 font-bold border-none outline-none cursor-pointer"
+              style={{ boxShadow: 'var(--shadow-soft)' }}
+            >
+              <option value="beginner">🌱 Beginner</option>
+              <option value="intermediate">🌿 Intermediate</option>
+              <option value="advanced">🌳 Advanced</option>
+            </select>
           </div>
         </div>
       </div>

@@ -14,11 +14,27 @@ serve(async (req) => {
   }
 
   try {
-    const { text } = await req.json();
+    const { text, previousContext = '', userLevel = 'beginner' } = await req.json();
 
-    const prompt = `The student said: "${text}".
-Give a short, friendly English practice follow-up question related to their answer.
-Keep it simple, casual, and appropriate for spoken English.`;
+    // Enhanced contextual prompt for smooth, natural follow-ups
+    const prompt = `
+Context: The student said: "${text}". 
+Previous conversation: ${previousContext}
+Student level: ${userLevel}
+
+Generate a natural, contextual follow-up question that:
+1. Stays on the same topic as what they just said
+2. Feels like a friendly conversation, not an interview
+3. Uses simple, encouraging language for ${userLevel} level
+4. Shows genuine interest in their response
+5. Keeps the conversation flowing naturally
+
+Examples of smooth transitions:
+- If they mentioned food: "That sounds delicious! Do you cook it yourself?"
+- If they talked about hobbies: "How long have you been doing that?"
+- If they shared an opinion: "That's interesting! What made you think that way?"
+
+Generate ONE short, warm follow-up question (max 15 words):`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -32,8 +48,8 @@ Keep it simple, casual, and appropriate for spoken English.`;
           { role: 'system', content: 'You are a friendly English tutor.' },
           { role: 'user', content: prompt }
         ],
-        max_tokens: 60,
-        temperature: 0.8
+        max_tokens: 50,
+        temperature: 0.9
       }),
     });
 
