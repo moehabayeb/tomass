@@ -18,10 +18,6 @@ export default {
 			}
 		},
 		extend: {
-			fontFamily: {
-				sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-				inter: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
@@ -88,27 +84,11 @@ export default {
 					to: {
 						height: '0'
 					}
-				},
-				shimmer: {
-					'0%': { left: '-100%' },
-					'100%': { left: '100%' }
-				},
-				fadeInUp: {
-					from: {
-						opacity: '0',
-						transform: 'translateY(20px)'
-					},
-					to: {
-						opacity: '1',
-						transform: 'translateY(0)'
-					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out',
-				'shimmer': 'shimmer 2s infinite',
-				'fade-in-up': 'fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
+				'accordion-up': 'accordion-up 0.2s ease-out'
 			}
 		}
 	},

@@ -21,27 +21,27 @@ const Sparkle = ({ className, delayed = false }: { className?: string; delayed?:
   />
 );
 
-// Premium XP Progress Bar component
+// XP Progress Bar component
 const XPProgressBar = ({ current, max, className }: { current: number; max: number; className?: string }) => {
-  const percentage = Math.min((current / max) * 100, 100);
+  const percentage = (current / max) * 100;
   
   return (
     <div className={`relative ${className}`}>
-      <div className="xp-progress-container h-4 w-full">
+      <div 
+        className="w-full h-2.5 rounded-lg overflow-hidden" 
+        style={{ background: '#111' }}
+      >
         <div 
-          className="xp-progress-fill h-full"
-          style={{ width: `${percentage}%` }}
+          className="h-full transition-all duration-500 ease-out"
+          style={{ 
+            width: `${percentage}%`,
+            background: 'yellow'
+          }}
         />
       </div>
-      <div className="flex items-center justify-between mt-2 px-1">
-        <div className="flex items-center space-x-1">
-          <span className="text-lg">⚡</span>
-          <span className="text-sm font-semibold text-gray-600">XP</span>
-        </div>
-        <span className="text-sm font-bold text-gray-700">
-          {current} / {max}
-        </span>
-      </div>
+      <span className="absolute right-0 top-3 text-xs text-yellow-300 font-bold">
+        XP {current} / {max}
+      </span>
     </div>
   );
 };
@@ -312,60 +312,45 @@ export default function SpeakingApp() {
       <Sparkle className="bottom-80 right-24" delayed />
 
       <div className="relative z-10 p-6 max-w-md mx-auto">
-        {/* Premium Header & Profile Section */}
-        <div className="profile-card p-6 mb-6 mt-8 fade-in-up">
-          <div className="flex flex-col items-center space-y-4">
-            {/* Centered Avatar */}
-            <div className="avatar-premium w-24 h-24 rounded-full flex items-center justify-center">
+        {/* Header Section */}
+        <div className="flex items-center justify-between mb-6 pt-8">
+          <div className="flex items-center space-x-4">
+            <div 
+              className="w-20 h-20 rounded-full flex items-center justify-center border-4 border-black/10"
+              style={{ backgroundColor: 'hsl(var(--avatar-bg))' }}
+            >
               <img 
                 src={avatarImage} 
-                alt="AI Tutor" 
-                className="w-20 h-20 rounded-full object-cover"
+                alt="Avatar" 
+                className="w-16 h-16 rounded-full object-cover"
               />
             </div>
-            
-            {/* User Info */}
-            <div className="text-center">
-              <h1 className="font-inter font-bold text-2xl text-gray-800 mb-1">Tomas Hoca</h1>
-              <div className="flex items-center justify-center space-x-2 mb-4">
-                <span className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
-                  Level {level}
-                </span>
-              </div>
-            </div>
-            
-            {/* Premium XP Progress */}
-            <div className="w-full">
-              <XPProgressBar current={xp} max={500} />
-            </div>
+            <h1 className="text-white font-extrabold text-2xl">Tomas<br />Hoca</h1>
+          </div>
+          
+          <div className="flex flex-col items-end">
+            <span className="text-white font-extrabold text-xl mb-2">Level {level}</span>
+            <XPProgressBar current={xp} max={500} />
           </div>
         </div>
 
-        {/* Enhanced Streak Counter */}
-        <div className="streak-container p-4 mb-6 fade-in-up">
-          <div className="flex items-center justify-center space-x-2">
-            <span className="text-2xl">🔥</span>
-            <span className="font-inter font-bold text-lg">
-              Day {streakData.currentStreak} - {getStreakMessage()}
-            </span>
-          </div>
-        </div>
+        {/* Streak Counter */}
+        <StreakCounter 
+          currentStreak={streakData.currentStreak}
+          message={getStreakMessage()}
+          bestStreak={streakData.bestStreak}
+        />
 
-        {/* Enhanced Sample Answer Button */}
-        <div className="mb-6 fade-in-up">
-          <button 
-            className="sample-button w-full py-3 px-6 flex items-center justify-center space-x-2"
-            onClick={() => speak(`Sample answer for: ${currentQuestion}`)}
-          >
-            <span className="text-xl">💡</span>
-            <span className="font-inter font-semibold">See Sample Answers</span>
-          </button>
-        </div>
+        {/* Sample Answer Button */}
+        <SampleAnswerButton 
+          question={currentQuestion}
+          onSpeak={speak}
+        />
 
         {/* Chat Area */}
         <div 
-          className="space-y-4 mb-8 overflow-y-auto px-2 fade-in-up"
-          style={{ height: '320px' }}
+          className="space-y-2 mb-8 overflow-y-auto px-2"
+          style={{ height: '300px' }}
         >
           {messages.map((message, index) => (
             <ChatBubble 
@@ -377,36 +362,59 @@ export default function SpeakingApp() {
           ))}
         </div>
 
-        {/* Premium Speaking Button */}
-        <div className="flex flex-col items-center space-y-6 fade-in-up">
-          <button 
+        {/* XP Progress Bar (horizontal) */}
+        <div className="mb-8">
+          <div 
+            className="w-full h-2.5 rounded-lg overflow-hidden" 
+            style={{ background: '#111' }}
+          >
+            <div 
+              className="h-full transition-all duration-500 ease-out"
+              style={{ 
+                width: `${Math.min((xp / 500) * 100, 100)}%`,
+                background: 'yellow'
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Speaking Button */}
+        <div className="flex flex-col items-center space-y-6">
+          <Button 
             onClick={startSpeaking}
             disabled={isRecording}
-            className={`mic-button w-full max-w-sm py-6 px-8 text-xl font-inter font-bold ${isRecording ? 'glow animate-pulse' : ''}`}
+            className={`w-full max-w-sm py-6 text-xl font-extrabold rounded-full border-4 border-black/20 hover:scale-105 transition-all duration-200 disabled:opacity-50 ${isRecording ? 'animate-pulse' : ''}`}
+            size="lg"
+            style={{
+              backgroundColor: 'hsl(var(--mic-button))',
+              color: 'hsl(var(--text-white))',
+              boxShadow: isRecording ? '0 0 30px hsl(var(--mic-button))' : 'var(--shadow-button)'
+            }}
           >
-            <div className="flex items-center justify-center space-x-3">
-              <span className="text-2xl">{isRecording ? "🎙️" : "🎤"}</span>
-              <span>{isRecording ? "Recording..." : "Start Speaking"}</span>
-            </div>
-          </button>
+            {isRecording ? "🎙️ Recording..." : "🎤 Start Speaking"}
+          </Button>
 
-          {/* Premium Control Panel */}
+          {/* Sound Toggle & Level Selector */}
           <div className="flex flex-col items-center space-y-3">
-            <button 
-              className="sample-button flex items-center space-x-3 px-6 py-3"
+            <div 
+              className="flex items-center space-x-3 bg-white rounded-full px-6 py-3 cursor-pointer transition-transform duration-200 hover:scale-105"
               onClick={toggleSound}
+              style={{
+                boxShadow: 'var(--shadow-soft)'
+              }}
             >
               <Volume2 className="w-5 h-5 text-gray-700" />
-              <span className="font-inter font-semibold text-gray-700">
+              <span className="text-gray-700 font-bold text-lg">
                 Sound {soundEnabled ? 'ON' : 'OFF'}
               </span>
-            </button>
+            </div>
             
-            {/* Premium Level Selector */}
+            {/* Level Selector */}
             <select 
               value={userLevel}
               onChange={(e) => setUserLevel(e.target.value as typeof userLevel)}
-              className="sample-button px-4 py-2 font-inter font-semibold text-gray-700 border-none outline-none cursor-pointer"
+              className="bg-white rounded-full px-4 py-2 text-gray-700 font-bold border-none outline-none cursor-pointer"
+              style={{ boxShadow: 'var(--shadow-soft)' }}
             >
               <option value="beginner">🌱 Beginner</option>
               <option value="intermediate">🌿 Intermediate</option>
