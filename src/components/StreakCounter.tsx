@@ -26,3 +26,5 @@ export const StreakCounter = ({ currentStreak, message, bestStreak }: StreakCoun
     </div>
   );
 };
+
+export default StreakCounter;
