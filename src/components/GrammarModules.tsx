@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, ArrowRight, CheckCircle, BookOpen, Target } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle, BookOpen, Target, Trophy, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { supabase } from '@/integrations/supabase/client';
 
 // A1 Grammar Topics
 const grammarTopics = [
@@ -170,6 +172,7 @@ interface GrammarModulesProps {
 export default function GrammarModules({ onBack }: GrammarModulesProps) {
   const [selectedModule, setSelectedModule] = useState<number | null>(null);
   const [completedModules, setCompletedModules] = useState<number[]>([]);
+  const [showCongrats, setShowCongrats] = useState(false);
 
   // Load completed modules from localStorage
   useEffect(() => {
@@ -179,10 +182,28 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
     }
   }, []);
 
+  // Check for A1 completion
+  useEffect(() => {
+    const a1ModuleIds = [1, 2, 3, 4]; // First 4 modules are A1
+    const completedA1Modules = completedModules.filter(id => a1ModuleIds.includes(id));
+    
+    if (completedA1Modules.length === a1ModuleIds.length && !showCongrats) {
+      setShowCongrats(true);
+      unlockA2Modules();
+    }
+  }, [completedModules, showCongrats]);
+
   const markModuleComplete = (moduleId: number) => {
-    const updated = [...completedModules, moduleId];
-    setCompletedModules(updated);
-    localStorage.setItem('grammarModulesCompleted', JSON.stringify(updated));
+    if (!completedModules.includes(moduleId)) {
+      const updated = [...completedModules, moduleId];
+      setCompletedModules(updated);
+      localStorage.setItem('grammarModulesCompleted', JSON.stringify(updated));
+    }
+  };
+
+  const unlockA2Modules = () => {
+    // Future A2 modules will be unlocked here
+    console.log('A2 modules unlocked!');
   };
 
   if (selectedModule !== null) {
@@ -273,6 +294,40 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
           })}
         </div>
       </div>
+
+      {/* Congratulations Modal */}
+      <Dialog open={showCongrats} onOpenChange={setShowCongrats}>
+        <DialogContent className="max-w-sm mx-auto">
+          <DialogHeader className="text-center">
+            <div className="flex justify-center mb-4">
+              <Trophy className="h-16 w-16 text-yellow-500" />
+            </div>
+            <DialogTitle className="text-2xl font-bold text-gray-800">
+              🎉 Congratulations!
+            </DialogTitle>
+            <DialogDescription className="text-gray-600 text-base mt-4">
+              You've completed all A1 grammar modules! You're ready to move on to A2 level.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="text-center mt-6">
+            <div className="flex justify-center space-x-2 mb-4">
+              <Star className="h-6 w-6 text-yellow-500 fill-current" />
+              <Star className="h-6 w-6 text-yellow-500 fill-current" />
+              <Star className="h-6 w-6 text-yellow-500 fill-current" />
+            </div>
+            <Button
+              onClick={() => setShowCongrats(false)}
+              className="w-full py-3 text-lg font-bold"
+              style={{
+                background: 'linear-gradient(45deg, hsl(var(--primary)), hsl(var(--primary-variant)))',
+                color: 'white',
+              }}
+            >
+              Continue Learning! 🚀
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
