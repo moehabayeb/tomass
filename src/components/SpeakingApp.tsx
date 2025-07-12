@@ -227,18 +227,21 @@ export default function SpeakingApp() {
 
   // Helper function to generate follow-up questions
   const generateFollowUpQuestion = async (transcript: string): Promise<string> => {
-    // Simple follow-up questions based on context
-    const questions = [
-      "What do you usually eat for breakfast?",
-      "Tell me about your favorite hobby.",
-      "What did you do last weekend?",
-      "Describe your daily routine.",
-      "What's your favorite book or movie?",
-      "How do you like to spend your free time?"
-    ];
-    
-    // Return a random question for now
-    return questions[Math.floor(Math.random() * questions.length)];
+    try {
+      const response = await supabase.functions.invoke('follow-up-question', {
+        body: { text: transcript }
+      });
+
+      if (response.error) {
+        console.error('Error generating follow-up question:', response.error);
+        return "Can you tell me more about that?";
+      }
+
+      return response.data?.followUpQuestion || "Can you tell me more about that?";
+    } catch (error) {
+      console.error('Error generating follow-up question:', error);
+      return "Can you tell me more about that?";
+    }
   };
 
   const startSpeaking = async () => {
