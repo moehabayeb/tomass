@@ -8,8 +8,8 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 222 72% 16%;
+    --foreground: 0 0% 100%;
 
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
@@ -17,8 +17,8 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 222 72% 16%;
+    --primary-foreground: 0 0% 100%;
 
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
@@ -36,7 +36,20 @@ All colors MUST be HSL.
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
 
-    --radius: 0.5rem;
+    /* Gamified app colors */
+    --app-bg: 222 72% 16%;
+    --chat-bubble-ai: 196 100% 85%;
+    --chat-bubble-user: 45 100% 70%;
+    --xp-bar: 45 100% 60%;
+    --mic-button: 330 70% 65%;
+    --text-white: 0 0% 100%;
+    --text-dark: 222 72% 16%;
+    
+    /* Shadows and effects */
+    --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.15);
+    --shadow-button: 0 6px 20px rgba(330, 70%, 65%, 0.3);
+
+    --radius: 1rem;
 
     --sidebar-background: 0 0% 98%;
 
@@ -101,5 +114,56 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  /* Sparkle animation */
+  .sparkle {
+    animation: sparkle 2s infinite;
+  }
+  
+  .sparkle-delayed {
+    animation: sparkle 2s infinite 1s;
+  }
+  
+  @keyframes sparkle {
+    0%, 100% { opacity: 0.3; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.2); }
+  }
+  
+  /* Custom shadows */
+  .shadow-soft {
+    box-shadow: var(--shadow-soft);
+  }
+  
+  .shadow-button {
+    box-shadow: var(--shadow-button);
+  }
+  
+  /* Chat bubble styles */
+  .chat-bubble-ai {
+    background-color: hsl(var(--chat-bubble-ai));
+    color: hsl(var(--text-dark));
+  }
+  
+  .chat-bubble-user {
+    background-color: hsl(var(--chat-bubble-user));
+    color: hsl(var(--text-dark));
+  }
+  
+  /* XP bar styles */
+  .xp-bar-bg {
+    background-color: hsl(var(--text-dark) / 0.3);
+  }
+  
+  .xp-bar-fill {
+    background-color: hsl(var(--xp-bar));
+  }
+  
+  /* Mic button */
+  .mic-button {
+    background-color: hsl(var(--mic-button));
+    color: hsl(var(--text-white));
   }
 }
