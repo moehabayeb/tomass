@@ -9,14 +9,18 @@ import BookmarksView from './BookmarksView';
 import { AvatarDisplay } from './AvatarDisplay';
 import { LevelUpPopup } from './LevelUpPopup';
 import { XPBoostAnimation } from './XPBoostAnimation';
+import { StreakCounter } from './StreakCounter';
+import { StreakRewardPopup } from './StreakRewardPopup';
 import { useGamification } from '@/hooks/useGamification';
+import { useStreakTracker } from '@/hooks/useStreakTracker';
 
 type AppMode = 'speaking' | 'grammar' | 'bookmarks';
 
 export default function AppNavigation() {
   const [currentMode, setCurrentMode] = useState<AppMode>('speaking');
   const [showDailyTips, setShowDailyTips] = useState(false);
-  const { userProfile, xpBoosts, showLevelUpPopup, pendingLevelUp, closeLevelUpPopup, getXPProgress } = useGamification();
+  const { userProfile, xpBoosts, showLevelUpPopup, pendingLevelUp, closeLevelUpPopup, getXPProgress, addXP } = useGamification();
+  const { streakData, getStreakMessage, getNextMilestone, streakReward } = useStreakTracker(addXP);
 
   const xpProgress = getXPProgress();
 
@@ -35,6 +39,12 @@ export default function AppNavigation() {
         show={showLevelUpPopup} 
         newLevel={pendingLevelUp || 1} 
         onClose={closeLevelUpPopup} 
+      />
+
+      {/* Streak Reward Popup */}
+      <StreakRewardPopup
+        reward={streakReward}
+        onClose={() => {}} // Auto-closes after timer
       />
 
       {/* Daily Tips Modal */}
@@ -100,6 +110,18 @@ export default function AppNavigation() {
             userName={userProfile.name}
             showXPBar={true}
             size="md"
+          />
+        </div>
+      )}
+
+      {/* Streak Counter - Only show in speaking mode */}
+      {currentMode === 'speaking' && (
+        <div className="fixed bottom-4 left-4 z-20 max-w-72">
+          <StreakCounter
+            currentStreak={streakData.currentStreak}
+            message={getStreakMessage()}
+            bestStreak={streakData.bestStreak}
+            nextMilestone={getNextMilestone()}
           />
         </div>
       )}
