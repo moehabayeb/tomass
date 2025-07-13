@@ -30,8 +30,8 @@ serve(async (req) => {
     openAIFormData.append('file', audioBlob, audioFile.name || 'audio.webm')
     openAIFormData.append('model', 'whisper-1')
     openAIFormData.append('language', 'en') // Specify English for better accuracy
-    openAIFormData.append('response_format', 'text') // Get plain text only
     openAIFormData.append('temperature', '0') // More deterministic results
+    // Note: Removed response_format to get JSON response by default
 
     console.log('Sending to OpenAI Whisper...')
 
