@@ -1,26 +1,30 @@
 import { useState } from 'react';
-import { Mic, BookOpen, Bookmark } from 'lucide-react';
+import { Mic, BookOpen, Bookmark, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import SpeakingApp from './SpeakingApp';
 import GrammarModules from './GrammarModules';
 import DailyTips from './DailyTips';
 import DailyTipsBadge from './DailyTipsBadge';
 import BookmarksView from './BookmarksView';
+import BadgesView from './BadgesView';
 import { AvatarDisplay } from './AvatarDisplay';
 import { LevelUpPopup } from './LevelUpPopup';
 import { XPBoostAnimation } from './XPBoostAnimation';
 import { StreakCounter } from './StreakCounter';
 import { StreakRewardPopup } from './StreakRewardPopup';
+import { BadgeAchievement } from './BadgeAchievement';
 import { useGamification } from '@/hooks/useGamification';
 import { useStreakTracker } from '@/hooks/useStreakTracker';
+import { useBadgeSystem } from '@/hooks/useBadgeSystem';
 
-type AppMode = 'speaking' | 'grammar' | 'bookmarks';
+type AppMode = 'speaking' | 'grammar' | 'bookmarks' | 'badges';
 
 export default function AppNavigation() {
   const [currentMode, setCurrentMode] = useState<AppMode>('speaking');
   const [showDailyTips, setShowDailyTips] = useState(false);
   const { userProfile, xpBoosts, showLevelUpPopup, pendingLevelUp, closeLevelUpPopup, getXPProgress, addXP } = useGamification();
   const { streakData, getStreakMessage, getNextMilestone, streakReward } = useStreakTracker(addXP);
+  const { newlyUnlockedBadge, closeBadgeNotification, getFeatureProgress } = useBadgeSystem();
 
   const xpProgress = getXPProgress();
 
@@ -45,6 +49,12 @@ export default function AppNavigation() {
       <StreakRewardPopup
         reward={streakReward}
         onClose={() => {}} // Auto-closes after timer
+      />
+
+      {/* Badge Achievement Popup */}
+      <BadgeAchievement
+        badge={newlyUnlockedBadge}
+        onClose={closeBadgeNotification}
       />
 
       {/* Daily Tips Modal */}
@@ -97,6 +107,19 @@ export default function AppNavigation() {
             <Bookmark className="h-4 w-4 mr-2" />
             Saved
           </Button>
+          <Button
+            onClick={() => setCurrentMode('badges')}
+            variant="ghost"
+            size="sm"
+            className={`rounded-xl transition-all duration-200 ${
+              currentMode === 'badges' 
+                ? 'bg-white/20 text-white shadow-sm' 
+                : 'text-white/70 hover:bg-white/10 hover:text-white'
+            }`}
+          >
+            <Award className="h-4 w-4 mr-2" />
+            Badges
+          </Button>
         </div>
       </div>
 
@@ -140,6 +163,10 @@ export default function AppNavigation() {
       
       {currentMode === 'bookmarks' && (
         <BookmarksView onBack={() => setCurrentMode('speaking')} />
+      )}
+      
+      {currentMode === 'badges' && (
+        <BadgesView onBack={() => setCurrentMode('speaking')} />
       )}
       
       {currentMode === 'speaking' && (

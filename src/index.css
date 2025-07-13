@@ -271,4 +271,38 @@
   .animate-spin-slow {
     animation: spin-slow 3s linear infinite;
   }
+
+  /* Confetti animation for achievements */
+  .confetti-animation {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(255,215,0,0.8) 1px, transparent 1px),
+                radial-gradient(circle, rgba(255,0,150,0.8) 1px, transparent 1px),
+                radial-gradient(circle, rgba(0,255,255,0.8) 1px, transparent 1px),
+                radial-gradient(circle, rgba(255,69,0,0.8) 1px, transparent 1px);
+    background-size: 50px 50px, 80px 80px, 40px 40px, 60px 60px;
+    animation: confetti-fall 3s ease-out infinite;
+  }
+
+  @keyframes confetti-fall {
+    0% {
+      background-position: 0% 0%, 50% 0%, 25% 0%, 75% 0%;
+      opacity: 1;
+    }
+    100% {
+      background-position: 0% 100%, 50% 120%, 25% 80%, 75% 110%;
+      opacity: 0;
+    }
+  }
+
+  /* Pulse animation for badges */
+  @keyframes badge-pulse {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+  }
 }

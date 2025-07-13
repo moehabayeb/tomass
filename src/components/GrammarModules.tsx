@@ -8,6 +8,7 @@ import Confetti from 'react-confetti';
 import { useWindowSize } from '@react-hook/window-size';
 import BookmarkButton from './BookmarkButton';
 import { useGamification } from '@/hooks/useGamification';
+import { useBadgeSystem } from '@/hooks/useBadgeSystem';
 
 // Simple confetti animation data (placeholder)
 const confettiAnimation = {
@@ -321,6 +322,7 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
   const [currentLevel, setCurrentLevel] = useState("A1");
   const [autoProgressEnabled, setAutoProgressEnabled] = useState(false); // Option for auto-progression
   const { earnXPForGrammarLesson } = useGamification();
+  const { incrementGrammarLessons, incrementTotalExercises } = useBadgeSystem();
 
   // Load completed modules from localStorage
   useEffect(() => {
@@ -386,6 +388,9 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
       
       // Award XP for completing grammar lesson
       await earnXPForGrammarLesson(true);
+      
+      // Track badges progress
+      incrementGrammarLessons();
     }
   };
 
@@ -720,6 +725,7 @@ function ModulePractice({ module, onComplete, onBack }: ModulePracticeProps) {
   const [showExplanation, setShowExplanation] = useState(false);
   const [showLesson, setShowLesson] = useState(true);
   const [correctAnswers, setCorrectAnswers] = useState(0);
+  const { incrementTotalExercises } = useBadgeSystem();
 
   // ENHANCED DEBUG LOGGING
   console.log('🚨🚨🚨 MODULEPRACTICE COMPONENT IS LOADING! 🚨🚨🚨');
@@ -745,9 +751,12 @@ function ModulePractice({ module, onComplete, onBack }: ModulePracticeProps) {
   const handleAnswer = (answerIndex: number) => {
     setSelectedAnswer(answerIndex);
     setShowExplanation(true);
-    if (answerIndex === exercise.correct) {
-      setCorrectAnswers(prev => prev + 1);
-    }
+        if (answerIndex === exercise.correct) {
+          setCorrectAnswers(prev => prev + 1);
+        }
+        
+        // Track exercise completion for badges
+        incrementTotalExercises();
   };
 
   const handleNext = () => {
