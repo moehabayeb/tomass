@@ -27,8 +27,11 @@ serve(async (req) => {
 
     // Prepare form data for OpenAI
     const openAIFormData = new FormData()
-    openAIFormData.append('file', audioBlob, 'audio.wav')
+    openAIFormData.append('file', audioBlob, audioFile.name || 'audio.webm')
     openAIFormData.append('model', 'whisper-1')
+    openAIFormData.append('language', 'en') // Specify English for better accuracy
+    openAIFormData.append('response_format', 'text') // Get plain text only
+    openAIFormData.append('temperature', '0') // More deterministic results
 
     console.log('Sending to OpenAI Whisper...')
 

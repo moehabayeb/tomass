@@ -139,9 +139,20 @@ export default function SpeakingApp() {
 
   // Helper function to record and transcribe audio
   const sendToTranscribe = async (): Promise<string> => {
-    // Step 1: Record Audio from Mic
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    const mediaRecorder = new MediaRecorder(stream);
+    // Step 1: Record Audio from Mic with optimized settings for Whisper
+    const stream = await navigator.mediaDevices.getUserMedia({ 
+      audio: {
+        sampleRate: 16000, // Optimal for Whisper
+        channelCount: 1,
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true
+      } 
+    });
+    
+    const mediaRecorder = new MediaRecorder(stream, {
+      mimeType: 'audio/webm;codecs=opus' // Better compression and quality
+    });
     const audioChunks: Blob[] = [];
 
     mediaRecorder.ondataavailable = event => {
@@ -153,12 +164,79 @@ export default function SpeakingApp() {
     // Show recording message
     addChatBubble("🎙️ Listening...", "system");
 
-    await new Promise(resolve => setTimeout(resolve, 5000)); // Record 5 seconds
-    mediaRecorder.stop();
+    // Use voice activity detection with longer timeout for complete sentences
+    await new Promise(resolve => {
+      let silenceTimeout: NodeJS.Timeout;
+      let recordingTimeout: NodeJS.Timeout;
+      
+      // Create an audio context for voice activity detection
+      const audioContext = new AudioContext();
+      const analyser = audioContext.createAnalyser();
+      const source = audioContext.createMediaStreamSource(stream);
+      source.connect(analyser);
+      
+      analyser.fftSize = 256;
+      const bufferLength = analyser.frequencyBinCount;
+      const dataArray = new Uint8Array(bufferLength);
+      
+      let isSpeaking = false;
+      let speechStartTime = 0;
+      
+      const checkAudio = () => {
+        analyser.getByteFrequencyData(dataArray);
+        const average = dataArray.reduce((sum, value) => sum + value, 0) / bufferLength;
+        
+        // Voice activity threshold
+        const isCurrentlySpeaking = average > 30;
+        
+        if (isCurrentlySpeaking && !isSpeaking) {
+          // Speech started
+          isSpeaking = true;
+          speechStartTime = Date.now();
+          clearTimeout(silenceTimeout);
+          console.log('Speech detected, recording...');
+        } else if (!isCurrentlySpeaking && isSpeaking) {
+          // Potential silence detected
+          silenceTimeout = setTimeout(() => {
+            // Stop recording after 1.5 seconds of silence
+            if (Date.now() - speechStartTime > 1000) { // Minimum 1 second of speech
+              console.log('Silence detected, stopping recording');
+              mediaRecorder.stop();
+              audioContext.close();
+              resolve(undefined);
+            }
+          }, 1500);
+        }
+        
+        if (mediaRecorder.state === 'recording') {
+          requestAnimationFrame(checkAudio);
+        }
+      };
+      
+      // Start voice activity detection
+      checkAudio();
+      
+      // Maximum recording time (10 seconds for complete sentences)
+      recordingTimeout = setTimeout(() => {
+        if (mediaRecorder.state === 'recording') {
+          console.log('Maximum recording time reached, stopping');
+          mediaRecorder.stop();
+          audioContext.close();
+          resolve(undefined);
+        }
+      }, 10000);
+      
+      // Cleanup on stop
+      mediaRecorder.onstop = () => {
+        clearTimeout(silenceTimeout);
+        clearTimeout(recordingTimeout);
+        audioContext.close();
+      };
+    });
 
     const audioBlob = await new Promise<Blob>(resolve => {
       mediaRecorder.onstop = () => {
-        const blob = new Blob(audioChunks, { type: 'audio/wav' });
+        const blob = new Blob(audioChunks, { type: 'audio/webm' });
         resolve(blob);
       };
     });
@@ -168,12 +246,14 @@ export default function SpeakingApp() {
 
     // Step 2: Send Audio to Whisper Transcription
     const formData = new FormData();
-    formData.append("audio", audioBlob, "recording.wav");
+    formData.append("audio", audioBlob, "recording.webm");
+
+    console.log('Sending audio for transcription, size:', audioBlob.size, 'bytes');
 
     const transcribeRes = await fetch("https://sgzhbiknaiqsuknwgvjr.supabase.co/functions/v1/transcribe", {
       method: "POST",
       headers: {
-        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNnemhiaWtuYWlxc3VrbndndmpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIzNDkyNTUsImV4cCI6MjA2NzkyNTI1NX0.zi3agHTlckDVeDOQ-rFvC9X_TI21QOxiXzqbNs2UrG4',
+        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNnemhiaWtuYWlxc3VrbmdndmpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIzNDkyNTUsImV4cCI6MjA2NzkyNTI1NX0.zi3agHTlckDVeDOQ-rFvC9X_TI21QOxiXzqbNs2UrG4',
         'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNnemhiaWtuYWlxc3VrbndndmpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIzNDkyNTUsImV4cCI6MjA2NzkyNTI1NX0.zi3agHTlckDVeDOQ-rFvC9X_TI21QOxiXzqbNs2UrG4'
       },
       body: formData
@@ -185,6 +265,7 @@ export default function SpeakingApp() {
     }
 
     const transcribeData = await transcribeRes.json();
+    console.log('Transcription result:', transcribeData.transcript);
     return transcribeData.transcript;
   };
 
@@ -213,9 +294,9 @@ export default function SpeakingApp() {
   };
 
   // Helper function to display bot messages with text-to-speech
-  const showBotMessage = (message: string) => {
+  const showBotMessage = (message: string, onComplete?: () => void) => {
     addChatBubble(message, "bot");
-    speak(message);
+    speak(message, onComplete);
   };
 
   // Helper function to generate contextual follow-up questions
@@ -264,26 +345,37 @@ export default function SpeakingApp() {
       // Step 2: Get grammar feedback
       const feedback = await sendToFeedback(transcript);
 
-      // Step 3: Display feedback with text-to-speech
-      showBotMessage(feedback.message);
+      // Step 3: Display feedback with text-to-speech, wait for completion
+      await new Promise<void>((resolve) => {
+        showBotMessage(feedback.message, () => {
+          console.log('Feedback TTS completed');
+          resolve();
+        });
+      });
 
       // Step 4: Generate natural follow-up question
       const nextQuestion = await generateFollowUpQuestion(transcript);
       
-      // Add delay before asking follow-up to feel more natural
+      // Step 5: Add delay before asking follow-up question to prevent overlap
       setTimeout(() => {
-        showBotMessage(nextQuestion);
+        showBotMessage(nextQuestion, () => {
+          console.log('Follow-up question TTS completed');
+          // Add delay before re-enabling recording to prevent accidental triggering
+          setTimeout(() => {
+            console.log('Ready for next input');
+          }, 1500);
+        });
       }, 2000);
 
-      // Step 5: Log the session to history
+      // Step 6: Log the session to history
       logSession(transcript, feedback.corrected);
 
-      // Step 6: Award XP with bonuses for speed and accuracy
+      // Step 7: Award XP with bonuses for speed and accuracy
       const isCorrect = !feedback.message.toLowerCase().includes('mistake') && 
                        !feedback.message.toLowerCase().includes('error');
       addXP(20, responseTime, isCorrect);
 
-      // Step 7: Track speaking submission for badges
+      // Step 8: Track speaking submission for badges
       incrementSpeakingSubmissions();
 
     } catch (error) {
