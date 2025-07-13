@@ -1,7 +1,7 @@
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Star, GraduationCap, ShirtIcon, PartyPopper, Sparkles } from 'lucide-react';
+import { XPProgressBar } from './XPProgressBar';
 
 interface AvatarAccessory {
   id: string;
@@ -138,20 +138,21 @@ export const AvatarDisplay = ({
       {/* XP Progress Bar */}
       {showXPBar && (
         <div className="w-full max-w-48 space-y-2">
-          <div className="flex justify-between text-xs text-muted-foreground">
-            <span>{xp} XP</span>
-            <span>{maxXP} XP</span>
-          </div>
-          <Progress value={xpProgress} className="h-2" />
+          <XPProgressBar 
+            currentXP={Math.max(0, xp)} 
+            totalXP={maxXP} 
+            showLabels={true}
+            size="md"
+          />
           <p className="text-xs text-center text-muted-foreground">
-            {maxXP - xp} XP to level {level + 1}
+            {Math.max(0, maxXP - xp)} XP to level {level + 1}
           </p>
         </div>
       )}
 
       {/* Next Unlock Preview */}
       {nextAccessory && (
-        <div className="bg-muted/50 rounded-lg p-2 text-center max-w-48">
+        <div className="bg-muted/50 rounded-lg p-2 text-center max-w-48 relative group">
           <div className="flex items-center justify-center gap-2 mb-1">
             {nextAccessory.icon}
             <span className="text-xs font-medium">{nextAccessory.name}</span>
@@ -159,6 +160,13 @@ export const AvatarDisplay = ({
           <p className="text-xs text-muted-foreground">
             Unlock at Level {nextAccessory.unlockLevel}
           </p>
+          
+          {/* Tooltip for Party Mode */}
+          {nextAccessory.id === 'celebration' && (
+            <div className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 w-40 p-2 text-xs bg-background border rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 pointer-events-none">
+              Compete with friends in real-time at Level 10!
+            </div>
+          )}
         </div>
       )}
     </div>

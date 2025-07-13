@@ -22,6 +22,11 @@ export default function AppNavigation() {
 
   return (
     <div className="relative">
+      {/* Background Stars Animation */}
+      <div className="absolute inset-0 w-full h-full background-stars pointer-events-none" 
+           style={{ backgroundImage: 'radial-gradient(2px 2px at 20px 30px, #fff, transparent), radial-gradient(2px 2px at 40px 70px, #fff, transparent), radial-gradient(1px 1px at 90px 40px, #fff, transparent)', backgroundSize: '100px 100px' }} 
+      />
+      
       {/* XP Boost Animations */}
       <XPBoostAnimation boosts={xpBoosts} />
       
@@ -90,7 +95,7 @@ export default function AppNavigation() {
         <div className="fixed top-4 left-4 z-20">
           <AvatarDisplay
             level={userProfile.level}
-            xp={xpProgress.current}
+            xp={Math.max(0, xpProgress.current)}
             maxXP={xpProgress.max}
             userName={userProfile.name}
             showXPBar={true}

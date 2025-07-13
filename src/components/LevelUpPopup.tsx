@@ -83,7 +83,7 @@ export const LevelUpPopup = ({ show, newLevel, onClose }: LevelUpPopupProps) => 
 
       <Card 
         className={cn(
-          "relative bg-gradient-to-br from-background via-background/95 to-primary/5 border-primary/20 shadow-2xl max-w-sm mx-4 transform transition-all duration-500",
+          "relative bg-gradient-to-br from-background via-background/95 to-primary/5 border-primary/20 shadow-2xl max-w-sm mx-4 transform transition-all duration-500 animate-scale-in",
           isVisible ? "scale-100 rotate-0" : "scale-95 rotate-3"
         )}
       >
