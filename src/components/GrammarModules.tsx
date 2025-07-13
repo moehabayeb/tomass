@@ -322,7 +322,7 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
   const [currentLevel, setCurrentLevel] = useState("A1");
   const [autoProgressEnabled, setAutoProgressEnabled] = useState(false); // Option for auto-progression
   const { earnXPForGrammarLesson } = useGamification();
-  const { incrementGrammarLessons, incrementTotalExercises } = useBadgeSystem();
+  const { incrementGrammarLessons, incrementTotalExercises, incrementCompletedModules } = useBadgeSystem();
 
   // Load completed modules from localStorage
   useEffect(() => {
@@ -391,6 +391,7 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
       
       // Track badges progress
       incrementGrammarLessons();
+      incrementCompletedModules(); // Track module completion for Grammar Guru badge
     }
   };
 

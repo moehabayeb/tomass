@@ -12,16 +12,18 @@ export default function BadgesView({ onBack }: BadgesViewProps) {
 
   const getProgressText = (badgeId: string) => {
     switch (badgeId) {
+      case 'first_lesson':
+        return badgeProgress.totalExercises >= 1 ? 'Completed!' : '0/1 lessons';
       case 'a1_master':
         return `${badgeProgress.grammarLessonsCompleted}/10 lessons`;
-      case 'seven_day_speaker':
-        return `${Math.min(badgeProgress.speakingDaysStreak, 7)}/7 days`;
-      case 'level_up':
-        return `Level ${badgeProgress.currentLevel}/10`;
-      case 'smart_learner':
-        return `${badgeProgress.totalExercises}/50 exercises`;
-      case 'daily_streaker':
-        return `${Math.min(badgeProgress.currentStreak, 10)}/10 days`;
+      case 'three_day_streak':
+        return `${Math.min(badgeProgress.currentStreak, 3)}/3 days`;
+      case 'level_5_achieved':
+        return `Level ${badgeProgress.currentLevel}/5`;
+      case 'grammar_guru':
+        return `${badgeProgress.completedModules}/5 modules`;
+      case 'speaking_champ':
+        return `${badgeProgress.speakingSubmissions}/10 submissions`;
       default:
         return '';
     }
@@ -29,16 +31,18 @@ export default function BadgesView({ onBack }: BadgesViewProps) {
 
   const getProgressPercentage = (badgeId: string) => {
     switch (badgeId) {
+      case 'first_lesson':
+        return badgeProgress.totalExercises >= 1 ? 100 : 0;
       case 'a1_master':
         return Math.min((badgeProgress.grammarLessonsCompleted / 10) * 100, 100);
-      case 'seven_day_speaker':
-        return Math.min((badgeProgress.speakingDaysStreak / 7) * 100, 100);
-      case 'level_up':
-        return Math.min((badgeProgress.currentLevel / 10) * 100, 100);
-      case 'smart_learner':
-        return Math.min((badgeProgress.totalExercises / 50) * 100, 100);
-      case 'daily_streaker':
-        return Math.min((badgeProgress.currentStreak / 10) * 100, 100);
+      case 'three_day_streak':
+        return Math.min((badgeProgress.currentStreak / 3) * 100, 100);
+      case 'level_5_achieved':
+        return Math.min((badgeProgress.currentLevel / 5) * 100, 100);
+      case 'grammar_guru':
+        return Math.min((badgeProgress.completedModules / 5) * 100, 100);
+      case 'speaking_champ':
+        return Math.min((badgeProgress.speakingSubmissions / 10) * 100, 100);
       default:
         return 0;
     }

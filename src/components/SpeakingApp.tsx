@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTextToSpeech } from '@/hooks/useTextToSpeech';
 import { useStreakTracker } from '@/hooks/useStreakTracker';
 import { useXPSystem } from '@/hooks/useXPSystem';
+import { useBadgeSystem } from '@/hooks/useBadgeSystem';
 import { XPBoostAnimation } from './XPBoostAnimation';
 import { StreakCounter } from './StreakCounter';
 import { SampleAnswerButton } from './SampleAnswerButton';
@@ -95,6 +96,7 @@ export default function SpeakingApp() {
   const { speak, stopSpeaking, toggleSound, isSpeaking, soundEnabled } = useTextToSpeech();
   const { streakData, getStreakMessage } = useStreakTracker();
   const { xp, level, xpBoosts, showLevelUpPopup, addXP } = useXPSystem();
+  const { incrementSpeakingSubmissions } = useBadgeSystem();
   
   const [messages, setMessages] = useState([
     { text: "Hello! Ready to practice today? 🎤", isUser: false, isSystem: false },
@@ -280,6 +282,9 @@ export default function SpeakingApp() {
       const isCorrect = !feedback.message.toLowerCase().includes('mistake') && 
                        !feedback.message.toLowerCase().includes('error');
       addXP(20, responseTime, isCorrect);
+
+      // Step 7: Track speaking submission for badges
+      incrementSpeakingSubmissions();
 
     } catch (error) {
       console.error('Error in startSpeaking:', error);

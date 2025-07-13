@@ -16,6 +16,7 @@ import { BadgeAchievement } from './BadgeAchievement';
 import { useGamification } from '@/hooks/useGamification';
 import { useStreakTracker } from '@/hooks/useStreakTracker';
 import { useBadgeSystem } from '@/hooks/useBadgeSystem';
+import { Toaster } from '@/components/ui/toaster';
 
 type AppMode = 'speaking' | 'grammar' | 'bookmarks' | 'badges';
 
@@ -172,6 +173,9 @@ export default function AppNavigation() {
       {currentMode === 'speaking' && (
         <SpeakingApp />
       )}
+
+      {/* Toast Notifications */}
+      <Toaster />
     </div>
   );
 }
