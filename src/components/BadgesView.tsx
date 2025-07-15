@@ -12,18 +12,24 @@ export default function BadgesView({ onBack }: BadgesViewProps) {
 
   const getProgressText = (badgeId: string) => {
     switch (badgeId) {
+      case 'streak_starter':
+        return `${Math.min(badgeProgress.currentStreak, 3)}/3 days`;
+      case 'grammar_hero':
+        return `${badgeProgress.completedModules}/5 modules`;
+      case 'speaking_pro':
+        return `${badgeProgress.speakingSubmissions}/10 submissions`;
+      case 'daily_learner':
+        return `${badgeProgress.dailyTipsViewed}/7 tips`;
+      case 'early_riser':
+        return `${badgeProgress.earlyRiserCount}/3 times`;
+      case 'bookmark_master':
+        return `${badgeProgress.bookmarksSaved}/5 bookmarks`;
+      case 'level_up':
+        return `Level ${badgeProgress.currentLevel}/10`;
+      case 'party_master':
+        return badgeProgress.partyModeUnlocked ? 'Unlocked!' : 'Reach Level 10';
       case 'first_lesson':
         return badgeProgress.totalExercises >= 1 ? 'Completed!' : '0/1 lessons';
-      case 'a1_master':
-        return `${badgeProgress.grammarLessonsCompleted}/10 lessons`;
-      case 'three_day_streak':
-        return `${Math.min(badgeProgress.currentStreak, 3)}/3 days`;
-      case 'level_5_achieved':
-        return `Level ${badgeProgress.currentLevel}/5`;
-      case 'grammar_guru':
-        return `${badgeProgress.completedModules}/5 modules`;
-      case 'speaking_champ':
-        return `${badgeProgress.speakingSubmissions}/10 submissions`;
       default:
         return '';
     }
@@ -31,18 +37,24 @@ export default function BadgesView({ onBack }: BadgesViewProps) {
 
   const getProgressPercentage = (badgeId: string) => {
     switch (badgeId) {
+      case 'streak_starter':
+        return Math.min((badgeProgress.currentStreak / 3) * 100, 100);
+      case 'grammar_hero':
+        return Math.min((badgeProgress.completedModules / 5) * 100, 100);
+      case 'speaking_pro':
+        return Math.min((badgeProgress.speakingSubmissions / 10) * 100, 100);
+      case 'daily_learner':
+        return Math.min((badgeProgress.dailyTipsViewed / 7) * 100, 100);
+      case 'early_riser':
+        return Math.min((badgeProgress.earlyRiserCount / 3) * 100, 100);
+      case 'bookmark_master':
+        return Math.min((badgeProgress.bookmarksSaved / 5) * 100, 100);
+      case 'level_up':
+        return Math.min((badgeProgress.currentLevel / 10) * 100, 100);
+      case 'party_master':
+        return badgeProgress.partyModeUnlocked ? 100 : Math.min((badgeProgress.currentLevel / 10) * 100, 100);
       case 'first_lesson':
         return badgeProgress.totalExercises >= 1 ? 100 : 0;
-      case 'a1_master':
-        return Math.min((badgeProgress.grammarLessonsCompleted / 10) * 100, 100);
-      case 'three_day_streak':
-        return Math.min((badgeProgress.currentStreak / 3) * 100, 100);
-      case 'level_5_achieved':
-        return Math.min((badgeProgress.currentLevel / 5) * 100, 100);
-      case 'grammar_guru':
-        return Math.min((badgeProgress.completedModules / 5) * 100, 100);
-      case 'speaking_champ':
-        return Math.min((badgeProgress.speakingSubmissions / 10) * 100, 100);
       default:
         return 0;
     }
@@ -91,61 +103,87 @@ export default function BadgesView({ onBack }: BadgesViewProps) {
 
         {/* Badges Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {badges.map((badge) => (
-            <div
-              key={badge.id}
-              className={`relative bg-white/10 backdrop-blur-xl rounded-2xl p-6 border transition-all duration-300 ${
+        {badges.map((badge) => (
+          <div
+            key={badge.id}
+            className={`relative bg-white/10 backdrop-blur-xl rounded-2xl p-6 border transition-all duration-300 ${
+              badge.unlocked 
+                ? 'border-primary/50 shadow-lg shadow-primary/20 scale-100 animate-fade-in' 
+                : 'border-white/20 opacity-60 grayscale hover:opacity-80'
+            }`}
+          >
+            {/* Sparkle Effect for Unlocked Badges */}
+            {badge.unlocked && (
+              <div className="absolute inset-0 pointer-events-none">
+                <div className="absolute top-2 right-2 w-2 h-2 bg-yellow-400 rounded-full animate-pulse opacity-80"></div>
+                <div className="absolute top-4 right-6 w-1 h-1 bg-blue-400 rounded-full animate-pulse opacity-60 animation-delay-1000"></div>
+                <div className="absolute top-6 right-3 w-1.5 h-1.5 bg-pink-400 rounded-full animate-pulse opacity-70 animation-delay-2000"></div>
+              </div>
+            )}
+
+            {/* Badge Icon */}
+            <div className="text-center mb-4">
+              <div className={`text-6xl mb-2 transition-all duration-300 ${
                 badge.unlocked 
-                  ? 'border-primary/50 shadow-lg shadow-primary/20 scale-100' 
-                  : 'border-white/20 opacity-60 grayscale'
-              }`}
-            >
-              {/* Badge Icon */}
-              <div className="text-center mb-4">
-                <div className={`text-6xl mb-2 ${badge.unlocked ? 'animate-pulse' : ''}`}>
-                  {badge.icon}
-                </div>
-                <h3 className="text-xl font-bold text-white mb-1">{badge.name}</h3>
-                <p className="text-white/70 text-sm">{badge.description}</p>
+                  ? 'animate-pulse filter drop-shadow-lg' 
+                  : 'filter grayscale blur-sm'
+              }`}>
+                {badge.unlocked ? badge.icon : '🔒'}
               </div>
+              <h3 className={`text-xl font-bold mb-1 transition-all duration-300 ${
+                badge.unlocked ? 'text-white' : 'text-white/50 blur-sm'
+              }`}>
+                {badge.unlocked ? badge.name : '???'}
+              </h3>
+              <p className={`text-sm transition-all duration-300 ${
+                badge.unlocked ? 'text-white/70' : 'text-white/40 blur-sm'
+              }`}>
+                {badge.unlocked ? badge.description : 'Complete the challenge to unlock'}
+              </p>
+            </div>
 
-              {/* Progress Bar */}
-              {!badge.unlocked && (
-                <div className="mb-4">
-                  <div className="flex justify-between text-xs text-white/70 mb-2">
-                    <span>Progress</span>
-                    <span>{getProgressText(badge.id)}</span>
-                  </div>
-                  <div className="w-full bg-white/20 rounded-full h-2">
-                    <div
-                      className="bg-gradient-to-r from-primary to-primary-glow h-2 rounded-full transition-all duration-500"
-                      style={{ width: `${getProgressPercentage(badge.id)}%` }}
-                    />
-                  </div>
+            {/* Progress Bar for Locked Badges */}
+            {!badge.unlocked && (
+              <div className="mb-4">
+                <div className="flex justify-between text-xs text-white/70 mb-2">
+                  <span>Progress</span>
+                  <span>{getProgressText(badge.id)}</span>
                 </div>
-              )}
-
-              {/* Status Badge */}
-              <div className="flex justify-center">
-                {badge.unlocked ? (
-                  <Badge variant="secondary" className="bg-primary/20 text-primary border-primary/30">
-                    ✅ Unlocked
-                  </Badge>
-                ) : (
-                  <Badge variant="outline" className="border-white/30 text-white/70">
-                    🔒 {badge.condition}
-                  </Badge>
-                )}
+                <div className="w-full bg-white/20 rounded-full h-2 overflow-hidden">
+                  <div
+                    className="bg-gradient-to-r from-primary to-primary-glow h-2 rounded-full transition-all duration-1000 ease-out"
+                    style={{ width: `${getProgressPercentage(badge.id)}%` }}
+                  />
+                </div>
               </div>
+            )}
 
-              {/* Unlock Date */}
-              {badge.unlocked && badge.unlockedAt && (
-                <div className="text-center mt-2 text-xs text-white/50">
-                  Unlocked {new Date(badge.unlockedAt).toLocaleDateString()}
-                </div>
+            {/* Glow Effect for High Progress */}
+            {!badge.unlocked && getProgressPercentage(badge.id) > 70 && (
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent rounded-2xl pointer-events-none animate-pulse"></div>
+            )}
+
+            {/* Status Badge */}
+            <div className="flex justify-center">
+              {badge.unlocked ? (
+                <Badge variant="secondary" className="bg-green-500/20 text-green-300 border-green-400/30 font-medium">
+                  ✨ Unlocked
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="border-white/30 text-white/70 font-medium">
+                  🔒 {badge.condition}
+                </Badge>
               )}
             </div>
-          ))}
+
+            {/* Unlock Date */}
+            {badge.unlocked && badge.unlockedAt && (
+              <div className="text-center mt-2 text-xs text-white/50">
+                Unlocked {new Date(badge.unlockedAt).toLocaleDateString()}
+              </div>
+            )}
+          </div>
+        ))}
         </div>
       </div>
     </div>

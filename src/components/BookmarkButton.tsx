@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Bookmark, BookmarkCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
+import { useBadgeSystem } from '@/hooks/useBadgeSystem';
 
 interface BookmarkButtonProps {
   content: string;
@@ -29,6 +30,7 @@ export default function BookmarkButton({
 }: BookmarkButtonProps) {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const { incrementBookmarks } = useBadgeSystem();
 
   // Generate a unique ID for the bookmark based on content
   const getBookmarkId = (content: string) => {
@@ -87,6 +89,9 @@ export default function BookmarkButton({
         localStorage.setItem('bookmarks', JSON.stringify(updatedBookmarks));
         setIsBookmarked(true);
         onBookmark?.(true);
+        
+        // Track bookmark for badge progress
+        incrementBookmarks();
       }
 
       // TODO: Sync with Supabase when user authentication is implemented

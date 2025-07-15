@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { ScrollArea } from '@/components/ui/scroll-area';
 import BookmarkButton from './BookmarkButton';
 import { useGamification } from '@/hooks/useGamification';
+import { useBadgeSystem } from '@/hooks/useBadgeSystem';
 
 // Collection of daily tips for A1-A2 learners
 const dailyTips = [
@@ -137,6 +138,7 @@ export const hasTodaysTipBeenViewed = () => {
 export default function DailyTips({ onClose }: DailyTipsProps) {
   const [showHistory, setShowHistory] = useState(false);
   const { earnXPForDailyTip } = useGamification();
+  const { incrementDailyTips } = useBadgeSystem();
 
   const todaysTipIndex = getTodaysTipIndex();
   const todaysTip = dailyTips[todaysTipIndex];
@@ -146,8 +148,9 @@ export default function DailyTips({ onClose }: DailyTipsProps) {
     if (!hasTodaysTipBeenViewed()) {
       markTipAsViewed(todaysTip.id);
       earnXPForDailyTip();
+      incrementDailyTips(); // Track for badge progress
     }
-  }, [todaysTip.id, earnXPForDailyTip]);
+  }, [todaysTip.id, earnXPForDailyTip, incrementDailyTips]);
 
   // Get past viewed tips for history
   const getHistoryTips = () => {

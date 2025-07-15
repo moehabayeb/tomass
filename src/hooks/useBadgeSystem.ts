@@ -28,6 +28,10 @@ export interface BadgeProgress {
   currentLevel: number;
   currentStreak: number;
   completedModules: number;
+  dailyTipsViewed: number;
+  bookmarksSaved: number;
+  earlyRiserCount: number;
+  partyModeUnlocked: boolean;
 }
 
 export const useBadgeSystem = () => {
@@ -41,58 +45,87 @@ export const useBadgeSystem = () => {
     totalExercises: 0,
     currentLevel: 1,
     currentStreak: 0,
-    completedModules: 0
+    completedModules: 0,
+    dailyTipsViewed: 0,
+    bookmarksSaved: 0,
+    earlyRiserCount: 0,
+    partyModeUnlocked: false
   });
 
-  // Initialize badges
+  // Initialize badges with complete set
   useEffect(() => {
     const initialBadges: Badge[] = [
       {
+        id: 'streak_starter',
+        name: 'Streak Starter',
+        description: 'Complete 3 days in a row',
+        icon: '🔥',
+        condition: 'Complete 3 days in a row',
+        unlocked: false
+      },
+      {
+        id: 'grammar_hero',
+        name: 'Grammar Hero',
+        description: 'Finish all modules in a grammar level',
+        icon: '🧠',
+        condition: 'Complete all A1 grammar modules',
+        unlocked: false
+      },
+      {
+        id: 'speaking_pro',
+        name: 'Speaking Pro',
+        description: 'Complete 10 Speaking practices',
+        icon: '🎤',
+        condition: 'Complete 10 speaking practices',
+        unlocked: false
+      },
+      {
+        id: 'daily_learner',
+        name: 'Daily Learner',
+        description: 'View 7 Daily Tips',
+        icon: '📚',
+        condition: 'View 7 daily tips',
+        unlocked: false
+      },
+      {
+        id: 'early_riser',
+        name: 'Early Riser',
+        description: 'Open the app before 9AM 3 times',
+        icon: '✨',
+        condition: 'Open app before 9AM 3 times',
+        unlocked: false
+      },
+      {
+        id: 'bookmark_master',
+        name: 'Bookmark Master',
+        description: 'Save 5 helpful messages',
+        icon: '💾',
+        condition: 'Save 5 bookmarks',
+        unlocked: false
+      },
+      {
+        id: 'level_up',
+        name: 'Level Up',
+        description: 'Reach XP Level 10',
+        icon: '📈',
+        condition: 'Reach Level 10',
+        unlocked: false
+      },
+      {
+        id: 'party_master',
+        name: 'Party Master',
+        description: 'Unlock Party Mode',
+        icon: '👑',
+        condition: 'Unlock Party Mode feature',
+        unlocked: false
+      },
+      // Legacy badges for existing users
+      {
         id: 'first_lesson',
-        name: 'First Lesson',
+        name: 'First Steps',
         description: 'Completed your first lesson',
         icon: '🎉',
         condition: 'Complete your first lesson',
-        unlocked: false
-      },
-      {
-        id: 'a1_master',
-        name: 'A1 Master',
-        description: 'Completed all A1 grammar lessons',
-        icon: '🎓',
-        condition: 'Complete all A1 grammar lessons',
-        unlocked: false
-      },
-      {
-        id: 'three_day_streak',
-        name: '3-Day Streak',
-        description: 'Maintained a 3-day daily streak',
-        icon: '🔥',
-        condition: 'Reach 3-day streak',
-        unlocked: false
-      },
-      {
-        id: 'level_5_achieved',
-        name: 'Level 5 Achieved',
-        description: 'Reached Level 5',
-        icon: '💪',
-        condition: 'Reach Level 5',
-        unlocked: false
-      },
-      {
-        id: 'grammar_guru',
-        name: 'Grammar Guru',
-        description: 'Completed all grammar modules in A1',
-        icon: '📘',
-        condition: 'Complete all A1 modules',
-        unlocked: false
-      },
-      {
-        id: 'speaking_champ',
-        name: 'Speaking Champ',
-        description: 'Completed 10 speaking submissions',
-        icon: '🎤',
-        condition: 'Complete 10 speaking submissions',
         unlocked: false
       }
     ];
@@ -100,7 +133,13 @@ export const useBadgeSystem = () => {
     // Load saved badges from localStorage
     const savedBadges = localStorage.getItem('user_badges');
     if (savedBadges) {
-      setBadges(JSON.parse(savedBadges));
+      const parsed = JSON.parse(savedBadges);
+      // Merge with new badges for existing users
+      const mergedBadges = initialBadges.map(newBadge => {
+        const existingBadge = parsed.find((b: Badge) => b.id === newBadge.id);
+        return existingBadge || newBadge;
+      });
+      setBadges(mergedBadges);
     } else {
       setBadges(initialBadges);
     }
@@ -108,7 +147,19 @@ export const useBadgeSystem = () => {
     // Load badge progress
     const savedProgress = localStorage.getItem('badge_progress');
     if (savedProgress) {
-      setBadgeProgress(JSON.parse(savedProgress));
+      const parsed = JSON.parse(savedProgress);
+      setBadgeProgress({
+        grammarLessonsCompleted: parsed.grammarLessonsCompleted || 0,
+        speakingSubmissions: parsed.speakingSubmissions || 0,
+        totalExercises: parsed.totalExercises || 0,
+        currentLevel: parsed.currentLevel || 1,
+        currentStreak: parsed.currentStreak || 0,
+        completedModules: parsed.completedModules || 0,
+        dailyTipsViewed: parsed.dailyTipsViewed || 0,
+        bookmarksSaved: parsed.bookmarksSaved || 0,
+        earlyRiserCount: parsed.earlyRiserCount || 0,
+        partyModeUnlocked: parsed.partyModeUnlocked || false
+      });
     }
   }, []);
 
@@ -136,7 +187,7 @@ export const useBadgeSystem = () => {
     setUnlockableFeatures(features);
   }, []);
 
-  // Update progress based on user profile
+  // Update progress based on user profile and localStorage
   useEffect(() => {
     if (userProfile) {
       const currentStreak = parseInt(localStorage.getItem('currentStreak') || '0');
@@ -144,17 +195,37 @@ export const useBadgeSystem = () => {
       const grammarLessons = parseInt(localStorage.getItem('grammarLessonsCompleted') || '0');
       const speakingSubmissions = parseInt(localStorage.getItem('speakingSubmissions') || '0');
       const completedModules = parseInt(localStorage.getItem('completedModules') || '0');
+      const dailyTipsViewed = parseInt(localStorage.getItem('dailyTipsViewed') || '0');
+      const bookmarksSaved = parseInt(localStorage.getItem('bookmarksSaved') || '0');
+      const earlyRiserCount = parseInt(localStorage.getItem('earlyRiserCount') || '0');
       
-      setBadgeProgress({
+      setBadgeProgress(prev => ({
+        ...prev,
         grammarLessonsCompleted: grammarLessons,
         speakingSubmissions: speakingSubmissions,
         totalExercises: totalExercises,
         currentLevel: userProfile.level,
         currentStreak: currentStreak,
-        completedModules: completedModules
-      });
+        completedModules: completedModules,
+        dailyTipsViewed: dailyTipsViewed,
+        bookmarksSaved: bookmarksSaved,
+        earlyRiserCount: earlyRiserCount
+      }));
     }
   }, [userProfile]);
+
+  // Check for early riser on app open
+  useEffect(() => {
+    const now = new Date();
+    const hour = now.getHours();
+    const today = now.toDateString();
+    const lastEarlyRiserCheck = localStorage.getItem('lastEarlyRiserCheck');
+    
+    if (hour < 9 && lastEarlyRiserCheck !== today) {
+      localStorage.setItem('lastEarlyRiserCheck', today);
+      incrementEarlyRiser();
+    }
+  }, []);
 
   // Check and unlock badges
   useEffect(() => {
@@ -164,23 +235,32 @@ export const useBadgeSystem = () => {
       let shouldUnlock = false;
 
       switch (badge.id) {
-        case 'first_lesson':
-          shouldUnlock = badgeProgress.grammarLessonsCompleted >= 1 || badgeProgress.totalExercises >= 1;
-          break;
-        case 'a1_master':
-          shouldUnlock = badgeProgress.grammarLessonsCompleted >= 10;
-          break;
-        case 'three_day_streak':
+        case 'streak_starter':
           shouldUnlock = badgeProgress.currentStreak >= 3;
           break;
-        case 'level_5_achieved':
-          shouldUnlock = badgeProgress.currentLevel >= 5;
-          break;
-        case 'grammar_guru':
+        case 'grammar_hero':
           shouldUnlock = badgeProgress.completedModules >= 5; // All A1 modules
           break;
-        case 'speaking_champ':
+        case 'speaking_pro':
           shouldUnlock = badgeProgress.speakingSubmissions >= 10;
+          break;
+        case 'daily_learner':
+          shouldUnlock = badgeProgress.dailyTipsViewed >= 7;
+          break;
+        case 'early_riser':
+          shouldUnlock = badgeProgress.earlyRiserCount >= 3;
+          break;
+        case 'bookmark_master':
+          shouldUnlock = badgeProgress.bookmarksSaved >= 5;
+          break;
+        case 'level_up':
+          shouldUnlock = badgeProgress.currentLevel >= 10;
+          break;
+        case 'party_master':
+          shouldUnlock = badgeProgress.partyModeUnlocked;
+          break;
+        case 'first_lesson':
+          shouldUnlock = badgeProgress.grammarLessonsCompleted >= 1 || badgeProgress.totalExercises >= 1;
           break;
       }
 
@@ -201,17 +281,29 @@ export const useBadgeSystem = () => {
       return badge;
     });
 
-    setBadges(updatedBadges);
-    localStorage.setItem('user_badges', JSON.stringify(updatedBadges));
+    if (JSON.stringify(updatedBadges) !== JSON.stringify(badges)) {
+      setBadges(updatedBadges);
+      localStorage.setItem('user_badges', JSON.stringify(updatedBadges));
+    }
     localStorage.setItem('badge_progress', JSON.stringify(badgeProgress));
   }, [badgeProgress, badges]);
 
   // Update unlockable features based on level
   useEffect(() => {
-    const updatedFeatures = unlockableFeatures.map(feature => ({
-      ...feature,
-      unlocked: badgeProgress.currentLevel >= feature.unlockLevel
-    }));
+    const updatedFeatures = unlockableFeatures.map(feature => {
+      const wasUnlocked = feature.unlocked;
+      const isNowUnlocked = badgeProgress.currentLevel >= feature.unlockLevel;
+      
+      // If party mode just unlocked, update badge progress
+      if (feature.id === 'party_mode' && !wasUnlocked && isNowUnlocked) {
+        setBadgeProgress(prev => ({ ...prev, partyModeUnlocked: true }));
+      }
+      
+      return {
+        ...feature,
+        unlocked: isNowUnlocked
+      };
+    });
     setUnlockableFeatures(updatedFeatures);
   }, [badgeProgress.currentLevel, unlockableFeatures]);
 
@@ -239,6 +331,24 @@ export const useBadgeSystem = () => {
     setBadgeProgress(prev => ({ ...prev, completedModules: newCount }));
   };
 
+  const incrementDailyTips = () => {
+    const newCount = badgeProgress.dailyTipsViewed + 1;
+    localStorage.setItem('dailyTipsViewed', newCount.toString());
+    setBadgeProgress(prev => ({ ...prev, dailyTipsViewed: newCount }));
+  };
+
+  const incrementBookmarks = () => {
+    const newCount = badgeProgress.bookmarksSaved + 1;
+    localStorage.setItem('bookmarksSaved', newCount.toString());
+    setBadgeProgress(prev => ({ ...prev, bookmarksSaved: newCount }));
+  };
+
+  const incrementEarlyRiser = () => {
+    const newCount = badgeProgress.earlyRiserCount + 1;
+    localStorage.setItem('earlyRiserCount', newCount.toString());
+    setBadgeProgress(prev => ({ ...prev, earlyRiserCount: newCount }));
+  };
+
   const closeBadgeNotification = () => {
     setNewlyUnlockedBadge(null);
   };
@@ -264,6 +374,9 @@ export const useBadgeSystem = () => {
     incrementTotalExercises,
     incrementSpeakingSubmissions,
     incrementCompletedModules,
+    incrementDailyTips,
+    incrementBookmarks,
+    incrementEarlyRiser,
     closeBadgeNotification,
     getFeatureProgress
   };

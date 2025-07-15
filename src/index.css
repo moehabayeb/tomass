@@ -177,7 +177,15 @@
   .glow {
     animation: glow 1.5s infinite;
   }
+  
+/* Badge Animation Delays */
+.animation-delay-1000 {
+  animation-delay: 1s;
+}
 
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
   @keyframes glow {
     0% { box-shadow: 0 0 5px #ff4f80; }
     50% { box-shadow: 0 0 20px #ff4f80; }
