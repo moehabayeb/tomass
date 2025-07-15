@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Lightbulb } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { hasTodaysTipBeenViewed } from './DailyTips';
 
 interface DailyTipsBadgeProps {
   onClick: () => void;
@@ -12,19 +13,12 @@ export default function DailyTipsBadge({ onClick }: DailyTipsBadgeProps) {
   useEffect(() => {
     // Check if today's tip has been viewed
     const checkForNewTip = () => {
-      const today = new Date();
-      const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
-      const todaysTipId = (dayOfYear % 15) + 1; // Assuming 15 tips total, cycling
-
-      const viewedTips = JSON.parse(localStorage.getItem('viewedDailyTips') || '[]');
-      const hasViewedToday = viewedTips.includes(todaysTipId);
-
-      setHasNewTip(!hasViewedToday);
+      setHasNewTip(!hasTodaysTipBeenViewed());
     };
 
     checkForNewTip();
     
-    // Check every hour for new tips
+    // Check every hour for new tips (in case the day changes)
     const interval = setInterval(checkForNewTip, 3600000);
     return () => clearInterval(interval);
   }, []);
