@@ -18,7 +18,7 @@ import { useStreakTracker } from '@/hooks/useStreakTracker';
 import { useBadgeSystem } from '@/hooks/useBadgeSystem';
 import { Toaster } from '@/components/ui/toaster';
 
-type AppMode = 'speaking' | 'grammar' | 'bookmarks' | 'badges';
+type AppMode = 'speaking' | 'lessons' | 'bookmarks' | 'badges';
 
 export default function AppNavigation() {
   const [currentMode, setCurrentMode] = useState<AppMode>('speaking');
@@ -83,17 +83,17 @@ export default function AppNavigation() {
             Speaking
           </Button>
           <Button
-            onClick={() => setCurrentMode('grammar')}
+            onClick={() => setCurrentMode('lessons')}
             variant="ghost"
             size="sm"
             className={`rounded-xl transition-all duration-200 ${
-              currentMode === 'grammar' 
+              currentMode === 'lessons' 
                 ? 'bg-white/20 text-white shadow-sm' 
                 : 'text-white/70 hover:bg-white/10 hover:text-white'
             }`}
           >
             <BookOpen className="h-4 w-4 mr-2" />
-            Grammar
+            Lessons
           </Button>
           <Button
             onClick={() => setCurrentMode('bookmarks')}
@@ -158,7 +158,7 @@ export default function AppNavigation() {
       )}
 
       {/* Content based on current mode */}
-      {currentMode === 'grammar' && (
+      {currentMode === 'lessons' && (
         <GrammarModules onBack={() => setCurrentMode('speaking')} />
       )}
       
