@@ -38,13 +38,26 @@ export function useAvatarState({
   useEffect(() => {
     if (lastMessageTime) {
       setAvatarState('talking');
+      // Extended talking duration to feel more natural
       const timer = setTimeout(() => {
-        setAvatarState('idle');
-      }, 2000);
+        if (!isSpeaking) { // Only return to idle if not actually speaking
+          setAvatarState('idle');
+        }
+      }, 3000);
       
       return () => clearTimeout(timer);
     }
-  }, [lastMessageTime]);
+  }, [lastMessageTime, isSpeaking]);
 
-  return { avatarState, setAvatarState };
+  // Method to manually trigger specific states for fine control
+  const triggerState = (state: AvatarState, duration: number = 2000) => {
+    setAvatarState(state);
+    setTimeout(() => {
+      if (!isRecording && !isSpeaking && !isProcessing) {
+        setAvatarState('idle');
+      }
+    }, duration);
+  };
+
+  return { avatarState, setAvatarState, triggerState };
 }
