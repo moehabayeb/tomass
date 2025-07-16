@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Bookmark, MessageSquare, BookOpen, Lightbulb, Trash2, Calendar } from 'lucide-react';
+import { ArrowLeft, Bookmark, MessageSquare, BookOpen, Lightbulb, Trash2, Calendar, Reply } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -7,9 +7,10 @@ import { BookmarkItem } from './BookmarkButton';
 
 interface BookmarksViewProps {
   onBack: () => void;
+  onContinueFromMessage?: (content: string) => void;
 }
 
-export default function BookmarksView({ onBack }: BookmarksViewProps) {
+export default function BookmarksView({ onBack, onContinueFromMessage }: BookmarksViewProps) {
   const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
   const [selectedTab, setSelectedTab] = useState<'all' | 'message' | 'lesson' | 'tip'>('all');
 
@@ -205,6 +206,22 @@ export default function BookmarksView({ onBack }: BookmarksViewProps) {
                     <span className={`text-xs font-medium px-2 py-1 rounded-full ${getTypeColor(bookmark.type)}`}>
                       {bookmark.type.charAt(0).toUpperCase() + bookmark.type.slice(1)}
                     </span>
+                    
+                    {onContinueFromMessage && (
+                      <Button
+                        onClick={() => {
+                          onContinueFromMessage(bookmark.content);
+                          onBack(); // Go back to main app after continuing
+                        }}
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50 border border-blue-200"
+                        title="Bring this content back to continue the conversation"
+                      >
+                        <Reply className="h-3 w-3 mr-1" />
+                        Continue Here
+                      </Button>
+                    )}
                   </div>
                 </CardContent>
               </Card>

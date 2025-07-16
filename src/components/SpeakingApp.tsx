@@ -92,7 +92,11 @@ const ChatBubble = ({
   </div>
 );
 
-export default function SpeakingApp() {
+interface SpeakingAppProps {
+  initialMessage?: string;
+}
+
+export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   const { speak, stopSpeaking, toggleSound, isSpeaking, soundEnabled } = useTextToSpeech();
   const { streakData, getStreakMessage } = useStreakTracker();
   const { xp, level, xpBoosts, showLevelUpPopup, addXP } = useXPSystem();
@@ -116,6 +120,14 @@ export default function SpeakingApp() {
     const savedHistory = JSON.parse(localStorage.getItem("chatHistory") || "[]");
     setHistory(savedHistory);
   }, []);
+
+  // Handle initial message from bookmarks
+  useEffect(() => {
+    if (initialMessage) {
+      addChatBubble(`💬 Continuing from: "${initialMessage}"`, "system");
+      addChatBubble("Let's continue our conversation from here! What would you like to say about this?", "bot");
+    }
+  }, [initialMessage]);
 
   const logSession = (input: string, corrected: string) => {
     const newSession = {

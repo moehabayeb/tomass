@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Mic, BookOpen, Bookmark, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import SpeakingApp from './SpeakingApp';
@@ -22,12 +22,24 @@ type AppMode = 'speaking' | 'lessons' | 'bookmarks' | 'badges';
 
 export default function AppNavigation() {
   const [currentMode, setCurrentMode] = useState<AppMode>('speaking');
+  const [continuedMessage, setContinuedMessage] = useState<string | undefined>();
   const [showDailyTips, setShowDailyTips] = useState(false);
   const { userProfile, xpBoosts, showLevelUpPopup, pendingLevelUp, closeLevelUpPopup, getXPProgress, addXP } = useGamification();
   const { streakData, getStreakMessage, getNextMilestone, streakReward } = useStreakTracker(addXP);
   const { newlyUnlockedBadge, closeBadgeNotification, getFeatureProgress } = useBadgeSystem();
 
   const xpProgress = getXPProgress();
+
+  // Clear continued message after it's used
+  useEffect(() => {
+    if (currentMode === 'speaking' && continuedMessage) {
+      // Clear the message after a short delay to allow the component to use it
+      const timer = setTimeout(() => {
+        setContinuedMessage(undefined);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [currentMode, continuedMessage]);
 
   return (
     <div className="relative">
@@ -163,7 +175,13 @@ export default function AppNavigation() {
       )}
       
       {currentMode === 'bookmarks' && (
-        <BookmarksView onBack={() => setCurrentMode('speaking')} />
+        <BookmarksView 
+          onBack={() => setCurrentMode('speaking')} 
+          onContinueFromMessage={(content) => {
+            setContinuedMessage(content);
+            setCurrentMode('speaking');
+          }}
+        />
       )}
       
       {currentMode === 'badges' && (
@@ -171,7 +189,10 @@ export default function AppNavigation() {
       )}
       
       {currentMode === 'speaking' && (
-        <SpeakingApp />
+        <SpeakingApp 
+          initialMessage={continuedMessage}
+          key={continuedMessage ? `continued-${Date.now()}` : 'default'} // Force re-mount when continuing
+        />
       )}
 
       {/* Toast Notifications */}
