@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ArrowLeft, Play, Pause, Mic, MicOff, Volume2, RefreshCw, Star, CheckCircle, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Play, Pause, Mic, MicOff, Volume2, RefreshCw, Star, CheckCircle, AlertCircle, Lock, BookOpen, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -17,6 +17,26 @@ interface LessonsAppProps {
   onBack: () => void;
 }
 
+type ViewState = 'levels' | 'modules' | 'lesson';
+type LessonPhase = 'intro' | 'listening' | 'speaking' | 'completed';
+
+// Levels data
+const LEVELS = [
+  { id: 'A1', name: 'A1 - Beginner', description: 'Start your English journey', moduleCount: 50, color: 'bg-blue-500' },
+  { id: 'A2', name: 'A2 - Elementary', description: 'Build basic skills', moduleCount: 50, color: 'bg-green-500', locked: true },
+  { id: 'B1', name: 'B1 - Intermediate', description: 'Expand your knowledge', moduleCount: 50, color: 'bg-orange-500', locked: true },
+  { id: 'B2', name: 'B2 - Upper Intermediate', description: 'Advanced concepts', moduleCount: 50, color: 'bg-purple-500', locked: true },
+];
+
+// A1 modules data (for now just Module 1 implemented)
+const A1_MODULES = Array.from({ length: 50 }, (_, i) => ({
+  id: i + 1,
+  title: i === 0 ? 'Verb To Be - Positive Sentences' : `Module ${i + 1}`,
+  description: i === 0 ? 'Learn to use am, is, and are' : 'Coming soon',
+  completed: false,
+  locked: i > 0, // Only Module 1 is unlocked initially
+}));
+
 // Module 1 Data: Verb To Be - Positive Sentences
 const MODULE_1_DATA = {
   title: "Module 1: Verb To Be - Positive Sentences",
@@ -26,30 +46,32 @@ const MODULE_1_DATA = {
   
   listeningExamples: [
     "I am a student.",
-    "She is a doctor.", 
-    "They are friends.",
-    "You are tired.",
-    "We are happy."
+    "He is a teacher.",
+    "She is a doctor.",
+    "It is a dog.",
+    "We are happy.",
+    "You are friends.",
+    "They are engineers."
   ],
   
-  speakingQuestions: [
-    { question: "Are you a student?", expected: "Yes, I am a student." },
-    { question: "Is she your friend?", expected: "Yes, she is my friend." },
-    { question: "Are they at home?", expected: "Yes, they are at home." },
-    { question: "Are you happy today?", expected: "Yes, I am happy today." },
-    { question: "Is he a teacher?", expected: "Yes, he is a teacher." },
-    { question: "Are we ready to start?", expected: "Yes, we are ready to start." },
-    { question: "Is it a beautiful day?", expected: "Yes, it is a beautiful day." },
-    { question: "Are you learning English?", expected: "Yes, I am learning English." },
-    { question: "Is this your book?", expected: "Yes, this is my book." },
-    { question: "Are they your parents?", expected: "Yes, they are my parents." }
+  speakingPractice: [
+    "I am a student.",
+    "He is a teacher.",
+    "She is a doctor.",
+    "It is a dog.",
+    "We are happy.",
+    "You are friends.",
+    "They are engineers."
   ]
 };
 
-type LessonPhase = 'intro' | 'listening' | 'speaking' | 'completed';
-
 export default function LessonsApp({ onBack }: LessonsAppProps) {
   const [width, height] = useWindowSize();
+  const [viewState, setViewState] = useState<ViewState>('levels');
+  const [selectedLevel, setSelectedLevel] = useState<string>('');
+  const [selectedModule, setSelectedModule] = useState<number>(0);
+  
+  // Lesson state
   const [currentPhase, setCurrentPhase] = useState<LessonPhase>('intro');
   const [listeningIndex, setListeningIndex] = useState(0);
   const [speakingIndex, setSpeakingIndex] = useState(0);
@@ -73,8 +95,17 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     lastMessageTime: lastResponseTime
   });
 
+  // Get completed modules from localStorage
+  const completedModules = JSON.parse(localStorage.getItem('completedModules') || '[]');
+
+  // Check if module is unlocked
+  const isModuleUnlocked = (moduleId: number) => {
+    if (moduleId === 1) return true; // Module 1 is always unlocked
+    return completedModules.includes(`module-${moduleId - 1}`);
+  };
+
   // Calculate progress
-  const totalQuestions = MODULE_1_DATA.speakingQuestions.length;
+  const totalQuestions = MODULE_1_DATA.speakingPractice.length;
   const overallProgress = ((speakingIndex + (correctAnswers > 0 ? 1 : 0)) / totalQuestions) * 100;
 
   // Speech recognition setup
@@ -91,7 +122,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
       
       recognitionInstance.onresult = (event: any) => {
         const transcript = event.results[0][0].transcript.toLowerCase().trim();
-        handleUserResponse(transcript);
+        handleSpeechResponse(transcript);
       };
       
       recognitionInstance.onerror = (event: any) => {
@@ -112,7 +143,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
 
   // Start lesson with intro
   useEffect(() => {
-    if (currentPhase === 'intro') {
+    if (currentPhase === 'intro' && viewState === 'lesson') {
       const timer = setTimeout(() => {
         speak(MODULE_1_DATA.intro, () => {
           setCurrentPhase('listening');
@@ -120,72 +151,67 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
       }, 1000);
       return () => clearTimeout(timer);
     }
-  }, [currentPhase, speak]);
+  }, [currentPhase, viewState, speak]);
 
-  const handleUserResponse = useCallback(async (transcript: string) => {
+  const handleSpeechResponse = useCallback(async (transcript: string) => {
     setIsProcessing(true);
     setAttempts(prev => prev + 1);
     
-    const currentQuestion = MODULE_1_DATA.speakingQuestions[speakingIndex];
-    const expected = currentQuestion.expected.toLowerCase();
-    
-    // Simple matching logic - check for key components
-    const isCorrectStructure = (response: string): boolean => {
-      // Remove punctuation and extra spaces
-      const clean = response.replace(/[.,!?]/g, '').trim();
-      
-      // Check if it contains the main components of expected answer
-      if (expected.includes('yes, i am')) {
-        return clean.includes('yes') && clean.includes('i am');
-      }
-      if (expected.includes('yes, she is')) {
-        return clean.includes('yes') && clean.includes('she is');
-      }
-      if (expected.includes('yes, they are')) {
-        return clean.includes('yes') && clean.includes('they are');
-      }
-      if (expected.includes('yes, we are')) {
-        return clean.includes('yes') && clean.includes('we are');
-      }
-      if (expected.includes('yes, he is')) {
-        return clean.includes('yes') && clean.includes('he is');
-      }
-      if (expected.includes('yes, it is')) {
-        return clean.includes('yes') && clean.includes('it is');
-      }
-      if (expected.includes('yes, this is')) {
-        return clean.includes('yes') && clean.includes('this is');
-      }
-      
-      // Fallback: check similarity
-      return clean.length > 3 && expected.includes(clean.substring(0, Math.min(clean.length, 10)));
-    };
-
-    const isCorrect = isCorrectStructure(transcript);
-    
-    if (isCorrect) {
-      setCorrectAnswers(prev => prev + 1);
-      setFeedback('Great job! 🎉 Let\'s move to the next question.');
-      setFeedbackType('success');
-      
-      // Award XP for correct answer
-      await earnXPForGrammarLesson(true);
-      await incrementTotalExercises();
-      
-      setTimeout(() => {
-        if (speakingIndex < totalQuestions - 1) {
-          setSpeakingIndex(prev => prev + 1);
-          setFeedback('');
-        } else {
-          completeLesson();
+    try {
+      // Send to feedback edge function for analysis
+      const response = await supabase.functions.invoke('feedback', {
+        body: { 
+          userSentence: transcript,
+          expectedSentence: MODULE_1_DATA.speakingPractice[speakingIndex]
         }
-        setIsProcessing(false);
-      }, 2000);
-    } else {
-      // Provide helpful feedback
-      const helpfulResponse = generateHelpfulFeedback(transcript, currentQuestion.expected);
-      setFeedback(helpfulResponse);
-      setFeedbackType('error');
+      });
+
+      if (response.error) {
+        throw response.error;
+      }
+
+      const { feedback: aiAssessment, isCorrect } = response.data;
+      
+      if (isCorrect) {
+        setCorrectAnswers(prev => prev + 1);
+        setFeedback('Great job! 🎉 Let\'s move to the next sentence.');
+        setFeedbackType('success');
+        
+        // Award XP for correct answer
+        await earnXPForGrammarLesson(true);
+        await incrementTotalExercises();
+        
+        setTimeout(() => {
+          if (speakingIndex < totalQuestions - 1) {
+            setSpeakingIndex(prev => prev + 1);
+            setFeedback('');
+          } else {
+            completeLesson();
+          }
+          setIsProcessing(false);
+        }, 2000);
+      } else {
+        setFeedback(aiAssessment || 'Try again with the full sentence.');
+        setFeedbackType('error');
+        
+        setTimeout(() => {
+          setFeedback('');
+          setIsProcessing(false);
+        }, 3000);
+      }
+    } catch (error) {
+      console.error('Error getting feedback:', error);
+      // Fallback to simple logic if API fails
+      const isCorrect = transcript.toLowerCase().includes(MODULE_1_DATA.speakingPractice[speakingIndex].toLowerCase().substring(0, 10));
+      
+      if (isCorrect) {
+        setCorrectAnswers(prev => prev + 1);
+        setFeedback('Great job! 🎉');
+        setFeedbackType('success');
+      } else {
+        setFeedback(`Try saying: "${MODULE_1_DATA.speakingPractice[speakingIndex]}"`);
+        setFeedbackType('error');
+      }
       
       setTimeout(() => {
         setFeedback('');
@@ -196,25 +222,6 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     setLastResponseTime(Date.now());
   }, [speakingIndex, earnXPForGrammarLesson, incrementTotalExercises]);
 
-  const generateHelpfulFeedback = (userResponse: string, expected: string): string => {
-    const response = userResponse.toLowerCase().trim();
-    
-    // Check what's missing
-    if (response === 'yes' || response === 'no') {
-      return `Almost! Try again with a full sentence like: "${expected}"`;
-    }
-    
-    if (response.includes('she') && response.includes('friend') && !response.includes('is')) {
-      return `Good! But remember to use 'is': "${expected}"`;
-    }
-    
-    if (response.includes('they') && response.includes('home') && !response.includes('are')) {
-      return `Close! Don't forget 'are': "${expected}"`;
-    }
-    
-    return `Almost! Try again with a full sentence like: "${expected}"`;
-  };
-
   const completeLesson = async () => {
     setCurrentPhase('completed');
     setShowConfetti(true);
@@ -224,10 +231,10 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     await incrementGrammarLessons();
     
     // Save progress
-    const completedModules = JSON.parse(localStorage.getItem('completedModules') || '[]');
-    if (!completedModules.includes('module-1')) {
-      completedModules.push('module-1');
-      localStorage.setItem('completedModules', JSON.stringify(completedModules));
+    const newCompletedModules = [...completedModules];
+    if (!newCompletedModules.includes('module-1')) {
+      newCompletedModules.push('module-1');
+      localStorage.setItem('completedModules', JSON.stringify(newCompletedModules));
     }
     
     speak('Congratulations! You have completed Module 1. Well done!');
@@ -237,7 +244,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     }, 5000);
   };
 
-  const startRecording = () => {
+  const startRecording = async () => {
     if (recognition && !isRecording) {
       setIsRecording(true);
       setFeedback('');
@@ -252,16 +259,12 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     }
   };
 
-  const speakExample = (text: string) => {
-    speak(text);
-  };
-
   const nextListeningExample = () => {
     if (listeningIndex < MODULE_1_DATA.listeningExamples.length - 1) {
       setListeningIndex(prev => prev + 1);
     } else {
       setCurrentPhase('speaking');
-      speak('Now let\'s practice speaking! I\'ll ask you questions and you give full answers.');
+      speak('Now let\'s practice speaking! Say each sentence clearly.');
     }
   };
 
@@ -270,11 +273,152 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     speak(currentExample);
   };
 
-  const speakCurrentQuestion = () => {
-    const currentQuestion = MODULE_1_DATA.speakingQuestions[speakingIndex];
-    speak(currentQuestion.question);
+  const speakCurrentSentence = () => {
+    const currentSentence = MODULE_1_DATA.speakingPractice[speakingIndex];
+    speak(currentSentence);
   };
 
+  // Render levels view
+  if (viewState === 'levels') {
+    return (
+      <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: 'hsl(var(--app-bg))' }}>
+        <div className="relative z-10 p-4 max-w-sm mx-auto">
+          {/* Header */}
+          <div className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-3xl p-6 mb-6 mt-safe-area-inset-top">
+            <div className="flex items-center justify-between mb-4">
+              <Button
+                onClick={onBack}
+                variant="ghost"
+                size="icon"
+                className="text-white hover:bg-white/10 rounded-full"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              
+              <h1 className="text-lg font-bold text-white">Choose Your Level</h1>
+              <div className="w-10"></div>
+            </div>
+          </div>
+
+          {/* Levels Grid */}
+          <div className="space-y-4">
+            {LEVELS.map((level) => (
+              <Card 
+                key={level.id} 
+                className={`bg-white/10 border-white/20 cursor-pointer transition-all hover:bg-white/15 ${level.locked ? 'opacity-50' : ''}`}
+                onClick={() => {
+                  if (!level.locked) {
+                    setSelectedLevel(level.id);
+                    setViewState('modules');
+                  }
+                }}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-center space-x-4">
+                    <div className={`w-12 h-12 rounded-full ${level.color} flex items-center justify-center flex-shrink-0`}>
+                      {level.locked ? (
+                        <Lock className="h-6 w-6 text-white" />
+                      ) : (
+                        <BookOpen className="h-6 w-6 text-white" />
+                      )}
+                    </div>
+                    
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-white">{level.name}</h3>
+                      <p className="text-white/70 text-sm">{level.description}</p>
+                      <p className="text-white/60 text-xs">{level.moduleCount} modules</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Render modules view
+  if (viewState === 'modules') {
+    return (
+      <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: 'hsl(var(--app-bg))' }}>
+        <div className="relative z-10 p-4 max-w-sm mx-auto">
+          {/* Header */}
+          <div className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-3xl p-6 mb-6 mt-safe-area-inset-top">
+            <div className="flex items-center justify-between mb-4">
+              <Button
+                onClick={() => setViewState('levels')}
+                variant="ghost"
+                size="icon"
+                className="text-white hover:bg-white/10 rounded-full"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              
+              <div className="text-center">
+                <h1 className="text-lg font-bold text-white">{selectedLevel} Modules</h1>
+                <p className="text-sm text-white/70">Choose a module to start</p>
+              </div>
+              <div className="w-10"></div>
+            </div>
+          </div>
+
+          {/* Modules Grid */}
+          <div className="space-y-3">
+            {A1_MODULES.map((module) => {
+              const isUnlocked = isModuleUnlocked(module.id);
+              const isCompleted = completedModules.includes(`module-${module.id}`);
+              
+              return (
+                <Card 
+                  key={module.id} 
+                  className={`bg-white/10 border-white/20 cursor-pointer transition-all hover:bg-white/15 ${!isUnlocked ? 'opacity-50' : ''}`}
+                  onClick={() => {
+                    if (isUnlocked && module.id === 1) { // Only Module 1 is implemented
+                      setSelectedModule(module.id);
+                      setViewState('lesson');
+                      setCurrentPhase('intro');
+                      setListeningIndex(0);
+                      setSpeakingIndex(0);
+                      setCorrectAnswers(0);
+                      setAttempts(0);
+                      setFeedback('');
+                    }
+                  }}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                        {!isUnlocked ? (
+                          <Lock className="h-6 w-6 text-white/50" />
+                        ) : isCompleted ? (
+                          <CheckCircle className="h-6 w-6 text-green-400" />
+                        ) : (
+                          <span className="text-white font-bold">{module.id}</span>
+                        )}
+                      </div>
+                      
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-white">{module.title}</h3>
+                        <p className="text-white/70 text-sm">{module.description}</p>
+                        {isCompleted && (
+                          <Badge variant="outline" className="text-green-400 border-green-400 mt-1">
+                            Completed
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Lesson completion view
   if (currentPhase === 'completed') {
     return (
       <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: 'hsl(var(--app-bg))' }}>
@@ -293,7 +437,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
             
             <div className="space-y-3 mb-6">
               <div className="flex justify-between text-white/90">
-                <span>Questions Completed:</span>
+                <span>Sentences Completed:</span>
                 <span className="font-semibold">{correctAnswers}/{totalQuestions}</span>
               </div>
               <div className="flex justify-between text-white/90">
@@ -303,10 +447,10 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
             </div>
 
             <Button 
-              onClick={onBack}
+              onClick={() => setViewState('modules')}
               className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30"
             >
-              Back to Lessons
+              Back to Modules
             </Button>
           </div>
         </div>
@@ -314,6 +458,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     );
   }
 
+  // Render lesson content
   return (
     <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: 'hsl(var(--app-bg))' }}>
       <div className="relative z-10 p-4 max-w-sm mx-auto">
@@ -321,7 +466,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
         <div className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-3xl p-6 mb-6 mt-safe-area-inset-top">
           <div className="flex items-center justify-between mb-4">
             <Button
-              onClick={onBack}
+              onClick={() => setViewState('modules')}
               variant="ghost"
               size="icon"
               className="text-white hover:bg-white/10 rounded-full"
@@ -434,10 +579,10 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
               <div className="text-center">
                 <div className="bg-white/5 rounded-xl p-4 mb-4">
                   <p className="text-white text-lg font-medium mb-2">
-                    "{MODULE_1_DATA.speakingQuestions[speakingIndex].question}"
+                    "{MODULE_1_DATA.speakingPractice[speakingIndex]}"
                   </p>
                   <Button
-                    onClick={speakCurrentQuestion}
+                    onClick={speakCurrentSentence}
                     variant="ghost"
                     size="sm"
                     className="text-white/70 hover:text-white hover:bg-white/10"
@@ -469,7 +614,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
                 </div>
 
                 <p className="text-white/70 text-sm mb-4">
-                  {isRecording ? 'Listening...' : 'Tap to speak your answer'}
+                  {isRecording ? 'Listening...' : 'Tap to speak the sentence'}
                 </p>
 
                 {/* Feedback */}
