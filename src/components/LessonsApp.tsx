@@ -33,9 +33,11 @@ const A1_MODULES = Array.from({ length: 50 }, (_, i) => ({
   id: i + 1,
   title: i === 0 ? 'Verb To Be - Positive Sentences' : 
          i === 1 ? 'Negative Sentences' : 
+         i === 2 ? 'Question Sentences' :
          `Module ${i + 1}`,
   description: i === 0 ? 'Learn to use am, is, and are' : 
                i === 1 ? 'Learn to use "am", "is", and "are" with "not"' :
+               i === 2 ? 'Learn to form questions with "am", "is", and "are"' :
                'Coming soon',
   completed: false,
   locked: i > 0, // Only Module 1 is unlocked initially
@@ -126,6 +128,75 @@ const MODULE_2_DATA = {
   ]
 };
 
+// Module 3 Data: Question Sentences
+const MODULE_3_DATA = {
+  title: "Module 3: Question Sentences",
+  description: "Learn to form questions with 'am', 'is', and 'are'",
+  intro: "Excellent! Now we are learning how to ask questions with 'am', 'is', and 'are'. For example: 'Am I late?' 'Is she happy?' 'Are they students?' Let's practice!",
+  tip: "How to form questions with 'To Be': Move the verb before the subject. Am I...? Is he/she/it...? Are we/you/they...?",
+  
+  table: [
+    { verb: "Am", subject: "I", complement: "a student?", example: "Am I a student?" },
+    { verb: "Is", subject: "he", complement: "tired?", example: "Is he tired?" },
+    { verb: "Is", subject: "she", complement: "a doctor?", example: "Is she a doctor?" },
+    { verb: "Is", subject: "it", complement: "cold?", example: "Is it cold?" },
+    { verb: "Are", subject: "we", complement: "happy?", example: "Are we happy?" },
+    { verb: "Are", subject: "you", complement: "teachers?", example: "Are you teachers?" },
+    { verb: "Are", subject: "they", complement: "friends?", example: "Are they friends?" }
+  ],
+  
+  listeningExamples: [
+    "Am I late?",
+    "Is she happy?",
+    "Are they students?"
+  ],
+  
+  speakingPractice: [
+    "Yes, you are a teacher.",
+    "No, you are not a teacher.",
+    "Yes, you are a student.",
+    "No, you are not a student.",
+    "Yes, you are happy.",
+    "No, you are not happy.",
+    "Yes, he is a doctor.",
+    "No, he is not a doctor.",
+    "Yes, he is tired.",
+    "No, he is not tired.",
+    "Yes, he is busy.",
+    "No, he is not busy.",
+    "Yes, she is a nurse.",
+    "No, she is not a nurse.",
+    "Yes, she is beautiful.",
+    "No, she is not beautiful.",
+    "Yes, she is ready.",
+    "No, she is not ready.",
+    "Yes, it is cold.",
+    "No, it is not cold.",
+    "Yes, it is big.",
+    "No, it is not big.",
+    "Yes, it is expensive.",
+    "No, it is not expensive.",
+    "Yes, we are friends.",
+    "No, we are not friends.",
+    "Yes, we are students.",
+    "No, we are not students.",
+    "Yes, we are ready.",
+    "No, we are not ready.",
+    "Yes, you are right.",
+    "No, you are not right.",
+    "Yes, you are late.",
+    "No, you are not late.",
+    "Yes, you are welcome.",
+    "No, you are not welcome.",
+    "Yes, they are engineers.",
+    "No, they are not engineers.",
+    "Yes, they are married.",
+    "No, they are not married.",
+    "Yes, they are available.",
+    "No, they are not available."
+  ]
+};
+
 export default function LessonsApp({ onBack }: LessonsAppProps) {
   const [width, height] = useWindowSize();
   const [viewState, setViewState] = useState<ViewState>('levels');
@@ -169,6 +240,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
   const getCurrentModuleData = () => {
     if (selectedModule === 1) return MODULE_1_DATA;
     if (selectedModule === 2) return MODULE_2_DATA;
+    if (selectedModule === 3) return MODULE_3_DATA;
     return MODULE_1_DATA; // fallback
   };
 
@@ -576,7 +648,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
                   key={module.id} 
                   className={`bg-white/10 border-white/20 cursor-pointer transition-all hover:bg-white/15 ${!isUnlocked ? 'opacity-50' : ''}`}
                   onClick={() => {
-                    if (isUnlocked && (module.id === 1 || module.id === 2)) { // Module 1 & 2 are implemented
+                    if (isUnlocked && (module.id === 1 || module.id === 2 || module.id === 3)) { // Modules 1, 2 & 3 are implemented
                       setSelectedModule(module.id);
                       setViewState('lesson');
                       setCurrentPhase('intro');
