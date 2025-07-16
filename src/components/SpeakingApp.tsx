@@ -207,7 +207,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       const bufferLength = analyser.frequencyBinCount;
       const dataArray = new Uint8Array(bufferLength);
       
-      let isSpeaking = false;
+      let isCurrentlySpeakingLocal = false;
       let speechStartTime = 0;
       
       const checkAudio = () => {
@@ -217,13 +217,13 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         // Voice activity threshold
         const isCurrentlySpeaking = average > 30;
         
-        if (isCurrentlySpeaking && !isSpeaking) {
+        if (isCurrentlySpeaking && !isCurrentlySpeakingLocal) {
           // Speech started
-          isSpeaking = true;
+          isCurrentlySpeakingLocal = true;
           speechStartTime = Date.now();
           clearTimeout(silenceTimeout);
           console.log('Speech detected, recording...');
-        } else if (!isCurrentlySpeaking && isSpeaking) {
+        } else if (!isCurrentlySpeaking && isCurrentlySpeakingLocal) {
           // Potential silence detected
           silenceTimeout = setTimeout(() => {
             // Stop recording after 1.5 seconds of silence
