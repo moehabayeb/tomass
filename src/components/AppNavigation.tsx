@@ -3,6 +3,7 @@ import { Mic, BookOpen, Bookmark, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import SpeakingApp from './SpeakingApp';
 import GrammarModules from './GrammarModules';
+import LessonsApp from './LessonsApp';
 import DailyTips from './DailyTips';
 import DailyTipsBadge from './DailyTipsBadge';
 import BookmarksView from './BookmarksView';
@@ -171,7 +172,7 @@ export default function AppNavigation() {
 
       {/* Content based on current mode */}
       {currentMode === 'lessons' && (
-        <GrammarModules onBack={() => setCurrentMode('speaking')} />
+        <LessonsApp onBack={() => setCurrentMode('speaking')} />
       )}
       
       {currentMode === 'bookmarks' && (
