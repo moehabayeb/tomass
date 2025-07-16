@@ -108,37 +108,43 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
   const totalQuestions = MODULE_1_DATA.speakingPractice.length;
   const overallProgress = ((speakingIndex + (correctAnswers > 0 ? 1 : 0)) / totalQuestions) * 100;
 
-  // Speech recognition setup
-  const [recognition, setRecognition] = useState<any>(null);
+  // Audio recording setup
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
+  const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
 
   useEffect(() => {
-    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-      const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
-      const recognitionInstance = new SpeechRecognition();
-      
-      recognitionInstance.continuous = false;
-      recognitionInstance.interimResults = false;
-      recognitionInstance.lang = 'en-US';
-      
-      recognitionInstance.onresult = (event: any) => {
-        const transcript = event.results[0][0].transcript.toLowerCase().trim();
-        handleSpeechResponse(transcript);
-      };
-      
-      recognitionInstance.onerror = (event: any) => {
-        console.error('Speech recognition error:', event.error);
-        setIsRecording(false);
-        setIsProcessing(false);
-        setFeedback('Sorry, I couldn\'t hear you clearly. Please try again.');
+    // Initialize media recorder when component mounts
+    const initializeRecorder = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const recorder = new MediaRecorder(stream);
+        
+        let currentAudioChunks: Blob[] = [];
+        
+        recorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            currentAudioChunks.push(event.data);
+          }
+        };
+        
+        recorder.onstop = async () => {
+          // Process the recorded audio
+          if (currentAudioChunks.length > 0) {
+            const audioBlob = new Blob(currentAudioChunks, { type: 'audio/webm' });
+            await processAudioRecording(audioBlob);
+            currentAudioChunks = [];
+          }
+        };
+        
+        setMediaRecorder(recorder);
+      } catch (error) {
+        console.error('Error accessing microphone:', error);
+        setFeedback('Unable to access microphone. Please check permissions.');
         setFeedbackType('error');
-      };
-      
-      recognitionInstance.onend = () => {
-        setIsRecording(false);
-      };
-      
-      setRecognition(recognitionInstance);
-    }
+      }
+    };
+
+    initializeRecorder();
   }, []);
 
   // Start lesson with intro
@@ -153,24 +159,51 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     }
   }, [currentPhase, viewState, speak]);
 
-  const handleSpeechResponse = useCallback(async (transcript: string) => {
+  const processAudioRecording = useCallback(async (audioBlob: Blob) => {
     setIsProcessing(true);
     setAttempts(prev => prev + 1);
     
     try {
-      // Send to feedback edge function for analysis
-      const response = await supabase.functions.invoke('feedback', {
-        body: { 
-          userSentence: transcript,
-          expectedSentence: MODULE_1_DATA.speakingPractice[speakingIndex]
-        }
+      // Convert audio blob to base64
+      const arrayBuffer = await audioBlob.arrayBuffer();
+      const base64Audio = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+      
+      // Step 1: Transcribe the audio
+      const transcribeResponse = await supabase.functions.invoke('transcribe', {
+        body: { audio: base64Audio }
       });
 
-      if (response.error) {
-        throw response.error;
+      if (transcribeResponse.error) {
+        throw new Error('Transcription failed');
       }
 
-      const { feedback: aiAssessment, isCorrect } = response.data;
+      const { text: transcript } = transcribeResponse.data;
+      
+      if (!transcript || transcript.trim() === '') {
+        setFeedback('I couldn\'t hear anything. Please try again.');
+        setFeedbackType('error');
+        setTimeout(() => {
+          setFeedback('');
+          setIsProcessing(false);
+        }, 3000);
+        return;
+      }
+
+      // Step 2: Get feedback on the transcribed text
+      const feedbackResponse = await supabase.functions.invoke('feedback', {
+        body: { text: transcript }
+      });
+
+      if (feedbackResponse.error) {
+        throw new Error('Feedback analysis failed');
+      }
+
+      const { corrected } = feedbackResponse.data;
+      const expectedSentence = MODULE_1_DATA.speakingPractice[speakingIndex].toLowerCase();
+      const userSentence = transcript.toLowerCase();
+      
+      // Simple correctness check - if transcript matches expected sentence closely
+      const isCorrect = userSentence.includes(expectedSentence.substring(0, Math.min(10, expectedSentence.length)));
       
       if (isCorrect) {
         setCorrectAnswers(prev => prev + 1);
@@ -191,7 +224,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
           setIsProcessing(false);
         }, 2000);
       } else {
-        setFeedback(aiAssessment || 'Try again with the full sentence.');
+        setFeedback(corrected || `Try saying: "${MODULE_1_DATA.speakingPractice[speakingIndex]}"`);
         setFeedbackType('error');
         
         setTimeout(() => {
@@ -200,18 +233,9 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
         }, 3000);
       }
     } catch (error) {
-      console.error('Error getting feedback:', error);
-      // Fallback to simple logic if API fails
-      const isCorrect = transcript.toLowerCase().includes(MODULE_1_DATA.speakingPractice[speakingIndex].toLowerCase().substring(0, 10));
-      
-      if (isCorrect) {
-        setCorrectAnswers(prev => prev + 1);
-        setFeedback('Great job! 🎉');
-        setFeedbackType('success');
-      } else {
-        setFeedback(`Try saying: "${MODULE_1_DATA.speakingPractice[speakingIndex]}"`);
-        setFeedbackType('error');
-      }
+      console.error('Error processing audio:', error);
+      setFeedback('Sorry, there was an error processing your audio. Please try again.');
+      setFeedbackType('error');
       
       setTimeout(() => {
         setFeedback('');
@@ -245,16 +269,17 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
   };
 
   const startRecording = async () => {
-    if (recognition && !isRecording) {
+    if (mediaRecorder && mediaRecorder.state === 'inactive') {
       setIsRecording(true);
       setFeedback('');
-      recognition.start();
+      setAudioChunks([]);
+      mediaRecorder.start();
     }
   };
 
   const stopRecording = () => {
-    if (recognition && isRecording) {
-      recognition.stop();
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+      mediaRecorder.stop();
       setIsRecording(false);
     }
   };
