@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Mic, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import AnimatedAvatar from './AnimatedAvatar';
+import CanvasAvatar from './CanvasAvatar';
 import { useAvatarState } from '@/hooks/useAvatarState';
 import { supabase } from '@/integrations/supabase/client';
 import { useTextToSpeech } from '@/hooks/useTextToSpeech';
@@ -470,7 +470,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           style={{ boxShadow: 'var(--shadow-medium), inset 0 1px 0 rgba(255,255,255,0.1)' }}
         >
           <div className="flex items-center justify-center mb-6">
-            <AnimatedAvatar 
+            <CanvasAvatar 
               size="lg"
               state={avatarState}
               className="border-4 border-white/20 transition-all duration-300 hover:scale-105"
