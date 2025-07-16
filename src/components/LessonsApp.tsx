@@ -116,30 +116,82 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     // Initialize media recorder when component mounts
     const initializeRecorder = async () => {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        const recorder = new MediaRecorder(stream);
+        console.log('🎤 Requesting microphone access...');
+        
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          audio: {
+            sampleRate: 24000,
+            channelCount: 1,
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true
+          }
+        });
+        
+        console.log('✅ Microphone access granted!', stream);
+        console.log('Audio tracks:', stream.getAudioTracks());
+        
+        const recorder = new MediaRecorder(stream, {
+          mimeType: 'audio/webm;codecs=opus'
+        });
         
         let currentAudioChunks: Blob[] = [];
         
         recorder.ondataavailable = (event) => {
+          console.log('📊 Audio chunk received:', event.data.size, 'bytes');
           if (event.data.size > 0) {
             currentAudioChunks.push(event.data);
           }
         };
         
+        recorder.onstart = () => {
+          console.log('🎙️ Recording started');
+          currentAudioChunks = [];
+        };
+        
         recorder.onstop = async () => {
-          // Process the recorded audio
+          console.log('⏹️ Recording stopped. Chunks:', currentAudioChunks.length);
+          
           if (currentAudioChunks.length > 0) {
-            const audioBlob = new Blob(currentAudioChunks, { type: 'audio/webm' });
-            await processAudioRecording(audioBlob);
+            const totalSize = currentAudioChunks.reduce((sum, chunk) => sum + chunk.size, 0);
+            console.log('📦 Total audio size:', totalSize, 'bytes');
+            
+            if (totalSize > 0) {
+              const audioBlob = new Blob(currentAudioChunks, { type: 'audio/webm' });
+              console.log('🎵 Final blob size:', audioBlob.size, 'bytes');
+              await processAudioRecording(audioBlob);
+            } else {
+              console.warn('⚠️ Empty audio recording');
+              setFeedback('No audio was recorded. Please try again.');
+              setFeedbackType('error');
+              setTimeout(() => {
+                setFeedback('');
+                setIsProcessing(false);
+              }, 3000);
+            }
             currentAudioChunks = [];
+          } else {
+            console.warn('⚠️ No audio chunks recorded');
+            setFeedback('No audio was captured. Please check your microphone.');
+            setFeedbackType('error');
+            setTimeout(() => {
+              setFeedback('');
+              setIsProcessing(false);
+            }, 3000);
           }
         };
         
+        recorder.onerror = (event) => {
+          console.error('❌ MediaRecorder error:', event);
+          setFeedback('Recording error. Please try again.');
+          setFeedbackType('error');
+        };
+        
         setMediaRecorder(recorder);
+        console.log('🎤 MediaRecorder initialized successfully');
       } catch (error) {
-        console.error('Error accessing microphone:', error);
-        setFeedback('Unable to access microphone. Please check permissions.');
+        console.error('❌ Error accessing microphone:', error);
+        setFeedback('Unable to access microphone. Please check permissions and try again.');
         setFeedbackType('error');
       }
     };
@@ -294,17 +346,47 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
   };
 
   const startRecording = async () => {
+    console.log('🎯 Start recording clicked');
+    console.log('MediaRecorder state:', mediaRecorder?.state);
+    
     if (mediaRecorder && mediaRecorder.state === 'inactive') {
-      setIsRecording(true);
-      setFeedback('');
-      setAudioChunks([]);
-      mediaRecorder.start();
+      try {
+        setIsRecording(true);
+        setFeedback('');
+        console.log('🎙️ Starting MediaRecorder...');
+        
+        // Record for a maximum of 10 seconds
+        mediaRecorder.start(1000); // Collect data every 1 second
+        
+        // Auto-stop after 10 seconds
+        setTimeout(() => {
+          if (mediaRecorder.state === 'recording') {
+            console.log('⏰ Auto-stopping recording after 10 seconds');
+            stopRecording();
+          }
+        }, 10000);
+        
+      } catch (error) {
+        console.error('❌ Error starting recording:', error);
+        setIsRecording(false);
+        setFeedback('Failed to start recording. Please try again.');
+        setFeedbackType('error');
+      }
+    } else {
+      console.warn('⚠️ MediaRecorder not ready. State:', mediaRecorder?.state);
     }
   };
 
   const stopRecording = () => {
+    console.log('🛑 Stop recording called');
+    console.log('MediaRecorder state:', mediaRecorder?.state);
+    
     if (mediaRecorder && mediaRecorder.state === 'recording') {
+      console.log('⏹️ Stopping MediaRecorder...');
       mediaRecorder.stop();
+      setIsRecording(false);
+    } else {
+      console.warn('⚠️ MediaRecorder not recording. Current state:', mediaRecorder?.state);
       setIsRecording(false);
     }
   };
