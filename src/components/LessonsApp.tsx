@@ -164,20 +164,26 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     setAttempts(prev => prev + 1);
     
     try {
-      // Convert audio blob to base64
-      const arrayBuffer = await audioBlob.arrayBuffer();
-      const base64Audio = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+      console.log('Processing audio recording, blob size:', audioBlob.size);
       
-      // Step 1: Transcribe the audio
+      // Step 1: Transcribe the audio using FormData (as expected by the endpoint)
+      const formData = new FormData();
+      formData.append('audio', audioBlob, 'recording.webm');
+      
+      console.log('Sending audio to transcribe endpoint...');
       const transcribeResponse = await supabase.functions.invoke('transcribe', {
-        body: { audio: base64Audio }
+        body: formData
       });
 
+      console.log('Transcribe response:', transcribeResponse);
+
       if (transcribeResponse.error) {
+        console.error('Transcribe error:', transcribeResponse.error);
         throw new Error('Transcription failed');
       }
 
       const { text: transcript } = transcribeResponse.data;
+      console.log('Transcribed text:', transcript);
       
       if (!transcript || transcript.trim() === '') {
         setFeedback('I couldn\'t hear anything. Please try again.');
@@ -190,11 +196,15 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
       }
 
       // Step 2: Get feedback on the transcribed text
+      console.log('Sending to feedback endpoint:', transcript);
       const feedbackResponse = await supabase.functions.invoke('feedback', {
         body: { text: transcript }
       });
 
+      console.log('Feedback response:', feedbackResponse);
+
       if (feedbackResponse.error) {
+        console.error('Feedback error:', feedbackResponse.error);
         throw new Error('Feedback analysis failed');
       }
 
@@ -202,8 +212,22 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
       const expectedSentence = MODULE_1_DATA.speakingPractice[speakingIndex].toLowerCase();
       const userSentence = transcript.toLowerCase();
       
-      // Simple correctness check - if transcript matches expected sentence closely
-      const isCorrect = userSentence.includes(expectedSentence.substring(0, Math.min(10, expectedSentence.length)));
+      console.log('Expected:', expectedSentence);
+      console.log('User said:', userSentence);
+      console.log('AI feedback:', corrected);
+      
+      // Check if the transcript contains the key parts of the expected sentence
+      const expectedWords = expectedSentence.replace(/[.,!?]/g, '').split(' ');
+      const userWords = userSentence.replace(/[.,!?]/g, '').split(' ');
+      
+      // Must contain at least 70% of the expected words
+      const matchingWords = expectedWords.filter(word => 
+        userWords.some(userWord => userWord.includes(word) || word.includes(userWord))
+      );
+      const isCorrect = matchingWords.length >= expectedWords.length * 0.7;
+      
+      console.log('Matching words:', matchingWords.length, 'of', expectedWords.length);
+      console.log('Is correct:', isCorrect);
       
       if (isCorrect) {
         setCorrectAnswers(prev => prev + 1);
@@ -224,13 +248,14 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
           setIsProcessing(false);
         }, 2000);
       } else {
-        setFeedback(corrected || `Try saying: "${MODULE_1_DATA.speakingPractice[speakingIndex]}"`);
+        const improvement = corrected || `Try saying: "${MODULE_1_DATA.speakingPractice[speakingIndex]}"`;
+        setFeedback(`${improvement} \n\nYou said: "${transcript}"`);
         setFeedbackType('error');
         
         setTimeout(() => {
           setFeedback('');
           setIsProcessing(false);
-        }, 3000);
+        }, 4000);
       }
     } catch (error) {
       console.error('Error processing audio:', error);
