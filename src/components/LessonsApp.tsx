@@ -28,11 +28,15 @@ const LEVELS = [
   { id: 'B2', name: 'B2 - Upper Intermediate', description: 'Advanced concepts', moduleCount: 50, color: 'bg-purple-500', locked: true },
 ];
 
-// A1 modules data (for now just Module 1 implemented)
+// A1 modules data
 const A1_MODULES = Array.from({ length: 50 }, (_, i) => ({
   id: i + 1,
-  title: i === 0 ? 'Verb To Be - Positive Sentences' : `Module ${i + 1}`,
-  description: i === 0 ? 'Learn to use am, is, and are' : 'Coming soon',
+  title: i === 0 ? 'Verb To Be - Positive Sentences' : 
+         i === 1 ? 'Negative Sentences' : 
+         `Module ${i + 1}`,
+  description: i === 0 ? 'Learn to use am, is, and are' : 
+               i === 1 ? 'Learn to use "am", "is", and "are" with "not"' :
+               'Coming soon',
   completed: false,
   locked: i > 0, // Only Module 1 is unlocked initially
 }));
@@ -62,6 +66,63 @@ const MODULE_1_DATA = {
     "We are happy.",
     "You are friends.",
     "They are engineers."
+  ]
+};
+
+// Module 2 Data: Negative Sentences
+const MODULE_2_DATA = {
+  title: "Module 2: Negative Sentences",
+  description: "Learn to use 'am', 'is', and 'are' with 'not' in negative sentences",
+  intro: "Great! Now we are learning how to make negative sentences with 'am not', 'is not', and 'are not'. For example: 'I am not a teacher.' 'He is not happy.' Let's practice!",
+  tip: "'To Be' fiilinin olumsuz hali 'not' eklenerek yapılır: I → am not, He/She/It → is not (isn't), We/You/They → are not (aren't)",
+  
+  listeningExamples: [
+    "I am not a student.",
+    "She isn't happy.",
+    "They aren't teachers."
+  ],
+  
+  speakingPractice: [
+    "No, I am not a teacher.",
+    "No, I am not a doctor.",
+    "No, I am not a student.",
+    "No, I am not happy.",
+    "No, I am not sad.",
+    "No, he is not a teacher.",
+    "No, he is not a doctor.",
+    "No, he is not a student.",
+    "No, he is not happy.",
+    "No, he is not sad.",
+    "No, she is not a teacher.",
+    "No, she is not a doctor.",
+    "No, she is not a student.",
+    "No, she is not happy.",
+    "No, she is not sad.",
+    "No, it is not a dog.",
+    "No, it is not a cat.",
+    "No, it is not big.",
+    "No, it is not small.",
+    "No, it is not red.",
+    "No, we are not teachers.",
+    "No, we are not doctors.",
+    "No, we are not students.",
+    "No, we are not happy.",
+    "No, we are not sad.",
+    "No, you are not a teacher.",
+    "No, you are not a doctor.",
+    "No, you are not a student.",
+    "No, you are not happy.",
+    "No, you are not sad.",
+    "No, they are not teachers.",
+    "No, they are not doctors.",
+    "No, they are not students.",
+    "No, they are not happy.",
+    "No, they are not sad.",
+    "No, they are not engineers.",
+    "No, they are not nurses.",
+    "No, they are not friends.",
+    "No, they are not busy.",
+    "No, they are not ready."
   ]
 };
 
@@ -103,9 +164,17 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     if (moduleId === 1) return true; // Module 1 is always unlocked
     return completedModules.includes(`module-${moduleId - 1}`);
   };
+  
+  // Get current module data
+  const getCurrentModuleData = () => {
+    if (selectedModule === 1) return MODULE_1_DATA;
+    if (selectedModule === 2) return MODULE_2_DATA;
+    return MODULE_1_DATA; // fallback
+  };
 
   // Calculate progress
-  const totalQuestions = MODULE_1_DATA.speakingPractice.length;
+  const currentModuleData = getCurrentModuleData();
+  const totalQuestions = currentModuleData.speakingPractice.length;
   const overallProgress = ((speakingIndex + (correctAnswers > 0 ? 1 : 0)) / totalQuestions) * 100;
 
   // Audio recording setup
@@ -203,13 +272,13 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
   useEffect(() => {
     if (currentPhase === 'intro' && viewState === 'lesson') {
       const timer = setTimeout(() => {
-        speak(MODULE_1_DATA.intro, () => {
+        speak(currentModuleData.intro, () => {
           setCurrentPhase('listening');
         });
       }, 1000);
       return () => clearTimeout(timer);
     }
-  }, [currentPhase, viewState, speak]);
+  }, [currentPhase, viewState, speak, currentModuleData]);
 
   const processAudioRecording = useCallback(async (audioBlob: Blob) => {
     setIsProcessing(true);
@@ -261,7 +330,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
       }
 
       const { corrected } = feedbackResponse.data;
-      const expectedSentence = MODULE_1_DATA.speakingPractice[speakingIndex].toLowerCase();
+      const expectedSentence = currentModuleData.speakingPractice[speakingIndex].toLowerCase();
       const userSentence = transcript.toLowerCase();
       
       console.log('Expected:', expectedSentence);
@@ -300,7 +369,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
           setIsProcessing(false);
         }, 2000);
       } else {
-        const improvement = corrected || `Try saying: "${MODULE_1_DATA.speakingPractice[speakingIndex]}"`;
+        const improvement = corrected || `Try saying: "${currentModuleData.speakingPractice[speakingIndex]}"`;
         setFeedback(`${improvement} \n\nYou said: "${transcript}"`);
         setFeedbackType('error');
         
@@ -333,12 +402,13 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     
     // Save progress
     const newCompletedModules = [...completedModules];
-    if (!newCompletedModules.includes('module-1')) {
-      newCompletedModules.push('module-1');
+    const moduleKey = `module-${selectedModule}`;
+    if (!newCompletedModules.includes(moduleKey)) {
+      newCompletedModules.push(moduleKey);
       localStorage.setItem('completedModules', JSON.stringify(newCompletedModules));
     }
     
-    speak('Congratulations! You have completed Module 1. Well done!');
+    speak(`Congratulations! You have completed Module ${selectedModule}. Well done!`);
     
     setTimeout(() => {
       setShowConfetti(false);
@@ -392,7 +462,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
   };
 
   const nextListeningExample = () => {
-    if (listeningIndex < MODULE_1_DATA.listeningExamples.length - 1) {
+    if (listeningIndex < currentModuleData.listeningExamples.length - 1) {
       setListeningIndex(prev => prev + 1);
     } else {
       setCurrentPhase('speaking');
@@ -401,12 +471,12 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
   };
 
   const repeatExample = () => {
-    const currentExample = MODULE_1_DATA.listeningExamples[listeningIndex];
+    const currentExample = currentModuleData.listeningExamples[listeningIndex];
     speak(currentExample);
   };
 
   const speakCurrentSentence = () => {
-    const currentSentence = MODULE_1_DATA.speakingPractice[speakingIndex];
+    const currentSentence = currentModuleData.speakingPractice[speakingIndex];
     speak(currentSentence);
   };
 
@@ -506,7 +576,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
                   key={module.id} 
                   className={`bg-white/10 border-white/20 cursor-pointer transition-all hover:bg-white/15 ${!isUnlocked ? 'opacity-50' : ''}`}
                   onClick={() => {
-                    if (isUnlocked && module.id === 1) { // Only Module 1 is implemented
+                    if (isUnlocked && (module.id === 1 || module.id === 2)) { // Module 1 & 2 are implemented
                       setSelectedModule(module.id);
                       setViewState('lesson');
                       setCurrentPhase('intro');
@@ -565,7 +635,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
             </div>
             
             <h2 className="text-2xl font-bold text-white mb-2">Congratulations!</h2>
-            <p className="text-white/80 mb-4">You completed Module 1!</p>
+            <p className="text-white/80 mb-4">You completed Module {selectedModule}!</p>
             
             <div className="space-y-3 mb-6">
               <div className="flex justify-between text-white/90">
@@ -607,8 +677,8 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
             </Button>
             
             <div className="text-center">
-              <h1 className="text-lg font-bold text-white">{MODULE_1_DATA.title}</h1>
-              <p className="text-sm text-white/70">{MODULE_1_DATA.description}</p>
+              <h1 className="text-lg font-bold text-white">{currentModuleData.title}</h1>
+              <p className="text-sm text-white/70">{currentModuleData.description}</p>
             </div>
             
             <Button
@@ -645,7 +715,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
               </div>
               <div>
                 <h3 className="font-semibold text-white text-sm mb-1">Grammar Tip</h3>
-                <p className="text-white/80 text-sm">{MODULE_1_DATA.tip}</p>
+                <p className="text-white/80 text-sm">{currentModuleData.tip}</p>
               </div>
             </div>
           </CardContent>
@@ -664,7 +734,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
               <div className="text-center">
                 <div className="bg-white/5 rounded-xl p-4 mb-4">
                   <p className="text-white text-lg font-medium">
-                    "{MODULE_1_DATA.listeningExamples[listeningIndex]}"
+                    "{currentModuleData.listeningExamples[listeningIndex]}"
                   </p>
                 </div>
                 
@@ -685,7 +755,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
                     className="bg-white/20 text-white hover:bg-white/30"
                     disabled={isSpeaking}
                   >
-                    {listeningIndex < MODULE_1_DATA.listeningExamples.length - 1 ? 'Next' : 'Start Speaking'}
+                    {listeningIndex < currentModuleData.listeningExamples.length - 1 ? 'Next' : 'Start Speaking'}
                   </Button>
                 </div>
               </div>
@@ -711,7 +781,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
               <div className="text-center">
                 <div className="bg-white/5 rounded-xl p-4 mb-4">
                   <p className="text-white text-lg font-medium mb-2">
-                    "{MODULE_1_DATA.speakingPractice[speakingIndex]}"
+                    "{currentModuleData.speakingPractice[speakingIndex]}"
                   </p>
                   <Button
                     onClick={speakCurrentSentence}
