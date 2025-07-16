@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Mic, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-const avatarImage = '/lovable-uploads/dbfb3a2b-8dc9-44ae-8c2f-c0b3094f054f.png';
+import AnimatedAvatar from './AnimatedAvatar';
+import { useAvatarState } from '@/hooks/useAvatarState';
 import { supabase } from '@/integrations/supabase/client';
 import { useTextToSpeech } from '@/hooks/useTextToSpeech';
 import { useStreakTracker } from '@/hooks/useStreakTracker';
@@ -115,6 +116,16 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   const [userLevel, setUserLevel] = useState<'beginner' | 'intermediate' | 'advanced'>('beginner');
   const [recordingStartTime, setRecordingStartTime] = useState<number | null>(null);
   
+  // Avatar state management
+  const [lastMessageTime, setLastMessageTime] = useState<number>();
+  const [isProcessing, setIsProcessing] = useState(false);
+  const { avatarState } = useAvatarState({
+    isRecording,
+    isSpeaking,
+    isProcessing,
+    lastMessageTime
+  });
+  
   // Load chat history from localStorage on component mount
   useEffect(() => {
     const savedHistory = JSON.parse(localStorage.getItem("chatHistory") || "[]");
@@ -147,6 +158,11 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       isSystem: type === "system"
     };
     setMessages(prev => [...prev, newMessage]);
+    
+    // Update avatar state based on message type
+    if (type === "bot") {
+      setLastMessageTime(Date.now());
+    }
   };
 
   // Helper function to record and transcribe audio
@@ -351,11 +367,16 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       const transcript = await sendToTranscribe();
       addChatBubble(transcript, "user");
 
+      // Set processing state while getting feedback
+      setIsProcessing(true);
+
       // Calculate response time for XP bonus
       const responseTime = recordingStartTime ? Date.now() - recordingStartTime : 0;
 
       // Step 2: Get grammar feedback
       const feedback = await sendToFeedback(transcript);
+      
+      setIsProcessing(false);
 
       // Step 3: Display feedback with text-to-speech, wait for completion
       await new Promise<void>((resolve) => {
@@ -365,8 +386,13 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         });
       });
 
+      // Set processing state while generating follow-up
+      setIsProcessing(true);
+
       // Step 4: Generate natural follow-up question
       const nextQuestion = await generateFollowUpQuestion(transcript);
+      
+      setIsProcessing(false);
       
       // Step 5: Add delay before asking follow-up question to prevent overlap
       setTimeout(() => {
@@ -393,6 +419,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     } catch (error) {
       console.error('Error in startSpeaking:', error);
       addChatBubble("Sorry, there was an error. Please try again.", "system");
+      setIsProcessing(false);
     } finally {
       setIsRecording(false);
       setRecordingStartTime(null);
@@ -443,19 +470,11 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           style={{ boxShadow: 'var(--shadow-medium), inset 0 1px 0 rgba(255,255,255,0.1)' }}
         >
           <div className="flex items-center justify-center mb-6">
-            <div 
-              className="w-24 h-24 rounded-full flex items-center justify-center border-4 border-white/20 transition-all duration-300 hover:scale-105"
-              style={{ 
-                backgroundColor: 'hsl(var(--avatar-bg))',
-                boxShadow: 'var(--shadow-medium)'
-              }}
-            >
-              <img 
-                src={avatarImage} 
-                alt="Avatar" 
-                className="w-20 h-20 rounded-full object-cover"
-              />
-            </div>
+            <AnimatedAvatar 
+              size="lg"
+              state={avatarState}
+              className="border-4 border-white/20 transition-all duration-300 hover:scale-105"
+            />
           </div>
           
           <div className="text-center mb-4">
