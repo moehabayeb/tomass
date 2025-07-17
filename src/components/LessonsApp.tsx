@@ -36,12 +36,14 @@ const A1_MODULES = Array.from({ length: 50 }, (_, i) => ({
          i === 2 ? 'Question Sentences' :
          i === 3 ? 'Short Answers' :
          i === 4 ? 'Subject Pronouns' :
+         i === 5 ? 'Possessive Adjectives' :
          `Module ${i + 1}`,
   description: i === 0 ? 'Learn to use am, is, and are' : 
                i === 1 ? 'Learn to use "am", "is", and "are" with "not"' :
                i === 2 ? 'Learn to form questions with "am", "is", and "are"' :
                i === 3 ? 'Practice short Yes/No answers with "am", "is", and "are"' :
                i === 4 ? 'Learn and practice Subject Pronouns (I, You, He, She, It, We, They)' :
+               i === 5 ? 'Practice possessive adjectives (my, your, his, her, its, our, their)' :
                'Coming soon',
   completed: false,
   locked: i > 0, // Only Module 1 is unlocked initially
@@ -325,6 +327,73 @@ const MODULE_5_DATA = {
   ]
 };
 
+// Module 6 Data: Possessive Adjectives
+const MODULE_6_DATA = {
+  title: "Module 6: Possessive Adjectives",
+  description: "Practice possessive adjectives (my, your, his, her, its, our, their)",
+  intro: "Perfect! Now we are learning about Possessive Adjectives. These show who something belongs to: my, your, his, her, its, our, their. For example: 'This is my book.' 'That is her car.' Let's practice using them!",
+  tip: "Possessive Adjectives show who something belongs to. Use: my (for I), your (for you), his (for he), her (for she), its (for it), our (for we), their (for they).",
+  
+  table: [
+    { pronoun: "I", possessive: "my", example: "This is my house." },
+    { pronoun: "You", possessive: "your", example: "Your dog is cute." },
+    { pronoun: "He", possessive: "his", example: "His phone is on the table." },
+    { pronoun: "She", possessive: "her", example: "Her bag is blue." },
+    { pronoun: "It", possessive: "its", example: "The cat is licking its paw." },
+    { pronoun: "We", possessive: "our", example: "Our school is big." },
+    { pronoun: "They", possessive: "their", example: "Their children are playing." }
+  ],
+  
+  listeningExamples: [
+    "This is my book.",
+    "That is her car.",
+    "These are their friends."
+  ],
+  
+  speakingPractice: [
+    "It is my book.",
+    "Yes, it is my pen.",
+    "His car is in the garage.",
+    "That is their house.",
+    "Yes, it is her phone.",
+    "This is my bag.",
+    "Your book is on the table.",
+    "Her sister is a doctor.",
+    "Its color is red.",
+    "Our teacher is nice.",
+    "Their dog is big.",
+    "My name is Tom.",
+    "Your car is blue.",
+    "His house is small.",
+    "Her dress is beautiful.",
+    "Its tail is long.",
+    "Our classroom is clean.",
+    "Their children are happy.",
+    "My phone is new.",
+    "Your job is important.",
+    "His family is large.",
+    "Her eyes are green.",
+    "Its wings are white.",
+    "Our garden is beautiful.",
+    "Their vacation was fun.",
+    "My coffee is hot.",
+    "Your idea is great.",
+    "His voice is deep.",
+    "Her smile is lovely.",
+    "Its sound is loud.",
+    "Our meeting is tomorrow.",
+    "Their team won the game.",
+    "My birthday is next week.",
+    "Your answer is correct.",
+    "His story is interesting.",
+    "Her cooking is delicious.",
+    "Its price is high.",
+    "Our flight is delayed.",
+    "Their wedding is beautiful.",
+    "My dream came true."
+  ]
+};
+
 export default function LessonsApp({ onBack }: LessonsAppProps) {
   const [width, height] = useWindowSize();
   const [viewState, setViewState] = useState<ViewState>('levels');
@@ -371,6 +440,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     if (selectedModule === 3) return MODULE_3_DATA;
     if (selectedModule === 4) return MODULE_4_DATA;
     if (selectedModule === 5) return MODULE_5_DATA;
+    if (selectedModule === 6) return MODULE_6_DATA;
     return MODULE_1_DATA; // fallback
   };
 
@@ -778,7 +848,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
                   key={module.id} 
                   className={`bg-white/10 border-white/20 cursor-pointer transition-all hover:bg-white/15 ${!isUnlocked ? 'opacity-50' : ''}`}
                   onClick={() => {
-                    if (isUnlocked && (module.id === 1 || module.id === 2 || module.id === 3 || module.id === 4 || module.id === 5)) { // Modules 1, 2, 3, 4 & 5 are implemented
+                    if (isUnlocked && (module.id === 1 || module.id === 2 || module.id === 3 || module.id === 4 || module.id === 5 || module.id === 6)) { // Modules 1, 2, 3, 4, 5 & 6 are implemented
                       setSelectedModule(module.id);
                       setViewState('lesson');
                       setCurrentPhase('intro');
