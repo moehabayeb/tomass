@@ -34,10 +34,12 @@ const A1_MODULES = Array.from({ length: 50 }, (_, i) => ({
   title: i === 0 ? 'Verb To Be - Positive Sentences' : 
          i === 1 ? 'Negative Sentences' : 
          i === 2 ? 'Question Sentences' :
+         i === 3 ? 'Short Answers' :
          `Module ${i + 1}`,
   description: i === 0 ? 'Learn to use am, is, and are' : 
                i === 1 ? 'Learn to use "am", "is", and "are" with "not"' :
                i === 2 ? 'Learn to form questions with "am", "is", and "are"' :
+               i === 3 ? 'Practice short Yes/No answers with "am", "is", and "are"' :
                'Coming soon',
   completed: false,
   locked: i > 0, // Only Module 1 is unlocked initially
@@ -197,6 +199,63 @@ const MODULE_3_DATA = {
   ]
 };
 
+// Module 4 Data: Short Answers
+const MODULE_4_DATA = {
+  title: "Module 4: Short Answers",
+  description: "Practice short Yes/No answers with 'am', 'is', and 'are'",
+  intro: "Perfect! Now we are learning how to give short answers to questions with 'am', 'is', and 'are'. For example: 'Yes, I am.' 'No, she isn't.' 'Yes, they are.' Let's practice!",
+  tip: "Short answers use: Yes/No + pronoun + am/is/are (or am not/isn't/aren't). Examples: 'Yes, I am.' 'No, he isn't.' 'Yes, we are.'",
+  
+  listeningExamples: [
+    "Yes, I am.",
+    "No, she isn't.",
+    "Yes, they are."
+  ],
+  
+  speakingPractice: [
+    "Yes, I am.",
+    "No, I am not.",
+    "Yes, I am.",
+    "No, I am not.",
+    "Yes, she is.",
+    "No, she isn't.",
+    "Yes, he is.",
+    "No, he isn't.",
+    "Yes, you are.",
+    "No, you aren't.",
+    "Yes, it is.",
+    "No, it isn't.",
+    "Yes, we are.",
+    "No, we aren't.",
+    "Yes, they are.",
+    "No, they aren't.",
+    "Yes, I am.",
+    "No, I am not.",
+    "Yes, she is.",
+    "No, she isn't.",
+    "Yes, he is.",
+    "No, he isn't.",
+    "Yes, you are.",
+    "No, you aren't.",
+    "Yes, it is.",
+    "No, it isn't.",
+    "Yes, we are.",
+    "No, we aren't.",
+    "Yes, they are.",
+    "No, they aren't.",
+    "Yes, I am.",
+    "No, I am not.",
+    "Yes, she is.",
+    "No, she isn't.",
+    "Yes, he is.",
+    "No, he isn't.",
+    "Yes, you are.",
+    "No, you aren't.",
+    "Yes, it is.",
+    "No, it isn't."
+  ]
+};
+
 export default function LessonsApp({ onBack }: LessonsAppProps) {
   const [width, height] = useWindowSize();
   const [viewState, setViewState] = useState<ViewState>('levels');
@@ -241,6 +300,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     if (selectedModule === 1) return MODULE_1_DATA;
     if (selectedModule === 2) return MODULE_2_DATA;
     if (selectedModule === 3) return MODULE_3_DATA;
+    if (selectedModule === 4) return MODULE_4_DATA;
     return MODULE_1_DATA; // fallback
   };
 
@@ -648,7 +708,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
                   key={module.id} 
                   className={`bg-white/10 border-white/20 cursor-pointer transition-all hover:bg-white/15 ${!isUnlocked ? 'opacity-50' : ''}`}
                   onClick={() => {
-                    if (isUnlocked && (module.id === 1 || module.id === 2 || module.id === 3)) { // Modules 1, 2 & 3 are implemented
+                    if (isUnlocked && (module.id === 1 || module.id === 2 || module.id === 3 || module.id === 4)) { // Modules 1, 2, 3 & 4 are implemented
                       setSelectedModule(module.id);
                       setViewState('lesson');
                       setCurrentPhase('intro');
