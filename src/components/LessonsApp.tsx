@@ -35,11 +35,13 @@ const A1_MODULES = Array.from({ length: 50 }, (_, i) => ({
          i === 1 ? 'Negative Sentences' : 
          i === 2 ? 'Question Sentences' :
          i === 3 ? 'Short Answers' :
+         i === 4 ? 'Subject Pronouns' :
          `Module ${i + 1}`,
   description: i === 0 ? 'Learn to use am, is, and are' : 
                i === 1 ? 'Learn to use "am", "is", and "are" with "not"' :
                i === 2 ? 'Learn to form questions with "am", "is", and "are"' :
                i === 3 ? 'Practice short Yes/No answers with "am", "is", and "are"' :
+               i === 4 ? 'Learn and practice Subject Pronouns (I, You, He, She, It, We, They)' :
                'Coming soon',
   completed: false,
   locked: i > 0, // Only Module 1 is unlocked initially
@@ -256,6 +258,73 @@ const MODULE_4_DATA = {
   ]
 };
 
+// Module 5 Data: Subject Pronouns
+const MODULE_5_DATA = {
+  title: "Module 5: Subject Pronouns",
+  description: "Learn and practice Subject Pronouns (I, You, He, She, It, We, They)",
+  intro: "Excellent! Now we are learning about Subject Pronouns. These are the words we use to replace names when we speak. The subject pronouns are: I, You, He, She, It, We, They. Let's practice using them!",
+  tip: "Subject Pronouns replace the subject in a sentence. Use: I (for yourself), You (for the person you're talking to), He (for a male), She (for a female), It (for things/animals), We (for yourself and others), They (for other people or things).",
+  
+  table: [
+    { pronoun: "I", example: "I am a student." },
+    { pronoun: "You", example: "You are my friend." },
+    { pronoun: "He", example: "He is a doctor." },
+    { pronoun: "She", example: "She is happy." },
+    { pronoun: "It", example: "It is a book." },
+    { pronoun: "We", example: "We are teachers." },
+    { pronoun: "They", example: "They are at school." }
+  ],
+  
+  listeningExamples: [
+    "I am a student.",
+    "You are my friend.",
+    "He is a doctor."
+  ],
+  
+  speakingPractice: [
+    "I am happy.",
+    "I am a student.",
+    "I am tired.",
+    "I am ready.",
+    "I am here.",
+    "You are nice.",
+    "You are smart.",
+    "You are my friend.",
+    "You are welcome.",
+    "You are right.",
+    "He is tall.",
+    "He is a doctor.",
+    "He is busy.",
+    "He is kind.",
+    "He is here.",
+    "She is beautiful.",
+    "She is a teacher.",
+    "She is happy.",
+    "She is smart.",
+    "She is ready.",
+    "It is big.",
+    "It is a book.",
+    "It is red.",
+    "It is cold.",
+    "It is expensive.",
+    "We are friends.",
+    "We are students.",
+    "We are happy.",
+    "We are ready.",
+    "We are here.",
+    "They are doctors.",
+    "They are teachers.",
+    "They are busy.",
+    "They are kind.",
+    "They are students.",
+    "They are happy.",
+    "They are ready.",
+    "They are here.",
+    "They are friends.",
+    "They are at school."
+  ]
+};
+
 export default function LessonsApp({ onBack }: LessonsAppProps) {
   const [width, height] = useWindowSize();
   const [viewState, setViewState] = useState<ViewState>('levels');
@@ -301,6 +370,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     if (selectedModule === 2) return MODULE_2_DATA;
     if (selectedModule === 3) return MODULE_3_DATA;
     if (selectedModule === 4) return MODULE_4_DATA;
+    if (selectedModule === 5) return MODULE_5_DATA;
     return MODULE_1_DATA; // fallback
   };
 
@@ -708,7 +778,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
                   key={module.id} 
                   className={`bg-white/10 border-white/20 cursor-pointer transition-all hover:bg-white/15 ${!isUnlocked ? 'opacity-50' : ''}`}
                   onClick={() => {
-                    if (isUnlocked && (module.id === 1 || module.id === 2 || module.id === 3 || module.id === 4)) { // Modules 1, 2, 3 & 4 are implemented
+                    if (isUnlocked && (module.id === 1 || module.id === 2 || module.id === 3 || module.id === 4 || module.id === 5)) { // Modules 1, 2, 3, 4 & 5 are implemented
                       setSelectedModule(module.id);
                       setViewState('lesson');
                       setCurrentPhase('intro');
