@@ -363,9 +363,17 @@ Are they students? → Yes, they are. / No, they aren't.`,
 
 // Module 5 Data: Subject Pronouns
 const MODULE_5_DATA = {
-  title: "Module 5: Subject Pronouns",
-  description: "Learn and practice Subject Pronouns (I, You, He, She, It, We, They)",
-  intro: "Excellent! Now we are learning about Subject Pronouns. These are the words we use to replace names when we speak. The subject pronouns are: I, You, He, She, It, We, They. Let's practice using them!",
+  title: "Modül 5 - Subject Pronouns",
+  description: "Bu modülde İngilizcede Subject Pronouns (özne zamirleri) konusunu öğreneceğiz.",
+  intro: `Bu modülde İngilizcede Subject Pronouns (özne zamirleri) konusunu öğreneceğiz.
+
+Subject Pronouns cümlenin öznesi olarak kullanılır:
+I, You, He, She, It, We, They
+
+Örnek Cümleler:
+- I am a student.
+- She is a teacher.
+- They are friends.`,
   tip: "Subject Pronouns replace the subject in a sentence. Use: I (for yourself), You (for the person you're talking to), He (for a male), She (for a female), It (for things/animals), We (for yourself and others), They (for other people or things).",
   
   table: [
@@ -385,46 +393,46 @@ const MODULE_5_DATA = {
   ],
   
   speakingPractice: [
-    "I am happy.",
-    "I am a student.",
-    "I am tired.",
-    "I am ready.",
-    "I am here.",
-    "You are nice.",
-    "You are smart.",
-    "You are my friend.",
-    "You are welcome.",
-    "You are right.",
-    "He is tall.",
-    "He is a doctor.",
-    "He is busy.",
-    "He is kind.",
-    "He is here.",
-    "She is beautiful.",
-    "She is a teacher.",
-    "She is happy.",
-    "She is smart.",
-    "She is ready.",
-    "It is big.",
-    "It is a book.",
-    "It is red.",
-    "It is cold.",
-    "It is expensive.",
-    "We are friends.",
-    "We are students.",
-    "We are happy.",
-    "We are ready.",
-    "We are here.",
-    "They are doctors.",
-    "They are teachers.",
-    "They are busy.",
-    "They are kind.",
-    "They are students.",
-    "They are happy.",
-    "They are ready.",
-    "They are here.",
-    "They are friends.",
-    "They are at school."
+    { question: "Who am I?", answer: "You are my teacher." },
+    { question: "Who is he?", answer: "He is my brother." },
+    { question: "Who is she?", answer: "She is my sister." },
+    { question: "What is it?", answer: "It is a book." },
+    { question: "Who are we?", answer: "We are students." },
+    { question: "Who are they?", answer: "They are my friends." },
+    { question: "Am I happy?", answer: "Yes, you are happy." },
+    { question: "Is he tall?", answer: "Yes, he is tall." },
+    { question: "Is she beautiful?", answer: "Yes, she is beautiful." },
+    { question: "Is it big?", answer: "Yes, it is big." },
+    { question: "Are we ready?", answer: "Yes, we are ready." },
+    { question: "Are they here?", answer: "Yes, they are here." },
+    { question: "Am I a student?", answer: "Yes, you are a student." },
+    { question: "Is he a doctor?", answer: "Yes, he is a doctor." },
+    { question: "Is she a teacher?", answer: "Yes, she is a teacher." },
+    { question: "Is it a cat?", answer: "Yes, it is a cat." },
+    { question: "Are we friends?", answer: "Yes, we are friends." },
+    { question: "Are they busy?", answer: "Yes, they are busy." },
+    { question: "Am I late?", answer: "No, you are not late." },
+    { question: "Is he tired?", answer: "No, he is not tired." },
+    { question: "Is she sad?", answer: "No, she is not sad." },
+    { question: "Is it cold?", answer: "No, it is not cold." },
+    { question: "Are we wrong?", answer: "No, we are not wrong." },
+    { question: "Are they angry?", answer: "No, they are not angry." },
+    { question: "Who am I to you?", answer: "You are my friend." },
+    { question: "Who is he to you?", answer: "He is my father." },
+    { question: "Who is she to you?", answer: "She is my mother." },
+    { question: "What is it to you?", answer: "It is my phone." },
+    { question: "Who are we to them?", answer: "We are their children." },
+    { question: "Who are they to you?", answer: "They are my parents." },
+    { question: "Am I your teacher?", answer: "Yes, you are my teacher." },
+    { question: "Is he your friend?", answer: "Yes, he is my friend." },
+    { question: "Is she your sister?", answer: "Yes, she is my sister." },
+    { question: "Is it your book?", answer: "Yes, it is my book." },
+    { question: "Are we your students?", answer: "Yes, we are your students." },
+    { question: "Are they your family?", answer: "Yes, they are my family." },
+    { question: "Am I right?", answer: "Yes, you are right." },
+    { question: "Is he kind?", answer: "Yes, he is kind." },
+    { question: "Is she smart?", answer: "Yes, she is smart." },
+    { question: "Are they good people?", answer: "Yes, they are good people." }
   ]
 };
 
@@ -1363,7 +1371,8 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
                     {selectedModule === 1 ? '📊 Verb To Be Tablosu:' : 
                      selectedModule === 2 ? '🧩 Verb To Be Negatif Tablosu:' : 
                      selectedModule === 3 ? '❓ Verb To Be Soru Tablosu:' :
-                     '💬 Verb To Be Short Answers Tablosu:'}
+                     selectedModule === 4 ? '💬 Verb To Be Short Answers Tablosu:' :
+                     '👥 Subject Pronouns Tablosu:'}
                   </h4>
                   <div className="overflow-x-auto">
                     <table className="w-full text-white/90 text-sm">
@@ -1381,6 +1390,11 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
                               <th className="text-left py-2 px-1">Question</th>
                               <th className="text-left py-2 px-1">Positive Short Answer</th>
                               <th className="text-left py-2 px-1">Negative Short Answer</th>
+                            </>
+                          ) : selectedModule === 5 ? (
+                            <>
+                              <th className="text-left py-2 px-1">Subject Pronoun</th>
+                              <th className="text-left py-2 px-1">Example</th>
                             </>
                           ) : (
                             <>
@@ -1408,6 +1422,11 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
                                 <td className="py-2 px-1 font-medium">{(row as any).question}</td>
                                 <td className="py-2 px-1 text-green-300">{(row as any).positive}</td>
                                 <td className="py-2 px-1 text-red-300">{(row as any).negative}</td>
+                              </>
+                            ) : selectedModule === 5 ? (
+                              <>
+                                <td className="py-2 px-1 text-purple-300 font-medium">{(row as any).pronoun}</td>
+                                <td className="py-2 px-1 italic">{row.example}</td>
                               </>
                             ) : (
                               <>
