@@ -43,6 +43,7 @@ const A1_MODULES = Array.from({ length: 50 }, (_, i) => ({
           i === 9 ? 'There is / There are - Question Sentences' :
           i === 10 ? 'Articles: a / an / the – Basic Usage' :
           i === 11 ? 'Plural Nouns – Regular and Irregular' :
+          i === 12 ? 'Have got / Has got – Positive Sentences' :
           `Module ${i + 1}`,
   description: i === 0 ? 'Learn to use am, is, and are' : 
                i === 1 ? 'Learn to use "am", "is", and "are" with "not"' :
@@ -56,6 +57,7 @@ const A1_MODULES = Array.from({ length: 50 }, (_, i) => ({
                 i === 9 ? 'Learn to ask questions with Is there and Are there' :
                 i === 10 ? 'Learn the basic usage of articles a, an, and the' :
                 i === 11 ? 'Learn regular and irregular plural nouns in English' :
+                i === 12 ? 'Learn to use Have got and Has got in positive sentences' :
                 'Coming soon',
   completed: false,
   locked: i > 0, // Only Module 1 is unlocked initially
@@ -969,6 +971,87 @@ Brush your teeth every day.`,
   ]
 };
 
+// Module 13 Data: Have got / Has got – Positive Sentences
+const MODULE_13_DATA = {
+  title: "Modül 13 - Have got / Has got – Positive Sentences",
+  description: "Bu modülde İngilizcede 'Have got' ve 'Has got' kullanarak olumlu cümleler kurmayı öğreneceğiz.",
+  intro: `Bu modülde İngilizcede 'Have got' ve 'Has got' kullanarak olumlu cümleler kurmayı öğreneceğiz.
+
+Kullanım Kuralları:
+
+'Have got' → I, you, we, they için kullanılır.
+
+'Has got' → He, she, it için kullanılır.
+
+Örnek Cümleler:
+
+I have got a new phone.
+
+She has got two sisters.
+
+We have got a big house.`,
+  tip: "Use 'have got' with I, you, we, they and 'has got' with he, she, it to show possession.",
+  
+  table: [
+    { subject: "I", verb: "have got", example: "I have got a car." },
+    { subject: "You", verb: "have got", example: "You have got a bike." },
+    { subject: "He", verb: "has got", example: "He has got a brother." },
+    { subject: "She", verb: "has got", example: "She has got a cat." },
+    { subject: "It", verb: "has got", example: "It has got four legs." },
+    { subject: "We", verb: "have got", example: "We have got a garden." },
+    { subject: "They", verb: "have got", example: "They have got a dog." }
+  ],
+  
+  listeningExamples: [
+    "I have got a new phone.",
+    "She has got two sisters.",
+    "We have got a big house."
+  ],
+  
+  speakingPractice: [
+    { question: "What do you have?", answer: "I have got a new car." },
+    { question: "What has she got?", answer: "She has got a lovely dress." },
+    { question: "What have they got?", answer: "They have got two dogs." },
+    { question: "What has he got?", answer: "He has got a brother." },
+    { question: "What have we got?", answer: "We have got a big house." },
+    { question: "What have you got?", answer: "I have got a bicycle." },
+    { question: "What has it got?", answer: "It has got a long tail." },
+    { question: "What have your friends got?", answer: "They have got new phones." },
+    { question: "What has Anna got?", answer: "She has got blue eyes." },
+    { question: "What have your parents got?", answer: "They have got a car." },
+    { question: "What has he got?", answer: "He has got a computer." },
+    { question: "What have we got?", answer: "We have got a holiday next week." },
+    { question: "What have the students got?", answer: "They have got exams tomorrow." },
+    { question: "What has your dog got?", answer: "It has got a new toy." },
+    { question: "What have you got in your bag?", answer: "I have got a book in my bag." },
+    { question: "What has she got in her room?", answer: "She has got a big bed in her room." },
+    { question: "What have they got in the kitchen?", answer: "They have got a fridge in the kitchen." },
+    { question: "What has John got?", answer: "John has got a new watch." },
+    { question: "What have we got for dinner?", answer: "We have got pizza for dinner." },
+    { question: "What has your teacher got?", answer: "He has got a lot of books." },
+    { question: "What do you have?", answer: "I have got a new car." },
+    { question: "What has she got?", answer: "She has got a lovely dress." },
+    { question: "What have they got?", answer: "They have got two dogs." },
+    { question: "What has he got?", answer: "He has got a brother." },
+    { question: "What have we got?", answer: "We have got a big house." },
+    { question: "What have you got?", answer: "I have got a bicycle." },
+    { question: "What has it got?", answer: "It has got a long tail." },
+    { question: "What have your friends got?", answer: "They have got new phones." },
+    { question: "What has Anna got?", answer: "She has got blue eyes." },
+    { question: "What have your parents got?", answer: "They have got a car." },
+    { question: "What has he got?", answer: "He has got a computer." },
+    { question: "What have we got?", answer: "We have got a holiday next week." },
+    { question: "What have the students got?", answer: "They have got exams tomorrow." },
+    { question: "What has your dog got?", answer: "It has got a new toy." },
+    { question: "What have you got in your bag?", answer: "I have got a book in my bag." },
+    { question: "What has she got in her room?", answer: "She has got a big bed in her room." },
+    { question: "What have they got in the kitchen?", answer: "They have got a fridge in the kitchen." },
+    { question: "What has John got?", answer: "John has got a new watch." },
+    { question: "What have we got for dinner?", answer: "We have got pizza for dinner." },
+    { question: "What has your teacher got?", answer: "He has got a lot of books." }
+  ]
+};
+
 export default function LessonsApp({ onBack }: LessonsAppProps) {
   const [width, height] = useWindowSize();
   const [viewState, setViewState] = useState<ViewState>('levels');
@@ -1022,6 +1105,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     if (selectedModule === 10) return MODULE_10_DATA;
     if (selectedModule === 11) return MODULE_11_DATA;
     if (selectedModule === 12) return MODULE_12_DATA;
+    if (selectedModule === 13) return MODULE_13_DATA;
     return MODULE_1_DATA; // fallback
   };
 
