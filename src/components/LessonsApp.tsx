@@ -531,13 +531,29 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
           const totalSize = currentAudioChunks.reduce((sum, chunk) => sum + chunk.size, 0);
           console.log('📦 Total audio size:', totalSize, 'bytes');
           
-          if (totalSize > 0) {
+          if (totalSize > 1000) { // Minimum 1KB for meaningful audio
             const audioBlob = new Blob(currentAudioChunks, { type: mimeType });
-            console.log('🎵 Final blob size:', audioBlob.size, 'bytes');
-            await processAudioRecording(audioBlob);
+            console.log('🎵 Final blob created:', {
+              size: audioBlob.size,
+              type: audioBlob.type,
+              chunks: currentAudioChunks.length
+            });
+            
+            // Additional validation: check if blob is actually audio data
+            if (audioBlob.size > 0 && audioBlob.type.includes('audio')) {
+              await processAudioRecording(audioBlob);
+            } else {
+              console.error('❌ Invalid audio blob created');
+              setFeedback('Invalid audio format. Please try again.');
+              setFeedbackType('error');
+              setTimeout(() => {
+                setFeedback('');
+                setIsProcessing(false);
+              }, 3000);
+            }
           } else {
-            console.warn('⚠️ Empty audio recording');
-            setFeedback('No audio was recorded. Please speak louder and try again.');
+            console.warn('⚠️ Audio recording too small:', totalSize, 'bytes');
+            setFeedback('Recording too short. Please speak for at least 2 seconds.');
             setFeedbackType('error');
             setTimeout(() => {
               setFeedback('');
@@ -639,29 +655,76 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     setAttempts(prev => prev + 1);
     
     try {
-      console.log('Processing audio recording, blob size:', audioBlob.size);
+      console.log('🎵 Processing audio recording...');
+      console.log('📊 Blob details:', {
+        size: audioBlob.size,
+        type: audioBlob.type,
+        isEmpty: audioBlob.size === 0
+      });
+      
+      // Validate audio blob
+      if (!audioBlob || audioBlob.size === 0) {
+        console.error('❌ Empty or invalid audio blob');
+        setFeedback('No audio captured. Please speak louder and try again.');
+        setFeedbackType('error');
+        setTimeout(() => {
+          setFeedback('');
+          setIsProcessing(false);
+        }, 3000);
+        return;
+      }
+      
+      // Check minimum audio size (should be at least a few KB for meaningful audio)
+      if (audioBlob.size < 1000) {
+        console.warn('⚠️ Audio blob is very small:', audioBlob.size, 'bytes');
+        setFeedback('Audio recording too short. Please speak for at least 2 seconds.');
+        setFeedbackType('error');
+        setTimeout(() => {
+          setFeedback('');
+          setIsProcessing(false);
+        }, 3000);
+        return;
+      }
       
       // Step 1: Transcribe the audio using FormData (as expected by the endpoint)
       const formData = new FormData();
-      formData.append('audio', audioBlob, 'recording.webm');
       
-      console.log('Sending audio to transcribe endpoint...');
+      // Create a unique filename with timestamp to avoid caching issues
+      const timestamp = Date.now();
+      const filename = `recording_${timestamp}.webm`;
+      formData.append('audio', audioBlob, filename);
+      
+      console.log('📤 Sending audio to transcribe endpoint...', {
+        blobSize: audioBlob.size,
+        filename: filename,
+        type: audioBlob.type
+      });
+      
       const transcribeResponse = await supabase.functions.invoke('transcribe', {
         body: formData
       });
 
-      console.log('Transcribe response:', transcribeResponse);
+      console.log('📥 Transcribe response:', transcribeResponse);
 
       if (transcribeResponse.error) {
-        console.error('Transcribe error:', transcribeResponse.error);
-        throw new Error('Transcription failed');
+        console.error('❌ Transcribe error:', transcribeResponse.error);
+        setFeedback('Failed to process audio. Please try again.');
+        setFeedbackType('error');
+        setTimeout(() => {
+          setFeedback('');
+          setIsProcessing(false);
+        }, 3000);
+        return;
       }
 
-      const { text: transcript } = transcribeResponse.data;
-      console.log('Transcribed text:', transcript);
+      const { transcript, text } = transcribeResponse.data || {};
+      const finalTranscript = transcript || text || '';
       
-      if (!transcript || transcript.trim() === '') {
-        setFeedback('I couldn\'t hear anything. Please try again.');
+      console.log('📝 Transcribed text:', finalTranscript);
+      
+      if (!finalTranscript || finalTranscript.trim() === '') {
+        console.warn('⚠️ Empty transcript received');
+        setFeedback('I couldn\'t understand what you said. Please speak clearly and try again.');
         setFeedbackType('error');
         setTimeout(() => {
           setFeedback('');
@@ -671,9 +734,9 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
       }
 
       // Step 2: Get feedback on the transcribed text
-      console.log('Sending to feedback endpoint:', transcript);
+      console.log('Sending to feedback endpoint:', finalTranscript);
       const feedbackResponse = await supabase.functions.invoke('feedback', {
-        body: { text: transcript }
+        body: { text: finalTranscript }
       });
 
       console.log('Feedback response:', feedbackResponse);
@@ -685,7 +748,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
 
       const { corrected } = feedbackResponse.data;
       const expectedSentence = currentModuleData.speakingPractice[speakingIndex].toLowerCase();
-      const userSentence = transcript.toLowerCase();
+      const userSentence = finalTranscript.toLowerCase();
       
       console.log('Expected:', expectedSentence);
       console.log('User said:', userSentence);
@@ -724,7 +787,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
         }, 2000);
       } else {
         const improvement = corrected || `Try saying: "${currentModuleData.speakingPractice[speakingIndex]}"`;
-        setFeedback(`${improvement} \n\nYou said: "${transcript}"`);
+        setFeedback(`${improvement} \n\nYou said: "${finalTranscript}"`);
         setFeedbackType('error');
         
         setTimeout(() => {
@@ -796,8 +859,12 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
         setMicrophoneError(null);
         console.log('🎙️ Starting MediaRecorder...');
         
-        // Record for a maximum of 10 seconds
+        // Record minimum of 2 seconds, maximum of 10 seconds
+        const startTime = Date.now();
         mediaRecorder.start(1000); // Collect data every 1 second
+        
+        // Store the start time for minimum duration check
+        (mediaRecorder as any)._recordingStartTime = startTime;
         
         // Auto-stop after 10 seconds
         setTimeout(() => {
@@ -845,7 +912,19 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     console.log('MediaRecorder state:', mediaRecorder?.state);
     
     if (mediaRecorder && mediaRecorder.state === 'recording') {
-      console.log('⏹️ Stopping MediaRecorder...');
+      // Check minimum recording duration (2 seconds)
+      const startTime = (mediaRecorder as any)._recordingStartTime;
+      const currentTime = Date.now();
+      const recordingDuration = currentTime - startTime;
+      
+      if (recordingDuration < 2000) { // Less than 2 seconds
+        console.warn('⚠️ Recording too short:', recordingDuration, 'ms');
+        setFeedback('Please speak for at least 2 seconds. Keep recording...');
+        setFeedbackType('info');
+        return; // Don't stop recording yet
+      }
+      
+      console.log('⏹️ Stopping MediaRecorder... Duration:', recordingDuration, 'ms');
       mediaRecorder.stop();
       setIsRecording(false);
     } else {
