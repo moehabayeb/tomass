@@ -24,8 +24,8 @@ export const useTextToSpeech = () => {
       // Choose a pleasant voice if available
       const voices = speechSynthesis.getVoices();
       const preferredVoice = voices.find(voice => 
-        voice.lang.includes('en') && 
-        (voice.name.includes('Female') || voice.name.includes('Google') || voice.name.includes('US'))
+        voice.lang?.includes('en') && 
+        (voice.name?.includes('Female') || voice.name?.includes('Google') || voice.name?.includes('US'))
       );
       if (preferredVoice) {
         utterance.voice = preferredVoice;
