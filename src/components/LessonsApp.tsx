@@ -438,9 +438,18 @@ I, You, He, She, It, We, They
 
 // Module 6 Data: Possessive Adjectives
 const MODULE_6_DATA = {
-  title: "Module 6: Possessive Adjectives",
-  description: "Practice possessive adjectives (my, your, his, her, its, our, their)",
-  intro: "Perfect! Now we are learning about Possessive Adjectives. These show who something belongs to: my, your, his, her, its, our, their. For example: 'This is my book.' 'That is her car.' Let's practice using them!",
+  title: "Modül 6 - Possessive Adjectives",
+  description: "Bu modülde İngilizcede Possessive Adjectives (iyelik sıfatları) konusunu öğreneceğiz.",
+  intro: `Bu modülde İngilizcede Possessive Adjectives (iyelik sıfatları) konusunu öğreneceğiz.
+
+Konu Anlatımı:
+Possessive Adjectives bir ismin önüne gelerek onun kime ait olduğunu gösterir.
+my, your, his, her, its, our, their
+
+Örnek Cümleler:
+This is my book.
+That is her car.
+These are their friends.`,
   tip: "Possessive Adjectives show who something belongs to. Use: my (for I), your (for you), his (for he), her (for she), its (for it), our (for we), their (for they).",
   
   table: [
@@ -460,46 +469,46 @@ const MODULE_6_DATA = {
   ],
   
   speakingPractice: [
-    "It is my book.",
-    "Yes, it is my pen.",
-    "His car is in the garage.",
-    "That is their house.",
-    "Yes, it is her phone.",
-    "This is my bag.",
-    "Your book is on the table.",
-    "Her sister is a doctor.",
-    "Its color is red.",
-    "Our teacher is nice.",
-    "Their dog is big.",
-    "My name is Tom.",
-    "Your car is blue.",
-    "His house is small.",
-    "Her dress is beautiful.",
-    "Its tail is long.",
-    "Our classroom is clean.",
-    "Their children are happy.",
-    "My phone is new.",
-    "Your job is important.",
-    "His family is large.",
-    "Her eyes are green.",
-    "Its wings are white.",
-    "Our garden is beautiful.",
-    "Their vacation was fun.",
-    "My coffee is hot.",
-    "Your idea is great.",
-    "His voice is deep.",
-    "Her smile is lovely.",
-    "Its sound is loud.",
-    "Our meeting is tomorrow.",
-    "Their team won the game.",
-    "My birthday is next week.",
-    "Your answer is correct.",
-    "His story is interesting.",
-    "Her cooking is delicious.",
-    "Its price is high.",
-    "Our flight is delayed.",
-    "Their wedding is beautiful.",
-    "My dream came true."
+    { question: "Whose book is this?", answer: "It is my book." },
+    { question: "Whose pen is this?", answer: "Yes, it is my pen." },
+    { question: "Whose car is that?", answer: "His car is in the garage." },
+    { question: "Whose house is that?", answer: "That is their house." },
+    { question: "Whose phone is this?", answer: "Yes, it is her phone." },
+    { question: "Whose bag is this?", answer: "This is my bag." },
+    { question: "Whose book is on the table?", answer: "Your book is on the table." },
+    { question: "Whose sister is a doctor?", answer: "Her sister is a doctor." },
+    { question: "What color is it?", answer: "Its color is red." },
+    { question: "Who is your teacher?", answer: "Our teacher is nice." },
+    { question: "Whose dog is big?", answer: "Their dog is big." },
+    { question: "What is your name?", answer: "My name is Tom." },
+    { question: "What color is your car?", answer: "Your car is blue." },
+    { question: "Where is his house?", answer: "His house is small." },
+    { question: "How is her dress?", answer: "Her dress is beautiful." },
+    { question: "How long is its tail?", answer: "Its tail is long." },
+    { question: "How is your classroom?", answer: "Our classroom is clean." },
+    { question: "How are their children?", answer: "Their children are happy." },
+    { question: "Is your phone new?", answer: "My phone is new." },
+    { question: "Is your job important?", answer: "Your job is important." },
+    { question: "How is his family?", answer: "His family is large." },
+    { question: "What color are her eyes?", answer: "Her eyes are green." },
+    { question: "What color are its wings?", answer: "Its wings are white." },
+    { question: "How is your garden?", answer: "Our garden is beautiful." },
+    { question: "How was their vacation?", answer: "Their vacation was fun." },
+    { question: "How is your coffee?", answer: "My coffee is hot." },
+    { question: "How is your idea?", answer: "Your idea is great." },
+    { question: "How is his voice?", answer: "His voice is deep." },
+    { question: "How is her smile?", answer: "Her smile is lovely." },
+    { question: "How is its sound?", answer: "Its sound is loud." },
+    { question: "When is your meeting?", answer: "Our meeting is tomorrow." },
+    { question: "Who won the game?", answer: "Their team won the game." },
+    { question: "When is your birthday?", answer: "My birthday is next week." },
+    { question: "Is your answer correct?", answer: "Your answer is correct." },
+    { question: "How is his story?", answer: "His story is interesting." },
+    { question: "How is her cooking?", answer: "Her cooking is delicious." },
+    { question: "How is its price?", answer: "Its price is high." },
+    { question: "What happened to your flight?", answer: "Our flight is delayed." },
+    { question: "How is their wedding?", answer: "Their wedding is beautiful." },
+    { question: "What happened to your dream?", answer: "My dream came true." }
   ]
 };
 
@@ -1372,7 +1381,8 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
                      selectedModule === 2 ? '🧩 Verb To Be Negatif Tablosu:' : 
                      selectedModule === 3 ? '❓ Verb To Be Soru Tablosu:' :
                      selectedModule === 4 ? '💬 Verb To Be Short Answers Tablosu:' :
-                     '👥 Subject Pronouns Tablosu:'}
+                     selectedModule === 5 ? '👥 Subject Pronouns Tablosu:' :
+                     '🏠 Possessive Adjectives Tablosu:'}
                   </h4>
                   <div className="overflow-x-auto">
                     <table className="w-full text-white/90 text-sm">
@@ -1394,6 +1404,12 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
                           ) : selectedModule === 5 ? (
                             <>
                               <th className="text-left py-2 px-1">Subject Pronoun</th>
+                              <th className="text-left py-2 px-1">Example</th>
+                            </>
+                          ) : selectedModule === 6 ? (
+                            <>
+                              <th className="text-left py-2 px-1">Subject Pronoun</th>
+                              <th className="text-left py-2 px-1">Possessive Adjective</th>
                               <th className="text-left py-2 px-1">Example</th>
                             </>
                           ) : (
@@ -1426,6 +1442,12 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
                             ) : selectedModule === 5 ? (
                               <>
                                 <td className="py-2 px-1 text-purple-300 font-medium">{(row as any).pronoun}</td>
+                                <td className="py-2 px-1 italic">{row.example}</td>
+                              </>
+                            ) : selectedModule === 6 ? (
+                              <>
+                                <td className="py-2 px-1 text-purple-300 font-medium">{(row as any).pronoun}</td>
+                                <td className="py-2 px-1 text-orange-300 font-medium">{(row as any).possessive}</td>
                                 <td className="py-2 px-1 italic">{row.example}</td>
                               </>
                             ) : (
