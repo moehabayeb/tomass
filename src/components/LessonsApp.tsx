@@ -50,9 +50,10 @@ const A1_MODULES = Array.from({ length: 50 }, (_, i) => ({
            i === 16 ? 'Simple Present – Positive Sentences (He / She / It)' :
             i === 17 ? 'Simple Present – Negative Sentences (don\'t / doesn\'t)' :
             i === 18 ? 'Simple Present – Yes/No Questions' :
-            i === 19 ? 'Simple Present – Wh- Questions (What, Where, Who, etc.)' :
-            i === 20 ? 'Adverbs of Frequency (Sıklık Zarfları)' :
-            `Module ${i + 1}`,
+             i === 19 ? 'Simple Present – Wh- Questions (What, Where, Who, etc.)' :
+             i === 20 ? 'Adverbs of Frequency (Sıklık Zarfları)' :
+             i === 21 ? 'Can / Can\'t for Abilities' :
+             `Module ${i + 1}`,
   description: i === 0 ? 'Learn to use am, is, and are' : 
                i === 1 ? 'Learn to use "am", "is", and "are" with "not"' :
                i === 2 ? 'Learn to form questions with "am", "is", and "are"' :
@@ -72,9 +73,10 @@ const A1_MODULES = Array.from({ length: 50 }, (_, i) => ({
                 i === 16 ? 'Learn to form positive sentences using Simple Present tense with He, She, It (+s/es)' :
                  i === 17 ? 'Learn to form negative sentences using Simple Present tense with don\'t and doesn\'t' :
                  i === 18 ? 'Learn to form Yes/No questions using Simple Present tense with Do and Does' :
-                 i === 19 ? 'Learn to form Wh- questions using Simple Present tense with What, Where, Who, When, Why, How' :
-                 i === 20 ? 'Learn to use adverbs of frequency (always, usually, sometimes, never) in English sentences' :
-                 'Coming soon',
+                  i === 19 ? 'Learn to form Wh- questions using Simple Present tense with What, Where, Who, When, Why, How' :
+                  i === 20 ? 'Learn to use adverbs of frequency (always, usually, sometimes, never) in English sentences' :
+                  i === 21 ? 'Learn to express abilities and inabilities using can and can\'t' :
+                  'Coming soon',
   completed: false,
   locked: i > 0, // Only Module 1 is unlocked initially
 }));
@@ -1679,6 +1681,86 @@ Yardımcı fiil varsa, sıklık zarfı yardımcı fiilden sonra gelir.
   ]
 };
 
+// Module 22 Data: Can / Can't for Abilities
+const MODULE_22_DATA = {
+  title: "Tomas Hoca - Module 22: Can / Can't for Abilities",
+  description: '"Can" ve "Can\'t", bir kişinin yapabildiği ya da yapamadığı şeyleri anlatmak için kullanılır.',
+  intro: `"Can" ve "Can't", bir kişinin yapabildiği ya da yapamadığı şeyleri anlatmak için kullanılır.
+
+Can: Yapabilmek
+
+Can't (Cannot): Yapamamak
+
+Kullanımı:
+Olumlu (Affirmative): Subject + can + verb (base form)
+Örnek: I can swim. (Ben yüzebilirim.)
+
+Olumsuz (Negative): Subject + can't + verb (base form)  
+Örnek: She can't drive. (O araba süremez.)
+
+Soru (Question): Can + subject + verb (base form)?
+Örnek: Can you play the piano? (Sen piyano çalabilir misin?)
+
+Cevap: Yes, I can. / No, I can't.`,
+  tip: "Can kullanırken fiil kök halinde kullanılır (infinitive without 'to')",
+  
+  table: [
+    { type: "Olumlu", form: "Subject + can + verb", example: "I can swim." },
+    { type: "Olumsuz", form: "Subject + can't + verb", example: "She can't drive." },
+    { type: "Soru", form: "Can + subject + verb?", example: "Can you play the piano?" },
+    { type: "Cevap", form: "Yes, I can. / No, I can't.", example: "Yes, I can play the piano." }
+  ],
+  
+  listeningExamples: [
+    "I can swim very well.",
+    "She can't drive a car.",
+    "Can you speak English?"
+  ],
+  
+  speakingPractice: [
+    { question: "Can you swim?", answer: "Yes, I can swim." },
+    { question: "Can your brother play the guitar?", answer: "No, he can't play the guitar." },
+    { question: "Can your parents speak English?", answer: "Yes, they can speak English." },
+    { question: "Can your best friend cook Italian food?", answer: "No, she can't cook Italian food." },
+    { question: "Can they run five kilometers?", answer: "Yes, they can run five kilometers." },
+    { question: "Can you ride a bike?", answer: "Yes, I can ride a bike." },
+    { question: "Can she sing well?", answer: "Yes, she can sing well." },
+    { question: "Can he play chess?", answer: "No, he can't play chess." },
+    { question: "Can your teacher speak Spanish?", answer: "No, he can't speak Spanish." },
+    { question: "Can we visit the museum today?", answer: "Yes, we can visit the museum." },
+    { question: "Can they play tennis?", answer: "No, they can't play tennis." },
+    { question: "Can you dance?", answer: "Yes, I can dance." },
+    { question: "Can your father drive a truck?", answer: "Yes, he can drive a truck." },
+    { question: "Can your sister play the piano?", answer: "No, she can't play the piano." },
+    { question: "Can he swim fast?", answer: "Yes, he can swim fast." },
+    { question: "Can we stay here?", answer: "Yes, we can stay here." },
+    { question: "Can they climb the mountain?", answer: "No, they can't climb the mountain." },
+    { question: "Can you run fast?", answer: "Yes, I can run fast." },
+    { question: "Can your friend cook well?", answer: "No, he can't cook well." },
+    { question: "Can she speak French?", answer: "Yes, she can speak French." },
+    { question: "Can we park here?", answer: "No, we can't park here." },
+    { question: "Can they help us?", answer: "Yes, they can help us." },
+    { question: "Can you read this book?", answer: "Yes, I can read this book." },
+    { question: "Can your brother drive a car?", answer: "No, he can't drive a car." },
+    { question: "Can your friends play basketball?", answer: "Yes, they can play basketball." },
+    { question: "Can she use a computer?", answer: "Yes, she can use a computer." },
+    { question: "Can he run a marathon?", answer: "No, he can't run a marathon." },
+    { question: "Can we eat in this restaurant?", answer: "Yes, we can eat here." },
+    { question: "Can they speak German?", answer: "No, they can't speak German." },
+    { question: "Can you paint pictures?", answer: "Yes, I can paint pictures." },
+    { question: "Can your dog swim?", answer: "No, it can't swim." },
+    { question: "Can your teacher play the guitar?", answer: "Yes, he can play the guitar." },
+    { question: "Can she ride a horse?", answer: "Yes, she can ride a horse." },
+    { question: "Can they fix the car?", answer: "No, they can't fix the car." },
+    { question: "Can you play the drums?", answer: "Yes, I can play the drums." },
+    { question: "Can your friend speak Chinese?", answer: "No, he can't speak Chinese." },
+    { question: "Can he play football?", answer: "Yes, he can play football." },
+    { question: "Can we go there?", answer: "Yes, we can go there." },
+    { question: "Can they help us now?", answer: "No, they can't help us now." },
+    { question: "Can she draw well?", answer: "Yes, she can draw well." }
+  ]
+};
+
 export default function LessonsApp({ onBack }: LessonsAppProps) {
   const [width, height] = useWindowSize();
   const [viewState, setViewState] = useState<ViewState>('levels');
@@ -1741,6 +1823,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     if (selectedModule === 19) return MODULE_19_DATA;
     if (selectedModule === 20) return MODULE_20_DATA;
     if (selectedModule === 21) return MODULE_21_DATA;
+    if (selectedModule === 22) return MODULE_22_DATA;
     return MODULE_1_DATA; // fallback
   };
 
