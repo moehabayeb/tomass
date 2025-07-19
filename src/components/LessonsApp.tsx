@@ -211,9 +211,20 @@ They aren't teachers.`,
 
 // Module 3 Data: Question Sentences
 const MODULE_3_DATA = {
-  title: "Module 3: Question Sentences",
-  description: "Learn to form questions with 'am', 'is', and 'are'",
-  intro: "Excellent! Now we are learning how to ask questions with 'am', 'is', and 'are'. For example: 'Am I late?' 'Is she happy?' 'Are they students?' Let's practice!",
+  title: "Modül 3 - Verb To Be (am, is, are) - Question Sentences",
+  description: "Bu modülde İngilizcede 'am, is, are' kullanarak soru cümleleri kurmayı öğreneceğiz.",
+  intro: `Bu modülde İngilizcede 'am, is, are' kullanarak soru cümleleri kurmayı öğreneceğiz.
+
+Konu Anlatımı:
+"To Be" fiiliyle soru cümlesi kurarken, fiil cümlenin başına gelir:
+Am I...?
+Is he/she/it...?
+Are we/you/they...?
+
+Örnek Cümleler:
+Am I late?
+Is she happy?
+Are they students?`,
   tip: "How to form questions with 'To Be': Move the verb before the subject. Am I...? Is he/she/it...? Are we/you/they...?",
   
   table: [
@@ -233,48 +244,46 @@ const MODULE_3_DATA = {
   ],
   
   speakingPractice: [
-    "Yes, you are a teacher.",
-    "No, you are not a teacher.",
-    "Yes, you are a student.",
-    "No, you are not a student.",
-    "Yes, you are happy.",
-    "No, you are not happy.",
-    "Yes, he is a doctor.",
-    "No, he is not a doctor.",
-    "Yes, he is tired.",
-    "No, he is not tired.",
-    "Yes, he is busy.",
-    "No, he is not busy.",
-    "Yes, she is a nurse.",
-    "No, she is not a nurse.",
-    "Yes, she is beautiful.",
-    "No, she is not beautiful.",
-    "Yes, she is ready.",
-    "No, she is not ready.",
-    "Yes, it is cold.",
-    "No, it is not cold.",
-    "Yes, it is big.",
-    "No, it is not big.",
-    "Yes, it is expensive.",
-    "No, it is not expensive.",
-    "Yes, we are friends.",
-    "No, we are not friends.",
-    "Yes, we are students.",
-    "No, we are not students.",
-    "Yes, we are ready.",
-    "No, we are not ready.",
-    "Yes, you are right.",
-    "No, you are not right.",
-    "Yes, you are late.",
-    "No, you are not late.",
-    "Yes, you are welcome.",
-    "No, you are not welcome.",
-    "Yes, they are engineers.",
-    "No, they are not engineers.",
-    "Yes, they are married.",
-    "No, they are not married.",
-    "Yes, they are available.",
-    "No, they are not available."
+    { question: "Am I a teacher?", answer: "Yes, you are a teacher." },
+    { question: "Am I a teacher?", answer: "No, you are not a teacher." },
+    { question: "Am I a student?", answer: "Yes, you are a student." },
+    { question: "Am I a student?", answer: "No, you are not a student." },
+    { question: "Am I happy?", answer: "Yes, you are happy." },
+    { question: "Am I happy?", answer: "No, you are not happy." },
+    { question: "Is he a doctor?", answer: "Yes, he is a doctor." },
+    { question: "Is he a doctor?", answer: "No, he is not a doctor." },
+    { question: "Is he tired?", answer: "Yes, he is tired." },
+    { question: "Is he tired?", answer: "No, he is not tired." },
+    { question: "Is he busy?", answer: "Yes, he is busy." },
+    { question: "Is he busy?", answer: "No, he is not busy." },
+    { question: "Is she a nurse?", answer: "Yes, she is a nurse." },
+    { question: "Is she a nurse?", answer: "No, she is not a nurse." },
+    { question: "Is she beautiful?", answer: "Yes, she is beautiful." },
+    { question: "Is she beautiful?", answer: "No, she is not beautiful." },
+    { question: "Is she ready?", answer: "Yes, she is ready." },
+    { question: "Is she ready?", answer: "No, she is not ready." },
+    { question: "Is it cold?", answer: "Yes, it is cold." },
+    { question: "Is it cold?", answer: "No, it is not cold." },
+    { question: "Is it big?", answer: "Yes, it is big." },
+    { question: "Is it big?", answer: "No, it is not big." },
+    { question: "Is it expensive?", answer: "Yes, it is expensive." },
+    { question: "Is it expensive?", answer: "No, it is not expensive." },
+    { question: "Are we friends?", answer: "Yes, we are friends." },
+    { question: "Are we friends?", answer: "No, we are not friends." },
+    { question: "Are we students?", answer: "Yes, we are students." },
+    { question: "Are we students?", answer: "No, we are not students." },
+    { question: "Are we ready?", answer: "Yes, we are ready." },
+    { question: "Are we ready?", answer: "No, we are not ready." },
+    { question: "Are you right?", answer: "Yes, I am right." },
+    { question: "Are you right?", answer: "No, I am not right." },
+    { question: "Are you late?", answer: "Yes, I am late." },
+    { question: "Are you late?", answer: "No, I am not late." },
+    { question: "Are you welcome?", answer: "Yes, I am welcome." },
+    { question: "Are you welcome?", answer: "No, I am not welcome." },
+    { question: "Are they engineers?", answer: "Yes, they are engineers." },
+    { question: "Are they engineers?", answer: "No, they are not engineers." },
+    { question: "Are they married?", answer: "Yes, they are married." },
+    { question: "Are they available?", answer: "No, they are not available." }
   ]
 };
 
@@ -1334,27 +1343,51 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
               {'table' in currentModuleData && currentModuleData.table && (
                 <div className="bg-white/5 rounded-xl p-4">
                   <h4 className="text-white font-semibold mb-3 text-center">
-                    {selectedModule === 1 ? '📊 Verb To Be Tablosu:' : '🧩 Verb To Be Negatif Tablosu:'}
+                    {selectedModule === 1 ? '📊 Verb To Be Tablosu:' : 
+                     selectedModule === 2 ? '🧩 Verb To Be Negatif Tablosu:' : 
+                     '❓ Verb To Be Soru Tablosu:'}
                   </h4>
                   <div className="overflow-x-auto">
                     <table className="w-full text-white/90 text-sm">
                       <thead>
                         <tr className="border-b border-white/20">
-                          <th className="text-left py-2 px-1">Subject</th>
-                          <th className="text-left py-2 px-1">Verb To Be</th>
-                          {selectedModule === 2 && <th className="text-left py-2 px-1">Not</th>}
-                          <th className="text-left py-2 px-1">Complement</th>
-                          <th className="text-left py-2 px-1">Example</th>
+                          {selectedModule === 3 ? (
+                            <>
+                              <th className="text-left py-2 px-1">Verb To Be</th>
+                              <th className="text-left py-2 px-1">Subject</th>
+                              <th className="text-left py-2 px-1">Complement</th>
+                              <th className="text-left py-2 px-1">Example</th>
+                            </>
+                          ) : (
+                            <>
+                              <th className="text-left py-2 px-1">Subject</th>
+                              <th className="text-left py-2 px-1">Verb To Be</th>
+                              {selectedModule === 2 && <th className="text-left py-2 px-1">Not</th>}
+                              <th className="text-left py-2 px-1">Complement</th>
+                              <th className="text-left py-2 px-1">Example</th>
+                            </>
+                          )}
                         </tr>
                       </thead>
                       <tbody>
                         {currentModuleData.table.map((row, index) => (
                           <tr key={index} className="border-b border-white/10">
-                            <td className="py-2 px-1 font-medium">{row.subject}</td>
-                            <td className="py-2 px-1 text-blue-300">{row.verb}</td>
-                            {selectedModule === 2 && 'not' in row && <td className="py-2 px-1 text-red-300">{(row as any).not}</td>}
-                            <td className="py-2 px-1">{row.complement}</td>
-                            <td className="py-2 px-1 italic">{row.example}</td>
+                            {selectedModule === 3 ? (
+                              <>
+                                <td className="py-2 px-1 text-blue-300 font-medium">{row.verb}</td>
+                                <td className="py-2 px-1">{row.subject}</td>
+                                <td className="py-2 px-1">{row.complement}</td>
+                                <td className="py-2 px-1 italic">{row.example}</td>
+                              </>
+                            ) : (
+                              <>
+                                <td className="py-2 px-1 font-medium">{row.subject}</td>
+                                <td className="py-2 px-1 text-blue-300">{row.verb}</td>
+                                {selectedModule === 2 && 'not' in row && <td className="py-2 px-1 text-red-300">{(row as any).not}</td>}
+                                <td className="py-2 px-1">{row.complement}</td>
+                                <td className="py-2 px-1 italic">{row.example}</td>
+                              </>
+                            )}
                           </tr>
                         ))}
                       </tbody>
