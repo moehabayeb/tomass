@@ -51,10 +51,31 @@ const A1_MODULES = Array.from({ length: 50 }, (_, i) => ({
 
 // Module 1 Data: Verb To Be - Positive Sentences
 const MODULE_1_DATA = {
-  title: "Module 1: Verb To Be - Positive Sentences",
-  description: "Learn to use 'am', 'is', and 'are' in positive sentences",
-  intro: "Welcome! Today we are learning how to say simple sentences with 'am', 'is', and 'are'. For example: 'I am a student.' 'He is a doctor.' Let's practice!",
+  title: "Modül 1 - Verb To Be (am, is, are) - Positive Sentences",
+  description: "Bu modülde İngilizcede 'am, is, are' kullanarak olumlu cümleler kurmayı öğreneceğiz.",
+  intro: `Bu modülde İngilizcede 'am, is, are' kullanarak olumlu cümleler kurmayı öğreneceğiz.
+
+Konu Anlatımı:
+"To Be" fiili İngilizcede 'olmak' anlamına gelir ve cümlenin öznesine göre değişir:
+I → am
+He/She/It → is  
+We/You/They → are
+
+Örnek Cümleler:
+I am a teacher.
+She is happy.
+They are students.`,
   tip: "Use 'am' with I, 'is' with he/she/it, and 'are' with we/you/they",
+  
+  table: [
+    { subject: "I", verb: "am", complement: "a student", example: "I am a student." },
+    { subject: "He", verb: "is", complement: "tired", example: "He is tired." },
+    { subject: "She", verb: "is", complement: "a doctor", example: "She is a doctor." },
+    { subject: "It", verb: "is", complement: "cold", example: "It is cold." },
+    { subject: "We", verb: "are", complement: "happy", example: "We are happy." },
+    { subject: "You", verb: "are", complement: "teachers", example: "You are teachers." },
+    { subject: "They", verb: "are", complement: "friends", example: "They are friends." }
+  ],
   
   listeningExamples: [
     "I am a student.",
@@ -67,13 +88,46 @@ const MODULE_1_DATA = {
   ],
   
   speakingPractice: [
-    "I am a student.",
-    "He is a teacher.",
-    "She is a doctor.",
-    "It is a dog.",
-    "We are happy.",
-    "You are friends.",
-    "They are engineers."
+    { question: "Are you a teacher?", answer: "Yes, I am a teacher." },
+    { question: "Is she your friend?", answer: "Yes, she is my friend." },
+    { question: "Are they students?", answer: "Yes, they are students." },
+    { question: "Is he a doctor?", answer: "Yes, he is a doctor." },
+    { question: "Are you happy?", answer: "Yes, I am happy." },
+    { question: "Is it cold today?", answer: "Yes, it is cold today." },
+    { question: "Are we friends?", answer: "Yes, we are friends." },
+    { question: "Is she a nurse?", answer: "Yes, she is a nurse." },
+    { question: "Are you ready?", answer: "Yes, I am ready." },
+    { question: "Is he tall?", answer: "Yes, he is tall." },
+    { question: "Are they at home?", answer: "Yes, they are at home." },
+    { question: "Is she beautiful?", answer: "Yes, she is beautiful." },
+    { question: "Are you tired?", answer: "Yes, I am tired." },
+    { question: "Is it expensive?", answer: "Yes, it is expensive." },
+    { question: "Are we late?", answer: "Yes, we are late." },
+    { question: "Is he busy?", answer: "Yes, he is busy." },
+    { question: "Are they married?", answer: "Yes, they are married." },
+    { question: "Is she smart?", answer: "Yes, she is smart." },
+    { question: "Are you hungry?", answer: "Yes, I am hungry." },
+    { question: "Is it big?", answer: "Yes, it is big." },
+    { question: "Are we correct?", answer: "Yes, we are correct." },
+    { question: "Is he kind?", answer: "Yes, he is kind." },
+    { question: "Are they engineers?", answer: "Yes, they are engineers." },
+    { question: "Is she young?", answer: "Yes, she is young." },
+    { question: "Are you a student?", answer: "Yes, I am a student." },
+    { question: "Is it hot?", answer: "Yes, it is hot." },
+    { question: "Are we early?", answer: "Yes, we are early." },
+    { question: "Is he strong?", answer: "Yes, he is strong." },
+    { question: "Are they rich?", answer: "Yes, they are rich." },
+    { question: "Is she funny?", answer: "Yes, she is funny." },
+    { question: "Are you safe?", answer: "Yes, I am safe." },
+    { question: "Is it new?", answer: "Yes, it is new." },
+    { question: "Are we together?", answer: "Yes, we are together." },
+    { question: "Is he careful?", answer: "Yes, he is careful." },
+    { question: "Are they happy?", answer: "Yes, they are happy." },
+    { question: "Is she ready?", answer: "Yes, she is ready." },
+    { question: "Are you excited?", answer: "Yes, I am excited." },
+    { question: "Is it difficult?", answer: "Yes, it is difficult." },
+    { question: "Are we successful?", answer: "Yes, we are successful." },
+    { question: "Is he helpful?", answer: "Yes, he is helpful." }
   ]
 };
 
@@ -638,17 +692,12 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     };
   }, [initializeRecorder]);
 
-  // Start lesson with intro
+  // Start lesson with intro - but don't auto-advance, let user control
   useEffect(() => {
     if (currentPhase === 'intro' && viewState === 'lesson') {
-      const timer = setTimeout(() => {
-        speak(currentModuleData.intro, () => {
-          setCurrentPhase('listening');
-        });
-      }, 1000);
-      return () => clearTimeout(timer);
+      // Don't auto-advance from intro phase, let user read and proceed manually
     }
-  }, [currentPhase, viewState, speak, currentModuleData]);
+  }, [currentPhase, viewState]);
 
   const processAudioRecording = useCallback(async (audioBlob: Blob) => {
     // 🔒 CRITICAL: Prevent concurrent processing and lock current state
@@ -660,7 +709,8 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     // CRITICAL: Capture the current speaking index and expected sentence at the START
     // This creates an immutable snapshot that cannot be changed during async operations
     const capturedSpeakingIndex = speakingIndex;
-    const capturedExpectedSentence = currentModuleData.speakingPractice[capturedSpeakingIndex];
+    const currentPracticeItem = currentModuleData.speakingPractice[capturedSpeakingIndex];
+    const capturedExpectedSentence = typeof currentPracticeItem === 'string' ? currentPracticeItem : currentPracticeItem.answer;
     
     // Validate captured data before proceeding
     if (!capturedExpectedSentence) {
@@ -784,7 +834,9 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
       console.log('AI feedback:', corrected);
       
       // Double-check that we're still processing the correct question
-      if (capturedExpectedSentence !== currentModuleData.speakingPractice[capturedSpeakingIndex]) {
+      const currentValidationItem = currentModuleData.speakingPractice[capturedSpeakingIndex];
+      const currentValidationSentence = typeof currentValidationItem === 'string' ? currentValidationItem : currentValidationItem.answer;
+      if (capturedExpectedSentence !== currentValidationSentence) {
         console.error('🚨 CRITICAL: Expected sentence mismatch detected! Aborting to prevent confusion.');
         setFeedback('System error. Please try again.');
         setFeedbackType('error');
@@ -998,7 +1050,8 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
   };
 
   const speakCurrentSentence = () => {
-    const currentSentence = currentModuleData.speakingPractice[speakingIndex];
+    const currentPracticeItem = currentModuleData.speakingPractice[speakingIndex];
+    const currentSentence = typeof currentPracticeItem === 'string' ? currentPracticeItem : currentPracticeItem.answer;
     speak(currentSentence);
   };
 
@@ -1243,6 +1296,60 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
           </CardContent>
         </Card>
 
+        {/* Intro Phase */}
+        {currentPhase === 'intro' && (
+          <Card className="bg-white/10 border-white/20 mb-6">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center">
+                <BookOpen className="h-5 w-5 mr-2" />
+                {currentModuleData.title}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="text-white/90 whitespace-pre-line text-sm leading-relaxed">
+                {currentModuleData.intro}
+              </div>
+              
+              {'table' in currentModuleData && currentModuleData.table && (
+                <div className="bg-white/5 rounded-xl p-4">
+                  <h4 className="text-white font-semibold mb-3 text-center">📊 Verb To Be Tablosu:</h4>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-white/90 text-sm">
+                      <thead>
+                        <tr className="border-b border-white/20">
+                          <th className="text-left py-2 px-1">Subject</th>
+                          <th className="text-left py-2 px-1">Verb To Be</th>
+                          <th className="text-left py-2 px-1">Complement</th>
+                          <th className="text-left py-2 px-1">Example</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {currentModuleData.table.map((row, index) => (
+                          <tr key={index} className="border-b border-white/10">
+                            <td className="py-2 px-1 font-medium">{row.subject}</td>
+                            <td className="py-2 px-1 text-blue-300">{row.verb}</td>
+                            <td className="py-2 px-1">{row.complement}</td>
+                            <td className="py-2 px-1 italic">{row.example}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              <div className="text-center pt-4">
+                <Button
+                  onClick={() => setCurrentPhase('listening')}
+                  className="bg-white/20 text-white hover:bg-white/30"
+                >
+                  Continue to Practice
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Listening Phase */}
         {currentPhase === 'listening' && (
           <Card className="bg-white/10 border-white/20">
@@ -1302,9 +1409,27 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
             <CardContent className="space-y-4">
               <div className="text-center">
                 <div className="bg-white/5 rounded-xl p-4 mb-4">
-                  <p className="text-white text-lg font-medium mb-2">
-                    "{currentModuleData.speakingPractice[speakingIndex]}"
-                  </p>
+                  {(() => {
+                    const currentPracticeItem = currentModuleData.speakingPractice[speakingIndex];
+                    if (typeof currentPracticeItem === 'string') {
+                      return (
+                        <p className="text-white text-lg font-medium mb-2">
+                          "{currentPracticeItem}"
+                        </p>
+                      );
+                    } else {
+                      return (
+                        <>
+                          <p className="text-white/70 text-sm mb-2">
+                            Soru: {currentPracticeItem.question}
+                          </p>
+                          <p className="text-white text-lg font-medium mb-2">
+                            Say: "{currentPracticeItem.answer}"
+                          </p>
+                        </>
+                      );
+                    }
+                  })()}
                   <Button
                     onClick={speakCurrentSentence}
                     variant="ghost"
