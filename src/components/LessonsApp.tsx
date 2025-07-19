@@ -512,6 +512,75 @@ These are their friends.`,
   ]
 };
 
+// Module 7 Data: This / That / These / Those
+const MODULE_7_DATA = {
+  title: "Modül 7 - This / That / These / Those",
+  description: "Bu modülde İngilizcede This, That, These ve Those kullanımlarını öğreneceğiz.",
+  intro: `Bu modülde İngilizcede This, That, These ve Those kullanımlarını öğreneceğiz.
+
+Konu Anlatımı:
+- This = Bu (yakında, tekil)
+- That = Şu (uzakta, tekil)
+- These = Bunlar (yakında, çoğul)
+- Those = Şunlar (uzakta, çoğul)
+
+Örnek Cümleler:
+- This is my book.
+- That is her car.
+- These are our friends.
+- Those are their houses.`,
+  tip: "Use 'This' and 'These' for things that are near you. Use 'That' and 'Those' for things that are far from you. 'This/That' are singular, 'These/Those' are plural.",
+  
+  listeningExamples: [
+    "This is my book.",
+    "That is her car.",
+    "These are our friends."
+  ],
+  
+  speakingPractice: [
+    { question: "What is this?", answer: "This is my phone." },
+    { question: "What is that?", answer: "That is a car." },
+    { question: "What are these?", answer: "These are my books." },
+    { question: "What are those?", answer: "Those are trees." },
+    { question: "Is this your pen?", answer: "Yes, this is my pen." },
+    { question: "Is that your house?", answer: "Yes, that is my house." },
+    { question: "Are these your friends?", answer: "Yes, these are my friends." },
+    { question: "Are those your bags?", answer: "Yes, those are my bags." },
+    { question: "What is this object?", answer: "This is a computer." },
+    { question: "What is that building?", answer: "That is a school." },
+    { question: "What are these items?", answer: "These are flowers." },
+    { question: "What are those animals?", answer: "Those are dogs." },
+    { question: "Is this book interesting?", answer: "Yes, this book is interesting." },
+    { question: "Is that movie good?", answer: "Yes, that movie is good." },
+    { question: "Are these apples fresh?", answer: "Yes, these apples are fresh." },
+    { question: "Are those students smart?", answer: "Yes, those students are smart." },
+    { question: "What color is this shirt?", answer: "This shirt is blue." },
+    { question: "What color is that chair?", answer: "That chair is red." },
+    { question: "What color are these shoes?", answer: "These shoes are black." },
+    { question: "What color are those flowers?", answer: "Those flowers are yellow." },
+    { question: "Is this your favorite food?", answer: "Yes, this is my favorite food." },
+    { question: "Is that your best friend?", answer: "Yes, that is my best friend." },
+    { question: "Are these your new clothes?", answer: "Yes, these are my new clothes." },
+    { question: "Are those your old photos?", answer: "Yes, those are my old photos." },
+    { question: "What size is this room?", answer: "This room is big." },
+    { question: "What size is that window?", answer: "That window is small." },
+    { question: "How are these cookies?", answer: "These cookies are delicious." },
+    { question: "How are those people?", answer: "Those people are kind." },
+    { question: "Is this place beautiful?", answer: "Yes, this place is beautiful." },
+    { question: "Is that restaurant expensive?", answer: "Yes, that restaurant is expensive." },
+    { question: "Are these exercises easy?", answer: "Yes, these exercises are easy." },
+    { question: "Are those questions difficult?", answer: "Yes, those questions are difficult." },
+    { question: "What is this made of?", answer: "This is made of wood." },
+    { question: "What is that made of?", answer: "That is made of metal." },
+    { question: "What are these used for?", answer: "These are used for writing." },
+    { question: "What are those used for?", answer: "Those are used for cooking." },
+    { question: "Is this the right answer?", answer: "Yes, this is the right answer." },
+    { question: "Is that the wrong way?", answer: "Yes, that is the wrong way." },
+    { question: "Are these the correct tools?", answer: "Yes, these are the correct tools." },
+    { question: "Are those the final results?", answer: "Yes, those are the final results." }
+  ]
+};
+
 export default function LessonsApp({ onBack }: LessonsAppProps) {
   const [width, height] = useWindowSize();
   const [viewState, setViewState] = useState<ViewState>('levels');
@@ -559,6 +628,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     if (selectedModule === 4) return MODULE_4_DATA;
     if (selectedModule === 5) return MODULE_5_DATA;
     if (selectedModule === 6) return MODULE_6_DATA;
+    if (selectedModule === 7) return MODULE_7_DATA;
     return MODULE_1_DATA; // fallback
   };
 
@@ -1215,7 +1285,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
                   key={module.id} 
                   className={`bg-white/10 border-white/20 cursor-pointer transition-all hover:bg-white/15 ${!isUnlocked ? 'opacity-50' : ''}`}
                   onClick={() => {
-                    if (isUnlocked && (module.id === 1 || module.id === 2 || module.id === 3 || module.id === 4 || module.id === 5 || module.id === 6)) { // Modules 1, 2, 3, 4, 5 & 6 are implemented
+                    if (isUnlocked && (module.id === 1 || module.id === 2 || module.id === 3 || module.id === 4 || module.id === 5 || module.id === 6 || module.id === 7)) { // Modules 1-7 are implemented
                       setSelectedModule(module.id);
                       setViewState('lesson');
                       setCurrentPhase('intro');
@@ -1424,7 +1494,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
                         </tr>
                       </thead>
                       <tbody>
-                        {currentModuleData.table.map((row, index) => (
+                        {'table' in currentModuleData && currentModuleData.table && Array.isArray(currentModuleData.table) && currentModuleData.table.map((row, index) => (
                           <tr key={index} className="border-b border-white/10">
                             {selectedModule === 3 ? (
                               <>
