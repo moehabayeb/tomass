@@ -53,6 +53,7 @@ const A1_MODULES = Array.from({ length: 50 }, (_, i) => ({
              i === 19 ? 'Simple Present – Wh- Questions (What, Where, Who, etc.)' :
              i === 20 ? 'Adverbs of Frequency (Sıklık Zarfları)' :
              i === 21 ? 'Can / Can\'t for Abilities' :
+             i === 22 ? 'Can / Can\'t for Permission' :
              `Module ${i + 1}`,
   description: i === 0 ? 'Learn to use am, is, and are' : 
                i === 1 ? 'Learn to use "am", "is", and "are" with "not"' :
@@ -76,6 +77,7 @@ const A1_MODULES = Array.from({ length: 50 }, (_, i) => ({
                   i === 19 ? 'Learn to form Wh- questions using Simple Present tense with What, Where, Who, When, Why, How' :
                   i === 20 ? 'Learn to use adverbs of frequency (always, usually, sometimes, never) in English sentences' :
                   i === 21 ? 'Learn to express abilities and inabilities using can and can\'t' :
+                  i === 22 ? 'Learn to ask for and give permission using can and can\'t' :
                   'Coming soon',
   completed: false,
   locked: i > 0, // Only Module 1 is unlocked initially
@@ -1681,6 +1683,89 @@ Yardımcı fiil varsa, sıklık zarfı yardımcı fiilden sonra gelir.
   ]
 };
 
+// Module 23 Data: Can / Can't for Permission
+const MODULE_23_DATA = {
+  title: "Tomas Hoca – A1 Module 23: Can / Can't for Permission",
+  description: '"Can" ve "Can\'t", birinden izin istemek veya izin vermek için kullanılır.',
+  intro: `"Can" ve "Can't", birinden izin istemek veya izin vermek için kullanılır.
+
+Can: İzin istemek veya izin vermek
+
+Can't: İzin vermemek
+
+🔹 Kullanımı:
+
+Olumlu (Affirmative): Subject + can + verb (base form)
+→ You can use my phone. (Telefonumu kullanabilirsin.)
+
+Olumsuz (Negative): Subject + can't + verb (base form)
+→ You can't park here. (Buraya park edemezsin.)
+
+Soru (Question): Can + subject + verb (base form)?
+→ Can I open the window? (Pencereyi açabilir miyim?)
+
+Cevap: Yes, you can. / No, you can't.`,
+  tip: "Can ile izin istemek ve vermek için kullanın",
+  
+  table: [
+    { subject: "I", affirmative: "I can go out.", negative: "I can't go out.", question: "Can I go out?", answer: "Yes, you can. / No, you can't." },
+    { subject: "You", affirmative: "You can use my pen.", negative: "You can't use my pen.", question: "Can I use your pen?", answer: "Yes, you can. / No, you can't." },
+    { subject: "He", affirmative: "He can visit us today.", negative: "He can't visit us.", question: "Can he visit us today?", answer: "Yes, he can. / No, he can't." },
+    { subject: "She", affirmative: "She can stay here.", negative: "She can't stay here.", question: "Can she stay here?", answer: "Yes, she can. / No, she can't." },
+    { subject: "We", affirmative: "We can enter now.", negative: "We can't enter now.", question: "Can we enter now?", answer: "Yes, you can. / No, you can't." },
+    { subject: "They", affirmative: "They can use the computer.", negative: "They can't use the computer.", question: "Can they use the computer?", answer: "Yes, they can. / No, they can't." }
+  ],
+  
+  listeningExamples: [
+    "Can I sit here?",
+    "You can use my phone.",
+    "No, you can't park here."
+  ],
+  
+  speakingPractice: [
+    { question: "Can I sit here?", answer: "Yes, you can sit here." },
+    { question: "Can we eat in this room?", answer: "No, you can't eat here." },
+    { question: "Can he borrow your book?", answer: "Yes, he can borrow my book." },
+    { question: "Can they park here?", answer: "No, they can't park here." },
+    { question: "Can I use your phone?", answer: "Yes, you can use my phone." },
+    { question: "Can she come to the party?", answer: "No, she can't come to the party." },
+    { question: "Can we take photos here?", answer: "Yes, you can take photos here." },
+    { question: "Can he open the window?", answer: "Yes, he can open the window." },
+    { question: "Can I leave early?", answer: "No, you can't leave early." },
+    { question: "Can they visit us tomorrow?", answer: "Yes, they can visit us tomorrow." },
+    { question: "Can we drink water here?", answer: "Yes, you can drink water here." },
+    { question: "Can I call my friend?", answer: "Yes, you can call your friend." },
+    { question: "Can she use your laptop?", answer: "No, she can't use my laptop." },
+    { question: "Can I bring my dog?", answer: "No, you can't bring your dog." },
+    { question: "Can they stay here tonight?", answer: "Yes, they can stay here tonight." },
+    { question: "Can we play music here?", answer: "No, you can't play music here." },
+    { question: "Can I open the door?", answer: "Yes, you can open the door." },
+    { question: "Can he borrow your pen?", answer: "Yes, he can borrow my pen." },
+    { question: "Can she watch TV now?", answer: "No, she can't watch TV now." },
+    { question: "Can we go inside?", answer: "Yes, you can go inside." },
+    { question: "Can they use this table?", answer: "No, they can't use this table." },
+    { question: "Can I join the meeting?", answer: "Yes, you can join the meeting." },
+    { question: "Can she park her car here?", answer: "No, she can't park her car here." },
+    { question: "Can we leave our bags here?", answer: "Yes, you can leave your bags here." },
+    { question: "Can I write on the board?", answer: "Yes, you can write on the board." },
+    { question: "Can he take this chair?", answer: "No, he can't take this chair." },
+    { question: "Can they use your bike?", answer: "Yes, they can use my bike." },
+    { question: "Can we borrow your books?", answer: "No, you can't borrow my books." },
+    { question: "Can she go to the library?", answer: "Yes, she can go to the library." },
+    { question: "Can I eat here?", answer: "No, you can't eat here." },
+    { question: "Can they visit us today?", answer: "Yes, they can visit us today." },
+    { question: "Can we sit in this area?", answer: "No, you can't sit in this area." },
+    { question: "Can I play with your dog?", answer: "Yes, you can play with my dog." },
+    { question: "Can he use this pen?", answer: "Yes, he can use this pen." },
+    { question: "Can we stay here longer?", answer: "No, you can't stay here longer." },
+    { question: "Can she join the game?", answer: "Yes, she can join the game." },
+    { question: "Can I talk to the teacher?", answer: "Yes, you can talk to the teacher." },
+    { question: "Can they use this room?", answer: "No, they can't use this room." },
+    { question: "Can we park here?", answer: "Yes, you can park here." },
+    { question: "Can he sit next to you?", answer: "No, he can't sit next to me." }
+  ]
+};
+
 // Module 22 Data: Can / Can't for Abilities
 const MODULE_22_DATA = {
   title: "Tomas Hoca - Module 22: Can / Can't for Abilities",
@@ -1824,6 +1909,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     if (selectedModule === 20) return MODULE_20_DATA;
     if (selectedModule === 21) return MODULE_21_DATA;
     if (selectedModule === 22) return MODULE_22_DATA;
+    if (selectedModule === 23) return MODULE_23_DATA;
     return MODULE_1_DATA; // fallback
   };
 
