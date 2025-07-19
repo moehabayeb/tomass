@@ -40,6 +40,7 @@ const A1_MODULES = Array.from({ length: 50 }, (_, i) => ({
          i === 6 ? 'This / That / These / Those' :
          i === 7 ? 'There is / There are - Positive Sentences' :
          i === 8 ? 'There is / There are - Negative Sentences' :
+         i === 9 ? 'There is / There are - Question Sentences' :
          `Module ${i + 1}`,
   description: i === 0 ? 'Learn to use am, is, and are' : 
                i === 1 ? 'Learn to use "am", "is", and "are" with "not"' :
@@ -50,6 +51,7 @@ const A1_MODULES = Array.from({ length: 50 }, (_, i) => ({
                i === 6 ? 'Learn to use This, That, These, and Those correctly' :
                i === 7 ? 'Learn to use There is and There are in positive sentences' :
                i === 8 ? 'Learn to use There isn\'t and There aren\'t in negative sentences' :
+               i === 9 ? 'Learn to ask questions with Is there and Are there' :
                'Coming soon',
   completed: false,
   locked: i > 0, // Only Module 1 is unlocked initially
@@ -732,6 +734,77 @@ Konu Anlatımı:
   ]
 };
 
+// Module 10 Data: There is / There are - Question Sentences
+const MODULE_10_DATA = {
+  title: "Modül 10 - There is / There are – Question Sentences",
+  description: "Bu modülde İngilizcede 'There is' ve 'There are' soru cümleleri kurmayı öğreneceğiz.",
+  intro: `"There is" ve "There are" kalıplarını, bir şeyin bir yerde olup olmadığını sorarken de kullanırız.
+
+Kullanımı:
+Is there a... + tekil isim?
+Are there any... + çoğul isim?
+
+Örnekler:
+Is there a pen on the desk? (Masada bir kalem var mı?)
+Are there any books in your bag? (Çantanda kitap var mı?)`,
+  tip: "Use 'Is there' with singular nouns and 'Are there' with plural nouns when asking questions about existence or location.",
+  
+  table: [
+    { structure: "Is there a + singular noun?", example: "Is there a pen on the desk?" },
+    { structure: "Are there any + plural noun?", example: "Are there any books in your bag?" },
+    { structure: "Is there + uncountable noun?", example: "Is there water in the glass?" }
+  ],
+  
+  listeningExamples: [
+    "Is there a pen on the desk?",
+    "Are there any books in your bag?",
+    "Is there water in the glass?"
+  ],
+  
+  speakingPractice: [
+    { question: "Is there a pen on the desk?", answer: "Yes, there is a pen on the desk." },
+    { question: "Is there a book in your bag?", answer: "Yes, there is a book in my bag." },
+    { question: "Is there a dog in the garden?", answer: "Yes, there is a dog in the garden." },
+    { question: "Is there a teacher in the classroom?", answer: "Yes, there is a teacher in the classroom." },
+    { question: "Is there a phone on the table?", answer: "Yes, there is a phone on the table." },
+    { question: "Is there an apple in the fridge?", answer: "Yes, there is an apple in the fridge." },
+    { question: "Is there a window in the room?", answer: "Yes, there is a window in the room." },
+    { question: "Is there a car in the garage?", answer: "Yes, there is a car in the garage." },
+    { question: "Is there a student in the hall?", answer: "Yes, there is a student in the hall." },
+    { question: "Is there a laptop on the chair?", answer: "Yes, there is a laptop on the chair." },
+    { question: "Are there any books on the shelf?", answer: "Yes, there are books on the shelf." },
+    { question: "Are there any pens in the pencil case?", answer: "Yes, there are pens in the pencil case." },
+    { question: "Are there any students in the library?", answer: "Yes, there are students in the library." },
+    { question: "Are there any chairs in the room?", answer: "Yes, there are chairs in the room." },
+    { question: "Are there any cars on the street?", answer: "Yes, there are cars on the street." },
+    { question: "Are there any apples on the tree?", answer: "Yes, there are apples on the tree." },
+    { question: "Are there any cats under the bed?", answer: "Yes, there are cats under the bed." },
+    { question: "Are there any people at the bus stop?", answer: "Yes, there are people at the bus stop." },
+    { question: "Are there any shirts in the drawer?", answer: "Yes, there are shirts in the drawer." },
+    { question: "Are there any bottles in the box?", answer: "Yes, there are bottles in the box." },
+    { question: "Is there a television in the living room?", answer: "Yes, there is a television in the living room." },
+    { question: "Is there a fridge in the kitchen?", answer: "Yes, there is a fridge in the kitchen." },
+    { question: "Is there a mirror in the bathroom?", answer: "Yes, there is a mirror in the bathroom." },
+    { question: "Is there a bed in the bedroom?", answer: "Yes, there is a bed in the bedroom." },
+    { question: "Is there a clock on the wall?", answer: "Yes, there is a clock on the wall." },
+    { question: "Are there any toys in the box?", answer: "Yes, there are toys in the box." },
+    { question: "Are there any pictures on the wall?", answer: "Yes, there are pictures on the wall." },
+    { question: "Are there any shoes under the bed?", answer: "Yes, there are shoes under the bed." },
+    { question: "Are there any cups on the table?", answer: "Yes, there are cups on the table." },
+    { question: "Are there any lamps in the room?", answer: "Yes, there are lamps in the room." },
+    { question: "Is there a map on the wall?", answer: "Yes, there is a map on the wall." },
+    { question: "Is there a bag on the chair?", answer: "Yes, there is a bag on the chair." },
+    { question: "Is there a computer on the desk?", answer: "Yes, there is a computer on the desk." },
+    { question: "Is there a magazine on the sofa?", answer: "Yes, there is a magazine on the sofa." },
+    { question: "Is there a cat in the room?", answer: "Yes, there is a cat in the room." },
+    { question: "Are there any notebooks in the bag?", answer: "Yes, there are notebooks in the bag." },
+    { question: "Are there any bottles in the fridge?", answer: "Yes, there are bottles in the fridge." },
+    { question: "Are there any pictures in the album?", answer: "Yes, there are pictures in the album." },
+    { question: "Are there any people in the room?", answer: "Yes, there are people in the room." },
+    { question: "Are there any sandwiches on the plate?", answer: "Yes, there are sandwiches on the plate." }
+  ]
+};
+
 export default function LessonsApp({ onBack }: LessonsAppProps) {
   const [width, height] = useWindowSize();
   const [viewState, setViewState] = useState<ViewState>('levels');
@@ -782,6 +855,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     if (selectedModule === 7) return MODULE_7_DATA;
     if (selectedModule === 8) return MODULE_8_DATA;
     if (selectedModule === 9) return MODULE_9_DATA;
+    if (selectedModule === 10) return MODULE_10_DATA;
     return MODULE_1_DATA; // fallback
   };
 
@@ -1438,7 +1512,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
                   key={module.id} 
                   className={`bg-white/10 border-white/20 cursor-pointer transition-all hover:bg-white/15 ${!isUnlocked ? 'opacity-50' : ''}`}
                   onClick={() => {
-                    if (isUnlocked && (module.id === 1 || module.id === 2 || module.id === 3 || module.id === 4 || module.id === 5 || module.id === 6 || module.id === 7 || module.id === 8 || module.id === 9)) { // Modules 1-9 are implemented
+                    if (isUnlocked && (module.id === 1 || module.id === 2 || module.id === 3 || module.id === 4 || module.id === 5 || module.id === 6 || module.id === 7 || module.id === 8 || module.id === 9 || module.id === 10)) { // Modules 1-10 are implemented
                       setSelectedModule(module.id);
                       setViewState('lesson');
                       setCurrentPhase('intro');
@@ -1608,6 +1682,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
                      selectedModule === 6 ? '🏠 Possessive Adjectives Tablosu:' :
                      selectedModule === 8 ? '📍 There is / There are Tablosu:' :
                      selectedModule === 9 ? '🚫 There isn\'t / There aren\'t Tablosu:' :
+                     selectedModule === 10 ? '❓ There is / There are Soru Tablosu:' :
                      '📊 Grammar Tablosu:'}
                   </h4>
                   <div className="overflow-x-auto">
@@ -1638,7 +1713,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
                               <th className="text-left py-2 px-1">Possessive Adjective</th>
                               <th className="text-left py-2 px-1">Example</th>
                             </>
-                          ) : selectedModule === 8 || selectedModule === 9 ? (
+                          ) : selectedModule === 8 || selectedModule === 9 || selectedModule === 10 ? (
                             <>
                               <th className="text-left py-2 px-1">Structure</th>
                               <th className="text-left py-2 px-1">Example</th>
@@ -1681,7 +1756,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
                                 <td className="py-2 px-1 text-orange-300 font-medium">{(row as any).possessive}</td>
                                 <td className="py-2 px-1 italic">{row.example}</td>
                               </>
-                            ) : selectedModule === 8 || selectedModule === 9 ? (
+                            ) : selectedModule === 8 || selectedModule === 9 || selectedModule === 10 ? (
                               <>
                                 <td className="py-2 px-1 text-green-300 font-medium">{(row as any).structure}</td>
                                 <td className="py-2 px-1 italic">{row.example}</td>
