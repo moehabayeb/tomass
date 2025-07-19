@@ -54,6 +54,7 @@ const A1_MODULES = Array.from({ length: 50 }, (_, i) => ({
              i === 20 ? 'Adverbs of Frequency (Sıklık Zarfları)' :
              i === 21 ? 'Can / Can\'t for Abilities' :
              i === 22 ? 'Can / Can\'t for Permission' :
+             i === 23 ? 'Like/Love/Hate + -ing' :
              `Module ${i + 1}`,
   description: i === 0 ? 'Learn to use am, is, and are' : 
                i === 1 ? 'Learn to use "am", "is", and "are" with "not"' :
@@ -78,6 +79,7 @@ const A1_MODULES = Array.from({ length: 50 }, (_, i) => ({
                   i === 20 ? 'Learn to use adverbs of frequency (always, usually, sometimes, never) in English sentences' :
                   i === 21 ? 'Learn to express abilities and inabilities using can and can\'t' :
                   i === 22 ? 'Learn to ask for and give permission using can and can\'t' :
+                  i === 23 ? 'Learn to express likes, loves, and hates with -ing verbs' :
                   'Coming soon',
   completed: false,
   locked: i > 0, // Only Module 1 is unlocked initially
@@ -1766,6 +1768,81 @@ Cevap: Yes, you can. / No, you can't.`,
   ]
 };
 
+// Module 24 Data: Like/Love/Hate + -ing
+const MODULE_24_DATA = {
+  title: "A1 – Module 24: Like/Love/Hate + -ing",
+  description: '"Like", "Love" ve "Hate" fiilleri, bir eylemi sevdiğimizi, çok sevdiğimizi veya nefret ettiğimizi anlatmak için kullanılır.',
+  intro: `"Like", "Love" ve "Hate" fiilleri, bir eylemi sevdiğimizi, çok sevdiğimizi veya nefret ettiğimizi anlatmak için kullanılır. Bu fiillerden sonra gelen fiil "-ing" takısı alır.
+
+Kullanımı:
+Subject + like/love/hate + verb-ing
+
+Örnekler:
+
+I like reading books. (Kitap okumayı severim.)
+
+She loves cooking. (O yemek yapmayı çok sever.)
+
+He hates running. (O koşmaktan nefret eder.)`,
+  tip: "Like/Love/Hate fiillerinden sonra fiiller -ing takısı alır",
+  
+  table: [
+    { verb: "Like", usage: "Subject + like + verb-ing", example: "I like reading books." },
+    { verb: "Love", usage: "Subject + love + verb-ing", example: "She loves cooking." },
+    { verb: "Hate", usage: "Subject + hate + verb-ing", example: "He hates running." },
+    { verb: "Don't like", usage: "Subject + don't/doesn't like + verb-ing", example: "They don't like swimming." }
+  ],
+  
+  listeningExamples: [
+    "I like reading books.",
+    "She loves cooking.",
+    "He hates running."
+  ],
+  
+  speakingPractice: [
+    { question: "Do you like reading books?", answer: "Yes, I like reading books." },
+    { question: "Does he love cooking?", answer: "Yes, he loves cooking." },
+    { question: "Do they hate playing football?", answer: "No, they don't hate playing football." },
+    { question: "Does she like swimming?", answer: "Yes, she likes swimming." },
+    { question: "Do you love watching movies?", answer: "Yes, I love watching movies." },
+    { question: "Does he hate dancing?", answer: "No, he doesn't hate dancing." },
+    { question: "Do we like walking in the park?", answer: "Yes, we like walking in the park." },
+    { question: "Do they love listening to music?", answer: "Yes, they love listening to music." },
+    { question: "Does she hate cleaning the house?", answer: "Yes, she hates cleaning the house." },
+    { question: "Do you like painting?", answer: "No, I don't like painting." },
+    { question: "Does he love running?", answer: "Yes, he loves running." },
+    { question: "Do they hate studying?", answer: "No, they don't hate studying." },
+    { question: "Does she like writing stories?", answer: "Yes, she likes writing stories." },
+    { question: "Do you love singing?", answer: "Yes, I love singing." },
+    { question: "Does he hate eating vegetables?", answer: "Yes, he hates eating vegetables." },
+    { question: "Do we like playing chess?", answer: "No, we don't like playing chess." },
+    { question: "Do they love driving?", answer: "Yes, they love driving." },
+    { question: "Does she hate working at night?", answer: "No, she doesn't hate working at night." },
+    { question: "Do you like traveling?", answer: "Yes, I like traveling." },
+    { question: "Does he love fishing?", answer: "Yes, he loves fishing." },
+    { question: "Do they hate doing homework?", answer: "No, they don't hate doing homework." },
+    { question: "Does she like going shopping?", answer: "Yes, she likes going shopping." },
+    { question: "Do we love eating ice cream?", answer: "Yes, we love eating ice cream." },
+    { question: "Do you hate waiting in line?", answer: "Yes, I hate waiting in line." },
+    { question: "Does he like playing video games?", answer: "Yes, he likes playing video games." },
+    { question: "Do they love baking cakes?", answer: "Yes, they love baking cakes." },
+    { question: "Does she hate driving in traffic?", answer: "Yes, she hates driving in traffic." },
+    { question: "Do you like gardening?", answer: "No, I don't like gardening." },
+    { question: "Does he love hiking?", answer: "Yes, he loves hiking." },
+    { question: "Do they hate cleaning their room?", answer: "No, they don't hate cleaning their room." },
+    { question: "Does she like taking photos?", answer: "Yes, she likes taking photos." },
+    { question: "Do we love watching football?", answer: "Yes, we love watching football." },
+    { question: "Do you hate doing the dishes?", answer: "Yes, I hate doing the dishes." },
+    { question: "Does he like shopping online?", answer: "Yes, he likes shopping online." },
+    { question: "Do they love helping people?", answer: "Yes, they love helping people." },
+    { question: "Does she hate studying at night?", answer: "No, she doesn't hate studying at night." },
+    { question: "Do you like running in the morning?", answer: "Yes, I like running in the morning." },
+    { question: "Does he love playing the guitar?", answer: "Yes, he loves playing the guitar." },
+    { question: "Do they hate swimming in cold water?", answer: "Yes, they hate swimming in cold water." },
+    { question: "Does she like watching cartoons?", answer: "Yes, she likes watching cartoons." }
+  ]
+};
+
 // Module 22 Data: Can / Can't for Abilities
 const MODULE_22_DATA = {
   title: "Tomas Hoca - Module 22: Can / Can't for Abilities",
@@ -1910,6 +1987,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     if (selectedModule === 21) return MODULE_21_DATA;
     if (selectedModule === 22) return MODULE_22_DATA;
     if (selectedModule === 23) return MODULE_23_DATA;
+    if (selectedModule === 24) return MODULE_24_DATA;
     return MODULE_1_DATA; // fallback
   };
 
