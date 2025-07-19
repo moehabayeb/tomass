@@ -44,6 +44,7 @@ const A1_MODULES = Array.from({ length: 50 }, (_, i) => ({
           i === 10 ? 'Articles: a / an / the – Basic Usage' :
           i === 11 ? 'Plural Nouns – Regular and Irregular' :
           i === 12 ? 'Have got / Has got – Positive Sentences' :
+          i === 13 ? 'Have got / Has got – Negative Sentences' :
           `Module ${i + 1}`,
   description: i === 0 ? 'Learn to use am, is, and are' : 
                i === 1 ? 'Learn to use "am", "is", and "are" with "not"' :
@@ -58,6 +59,7 @@ const A1_MODULES = Array.from({ length: 50 }, (_, i) => ({
                 i === 10 ? 'Learn the basic usage of articles a, an, and the' :
                 i === 11 ? 'Learn regular and irregular plural nouns in English' :
                 i === 12 ? 'Learn to use Have got and Has got in positive sentences' :
+                i === 13 ? 'Learn to use Haven\'t got and Hasn\'t got in negative sentences' :
                 'Coming soon',
   completed: false,
   locked: i > 0, // Only Module 1 is unlocked initially
@@ -1052,6 +1054,84 @@ We have got a big house.`,
   ]
 };
 
+// Module 14 Data: Have got / Has got – Negative Sentences
+const MODULE_14_DATA = {
+  title: "Modül 14 - Have got / Has got – Negative Sentences",
+  description: "Bu modülde İngilizcede 'Have got' ve 'Has got' kullanarak olumsuz cümleler kurmayı öğreneceğiz.",
+  intro: `Bu modülde İngilizcede "Have got" ve "Has got" kullanarak olumsuz cümleler kurmayı öğreneceğiz.
+
+Konu Anlatımı:
+
+haven't got = I, you, we, they için kullanılır.
+
+hasn't got = He, she, it için kullanılır.
+
+Örnek Cümleler:
+I haven't got a car.
+She hasn't got a sister.
+They haven't got any money.`,
+  tip: "Use 'haven't got' with I, you, we, they and 'hasn't got' with he, she, it for negative possession.",
+  
+  table: [
+    { subject: "I", verb: "haven't got", example: "I haven't got a bike." },
+    { subject: "You", verb: "haven't got", example: "You haven't got a dog." },
+    { subject: "He", verb: "hasn't got", example: "He hasn't got a brother." },
+    { subject: "She", verb: "hasn't got", example: "She hasn't got a car." },
+    { subject: "It", verb: "hasn't got", example: "It hasn't got a tail." },
+    { subject: "We", verb: "haven't got", example: "We haven't got a garden." },
+    { subject: "They", verb: "haven't got", example: "They haven't got a house." }
+  ],
+  
+  listeningExamples: [
+    "I haven't got a car.",
+    "She hasn't got a sister.",
+    "They haven't got any money."
+  ],
+  
+  speakingPractice: [
+    { question: "Do you have a car?", answer: "No, I haven't got a car." },
+    { question: "Has she got any brothers?", answer: "No, she hasn't got any brothers." },
+    { question: "Have they got pets?", answer: "No, they haven't got any pets." },
+    { question: "Has he got a computer?", answer: "No, he hasn't got a computer." },
+    { question: "Have we got enough chairs?", answer: "No, we haven't got enough chairs." },
+    { question: "Have you got a bike?", answer: "No, I haven't got a bike." },
+    { question: "Has it got a name tag?", answer: "No, it hasn't got a name tag." },
+    { question: "Have your friends got time?", answer: "No, they haven't got time." },
+    { question: "Has Anna got blue eyes?", answer: "No, she hasn't got blue eyes." },
+    { question: "Have your parents got a car?", answer: "No, they haven't got a car." },
+    { question: "Has he got a mobile phone?", answer: "No, he hasn't got a mobile phone." },
+    { question: "Have we got a holiday this week?", answer: "No, we haven't got a holiday this week." },
+    { question: "Have the students got books?", answer: "No, they haven't got books." },
+    { question: "Has your dog got a collar?", answer: "No, it hasn't got a collar." },
+    { question: "Have you got anything in your bag?", answer: "No, I haven't got anything in my bag." },
+    { question: "Has she got a television in her room?", answer: "No, she hasn't got a television in her room." },
+    { question: "Have they got a fridge?", answer: "No, they haven't got a fridge." },
+    { question: "Has John got a watch?", answer: "No, he hasn't got a watch." },
+    { question: "Have we got any juice?", answer: "No, we haven't got any juice." },
+    { question: "Has your teacher got a car?", answer: "No, he hasn't got a car." },
+    { question: "Do you have a car?", answer: "No, I haven't got a car." },
+    { question: "Has she got any brothers?", answer: "No, she hasn't got any brothers." },
+    { question: "Have they got pets?", answer: "No, they haven't got any pets." },
+    { question: "Has he got a computer?", answer: "No, he hasn't got a computer." },
+    { question: "Have we got enough chairs?", answer: "No, we haven't got enough chairs." },
+    { question: "Have you got a bike?", answer: "No, I haven't got a bike." },
+    { question: "Has it got a name tag?", answer: "No, it hasn't got a name tag." },
+    { question: "Have your friends got time?", answer: "No, they haven't got time." },
+    { question: "Has Anna got blue eyes?", answer: "No, she hasn't got blue eyes." },
+    { question: "Have your parents got a car?", answer: "No, they haven't got a car." },
+    { question: "Has he got a mobile phone?", answer: "No, he hasn't got a mobile phone." },
+    { question: "Have we got a holiday this week?", answer: "No, we haven't got a holiday this week." },
+    { question: "Have the students got books?", answer: "No, they haven't got books." },
+    { question: "Has your dog got a collar?", answer: "No, it hasn't got a collar." },
+    { question: "Have you got anything in your bag?", answer: "No, I haven't got anything in my bag." },
+    { question: "Has she got a television in her room?", answer: "No, she hasn't got a television in her room." },
+    { question: "Have they got a fridge?", answer: "No, they haven't got a fridge." },
+    { question: "Has John got a watch?", answer: "No, he hasn't got a watch." },
+    { question: "Have we got any juice?", answer: "No, we haven't got any juice." },
+    { question: "Has your teacher got a car?", answer: "No, he hasn't got a car." }
+  ]
+};
+
 export default function LessonsApp({ onBack }: LessonsAppProps) {
   const [width, height] = useWindowSize();
   const [viewState, setViewState] = useState<ViewState>('levels');
@@ -1106,6 +1186,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     if (selectedModule === 11) return MODULE_11_DATA;
     if (selectedModule === 12) return MODULE_12_DATA;
     if (selectedModule === 13) return MODULE_13_DATA;
+    if (selectedModule === 14) return MODULE_14_DATA;
     return MODULE_1_DATA; // fallback
   };
 
