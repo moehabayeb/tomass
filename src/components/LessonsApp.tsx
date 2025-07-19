@@ -651,6 +651,11 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
   }, [currentPhase, viewState, speak, currentModuleData]);
 
   const processAudioRecording = useCallback(async (audioBlob: Blob) => {
+    // CRITICAL: Capture the current speaking index and expected sentence at the START
+    // This prevents race conditions where the index changes during async operations
+    const capturedSpeakingIndex = speakingIndex;
+    const capturedExpectedSentence = currentModuleData.speakingPractice[capturedSpeakingIndex];
+    
     setIsProcessing(true);
     setAttempts(prev => prev + 1);
     
@@ -661,6 +666,8 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
         type: audioBlob.type,
         isEmpty: audioBlob.size === 0
       });
+      console.log('🎯 CAPTURED speaking index:', capturedSpeakingIndex);
+      console.log('🎯 CAPTURED expected sentence:', capturedExpectedSentence);
       
       // Validate audio blob
       if (!audioBlob || audioBlob.size === 0) {
@@ -747,11 +754,14 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
       }
 
       const { corrected } = feedbackResponse.data;
-      const expectedSentence = currentModuleData.speakingPractice[speakingIndex].toLowerCase();
+      
+      // CRITICAL: Use the CAPTURED values to prevent race conditions
+      const expectedSentence = capturedExpectedSentence.toLowerCase();
       const userSentence = finalTranscript.toLowerCase();
       
-      console.log('Expected:', expectedSentence);
-      console.log('User said:', userSentence);
+      console.log('🎯 Expected (CAPTURED):', expectedSentence);
+      console.log('🎯 User said:', userSentence);
+      console.log('🎯 Index used (CAPTURED):', capturedSpeakingIndex);
       console.log('AI feedback:', corrected);
       
       // Check if the transcript contains the key parts of the expected sentence
@@ -778,8 +788,12 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
         
         // Auto-advance after 1.5 seconds for A1 level
         setTimeout(() => {
-          if (speakingIndex < totalQuestions - 1) {
-            setSpeakingIndex(prev => prev + 1);
+          // Verify we're still on the same question before advancing
+          if (capturedSpeakingIndex < totalQuestions - 1) {
+            setSpeakingIndex(prev => {
+              console.log('🎯 Advancing from captured index:', capturedSpeakingIndex, 'current state:', prev, 'to:', prev + 1);
+              return prev + 1;
+            });
             setFeedback('');
           } else {
             completeLesson();
@@ -788,7 +802,8 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
         }, 1500);
       } else {
         // Only show corrective feedback when actually incorrect for A1 level
-        setFeedback(`Try saying: "${currentModuleData.speakingPractice[speakingIndex]}"`);
+        // Use CAPTURED expected sentence to ensure consistency
+        setFeedback(`Try saying: "${capturedExpectedSentence}"`);
         setFeedbackType('error');
         
         setTimeout(() => {
