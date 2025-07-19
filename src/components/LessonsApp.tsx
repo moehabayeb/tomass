@@ -51,6 +51,7 @@ const A1_MODULES = Array.from({ length: 50 }, (_, i) => ({
             i === 17 ? 'Simple Present – Negative Sentences (don\'t / doesn\'t)' :
             i === 18 ? 'Simple Present – Yes/No Questions' :
             i === 19 ? 'Simple Present – Wh- Questions (What, Where, Who, etc.)' :
+            i === 20 ? 'Adverbs of Frequency (Sıklık Zarfları)' :
             `Module ${i + 1}`,
   description: i === 0 ? 'Learn to use am, is, and are' : 
                i === 1 ? 'Learn to use "am", "is", and "are" with "not"' :
@@ -72,6 +73,7 @@ const A1_MODULES = Array.from({ length: 50 }, (_, i) => ({
                  i === 17 ? 'Learn to form negative sentences using Simple Present tense with don\'t and doesn\'t' :
                  i === 18 ? 'Learn to form Yes/No questions using Simple Present tense with Do and Does' :
                  i === 19 ? 'Learn to form Wh- questions using Simple Present tense with What, Where, Who, When, Why, How' :
+                 i === 20 ? 'Learn to use adverbs of frequency (always, usually, sometimes, never) in English sentences' :
                  'Coming soon',
   completed: false,
   locked: i > 0, // Only Module 1 is unlocked initially
@@ -1593,6 +1595,90 @@ When do they study?`,
   ]
 };
 
+// Module 21 Data: Adverbs of Frequency (Sıklık Zarfları)
+const MODULE_21_DATA = {
+  title: "Modül 21 – Adverbs of Frequency (Sıklık Zarfları)",
+  description: '"Adverbs of Frequency" (Sıklık Zarfları), bir eylemin ne sıklıkla yapıldığını ifade eder.',
+  intro: `"Adverbs of Frequency" (Sıklık Zarfları), bir eylemin ne sıklıkla yapıldığını ifade eder.
+En sık kullanılanlar şunlardır:
+
+Always – Her zaman
+
+Usually – Genellikle
+
+Sometimes – Bazen
+
+Never – Asla
+
+Kullanım Kuralları:
+
+Eğer cümlede "to be" fiili varsa, sıklık zarfı bu fiilden sonra gelir.
+👉 Örnek: She is always happy.
+
+Diğer fiillerde ise sıklık zarfı fiilden önce gelir.
+👉 Örnek: They usually eat lunch at 1 pm.
+
+Yardımcı fiil varsa, sıklık zarfı yardımcı fiilden sonra gelir.
+👉 Örnek: You can sometimes see dolphins here.`,
+  tip: "Sıklık zarfları 'to be' fiilinden sonra, diğer fiillerden önce gelir",
+  
+  table: [
+    { adverb: "Always", meaning: "Her zaman", example: "I always wake up at 7 o'clock." },
+    { adverb: "Usually", meaning: "Genellikle", example: "She usually drinks tea in the morning." },
+    { adverb: "Sometimes", meaning: "Bazen", example: "We sometimes go to the cinema." },
+    { adverb: "Never", meaning: "Asla", example: "He never eats fast food." }
+  ],
+  
+  listeningExamples: [
+    "I always eat breakfast at home.",
+    "She usually drinks tea in the morning.",
+    "We sometimes go to the cinema."
+  ],
+  
+  speakingPractice: [
+    { question: "Do you always eat breakfast?", answer: "Yes, I always eat breakfast at home." },
+    { question: "What do you usually do on Sundays?", answer: "I usually visit my grandparents on Sundays." },
+    { question: "Does your friend sometimes call you at night?", answer: "Yes, he sometimes calls me." },
+    { question: "Do you never drink coffee?", answer: "No, I never drink coffee." },
+    { question: "Does she always smile?", answer: "Yes, she always smiles." },
+    { question: "What do you usually eat for lunch?", answer: "I usually eat salad or soup." },
+    { question: "Do you sometimes play football?", answer: "Yes, I sometimes play football with my friends." },
+    { question: "Does your teacher never give homework?", answer: "No, she never gives homework." },
+    { question: "Do they always go to school by bus?", answer: "Yes, they always go by bus." },
+    { question: "Do you usually watch TV at night?", answer: "I usually watch TV after dinner." },
+    { question: "Do you sometimes listen to music in the morning?", answer: "Yes, I sometimes listen to music." },
+    { question: "Does your brother never play computer games?", answer: "No, he never plays computer games." },
+    { question: "What do you always carry in your bag?", answer: "I always carry my phone and wallet." },
+    { question: "Do you usually wake up early?", answer: "Yes, I usually wake up at 6 am." },
+    { question: "Do you never eat chocolate?", answer: "No, I never eat chocolate." },
+    { question: "Do your parents always drink tea?", answer: "Yes, they always drink tea in the morning." },
+    { question: "Do you sometimes go to the park?", answer: "Yes, I sometimes go to the park on weekends." },
+    { question: "Does your dog never bark?", answer: "No, my dog never barks." },
+    { question: "Do you always do your homework?", answer: "Yes, I always do my homework after school." },
+    { question: "Do you usually read books before sleeping?", answer: "I usually read books before I sleep." },
+    { question: "Do you always check your phone in the morning?", answer: "Yes, I always check my phone when I wake up." },
+    { question: "What do you usually eat for dinner?", answer: "I usually eat vegetables and meat for dinner." },
+    { question: "Does your sister sometimes watch cartoons?", answer: "Yes, she sometimes watches cartoons on weekends." },
+    { question: "Do your friends never arrive late?", answer: "No, they never arrive late." },
+    { question: "Do you always brush your teeth before bed?", answer: "Yes, I always brush my teeth at night." },
+    { question: "What do you usually drink in the morning?", answer: "I usually drink tea or coffee in the morning." },
+    { question: "Do you sometimes forget your keys?", answer: "Yes, I sometimes forget them." },
+    { question: "Does your brother never eat vegetables?", answer: "No, he never eats vegetables." },
+    { question: "Do you always wear a jacket in winter?", answer: "Yes, I always wear a warm jacket." },
+    { question: "Do you usually clean your room on Saturdays?", answer: "Yes, I usually clean it on Saturdays." },
+    { question: "Do your parents sometimes go shopping together?", answer: "Yes, they sometimes go shopping together." },
+    { question: "Does your teacher never come late to class?", answer: "No, she never comes late." },
+    { question: "What do you always take with you when you travel?", answer: "I always take my passport and phone." },
+    { question: "Do you usually walk to school?", answer: "Yes, I usually walk when the weather is good." },
+    { question: "Do you sometimes eat breakfast outside?", answer: "Yes, I sometimes eat breakfast at a café." },
+    { question: "Do your friends never play basketball?", answer: "No, they never play basketball." },
+    { question: "Do you always call your family on weekends?", answer: "Yes, I always call them on Sunday evenings." },
+    { question: "Do you usually watch movies at night?", answer: "I usually watch a movie after dinner." },
+    { question: "Does your cousin sometimes visit you?", answer: "Yes, he sometimes visits us in the summer." },
+    { question: "Do you never drink fizzy drinks?", answer: "No, I never drink fizzy drinks." }
+  ]
+};
+
 export default function LessonsApp({ onBack }: LessonsAppProps) {
   const [width, height] = useWindowSize();
   const [viewState, setViewState] = useState<ViewState>('levels');
@@ -1654,6 +1740,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     if (selectedModule === 18) return MODULE_18_DATA;
     if (selectedModule === 19) return MODULE_19_DATA;
     if (selectedModule === 20) return MODULE_20_DATA;
+    if (selectedModule === 21) return MODULE_21_DATA;
     return MODULE_1_DATA; // fallback
   };
 
