@@ -47,6 +47,7 @@ const A1_MODULES = Array.from({ length: 50 }, (_, i) => ({
           i === 13 ? 'Have got / Has got – Negative Sentences' :
            i === 14 ? 'Have got / Has got – Question Sentences' :
            i === 15 ? 'Simple Present – Positive Sentences (I / You / We / They)' :
+           i === 16 ? 'Simple Present – Positive Sentences (He / She / It)' :
            `Module ${i + 1}`,
   description: i === 0 ? 'Learn to use am, is, and are' : 
                i === 1 ? 'Learn to use "am", "is", and "are" with "not"' :
@@ -64,6 +65,7 @@ const A1_MODULES = Array.from({ length: 50 }, (_, i) => ({
                 i === 13 ? 'Learn to use Haven\'t got and Hasn\'t got in negative sentences' :
                 i === 14 ? 'Learn to ask questions with Have got and Has got' :
                 i === 15 ? 'Learn to form positive sentences using Simple Present tense with I, You, We, They' :
+                i === 16 ? 'Learn to form positive sentences using Simple Present tense with He, She, It (+s/es)' :
                 'Coming soon',
   completed: false,
   locked: i > 0, // Only Module 1 is unlocked initially
@@ -1282,6 +1284,79 @@ They go to school by bus.`,
   ]
 };
 
+// Module 17 Data: Simple Present – Positive Sentences (He / She / It)
+const MODULE_17_DATA = {
+  title: "Modül 17 - Simple Present – Positive Sentences (He / She / It)",
+  description: "Bu modülde İngilizcede Simple Present Tense kullanarak olumlu cümleler kurmayı öğreneceğiz.",
+  intro: `Bu modülde İngilizcede Simple Present Tense kullanarak olumlu cümleler kurmayı öğreneceğiz.
+
+Konu Anlatımı:
+Simple Present, alışkanlıkları, genel gerçekleri ve rutinleri ifade eder.
+He / She / It özneleriyle fiile -s veya -es eklenir.
+
+Örnek Cümleler:
+- He plays football on Sundays.
+- She likes coffee.
+- It works very well.`,
+  tip: "Add -s or -es to verbs when using He, She, or It to express habits, general facts, and routines.",
+  
+  table: [
+    { subject: "He", verb: "plays", example: "He plays tennis every weekend." },
+    { subject: "She", verb: "likes", example: "She likes music." },
+    { subject: "It", verb: "works", example: "It works perfectly." },
+    { subject: "He", verb: "watches", example: "He watches TV at night." }
+  ],
+  
+  listeningExamples: [
+    "He plays football on Sundays.",
+    "She likes coffee.",
+    "It works very well."
+  ],
+  
+  speakingPractice: [
+    { question: "What does he do on Sundays?", answer: "He plays football on Sundays." },
+    { question: "Does she like tea?", answer: "Yes, she likes tea." },
+    { question: "Where does he go on Fridays?", answer: "He goes to the cinema on Fridays." },
+    { question: "What does she do after school?", answer: "She plays basketball after school." },
+    { question: "Does he watch TV at night?", answer: "Yes, he watches TV at night." },
+    { question: "What does she eat for breakfast?", answer: "She eats eggs for breakfast." },
+    { question: "Does it rain in winter?", answer: "Yes, it rains a lot in winter." },
+    { question: "Where does he live?", answer: "He lives in Ankara." },
+    { question: "What does she do every morning?", answer: "She drinks coffee every morning." },
+    { question: "Does it work well?", answer: "Yes, it works very well." },
+    { question: "What does he read?", answer: "He reads books every evening." },
+    { question: "What does she play?", answer: "She plays the piano every Saturday." },
+    { question: "Where does he study?", answer: "He studies at the library." },
+    { question: "Does she go shopping?", answer: "Yes, she goes shopping on Saturdays." },
+    { question: "What does he clean?", answer: "He cleans his room every week." },
+    { question: "What does it make?", answer: "It makes a loud noise." },
+    { question: "Does she like ice cream?", answer: "Yes, she likes ice cream." },
+    { question: "What does he cook?", answer: "He cooks pasta for dinner." },
+    { question: "Where does she swim?", answer: "She swims in the sea every summer." },
+    { question: "What does he do in his free time?", answer: "He plays chess in his free time." },
+    { question: "What does he do on Sundays?", answer: "He plays football on Sundays." },
+    { question: "Does she like tea?", answer: "Yes, she likes tea." },
+    { question: "Where does he go on Fridays?", answer: "He goes to the cinema on Fridays." },
+    { question: "What does she do after school?", answer: "She plays basketball after school." },
+    { question: "Does he watch TV at night?", answer: "Yes, he watches TV at night." },
+    { question: "What does she eat for breakfast?", answer: "She eats eggs for breakfast." },
+    { question: "Does it rain in winter?", answer: "Yes, it rains a lot in winter." },
+    { question: "Where does he live?", answer: "He lives in Ankara." },
+    { question: "What does she do every morning?", answer: "She drinks coffee every morning." },
+    { question: "Does it work well?", answer: "Yes, it works very well." },
+    { question: "What does he read?", answer: "He reads books every evening." },
+    { question: "What does she play?", answer: "She plays the piano every Saturday." },
+    { question: "Where does he study?", answer: "He studies at the library." },
+    { question: "Does she go shopping?", answer: "Yes, she goes shopping on Saturdays." },
+    { question: "What does he clean?", answer: "He cleans his room every week." },
+    { question: "What does it make?", answer: "It makes a loud noise." },
+    { question: "Does she like ice cream?", answer: "Yes, she likes ice cream." },
+    { question: "What does he cook?", answer: "He cooks pasta for dinner." },
+    { question: "Where does she swim?", answer: "She swims in the sea every summer." },
+    { question: "What does he do in his free time?", answer: "He plays chess in his free time." }
+  ]
+};
+
 export default function LessonsApp({ onBack }: LessonsAppProps) {
   const [width, height] = useWindowSize();
   const [viewState, setViewState] = useState<ViewState>('levels');
@@ -1339,6 +1414,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     if (selectedModule === 14) return MODULE_14_DATA;
     if (selectedModule === 15) return MODULE_15_DATA;
     if (selectedModule === 16) return MODULE_16_DATA;
+    if (selectedModule === 17) return MODULE_17_DATA;
     return MODULE_1_DATA; // fallback
   };
 
@@ -1995,7 +2071,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
                   key={module.id} 
                   className={`bg-white/10 border-white/20 cursor-pointer transition-all hover:bg-white/15 ${!isUnlocked ? 'opacity-50' : ''}`}
                   onClick={() => {
-                    if (isUnlocked && (module.id >= 1 && module.id <= 16)) { // Modules 1-16 are implemented
+                    if (isUnlocked && (module.id >= 1 && module.id <= 17)) { // Modules 1-17 are implemented
                       setSelectedModule(module.id);
                       setViewState('lesson');
                       setCurrentPhase('intro');
