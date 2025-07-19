@@ -48,9 +48,10 @@ const A1_MODULES = Array.from({ length: 50 }, (_, i) => ({
            i === 14 ? 'Have got / Has got – Question Sentences' :
            i === 15 ? 'Simple Present – Positive Sentences (I / You / We / They)' :
            i === 16 ? 'Simple Present – Positive Sentences (He / She / It)' :
-           i === 17 ? 'Simple Present – Negative Sentences (don\'t / doesn\'t)' :
-           i === 18 ? 'Simple Present – Yes/No Questions' :
-           `Module ${i + 1}`,
+            i === 17 ? 'Simple Present – Negative Sentences (don\'t / doesn\'t)' :
+            i === 18 ? 'Simple Present – Yes/No Questions' :
+            i === 19 ? 'Simple Present – Wh- Questions (What, Where, Who, etc.)' :
+            `Module ${i + 1}`,
   description: i === 0 ? 'Learn to use am, is, and are' : 
                i === 1 ? 'Learn to use "am", "is", and "are" with "not"' :
                i === 2 ? 'Learn to form questions with "am", "is", and "are"' :
@@ -70,6 +71,7 @@ const A1_MODULES = Array.from({ length: 50 }, (_, i) => ({
                 i === 16 ? 'Learn to form positive sentences using Simple Present tense with He, She, It (+s/es)' :
                  i === 17 ? 'Learn to form negative sentences using Simple Present tense with don\'t and doesn\'t' :
                  i === 18 ? 'Learn to form Yes/No questions using Simple Present tense with Do and Does' :
+                 i === 19 ? 'Learn to form Wh- questions using Simple Present tense with What, Where, Who, When, Why, How' :
                  'Coming soon',
   completed: false,
   locked: i > 0, // Only Module 1 is unlocked initially
@@ -1512,6 +1514,85 @@ Do they work on Mondays? → Yes, they do. / No, they don't.`,
   ]
 };
 
+// Module 20 Data: Simple Present – Wh- Questions (What, Where, Who, etc.)
+const MODULE_20_DATA = {
+  title: "Modül 20 – Simple Present – Wh- Questions (What, Where, Who, etc.)",
+  description: "Öğrencilere İngilizce'de Simple Present Tense ile Wh- Questions kurdurmak ve doğru cümleyle cevaplama pratiği yaptırmak.",
+  intro: `Wh- soru kelimeleri: What, Where, Who, When, Why, How
+Kalıplar:
+
+I / You / We / They → Wh- + do + subject + verb?
+
+He / She / It → Wh- + does + subject + verb?
+
+Örnek Cümleler:
+
+What do you eat for breakfast?
+
+Where does she live?
+
+Who plays football?
+
+When do they study?`,
+  tip: "Wh- sorularda I/You/We/They için 'do', He/She/It için 'does' kullanın",
+  
+  table: [
+    { whWord: "What", questionForm: "What do/does + subject + verb?", example: "What do you do on Sundays?" },
+    { whWord: "Where", questionForm: "Where do/does + subject + verb?", example: "Where does she work?" },
+    { whWord: "Who", questionForm: "Who + verb (+s)?", example: "Who cooks dinner?" },
+    { whWord: "When", questionForm: "When do/does + subject + verb?", example: "When do they visit their grandparents?" }
+  ],
+  
+  listeningExamples: [
+    "What do you eat for breakfast?",
+    "Where does she live?",
+    "Who plays football in your team?"
+  ],
+  
+  speakingPractice: [
+    { question: "What do you eat for breakfast?", answer: "I eat eggs and bread for breakfast." },
+    { question: "Where does she live?", answer: "She lives in London." },
+    { question: "Who plays football in your team?", answer: "John plays football in our team." },
+    { question: "When do they go to school?", answer: "They go to school at 8 AM." },
+    { question: "Why do you like this book?", answer: "Because it's very interesting." },
+    { question: "How does he travel to work?", answer: "He travels by bus." },
+    { question: "What does Anna cook for dinner?", answer: "Anna cooks pasta for dinner." },
+    { question: "Where do you study English?", answer: "I study English at Grammar Chat." },
+    { question: "Who watches TV every evening?", answer: "My parents watch TV every evening." },
+    { question: "When does it snow here?", answer: "It snows in January." },
+    { question: "What do they play on weekends?", answer: "They play basketball on weekends." },
+    { question: "Where does your brother work?", answer: "He works at a bank." },
+    { question: "Who sings very well?", answer: "Sarah sings very well." },
+    { question: "When do you clean your room?", answer: "I clean my room every Saturday." },
+    { question: "Why does she like swimming?", answer: "Because it's fun." },
+    { question: "How do they go to school?", answer: "They go to school by bike." },
+    { question: "What does your dog eat?", answer: "It eats dry food." },
+    { question: "Where do we meet on Fridays?", answer: "We meet at the café." },
+    { question: "Who cooks in your family?", answer: "My mother cooks in our family." },
+    { question: "When does your teacher give homework?", answer: "She gives homework every Monday." },
+    { question: "What do you eat for breakfast?", answer: "I eat eggs and bread for breakfast." },
+    { question: "Where does she live?", answer: "She lives in London." },
+    { question: "Who plays football in your team?", answer: "John plays football in our team." },
+    { question: "When do they go to school?", answer: "They go to school at 8 AM." },
+    { question: "Why do you like this book?", answer: "Because it's very interesting." },
+    { question: "How does he travel to work?", answer: "He travels by bus." },
+    { question: "What does Anna cook for dinner?", answer: "Anna cooks pasta for dinner." },
+    { question: "Where do you study English?", answer: "I study English at Grammar Chat." },
+    { question: "Who watches TV every evening?", answer: "My parents watch TV every evening." },
+    { question: "When does it snow here?", answer: "It snows in January." },
+    { question: "What do they play on weekends?", answer: "They play basketball on weekends." },
+    { question: "Where does your brother work?", answer: "He works at a bank." },
+    { question: "Who sings very well?", answer: "Sarah sings very well." },
+    { question: "When do you clean your room?", answer: "I clean my room every Saturday." },
+    { question: "Why does she like swimming?", answer: "Because it's fun." },
+    { question: "How do they go to school?", answer: "They go to school by bike." },
+    { question: "What does your dog eat?", answer: "It eats dry food." },
+    { question: "Where do we meet on Fridays?", answer: "We meet at the café." },
+    { question: "Who cooks in your family?", answer: "My mother cooks in our family." },
+    { question: "When does your teacher give homework?", answer: "She gives homework every Monday." }
+  ]
+};
+
 export default function LessonsApp({ onBack }: LessonsAppProps) {
   const [width, height] = useWindowSize();
   const [viewState, setViewState] = useState<ViewState>('levels');
@@ -1572,6 +1653,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     if (selectedModule === 17) return MODULE_17_DATA;
     if (selectedModule === 18) return MODULE_18_DATA;
     if (selectedModule === 19) return MODULE_19_DATA;
+    if (selectedModule === 20) return MODULE_20_DATA;
     return MODULE_1_DATA; // fallback
   };
 
