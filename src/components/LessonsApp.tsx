@@ -41,6 +41,7 @@ const A1_MODULES = Array.from({ length: 50 }, (_, i) => ({
          i === 7 ? 'There is / There are - Positive Sentences' :
          i === 8 ? 'There is / There are - Negative Sentences' :
          i === 9 ? 'There is / There are - Question Sentences' :
+         i === 10 ? 'Articles: a / an / the – Basic Usage' :
          `Module ${i + 1}`,
   description: i === 0 ? 'Learn to use am, is, and are' : 
                i === 1 ? 'Learn to use "am", "is", and "are" with "not"' :
@@ -52,6 +53,7 @@ const A1_MODULES = Array.from({ length: 50 }, (_, i) => ({
                i === 7 ? 'Learn to use There is and There are in positive sentences' :
                i === 8 ? 'Learn to use There isn\'t and There aren\'t in negative sentences' :
                i === 9 ? 'Learn to ask questions with Is there and Are there' :
+               i === 10 ? 'Learn the basic usage of articles a, an, and the' :
                'Coming soon',
   completed: false,
   locked: i > 0, // Only Module 1 is unlocked initially
@@ -805,6 +807,82 @@ Are there any books in your bag? (Çantanda kitap var mı?)`,
   ]
 };
 
+// Module 11 Data: Articles (a / an / the)
+const MODULE_11_DATA = {
+  title: "Modül 11 - Articles: a / an / the – Basic Usage",
+  description: "Bu modülde İngilizcede Articles (a, an, the) konusunu öğreneceğiz.",
+  intro: `Bu modülde İngilizcede Articles (a, an, the) konusunu öğreneceğiz.
+
+Konu Anlatımı:
+- 'a' = sessiz harfle başlayan sayılabilir tekil isimler için
+- 'an' = sesli harfle başlayan sayılabilir tekil isimler için  
+- 'the' = belirli bir nesneden bahsederken
+
+Örnek Cümleler:
+I see a cat. (Herhangi bir kedi)
+She has an apple. (Herhangi bir elma)
+The sun is bright. (Belirli: Güneş)`,
+  
+  table: [
+    { article: "a", usage: "Sessiz harf ile başlayan tekil isim", example: "a dog, a car, a house" },
+    { article: "an", usage: "Sesli harf ile başlayan tekil isim", example: "an apple, an hour" },
+    { article: "the", usage: "Belirli nesneler veya tek olanlar", example: "the sun, the book on the table" }
+  ],
+  
+  listeningExamples: [
+    "I have a book.",
+    "She eats an apple.",
+    "The cat is sleeping.",
+    "He has a car.",
+    "We need an umbrella.",
+    "The door is open.",
+    "There is a dog in the garden."
+  ],
+  
+  speakingPractice: [
+    { question: "What do you see?", answer: "I see a cat." },
+    { question: "What does she have?", answer: "She has an apple." },
+    { question: "What is bright?", answer: "The sun is bright." },
+    { question: "What do you need?", answer: "I need a pen." },
+    { question: "What do they want?", answer: "They want an orange." },
+    { question: "What is on the table?", answer: "The book is on the table." },
+    { question: "What do you have?", answer: "I have a phone." },
+    { question: "What does he need?", answer: "He needs an umbrella." },
+    { question: "What is in the sky?", answer: "The moon is in the sky." },
+    { question: "What do you want?", answer: "I want a sandwich." },
+    { question: "What does she eat?", answer: "She eats an egg." },
+    { question: "What is closed?", answer: "The window is closed." },
+    { question: "What do you see?", answer: "I see a bird." },
+    { question: "What do they need?", answer: "They need an hour." },
+    { question: "What is open?", answer: "The door is open." },
+    { question: "What do you have?", answer: "I have a computer." },
+    { question: "What does he want?", answer: "He wants an ice cream." },
+    { question: "What is shining?", answer: "The star is shining." },
+    { question: "What do you need?", answer: "I need a chair." },
+    { question: "What does she have?", answer: "She has an idea." },
+    { question: "What is beautiful?", answer: "The flower is beautiful." },
+    { question: "What do you see?", answer: "I see a house." },
+    { question: "What do they want?", answer: "They want an answer." },
+    { question: "What is big?", answer: "The elephant is big." },
+    { question: "What do you have?", answer: "I have a bag." },
+    { question: "What does he need?", answer: "He needs an eraser." },
+    { question: "What is red?", answer: "The apple is red." },
+    { question: "What do you want?", answer: "I want a coffee." },
+    { question: "What does she see?", answer: "She sees an owl." },
+    { question: "What is long?", answer: "The river is long." },
+    { question: "What do you have?", answer: "I have a watch." },
+    { question: "What do they need?", answer: "They need an envelope." },
+    { question: "What is small?", answer: "The ant is small." },
+    { question: "What do you see?", answer: "I see a tree." },
+    { question: "What does he want?", answer: "He wants an orange juice." },
+    { question: "What is loud?", answer: "The music is loud." },
+    { question: "What do you need?", answer: "I need a map." },
+    { question: "What does she have?", answer: "She has an umbrella." },
+    { question: "What is warm?", answer: "The sun is warm." },
+    { question: "What do you want?", answer: "I want a pizza." }
+  ]
+};
+
 export default function LessonsApp({ onBack }: LessonsAppProps) {
   const [width, height] = useWindowSize();
   const [viewState, setViewState] = useState<ViewState>('levels');
@@ -856,6 +934,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     if (selectedModule === 8) return MODULE_8_DATA;
     if (selectedModule === 9) return MODULE_9_DATA;
     if (selectedModule === 10) return MODULE_10_DATA;
+    if (selectedModule === 11) return MODULE_11_DATA;
     return MODULE_1_DATA; // fallback
   };
 
@@ -1643,19 +1722,21 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
         </div>
 
         {/* Tip Card */}
-        <Card className="mb-6 bg-white/10 border-white/20">
-          <CardContent className="p-4">
-            <div className="flex items-start space-x-3">
-              <div className="bg-blue-500/20 rounded-full p-2 flex-shrink-0">
-                <Star className="h-4 w-4 text-blue-400" />
+        {'tip' in currentModuleData && currentModuleData.tip && (
+          <Card className="mb-6 bg-white/10 border-white/20">
+            <CardContent className="p-4">
+              <div className="flex items-start space-x-3">
+                <div className="bg-blue-500/20 rounded-full p-2 flex-shrink-0">
+                  <Star className="h-4 w-4 text-blue-400" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-white text-sm mb-1">Grammar Tip</h3>
+                  <p className="text-white/80 text-sm">{currentModuleData.tip}</p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-semibold text-white text-sm mb-1">Grammar Tip</h3>
-                <p className="text-white/80 text-sm">{currentModuleData.tip}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Intro Phase */}
         {currentPhase === 'intro' && (
@@ -1683,6 +1764,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
                      selectedModule === 8 ? '📍 There is / There are Tablosu:' :
                      selectedModule === 9 ? '🚫 There isn\'t / There aren\'t Tablosu:' :
                      selectedModule === 10 ? '❓ There is / There are Soru Tablosu:' :
+                     selectedModule === 11 ? '📰 Articles Tablosu:' :
                      '📊 Grammar Tablosu:'}
                   </h4>
                   <div className="overflow-x-auto">
@@ -1718,6 +1800,12 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
                               <th className="text-left py-2 px-1">Structure</th>
                               <th className="text-left py-2 px-1">Example</th>
                             </>
+                          ) : selectedModule === 11 ? (
+                            <>
+                              <th className="text-left py-2 px-1">Article</th>
+                              <th className="text-left py-2 px-1">Usage</th>
+                              <th className="text-left py-2 px-1">Example</th>
+                            </>
                           ) : (
                             <>
                               <th className="text-left py-2 px-1">Subject</th>
@@ -1734,10 +1822,10 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
                           <tr key={index} className="border-b border-white/10">
                             {selectedModule === 3 ? (
                               <>
-                                <td className="py-2 px-1 text-blue-300 font-medium">{row.verb}</td>
-                                <td className="py-2 px-1">{row.subject}</td>
-                                <td className="py-2 px-1">{row.complement}</td>
-                                <td className="py-2 px-1 italic">{row.example}</td>
+                                <td className="py-2 px-1 text-blue-300 font-medium">{(row as any).verb}</td>
+                                <td className="py-2 px-1">{(row as any).subject}</td>
+                                <td className="py-2 px-1">{(row as any).complement}</td>
+                                <td className="py-2 px-1 italic">{(row as any).example}</td>
                               </>
                             ) : selectedModule === 4 ? (
                               <>
@@ -1748,26 +1836,32 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
                             ) : selectedModule === 5 ? (
                               <>
                                 <td className="py-2 px-1 text-purple-300 font-medium">{(row as any).pronoun}</td>
-                                <td className="py-2 px-1 italic">{row.example}</td>
+                                <td className="py-2 px-1 italic">{(row as any).example}</td>
                               </>
                             ) : selectedModule === 6 ? (
                               <>
                                 <td className="py-2 px-1 text-purple-300 font-medium">{(row as any).pronoun}</td>
                                 <td className="py-2 px-1 text-orange-300 font-medium">{(row as any).possessive}</td>
-                                <td className="py-2 px-1 italic">{row.example}</td>
+                                <td className="py-2 px-1 italic">{(row as any).example}</td>
                               </>
                             ) : selectedModule === 8 || selectedModule === 9 || selectedModule === 10 ? (
                               <>
                                 <td className="py-2 px-1 text-green-300 font-medium">{(row as any).structure}</td>
-                                <td className="py-2 px-1 italic">{row.example}</td>
+                                <td className="py-2 px-1 italic">{(row as any).example}</td>
+                              </>
+                            ) : selectedModule === 11 ? (
+                              <>
+                                <td className="py-2 px-1 text-blue-300 font-medium">{(row as any).article}</td>
+                                <td className="py-2 px-1">{(row as any).usage}</td>
+                                <td className="py-2 px-1 italic">{(row as any).example}</td>
                               </>
                             ) : (
                               <>
-                                <td className="py-2 px-1 font-medium">{row.subject}</td>
-                                <td className="py-2 px-1 text-blue-300">{row.verb}</td>
+                                <td className="py-2 px-1 font-medium">{(row as any).subject}</td>
+                                <td className="py-2 px-1 text-blue-300">{(row as any).verb}</td>
                                 {selectedModule === 2 && 'not' in row && <td className="py-2 px-1 text-red-300">{(row as any).not}</td>}
-                                <td className="py-2 px-1">{row.complement}</td>
-                                <td className="py-2 px-1 italic">{row.example}</td>
+                                <td className="py-2 px-1">{(row as any).complement}</td>
+                                <td className="py-2 px-1 italic">{(row as any).example}</td>
                               </>
                             )}
                           </tr>
