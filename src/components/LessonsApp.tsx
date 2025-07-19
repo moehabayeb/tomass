@@ -289,10 +289,27 @@ Are they students?`,
 
 // Module 4 Data: Short Answers
 const MODULE_4_DATA = {
-  title: "Module 4: Short Answers",
-  description: "Practice short Yes/No answers with 'am', 'is', and 'are'",
-  intro: "Perfect! Now we are learning how to give short answers to questions with 'am', 'is', and 'are'. For example: 'Yes, I am.' 'No, she isn't.' 'Yes, they are.' Let's practice!",
+  title: "Modül 4 - Verb To Be – Short Answers",
+  description: "Bu modülde İngilizcede 'am, is, are' kullanarak kısa cevaplar vermeyi öğreneceğiz.",
+  intro: `Bu modülde İngilizcede 'am, is, are' kullanarak kısa cevaplar vermeyi öğreneceğiz.
+
+Konu Anlatımı:
+Yes + subject + to be / No + subject + to be + not
+
+Örnek Cümleler:
+Are you a teacher? → Yes, I am. / No, I'm not.
+Is he at home? → Yes, he is. / No, he isn't.
+Are they students? → Yes, they are. / No, they aren't.`,
   tip: "Short answers use: Yes/No + pronoun + am/is/are (or am not/isn't/aren't). Examples: 'Yes, I am.' 'No, he isn't.' 'Yes, we are.'",
+  
+  table: [
+    { question: "Are you a teacher?", positive: "Yes, I am.", negative: "No, I'm not." },
+    { question: "Is she happy?", positive: "Yes, she is.", negative: "No, she isn't." },
+    { question: "Are they here?", positive: "Yes, they are.", negative: "No, they aren't." },
+    { question: "Am I late?", positive: "Yes, you are.", negative: "No, you aren't." },
+    { question: "Is it cold?", positive: "Yes, it is.", negative: "No, it isn't." },
+    { question: "Are we ready?", positive: "Yes, we are.", negative: "No, we aren't." }
+  ],
   
   listeningExamples: [
     "Yes, I am.",
@@ -301,46 +318,46 @@ const MODULE_4_DATA = {
   ],
   
   speakingPractice: [
-    "Yes, I am.",
-    "No, I am not.",
-    "Yes, I am.",
-    "No, I am not.",
-    "Yes, she is.",
-    "No, she isn't.",
-    "Yes, he is.",
-    "No, he isn't.",
-    "Yes, you are.",
-    "No, you aren't.",
-    "Yes, it is.",
-    "No, it isn't.",
-    "Yes, we are.",
-    "No, we aren't.",
-    "Yes, they are.",
-    "No, they aren't.",
-    "Yes, I am.",
-    "No, I am not.",
-    "Yes, she is.",
-    "No, she isn't.",
-    "Yes, he is.",
-    "No, he isn't.",
-    "Yes, you are.",
-    "No, you aren't.",
-    "Yes, it is.",
-    "No, it isn't.",
-    "Yes, we are.",
-    "No, we aren't.",
-    "Yes, they are.",
-    "No, they aren't.",
-    "Yes, I am.",
-    "No, I am not.",
-    "Yes, she is.",
-    "No, she isn't.",
-    "Yes, he is.",
-    "No, he isn't.",
-    "Yes, you are.",
-    "No, you aren't.",
-    "Yes, it is.",
-    "No, it isn't."
+    { question: "Are you a student?", answer: "Yes, I am." },
+    { question: "Are you a student?", answer: "No, I am not." },
+    { question: "Are you a teacher?", answer: "Yes, I am." },
+    { question: "Are you a teacher?", answer: "No, I am not." },
+    { question: "Are you happy?", answer: "Yes, I am." },
+    { question: "Are you happy?", answer: "No, I am not." },
+    { question: "Is she a nurse?", answer: "Yes, she is." },
+    { question: "Is she a nurse?", answer: "No, she isn't." },
+    { question: "Is she tired?", answer: "Yes, she is." },
+    { question: "Is she tired?", answer: "No, she isn't." },
+    { question: "Is he a doctor?", answer: "Yes, he is." },
+    { question: "Is he a doctor?", answer: "No, he isn't." },
+    { question: "Is he busy?", answer: "Yes, he is." },
+    { question: "Is he busy?", answer: "No, he isn't." },
+    { question: "Are you ready?", answer: "Yes, I am." },
+    { question: "Are you ready?", answer: "No, I am not." },
+    { question: "Are you late?", answer: "Yes, I am." },
+    { question: "Are you late?", answer: "No, I am not." },
+    { question: "Is it cold?", answer: "Yes, it is." },
+    { question: "Is it cold?", answer: "No, it isn't." },
+    { question: "Is it big?", answer: "Yes, it is." },
+    { question: "Is it big?", answer: "No, it isn't." },
+    { question: "Are we friends?", answer: "Yes, we are." },
+    { question: "Are we friends?", answer: "No, we aren't." },
+    { question: "Are we students?", answer: "Yes, we are." },
+    { question: "Are we students?", answer: "No, we aren't." },
+    { question: "Are they engineers?", answer: "Yes, they are." },
+    { question: "Are they engineers?", answer: "No, they aren't." },
+    { question: "Are they married?", answer: "Yes, they are." },
+    { question: "Are they married?", answer: "No, they aren't." },
+    { question: "Am I correct?", answer: "Yes, you are." },
+    { question: "Am I correct?", answer: "No, you aren't." },
+    { question: "Am I early?", answer: "Yes, you are." },
+    { question: "Am I early?", answer: "No, you aren't." },
+    { question: "Is she beautiful?", answer: "Yes, she is." },
+    { question: "Is she beautiful?", answer: "No, she isn't." },
+    { question: "Is he strong?", answer: "Yes, he is." },
+    { question: "Is he strong?", answer: "No, he isn't." },
+    { question: "Are you excited?", answer: "Yes, I am." },
+    { question: "Are you excited?", answer: "No, I am not." }
   ]
 };
 
@@ -1345,7 +1362,8 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
                   <h4 className="text-white font-semibold mb-3 text-center">
                     {selectedModule === 1 ? '📊 Verb To Be Tablosu:' : 
                      selectedModule === 2 ? '🧩 Verb To Be Negatif Tablosu:' : 
-                     '❓ Verb To Be Soru Tablosu:'}
+                     selectedModule === 3 ? '❓ Verb To Be Soru Tablosu:' :
+                     '💬 Verb To Be Short Answers Tablosu:'}
                   </h4>
                   <div className="overflow-x-auto">
                     <table className="w-full text-white/90 text-sm">
@@ -1357,6 +1375,12 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
                               <th className="text-left py-2 px-1">Subject</th>
                               <th className="text-left py-2 px-1">Complement</th>
                               <th className="text-left py-2 px-1">Example</th>
+                            </>
+                          ) : selectedModule === 4 ? (
+                            <>
+                              <th className="text-left py-2 px-1">Question</th>
+                              <th className="text-left py-2 px-1">Positive Short Answer</th>
+                              <th className="text-left py-2 px-1">Negative Short Answer</th>
                             </>
                           ) : (
                             <>
@@ -1378,6 +1402,12 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
                                 <td className="py-2 px-1">{row.subject}</td>
                                 <td className="py-2 px-1">{row.complement}</td>
                                 <td className="py-2 px-1 italic">{row.example}</td>
+                              </>
+                            ) : selectedModule === 4 ? (
+                              <>
+                                <td className="py-2 px-1 font-medium">{(row as any).question}</td>
+                                <td className="py-2 px-1 text-green-300">{(row as any).positive}</td>
+                                <td className="py-2 px-1 text-red-300">{(row as any).negative}</td>
                               </>
                             ) : (
                               <>
