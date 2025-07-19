@@ -133,10 +133,31 @@ They are students.`,
 
 // Module 2 Data: Negative Sentences
 const MODULE_2_DATA = {
-  title: "Module 2: Negative Sentences",
-  description: "Learn to use 'am', 'is', and 'are' with 'not' in negative sentences",
-  intro: "Great! Now we are learning how to make negative sentences with 'am not', 'is not', and 'are not'. For example: 'I am not a teacher.' 'He is not happy.' Let's practice!",
+  title: "Modül 2 - Verb To Be (am, is, are) - Negative Sentences",
+  description: "Bu modülde İngilizcede 'am, is, are' kullanarak olumsuz cümleler kurmayı öğreneceğiz.",
+  intro: `Bu modülde İngilizcede 'am, is, are' kullanarak olumsuz cümleler kurmayı öğreneceğiz.
+
+"To Be" fiilinin olumsuz hali 'not' eklenerek yapılır:
+
+I → am not
+He/She/It → is not (isn't)  
+We/You/They → are not (aren't)
+
+Örnek Cümleler:
+I am not a student.
+She isn't happy.
+They aren't teachers.`,
   tip: "'To Be' fiilinin olumsuz hali 'not' eklenerek yapılır: I → am not, He/She/It → is not (isn't), We/You/They → are not (aren't)",
+  
+  table: [
+    { subject: "I", verb: "am", not: "not", complement: "a student", example: "I am not a student." },
+    { subject: "He", verb: "is", not: "not", complement: "tired", example: "He is not tired." },
+    { subject: "She", verb: "is", not: "not", complement: "a doctor", example: "She isn't a doctor." },
+    { subject: "It", verb: "is", not: "not", complement: "cold", example: "It isn't cold." },
+    { subject: "We", verb: "are", not: "not", complement: "happy", example: "We aren't happy." },
+    { subject: "You", verb: "are", not: "not", complement: "teachers", example: "You aren't teachers." },
+    { subject: "They", verb: "are", not: "not", complement: "friends", example: "They aren't friends." }
+  ],
   
   listeningExamples: [
     "I am not a student.",
@@ -145,46 +166,46 @@ const MODULE_2_DATA = {
   ],
   
   speakingPractice: [
-    "No, I am not a teacher.",
-    "No, I am not a doctor.",
-    "No, I am not a student.",
-    "No, I am not happy.",
-    "No, I am not sad.",
-    "No, he is not a teacher.",
-    "No, he is not a doctor.",
-    "No, he is not a student.",
-    "No, he is not happy.",
-    "No, he is not sad.",
-    "No, she is not a teacher.",
-    "No, she is not a doctor.",
-    "No, she is not a student.",
-    "No, she is not happy.",
-    "No, she is not sad.",
-    "No, it is not a dog.",
-    "No, it is not a cat.",
-    "No, it is not big.",
-    "No, it is not small.",
-    "No, it is not red.",
-    "No, we are not teachers.",
-    "No, we are not doctors.",
-    "No, we are not students.",
-    "No, we are not happy.",
-    "No, we are not sad.",
-    "No, you are not a teacher.",
-    "No, you are not a doctor.",
-    "No, you are not a student.",
-    "No, you are not happy.",
-    "No, you are not sad.",
-    "No, they are not teachers.",
-    "No, they are not doctors.",
-    "No, they are not students.",
-    "No, they are not happy.",
-    "No, they are not sad.",
-    "No, they are not engineers.",
-    "No, they are not nurses.",
-    "No, they are not friends.",
-    "No, they are not busy.",
-    "No, they are not ready."
+    { question: "Are you a teacher?", answer: "No, I am not a teacher." },
+    { question: "Are you a doctor?", answer: "No, I am not a doctor." },
+    { question: "Are you a student?", answer: "No, I am not a student." },
+    { question: "Are you happy?", answer: "No, I am not happy." },
+    { question: "Are you sad?", answer: "No, I am not sad." },
+    { question: "Is he a teacher?", answer: "No, he is not a teacher." },
+    { question: "Is he a doctor?", answer: "No, he is not a doctor." },
+    { question: "Is he a student?", answer: "No, he is not a student." },
+    { question: "Is he happy?", answer: "No, he is not happy." },
+    { question: "Is he sad?", answer: "No, he is not sad." },
+    { question: "Is she a teacher?", answer: "No, she is not a teacher." },
+    { question: "Is she a doctor?", answer: "No, she is not a doctor." },
+    { question: "Is she a student?", answer: "No, she is not a student." },
+    { question: "Is she happy?", answer: "No, she is not happy." },
+    { question: "Is she sad?", answer: "No, she is not sad." },
+    { question: "Is it a dog?", answer: "No, it is not a dog." },
+    { question: "Is it a cat?", answer: "No, it is not a cat." },
+    { question: "Is it big?", answer: "No, it is not big." },
+    { question: "Is it small?", answer: "No, it is not small." },
+    { question: "Is it red?", answer: "No, it is not red." },
+    { question: "Are we teachers?", answer: "No, we are not teachers." },
+    { question: "Are we doctors?", answer: "No, we are not doctors." },
+    { question: "Are we students?", answer: "No, we are not students." },
+    { question: "Are we happy?", answer: "No, we are not happy." },
+    { question: "Are we sad?", answer: "No, we are not sad." },
+    { question: "Are you a teacher?", answer: "No, you are not a teacher." },
+    { question: "Are you a doctor?", answer: "No, you are not a doctor." },
+    { question: "Are you a student?", answer: "No, you are not a student." },
+    { question: "Are you happy?", answer: "No, you are not happy." },
+    { question: "Are you sad?", answer: "No, you are not sad." },
+    { question: "Are they teachers?", answer: "No, they are not teachers." },
+    { question: "Are they doctors?", answer: "No, they are not doctors." },
+    { question: "Are they students?", answer: "No, they are not students." },
+    { question: "Are they happy?", answer: "No, they are not happy." },
+    { question: "Are they sad?", answer: "No, they are not sad." },
+    { question: "Are they engineers?", answer: "No, they are not engineers." },
+    { question: "Are they nurses?", answer: "No, they are not nurses." },
+    { question: "Are they friends?", answer: "No, they are not friends." },
+    { question: "Are they busy?", answer: "No, they are not busy." },
+    { question: "Are they ready?", answer: "No, they are not ready." }
   ]
 };
 
@@ -1312,13 +1333,16 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
               
               {'table' in currentModuleData && currentModuleData.table && (
                 <div className="bg-white/5 rounded-xl p-4">
-                  <h4 className="text-white font-semibold mb-3 text-center">📊 Verb To Be Tablosu:</h4>
+                  <h4 className="text-white font-semibold mb-3 text-center">
+                    {selectedModule === 1 ? '📊 Verb To Be Tablosu:' : '🧩 Verb To Be Negatif Tablosu:'}
+                  </h4>
                   <div className="overflow-x-auto">
                     <table className="w-full text-white/90 text-sm">
                       <thead>
                         <tr className="border-b border-white/20">
                           <th className="text-left py-2 px-1">Subject</th>
                           <th className="text-left py-2 px-1">Verb To Be</th>
+                          {selectedModule === 2 && <th className="text-left py-2 px-1">Not</th>}
                           <th className="text-left py-2 px-1">Complement</th>
                           <th className="text-left py-2 px-1">Example</th>
                         </tr>
@@ -1328,6 +1352,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
                           <tr key={index} className="border-b border-white/10">
                             <td className="py-2 px-1 font-medium">{row.subject}</td>
                             <td className="py-2 px-1 text-blue-300">{row.verb}</td>
+                            {selectedModule === 2 && 'not' in row && <td className="py-2 px-1 text-red-300">{(row as any).not}</td>}
                             <td className="py-2 px-1">{row.complement}</td>
                             <td className="py-2 px-1 italic">{row.example}</td>
                           </tr>
