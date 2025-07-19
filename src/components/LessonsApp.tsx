@@ -37,6 +37,7 @@ const A1_MODULES = Array.from({ length: 50 }, (_, i) => ({
          i === 3 ? 'Short Answers' :
          i === 4 ? 'Subject Pronouns' :
          i === 5 ? 'Possessive Adjectives' :
+         i === 6 ? 'This / That / These / Those' :
          `Module ${i + 1}`,
   description: i === 0 ? 'Learn to use am, is, and are' : 
                i === 1 ? 'Learn to use "am", "is", and "are" with "not"' :
@@ -44,6 +45,7 @@ const A1_MODULES = Array.from({ length: 50 }, (_, i) => ({
                i === 3 ? 'Practice short Yes/No answers with "am", "is", and "are"' :
                i === 4 ? 'Learn and practice Subject Pronouns (I, You, He, She, It, We, They)' :
                i === 5 ? 'Practice possessive adjectives (my, your, his, her, its, our, their)' :
+               i === 6 ? 'Learn to use This, That, These, and Those correctly' :
                'Coming soon',
   completed: false,
   locked: i > 0, // Only Module 1 is unlocked initially
