@@ -45,6 +45,7 @@ const A1_MODULES = Array.from({ length: 50 }, (_, i) => ({
           i === 11 ? 'Plural Nouns – Regular and Irregular' :
           i === 12 ? 'Have got / Has got – Positive Sentences' :
           i === 13 ? 'Have got / Has got – Negative Sentences' :
+          i === 14 ? 'Have got / Has got – Question Sentences' :
           `Module ${i + 1}`,
   description: i === 0 ? 'Learn to use am, is, and are' : 
                i === 1 ? 'Learn to use "am", "is", and "are" with "not"' :
@@ -60,6 +61,7 @@ const A1_MODULES = Array.from({ length: 50 }, (_, i) => ({
                 i === 11 ? 'Learn regular and irregular plural nouns in English' :
                 i === 12 ? 'Learn to use Have got and Has got in positive sentences' :
                 i === 13 ? 'Learn to use Haven\'t got and Hasn\'t got in negative sentences' :
+                i === 14 ? 'Learn to ask questions with Have got and Has got' :
                 'Coming soon',
   completed: false,
   locked: i > 0, // Only Module 1 is unlocked initially
@@ -1132,6 +1134,78 @@ They haven't got any money.`,
   ]
 };
 
+// Module 15 Data: Have got / Has got – Question Sentences
+const MODULE_15_DATA = {
+  title: "Modül 15 - Have got / Has got – Question Sentences",
+  description: "Bu modülde İngilizcede 'Have got' ve 'Has got' kullanarak soru cümleleri kurmayı öğreneceğiz.",
+  intro: `Bu modülde İngilizcede "Have got" ve "Has got" kullanarak soru cümleleri kurmayı öğreneceğiz.
+
+Açıklama:
+'Have you got...?' → I, you, we, they için soru
+
+'Has he/she/it got...?' → He, she, it için soru
+
+Örnek Cümleler:
+Have you got a car?
+Has she got a brother?
+Have they got any money?`,
+  tip: "Use 'Have' with I, you, we, they and 'Has' with he, she, it to ask questions about possession.",
+  
+  table: [
+    { subject: "I/you/we/they", questionForm: "Have + subject + got?", example: "Have you got a pen?" },
+    { subject: "He/she/it", questionForm: "Has + subject + got?", example: "Has she got a car?" }
+  ],
+  
+  listeningExamples: [
+    "Have you got a car?",
+    "Has she got a brother?",
+    "Have they got any money?"
+  ],
+  
+  speakingPractice: [
+    { question: "Have you got a bike?", answer: "Yes, I have got a bike." },
+    { question: "Has she got a cat?", answer: "Yes, she has got a cat." },
+    { question: "Have they got any books?", answer: "No, they haven't got any books." },
+    { question: "Has he got a brother?", answer: "No, he hasn't got a brother." },
+    { question: "Have we got enough chairs?", answer: "Yes, we have got enough chairs." },
+    { question: "Have you got a car?", answer: "No, I haven't got a car." },
+    { question: "Has it got a name tag?", answer: "Yes, it has got a name tag." },
+    { question: "Have your friends got time?", answer: "No, they haven't got time." },
+    { question: "Has Anna got blue eyes?", answer: "Yes, she has got blue eyes." },
+    { question: "Have your parents got a house?", answer: "Yes, they have got a house." },
+    { question: "Has John got a new phone?", answer: "Yes, he has got a new phone." },
+    { question: "Have we got juice in the fridge?", answer: "No, we haven't got juice." },
+    { question: "Have the students got notebooks?", answer: "Yes, they have got notebooks." },
+    { question: "Has your dog got a toy?", answer: "Yes, it has got a toy." },
+    { question: "Have you got your keys?", answer: "Yes, I have got my keys." },
+    { question: "Has she got a television?", answer: "No, she hasn't got a television." },
+    { question: "Have they got pets?", answer: "Yes, they have got pets." },
+    { question: "Has your teacher got a car?", answer: "Yes, he has got a car." },
+    { question: "Have we got an exam tomorrow?", answer: "Yes, we have got an exam." },
+    { question: "Has he got a hat?", answer: "No, he hasn't got a hat." },
+    { question: "Have you got a bike?", answer: "Yes, I have got a bike." },
+    { question: "Has she got a cat?", answer: "Yes, she has got a cat." },
+    { question: "Have they got any books?", answer: "No, they haven't got any books." },
+    { question: "Has he got a brother?", answer: "No, he hasn't got a brother." },
+    { question: "Have we got enough chairs?", answer: "Yes, we have got enough chairs." },
+    { question: "Have you got a car?", answer: "No, I haven't got a car." },
+    { question: "Has it got a name tag?", answer: "Yes, it has got a name tag." },
+    { question: "Have your friends got time?", answer: "No, they haven't got time." },
+    { question: "Has Anna got blue eyes?", answer: "Yes, she has got blue eyes." },
+    { question: "Have your parents got a house?", answer: "Yes, they have got a house." },
+    { question: "Has John got a new phone?", answer: "Yes, he has got a new phone." },
+    { question: "Have we got juice in the fridge?", answer: "No, we haven't got juice." },
+    { question: "Have the students got notebooks?", answer: "Yes, they have got notebooks." },
+    { question: "Has your dog got a toy?", answer: "Yes, it has got a toy." },
+    { question: "Have you got your keys?", answer: "Yes, I have got my keys." },
+    { question: "Has she got a television?", answer: "No, she hasn't got a television." },
+    { question: "Have they got pets?", answer: "Yes, they have got pets." },
+    { question: "Has your teacher got a car?", answer: "Yes, he has got a car." },
+    { question: "Have we got an exam tomorrow?", answer: "Yes, we have got an exam." },
+    { question: "Has he got a hat?", answer: "No, he hasn't got a hat." }
+  ]
+};
+
 export default function LessonsApp({ onBack }: LessonsAppProps) {
   const [width, height] = useWindowSize();
   const [viewState, setViewState] = useState<ViewState>('levels');
@@ -1187,6 +1261,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     if (selectedModule === 12) return MODULE_12_DATA;
     if (selectedModule === 13) return MODULE_13_DATA;
     if (selectedModule === 14) return MODULE_14_DATA;
+    if (selectedModule === 15) return MODULE_15_DATA;
     return MODULE_1_DATA; // fallback
   };
 
