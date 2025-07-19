@@ -45,8 +45,9 @@ const A1_MODULES = Array.from({ length: 50 }, (_, i) => ({
           i === 11 ? 'Plural Nouns – Regular and Irregular' :
           i === 12 ? 'Have got / Has got – Positive Sentences' :
           i === 13 ? 'Have got / Has got – Negative Sentences' :
-          i === 14 ? 'Have got / Has got – Question Sentences' :
-          `Module ${i + 1}`,
+           i === 14 ? 'Have got / Has got – Question Sentences' :
+           i === 15 ? 'Simple Present – Positive Sentences (I / You / We / They)' :
+           `Module ${i + 1}`,
   description: i === 0 ? 'Learn to use am, is, and are' : 
                i === 1 ? 'Learn to use "am", "is", and "are" with "not"' :
                i === 2 ? 'Learn to form questions with "am", "is", and "are"' :
@@ -62,6 +63,7 @@ const A1_MODULES = Array.from({ length: 50 }, (_, i) => ({
                 i === 12 ? 'Learn to use Have got and Has got in positive sentences' :
                 i === 13 ? 'Learn to use Haven\'t got and Hasn\'t got in negative sentences' :
                 i === 14 ? 'Learn to ask questions with Have got and Has got' :
+                i === 15 ? 'Learn to form positive sentences using Simple Present tense with I, You, We, They' :
                 'Coming soon',
   completed: false,
   locked: i > 0, // Only Module 1 is unlocked initially
@@ -1206,6 +1208,80 @@ Have they got any money?`,
   ]
 };
 
+// Module 16 Data: Simple Present – Positive Sentences (I / You / We / They)
+const MODULE_16_DATA = {
+  title: "Modül 16 - Simple Present – Positive Sentences (I / You / We / They)",
+  description: "Bu modülde İngilizcede Simple Present Tense kullanarak olumlu cümleler kurmayı öğreneceğiz.",
+  intro: `Bu modülde İngilizcede Simple Present Tense kullanarak olumlu cümleler kurmayı öğreneceğiz.
+
+Konu Anlatımı:
+Simple Present, alışkanlıkları, genel gerçekleri ve rutinleri ifade eder.
+I / You / We / They özneleriyle fiil yalın halde kullanılır.
+
+Örnek Cümleler:
+I play football on Sundays.
+You like coffee.
+We watch TV at night.
+They go to school by bus.`,
+  tip: "Use the base form of verbs with I, you, we, they to express habits, general facts, and routines.",
+  
+  table: [
+    { subject: "I", verb: "play", example: "I play tennis every weekend." },
+    { subject: "You", verb: "like", example: "You like music." },
+    { subject: "We", verb: "watch", example: "We watch movies on Fridays." },
+    { subject: "They", verb: "go", example: "They go to the park every morning." }
+  ],
+  
+  listeningExamples: [
+    "I play football on Sundays.",
+    "You like coffee.",
+    "We watch TV at night."
+  ],
+  
+  speakingPractice: [
+    { question: "What do you do on Sundays?", answer: "I play football on Sundays." },
+    { question: "Do you like tea?", answer: "Yes, I like tea." },
+    { question: "Where do we go on Fridays?", answer: "We go to the cinema on Fridays." },
+    { question: "What do they do after school?", answer: "They play basketball after school." },
+    { question: "Do you watch TV at night?", answer: "Yes, I watch TV at night." },
+    { question: "What do we eat for breakfast?", answer: "We eat eggs for breakfast." },
+    { question: "Do they visit their grandparents?", answer: "Yes, they visit their grandparents." },
+    { question: "Where do you live?", answer: "I live in Istanbul." },
+    { question: "What do we do every morning?", answer: "We drink coffee every morning." },
+    { question: "Do they walk to school?", answer: "Yes, they walk to school." },
+    { question: "What do you read?", answer: "I read books every evening." },
+    { question: "What do they play?", answer: "They play football every Saturday." },
+    { question: "Where do we study?", answer: "We study at the library." },
+    { question: "Do you go shopping?", answer: "Yes, I go shopping on Saturdays." },
+    { question: "What do we clean?", answer: "We clean our rooms every week." },
+    { question: "What do they watch?", answer: "They watch cartoons in the afternoon." },
+    { question: "Do you like ice cream?", answer: "Yes, I like ice cream." },
+    { question: "What do we cook?", answer: "We cook pasta for dinner." },
+    { question: "Where do they swim?", answer: "They swim in the sea every summer." },
+    { question: "What do you do in your free time?", answer: "I play chess in my free time." },
+    { question: "What do you do on Sundays?", answer: "I play football on Sundays." },
+    { question: "Do you like tea?", answer: "Yes, I like tea." },
+    { question: "Where do we go on Fridays?", answer: "We go to the cinema on Fridays." },
+    { question: "What do they do after school?", answer: "They play basketball after school." },
+    { question: "Do you watch TV at night?", answer: "Yes, I watch TV at night." },
+    { question: "What do we eat for breakfast?", answer: "We eat eggs for breakfast." },
+    { question: "Do they visit their grandparents?", answer: "Yes, they visit their grandparents." },
+    { question: "Where do you live?", answer: "I live in Istanbul." },
+    { question: "What do we do every morning?", answer: "We drink coffee every morning." },
+    { question: "Do they walk to school?", answer: "Yes, they walk to school." },
+    { question: "What do you read?", answer: "I read books every evening." },
+    { question: "What do they play?", answer: "They play football every Saturday." },
+    { question: "Where do we study?", answer: "We study at the library." },
+    { question: "Do you go shopping?", answer: "Yes, I go shopping on Saturdays." },
+    { question: "What do we clean?", answer: "We clean our rooms every week." },
+    { question: "What do they watch?", answer: "They watch cartoons in the afternoon." },
+    { question: "Do you like ice cream?", answer: "Yes, I like ice cream." },
+    { question: "What do we cook?", answer: "We cook pasta for dinner." },
+    { question: "Where do they swim?", answer: "They swim in the sea every summer." },
+    { question: "What do you do in your free time?", answer: "I play chess in my free time." }
+  ]
+};
+
 export default function LessonsApp({ onBack }: LessonsAppProps) {
   const [width, height] = useWindowSize();
   const [viewState, setViewState] = useState<ViewState>('levels');
@@ -1262,6 +1338,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     if (selectedModule === 13) return MODULE_13_DATA;
     if (selectedModule === 14) return MODULE_14_DATA;
     if (selectedModule === 15) return MODULE_15_DATA;
+    if (selectedModule === 16) return MODULE_16_DATA;
     return MODULE_1_DATA; // fallback
   };
 
@@ -1918,7 +1995,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
                   key={module.id} 
                   className={`bg-white/10 border-white/20 cursor-pointer transition-all hover:bg-white/15 ${!isUnlocked ? 'opacity-50' : ''}`}
                   onClick={() => {
-                    if (isUnlocked && (module.id === 1 || module.id === 2 || module.id === 3 || module.id === 4 || module.id === 5 || module.id === 6 || module.id === 7 || module.id === 8 || module.id === 9 || module.id === 10)) { // Modules 1-10 are implemented
+                    if (isUnlocked && (module.id >= 1 && module.id <= 16)) { // Modules 1-16 are implemented
                       setSelectedModule(module.id);
                       setViewState('lesson');
                       setCurrentPhase('intro');
