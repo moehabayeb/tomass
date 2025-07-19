@@ -769,13 +769,14 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
       
       if (isCorrect) {
         setCorrectAnswers(prev => prev + 1);
-        setFeedback('Great job! 🎉 Let\'s move to the next sentence.');
+        setFeedback('Great job! Your sentence is correct.');
         setFeedbackType('success');
         
         // Award XP for correct answer
         await earnXPForGrammarLesson(true);
         await incrementTotalExercises();
         
+        // Auto-advance after 1.5 seconds for A1 level
         setTimeout(() => {
           if (speakingIndex < totalQuestions - 1) {
             setSpeakingIndex(prev => prev + 1);
@@ -784,16 +785,16 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
             completeLesson();
           }
           setIsProcessing(false);
-        }, 2000);
+        }, 1500);
       } else {
-        const improvement = corrected || `Try saying: "${currentModuleData.speakingPractice[speakingIndex]}"`;
-        setFeedback(`${improvement} \n\nYou said: "${finalTranscript}"`);
+        // Only show corrective feedback when actually incorrect for A1 level
+        setFeedback(`Try saying: "${currentModuleData.speakingPractice[speakingIndex]}"`);
         setFeedbackType('error');
         
         setTimeout(() => {
           setFeedback('');
           setIsProcessing(false);
-        }, 4000);
+        }, 3000);
       }
     } catch (error) {
       console.error('Error processing audio:', error);
