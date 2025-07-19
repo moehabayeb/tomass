@@ -651,13 +651,29 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
   }, [currentPhase, viewState, speak, currentModuleData]);
 
   const processAudioRecording = useCallback(async (audioBlob: Blob) => {
+    // 🔒 CRITICAL: Prevent concurrent processing and lock current state
+    if (isProcessing) {
+      console.log('⚠️ Audio processing already in progress, ignoring duplicate request');
+      return;
+    }
+
     // CRITICAL: Capture the current speaking index and expected sentence at the START
-    // This prevents race conditions where the index changes during async operations
+    // This creates an immutable snapshot that cannot be changed during async operations
     const capturedSpeakingIndex = speakingIndex;
     const capturedExpectedSentence = currentModuleData.speakingPractice[capturedSpeakingIndex];
     
+    // Validate captured data before proceeding
+    if (!capturedExpectedSentence) {
+      console.error('❌ No expected sentence found for index:', capturedSpeakingIndex);
+      return;
+    }
+    
     setIsProcessing(true);
     setAttempts(prev => prev + 1);
+    
+    // Clear any previous feedback to prevent confusion
+    setFeedback('');
+    setFeedbackType('info');
     
     try {
       console.log('🎵 Processing audio recording...');
@@ -666,8 +682,9 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
         type: audioBlob.type,
         isEmpty: audioBlob.size === 0
       });
-      console.log('🎯 CAPTURED speaking index:', capturedSpeakingIndex);
-      console.log('🎯 CAPTURED expected sentence:', capturedExpectedSentence);
+      console.log('🔒 LOCKED speaking index:', capturedSpeakingIndex);
+      console.log('🔒 LOCKED expected sentence:', capturedExpectedSentence);
+      console.log('🔒 Current module:', currentModuleData.title);
       
       // Validate audio blob
       if (!audioBlob || audioBlob.size === 0) {
@@ -755,14 +772,25 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
 
       const { corrected } = feedbackResponse.data;
       
-      // CRITICAL: Use the CAPTURED values to prevent race conditions
+      // 🔒 CRITICAL: Use LOCKED values - these cannot change during processing
       const expectedSentence = capturedExpectedSentence.toLowerCase();
       const userSentence = finalTranscript.toLowerCase();
       
-      console.log('🎯 Expected (CAPTURED):', expectedSentence);
-      console.log('🎯 User said:', userSentence);
-      console.log('🎯 Index used (CAPTURED):', capturedSpeakingIndex);
+      console.log('🔒 VALIDATION PHASE');
+      console.log('🔒 Expected (LOCKED):', expectedSentence);
+      console.log('🔒 User said:', userSentence);
+      console.log('🔒 Index (LOCKED):', capturedSpeakingIndex);
+      console.log('🔒 Module (LOCKED):', currentModuleData.title);
       console.log('AI feedback:', corrected);
+      
+      // Double-check that we're still processing the correct question
+      if (capturedExpectedSentence !== currentModuleData.speakingPractice[capturedSpeakingIndex]) {
+        console.error('🚨 CRITICAL: Expected sentence mismatch detected! Aborting to prevent confusion.');
+        setFeedback('System error. Please try again.');
+        setFeedbackType('error');
+        setIsProcessing(false);
+        return;
+      }
       
       // Check if the transcript contains the key parts of the expected sentence
       const expectedWords = expectedSentence.replace(/[.,!?]/g, '').split(' ');
@@ -788,11 +816,17 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
         
         // Auto-advance after 1.5 seconds for A1 level
         setTimeout(() => {
-          // Verify we're still on the same question before advancing
+          // 🔒 Final verification before advancing using LOCKED index
           if (capturedSpeakingIndex < totalQuestions - 1) {
             setSpeakingIndex(prev => {
-              console.log('🎯 Advancing from captured index:', capturedSpeakingIndex, 'current state:', prev, 'to:', prev + 1);
-              return prev + 1;
+              // Extra safety check
+              if (prev === capturedSpeakingIndex) {
+                console.log('🔒 ✅ Safe advance from:', capturedSpeakingIndex, 'to:', prev + 1);
+                return prev + 1;
+              } else {
+                console.log('🔒 ⚠️ State changed during processing. Current:', prev, 'Expected:', capturedSpeakingIndex);
+                return prev; // Don't advance if state changed
+              }
             });
             setFeedback('');
           } else {
@@ -801,8 +835,8 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
           setIsProcessing(false);
         }, 1500);
       } else {
-        // Only show corrective feedback when actually incorrect for A1 level
-        // Use CAPTURED expected sentence to ensure consistency
+        // 🔒 Show corrective feedback using LOCKED expected sentence
+        console.log('🔒 Showing correction for LOCKED sentence:', capturedExpectedSentence);
         setFeedback(`Try saying: "${capturedExpectedSentence}"`);
         setFeedbackType('error');
         
@@ -812,7 +846,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
         }, 3000);
       }
     } catch (error) {
-      console.error('Error processing audio:', error);
+      console.error('🔒 Error processing audio for LOCKED index:', capturedSpeakingIndex, error);
       setFeedback('Sorry, there was an error processing your audio. Please try again.');
       setFeedbackType('error');
       
