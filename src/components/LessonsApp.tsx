@@ -40,9 +40,10 @@ const A1_MODULES = Array.from({ length: 50 }, (_, i) => ({
          i === 6 ? 'This / That / These / Those' :
          i === 7 ? 'There is / There are - Positive Sentences' :
          i === 8 ? 'There is / There are - Negative Sentences' :
-         i === 9 ? 'There is / There are - Question Sentences' :
-         i === 10 ? 'Articles: a / an / the – Basic Usage' :
-         `Module ${i + 1}`,
+          i === 9 ? 'There is / There are - Question Sentences' :
+          i === 10 ? 'Articles: a / an / the – Basic Usage' :
+          i === 11 ? 'Plural Nouns – Regular and Irregular' :
+          `Module ${i + 1}`,
   description: i === 0 ? 'Learn to use am, is, and are' : 
                i === 1 ? 'Learn to use "am", "is", and "are" with "not"' :
                i === 2 ? 'Learn to form questions with "am", "is", and "are"' :
@@ -52,9 +53,10 @@ const A1_MODULES = Array.from({ length: 50 }, (_, i) => ({
                i === 6 ? 'Learn to use This, That, These, and Those correctly' :
                i === 7 ? 'Learn to use There is and There are in positive sentences' :
                i === 8 ? 'Learn to use There isn\'t and There aren\'t in negative sentences' :
-               i === 9 ? 'Learn to ask questions with Is there and Are there' :
-               i === 10 ? 'Learn the basic usage of articles a, an, and the' :
-               'Coming soon',
+                i === 9 ? 'Learn to ask questions with Is there and Are there' :
+                i === 10 ? 'Learn the basic usage of articles a, an, and the' :
+                i === 11 ? 'Learn regular and irregular plural nouns in English' :
+                'Coming soon',
   completed: false,
   locked: i > 0, // Only Module 1 is unlocked initially
 }));
@@ -883,6 +885,90 @@ The sun is bright. (Belirli: Güneş)`,
   ]
 };
 
+// Module 12 Data: Plural Nouns – Regular and Irregular
+const MODULE_12_DATA = {
+  title: "Modül 12 - Plural Nouns – Regular and Irregular",
+  description: "Bu modülde İngilizcede Plural Nouns (çoğul isimler) konusunu öğreneceğiz.",
+  intro: `Bu modülde İngilizcede Plural Nouns (çoğul isimler) konusunu öğreneceğiz.
+
+Konu Anlatımı:
+
+Regular Plurals:
+-s eklenir: cat → cats
+-es eklenir: bus → buses
+-y → -ies: baby → babies
+
+Irregular Plurals:
+man → men
+child → children
+tooth → teeth
+
+Örnek Cümleler:
+There are two cats in the garden.
+The children are playing outside.
+I saw three men at the park.
+Brush your teeth every day.`,
+  tip: "Regular plurals add -s, -es, or change -y to -ies. Irregular plurals have special forms like man→men, child→children, tooth→teeth.",
+  
+  table: [
+    { singular: "cat", plural: "cats", type: "Regular (+s)", example: "There are cats on the roof." },
+    { singular: "bus", plural: "buses", type: "Regular (+es)", example: "There are buses in the city." },
+    { singular: "baby", plural: "babies", type: "Regular (y→ies)", example: "The babies are sleeping." },
+    { singular: "man", plural: "men", type: "Irregular", example: "Three men are waiting." },
+    { singular: "child", plural: "children", type: "Irregular", example: "The children are playing outside." },
+    { singular: "tooth", plural: "teeth", type: "Irregular", example: "I brush my teeth every day." }
+  ],
+  
+  listeningExamples: [
+    "There are cats on the roof.",
+    "The buses are in the city.",
+    "The babies are sleeping."
+  ],
+  
+  speakingPractice: [
+    { question: "What are on the roof?", answer: "There are cats on the roof." },
+    { question: "What are in the city?", answer: "There are buses in the city." },
+    { question: "Who are sleeping?", answer: "The babies are sleeping." },
+    { question: "Who are waiting?", answer: "Three men are waiting." },
+    { question: "Who are playing outside?", answer: "The children are playing outside." },
+    { question: "What do you brush every day?", answer: "I brush my teeth every day." },
+    { question: "Are there cars in the garage?", answer: "Yes, there are cars in the garage." },
+    { question: "Are there boxes on the floor?", answer: "Yes, there are boxes on the floor." },
+    { question: "Who are in the park?", answer: "There are women in the park." },
+    { question: "What are on the table?", answer: "There are sandwiches on the table." },
+    { question: "Are there buses outside?", answer: "Yes, there are buses outside." },
+    { question: "Are there babies in the house?", answer: "Yes, there are babies in the house." },
+    { question: "Who are in the room?", answer: "There are men in the room." },
+    { question: "Are there children at school?", answer: "Yes, there are children at school." },
+    { question: "What are in the basket?", answer: "There are apples in the basket." },
+    { question: "Are there books on the desk?", answer: "Yes, there are books on the desk." },
+    { question: "Who are in the hall?", answer: "The women are in the hall." },
+    { question: "What do you see?", answer: "I see geese in the field." },
+    { question: "Who are outside?", answer: "The people are outside." },
+    { question: "What are in the fridge?", answer: "There are eggs in the fridge." },
+    { question: "What are on the roof?", answer: "There are cats on the roof." },
+    { question: "What are in the city?", answer: "There are buses in the city." },
+    { question: "Who are sleeping?", answer: "The babies are sleeping." },
+    { question: "Who are waiting?", answer: "Three men are waiting." },
+    { question: "Who are playing outside?", answer: "The children are playing outside." },
+    { question: "What do you brush every day?", answer: "I brush my teeth every day." },
+    { question: "Are there cars in the garage?", answer: "Yes, there are cars in the garage." },
+    { question: "Are there boxes on the floor?", answer: "Yes, there are boxes on the floor." },
+    { question: "Who are in the park?", answer: "There are women in the park." },
+    { question: "What are on the table?", answer: "There are sandwiches on the table." },
+    { question: "Are there buses outside?", answer: "Yes, there are buses outside." },
+    { question: "Are there babies in the house?", answer: "Yes, there are babies in the house." },
+    { question: "Who are in the room?", answer: "There are men in the room." },
+    { question: "Are there children at school?", answer: "Yes, there are children at school." },
+    { question: "What are in the basket?", answer: "There are apples in the basket." },
+    { question: "Are there books on the desk?", answer: "Yes, there are books on the desk." },
+    { question: "Who are in the hall?", answer: "The women are in the hall." },
+    { question: "What do you see?", answer: "I see geese in the field." },
+    { question: "Who are outside?", answer: "The people are outside." },
+    { question: "What are in the fridge?", answer: "There are eggs in the fridge." }
+  ]
+};
+
 export default function LessonsApp({ onBack }: LessonsAppProps) {
   const [width, height] = useWindowSize();
   const [viewState, setViewState] = useState<ViewState>('levels');
@@ -935,6 +1021,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     if (selectedModule === 9) return MODULE_9_DATA;
     if (selectedModule === 10) return MODULE_10_DATA;
     if (selectedModule === 11) return MODULE_11_DATA;
+    if (selectedModule === 12) return MODULE_12_DATA;
     return MODULE_1_DATA; // fallback
   };
 
