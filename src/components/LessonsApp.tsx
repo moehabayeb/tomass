@@ -38,6 +38,7 @@ const A1_MODULES = Array.from({ length: 50 }, (_, i) => ({
          i === 4 ? 'Subject Pronouns' :
          i === 5 ? 'Possessive Adjectives' :
          i === 6 ? 'This / That / These / Those' :
+         i === 7 ? 'There is / There are - Positive Sentences' :
          `Module ${i + 1}`,
   description: i === 0 ? 'Learn to use am, is, and are' : 
                i === 1 ? 'Learn to use "am", "is", and "are" with "not"' :
@@ -46,6 +47,7 @@ const A1_MODULES = Array.from({ length: 50 }, (_, i) => ({
                i === 4 ? 'Learn and practice Subject Pronouns (I, You, He, She, It, We, They)' :
                i === 5 ? 'Practice possessive adjectives (my, your, his, her, its, our, their)' :
                i === 6 ? 'Learn to use This, That, These, and Those correctly' :
+               i === 7 ? 'Learn to use There is and There are in positive sentences' :
                'Coming soon',
   completed: false,
   locked: i > 0, // Only Module 1 is unlocked initially
@@ -583,6 +585,78 @@ Konu Anlatımı:
   ]
 };
 
+// Module 8 Data: There is / There are - Positive Sentences
+const MODULE_8_DATA = {
+  title: "Modül 8 – There is / There are – Positive Sentences",
+  description: "Bu modülde İngilizcede 'There is' ve 'There are' kullanarak olumlu cümleler kurmayı öğreneceğiz.",
+  intro: `Bu modülde İngilizcede 'There is' ve 'There are' kullanarak olumlu cümleler kurmayı öğreneceğiz.
+
+'There is' = Tekil nesneler için kullanılır.
+'There are' = Çoğul nesneler için kullanılır.
+
+Örnekler:
+There is a book on the table.
+There are two cars in the garage.
+There is an apple in the basket.
+There are many people in the park.`,
+  tip: "Use 'There is' for singular nouns and 'There are' for plural nouns. 'There is' can also be used with uncountable nouns.",
+  
+  table: [
+    { structure: "There is + singular noun", example: "There is a dog in the garden." },
+    { structure: "There are + plural noun", example: "There are flowers in the vase." },
+    { structure: "There is + uncountable noun", example: "There is water in the glass." }
+  ],
+  
+  listeningExamples: [
+    "There is a book on the table.",
+    "There are two cars in the garage.",
+    "There is water in the glass."
+  ],
+  
+  speakingPractice: [
+    { question: "What is on the table?", answer: "There is a book on the table." },
+    { question: "What is in the kitchen?", answer: "There is a fridge in the kitchen." },
+    { question: "What is in the garden?", answer: "There is a cat in the garden." },
+    { question: "What is in the room?", answer: "There is a chair in the room." },
+    { question: "What is on the wall?", answer: "There is a picture on the wall." },
+    { question: "What is in the basket?", answer: "There is an apple in the basket." },
+    { question: "What are in the garage?", answer: "There are two cars in the garage." },
+    { question: "What are in the park?", answer: "There are many people in the park." },
+    { question: "What are on the desk?", answer: "There are some pens on the desk." },
+    { question: "What are in the box?", answer: "There are toys in the box." },
+    { question: "What is in the bottle?", answer: "There is water in the bottle." },
+    { question: "What is in the bag?", answer: "There is a notebook in the bag." },
+    { question: "What are in the classroom?", answer: "There are students in the classroom." },
+    { question: "What are on the shelves?", answer: "There are books on the shelves." },
+    { question: "What is under the bed?", answer: "There is a box under the bed." },
+    { question: "What is on the sofa?", answer: "There is a pillow on the sofa." },
+    { question: "What are in the fridge?", answer: "There are eggs in the fridge." },
+    { question: "What are on the plate?", answer: "There are sandwiches on the plate." },
+    { question: "What is in the cup?", answer: "There is tea in the cup." },
+    { question: "What is near the door?", answer: "There is a bag near the door." },
+    { question: "What is on the table?", answer: "There is a book on the table." },
+    { question: "What is in the kitchen?", answer: "There is a fridge in the kitchen." },
+    { question: "What is in the garden?", answer: "There is a cat in the garden." },
+    { question: "What is in the room?", answer: "There is a chair in the room." },
+    { question: "What is on the wall?", answer: "There is a picture on the wall." },
+    { question: "What is in the basket?", answer: "There is an apple in the basket." },
+    { question: "What are in the garage?", answer: "There are two cars in the garage." },
+    { question: "What are in the park?", answer: "There are many people in the park." },
+    { question: "What are on the desk?", answer: "There are some pens on the desk." },
+    { question: "What are in the box?", answer: "There are toys in the box." },
+    { question: "What is in the bottle?", answer: "There is water in the bottle." },
+    { question: "What is in the bag?", answer: "There is a notebook in the bag." },
+    { question: "What are in the classroom?", answer: "There are students in the classroom." },
+    { question: "What are on the shelves?", answer: "There are books on the shelves." },
+    { question: "What is under the bed?", answer: "There is a box under the bed." },
+    { question: "What is on the sofa?", answer: "There is a pillow on the sofa." },
+    { question: "What are in the fridge?", answer: "There are eggs in the fridge." },
+    { question: "What are on the plate?", answer: "There are sandwiches on the plate." },
+    { question: "What is in the cup?", answer: "There is tea in the cup." },
+    { question: "What is near the door?", answer: "There is a bag near the door." }
+  ]
+};
+
 export default function LessonsApp({ onBack }: LessonsAppProps) {
   const [width, height] = useWindowSize();
   const [viewState, setViewState] = useState<ViewState>('levels');
@@ -631,6 +705,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     if (selectedModule === 5) return MODULE_5_DATA;
     if (selectedModule === 6) return MODULE_6_DATA;
     if (selectedModule === 7) return MODULE_7_DATA;
+    if (selectedModule === 8) return MODULE_8_DATA;
     return MODULE_1_DATA; // fallback
   };
 
@@ -1287,7 +1362,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
                   key={module.id} 
                   className={`bg-white/10 border-white/20 cursor-pointer transition-all hover:bg-white/15 ${!isUnlocked ? 'opacity-50' : ''}`}
                   onClick={() => {
-                    if (isUnlocked && (module.id === 1 || module.id === 2 || module.id === 3 || module.id === 4 || module.id === 5 || module.id === 6 || module.id === 7)) { // Modules 1-7 are implemented
+                    if (isUnlocked && (module.id === 1 || module.id === 2 || module.id === 3 || module.id === 4 || module.id === 5 || module.id === 6 || module.id === 7 || module.id === 8)) { // Modules 1-8 are implemented
                       setSelectedModule(module.id);
                       setViewState('lesson');
                       setCurrentPhase('intro');
@@ -1454,7 +1529,9 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
                      selectedModule === 3 ? '❓ Verb To Be Soru Tablosu:' :
                      selectedModule === 4 ? '💬 Verb To Be Short Answers Tablosu:' :
                      selectedModule === 5 ? '👥 Subject Pronouns Tablosu:' :
-                     '🏠 Possessive Adjectives Tablosu:'}
+                     selectedModule === 6 ? '🏠 Possessive Adjectives Tablosu:' :
+                     selectedModule === 8 ? '📍 There is / There are Tablosu:' :
+                     '📊 Grammar Tablosu:'}
                   </h4>
                   <div className="overflow-x-auto">
                     <table className="w-full text-white/90 text-sm">
@@ -1482,6 +1559,11 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
                             <>
                               <th className="text-left py-2 px-1">Subject Pronoun</th>
                               <th className="text-left py-2 px-1">Possessive Adjective</th>
+                              <th className="text-left py-2 px-1">Example</th>
+                            </>
+                          ) : selectedModule === 8 ? (
+                            <>
+                              <th className="text-left py-2 px-1">Structure</th>
                               <th className="text-left py-2 px-1">Example</th>
                             </>
                           ) : (
@@ -1520,6 +1602,11 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
                               <>
                                 <td className="py-2 px-1 text-purple-300 font-medium">{(row as any).pronoun}</td>
                                 <td className="py-2 px-1 text-orange-300 font-medium">{(row as any).possessive}</td>
+                                <td className="py-2 px-1 italic">{row.example}</td>
+                              </>
+                            ) : selectedModule === 8 ? (
+                              <>
+                                <td className="py-2 px-1 text-green-300 font-medium">{(row as any).structure}</td>
                                 <td className="py-2 px-1 italic">{row.example}</td>
                               </>
                             ) : (
