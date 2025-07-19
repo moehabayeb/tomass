@@ -49,6 +49,7 @@ const A1_MODULES = Array.from({ length: 50 }, (_, i) => ({
            i === 15 ? 'Simple Present – Positive Sentences (I / You / We / They)' :
            i === 16 ? 'Simple Present – Positive Sentences (He / She / It)' :
            i === 17 ? 'Simple Present – Negative Sentences (don\'t / doesn\'t)' :
+           i === 18 ? 'Simple Present – Yes/No Questions' :
            `Module ${i + 1}`,
   description: i === 0 ? 'Learn to use am, is, and are' : 
                i === 1 ? 'Learn to use "am", "is", and "are" with "not"' :
@@ -67,8 +68,9 @@ const A1_MODULES = Array.from({ length: 50 }, (_, i) => ({
                 i === 14 ? 'Learn to ask questions with Have got and Has got' :
                 i === 15 ? 'Learn to form positive sentences using Simple Present tense with I, You, We, They' :
                 i === 16 ? 'Learn to form positive sentences using Simple Present tense with He, She, It (+s/es)' :
-                i === 17 ? 'Learn to form negative sentences using Simple Present tense with don\'t and doesn\'t' :
-                'Coming soon',
+                 i === 17 ? 'Learn to form negative sentences using Simple Present tense with don\'t and doesn\'t' :
+                 i === 18 ? 'Learn to form Yes/No questions using Simple Present tense with Do and Does' :
+                 'Coming soon',
   completed: false,
   locked: i > 0, // Only Module 1 is unlocked initially
 }));
@@ -1430,6 +1432,86 @@ They don't watch TV at night.`,
   ]
 };
 
+// Module 19 Data: Simple Present – Yes/No Questions
+const MODULE_19_DATA = {
+  title: "Modül 19 - Simple Present – Yes/No Questions",
+  description: "İngilizcede Simple Present Tense kullanarak Evet/Hayır soruları kurmayı öğreniyoruz.",
+  intro: `İngilizcede Simple Present Tense kullanarak Evet/Hayır soruları kurmayı öğreniyoruz.
+
+Yapı:
+
+I / You / We / They → Do + subject + verb?
+
+He / She / It → Does + subject + verb?
+
+Örnek Cümleler:
+
+Do you play football? → Yes, I do. / No, I don't.
+
+Does she like tea? → Yes, she does. / No, she doesn't.
+
+Do they work on Mondays? → Yes, they do. / No, they don't.`,
+  tip: "Yes/No sorularda I/You/We/They için 'Do', He/She/It için 'Does' kullanın",
+  
+  table: [
+    { structure: "Do + I/You/We/They + verb?", example: "Do you play football?" },
+    { structure: "Does + He/She/It + verb?", example: "Does she like coffee?" },
+    { structure: "Answer: Yes, I/you/we/they do.", example: "Yes, I do." },
+    { structure: "Answer: Yes, he/she/it does.", example: "Yes, she does." },
+    { structure: "Answer: No, I/you/we/they don't.", example: "No, they don't." },
+    { structure: "Answer: No, he/she/it doesn't.", example: "No, it doesn't." }
+  ],
+  
+  listeningExamples: [
+    "Do you play football?",
+    "Does she like coffee?",
+    "Do they watch TV at night?"
+  ],
+  
+  speakingPractice: [
+    { question: "Do you play football?", answer: "Yes, I do." },
+    { question: "Does she like coffee?", answer: "Yes, she does." },
+    { question: "Do they watch TV at night?", answer: "No, they don't." },
+    { question: "Does he read books?", answer: "Yes, he does." },
+    { question: "Do we go to the park every Sunday?", answer: "No, we don't." },
+    { question: "Does it rain here in summer?", answer: "No, it doesn't." },
+    { question: "Do you cook dinner every day?", answer: "Yes, I do." },
+    { question: "Does Anna speak French?", answer: "Yes, she does." },
+    { question: "Do your friends study hard?", answer: "No, they don't." },
+    { question: "Does John work on weekends?", answer: "No, he doesn't." },
+    { question: "Do we need more chairs?", answer: "Yes, we do." },
+    { question: "Does your dog bark at night?", answer: "Yes, it does." },
+    { question: "Do they live in Istanbul?", answer: "No, they don't." },
+    { question: "Does she eat meat?", answer: "Yes, she does." },
+    { question: "Do you play the piano?", answer: "No, I don't." },
+    { question: "Does he drive to work?", answer: "Yes, he does." },
+    { question: "Do we drink tea in the morning?", answer: "Yes, we do." },
+    { question: "Does it snow here in winter?", answer: "Yes, it does." },
+    { question: "Do they visit their grandparents?", answer: "No, they don't." },
+    { question: "Does she like swimming?", answer: "No, she doesn't." },
+    { question: "Do you play football?", answer: "Yes, I do." },
+    { question: "Does she like coffee?", answer: "Yes, she does." },
+    { question: "Do they watch TV at night?", answer: "No, they don't." },
+    { question: "Does he read books?", answer: "Yes, he does." },
+    { question: "Do we go to the park every Sunday?", answer: "No, we don't." },
+    { question: "Does it rain here in summer?", answer: "No, it doesn't." },
+    { question: "Do you cook dinner every day?", answer: "Yes, I do." },
+    { question: "Does Anna speak French?", answer: "Yes, she does." },
+    { question: "Do your friends study hard?", answer: "No, they don't." },
+    { question: "Does John work on weekends?", answer: "No, he doesn't." },
+    { question: "Do we need more chairs?", answer: "Yes, we do." },
+    { question: "Does your dog bark at night?", answer: "Yes, it does." },
+    { question: "Do they live in Istanbul?", answer: "No, they don't." },
+    { question: "Does she eat meat?", answer: "Yes, she does." },
+    { question: "Do you play the piano?", answer: "No, I don't." },
+    { question: "Does he drive to work?", answer: "Yes, he does." },
+    { question: "Do we drink tea in the morning?", answer: "Yes, we do." },
+    { question: "Does it snow here in winter?", answer: "Yes, it does." },
+    { question: "Do they visit their grandparents?", answer: "No, they don't." },
+    { question: "Does she like swimming?", answer: "No, she doesn't." }
+  ]
+};
+
 export default function LessonsApp({ onBack }: LessonsAppProps) {
   const [width, height] = useWindowSize();
   const [viewState, setViewState] = useState<ViewState>('levels');
@@ -1489,6 +1571,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     if (selectedModule === 16) return MODULE_16_DATA;
     if (selectedModule === 17) return MODULE_17_DATA;
     if (selectedModule === 18) return MODULE_18_DATA;
+    if (selectedModule === 19) return MODULE_19_DATA;
     return MODULE_1_DATA; // fallback
   };
 
@@ -2145,7 +2228,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
                   key={module.id} 
                   className={`bg-white/10 border-white/20 cursor-pointer transition-all hover:bg-white/15 ${!isUnlocked ? 'opacity-50' : ''}`}
                   onClick={() => {
-                    if (isUnlocked && (module.id >= 1 && module.id <= 18)) { // Modules 1-18 are implemented
+                    if (isUnlocked && (module.id >= 1 && module.id <= 19)) { // Modules 1-19 are implemented
                       setSelectedModule(module.id);
                       setViewState('lesson');
                       setCurrentPhase('intro');
@@ -2319,6 +2402,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
                      selectedModule === 9 ? '🚫 There isn\'t / There aren\'t Tablosu:' :
                      selectedModule === 10 ? '❓ There is / There are Soru Tablosu:' :
                      selectedModule === 11 ? '📰 Articles Tablosu:' :
+                     selectedModule === 19 ? '❓ Simple Present Yes/No Questions Tablosu:' :
                      '📊 Grammar Tablosu:'}
                   </h4>
                   <div className="overflow-x-auto">
@@ -2354,13 +2438,18 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
                               <th className="text-left py-2 px-1">Structure</th>
                               <th className="text-left py-2 px-1">Example</th>
                             </>
-                          ) : selectedModule === 11 ? (
-                            <>
-                              <th className="text-left py-2 px-1">Article</th>
-                              <th className="text-left py-2 px-1">Usage</th>
-                              <th className="text-left py-2 px-1">Example</th>
-                            </>
-                          ) : (
+                           ) : selectedModule === 11 ? (
+                             <>
+                               <th className="text-left py-2 px-1">Article</th>
+                               <th className="text-left py-2 px-1">Usage</th>
+                               <th className="text-left py-2 px-1">Example</th>
+                             </>
+                           ) : selectedModule === 19 ? (
+                             <>
+                               <th className="text-left py-2 px-1">Structure</th>
+                               <th className="text-left py-2 px-1">Example</th>
+                             </>
+                           ) : (
                             <>
                               <th className="text-left py-2 px-1">Subject</th>
                               <th className="text-left py-2 px-1">Verb To Be</th>
@@ -2403,13 +2492,18 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
                                 <td className="py-2 px-1 text-green-300 font-medium">{(row as any).structure}</td>
                                 <td className="py-2 px-1 italic">{(row as any).example}</td>
                               </>
-                            ) : selectedModule === 11 ? (
-                              <>
-                                <td className="py-2 px-1 text-blue-300 font-medium">{(row as any).article}</td>
-                                <td className="py-2 px-1">{(row as any).usage}</td>
-                                <td className="py-2 px-1 italic">{(row as any).example}</td>
-                              </>
-                            ) : (
+                             ) : selectedModule === 11 ? (
+                               <>
+                                 <td className="py-2 px-1 text-blue-300 font-medium">{(row as any).article}</td>
+                                 <td className="py-2 px-1">{(row as any).usage}</td>
+                                 <td className="py-2 px-1 italic">{(row as any).example}</td>
+                               </>
+                             ) : selectedModule === 19 ? (
+                               <>
+                                 <td className="py-2 px-1 text-green-300 font-medium">{(row as any).structure}</td>
+                                 <td className="py-2 px-1 italic">{(row as any).example}</td>
+                               </>
+                             ) : (
                               <>
                                 <td className="py-2 px-1 font-medium">{(row as any).subject}</td>
                                 <td className="py-2 px-1 text-blue-300">{(row as any).verb}</td>
