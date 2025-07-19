@@ -48,6 +48,7 @@ const A1_MODULES = Array.from({ length: 50 }, (_, i) => ({
            i === 14 ? 'Have got / Has got – Question Sentences' :
            i === 15 ? 'Simple Present – Positive Sentences (I / You / We / They)' :
            i === 16 ? 'Simple Present – Positive Sentences (He / She / It)' :
+           i === 17 ? 'Simple Present – Negative Sentences (don\'t / doesn\'t)' :
            `Module ${i + 1}`,
   description: i === 0 ? 'Learn to use am, is, and are' : 
                i === 1 ? 'Learn to use "am", "is", and "are" with "not"' :
@@ -66,6 +67,7 @@ const A1_MODULES = Array.from({ length: 50 }, (_, i) => ({
                 i === 14 ? 'Learn to ask questions with Have got and Has got' :
                 i === 15 ? 'Learn to form positive sentences using Simple Present tense with I, You, We, They' :
                 i === 16 ? 'Learn to form positive sentences using Simple Present tense with He, She, It (+s/es)' :
+                i === 17 ? 'Learn to form negative sentences using Simple Present tense with don\'t and doesn\'t' :
                 'Coming soon',
   completed: false,
   locked: i > 0, // Only Module 1 is unlocked initially
@@ -1357,6 +1359,77 @@ He / She / It özneleriyle fiile -s veya -es eklenir.
   ]
 };
 
+// Module 18 Data: Simple Present – Negative Sentences (don't / doesn't)
+const MODULE_18_DATA = {
+  title: "Modül 18 - Simple Present – Negative Sentences (don't / doesn't)",
+  description: "Bu modülde İngilizcede Simple Present Tense kullanarak olumsuz cümleler kurmayı öğreneceğiz.",
+  intro: `Bu modülde İngilizcede Simple Present Tense kullanarak olumsuz cümleler kurmayı öğreneceğiz.
+
+Konu Anlatımı:
+I / You / We / They → don't + verb
+He / She / It → doesn't + verb
+
+Örnek Cümleler:
+I don't like coffee.
+She doesn't play tennis.
+They don't watch TV at night.`,
+  tip: "Use don't with I, you, we, they and doesn't with he, she, it to make negative sentences.",
+  
+  table: [
+    { subject: "I / You / We / They", negativeForm: "don't + verb", example: "We don't eat meat." },
+    { subject: "He / She / It", negativeForm: "doesn't + verb", example: "She doesn't go to school on Sundays." }
+  ],
+  
+  listeningExamples: [
+    "I don't like coffee.",
+    "She doesn't play tennis.",
+    "They don't watch TV at night."
+  ],
+  
+  speakingPractice: [
+    { question: "Do you like coffee?", answer: "No, I don't like coffee." },
+    { question: "Does she play football?", answer: "No, she doesn't play football." },
+    { question: "Do they watch TV at night?", answer: "No, they don't watch TV at night." },
+    { question: "Does he read books?", answer: "No, he doesn't read books." },
+    { question: "Do we go to the park every day?", answer: "No, we don't go to the park every day." },
+    { question: "Does it rain in summer?", answer: "No, it doesn't rain in summer." },
+    { question: "Do you cook at home?", answer: "No, I don't cook at home." },
+    { question: "Does Anna sing well?", answer: "No, she doesn't sing well." },
+    { question: "Do your friends study hard?", answer: "No, they don't study hard." },
+    { question: "Does John watch movies?", answer: "No, he doesn't watch movies." },
+    { question: "Do we work on weekends?", answer: "No, we don't work on weekends." },
+    { question: "Does your dog bark a lot?", answer: "No, it doesn't bark a lot." },
+    { question: "Do they live in this city?", answer: "No, they don't live in this city." },
+    { question: "Does she eat meat?", answer: "No, she doesn't eat meat." },
+    { question: "Do you play the guitar?", answer: "No, I don't play the guitar." },
+    { question: "Does he drive to work?", answer: "No, he doesn't drive to work." },
+    { question: "Do we drink coffee in the morning?", answer: "No, we don't drink coffee in the morning." },
+    { question: "Does it snow here?", answer: "No, it doesn't snow here." },
+    { question: "Do they visit their grandparents?", answer: "No, they don't visit their grandparents." },
+    { question: "Does she like swimming?", answer: "No, she doesn't like swimming." },
+    { question: "Do you like coffee?", answer: "No, I don't like coffee." },
+    { question: "Does she play football?", answer: "No, she doesn't play football." },
+    { question: "Do they watch TV at night?", answer: "No, they don't watch TV at night." },
+    { question: "Does he read books?", answer: "No, he doesn't read books." },
+    { question: "Do we go to the park every day?", answer: "No, we don't go to the park every day." },
+    { question: "Does it rain in summer?", answer: "No, it doesn't rain in summer." },
+    { question: "Do you cook at home?", answer: "No, I don't cook at home." },
+    { question: "Does Anna sing well?", answer: "No, she doesn't sing well." },
+    { question: "Do your friends study hard?", answer: "No, they don't study hard." },
+    { question: "Does John watch movies?", answer: "No, he doesn't watch movies." },
+    { question: "Do we work on weekends?", answer: "No, we don't work on weekends." },
+    { question: "Does your dog bark a lot?", answer: "No, it doesn't bark a lot." },
+    { question: "Do they live in this city?", answer: "No, they don't live in this city." },
+    { question: "Does she eat meat?", answer: "No, she doesn't eat meat." },
+    { question: "Do you play the guitar?", answer: "No, I don't play the guitar." },
+    { question: "Does he drive to work?", answer: "No, he doesn't drive to work." },
+    { question: "Do we drink coffee in the morning?", answer: "No, we don't drink coffee in the morning." },
+    { question: "Does it snow here?", answer: "No, it doesn't snow here." },
+    { question: "Do they visit their grandparents?", answer: "No, they don't visit their grandparents." },
+    { question: "Does she like swimming?", answer: "No, she doesn't like swimming." }
+  ]
+};
+
 export default function LessonsApp({ onBack }: LessonsAppProps) {
   const [width, height] = useWindowSize();
   const [viewState, setViewState] = useState<ViewState>('levels');
@@ -1415,6 +1488,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     if (selectedModule === 15) return MODULE_15_DATA;
     if (selectedModule === 16) return MODULE_16_DATA;
     if (selectedModule === 17) return MODULE_17_DATA;
+    if (selectedModule === 18) return MODULE_18_DATA;
     return MODULE_1_DATA; // fallback
   };
 
@@ -2071,7 +2145,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
                   key={module.id} 
                   className={`bg-white/10 border-white/20 cursor-pointer transition-all hover:bg-white/15 ${!isUnlocked ? 'opacity-50' : ''}`}
                   onClick={() => {
-                    if (isUnlocked && (module.id >= 1 && module.id <= 17)) { // Modules 1-17 are implemented
+                    if (isUnlocked && (module.id >= 1 && module.id <= 18)) { // Modules 1-18 are implemented
                       setSelectedModule(module.id);
                       setViewState('lesson');
                       setCurrentPhase('intro');
