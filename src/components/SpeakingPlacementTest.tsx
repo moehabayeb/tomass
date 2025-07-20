@@ -1,268 +1,265 @@
-import { useState, useEffect } from 'react';
-import { Mic, Play, Pause, RotateCcw, ArrowLeft, Star, Award, MicIcon } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { XPProgressBar } from './XPProgressBar';
-import { AvatarDisplay } from './AvatarDisplay';
+import { ArrowLeft, Mic, MicOff, Play, RotateCcw, Volume2, Award, Star } from 'lucide-react';
 import { useTextToSpeech } from '@/hooks/useTextToSpeech';
-import { useGamification } from '@/hooks/useGamification';
 import { supabase } from '@/integrations/supabase/client';
-
-interface Question {
-  id: number;
-  level: string;
-  type: 'multiple-choice' | 'speaking';
-  question: string;
-  options?: string[];
-  correctAnswer?: number;
-  speakingPrompt?: string;
-  expectedDuration?: number; // seconds
-}
+import { useGamification } from '@/hooks/useGamification';
+import { AvatarDisplay } from './AvatarDisplay';
 
 interface SpeakingPlacementTestProps {
   onBack: () => void;
-  onComplete: (level: string, recommendedModule: number) => void;
+  onComplete: (level: string, score: number) => void;
 }
 
-const questions: Question[] = [
-  // Quick warm-up MCQs
+const speakingQuestions = [
   {
     id: 1,
     level: 'A1',
-    type: 'multiple-choice',
-    question: 'What is your name?',
-    options: ['My name is...', 'I am name...', 'Name me is...', 'Is my name...'],
-    correctAnswer: 0
+    type: 'speaking',
+    question: 'What is your name? Please answer in a full sentence.',
+    expectedTime: 10
   },
   {
     id: 2,
-    level: 'A2',
-    type: 'multiple-choice',
-    question: 'How do you ask for directions?',
-    options: ['Where is the bathroom?', 'Bathroom where is?', 'Is where bathroom?', 'The bathroom where?'],
-    correctAnswer: 0
+    level: 'A1',
+    type: 'speaking', 
+    question: 'Where are you from? Tell me about your country.',
+    expectedTime: 15
   },
-  
-  // Speaking prompts
   {
     id: 3,
-    level: 'A1',
+    level: 'A2',
     type: 'speaking',
-    question: 'Let\'s start with something simple!',
-    speakingPrompt: 'Please introduce yourself. Tell me your name and where you\'re from.',
-    expectedDuration: 15
+    question: 'Describe what you did yesterday. Use past tense.',
+    expectedTime: 20
   },
   {
     id: 4,
     level: 'A2',
     type: 'speaking',
-    question: 'Tell me about your daily routine',
-    speakingPrompt: 'Describe what you do in a typical day. What time do you wake up? What do you do for work or study?',
-    expectedDuration: 30
+    question: 'What is your favorite food and why do you like it?',
+    expectedTime: 20
   },
   {
     id: 5,
     level: 'B1',
     type: 'speaking',
-    question: 'Share a recent experience',
-    speakingPrompt: 'Tell me about something interesting that happened to you last week. Give me details about what happened and how you felt.',
-    expectedDuration: 45
+    question: 'Tell me about a memorable trip or vacation you took.',
+    expectedTime: 30
   },
   {
     id: 6,
-    level: 'B2',
+    level: 'B1',
     type: 'speaking',
-    question: 'Express your opinion',
-    speakingPrompt: 'What do you think about social media? Discuss both the positive and negative aspects of social media in our daily lives.',
-    expectedDuration: 60
+    question: 'What are your future plans? What do you want to achieve?',
+    expectedTime: 30
   },
   {
     id: 7,
-    level: 'C1',
+    level: 'B2',
     type: 'speaking',
-    question: 'Complex scenario',
-    speakingPrompt: 'Imagine you\'re planning a business event for 100 people. Explain the challenges you might face and how you would solve them.',
-    expectedDuration: 90
+    question: 'Describe a problem in your community and suggest a solution.',
+    expectedTime: 45
   }
 ];
 
-export default function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementTestProps) {
+export const SpeakingPlacementTest: React.FC<SpeakingPlacementTestProps> = ({ onBack, onComplete }) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState<(number | string)[]>([]);
-  const [selectedOption, setSelectedOption] = useState<number | null>(null);
-  const [userResponse, setUserResponse] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [finalLevel, setFinalLevel] = useState('');
-  const [recommendedModule, setRecommendedModule] = useState(1);
-  const [progress, setProgress] = useState(0);
+  const [finalScore, setFinalScore] = useState(0);
+  const [testStarted, setTestStarted] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const [userResponse, setUserResponse] = useState('');
+  const [isEvaluating, setIsEvaluating] = useState(false);
+  const [currentFeedback, setCurrentFeedback] = useState('');
+  const [answers, setAnswers] = useState<Array<{question: string, answer: string, score: number, feedback: string}>>([]);
+  const [questionScores, setQuestionScores] = useState<number[]>([]);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [recordingDuration, setRecordingDuration] = useState(0);
   
-  const { speak } = useTextToSpeech();
+  const mediaRecorder = useRef<MediaRecorder | null>(null);
+  const audioChunks = useRef<Blob[]>([]);
+  const recordingTimer = useRef<NodeJS.Timeout | null>(null);
+  const progressTimer = useRef<NodeJS.Timeout | null>(null);
+  
+  const { speak, isSpeaking } = useTextToSpeech();
   const { userProfile, getXPProgress } = useGamification();
   const xpProgress = getXPProgress();
 
-  const currentQuestion = questions[currentQuestionIndex];
+  const currentQuestion = speakingQuestions[currentQuestionIndex];
+  const progress = ((currentQuestionIndex + 1) / speakingQuestions.length) * 100;
 
   useEffect(() => {
-    setProgress((currentQuestionIndex / questions.length) * 100);
-  }, [currentQuestionIndex]);
-
-  // Recording timer
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isRecording) {
-      interval = setInterval(() => {
-        setRecordingDuration(prev => prev + 1);
+    if (testStarted && currentQuestion && !isRecording && !isEvaluating) {
+      // Read the question aloud when it appears
+      const timer = setTimeout(() => {
+        playQuestion();
       }, 1000);
+      return () => clearTimeout(timer);
     }
-    return () => clearInterval(interval);
-  }, [isRecording]);
+  }, [currentQuestionIndex, testStarted]);
 
-  const playPrompt = (text: string) => {
+  const playQuestion = () => {
     setIsPlaying(true);
-    speak(text, () => setIsPlaying(false));
+    speak(currentQuestion.question, () => {
+      setIsPlaying(false);
+    });
   };
 
   const startRecording = async () => {
-    setIsRecording(true);
-    setRecordingDuration(0);
-    setUserResponse('');
-    
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
-      const audioChunks: BlobPart[] = [];
+      mediaRecorder.current = new MediaRecorder(stream);
+      audioChunks.current = [];
 
-      mediaRecorder.ondataavailable = (event) => {
-        audioChunks.push(event.data);
+      mediaRecorder.current.ondataavailable = (event) => {
+        audioChunks.current.push(event.data);
       };
 
-      mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+      mediaRecorder.current.onstop = async () => {
+        const audioBlob = new Blob(audioChunks.current, { type: 'audio/webm' });
         await sendToTranscribe(audioBlob);
         stream.getTracks().forEach(track => track.stop());
       };
 
-      mediaRecorder.start();
+      mediaRecorder.current.start();
+      setIsRecording(true);
+      setRecordingTime(0);
 
-      // Auto-stop based on expected duration
-      const expectedDuration = currentQuestion.expectedDuration || 30;
-      setTimeout(() => {
-        if (mediaRecorder.state === 'recording') {
-          mediaRecorder.stop();
-          setIsRecording(false);
-        }
-      }, expectedDuration * 1000);
+      // Start recording timer
+      recordingTimer.current = setInterval(() => {
+        setRecordingTime(prev => {
+          if (prev >= currentQuestion.expectedTime) {
+            stopRecording();
+            return prev;
+          }
+          return prev + 1;
+        });
+      }, 1000);
 
     } catch (error) {
       console.error('Error accessing microphone:', error);
-      setIsRecording(false);
     }
   };
 
   const stopRecording = () => {
-    setIsRecording(false);
+    if (mediaRecorder.current && isRecording) {
+      mediaRecorder.current.stop();
+      setIsRecording(false);
+      if (recordingTimer.current) {
+        clearInterval(recordingTimer.current);
+      }
+    }
   };
 
   const sendToTranscribe = async (audioBlob: Blob) => {
     try {
+      setIsEvaluating(true);
       const reader = new FileReader();
       reader.readAsDataURL(audioBlob);
       reader.onloadend = async () => {
-        const base64Audio = reader.result?.toString().split(',')[1];
-        if (base64Audio) {
-          const { data, error } = await supabase.functions.invoke('transcribe', {
-            body: { audio: base64Audio }
-          });
+        const base64data = reader.result as string;
+        const audioData = base64data.split(',')[1];
 
-          if (error) {
-            console.error('Transcription error:', error);
-            setUserResponse('Unable to transcribe audio. Please try again.');
-          } else {
-            setUserResponse(data.text || 'No transcription available');
-          }
+        const { data, error } = await supabase.functions.invoke('transcribe', {
+          body: { audio: audioData }
+        });
+
+        if (error) throw error;
+
+        const transcription = data.text || '';
+        setUserResponse(transcription);
+
+        if (transcription.trim().length < 3) {
+          setCurrentFeedback('Please try again with a longer answer.');
+          setIsEvaluating(false);
+          return;
         }
+
+        // Evaluate the answer with GPT
+        await evaluateAnswer(transcription);
       };
     } catch (error) {
-      console.error('Error processing audio:', error);
-      setUserResponse('Error processing audio. Please try again.');
+      console.error('Error transcribing audio:', error);
+      setIsEvaluating(false);
     }
   };
 
-  const handleMultipleChoice = (optionIndex: number) => {
-    setSelectedOption(optionIndex);
+  const evaluateAnswer = async (transcription: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('evaluate-speaking', {
+        body: {
+          question: currentQuestion.question,
+          answer: transcription,
+          level: currentQuestion.level
+        }
+      });
+
+      if (error) throw error;
+
+      const evaluation = data;
+      setCurrentFeedback(evaluation.feedback);
+      
+      // Store the answer and score
+      const newAnswer = {
+        question: currentQuestion.question,
+        answer: transcription,
+        score: evaluation.score,
+        feedback: evaluation.feedback
+      };
+      
+      setAnswers(prev => [...prev, newAnswer]);
+      setQuestionScores(prev => [...prev, evaluation.score]);
+
+      // Move to next question after showing feedback
+      setTimeout(() => {
+        if (currentQuestionIndex < speakingQuestions.length - 1) {
+          setCurrentQuestionIndex(prev => prev + 1);
+          setUserResponse('');
+          setCurrentFeedback('');
+          setIsEvaluating(false);
+        } else {
+          calculateFinalResults();
+        }
+      }, 3000);
+
+    } catch (error) {
+      console.error('Error evaluating answer:', error);
+      setCurrentFeedback('Error evaluating your response. Please try again.');
+      setIsEvaluating(false);
+    }
   };
 
-  const handleNext = () => {
-    const newAnswers = [...answers];
+  const calculateFinalResults = () => {
+    const totalScore = questionScores.reduce((sum, score) => sum + score, 0);
+    const averageScore = totalScore / questionScores.length;
     
-    if (currentQuestion.type === 'multiple-choice') {
-      newAnswers[currentQuestionIndex] = selectedOption ?? -1;
-    } else {
-      newAnswers[currentQuestionIndex] = userResponse;
-    }
+    let level = 'A1';
+    if (averageScore >= 4.5) level = 'C1';
+    else if (averageScore >= 3.5) level = 'B2';
+    else if (averageScore >= 2.5) level = 'B1';
+    else if (averageScore >= 1.5) level = 'A2';
     
-    setAnswers(newAnswers);
-
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-      setSelectedOption(null);
-      setUserResponse('');
-      setRecordingDuration(0);
-    } else {
-      calculateResults(newAnswers);
-    }
-  };
-
-  const calculateResults = (allAnswers: (number | string)[]) => {
-    let score = 0;
-    
-    // Score MCQs
-    for (let i = 0; i < 2; i++) {
-      if (allAnswers[i] === questions[i].correctAnswer) {
-        score += 20;
-      }
-    }
-    
-    // Score speaking responses (simplified - in real app, use AI evaluation)
-    for (let i = 2; i < allAnswers.length; i++) {
-      const response = allAnswers[i] as string;
-      if (response && response.length > 10) {
-        const words = response.split(' ').length;
-        if (words >= 10) score += 15;
-        if (words >= 20) score += 10;
-        if (words >= 30) score += 5;
-      }
-    }
-
-    // Determine level and module
-    let level = '';
-    let module = 1;
-    
-    if (score >= 90) {
-      level = 'C1';
-      module = 7;
-    } else if (score >= 75) {
-      level = 'B2';
-      module = 6;
-    } else if (score >= 60) {
-      level = 'B1';
-      module = 4;
-    } else if (score >= 40) {
-      level = 'A2';
-      module = 2;
-    } else {
-      level = 'A1';
-      module = 1;
-    }
-
+    setFinalScore(Math.round(averageScore * 20)); // Convert to percentage
     setFinalLevel(level);
-    setRecommendedModule(module);
     setShowResult(true);
+    onComplete(level, Math.round(averageScore * 20));
+  };
+
+  const resetTest = () => {
+    setCurrentQuestionIndex(0);
+    setShowResult(false);
+    setTestStarted(false);
+    setUserResponse('');
+    setCurrentFeedback('');
+    setAnswers([]);
+    setQuestionScores([]);
+    setIsEvaluating(false);
+    setIsRecording(false);
   };
 
   const getLevelColor = (level: string) => {
@@ -276,57 +273,77 @@ export default function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPl
     }
   };
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
   if (showResult) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4">
-        {/* Background Stars */}
         <div className="absolute inset-0 w-full h-full background-stars pointer-events-none" 
              style={{ backgroundImage: 'radial-gradient(2px 2px at 20px 30px, #fff, transparent), radial-gradient(2px 2px at 40px 70px, #fff, transparent), radial-gradient(1px 1px at 90px 40px, #fff, transparent)', backgroundSize: '100px 100px' }} 
         />
         
+        {/* Avatar Display */}
+        {userProfile && (
+          <div className="fixed top-4 left-4 z-20">
+            <AvatarDisplay
+              level={userProfile.level}
+              xp={Math.max(0, xpProgress.current)}
+              maxXP={xpProgress.max}
+              userName={userProfile.name}
+              showXPBar={true}
+              size="sm"
+            />
+          </div>
+        )}
+
         <div className="relative max-w-md mx-auto pt-20">
           <Card className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl border border-white/20 text-white">
             <CardContent className="p-8 text-center">
               <div className="mb-6">
-                <Award className="h-16 w-16 mx-auto mb-4 text-yellow-400" />
-                <h2 className="text-2xl font-bold mb-2">Speaking Test Complete!</h2>
-                <p className="text-white/80">Great job! Here are your results:</p>
+                <div className="relative">
+                  <Award className="h-16 w-16 mx-auto mb-4 text-yellow-400" />
+                  <div className="absolute -top-2 -right-2">
+                    <Star className="h-6 w-6 text-yellow-300 animate-pulse" />
+                  </div>
+                </div>
+                <h2 className="text-2xl font-bold mb-2">🎉 Speaking Test Complete!</h2>
+                <p className="text-white/80">Amazing work! Here are your results:</p>
               </div>
               
               <div className="space-y-4 mb-6">
                 <div className={`bg-gradient-to-r ${getLevelColor(finalLevel)} rounded-xl p-4`}>
-                  <h3 className="text-xl font-bold">Your Level: {finalLevel}</h3>
+                  <h3 className="text-xl font-bold text-white">Your Level: {finalLevel}</h3>
+                  <p className="text-white/90 text-sm">Score: {finalScore}%</p>
                 </div>
                 
                 <div className="bg-white/10 rounded-xl p-4">
-                  <p className="text-sm text-white/80 mb-2">Recommended Starting Point</p>
-                  <Badge variant="secondary" className="text-lg px-3 py-1">
-                    Module {recommendedModule}
-                  </Badge>
+                  <p className="text-sm text-white/80 mb-2">Questions Completed</p>
+                  <div className="text-2xl font-bold text-white">{speakingQuestions.length}/7</div>
                 </div>
               </div>
               
               <div className="space-y-3">
                 <Button
-                  onClick={() => onComplete(finalLevel, recommendedModule)}
+                  onClick={() => onComplete(finalLevel, finalScore)}
                   className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-medium py-3 rounded-xl"
                 >
                   Start Learning Journey
                 </Button>
                 
                 <Button
+                  onClick={resetTest}
+                  variant="outline"
+                  className="w-full border-white/20 text-white/70 hover:text-white hover:bg-white/10"
+                >
+                  <RotateCcw className="h-4 w-4 mr-2" />
+                  Retake Test
+                </Button>
+                
+                <Button
                   onClick={onBack}
                   variant="ghost"
-                  className="w-full text-white/70 hover:text-white hover:bg-white/10"
+                  className="w-full text-white/50 hover:text-white/70 hover:bg-white/5"
                 >
                   <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back to Speaking
+                  Back to Menu
                 </Button>
               </div>
             </CardContent>
@@ -338,7 +355,6 @@ export default function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPl
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4">
-      {/* Background Stars */}
       <div className="absolute inset-0 w-full h-full background-stars pointer-events-none" 
            style={{ backgroundImage: 'radial-gradient(2px 2px at 20px 30px, #fff, transparent), radial-gradient(2px 2px at 40px 70px, #fff, transparent), radial-gradient(1px 1px at 90px 40px, #fff, transparent)', backgroundSize: '100px 100px' }} 
       />
@@ -358,127 +374,150 @@ export default function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPl
       )}
 
       <div className="relative max-w-md mx-auto pt-20">
-        {/* Header */}
-        <div className="text-center mb-6">
-          <MicIcon className="h-12 w-12 mx-auto mb-4 text-blue-400" />
-          <h1 className="text-2xl font-bold text-white mb-2">Speaking Test</h1>
-          <p className="text-white/80 text-sm">Let's test your English by speaking! Answer a few voice prompts and we'll find your level.</p>
-        </div>
+        <Button
+          onClick={onBack}
+          variant="ghost"
+          className="mb-4 text-white/70 hover:text-white hover:bg-white/10"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back
+        </Button>
 
-        {/* Progress */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-2 text-white/80 text-sm">
-            <span>Question {currentQuestionIndex + 1} of {questions.length}</span>
-            <span>{Math.round(progress)}%</span>
-          </div>
-          <Progress value={progress} className="h-2 bg-white/20" />
-        </div>
+        {/* Welcome Screen */}
+        {!testStarted && (
+          <Card className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl border border-white/20">
+            <CardContent className="p-8">
+              <div className="text-center space-y-6">
+                <div className="w-24 h-24 mx-auto bg-primary/20 rounded-full flex items-center justify-center">
+                  <Mic className="w-12 h-12 text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-white mb-2">🎤 Speaking Test</h2>
+                  <p className="text-white/80">
+                    Let's test your English by speaking! Answer a few voice prompts and we'll find your level.
+                  </p>
+                </div>
+                <Button 
+                  onClick={() => setTestStarted(true)}
+                  size="lg"
+                  className="bg-white text-primary hover:bg-white/90"
+                >
+                  <Play className="w-5 h-5 mr-2" />
+                  Start Speaking Test
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
-        {/* Question Card */}
-        <Card className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl border border-white/20 mb-6">
-          <CardContent className="p-6">
-            <div className="mb-4">
-              <Badge variant="secondary" className="mb-3">
-                {currentQuestion.level} Level
-              </Badge>
-              <h2 className="text-xl font-semibold text-white mb-4">
-                {currentQuestion.question}
-              </h2>
+        {/* Test Content */}
+        {testStarted && !showResult && (
+          <div className="space-y-6">
+            {/* Progress */}
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm text-white/80">
+                <span>Question {currentQuestionIndex + 1} of {speakingQuestions.length}</span>
+                <span>{Math.round(progress)}% Complete</span>
+              </div>
+              <Progress value={progress} className="bg-white/20" />
             </div>
 
-            {currentQuestion.type === 'multiple-choice' ? (
-              <div className="space-y-3">
-                {currentQuestion.options?.map((option, index) => (
-                  <Button
-                    key={index}
-                    onClick={() => handleMultipleChoice(index)}
-                    variant={selectedOption === index ? "default" : "outline"}
-                    className={`w-full text-left justify-start ${
-                      selectedOption === index 
-                        ? 'bg-blue-500 text-white' 
-                        : 'bg-white/10 text-white border-white/20 hover:bg-white/20'
-                    }`}
-                  >
-                    {option}
-                  </Button>
-                ))}
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="bg-blue-500/20 border border-blue-500/30 rounded-lg p-4">
-                  <p className="text-white/90 text-sm mb-3">
-                    {currentQuestion.speakingPrompt}
-                  </p>
-                  <Button
-                    onClick={() => playPrompt(currentQuestion.speakingPrompt || '')}
-                    variant="ghost"
-                    size="sm"
-                    disabled={isPlaying}
-                    className="text-blue-300 hover:text-blue-200 hover:bg-blue-500/20"
-                  >
-                    <Play className="h-4 w-4 mr-2" />
-                    {isPlaying ? 'Playing...' : 'Listen to prompt'}
-                  </Button>
+            {/* Question Card */}
+            <Card className="bg-white/10 border-white/20">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center justify-between">
+                  <span>Speaking Question</span>
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      onClick={playQuestion}
+                      disabled={isPlaying || isSpeaking}
+                      variant="ghost"
+                      size="sm"
+                      className="text-white/80 hover:text-white hover:bg-white/10"
+                    >
+                      <Volume2 className="w-4 h-4" />
+                    </Button>
+                    <Badge variant="secondary" className="bg-primary/20 text-primary">
+                      {currentQuestion.level}
+                    </Badge>
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="text-white/90 text-lg leading-relaxed">
+                  {currentQuestion.question}
                 </div>
 
                 {/* Recording Controls */}
-                <div className="text-center space-y-4">
-                  {!isRecording ? (
-                    <Button
-                      onClick={startRecording}
-                      className="bg-red-500 hover:bg-red-600 text-white rounded-full w-20 h-20"
-                    >
-                      <Mic className="h-8 w-8" />
-                    </Button>
-                  ) : (
-                    <div className="space-y-3">
-                      <Button
-                        onClick={stopRecording}
-                        className="bg-red-600 hover:bg-red-700 text-white rounded-full w-20 h-20 animate-pulse"
-                      >
-                        <Pause className="h-8 w-8" />
-                      </Button>
-                      <p className="text-white/80 text-sm">
-                        Recording: {formatTime(recordingDuration)}
-                      </p>
+                <div className="flex flex-col items-center space-y-4">
+                  {isRecording && (
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-white">
+                        {Math.max(0, currentQuestion.expectedTime - recordingTime)}s
+                      </div>
+                      <div className="text-white/60 text-sm">Recording time remaining</div>
+                      <Progress 
+                        value={(recordingTime / currentQuestion.expectedTime) * 100} 
+                        className="w-32 mt-2 bg-white/20"
+                      />
                     </div>
                   )}
-                  
-                  {userResponse && (
-                    <div className="bg-green-500/20 border border-green-500/30 rounded-lg p-3 mt-4">
-                      <p className="text-green-300 text-sm font-medium mb-1">Your response:</p>
-                      <p className="text-white text-sm">{userResponse}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
 
-        {/* Navigation */}
-        <div className="flex space-x-3">
-          <Button
-            onClick={onBack}
-            variant="ghost"
-            className="text-white/70 hover:text-white hover:bg-white/10"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
-          </Button>
-          
-          <Button
-            onClick={handleNext}
-            disabled={
-              (currentQuestion.type === 'multiple-choice' && selectedOption === null) ||
-              (currentQuestion.type === 'speaking' && !userResponse && !isRecording)
-            }
-            className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-medium"
-          >
-            {currentQuestionIndex === questions.length - 1 ? 'Complete Test' : 'Next Question'}
-          </Button>
-        </div>
+                  <Button
+                    onClick={isRecording ? stopRecording : startRecording}
+                    disabled={isEvaluating || isPlaying || isSpeaking}
+                    size="lg"
+                    className={`w-20 h-20 rounded-full ${
+                      isRecording 
+                        ? 'bg-red-500 hover:bg-red-600 animate-pulse' 
+                        : 'bg-primary hover:bg-primary/90'
+                    }`}
+                  >
+                    {isRecording ? (
+                      <MicOff className="w-8 h-8" />
+                    ) : (
+                      <Mic className="w-8 h-8" />
+                    )}
+                  </Button>
+
+                  <div className="text-center text-white/80 text-sm">
+                    {isRecording ? 'Recording... Click to stop' : 
+                     isEvaluating ? 'Processing your response...' :
+                     (isPlaying || isSpeaking) ? 'Listen to the question...' :
+                     'Click to start recording'}
+                  </div>
+                </div>
+
+                {/* User Response */}
+                {userResponse && (
+                  <div className="bg-white/5 rounded-lg p-4">
+                    <h4 className="text-white font-medium mb-2">Your Response:</h4>
+                    <p className="text-white/80">{userResponse}</p>
+                  </div>
+                )}
+
+                {/* Feedback */}
+                {currentFeedback && !isEvaluating && (
+                  <div className="bg-green-500/20 border border-green-500/30 rounded-lg p-4">
+                    <p className="text-green-300">✨ {currentFeedback}</p>
+                    {currentQuestionIndex < speakingQuestions.length - 1 && (
+                      <p className="text-white/60 text-sm mt-2">Moving to next question...</p>
+                    )}
+                  </div>
+                )}
+
+                {/* Evaluation Status */}
+                {isEvaluating && (
+                  <div className="text-center text-white/60">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-2"></div>
+                    Evaluating your response...
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
     </div>
   );
-}
+};

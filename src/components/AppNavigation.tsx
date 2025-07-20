@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import SpeakingApp from './SpeakingApp';
 import GrammarModules from './GrammarModules';
 import LessonsApp from './LessonsApp';
-import SpeakingPlacementTest from './SpeakingPlacementTest';
+import { SpeakingPlacementTest } from './SpeakingPlacementTest';
 import DailyTips from './DailyTips';
 import DailyTipsBadge from './DailyTipsBadge';
 import BookmarksView from './BookmarksView';
