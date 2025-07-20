@@ -12,22 +12,21 @@ serve(async (req) => {
   }
 
   try {
-    const formData = await req.formData()
-    const audioFile = formData.get('audio') as File
+    const { audio } = await req.json()
     
-    if (!audioFile) {
-      throw new Error('No audio file provided')
+    if (!audio) {
+      throw new Error('No audio data provided')
     }
 
-    console.log('Received audio file:', audioFile.name, audioFile.size, 'bytes')
+    console.log('Received audio data, length:', audio.length)
 
-    // Convert file to buffer for OpenAI
-    const arrayBuffer = await audioFile.arrayBuffer()
-    const audioBlob = new Blob([arrayBuffer], { type: 'audio/wav' })
+    // Convert base64 to buffer for OpenAI
+    const audioBuffer = Uint8Array.from(atob(audio), c => c.charCodeAt(0))
+    const audioBlob = new Blob([audioBuffer], { type: 'audio/webm' })
 
     // Prepare form data for OpenAI
     const openAIFormData = new FormData()
-    openAIFormData.append('file', audioBlob, audioFile.name || 'audio.webm')
+    openAIFormData.append('file', audioBlob, 'audio.webm')
     openAIFormData.append('model', 'whisper-1')
     openAIFormData.append('language', 'en') // Specify English for better accuracy
     openAIFormData.append('temperature', '0') // More deterministic results

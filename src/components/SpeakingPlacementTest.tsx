@@ -171,7 +171,7 @@ export const SpeakingPlacementTest: React.FC<SpeakingPlacementTestProps> = ({ on
 
         if (error) throw error;
 
-        const transcription = data.text || '';
+        const transcription = data.transcript || '';
         setUserResponse(transcription);
 
         if (transcription.trim().length < 3) {
