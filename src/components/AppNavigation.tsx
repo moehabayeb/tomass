@@ -148,14 +148,14 @@ export default function AppNavigation() {
             onClick={() => setCurrentMode('placement-test')}
             variant="ghost"
             size="sm"
-            className={`rounded-xl transition-all duration-200 ${
+            className={`rounded-xl transition-all duration-200 text-white font-medium ${
               currentMode === 'placement-test' 
-                ? 'bg-white/20 text-white shadow-sm' 
-                : 'text-white/70 hover:bg-white/10 hover:text-white'
+                ? 'bg-white/20 shadow-sm' 
+                : 'text-white/90 hover:bg-white/15 hover:text-white'
             }`}
           >
-            <GraduationCap className="h-4 w-4 mr-2" />
-            Test
+            <GraduationCap className="h-4 w-4 mr-2 flex-shrink-0" />
+            <span className="whitespace-nowrap">Test</span>
           </Button>
         </div>
       </div>
