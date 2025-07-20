@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Mic, BookOpen, Bookmark, Award } from 'lucide-react';
+import { Mic, BookOpen, Bookmark, Award, GraduationCap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import SpeakingApp from './SpeakingApp';
 import GrammarModules from './GrammarModules';
 import LessonsApp from './LessonsApp';
+import PlacementTest from './PlacementTest';
 import DailyTips from './DailyTips';
 import DailyTipsBadge from './DailyTipsBadge';
 import BookmarksView from './BookmarksView';
@@ -19,12 +20,13 @@ import { useStreakTracker } from '@/hooks/useStreakTracker';
 import { useBadgeSystem } from '@/hooks/useBadgeSystem';
 import { Toaster } from '@/components/ui/toaster';
 
-type AppMode = 'speaking' | 'lessons' | 'bookmarks' | 'badges';
+type AppMode = 'speaking' | 'lessons' | 'bookmarks' | 'badges' | 'placement-test';
 
 export default function AppNavigation() {
   const [currentMode, setCurrentMode] = useState<AppMode>('speaking');
   const [continuedMessage, setContinuedMessage] = useState<string | undefined>();
   const [showDailyTips, setShowDailyTips] = useState(false);
+  const [hasCompletedPlacement, setHasCompletedPlacement] = useState(false);
   const { userProfile, xpBoosts, showLevelUpPopup, pendingLevelUp, closeLevelUpPopup, getXPProgress, addXP } = useGamification();
   const { streakData, getStreakMessage, getNextMilestone, streakReward } = useStreakTracker(addXP);
   const { newlyUnlockedBadge, closeBadgeNotification, getFeatureProgress } = useBadgeSystem();
@@ -41,6 +43,14 @@ export default function AppNavigation() {
       return () => clearTimeout(timer);
     }
   }, [currentMode, continuedMessage]);
+
+  const handlePlacementComplete = (level: string, recommendedModule: number) => {
+    setHasCompletedPlacement(true);
+    setCurrentMode('lessons');
+    // You could store the recommended starting point in localStorage or user profile
+    localStorage.setItem('recommendedStartLevel', level);
+    localStorage.setItem('recommendedStartModule', recommendedModule.toString());
+  };
 
   return (
     <div className="relative">
@@ -134,6 +144,19 @@ export default function AppNavigation() {
             <Award className="h-4 w-4 mr-2" />
             Badges
           </Button>
+          <Button
+            onClick={() => setCurrentMode('placement-test')}
+            variant="ghost"
+            size="sm"
+            className={`rounded-xl transition-all duration-200 ${
+              currentMode === 'placement-test' 
+                ? 'bg-white/20 text-white shadow-sm' 
+                : 'text-white/70 hover:bg-white/10 hover:text-white'
+            }`}
+          >
+            <GraduationCap className="h-4 w-4 mr-2" />
+            Test
+          </Button>
         </div>
       </div>
 
@@ -187,6 +210,13 @@ export default function AppNavigation() {
       
       {currentMode === 'badges' && (
         <BadgesView onBack={() => setCurrentMode('speaking')} />
+      )}
+      
+      {currentMode === 'placement-test' && (
+        <PlacementTest 
+          onBack={() => setCurrentMode('speaking')} 
+          onComplete={handlePlacementComplete}
+        />
       )}
       
       {currentMode === 'speaking' && (
