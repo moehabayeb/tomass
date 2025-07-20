@@ -88,10 +88,10 @@ export default function AppNavigation() {
 
       {/* Navigation Tab - Always visible */}
       <div 
-        className="fixed top-4 right-4 z-20 bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-2xl border border-white/20"
+        className="fixed top-4 right-4 z-20 bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-2xl border border-white/20 min-w-fit"
         style={{ boxShadow: 'var(--shadow-medium)' }}
       >
-        <div className="flex space-x-2 p-2">
+        <div className="flex space-x-2 p-2 flex-wrap">
           <Button
             onClick={() => setCurrentMode('speaking')}
             variant="ghost"
