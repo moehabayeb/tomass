@@ -8,6 +8,9 @@ import { useTextToSpeech } from '@/hooks/useTextToSpeech';
 import { supabase } from '@/integrations/supabase/client';
 import { useGamification } from '@/hooks/useGamification';
 import { AvatarDisplay } from './AvatarDisplay';
+import { useUserData } from '@/hooks/useUserData';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 interface SpeakingPlacementTestProps {
   onBack: () => void;
@@ -80,6 +83,7 @@ export const SpeakingPlacementTest: React.FC<SpeakingPlacementTestProps> = ({ on
   const [answers, setAnswers] = useState<Array<{question: string, answer: string, score: number, feedback: string}>>([]);
   const [questionScores, setQuestionScores] = useState<number[]>([]);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [showResultsModal, setShowResultsModal] = useState(false);
   
   const mediaRecorder = useRef<MediaRecorder | null>(null);
   const audioChunks = useRef<Blob[]>([]);
@@ -88,6 +92,7 @@ export const SpeakingPlacementTest: React.FC<SpeakingPlacementTestProps> = ({ on
   
   const { speak, isSpeaking } = useTextToSpeech();
   const { userProfile, getXPProgress } = useGamification();
+  const { updateProfile } = useUserData();
   const xpProgress = getXPProgress();
 
   const currentQuestion = speakingQuestions[currentQuestionIndex];
@@ -234,7 +239,7 @@ export const SpeakingPlacementTest: React.FC<SpeakingPlacementTestProps> = ({ on
     }
   };
 
-  const calculateFinalResults = () => {
+  const calculateFinalResults = async () => {
     const totalScore = questionScores.reduce((sum, score) => sum + score, 0);
     const averageScore = totalScore / questionScores.length;
     
@@ -246,7 +251,18 @@ export const SpeakingPlacementTest: React.FC<SpeakingPlacementTestProps> = ({ on
     
     setFinalScore(Math.round(averageScore * 20)); // Convert to percentage
     setFinalLevel(level);
+    
+    // Update user profile with new level
+    if (userProfile) {
+      let userLevel: 'beginner' | 'intermediate' | 'advanced' = 'beginner';
+      if (level === 'C1' || level === 'B2') userLevel = 'advanced';
+      else if (level === 'B1') userLevel = 'intermediate';
+      
+      await updateProfile({ userLevel });
+    }
+    
     setShowResult(true);
+    setShowResultsModal(true);
     onComplete(level, Math.round(averageScore * 20));
   };
 
@@ -260,6 +276,39 @@ export const SpeakingPlacementTest: React.FC<SpeakingPlacementTestProps> = ({ on
     setQuestionScores([]);
     setIsEvaluating(false);
     setIsRecording(false);
+    setShowResultsModal(false);
+  };
+
+  const getGrammarAccuracy = () => {
+    const grammarScores = questionScores.filter(score => score >= 3);
+    return Math.round((grammarScores.length / questionScores.length) * 100);
+  };
+
+  const getFluencyFeedback = () => {
+    const avgScore = questionScores.reduce((sum, score) => sum + score, 0) / questionScores.length;
+    if (avgScore >= 4) return "Excellent fluency and natural speech patterns";
+    if (avgScore >= 3) return "Good fluency with minor hesitations";
+    if (avgScore >= 2) return "Developing fluency, some pauses and repetitions";
+    return "Needs improvement in speech flow and confidence";
+  };
+
+  const getVocabularyRange = () => {
+    const avgScore = questionScores.reduce((sum, score) => sum + score, 0) / questionScores.length;
+    if (avgScore >= 4) return "Advanced vocabulary with varied expressions";
+    if (avgScore >= 3) return "Good vocabulary range for everyday topics";
+    if (avgScore >= 2) return "Basic vocabulary with simple expressions";
+    return "Limited vocabulary, relies on simple words";
+  };
+
+  const getLevelExplanation = () => {
+    switch (finalLevel) {
+      case 'A1': return "Beginner level: Can use basic phrases and simple sentences";
+      case 'A2': return "Elementary level: Can communicate in simple, routine tasks";
+      case 'B1': return "Intermediate level: Can handle most everyday situations";
+      case 'B2': return "Upper-intermediate: Can express ideas fluently and naturally";
+      case 'C1': return "Advanced level: Can use language flexibly and effectively";
+      default: return "";
+    }
   };
 
   const getLevelColor = (level: string) => {
@@ -322,8 +371,15 @@ export const SpeakingPlacementTest: React.FC<SpeakingPlacementTestProps> = ({ on
               
               <div className="space-y-3">
                 <Button
-                  onClick={() => onComplete(finalLevel, finalScore)}
+                  onClick={() => setShowResultsModal(true)}
                   className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-medium py-3 rounded-xl"
+                >
+                  View Detailed Results
+                </Button>
+                
+                <Button
+                  onClick={() => onComplete(finalLevel, finalScore)}
+                  className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-medium py-3 rounded-xl"
                 >
                   Start Learning Journey
                 </Button>
@@ -349,6 +405,138 @@ export const SpeakingPlacementTest: React.FC<SpeakingPlacementTestProps> = ({ on
             </CardContent>
           </Card>
         </div>
+
+        {/* Detailed Results Modal */}
+        <Dialog open={showResultsModal} onOpenChange={setShowResultsModal}>
+          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto bg-gradient-to-b from-slate-800 to-slate-900 border-white/20">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold text-white flex items-center gap-2">
+                <Award className="h-6 w-6 text-yellow-400" />
+                Your Speaking Test Results
+              </DialogTitle>
+            </DialogHeader>
+            
+            <div className="space-y-6 text-white">
+              {/* Summary Stats */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-white/10 rounded-lg p-3 text-center">
+                  <div className="text-2xl font-bold text-blue-400">{finalLevel}</div>
+                  <div className="text-sm text-white/70">Final Level</div>
+                </div>
+                <div className="bg-white/10 rounded-lg p-3 text-center">
+                  <div className="text-2xl font-bold text-green-400">{finalScore}%</div>
+                  <div className="text-sm text-white/70">Overall Score</div>
+                </div>
+                <div className="bg-white/10 rounded-lg p-3 text-center">
+                  <div className="text-2xl font-bold text-purple-400">{getGrammarAccuracy()}%</div>
+                  <div className="text-sm text-white/70">Grammar</div>
+                </div>
+                <div className="bg-white/10 rounded-lg p-3 text-center">
+                  <div className="text-2xl font-bold text-orange-400">{speakingQuestions.length}</div>
+                  <div className="text-sm text-white/70">Questions</div>
+                </div>
+              </div>
+
+              {/* Question Breakdown Table */}
+              <div className="bg-white/5 rounded-lg p-4">
+                <h3 className="text-lg font-bold mb-4">Question Breakdown</h3>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="border-white/20">
+                        <TableHead className="text-white/90">#</TableHead>
+                        <TableHead className="text-white/90">Question</TableHead>
+                        <TableHead className="text-white/90">Your Answer</TableHead>
+                        <TableHead className="text-white/90">AI Feedback</TableHead>
+                        <TableHead className="text-white/90 text-center">Score</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {answers.map((answer, index) => (
+                        <TableRow key={index} className="border-white/10">
+                          <TableCell className="text-white/70">{index + 1}</TableCell>
+                          <TableCell className="text-white/90 max-w-xs">
+                            <div className="truncate" title={answer.question}>
+                              {answer.question}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-white/90 max-w-xs">
+                            <div className="truncate" title={answer.answer}>
+                              {answer.answer}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-white/90 max-w-xs">
+                            <div className="truncate" title={answer.feedback}>
+                              {answer.feedback}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <div className="flex items-center justify-center gap-1">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <Star
+                                  key={star}
+                                  className={`h-4 w-4 ${
+                                    star <= answer.score
+                                      ? 'text-yellow-400 fill-current'
+                                      : 'text-gray-400'
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                            <div className="text-xs text-white/70 mt-1">{answer.score}/5</div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+
+              {/* Detailed Analysis */}
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="bg-white/5 rounded-lg p-4">
+                  <h4 className="font-bold mb-2 text-blue-400">📊 Performance Analysis</h4>
+                  <div className="space-y-2 text-sm">
+                    <div><strong>Grammar Accuracy:</strong> {getGrammarAccuracy()}%</div>
+                    <div><strong>Fluency:</strong> {getFluencyFeedback()}</div>
+                    <div><strong>Vocabulary:</strong> {getVocabularyRange()}</div>
+                  </div>
+                </div>
+                
+                <div className="bg-white/5 rounded-lg p-4">
+                  <h4 className="font-bold mb-2 text-green-400">🎯 Level Explanation</h4>
+                  <p className="text-sm text-white/90">
+                    <strong>{finalLevel} Level:</strong> {getLevelExplanation()}
+                  </p>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-4">
+                <Button
+                  onClick={() => {
+                    setShowResultsModal(false);
+                    onComplete(finalLevel, finalScore);
+                  }}
+                  className="flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
+                >
+                  Start Learning Journey
+                </Button>
+                <Button
+                  onClick={() => {
+                    setShowResultsModal(false);
+                    resetTest();
+                  }}
+                  variant="outline"
+                  className="border-white/20 text-white/90 hover:bg-white/10"
+                >
+                  <RotateCcw className="h-4 w-4 mr-2" />
+                  Retake Test
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
