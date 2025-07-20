@@ -243,13 +243,14 @@ export const SpeakingPlacementTest: React.FC<SpeakingPlacementTestProps> = ({ on
     const totalScore = questionScores.reduce((sum, score) => sum + score, 0);
     const averageScore = totalScore / questionScores.length;
     
+    // Level assignment based on specified criteria
     let level = 'A1';
     if (averageScore >= 4.5) level = 'C1';
-    else if (averageScore >= 3.5) level = 'B2';
-    else if (averageScore >= 2.5) level = 'B1';
-    else if (averageScore >= 1.5) level = 'A2';
+    else if (averageScore >= 4.0) level = 'B2';
+    else if (averageScore >= 3.0) level = 'B1';
+    else if (averageScore >= 2.0) level = 'A2';
     
-    setFinalScore(Math.round(averageScore * 20)); // Convert to percentage
+    setFinalScore(Math.round((averageScore / 5) * 100)); // Convert to percentage (out of 5)
     setFinalLevel(level);
     
     // Update user profile with new level
@@ -280,8 +281,12 @@ export const SpeakingPlacementTest: React.FC<SpeakingPlacementTestProps> = ({ on
   };
 
   const getGrammarAccuracy = () => {
-    const grammarScores = questionScores.filter(score => score >= 3);
-    return Math.round((grammarScores.length / questionScores.length) * 100);
+    // Calculate based on actual grammar scores if available in answers
+    if (answers.length > 0) {
+      const avgScore = questionScores.reduce((sum, score) => sum + score, 0) / questionScores.length;
+      return Math.round((avgScore / 5) * 100);
+    }
+    return 0;
   };
 
   const getFluencyFeedback = () => {

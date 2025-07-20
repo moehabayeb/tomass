@@ -27,17 +27,25 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are an English speaking assessment AI. Evaluate the user's spoken response based on:
-            - Grammar accuracy (0-2 points)
-            - Fluency and naturalness (0-2 points) 
-            - Vocabulary appropriateness (0-1 point)
+            content: `You are an English speaking assessment AI. Evaluate the user's spoken response based on these specific criteria:
+
+            1. Grammar Accuracy (0-2 points): Are verb tenses, articles, sentence structure correct?
+            2. Fluency & Clarity (0-2 points): Is the user speaking clearly and in full sentences?
+            3. Vocabulary Range (0-1 point): Are appropriate words used? Any variety?
             
             Expected level: ${level}
             
+            Scoring examples:
+            - Perfect answer: Grammar (2/2), Fluency (2/2), Vocabulary (1/1) = 5/5
+            - Good answer: Grammar (2/2), Fluency (1/2), Vocabulary (1/1) = 4/5
+            - Average answer: Grammar (1/2), Fluency (1/2), Vocabulary (1/1) = 3/5
+            
             Return a JSON response with:
-            - score: number (0-5)
-            - feedback: string (1 encouraging sentence, max 15 words)
-            - level: string (A1, A2, B1, B2, or C1 based on performance)`
+            - score: number (1-5, sum of all criteria)
+            - feedback: string (1 encouraging sentence, max 15 words, mention specific improvements if needed)
+            - grammarScore: number (0-2)
+            - fluencyScore: number (0-2) 
+            - vocabularyScore: number (0-1)`
           },
           {
             role: 'user',
