@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import SpeakingApp from './SpeakingApp';
 import GrammarModules from './GrammarModules';
 import LessonsApp from './LessonsApp';
-import PlacementTest from './PlacementTest';
+import SpeakingPlacementTest from './SpeakingPlacementTest';
 import DailyTips from './DailyTips';
 import DailyTipsBadge from './DailyTipsBadge';
 import BookmarksView from './BookmarksView';
@@ -154,8 +154,8 @@ export default function AppNavigation() {
                 : 'text-white/90 hover:bg-white/15 hover:text-white'
             }`}
           >
-            <GraduationCap className="h-4 w-4 mr-2 flex-shrink-0" />
-            <span className="whitespace-nowrap">Test</span>
+            <Mic className="h-4 w-4 mr-2 flex-shrink-0" />
+            <span className="whitespace-nowrap">Speaking Test</span>
           </Button>
         </div>
       </div>
@@ -213,7 +213,7 @@ export default function AppNavigation() {
       )}
       
       {currentMode === 'placement-test' && (
-        <PlacementTest 
+        <SpeakingPlacementTest 
           onBack={() => setCurrentMode('speaking')} 
           onComplete={handlePlacementComplete}
         />
