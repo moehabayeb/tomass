@@ -99,15 +99,29 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
   const startRecording = async () => {
     console.log('🎙️ START RECORDING - Button clicked');
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      // Enhanced audio constraints for better letter recognition
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          sampleRate: 16000, // Optimal for Whisper
+          channelCount: 1,
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        } 
+      });
       console.log('✅ Microphone access granted');
       
-      mediaRecorder.current = new MediaRecorder(stream);
+      mediaRecorder.current = new MediaRecorder(stream, {
+        mimeType: 'audio/webm;codecs=opus',
+        audioBitsPerSecond: 128000 // Higher quality for single letters
+      });
       audioChunks.current = [];
 
       mediaRecorder.current.ondataavailable = (event) => {
         console.log('📊 Audio data available:', event.data.size, 'bytes');
-        audioChunks.current.push(event.data);
+        if (event.data.size > 0) {
+          audioChunks.current.push(event.data);
+        }
       };
 
       mediaRecorder.current.onstop = async () => {
@@ -118,22 +132,24 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
         stream.getTracks().forEach(track => track.stop());
       };
 
-      mediaRecorder.current.start();
+      // Start recording with timeslice for better data collection
+      mediaRecorder.current.start(250); // Collect data every 250ms
       setIsRecording(true);
-      setHeardLetter('');
+      setHeardLetter('🎤 Listening...');
       console.log('🔴 Recording started - isRecording set to true');
 
-      // Auto-stop recording after 5 seconds for games
+      // Auto-stop recording after 3 seconds for single letters
       setTimeout(() => {
-        console.log('⏰ 5 seconds elapsed, checking if still recording...');
+        console.log('⏰ 3 seconds elapsed, checking if still recording...');
         if (mediaRecorder.current && mediaRecorder.current.state === 'recording') {
-          console.log('⏹️ Auto-stopping recording after 5 seconds');
+          console.log('⏹️ Auto-stopping recording after 3 seconds');
           stopRecording();
         }
-      }, 5000);
+      }, 3000);
 
     } catch (error) {
       console.error('❌ Error accessing microphone:', error);
+      setHeardLetter('❌ Microphone access denied');
     }
   };
 
@@ -152,12 +168,15 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
   const processAudio = async (audioBlob: Blob) => {
     try {
       setIsProcessing(true);
+      setHeardLetter('🔄 Processing...');
       console.log('📦 Processing audio blob, size:', audioBlob.size, 'bytes');
       
-      if (audioBlob.size === 0) {
-        console.error('❌ Audio blob is empty');
-        setHeardLetter('❌ No audio recorded');
+      if (audioBlob.size === 0 || audioBlob.size < 1000) {
+        console.error('❌ Audio blob too small:', audioBlob.size, 'bytes');
+        setHeardLetter('❌ No clear audio detected');
         setIsProcessing(false);
+        // Clear message after 3 seconds
+        setTimeout(() => setHeardLetter(''), 3000);
         return;
       }
       
@@ -176,30 +195,38 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
 
           if (error) {
             console.error('❌ Transcription error:', error);
-            setHeardLetter('❌ Speech error');
+            setHeardLetter('❌ Speech recognition failed');
             setIsProcessing(false);
+            setTimeout(() => setHeardLetter(''), 3000);
             return;
           }
 
           const transcription = data?.transcript?.toLowerCase().trim() || '';
           console.log('🎯 Transcription received:', transcription);
           
-          // Extract first letter from transcription
+          // Extract first letter from transcription with enhanced logic
           const extractedLetter = extractLetterFromSpeech(transcription);
           console.log('🔤 Extracted letter:', extractedLetter);
           
           if (extractedLetter) {
-            setHeardLetter(`You guessed: ${extractedLetter.toUpperCase()}`);
+            setHeardLetter(`🎯 You said: "${extractedLetter.toUpperCase()}"`);
             console.log('⚡ Processing guess for letter:', extractedLetter);
             processGuess(extractedLetter);
+            
+            // Keep message visible for 3 seconds
+            setTimeout(() => {
+              setHeardLetter('');
+            }, 3000);
           } else {
-            setHeardLetter('❓ Please say a letter clearly');
+            setHeardLetter(`❓ Heard: "${transcription}" - Try saying just the letter`);
             console.log('❌ No valid letter extracted from:', transcription);
+            setTimeout(() => setHeardLetter(''), 4000);
           }
           
         } catch (innerError) {
           console.error('❌ Inner processing error:', innerError);
           setHeardLetter('❌ Processing failed');
+          setTimeout(() => setHeardLetter(''), 3000);
         } finally {
           setIsProcessing(false);
         }
@@ -209,63 +236,104 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
         console.error('❌ FileReader error');
         setHeardLetter('❌ Audio processing failed');
         setIsProcessing(false);
+        setTimeout(() => setHeardLetter(''), 3000);
       };
       
     } catch (error) {
       console.error('❌ Error processing audio:', error);
       setHeardLetter('❌ Audio error');
       setIsProcessing(false);
+      setTimeout(() => setHeardLetter(''), 3000);
     }
   };
 
   const extractLetterFromSpeech = (text: string): string => {
-    // Handle common letter pronunciations
+    console.log('🔍 Extracting letter from:', text);
+    
+    // Enhanced letter mappings with more variations
     const letterMappings: Record<string, string> = {
-      'a': 'a', 'ay': 'a', 'eh': 'a',
-      'b': 'b', 'bee': 'b', 'be': 'b',
-      'c': 'c', 'see': 'c', 'sea': 'c',
-      'd': 'd', 'dee': 'd', 'de': 'd',
-      'e': 'e', 'ee': 'e',
-      'f': 'f', 'ef': 'f', 'eff': 'f',
-      'g': 'g', 'gee': 'g', 'ji': 'g',
-      'h': 'h', 'aitch': 'h', 'ach': 'h',
-      'i': 'i', 'eye': 'i', 'ai': 'i',
-      'j': 'j', 'jay': 'j', 'jey': 'j',
-      'k': 'k', 'kay': 'k', 'key': 'k',
-      'l': 'l', 'el': 'l', 'ell': 'l',
-      'm': 'm', 'em': 'm',
-      'n': 'n', 'en': 'n',
-      'o': 'o', 'oh': 'o',
-      'p': 'p', 'pee': 'p', 'pe': 'p',
-      'q': 'q', 'que': 'q', 'queue': 'q',
-      'r': 'r', 'are': 'r', 'ar': 'r',
-      's': 's', 'es': 's', 'ess': 's',
-      't': 't', 'tee': 't', 'te': 't',
-      'u': 'u', 'you': 'u', 'yu': 'u',
-      'v': 'v', 'vee': 'v', 've': 'v',
-      'w': 'w', 'double u': 'w', 'double you': 'w',
-      'x': 'x', 'ex': 'x',
-      'y': 'y', 'why': 'y', 'wai': 'y',
-      'z': 'z', 'zee': 'z', 'zed': 'z'
+      // A variations
+      'a': 'a', 'ay': 'a', 'eh': 'a', 'letter a': 'a', 'the letter a': 'a',
+      // B variations  
+      'b': 'b', 'bee': 'b', 'be': 'b', 'letter b': 'b', 'the letter b': 'b',
+      // C variations
+      'c': 'c', 'see': 'c', 'sea': 'c', 'letter c': 'c', 'the letter c': 'c',
+      // D variations
+      'd': 'd', 'dee': 'd', 'de': 'd', 'letter d': 'd', 'the letter d': 'd',
+      // E variations
+      'e': 'e', 'ee': 'e', 'letter e': 'e', 'the letter e': 'e',
+      // F variations
+      'f': 'f', 'ef': 'f', 'eff': 'f', 'letter f': 'f', 'the letter f': 'f',
+      // G variations
+      'g': 'g', 'gee': 'g', 'ji': 'g', 'letter g': 'g', 'the letter g': 'g',
+      // H variations
+      'h': 'h', 'aitch': 'h', 'ach': 'h', 'letter h': 'h', 'the letter h': 'h',
+      // I variations
+      'i': 'i', 'eye': 'i', 'ai': 'i', 'letter i': 'i', 'the letter i': 'i',
+      // J variations
+      'j': 'j', 'jay': 'j', 'jey': 'j', 'letter j': 'j', 'the letter j': 'j',
+      // K variations
+      'k': 'k', 'kay': 'k', 'key': 'k', 'letter k': 'k', 'the letter k': 'k',
+      // L variations
+      'l': 'l', 'el': 'l', 'ell': 'l', 'letter l': 'l', 'the letter l': 'l',
+      // M variations
+      'm': 'm', 'em': 'm', 'letter m': 'm', 'the letter m': 'm',
+      // N variations
+      'n': 'n', 'en': 'n', 'letter n': 'n', 'the letter n': 'n',
+      // O variations
+      'o': 'o', 'oh': 'o', 'letter o': 'o', 'the letter o': 'o',
+      // P variations
+      'p': 'p', 'pee': 'p', 'pe': 'p', 'letter p': 'p', 'the letter p': 'p',
+      // Q variations
+      'q': 'q', 'que': 'q', 'queue': 'q', 'letter q': 'q', 'the letter q': 'q',
+      // R variations
+      'r': 'r', 'are': 'r', 'ar': 'r', 'letter r': 'r', 'the letter r': 'r',
+      // S variations
+      's': 's', 'es': 's', 'ess': 's', 'letter s': 's', 'the letter s': 's',
+      // T variations
+      't': 't', 'tee': 't', 'te': 't', 'letter t': 't', 'the letter t': 't',
+      // U variations
+      'u': 'u', 'you': 'u', 'yu': 'u', 'letter u': 'u', 'the letter u': 'u',
+      // V variations
+      'v': 'v', 'vee': 'v', 've': 'v', 'letter v': 'v', 'the letter v': 'v',
+      // W variations
+      'w': 'w', 'double u': 'w', 'double you': 'w', 'letter w': 'w', 'the letter w': 'w',
+      // X variations
+      'x': 'x', 'ex': 'x', 'letter x': 'x', 'the letter x': 'x',
+      // Y variations
+      'y': 'y', 'why': 'y', 'wai': 'y', 'letter y': 'y', 'the letter y': 'y',
+      // Z variations
+      'z': 'z', 'zee': 'z', 'zed': 'z', 'letter z': 'z', 'the letter z': 'z'
     };
 
-    // First try exact mapping
+    // First try exact mapping (most common case)
     if (letterMappings[text]) {
+      console.log('✅ Exact match found:', letterMappings[text]);
       return letterMappings[text];
     }
 
-    // Try to find any single letter in the text
+    // Try to find letter phrases in the text
     for (const [key, value] of Object.entries(letterMappings)) {
       if (text.includes(key)) {
+        console.log('✅ Phrase match found:', key, '->', value);
         return value;
       }
     }
 
-    // If it's a single character and alphabetic, return it
-    if (text.length === 1 && /[a-z]/.test(text)) {
-      return text;
+    // Extract single alphabetic characters
+    const singleLetters = text.match(/[a-z]/g);
+    if (singleLetters && singleLetters.length === 1) {
+      console.log('✅ Single letter extracted:', singleLetters[0]);
+      return singleLetters[0];
     }
 
+    // If multiple letters, try to pick the most likely one
+    if (singleLetters && singleLetters.length > 1) {
+      console.log('⚠️ Multiple letters found:', singleLetters, 'using first one');
+      return singleLetters[0];
+    }
+
+    console.log('❌ No letter found in:', text);
     return '';
   };
 
@@ -494,8 +562,15 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
                 </Button>
                 
                  <p className="text-white/70 text-base">
-                   {isRecording ? '🎵 Listening for your letter... (5 seconds)' : '💡 Say any letter clearly: A, B, C...'}
+                   {isRecording ? '🎵 Listening for your letter... (3 seconds)' : '💡 Say any letter clearly: A, B, C...'}
                  </p>
+                 
+                 {/* Enhanced feedback message */}
+                 {heardLetter && (
+                   <div className="bg-gradient-to-r from-blue-500/30 to-purple-500/30 border border-blue-300/50 rounded-xl p-4 backdrop-blur-sm mt-4 animate-fade-in">
+                     <p className="text-white font-bold text-lg">{heardLetter}</p>
+                   </div>
+                 )}
                  
                  {/* Debug Input for Testing */}
                  <div className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-300/50 rounded-xl p-4 backdrop-blur-sm">
@@ -522,22 +597,31 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
             {gameStatus !== 'playing' && (
               <div className="text-center space-y-6">
                 {gameStatus === 'won' ? (
-                  <div className="bg-gradient-to-r from-green-500/30 to-emerald-500/30 border border-green-300/50 rounded-xl p-6 animate-fade-in">
-                    <div className="text-4xl mb-3">🎉</div>
-                    <h3 className="text-2xl font-bold text-green-200 mb-3">Fantastic! You Won!</h3>
-                    <p className="text-white/90 text-lg">Perfect spelling and pronunciation practice!</p>
-                    <div className="mt-4 text-yellow-400 text-lg font-bold">+50 XP Earned! ⭐</div>
+                  <div className="bg-gradient-to-r from-green-500/30 to-emerald-500/30 border border-green-300/50 rounded-xl p-6 animate-fade-in relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-green-400/20 animate-pulse"></div>
+                    <div className="relative z-10">
+                      <div className="text-6xl mb-4 animate-bounce">🎉</div>
+                      <h3 className="text-3xl font-bold text-green-200 mb-3">✅ You Got It!</h3>
+                      <p className="text-white/90 text-xl mb-4">Perfect! The word was: <span className="font-bold text-yellow-300">{currentWord?.english?.toUpperCase()}</span></p>
+                      <div className="bg-gradient-to-r from-yellow-400/30 to-green-400/30 rounded-lg p-4 mb-4">
+                        <div className="text-2xl font-bold text-yellow-200 animate-pulse">🌟 +50 XP Earned! 🌟</div>
+                        <p className="text-white/80 text-sm mt-2">Excellent pronunciation and spelling!</p>
+                      </div>
+                    </div>
                   </div>
                 ) : (
-                  <div className="bg-gradient-to-r from-orange-500/30 to-red-500/30 border border-orange-300/50 rounded-xl p-6 animate-fade-in">
-                    <div className="text-4xl mb-3">📚</div>
-                    <h3 className="text-2xl font-bold text-orange-200 mb-3">Keep Learning!</h3>
+                  <div className="bg-gradient-to-r from-red-500/30 to-orange-500/30 border border-red-300/50 rounded-xl p-6 animate-fade-in">
+                    <div className="text-6xl mb-4">😔</div>
+                    <h3 className="text-3xl font-bold text-red-200 mb-3">❌ Out of Guesses!</h3>
                     <p className="text-white/90 text-lg mb-2">The word was:</p>
-                    <p className="text-2xl font-bold text-white">{currentWord?.english}</p>
-                    <p className="text-lg text-blue-300 mt-2">({currentWord?.turkish})</p>
+                    <p className="text-3xl font-bold text-white bg-black/20 rounded-lg p-3 mb-3">{currentWord?.english?.toUpperCase()}</p>
+                    <p className="text-lg text-blue-300 mb-2">Turkish: {currentWord?.turkish}</p>
                     {currentWord?.source && (
-                      <p className="text-white/60 text-sm mt-2">From: {currentWord.source}</p>
+                      <p className="text-white/60 text-sm">From: {currentWord.source}</p>
                     )}
+                    <div className="bg-gradient-to-r from-blue-400/20 to-purple-400/20 rounded-lg p-3 mt-4">
+                      <p className="text-white/80 text-sm">💡 Try again to improve your vocabulary!</p>
+                    </div>
                   </div>
                 )}
                 
@@ -555,7 +639,7 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
                 
                 <Button
                   onClick={startNewGame}
-                  className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 py-4 text-lg font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+                  className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 py-4 text-lg font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
                 >
                   <RotateCcw className="h-5 w-5 mr-3" />
                   🎮 Play Next Word
