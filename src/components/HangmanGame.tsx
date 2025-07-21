@@ -116,12 +116,12 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
       setIsRecording(true);
       setHeardLetter('');
 
-      // Auto-stop recording after 2 seconds for quick letter recognition
+      // Auto-stop recording after 5 seconds for games
       setTimeout(() => {
         if (mediaRecorder.current && mediaRecorder.current.state === 'recording') {
           stopRecording();
         }
-      }, 2000);
+      }, 5000);
 
     } catch (error) {
       console.error('Error accessing microphone:', error);
@@ -290,7 +290,7 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
           <p className="text-white/70 text-lg">Speak letters to guess the word!</p>
         </div>
 
-        <Card className="bg-gradient-to-br from-white/20 to-white/5 backdrop-blur-xl border border-white/30 text-white shadow-2xl">
+        <Card className="bg-gradient-to-br from-violet-500/30 to-purple-500/20 backdrop-blur-xl border border-purple-300/50 text-white shadow-2xl">
           <CardContent className="space-y-6">
             {/* Hangman Drawing */}
             <div className="text-center">
@@ -396,7 +396,7 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
                 </div>
                 
                 <p className="text-white/70 text-base">
-                  {isRecording ? '🎵 Listening for your letter... (3 seconds)' : '💡 Say any letter clearly: A, B, C...'}
+                  {isRecording ? '🎵 Listening for your letter... (5 seconds)' : '💡 Say any letter clearly: A, B, C...'}
                 </p>
               </div>
             )}

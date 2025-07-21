@@ -91,12 +91,12 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
       mediaRecorder.current.start();
       setIsRecording(true);
 
-      // Auto-stop recording after 3 seconds for word recognition
+      // Auto-stop recording after 5 seconds for games
       setTimeout(() => {
         if (mediaRecorder.current && mediaRecorder.current.state === 'recording') {
           stopRecording();
         }
-      }, 3000);
+      }, 5000);
 
     } catch (error) {
       console.error('Error accessing microphone:', error);
@@ -249,7 +249,7 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
         />
         
         <div className="relative max-w-2xl mx-auto pt-8">
-          <Card className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl border border-white/20 text-white">
+          <Card className="bg-gradient-to-b from-indigo-500/30 to-purple-500/20 backdrop-blur-xl border border-purple-300/50 text-white">
             <CardHeader className="text-center">
               <CardTitle className="text-2xl font-bold flex items-center justify-center gap-2">
                 <Trophy className="h-6 w-6 text-yellow-400" />
@@ -389,7 +389,7 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
            </div>
          </div>
 
-        <Card className="bg-gradient-to-br from-white/20 to-white/5 backdrop-blur-xl border border-white/30 text-white shadow-2xl">
+        <Card className="bg-gradient-to-br from-emerald-500/30 to-teal-500/20 backdrop-blur-xl border border-emerald-300/50 text-white shadow-2xl">
           <CardContent className="space-y-6">
             {/* Enhanced Flashcard */}
             {currentCard && (
