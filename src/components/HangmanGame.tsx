@@ -97,17 +97,23 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
   }, [guessedLetters, wrongGuesses, gameStatus, currentWord]);
 
   const startRecording = async () => {
+    console.log('🎙️ START RECORDING - Button clicked');
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      console.log('✅ Microphone access granted');
+      
       mediaRecorder.current = new MediaRecorder(stream);
       audioChunks.current = [];
 
       mediaRecorder.current.ondataavailable = (event) => {
+        console.log('📊 Audio data available:', event.data.size, 'bytes');
         audioChunks.current.push(event.data);
       };
 
       mediaRecorder.current.onstop = async () => {
+        console.log('🛑 Recording stopped, processing audio...');
         const audioBlob = new Blob(audioChunks.current, { type: 'audio/webm' });
+        console.log('📦 Audio blob created:', audioBlob.size, 'bytes');
         await processAudio(audioBlob);
         stream.getTracks().forEach(track => track.stop());
       };
@@ -115,16 +121,19 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
       mediaRecorder.current.start();
       setIsRecording(true);
       setHeardLetter('');
+      console.log('🔴 Recording started - isRecording set to true');
 
       // Auto-stop recording after 5 seconds for games
       setTimeout(() => {
+        console.log('⏰ 5 seconds elapsed, checking if still recording...');
         if (mediaRecorder.current && mediaRecorder.current.state === 'recording') {
+          console.log('⏹️ Auto-stopping recording after 5 seconds');
           stopRecording();
         }
       }, 5000);
 
     } catch (error) {
-      console.error('Error accessing microphone:', error);
+      console.error('❌ Error accessing microphone:', error);
     }
   };
 
@@ -418,7 +427,7 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
 
                 <div className="relative">
                   <Button
-                    onClick={stopRecording}
+                    onClick={isRecording ? stopRecording : startRecording}
                     disabled={isProcessing}
                     className={`w-40 h-40 rounded-full shadow-2xl transition-all duration-300 cursor-pointer ${
                       isRecording 
