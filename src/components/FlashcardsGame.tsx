@@ -271,22 +271,22 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
                 </Badge>
               </div>
 
-              <div className="bg-white/10 rounded-lg p-4 space-y-3">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="text-center">
-                    <h3 className="text-lg font-bold mb-1">✅ Correct</h3>
-                    <p className="text-2xl font-bold text-green-400">{correctCount}/{cardResults.length}</p>
-                  </div>
-                  <div className="text-center">
-                    <h3 className="text-lg font-bold mb-1">⭐ XP Earned</h3>
-                    <p className="text-2xl font-bold text-yellow-400">{totalXPEarned}</p>
-                  </div>
-                </div>
-              </div>
+               <div className="bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-white/20 rounded-lg p-4 space-y-3 backdrop-blur-sm">
+                 <div className="grid grid-cols-2 gap-4">
+                   <div className="text-center">
+                     <h3 className="text-lg font-bold mb-1">✅ Correct</h3>
+                     <p className="text-2xl font-bold text-green-400">{correctCount}/{cardResults.length}</p>
+                   </div>
+                   <div className="text-center">
+                     <h3 className="text-lg font-bold mb-1">⭐ XP Earned</h3>
+                     <p className="text-2xl font-bold text-yellow-400">{totalXPEarned}</p>
+                   </div>
+                 </div>
+               </div>
 
-              {/* Detailed Results Table */}
-              <div className="bg-white/5 rounded-xl p-4 max-h-48 overflow-y-auto">
-                <h4 className="font-bold mb-3 text-center">📊 Detailed Results</h4>
+               {/* Detailed Results Table */}
+               <div className="bg-gradient-to-r from-slate-500/20 to-gray-500/20 border border-white/10 rounded-xl p-4 max-h-48 overflow-y-auto backdrop-blur-sm">
+                 <h4 className="font-bold mb-3 text-center">📊 Detailed Results</h4>
                 <div className="space-y-2">
                   {cardResults.map((result, index) => (
                     <div 
@@ -316,9 +316,9 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
                   🤖 AI Analysis
                 </h4>
                 <p className="text-sm text-white/90 mb-3">{analysis}</p>
-                <div className="bg-white/10 rounded-lg p-3">
-                  <p className="text-xs text-white/80 font-medium">📈 Your Level: {level}</p>
-                </div>
+                 <div className="bg-gradient-to-r from-indigo-500/20 to-blue-500/20 border border-white/20 rounded-lg p-3 backdrop-blur-sm">
+                   <p className="text-xs text-white/80 font-medium">📈 Your Level: {level}</p>
+                 </div>
               </div>
 
               <div className="space-y-3">
@@ -405,11 +405,11 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
                     <div className="text-5xl font-bold text-center text-cyan-200 drop-shadow-lg">
                       {currentCard.turkish}
                     </div>
-                    <div className="bg-white/20 rounded-full px-6 py-2 backdrop-blur-sm border border-white/30">
-                      <p className="text-white/90 text-base font-medium text-center">
-                        🔄 Click to reveal English word
-                      </p>
-                    </div>
+                     <div className="bg-gradient-to-r from-cyan-500/30 to-blue-500/30 rounded-full px-6 py-2 backdrop-blur-sm border border-cyan-300/40">
+                       <p className="text-white/90 text-base font-medium text-center">
+                         🔄 Click to reveal English word
+                       </p>
+                     </div>
                   </>
                 ) : (
                   <>
@@ -422,24 +422,24 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
                     {currentCard.source && (
                       <p className="text-white/60 text-sm">From: {currentCard.source}</p>
                     )}
-                    <Button
-                      onClick={playCardPronunciation}
-                      size="lg"
-                      variant="outline"
-                      className="border-white/40 text-white hover:bg-white/20 bg-white/10 backdrop-blur-sm py-3 px-6"
-                    >
-                      <Volume2 className="h-5 w-5 mr-3" />
-                      🔊 Listen to Pronunciation
-                    </Button>
+                     <Button
+                       onClick={playCardPronunciation}
+                       size="lg"
+                       variant="outline"
+                       className="border-white/40 text-white hover:bg-white/20 bg-gradient-to-r from-white/15 to-white/5 backdrop-blur-sm py-3 px-6"
+                     >
+                       <Volume2 className="h-5 w-5 mr-3" />
+                       🔊 Listen to Pronunciation
+                     </Button>
                   </>
                 )}
               </div>
               
               {/* Card flip animation indicator */}
               {gamePhase === 'front' && (
-                <div className="absolute top-4 right-4 bg-white/20 rounded-full p-2 group-hover:scale-110 transition-transform">
-                  <div className="text-white/80 text-lg">🔄</div>
-                </div>
+                 <div className="absolute top-4 right-4 bg-gradient-to-r from-cyan-500/30 to-blue-500/30 border border-white/20 rounded-full p-2 group-hover:scale-110 transition-transform backdrop-blur-sm">
+                   <div className="text-white/80 text-lg">🔄</div>
+                 </div>
                 )}
               </div>
             )}

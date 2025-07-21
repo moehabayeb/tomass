@@ -424,12 +424,12 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
                   </div>
                 )}
                 
-                <div className="bg-white/10 rounded-xl p-4">
+                <div className="bg-gradient-to-r from-indigo-500/20 to-purple-500/20 border border-white/20 rounded-xl p-4 backdrop-blur-sm">
                   <h4 className="text-white font-bold mb-3">📖 Learn This Word</h4>
                   <Button
                     onClick={playWordPronunciation}
                     variant="outline"
-                    className="w-full border-white/30 text-white hover:bg-white/20 bg-white/10 backdrop-blur-sm py-3 text-lg"
+                    className="w-full border-white/30 text-white hover:bg-white/20 bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-sm py-3 text-lg"
                   >
                     <Volume2 className="h-5 w-5 mr-3" />
                     🔊 Hear Pronunciation & Translation
