@@ -152,38 +152,68 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
   const processAudio = async (audioBlob: Blob) => {
     try {
       setIsProcessing(true);
+      console.log('📦 Processing audio blob, size:', audioBlob.size, 'bytes');
+      
+      if (audioBlob.size === 0) {
+        console.error('❌ Audio blob is empty');
+        setHeardLetter('❌ No audio recorded');
+        setIsProcessing(false);
+        return;
+      }
+      
       const reader = new FileReader();
       reader.readAsDataURL(audioBlob);
       reader.onloadend = async () => {
-        const base64data = reader.result as string;
-        const audioData = base64data.split(',')[1];
+        try {
+          const base64data = reader.result as string;
+          const audioData = base64data.split(',')[1];
+          
+          console.log('📤 Sending audio data to transcription service, length:', audioData.length);
 
-        const { data, error } = await supabase.functions.invoke('transcribe', {
-          body: { audio: audioData }
-        });
+          const { data, error } = await supabase.functions.invoke('transcribe', {
+            body: { audio: audioData }
+          });
 
-        if (error) throw error;
+          if (error) {
+            console.error('❌ Transcription error:', error);
+            setHeardLetter('❌ Speech error');
+            setIsProcessing(false);
+            return;
+          }
 
-        const transcription = data.transcript?.toLowerCase().trim() || '';
-        console.log('Transcription received:', transcription);
-        
-        // Extract first letter from transcription
-        const extractedLetter = extractLetterFromSpeech(transcription);
-        console.log('Extracted letter:', extractedLetter);
-        
-        if (extractedLetter) {
-          setHeardLetter(`✅ ${extractedLetter.toUpperCase()}`);
-          console.log('Processing guess for letter:', extractedLetter);
-          processGuess(extractedLetter);
-        } else {
-          setHeardLetter('❓ Try again');
-          console.log('No valid letter extracted from:', transcription);
+          const transcription = data?.transcript?.toLowerCase().trim() || '';
+          console.log('🎯 Transcription received:', transcription);
+          
+          // Extract first letter from transcription
+          const extractedLetter = extractLetterFromSpeech(transcription);
+          console.log('🔤 Extracted letter:', extractedLetter);
+          
+          if (extractedLetter) {
+            setHeardLetter(`You guessed: ${extractedLetter.toUpperCase()}`);
+            console.log('⚡ Processing guess for letter:', extractedLetter);
+            processGuess(extractedLetter);
+          } else {
+            setHeardLetter('❓ Please say a letter clearly');
+            console.log('❌ No valid letter extracted from:', transcription);
+          }
+          
+        } catch (innerError) {
+          console.error('❌ Inner processing error:', innerError);
+          setHeardLetter('❌ Processing failed');
+        } finally {
+          setIsProcessing(false);
         }
-        
+      };
+      
+      reader.onerror = () => {
+        console.error('❌ FileReader error');
+        setHeardLetter('❌ Audio processing failed');
         setIsProcessing(false);
       };
+      
     } catch (error) {
-      console.error('Error processing audio:', error);
+      console.error('❌ Error processing audio:', error);
+      setHeardLetter('❌ Audio error');
       setIsProcessing(false);
     }
   };
