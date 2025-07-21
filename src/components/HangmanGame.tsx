@@ -138,9 +138,14 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
   };
 
   const stopRecording = () => {
+    console.log('🛑 STOP RECORDING - Button clicked');
     if (mediaRecorder.current && isRecording) {
+      console.log('✅ Stopping media recorder...');
       mediaRecorder.current.stop();
       setIsRecording(false);
+      console.log('🔴 Recording stopped - isRecording set to false');
+    } else {
+      console.log('❌ Cannot stop recording - mediaRecorder:', !!mediaRecorder.current, 'isRecording:', isRecording);
     }
   };
 
