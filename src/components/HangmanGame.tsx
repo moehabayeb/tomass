@@ -415,9 +415,28 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
                   )}
                 </div>
                 
-                <p className="text-white/70 text-base">
-                  {isRecording ? '🎵 Listening for your letter... (5 seconds)' : '💡 Say any letter clearly: A, B, C...'}
-                </p>
+                 <p className="text-white/70 text-base">
+                   {isRecording ? '🎵 Listening for your letter... (5 seconds)' : '💡 Say any letter clearly: A, B, C...'}
+                 </p>
+                 
+                 {/* Debug Input for Testing */}
+                 <div className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-300/50 rounded-xl p-4 backdrop-blur-sm">
+                   <p className="text-yellow-200 text-sm font-medium mb-2">🔧 Debug: Type a letter to test</p>
+                   <input
+                     type="text"
+                     maxLength={1}
+                     placeholder="A"
+                     className="w-16 h-12 text-center text-2xl font-bold bg-white/10 border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                     onChange={(e) => {
+                       const letter = e.target.value.toLowerCase();
+                       if (letter && /^[a-z]$/.test(letter)) {
+                         console.log('Manual input letter:', letter);
+                         processGuess(letter);
+                         e.target.value = ''; // Clear input after processing
+                       }
+                     }}
+                   />
+                 </div>
               </div>
             )}
 
