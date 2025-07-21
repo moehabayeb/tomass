@@ -74,32 +74,84 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
 
   const startRecording = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorder.current = new MediaRecorder(stream);
+      console.log('🎤 Requesting microphone access...');
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          sampleRate: 44100,
+          channelCount: 1,
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        }
+      });
+      
+      console.log('✅ Microphone access granted!', {
+        streamId: stream.id,
+        audioTracks: stream.getAudioTracks().length,
+        trackSettings: stream.getAudioTracks()[0]?.getSettings()
+      });
+
+      const options = {
+        mimeType: 'audio/webm;codecs=opus',
+        audioBitsPerSecond: 128000
+      };
+
+      if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+        console.log('📱 Fallback: Using default audio format');
+        mediaRecorder.current = new MediaRecorder(stream);
+      } else {
+        console.log('📱 Using MIME type:', options.mimeType);
+        mediaRecorder.current = new MediaRecorder(stream, options);
+      }
+
       audioChunks.current = [];
+      console.log('🎤 MediaRecorder initialized successfully');
 
       mediaRecorder.current.ondataavailable = (event) => {
-        audioChunks.current.push(event.data);
+        if (event.data.size > 0) {
+          audioChunks.current.push(event.data);
+          console.log('📊 Audio chunk received:', event.data.size, 'bytes');
+        }
       };
 
       mediaRecorder.current.onstop = async () => {
+        console.log('⏹️ Recording stopped, processing', audioChunks.current.length, 'chunks');
         const audioBlob = new Blob(audioChunks.current, { type: 'audio/webm' });
-        await processAudio(audioBlob);
+        console.log('🔊 Final audio blob size:', audioBlob.size, 'bytes');
+        
+        if (audioBlob.size > 0) {
+          await processAudio(audioBlob);
+        } else {
+          console.error('❌ Empty audio blob');
+          setUserResponse('❌ No audio recorded');
+          setIsProcessing(false);
+        }
+        
         stream.getTracks().forEach(track => track.stop());
       };
 
-      mediaRecorder.current.start();
-      setIsRecording(true);
+      mediaRecorder.current.onerror = (event) => {
+        console.error('🚨 MediaRecorder error:', event);
+        setUserResponse('❌ Recording error occurred');
+        setIsProcessing(false);
+      };
 
-      // Auto-stop recording after 5 seconds for games
+      mediaRecorder.current.start(100); // Collect data every 100ms
+      setIsRecording(true);
+      console.log('🎙️ Recording started');
+
+      // Auto-stop recording after 3 seconds for better responsiveness
       setTimeout(() => {
         if (mediaRecorder.current && mediaRecorder.current.state === 'recording') {
+          console.log('⏰ Auto-stopping recording after 3 seconds');
           stopRecording();
         }
-      }, 5000);
+      }, 3000);
 
     } catch (error) {
-      console.error('Error accessing microphone:', error);
+      console.error('❌ Error accessing microphone:', error);
+      setUserResponse('❌ Microphone access denied');
+      setIsProcessing(false);
     }
   };
 
@@ -113,63 +165,104 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
   const processAudio = async (audioBlob: Blob) => {
     try {
       setIsProcessing(true);
+      console.log('🔄 Starting audio processing...');
+      
       const reader = new FileReader();
       reader.readAsDataURL(audioBlob);
       reader.onloadend = async () => {
-        const base64data = reader.result as string;
-        const audioData = base64data.split(',')[1];
+        try {
+          const base64data = reader.result as string;
+          const audioData = base64data.split(',')[1];
+          console.log('📤 Sending audio for transcription, size:', audioData.length);
 
-        // First transcribe
-        const { data: transcribeData, error: transcribeError } = await supabase.functions.invoke('transcribe', {
-          body: { audio: audioData }
-        });
+          // First transcribe
+          const { data: transcribeData, error: transcribeError } = await supabase.functions.invoke('transcribe', {
+            body: { audio: audioData }
+          });
 
-        if (transcribeError) throw transcribeError;
-
-        const transcription = transcribeData.transcript || '';
-        setUserResponse(`✅ Got it! "${transcription}"`);
-
-        // Then evaluate pronunciation
-        const { data: evaluateData, error: evaluateError } = await supabase.functions.invoke('evaluate-speaking', {
-          body: {
-            question: `Say the English word for "${currentCard.turkish}"`,
-            answer: transcription,
-            expectedAnswer: currentCard.english,
-            level: 'A1'
+          if (transcribeError) {
+            console.error('❌ Transcription error:', transcribeError);
+            throw transcribeError;
           }
-        });
 
-        if (evaluateError) throw evaluateError;
+          const transcription = transcribeData?.text || transcribeData?.transcript || '';
+          console.log('✅ Transcription received:', transcription);
+          
+          if (!transcription.trim()) {
+            setUserResponse('❌ No audio detected - please try speaking louder');
+            setIsProcessing(false);
+            setTimeout(() => {
+              setUserResponse('');
+            }, 3000);
+            return;
+          }
 
-        const evaluation = evaluateData;
-        setPronunciationFeedback(evaluation.feedback);
-        
-        const isCorrect = evaluation.score >= 3; // 3/5 or higher is considered correct
-        const xpEarned = isCorrect ? 20 : 5; // Reward even small attempts
-        
-        setCardResults(prev => [...prev, { 
-          word: currentCard, 
-          userSaid: transcription,
-          feedback: evaluation.feedback,
-          score: evaluation.score,
-          success: isCorrect,
-          xpEarned
-        }]);
+          // Display what we heard
+          setUserResponse(`✅ We heard: "${transcription}"`);
+          
+          // Keep the message visible for 3 seconds
+          setTimeout(() => {
+            setUserResponse(`✅ We heard: "${transcription}"`);
+          }, 3000);
 
-        setTotalXPEarned(prev => prev + xpEarned);
+          // Then evaluate pronunciation
+          console.log('🤖 Evaluating pronunciation...');
+          const { data: evaluateData, error: evaluateError } = await supabase.functions.invoke('evaluate-speaking', {
+            body: {
+              question: `Say the English word for "${currentCard.turkish}"`,
+              answer: transcription,
+              expectedAnswer: currentCard.english,
+              level: 'A1'
+            }
+          });
 
-        if (isCorrect) {
-          addXP(20, 'Perfect pronunciation!');
-        } else {
-          addXP(5, 'Good effort!'); // Encourage even failed attempts
+          if (evaluateError) {
+            console.error('❌ Evaluation error:', evaluateError);
+            throw evaluateError;
+          }
+
+          const evaluation = evaluateData;
+          console.log('📊 Evaluation result:', evaluation);
+          setPronunciationFeedback(evaluation.feedback);
+          
+          const isCorrect = evaluation.score >= 3; // 3/5 or higher is considered correct
+          const xpEarned = isCorrect ? 20 : 5; // Reward even small attempts
+          
+          setCardResults(prev => [...prev, { 
+            word: currentCard, 
+            userSaid: transcription,
+            feedback: evaluation.feedback,
+            score: evaluation.score,
+            success: isCorrect,
+            xpEarned
+          }]);
+
+          setTotalXPEarned(prev => prev + xpEarned);
+
+          if (isCorrect) {
+            addXP(20, 'Perfect pronunciation!');
+          } else {
+            addXP(5, 'Good effort!'); // Encourage even failed attempts
+          }
+
+          setGamePhase('feedback');
+          setIsProcessing(false);
+        } catch (innerError) {
+          console.error('❌ Processing error:', innerError);
+          setUserResponse('❌ Processing failed - please try again');
+          setIsProcessing(false);
+          setTimeout(() => {
+            setUserResponse('');
+          }, 3000);
         }
-
-        setGamePhase('feedback');
-        setIsProcessing(false);
       };
     } catch (error) {
-      console.error('Error processing audio:', error);
+      console.error('❌ Audio processing error:', error);
+      setUserResponse('❌ Audio processing failed');
       setIsProcessing(false);
+      setTimeout(() => {
+        setUserResponse('');
+      }, 3000);
     }
   };
 
@@ -471,13 +564,13 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
                    </div>
                 )}
                 
-                {userResponse && (
-                  <div className="bg-gradient-to-r from-cyan-500/30 to-blue-500/30 border border-cyan-300/50 rounded-xl p-4 animate-fade-in">
-                    <p className="text-cyan-200 text-lg font-medium">
-                      We heard: <span className="font-bold text-cyan-100 text-xl">"{userResponse}"</span>
-                    </p>
-                  </div>
-                )}
+                 {userResponse && (
+                   <div className="bg-gradient-to-r from-cyan-500/30 to-blue-500/30 border border-cyan-300/50 rounded-xl p-4 animate-fade-in">
+                     <p className="text-cyan-200 text-lg font-medium">
+                       {userResponse}
+                     </p>
+                   </div>
+                 )}
 
                 <div className="relative">
                   <Button
