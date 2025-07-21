@@ -34,7 +34,20 @@ export default function BookmarkButton({
 
   // Generate a unique ID for the bookmark based on content
   const getBookmarkId = (content: string) => {
-    return btoa(content.slice(0, 50)).replace(/[^a-zA-Z0-9]/g, '').slice(0, 20);
+    // Use a safer encoding method that works with all characters
+    try {
+      return btoa(unescape(encodeURIComponent(content.slice(0, 50)))).replace(/[^a-zA-Z0-9]/g, '').slice(0, 20);
+    } catch (error) {
+      // Fallback to simple string hashing if encoding fails
+      let hash = 0;
+      const str = content.slice(0, 50);
+      for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // Convert to 32bit integer
+      }
+      return Math.abs(hash).toString(36).slice(0, 20);
+    }
   };
 
   // Check if item is bookmarked on mount

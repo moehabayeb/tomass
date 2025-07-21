@@ -7,24 +7,14 @@ import { ArrowLeft, Mic, MicOff, Volume2, RotateCcw, Star, ChevronRight, Trophy,
 import { useTextToSpeech } from '@/hooks/useTextToSpeech';
 import { supabase } from '@/integrations/supabase/client';
 import { useGamification } from '@/hooks/useGamification';
+import { useGameVocabulary, type GameWord } from '@/hooks/useGameVocabulary';
 
 interface FlashcardsGameProps {
   onBack: () => void;
 }
 
-// Sample vocabulary - in real app this would come from user's current lessons
-const flashcardWords = [
-  { english: 'apple', turkish: 'elma' },
-  { english: 'water', turkish: 'su' },
-  { english: 'book', turkish: 'kitap' },
-  { english: 'house', turkish: 'ev' },
-  { english: 'friend', turkish: 'arkadaş' },
-  { english: 'happy', turkish: 'mutlu' },
-  { english: 'beautiful', turkish: 'güzel' },
-  { english: 'morning', turkish: 'sabah' }
-];
-
 export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
+  const [flashcardWords, setFlashcardWords] = useState<GameWord[]>([]);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [showBack, setShowBack] = useState(false);
   const [gamePhase, setGamePhase] = useState<'front' | 'back' | 'speaking' | 'feedback'>('front');
@@ -32,19 +22,38 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [userResponse, setUserResponse] = useState('');
   const [pronunciationFeedback, setPronunciationFeedback] = useState('');
-  const [cardResults, setCardResults] = useState<Array<{word: string, success: boolean}>>([]);
+  const [cardResults, setCardResults] = useState<Array<{
+    word: GameWord;
+    userSaid: string;
+    feedback: string;
+    score: number;
+    success: boolean;
+    xpEarned: number;
+  }>>([]);
   const [roundComplete, setRoundComplete] = useState(false);
+  const [totalXPEarned, setTotalXPEarned] = useState(0);
   
   const mediaRecorder = useRef<MediaRecorder | null>(null);
   const audioChunks = useRef<Blob[]>([]);
   
   const { speak } = useTextToSpeech();
   const { addXP } = useGamification();
+  const { getWordsForFlashcards, isLoading: vocabLoading } = useGameVocabulary();
+
+  // Initialize vocabulary when loaded
+  useEffect(() => {
+    if (!vocabLoading) {
+      const words = getWordsForFlashcards();
+      const selectedWords = words.slice(0, 8); // Limit to 8 cards for better experience
+      setFlashcardWords(selectedWords);
+    }
+  }, [vocabLoading, getWordsForFlashcards]);
 
   const currentCard = flashcardWords[currentCardIndex];
-  const progress = ((currentCardIndex + 1) / flashcardWords.length) * 100;
+  const progress = flashcardWords.length > 0 ? ((currentCardIndex + 1) / flashcardWords.length) * 100 : 0;
 
   const playCardPronunciation = () => {
+    if (!currentCard) return;
     speak(currentCard.english);
   };
 
@@ -133,14 +142,23 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
         setPronunciationFeedback(evaluation.feedback);
         
         const isCorrect = evaluation.score >= 3; // 3/5 or higher is considered correct
+        const xpEarned = isCorrect ? 20 : 5; // Reward even small attempts
         
         setCardResults(prev => [...prev, { 
-          word: currentCard.english, 
-          success: isCorrect 
+          word: currentCard, 
+          userSaid: transcription,
+          feedback: evaluation.feedback,
+          score: evaluation.score,
+          success: isCorrect,
+          xpEarned
         }]);
 
+        setTotalXPEarned(prev => prev + xpEarned);
+
         if (isCorrect) {
-          addXP(20, 'Perfect pronunciation!'); // Reward for correct pronunciation
+          addXP(20, 'Perfect pronunciation!');
+        } else {
+          addXP(5, 'Good effort!'); // Encourage even failed attempts
         }
 
         setGamePhase('feedback');
@@ -172,11 +190,18 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
     setPronunciationFeedback('');
     setCardResults([]);
     setRoundComplete(false);
+    setTotalXPEarned(0);
+    
+    // Reload fresh vocabulary
+    const words = getWordsForFlashcards();
+    const selectedWords = words.slice(0, 8);
+    setFlashcardWords(selectedWords);
   };
 
   const getStarRating = () => {
     const correctCount = cardResults.filter(result => result.success).length;
-    const percentage = (correctCount / cardResults.length) * 100;
+    const totalCount = cardResults.length;
+    const percentage = totalCount > 0 ? (correctCount / totalCount) * 100 : 0;
     
     if (percentage >= 90) return { stars: 3, label: 'Gold', color: 'text-yellow-400' };
     if (percentage >= 70) return { stars: 2, label: 'Silver', color: 'text-gray-300' };
@@ -184,9 +209,35 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
     return { stars: 0, label: 'Try Again', color: 'text-gray-500' };
   };
 
+  const getAIAnalysis = () => {
+    const correctCount = cardResults.filter(result => result.success).length;
+    const totalCount = cardResults.length;
+    const averageScore = cardResults.reduce((sum, result) => sum + result.score, 0) / totalCount;
+    
+    let analysis = '';
+    if (averageScore >= 4.5) {
+      analysis = 'Excellent pronunciation! Your accent is very clear and natural.';
+    } else if (averageScore >= 3.5) {
+      analysis = 'Good pronunciation overall. Focus on speaking more slowly for clarity.';
+    } else if (averageScore >= 2.5) {
+      analysis = 'Your pronunciation needs some practice. Try listening more to native speakers.';
+    } else {
+      analysis = 'Keep practicing! Focus on individual sounds and word stress patterns.';
+    }
+    
+    const percentage = (correctCount / totalCount) * 100;
+    let level = '';
+    if (percentage >= 80) level = 'B1-B2 level based on clear pronunciation';
+    else if (percentage >= 60) level = 'A2-B1 level with room for improvement';
+    else level = 'A1-A2 level, keep practicing basics';
+    
+    return { analysis, level };
+  };
+
   if (roundComplete) {
     const rating = getStarRating();
     const correctCount = cardResults.filter(result => result.success).length;
+    const { analysis, level } = getAIAnalysis();
     
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4">
@@ -217,26 +268,53 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
                 </Badge>
               </div>
 
-              <div className="bg-white/10 rounded-lg p-4">
-                <h3 className="text-lg font-bold mb-2">Your Results</h3>
-                <p className="text-2xl font-bold text-green-400">{correctCount}/{cardResults.length}</p>
-                <p className="text-white/70 text-sm">Correct pronunciations</p>
+              <div className="bg-white/10 rounded-lg p-4 space-y-3">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center">
+                    <h3 className="text-lg font-bold mb-1">✅ Correct</h3>
+                    <p className="text-2xl font-bold text-green-400">{correctCount}/{cardResults.length}</p>
+                  </div>
+                  <div className="text-center">
+                    <h3 className="text-lg font-bold mb-1">⭐ XP Earned</h3>
+                    <p className="text-2xl font-bold text-yellow-400">{totalXPEarned}</p>
+                  </div>
+                </div>
               </div>
 
-              <div className="space-y-2">
-                <h4 className="font-bold">Word Breakdown:</h4>
-                <div className="grid grid-cols-2 gap-2 text-sm">
+              {/* Detailed Results Table */}
+              <div className="bg-white/5 rounded-xl p-4 max-h-48 overflow-y-auto">
+                <h4 className="font-bold mb-3 text-center">📊 Detailed Results</h4>
+                <div className="space-y-2">
                   {cardResults.map((result, index) => (
                     <div 
                       key={index}
-                      className={`flex items-center justify-between p-2 rounded ${
-                        result.success ? 'bg-green-500/20' : 'bg-red-500/20'
+                      className={`flex items-center justify-between p-3 rounded-lg ${
+                        result.success ? 'bg-green-500/20' : 'bg-orange-500/20'
                       }`}
                     >
-                      <span>{result.word}</span>
-                      <span>{result.success ? '✅' : '❌'}</span>
+                      <div className="flex-1 text-left">
+                        <div className="font-medium">{result.word.english}</div>
+                        <div className="text-sm text-white/70">You said: "{result.userSaid}"</div>
+                        <div className="text-xs text-white/60">{result.feedback}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-lg">{result.success ? '✅' : '❌'}</div>
+                        <div className="text-xs text-white/70">{result.score}/5</div>
+                        <div className="text-xs text-yellow-400">+{result.xpEarned} XP</div>
+                      </div>
                     </div>
                   ))}
+                </div>
+              </div>
+
+              {/* AI Analysis */}
+              <div className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-white/20 rounded-xl p-4">
+                <h4 className="font-bold mb-2 flex items-center gap-2">
+                  🤖 AI Analysis
+                </h4>
+                <p className="text-sm text-white/90 mb-3">{analysis}</p>
+                <div className="bg-white/10 rounded-lg p-3">
+                  <p className="text-xs text-white/80 font-medium">📈 Your Level: {level}</p>
                 </div>
               </div>
 
@@ -301,8 +379,8 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
         <div className="space-y-4 mb-8">
           <div className="bg-gradient-to-r from-white/10 to-white/5 rounded-xl p-4 backdrop-blur-sm border border-white/20">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-white/80 text-sm font-medium">Your Progress</span>
-              <span className="text-white font-bold">{Math.round(progress)}%</span>
+              <span className="text-white/80 text-sm font-medium">Card Progress</span>
+              <span className="text-white font-bold">{currentCardIndex + 1}/{flashcardWords.length}</span>
             </div>
             <Progress value={progress} className="h-3 bg-white/20" />
           </div>
@@ -311,12 +389,13 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
         <Card className="bg-gradient-to-br from-white/20 to-white/5 backdrop-blur-xl border border-white/30 text-white shadow-2xl">
           <CardContent className="space-y-6">
             {/* Enhanced Flashcard */}
-            <div 
-              className={`relative h-80 bg-gradient-to-br from-indigo-500/30 to-purple-500/30 rounded-2xl border-2 border-white/30 cursor-pointer group transition-all duration-500 hover:scale-105 shadow-2xl ${
-                gamePhase === 'front' ? 'hover:shadow-blue-500/20' : ''
-              }`}
-              onClick={gamePhase === 'front' ? flipCard : undefined}
-            >
+            {currentCard && (
+              <div 
+                className={`relative h-80 bg-gradient-to-br from-indigo-500/30 to-purple-500/30 rounded-2xl border-2 border-white/30 cursor-pointer group transition-all duration-500 hover:scale-105 shadow-2xl ${
+                  gamePhase === 'front' ? 'hover:shadow-blue-500/20' : ''
+                }`}
+                onClick={gamePhase === 'front' ? flipCard : undefined}
+              >
               <div className="absolute inset-0 flex flex-col items-center justify-center space-y-6 p-8">
                 {gamePhase === 'front' ? (
                   <>
@@ -337,6 +416,9 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
                     <div className="text-3xl text-cyan-200 text-center font-semibold">
                       {currentCard.turkish}
                     </div>
+                    {currentCard.source && (
+                      <p className="text-white/60 text-sm">From: {currentCard.source}</p>
+                    )}
                     <Button
                       onClick={playCardPronunciation}
                       size="lg"
@@ -355,8 +437,9 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
                 <div className="absolute top-4 right-4 bg-white/20 rounded-full p-2 group-hover:scale-110 transition-transform">
                   <div className="text-white/80 text-lg">🔄</div>
                 </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
 
             {/* Game Phases */}
             {gamePhase === 'back' && (
@@ -377,10 +460,12 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
 
             {gamePhase === 'speaking' && (
               <div className="text-center space-y-6">
-                <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-white/20 rounded-xl p-4 backdrop-blur-sm">
-                  <p className="text-white text-xl font-bold mb-2">🎯 Say this word:</p>
-                  <p className="text-3xl font-bold text-yellow-300">"{currentCard.english}"</p>
-                </div>
+                {currentCard && (
+                  <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-white/20 rounded-xl p-4 backdrop-blur-sm">
+                    <p className="text-white text-xl font-bold mb-2">🎯 Say this word:</p>
+                    <p className="text-3xl font-bold text-yellow-300">"{currentCard.english}"</p>
+                  </div>
+                )}
                 
                 {userResponse && (
                   <div className="bg-gradient-to-r from-cyan-500/30 to-blue-500/30 border border-cyan-300/50 rounded-xl p-4 animate-fade-in">
@@ -445,7 +530,9 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
                   <p className="text-lg leading-relaxed">{pronunciationFeedback}</p>
                   
                   {cardResults[cardResults.length - 1]?.success && (
-                    <div className="mt-4 text-yellow-400 text-lg font-bold">+20 XP Earned! ⭐</div>
+                    <div className="mt-4 text-yellow-400 text-lg font-bold">
+                      +{cardResults[cardResults.length - 1]?.xpEarned || 20} XP Earned! ⭐
+                    </div>
                   )}
                 </div>
                 

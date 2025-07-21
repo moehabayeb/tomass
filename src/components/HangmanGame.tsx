@@ -6,27 +6,14 @@ import { ArrowLeft, Mic, MicOff, Volume2, RotateCcw, Trophy, Target } from 'luci
 import { useTextToSpeech } from '@/hooks/useTextToSpeech';
 import { supabase } from '@/integrations/supabase/client';
 import { useGamification } from '@/hooks/useGamification';
+import { useGameVocabulary, type GameWord } from '@/hooks/useGameVocabulary';
 
 interface HangmanGameProps {
   onBack: () => void;
 }
 
-// Sample vocabulary - in real app this would come from user's current lessons
-const gameWords = [
-  { english: 'book', turkish: 'kitap' },
-  { english: 'house', turkish: 'ev' },
-  { english: 'water', turkish: 'su' },
-  { english: 'friend', turkish: 'arkadaş' },
-  { english: 'school', turkish: 'okul' },
-  { english: 'family', turkish: 'aile' },
-  { english: 'happy', turkish: 'mutlu' },
-  { english: 'beautiful', turkish: 'güzel' },
-  { english: 'morning', turkish: 'sabah' },
-  { english: 'evening', turkish: 'akşam' }
-];
-
 export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
-  const [currentWord, setCurrentWord] = useState(gameWords[0]);
+  const [currentWord, setCurrentWord] = useState<GameWord | null>(null);
   const [guessedLetters, setGuessedLetters] = useState<string[]>([]);
   const [wrongGuesses, setWrongGuesses] = useState(0);
   const [gameStatus, setGameStatus] = useState<'playing' | 'won' | 'lost'>('playing');
@@ -34,6 +21,12 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
   const [heardLetter, setHeardLetter] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [score, setScore] = useState(0);
+  const [gameHistory, setGameHistory] = useState<Array<{
+    word: GameWord;
+    status: 'won' | 'lost';
+    wrongGuesses: number;
+    xpEarned: number;
+  }>>([]);
   
   const mediaRecorder = useRef<MediaRecorder | null>(null);
   const audioChunks = useRef<Blob[]>([]);
@@ -41,13 +34,19 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
   
   const { speak } = useTextToSpeech();
   const { addXP } = useGamification();
+  const { getWordsForHangman, isLoading: vocabLoading } = useGameVocabulary();
 
   useEffect(() => {
-    startNewGame();
-  }, []);
+    if (!vocabLoading) {
+      startNewGame();
+    }
+  }, [vocabLoading]);
 
   const startNewGame = () => {
-    const randomWord = gameWords[Math.floor(Math.random() * gameWords.length)];
+    const availableWords = getWordsForHangman();
+    if (availableWords.length === 0) return;
+    
+    const randomWord = availableWords[Math.floor(Math.random() * availableWords.length)];
     setCurrentWord(randomWord);
     setGuessedLetters([]);
     setWrongGuesses(0);
@@ -56,6 +55,7 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
   };
 
   const displayWord = () => {
+    if (!currentWord) return '';
     return currentWord.english
       .split('')
       .map(letter => (guessedLetters.includes(letter.toLowerCase()) ? letter : '_'))
@@ -63,6 +63,7 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
   };
 
   const isWordComplete = () => {
+    if (!currentWord) return false;
     return currentWord.english
       .toLowerCase()
       .split('')
@@ -70,16 +71,30 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
   };
 
   useEffect(() => {
-    if (gameStatus === 'playing') {
+    if (gameStatus === 'playing' && currentWord) {
       if (isWordComplete()) {
+        const xpEarned = 50;
         setGameStatus('won');
         setScore(prev => prev + 10);
-        addXP(50, 'Hangman victory!'); // Reward XP for winning
+        addXP(xpEarned, 'Hangman victory!');
+        
+        setGameHistory(prev => [...prev, {
+          word: currentWord,
+          status: 'won',
+          wrongGuesses,
+          xpEarned
+        }]);
       } else if (wrongGuesses >= maxWrongGuesses) {
         setGameStatus('lost');
+        setGameHistory(prev => [...prev, {
+          word: currentWord,
+          status: 'lost',
+          wrongGuesses,
+          xpEarned: 0
+        }]);
       }
     }
-  }, [guessedLetters, wrongGuesses, gameStatus]);
+  }, [guessedLetters, wrongGuesses, gameStatus, currentWord]);
 
   const startRecording = async () => {
     try {
@@ -206,6 +221,8 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
   };
 
   const processGuess = (letter: string) => {
+    if (!currentWord) return;
+    
     const lowerLetter = letter.toLowerCase();
     
     if (guessedLetters.includes(lowerLetter)) {
@@ -220,6 +237,7 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
   };
 
   const playWordPronunciation = () => {
+    if (!currentWord) return;
     speak(`${currentWord.english}. In Turkish: ${currentWord.turkish}`);
   };
 
@@ -285,8 +303,13 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
                 {displayWord()}
               </div>
               <p className="text-white/60 text-sm">
-                Turkish: {gameStatus !== 'playing' ? currentWord.turkish : '???'}
+                Turkish: {gameStatus !== 'playing' && currentWord ? currentWord.turkish : '???'}
               </p>
+              {currentWord?.source && (
+                <p className="text-white/40 text-xs mt-1">
+                  From: {currentWord.source}
+                </p>
+              )}
             </div>
 
             {/* Progress */}
@@ -309,11 +332,11 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
                   {guessedLetters.map((letter, index) => (
                     <span
                       key={index}
-                      className={`px-2 py-1 rounded text-sm ${
-                        currentWord.english.toLowerCase().includes(letter)
-                          ? 'bg-green-500/20 text-green-300'
-                          : 'bg-red-500/20 text-red-300'
-                      }`}
+                    className={`px-2 py-1 rounded text-sm ${
+                      currentWord && currentWord.english.toLowerCase().includes(letter)
+                        ? 'bg-green-500/20 text-green-300'
+                        : 'bg-red-500/20 text-red-300'
+                    }`}
                     >
                       {letter.toUpperCase()}
                     </span>
@@ -391,8 +414,11 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
                     <div className="text-4xl mb-3">📚</div>
                     <h3 className="text-2xl font-bold text-orange-200 mb-3">Keep Learning!</h3>
                     <p className="text-white/90 text-lg mb-2">The word was:</p>
-                    <p className="text-2xl font-bold text-white">{currentWord.english}</p>
-                    <p className="text-lg text-blue-300 mt-2">({currentWord.turkish})</p>
+                    <p className="text-2xl font-bold text-white">{currentWord?.english}</p>
+                    <p className="text-lg text-blue-300 mt-2">({currentWord?.turkish})</p>
+                    {currentWord?.source && (
+                      <p className="text-white/60 text-sm mt-2">From: {currentWord.source}</p>
+                    )}
                   </div>
                 )}
                 
