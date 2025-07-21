@@ -91,10 +91,12 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
       mediaRecorder.current.start();
       setIsRecording(true);
 
-      // Auto-stop recording after 5 seconds
+      // Auto-stop recording after 3 seconds for word recognition
       setTimeout(() => {
-        if (isRecording) stopRecording();
-      }, 5000);
+        if (mediaRecorder.current && mediaRecorder.current.state === 'recording') {
+          stopRecording();
+        }
+      }, 3000);
 
     } catch (error) {
       console.error('Error accessing microphone:', error);
@@ -125,13 +127,14 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
         if (transcribeError) throw transcribeError;
 
         const transcription = transcribeData.transcript || '';
-        setUserResponse(transcription);
+        setUserResponse(`✅ Got it! "${transcription}"`);
 
         // Then evaluate pronunciation
         const { data: evaluateData, error: evaluateError } = await supabase.functions.invoke('evaluate-speaking', {
           body: {
-            question: `Say the word "${currentCard.english}" correctly`,
+            question: `Say the English word for "${currentCard.turkish}"`,
             answer: transcription,
+            expectedAnswer: currentCard.english,
             level: 'A1'
           }
         });
@@ -397,24 +400,24 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
                 onClick={gamePhase === 'front' ? flipCard : undefined}
               >
               <div className="absolute inset-0 flex flex-col items-center justify-center space-y-6 p-8">
-                {gamePhase === 'front' ? (
+                 {gamePhase === 'front' ? (
                   <>
-                    <div className="text-5xl font-bold text-center text-white drop-shadow-lg">
-                      {currentCard.english}
+                    <div className="text-5xl font-bold text-center text-cyan-200 drop-shadow-lg">
+                      {currentCard.turkish}
                     </div>
                     <div className="bg-white/20 rounded-full px-6 py-2 backdrop-blur-sm border border-white/30">
                       <p className="text-white/90 text-base font-medium text-center">
-                        🔄 Click to reveal meaning
+                        🔄 Click to reveal English word
                       </p>
                     </div>
                   </>
                 ) : (
                   <>
-                    <div className="text-4xl font-bold text-center text-white mb-2">
-                      {currentCard.english}
-                    </div>
-                    <div className="text-3xl text-cyan-200 text-center font-semibold">
+                    <div className="text-3xl text-cyan-200 text-center font-semibold mb-2">
                       {currentCard.turkish}
+                    </div>
+                    <div className="text-4xl font-bold text-center text-white">
+                      {currentCard.english}
                     </div>
                     {currentCard.source && (
                       <p className="text-white/60 text-sm">From: {currentCard.source}</p>
@@ -461,10 +464,11 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
             {gamePhase === 'speaking' && (
               <div className="text-center space-y-6">
                 {currentCard && (
-                  <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-white/20 rounded-xl p-4 backdrop-blur-sm">
-                    <p className="text-white text-xl font-bold mb-2">🎯 Say this word:</p>
-                    <p className="text-3xl font-bold text-yellow-300">"{currentCard.english}"</p>
-                  </div>
+                   <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-white/20 rounded-xl p-4 backdrop-blur-sm">
+                     <p className="text-white text-xl font-bold mb-2">🎯 Say the English word for:</p>
+                     <p className="text-2xl font-bold text-cyan-300 mb-2">"{currentCard.turkish}"</p>
+                     <p className="text-white/60 text-sm">Expected: {currentCard.english}</p>
+                   </div>
                 )}
                 
                 {userResponse && (

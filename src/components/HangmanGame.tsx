@@ -116,10 +116,12 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
       setIsRecording(true);
       setHeardLetter('');
 
-      // Auto-stop recording after 3 seconds
+      // Auto-stop recording after 2 seconds for quick letter recognition
       setTimeout(() => {
-        if (isRecording) stopRecording();
-      }, 3000);
+        if (mediaRecorder.current && mediaRecorder.current.state === 'recording') {
+          stopRecording();
+        }
+      }, 2000);
 
     } catch (error) {
       console.error('Error accessing microphone:', error);
@@ -155,10 +157,10 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
         const extractedLetter = extractLetterFromSpeech(transcription);
         
         if (extractedLetter) {
-          setHeardLetter(extractedLetter.toUpperCase());
+          setHeardLetter(`✅ ${extractedLetter.toUpperCase()}`);
           processGuess(extractedLetter);
         } else {
-          setHeardLetter('?');
+          setHeardLetter('❓ Try again');
         }
         
         setIsProcessing(false);
