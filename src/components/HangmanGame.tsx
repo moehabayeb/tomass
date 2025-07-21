@@ -384,7 +384,7 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
 
                 <div className="relative">
                   <Button
-                    onClick={isRecording ? stopRecording : startRecording}
+                    onClick={stopRecording}
                     disabled={isProcessing}
                     className={`w-40 h-40 rounded-full shadow-2xl transition-all duration-300 cursor-pointer ${
                       isRecording 
