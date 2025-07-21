@@ -572,38 +572,37 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
                    </div>
                  )}
 
-                <div className="relative">
-                  <Button
-                    onClick={isRecording ? stopRecording : startRecording}
-                    disabled={isProcessing}
-                    className={`w-44 h-44 rounded-full shadow-2xl transition-all duration-300 cursor-pointer ${
-                      isRecording 
-                        ? 'bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 animate-pulse scale-110' 
-                        : 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 hover:scale-105'
-                    }`}
-                  >
-                    {isProcessing ? (
-                      <>
-                        <div className="animate-spin h-16 w-16 border-4 border-white border-t-transparent rounded-full" />
-                        <p className="text-sm mt-3 font-bold">Analyzing...</p>
-                      </>
-                    ) : isRecording ? (
-                      <>
-                        <MicOff className="h-20 w-20" />
-                        <p className="text-sm mt-3 font-bold">Click to Stop</p>
-                      </>
-                    ) : (
-                      <>
-                        <Mic className="h-20 w-20" />
-                        <p className="text-sm mt-3 font-bold">Tap to Speak</p>
-                      </>
-                    )}
-                  </Button>
-                  
-                  {isRecording && (
-                    <div className="absolute inset-0 rounded-full border-4 border-red-300 animate-ping opacity-75"></div>
-                  )}
-                </div>
+                 {/* Simple, Functional Recording Button */}
+                 <div className="flex flex-col items-center space-y-4">
+                   <Button
+                     onClick={isRecording ? stopRecording : startRecording}
+                     disabled={isProcessing}
+                     className={`w-48 h-16 text-lg font-medium transition-all duration-300 ${
+                       isRecording 
+                         ? 'bg-red-500 hover:bg-red-600 text-white animate-pulse' 
+                         : 'bg-emerald-500 hover:bg-emerald-600 text-white'
+                     } ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                   >
+                     {isProcessing ? (
+                       <>
+                         <div className="animate-spin mr-2">⚙️</div>
+                         Processing...
+                       </>
+                     ) : isRecording ? (
+                       <>
+                         🛑 Click to Stop Recording
+                       </>
+                     ) : (
+                       <>
+                         🎤 Tap to Speak Word
+                       </>
+                     )}
+                   </Button>
+                   
+                   <div className="text-sm text-white/70 text-center">
+                     {isRecording ? '🎙️ Listening... Speak clearly!' : 'Tap the button to start recording'}
+                   </div>
+                 </div>
                 
                 <p className="text-white/80 text-lg">
                   {isRecording ? '🎵 Recording your pronunciation... (5 seconds)' : '💡 Speak clearly and confidently!'}
