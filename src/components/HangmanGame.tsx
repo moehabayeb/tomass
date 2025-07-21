@@ -226,8 +226,14 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
   };
 
   const processGuess = (letter: string) => {
+    console.log('=== PROCESS GUESS START ===');
+    console.log('Input letter:', letter);
+    console.log('Current word:', currentWord);
+    console.log('Current guessed letters:', guessedLetters);
+    console.log('Current wrong guesses:', wrongGuesses);
+    
     if (!currentWord) {
-      console.log('No current word available');
+      console.log('❌ No current word available');
       return;
     }
     
@@ -235,27 +241,55 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
     console.log('Processing guess:', lowerLetter, 'for word:', currentWord.english);
     
     if (guessedLetters.includes(lowerLetter)) {
-      console.log('Letter already guessed:', lowerLetter);
+      console.log('❌ Letter already guessed:', lowerLetter);
       return; // Already guessed
     }
 
-    console.log('Adding letter to guessed letters:', lowerLetter);
+    console.log('✅ Adding letter to guessed letters:', lowerLetter);
     setGuessedLetters(prev => {
       const newGuessedLetters = [...prev, lowerLetter];
       console.log('Updated guessed letters:', newGuessedLetters);
       return newGuessedLetters;
     });
 
-    if (!currentWord.english.toLowerCase().includes(lowerLetter)) {
-      console.log('Letter not in word, incrementing wrong guesses');
+    const isLetterInWord = currentWord.english.toLowerCase().includes(lowerLetter);
+    console.log('Is letter in word?', isLetterInWord);
+    
+    if (!isLetterInWord) {
+      console.log('❌ Letter not in word, incrementing wrong guesses');
       setWrongGuesses(prev => {
         const newWrongGuesses = prev + 1;
         console.log('Updated wrong guesses:', newWrongGuesses);
+        
+        // Check if game should end
+        if (newWrongGuesses >= 6) {
+          console.log('🎮 GAME OVER - Max wrong guesses reached');
+          setGameStatus('lost');
+        }
+        
         return newWrongGuesses;
       });
     } else {
-      console.log('Correct letter! Letter is in word:', currentWord.english);
+      console.log('✅ Correct letter! Letter is in word:', currentWord.english);
+      
+      // Check if word is complete after this guess
+      setTimeout(() => {
+        const wordLetters = currentWord.english.toLowerCase().split('');
+        const allLettersGuessed = wordLetters.every(l => 
+          l === ' ' || [...guessedLetters, lowerLetter].includes(l)
+        );
+        
+        console.log('Word letters:', wordLetters);
+        console.log('All letters guessed?', allLettersGuessed);
+        
+        if (allLettersGuessed) {
+          console.log('🎉 WORD COMPLETED - Player wins!');
+          setGameStatus('won');
+        }
+      }, 100);
     }
+    
+    console.log('=== PROCESS GUESS END ===');
   };
 
   const playWordPronunciation = () => {
