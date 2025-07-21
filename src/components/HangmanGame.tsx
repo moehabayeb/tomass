@@ -350,7 +350,7 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
             {/* Speaking Interface */}
             {gameStatus === 'playing' && (
               <div className="text-center space-y-6">
-                <div className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-white/20 rounded-xl p-4 backdrop-blur-sm">
+                <div className="bg-gradient-to-r from-violet-500/30 to-purple-500/30 border border-purple-300/50 rounded-xl p-4 backdrop-blur-sm">
                   <p className="text-white text-lg font-medium">🎙️ Speak a letter to guess</p>
                 </div>
                 

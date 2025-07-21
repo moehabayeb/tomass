@@ -379,15 +379,15 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
           <p className="text-white/70 text-lg">Listen, learn, and speak with confidence!</p>
         </div>
 
-        <div className="space-y-4 mb-8">
-          <div className="bg-gradient-to-r from-white/10 to-white/5 rounded-xl p-4 backdrop-blur-sm border border-white/20">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-white/80 text-sm font-medium">Card Progress</span>
-              <span className="text-white font-bold">{currentCardIndex + 1}/{flashcardWords.length}</span>
-            </div>
-            <Progress value={progress} className="h-3 bg-white/20" />
-          </div>
-        </div>
+         <div className="space-y-4 mb-8">
+           <div className="bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-xl p-4 backdrop-blur-sm border border-purple-300/30">
+             <div className="flex justify-between items-center mb-2">
+               <span className="text-white/80 text-sm font-medium">Card Progress</span>
+               <span className="text-white font-bold">{currentCardIndex + 1}/{flashcardWords.length}</span>
+             </div>
+             <Progress value={progress} className="h-3 bg-white/20" />
+           </div>
+         </div>
 
         <Card className="bg-gradient-to-br from-white/20 to-white/5 backdrop-blur-xl border border-white/30 text-white shadow-2xl">
           <CardContent className="space-y-6">
@@ -405,7 +405,7 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
                     <div className="text-5xl font-bold text-center text-cyan-200 drop-shadow-lg">
                       {currentCard.turkish}
                     </div>
-                     <div className="bg-gradient-to-r from-cyan-500/30 to-blue-500/30 rounded-full px-6 py-2 backdrop-blur-sm border border-cyan-300/40">
+                     <div className="bg-gradient-to-r from-emerald-500/30 to-teal-500/30 rounded-full px-6 py-2 backdrop-blur-sm border border-emerald-300/40">
                        <p className="text-white/90 text-base font-medium text-center">
                          🔄 Click to reveal English word
                        </p>
