@@ -151,16 +151,19 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
         if (error) throw error;
 
         const transcription = data.transcript?.toLowerCase().trim() || '';
-        console.log('Heard:', transcription);
+        console.log('Transcription received:', transcription);
         
         // Extract first letter from transcription
         const extractedLetter = extractLetterFromSpeech(transcription);
+        console.log('Extracted letter:', extractedLetter);
         
         if (extractedLetter) {
           setHeardLetter(`✅ ${extractedLetter.toUpperCase()}`);
+          console.log('Processing guess for letter:', extractedLetter);
           processGuess(extractedLetter);
         } else {
           setHeardLetter('❓ Try again');
+          console.log('No valid letter extracted from:', transcription);
         }
         
         setIsProcessing(false);
@@ -223,18 +226,35 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
   };
 
   const processGuess = (letter: string) => {
-    if (!currentWord) return;
+    if (!currentWord) {
+      console.log('No current word available');
+      return;
+    }
     
     const lowerLetter = letter.toLowerCase();
+    console.log('Processing guess:', lowerLetter, 'for word:', currentWord.english);
     
     if (guessedLetters.includes(lowerLetter)) {
+      console.log('Letter already guessed:', lowerLetter);
       return; // Already guessed
     }
 
-    setGuessedLetters(prev => [...prev, lowerLetter]);
+    console.log('Adding letter to guessed letters:', lowerLetter);
+    setGuessedLetters(prev => {
+      const newGuessedLetters = [...prev, lowerLetter];
+      console.log('Updated guessed letters:', newGuessedLetters);
+      return newGuessedLetters;
+    });
 
     if (!currentWord.english.toLowerCase().includes(lowerLetter)) {
-      setWrongGuesses(prev => prev + 1);
+      console.log('Letter not in word, incrementing wrong guesses');
+      setWrongGuesses(prev => {
+        const newWrongGuesses = prev + 1;
+        console.log('Updated wrong guesses:', newWrongGuesses);
+        return newWrongGuesses;
+      });
+    } else {
+      console.log('Correct letter! Letter is in word:', currentWord.english);
     }
   };
 
