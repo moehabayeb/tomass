@@ -430,38 +430,38 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
                   </div>
                 )}
 
-                <div className="relative">
-                  <Button
-                    onClick={isRecording ? stopRecording : startRecording}
-                    disabled={isProcessing}
-                    className={`w-40 h-40 rounded-full shadow-2xl transition-all duration-300 cursor-pointer ${
-                      isRecording 
-                        ? 'bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 animate-pulse scale-110' 
-                        : 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 hover:scale-105'
-                    }`}
-                  >
-                    {isProcessing ? (
-                      <>
-                        <div className="animate-spin h-12 w-12 border-4 border-white border-t-transparent rounded-full" />
-                        <p className="text-xs mt-2 font-medium">Processing...</p>
-                      </>
-                    ) : isRecording ? (
-                      <>
-                        <MicOff className="h-16 w-16" />
-                        <p className="text-xs mt-2 font-medium">Click to Stop</p>
-                      </>
-                    ) : (
-                      <>
-                        <Mic className="h-16 w-16" />
-                        <p className="text-xs mt-2 font-medium">Tap to Speak</p>
-                      </>
-                    )}
-                  </Button>
-                  
-                  {isRecording && (
-                    <div className="absolute inset-0 rounded-full border-4 border-red-300 animate-ping opacity-75"></div>
+                <Button 
+                  onClick={isRecording ? stopRecording : startRecording}
+                  disabled={isProcessing}
+                  className={`w-full max-w-xs py-8 text-xl font-bold rounded-full border-0 hover:scale-105 transition-all duration-300 disabled:opacity-50 shadow-xl ${isRecording ? 'animate-pulse' : ''}`}
+                  size="lg"
+                  style={{
+                    backgroundColor: isRecording ? 'hsl(350, 85%, 60%)' : 'hsl(var(--mic-button))',
+                    color: 'hsl(var(--text-white))',
+                    background: isRecording 
+                      ? 'linear-gradient(45deg, hsl(350, 85%, 60%), hsl(350, 85%, 75%))' 
+                      : 'linear-gradient(45deg, hsl(var(--mic-button)), hsl(350, 85%, 70%))',
+                    boxShadow: isRecording ? '0 0 40px hsl(350, 85%, 60%)' : 'var(--shadow-strong)',
+                    minHeight: '64px'
+                  }}
+                >
+                  {isProcessing ? (
+                    <>
+                      <div className="animate-spin h-6 w-6 border-3 border-white border-t-transparent rounded-full mr-3" />
+                      Processing...
+                    </>
+                  ) : isRecording ? (
+                    <>
+                      <MicOff className="h-6 w-6 mr-3" />
+                      🛑 Click to Stop Recording
+                    </>
+                  ) : (
+                    <>
+                      <Mic className="h-6 w-6 mr-3" />
+                      🎤 Tap to Speak Letter
+                    </>
                   )}
-                </div>
+                </Button>
                 
                  <p className="text-white/70 text-base">
                    {isRecording ? '🎵 Listening for your letter... (5 seconds)' : '💡 Say any letter clearly: A, B, C...'}
