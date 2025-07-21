@@ -60,17 +60,17 @@ export const GamesApp: React.FC<GamesAppProps> = ({ onBack }) => {
         <div className="grid md:grid-cols-2 gap-8">
           {/* Hangman Game Card */}
           <Card 
-            className="bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-xl border border-white/20 cursor-pointer hover:from-white/25 hover:to-white/15 transition-all duration-500 group hover:scale-105 hover:shadow-2xl"
+            className="relative overflow-hidden bg-gradient-to-br from-blue-500/20 via-white/10 to-purple-500/20 backdrop-blur-xl border border-white/30 cursor-pointer hover:from-blue-500/30 hover:to-purple-500/30 transition-all duration-500 group hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/20 before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/5 before:to-transparent before:pointer-events-none"
             onClick={() => setSelectedGame('hangman')}
           >
-            <CardHeader className="text-center pb-4">
-              <div className="mx-auto mb-6 p-6 bg-gradient-to-r from-blue-500/30 to-purple-500/30 rounded-full w-fit group-hover:scale-110 transition-transform duration-300 shadow-lg">
-                <Target className="h-10 w-10 text-blue-300 group-hover:text-blue-200 transition-colors" />
+            <CardHeader className="relative z-10 text-center pb-4">
+              <div className="mx-auto mb-6 p-6 bg-gradient-to-r from-blue-400/40 to-purple-400/40 rounded-full w-fit group-hover:scale-110 transition-transform duration-300 shadow-xl backdrop-blur-sm border border-white/20">
+                <Target className="h-12 w-12 text-blue-200 group-hover:text-blue-100 transition-colors drop-shadow-lg" />
               </div>
-              <CardTitle className="text-2xl font-bold text-white group-hover:text-blue-300 transition-colors mb-2">
+              <CardTitle className="text-3xl font-bold text-white group-hover:text-blue-200 transition-colors mb-3 drop-shadow-md">
                 🧩 Word Hangman
               </CardTitle>
-              <p className="text-sm text-blue-200/80 font-medium">Spelling + Speaking Challenge</p>
+              <p className="text-base text-blue-200/90 font-semibold tracking-wide">Spelling + Speaking Challenge</p>
             </CardHeader>
             <CardContent className="text-center space-y-4">
               <p className="text-white/90 text-base leading-relaxed">
@@ -101,17 +101,17 @@ export const GamesApp: React.FC<GamesAppProps> = ({ onBack }) => {
 
           {/* Flashcards Game Card */}
           <Card 
-            className="bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-xl border border-white/20 cursor-pointer hover:from-white/25 hover:to-white/15 transition-all duration-500 group hover:scale-105 hover:shadow-2xl"
+            className="relative overflow-hidden bg-gradient-to-br from-green-500/20 via-white/10 to-teal-500/20 backdrop-blur-xl border border-white/30 cursor-pointer hover:from-green-500/30 hover:to-teal-500/30 transition-all duration-500 group hover:scale-105 hover:shadow-2xl hover:shadow-green-500/20 before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/5 before:to-transparent before:pointer-events-none"
             onClick={() => setSelectedGame('flashcards')}
           >
-            <CardHeader className="text-center pb-4">
-              <div className="mx-auto mb-6 p-6 bg-gradient-to-r from-green-500/30 to-teal-500/30 rounded-full w-fit group-hover:scale-110 transition-transform duration-300 shadow-lg">
-                <BookOpen className="h-10 w-10 text-green-300 group-hover:text-green-200 transition-colors" />
+            <CardHeader className="relative z-10 text-center pb-4">
+              <div className="mx-auto mb-6 p-6 bg-gradient-to-r from-green-400/40 to-teal-400/40 rounded-full w-fit group-hover:scale-110 transition-transform duration-300 shadow-xl backdrop-blur-sm border border-white/20">
+                <BookOpen className="h-12 w-12 text-green-200 group-hover:text-green-100 transition-colors drop-shadow-lg" />
               </div>
-              <CardTitle className="text-2xl font-bold text-white group-hover:text-green-300 transition-colors mb-2">
+              <CardTitle className="text-3xl font-bold text-white group-hover:text-green-200 transition-colors mb-3 drop-shadow-md">
                 🃏 Smart Flashcards
               </CardTitle>
-              <p className="text-sm text-green-200/80 font-medium">Pronunciation Mastery</p>
+              <p className="text-base text-green-200/90 font-semibold tracking-wide">Pronunciation Mastery</p>
             </CardHeader>
             <CardContent className="text-center space-y-4">
               <p className="text-white/90 text-base leading-relaxed">

@@ -366,7 +366,7 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
                   <Button
                     onClick={isRecording ? stopRecording : startRecording}
                     disabled={isProcessing}
-                    className={`w-40 h-40 rounded-full shadow-2xl transition-all duration-300 ${
+                    className={`w-40 h-40 rounded-full shadow-2xl transition-all duration-300 cursor-pointer ${
                       isRecording 
                         ? 'bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 animate-pulse scale-110' 
                         : 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 hover:scale-105'
@@ -380,7 +380,7 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
                     ) : isRecording ? (
                       <>
                         <MicOff className="h-16 w-16" />
-                        <p className="text-xs mt-2 font-medium">Recording</p>
+                        <p className="text-xs mt-2 font-medium">Click to Stop</p>
                       </>
                     ) : (
                       <>

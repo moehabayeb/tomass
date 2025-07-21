@@ -483,7 +483,7 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
                   <Button
                     onClick={isRecording ? stopRecording : startRecording}
                     disabled={isProcessing}
-                    className={`w-44 h-44 rounded-full shadow-2xl transition-all duration-300 ${
+                    className={`w-44 h-44 rounded-full shadow-2xl transition-all duration-300 cursor-pointer ${
                       isRecording 
                         ? 'bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 animate-pulse scale-110' 
                         : 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 hover:scale-105'
@@ -497,7 +497,7 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
                     ) : isRecording ? (
                       <>
                         <MicOff className="h-20 w-20" />
-                        <p className="text-sm mt-3 font-bold">Recording</p>
+                        <p className="text-sm mt-3 font-bold">Click to Stop</p>
                       </>
                     ) : (
                       <>
