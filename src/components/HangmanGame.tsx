@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, Mic, MicOff, Volume2, RotateCcw, Trophy } from 'lucide-react';
+import { ArrowLeft, Mic, MicOff, Volume2, RotateCcw, Trophy, Target } from 'lucide-react';
 import { useTextToSpeech } from '@/hooks/useTextToSpeech';
 import { supabase } from '@/integrations/supabase/client';
 import { useGamification } from '@/hooks/useGamification';
@@ -243,28 +243,34 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
       />
       
       <div className="relative max-w-2xl mx-auto pt-8">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-8">
           <Button
             onClick={onBack}
             variant="ghost"
             size="sm"
-            className="text-white/70 hover:text-white"
+            className="text-white/70 hover:text-white hover:bg-white/10 transition-all duration-300"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Games
           </Button>
-          <div className="text-white text-sm">
-            Score: <span className="font-bold text-yellow-400">{score}</span>
+          <div className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-white/20 rounded-full px-4 py-2 backdrop-blur-xl">
+            <div className="text-white text-sm flex items-center gap-2">
+              <Trophy className="h-4 w-4 text-yellow-400" />
+              Score: <span className="font-bold text-yellow-400">{score}</span>
+            </div>
           </div>
         </div>
 
-        <Card className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl border border-white/20 text-white mb-6">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center flex items-center justify-center gap-2">
-              🧩 Hangman Game
-              {gameStatus === 'won' && <Trophy className="h-6 w-6 text-yellow-400" />}
-            </CardTitle>
-          </CardHeader>
+        {/* Game Header */}
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold text-white mb-2 flex items-center justify-center gap-3">
+            🧩 Word Hangman
+            <Target className="h-8 w-8 text-blue-400 animate-pulse" />
+          </h2>
+          <p className="text-white/70 text-lg">Speak letters to guess the word!</p>
+        </div>
+
+        <Card className="bg-gradient-to-br from-white/20 to-white/5 backdrop-blur-xl border border-white/30 text-white shadow-2xl">
           <CardContent className="space-y-6">
             {/* Hangman Drawing */}
             <div className="text-center">
@@ -318,72 +324,97 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
 
             {/* Speaking Interface */}
             {gameStatus === 'playing' && (
-              <div className="text-center space-y-4">
-                <p className="text-white/80">Speak a letter to guess:</p>
+              <div className="text-center space-y-6">
+                <div className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-white/20 rounded-xl p-4 backdrop-blur-sm">
+                  <p className="text-white text-lg font-medium">🎙️ Speak a letter to guess</p>
+                </div>
                 
                 {heardLetter && (
-                  <div className="bg-blue-500/20 border border-blue-500/30 rounded-lg p-3">
-                    <p className="text-blue-300 text-sm">We heard: <span className="font-bold">{heardLetter}</span></p>
+                  <div className="bg-gradient-to-r from-blue-500/30 to-cyan-500/30 border border-blue-300/50 rounded-xl p-4 animate-fade-in">
+                    <p className="text-cyan-200 text-base font-medium">
+                      We heard: <span className="font-bold text-cyan-100 text-xl">"{heardLetter}"</span>
+                    </p>
                   </div>
                 )}
 
-                <Button
-                  onClick={isRecording ? stopRecording : startRecording}
-                  disabled={isProcessing}
-                  className={`w-32 h-32 rounded-full ${
-                    isRecording 
-                      ? 'bg-red-500 hover:bg-red-600 animate-pulse' 
-                      : 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700'
-                  }`}
-                >
-                  {isProcessing ? (
-                    <div className="animate-spin h-8 w-8 border-2 border-white border-t-transparent rounded-full" />
-                  ) : isRecording ? (
-                    <MicOff className="h-12 w-12" />
-                  ) : (
-                    <Mic className="h-12 w-12" />
+                <div className="relative">
+                  <Button
+                    onClick={isRecording ? stopRecording : startRecording}
+                    disabled={isProcessing}
+                    className={`w-40 h-40 rounded-full shadow-2xl transition-all duration-300 ${
+                      isRecording 
+                        ? 'bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 animate-pulse scale-110' 
+                        : 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 hover:scale-105'
+                    }`}
+                  >
+                    {isProcessing ? (
+                      <>
+                        <div className="animate-spin h-12 w-12 border-4 border-white border-t-transparent rounded-full" />
+                        <p className="text-xs mt-2 font-medium">Processing...</p>
+                      </>
+                    ) : isRecording ? (
+                      <>
+                        <MicOff className="h-16 w-16" />
+                        <p className="text-xs mt-2 font-medium">Recording</p>
+                      </>
+                    ) : (
+                      <>
+                        <Mic className="h-16 w-16" />
+                        <p className="text-xs mt-2 font-medium">Tap to Speak</p>
+                      </>
+                    )}
+                  </Button>
+                  
+                  {isRecording && (
+                    <div className="absolute inset-0 rounded-full border-4 border-red-300 animate-ping opacity-75"></div>
                   )}
-                </Button>
+                </div>
                 
-                <p className="text-white/60 text-xs">
-                  {isRecording ? 'Listening... (3 seconds)' : 'Tap to speak a letter'}
+                <p className="text-white/70 text-base">
+                  {isRecording ? '🎵 Listening for your letter... (3 seconds)' : '💡 Say any letter clearly: A, B, C...'}
                 </p>
               </div>
             )}
 
             {/* Game Over */}
             {gameStatus !== 'playing' && (
-              <div className="text-center space-y-4">
+              <div className="text-center space-y-6">
                 {gameStatus === 'won' ? (
-                  <div className="bg-green-500/20 border border-green-500/30 rounded-lg p-4">
-                    <h3 className="text-xl font-bold text-green-300 mb-2">🎉 You Won!</h3>
-                    <p className="text-white/80">Great job! You guessed the word.</p>
+                  <div className="bg-gradient-to-r from-green-500/30 to-emerald-500/30 border border-green-300/50 rounded-xl p-6 animate-fade-in">
+                    <div className="text-4xl mb-3">🎉</div>
+                    <h3 className="text-2xl font-bold text-green-200 mb-3">Fantastic! You Won!</h3>
+                    <p className="text-white/90 text-lg">Perfect spelling and pronunciation practice!</p>
+                    <div className="mt-4 text-yellow-400 text-lg font-bold">+50 XP Earned! ⭐</div>
                   </div>
                 ) : (
-                  <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-4">
-                    <h3 className="text-xl font-bold text-red-300 mb-2">😔 Game Over</h3>
-                    <p className="text-white/80">The word was: <span className="font-bold">{currentWord.english}</span></p>
+                  <div className="bg-gradient-to-r from-orange-500/30 to-red-500/30 border border-orange-300/50 rounded-xl p-6 animate-fade-in">
+                    <div className="text-4xl mb-3">📚</div>
+                    <h3 className="text-2xl font-bold text-orange-200 mb-3">Keep Learning!</h3>
+                    <p className="text-white/90 text-lg mb-2">The word was:</p>
+                    <p className="text-2xl font-bold text-white">{currentWord.english}</p>
+                    <p className="text-lg text-blue-300 mt-2">({currentWord.turkish})</p>
                   </div>
                 )}
                 
-                <div className="space-y-3">
+                <div className="bg-white/10 rounded-xl p-4">
+                  <h4 className="text-white font-bold mb-3">📖 Learn This Word</h4>
                   <Button
                     onClick={playWordPronunciation}
                     variant="outline"
-                    className="border-white/20 text-white hover:bg-white/10"
+                    className="w-full border-white/30 text-white hover:bg-white/20 bg-white/10 backdrop-blur-sm py-3 text-lg"
                   >
-                    <Volume2 className="h-4 w-4 mr-2" />
-                    Hear Pronunciation
-                  </Button>
-                  
-                  <Button
-                    onClick={startNewGame}
-                    className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
-                  >
-                    <RotateCcw className="h-4 w-4 mr-2" />
-                    Play Again
+                    <Volume2 className="h-5 w-5 mr-3" />
+                    🔊 Hear Pronunciation & Translation
                   </Button>
                 </div>
+                
+                <Button
+                  onClick={startNewGame}
+                  className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 py-4 text-lg font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+                >
+                  <RotateCcw className="h-5 w-5 mr-3" />
+                  🎮 Play Next Word
+                </Button>
               </div>
             )}
           </CardContent>

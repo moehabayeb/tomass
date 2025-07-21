@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Mic, MicOff, Volume2, RotateCcw, Star, ChevronRight, Trophy } from 'lucide-react';
+import { ArrowLeft, Mic, MicOff, Volume2, RotateCcw, Star, ChevronRight, Trophy, BookOpen } from 'lucide-react';
 import { useTextToSpeech } from '@/hooks/useTextToSpeech';
 import { supabase } from '@/integrations/supabase/client';
 import { useGamification } from '@/hooks/useGamification';
@@ -272,132 +272,193 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
       />
       
       <div className="relative max-w-2xl mx-auto pt-8">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-8">
           <Button
             onClick={onBack}
             variant="ghost"
             size="sm"
-            className="text-white/70 hover:text-white"
+            className="text-white/70 hover:text-white hover:bg-white/10 transition-all duration-300"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Games
           </Button>
-          <div className="text-white text-sm">
-            Card {currentCardIndex + 1} of {flashcardWords.length}
+          <div className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-white/20 rounded-full px-4 py-2 backdrop-blur-xl">
+            <div className="text-white text-sm font-medium">
+              Card {currentCardIndex + 1} of {flashcardWords.length}
+            </div>
           </div>
         </div>
 
-        <div className="space-y-4 mb-6">
-          <Progress value={progress} className="h-2 bg-white/20" />
-          <p className="text-white/60 text-center text-sm">Progress: {Math.round(progress)}%</p>
+        {/* Game Header */}
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold text-white mb-2 flex items-center justify-center gap-3">
+            🃏 Smart Flashcards
+            <BookOpen className="h-8 w-8 text-green-400 animate-pulse" />
+          </h2>
+          <p className="text-white/70 text-lg">Listen, learn, and speak with confidence!</p>
         </div>
 
-        <Card className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl border border-white/20 text-white">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center">
-              🃏 Flashcards
-            </CardTitle>
-          </CardHeader>
+        <div className="space-y-4 mb-8">
+          <div className="bg-gradient-to-r from-white/10 to-white/5 rounded-xl p-4 backdrop-blur-sm border border-white/20">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-white/80 text-sm font-medium">Your Progress</span>
+              <span className="text-white font-bold">{Math.round(progress)}%</span>
+            </div>
+            <Progress value={progress} className="h-3 bg-white/20" />
+          </div>
+        </div>
+
+        <Card className="bg-gradient-to-br from-white/20 to-white/5 backdrop-blur-xl border border-white/30 text-white shadow-2xl">
           <CardContent className="space-y-6">
-            {/* Flashcard */}
+            {/* Enhanced Flashcard */}
             <div 
-              className="relative h-64 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-xl border border-white/20 cursor-pointer group"
+              className={`relative h-80 bg-gradient-to-br from-indigo-500/30 to-purple-500/30 rounded-2xl border-2 border-white/30 cursor-pointer group transition-all duration-500 hover:scale-105 shadow-2xl ${
+                gamePhase === 'front' ? 'hover:shadow-blue-500/20' : ''
+              }`}
               onClick={gamePhase === 'front' ? flipCard : undefined}
             >
-              <div className="absolute inset-0 flex flex-col items-center justify-center space-y-4 p-6">
+              <div className="absolute inset-0 flex flex-col items-center justify-center space-y-6 p-8">
                 {gamePhase === 'front' ? (
                   <>
-                    <div className="text-4xl font-bold text-center">{currentCard.english}</div>
-                    <p className="text-white/60 text-sm text-center">Click to reveal Turkish meaning</p>
+                    <div className="text-5xl font-bold text-center text-white drop-shadow-lg">
+                      {currentCard.english}
+                    </div>
+                    <div className="bg-white/20 rounded-full px-6 py-2 backdrop-blur-sm border border-white/30">
+                      <p className="text-white/90 text-base font-medium text-center">
+                        🔄 Click to reveal meaning
+                      </p>
+                    </div>
                   </>
                 ) : (
                   <>
-                    <div className="text-3xl font-bold text-center">{currentCard.english}</div>
-                    <div className="text-2xl text-blue-300 text-center">{currentCard.turkish}</div>
+                    <div className="text-4xl font-bold text-center text-white mb-2">
+                      {currentCard.english}
+                    </div>
+                    <div className="text-3xl text-cyan-200 text-center font-semibold">
+                      {currentCard.turkish}
+                    </div>
                     <Button
                       onClick={playCardPronunciation}
-                      size="sm"
+                      size="lg"
                       variant="outline"
-                      className="border-white/20 text-white hover:bg-white/10"
+                      className="border-white/40 text-white hover:bg-white/20 bg-white/10 backdrop-blur-sm py-3 px-6"
                     >
-                      <Volume2 className="h-4 w-4 mr-2" />
-                      Listen
+                      <Volume2 className="h-5 w-5 mr-3" />
+                      🔊 Listen to Pronunciation
                     </Button>
                   </>
                 )}
               </div>
+              
+              {/* Card flip animation indicator */}
+              {gamePhase === 'front' && (
+                <div className="absolute top-4 right-4 bg-white/20 rounded-full p-2 group-hover:scale-110 transition-transform">
+                  <div className="text-white/80 text-lg">🔄</div>
+                </div>
+              )}
             </div>
 
             {/* Game Phases */}
             {gamePhase === 'back' && (
-              <div className="text-center space-y-4">
-                <p className="text-white/80">Ready to practice pronunciation?</p>
+              <div className="text-center space-y-6">
+                <div className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-white/20 rounded-xl p-6 backdrop-blur-sm">
+                  <div className="text-2xl mb-2">🎯</div>
+                  <p className="text-white text-lg font-medium mb-2">Ready for the challenge?</p>
+                  <p className="text-white/80 text-base">Say the word clearly and get instant AI feedback!</p>
+                </div>
                 <Button
                   onClick={startSpeakingChallenge}
-                  className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
+                  className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 py-4 px-8 text-lg font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
                 >
-                  Start Speaking Challenge
+                  🎤 Start Speaking Challenge
                 </Button>
               </div>
             )}
 
             {gamePhase === 'speaking' && (
-              <div className="text-center space-y-4">
-                <p className="text-white/80">Say "{currentCard.english}" clearly:</p>
+              <div className="text-center space-y-6">
+                <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-white/20 rounded-xl p-4 backdrop-blur-sm">
+                  <p className="text-white text-xl font-bold mb-2">🎯 Say this word:</p>
+                  <p className="text-3xl font-bold text-yellow-300">"{currentCard.english}"</p>
+                </div>
                 
                 {userResponse && (
-                  <div className="bg-blue-500/20 border border-blue-500/30 rounded-lg p-3">
-                    <p className="text-blue-300 text-sm">We heard: <span className="font-bold">"{userResponse}"</span></p>
+                  <div className="bg-gradient-to-r from-cyan-500/30 to-blue-500/30 border border-cyan-300/50 rounded-xl p-4 animate-fade-in">
+                    <p className="text-cyan-200 text-lg font-medium">
+                      We heard: <span className="font-bold text-cyan-100 text-xl">"{userResponse}"</span>
+                    </p>
                   </div>
                 )}
 
-                <Button
-                  onClick={isRecording ? stopRecording : startRecording}
-                  disabled={isProcessing}
-                  className={`w-32 h-32 rounded-full ${
-                    isRecording 
-                      ? 'bg-red-500 hover:bg-red-600 animate-pulse' 
-                      : 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700'
-                  }`}
-                >
-                  {isProcessing ? (
-                    <div className="animate-spin h-8 w-8 border-2 border-white border-t-transparent rounded-full" />
-                  ) : isRecording ? (
-                    <MicOff className="h-12 w-12" />
-                  ) : (
-                    <Mic className="h-12 w-12" />
+                <div className="relative">
+                  <Button
+                    onClick={isRecording ? stopRecording : startRecording}
+                    disabled={isProcessing}
+                    className={`w-44 h-44 rounded-full shadow-2xl transition-all duration-300 ${
+                      isRecording 
+                        ? 'bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 animate-pulse scale-110' 
+                        : 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 hover:scale-105'
+                    }`}
+                  >
+                    {isProcessing ? (
+                      <>
+                        <div className="animate-spin h-16 w-16 border-4 border-white border-t-transparent rounded-full" />
+                        <p className="text-sm mt-3 font-bold">Analyzing...</p>
+                      </>
+                    ) : isRecording ? (
+                      <>
+                        <MicOff className="h-20 w-20" />
+                        <p className="text-sm mt-3 font-bold">Recording</p>
+                      </>
+                    ) : (
+                      <>
+                        <Mic className="h-20 w-20" />
+                        <p className="text-sm mt-3 font-bold">Tap to Speak</p>
+                      </>
+                    )}
+                  </Button>
+                  
+                  {isRecording && (
+                    <div className="absolute inset-0 rounded-full border-4 border-red-300 animate-ping opacity-75"></div>
                   )}
-                </Button>
+                </div>
                 
-                <p className="text-white/60 text-xs">
-                  {isRecording ? 'Listening... (5 seconds)' : 'Tap to record your pronunciation'}
+                <p className="text-white/80 text-lg">
+                  {isRecording ? '🎵 Recording your pronunciation... (5 seconds)' : '💡 Speak clearly and confidently!'}
                 </p>
               </div>
             )}
 
             {gamePhase === 'feedback' && (
-              <div className="text-center space-y-4">
-                <div className={`border rounded-lg p-4 ${
+              <div className="text-center space-y-6">
+                <div className={`border-2 rounded-xl p-6 backdrop-blur-sm animate-fade-in ${
                   cardResults[cardResults.length - 1]?.success 
-                    ? 'bg-green-500/20 border-green-500/30' 
-                    : 'bg-orange-500/20 border-orange-500/30'
+                    ? 'bg-green-500/30 border-green-300/50' 
+                    : 'bg-orange-500/30 border-orange-300/50'
                 }`}>
-                  <h3 className="font-bold mb-2">
-                    {cardResults[cardResults.length - 1]?.success ? '🎉 Great job!' : '📚 Keep practicing!'}
+                  <div className="text-4xl mb-3">
+                    {cardResults[cardResults.length - 1]?.success ? '🎉' : '💪'}
+                  </div>
+                  <h3 className="text-2xl font-bold mb-3">
+                    {cardResults[cardResults.length - 1]?.success ? 'Excellent!' : 'Keep Growing!'}
                   </h3>
-                  <p className="text-sm">{pronunciationFeedback}</p>
+                  <p className="text-lg leading-relaxed">{pronunciationFeedback}</p>
+                  
+                  {cardResults[cardResults.length - 1]?.success && (
+                    <div className="mt-4 text-yellow-400 text-lg font-bold">+20 XP Earned! ⭐</div>
+                  )}
                 </div>
                 
                 <Button
                   onClick={nextCard}
-                  className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                  className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 py-4 text-lg font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
                 >
                   {currentCardIndex < flashcardWords.length - 1 ? (
                     <>
-                      Next Card <ChevronRight className="h-4 w-4 ml-2" />
+                      🚀 Next Card <ChevronRight className="h-5 w-5 ml-2" />
                     </>
                   ) : (
-                    'View Results'
+                    '📊 View Final Results'
                   )}
                 </Button>
               </div>

@@ -27,93 +27,145 @@ export const GamesApp: React.FC<GamesAppProps> = ({ onBack }) => {
       />
       
       <div className="relative max-w-2xl mx-auto pt-8">
-        <div className="flex items-center mb-6">
+        <div className="flex items-center justify-between mb-8">
           <Button
             onClick={onBack}
             variant="ghost"
             size="sm"
-            className="text-white/70 hover:text-white mr-4"
+            className="text-white/70 hover:text-white"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
-          <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-            <Gamepad2 className="h-8 w-8 text-purple-400" />
-            English Learning Games
-          </h1>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
+        {/* Animated Header */}
+        <div className="text-center mb-12 space-y-4">
+          <div className="animate-fade-in">
+            <Gamepad2 className="h-16 w-16 text-purple-400 mx-auto mb-4 animate-bounce" />
+            <h1 className="text-4xl font-bold text-white mb-2">
+              Let's Play to Practice! 🎮
+            </h1>
+            <p className="text-xl text-white/70">
+              Fun English games to boost your skills
+            </p>
+          </div>
+          <div className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-white/20 rounded-lg p-4 backdrop-blur-xl">
+            <p className="text-white/80 text-sm">
+              ✨ Practice speaking, improve pronunciation, and earn XP through interactive gameplay!
+            </p>
+          </div>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-8">
           {/* Hangman Game Card */}
           <Card 
-            className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl border border-white/20 cursor-pointer hover:from-white/20 hover:to-white/10 transition-all duration-300 group"
+            className="bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-xl border border-white/20 cursor-pointer hover:from-white/25 hover:to-white/15 transition-all duration-500 group hover:scale-105 hover:shadow-2xl"
             onClick={() => setSelectedGame('hangman')}
           >
-            <CardHeader className="text-center">
-              <div className="mx-auto mb-4 p-4 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full w-fit">
-                <Target className="h-8 w-8 text-blue-400" />
+            <CardHeader className="text-center pb-4">
+              <div className="mx-auto mb-6 p-6 bg-gradient-to-r from-blue-500/30 to-purple-500/30 rounded-full w-fit group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                <Target className="h-10 w-10 text-blue-300 group-hover:text-blue-200 transition-colors" />
               </div>
-              <CardTitle className="text-xl font-bold text-white group-hover:text-blue-300 transition-colors">
-                🧩 Hangman
+              <CardTitle className="text-2xl font-bold text-white group-hover:text-blue-300 transition-colors mb-2">
+                🧩 Word Hangman
               </CardTitle>
+              <p className="text-sm text-blue-200/80 font-medium">Spelling + Speaking Challenge</p>
             </CardHeader>
-            <CardContent className="text-center space-y-3">
-              <p className="text-white/80 text-sm">
-                Guess words by speaking letters aloud! Perfect for learning spelling and pronunciation.
+            <CardContent className="text-center space-y-4">
+              <p className="text-white/90 text-base leading-relaxed">
+                Guess words by speaking letters aloud! Perfect for learning spelling and pronunciation together.
               </p>
-              <div className="space-y-2 text-xs text-white/60">
-                <div>🎙️ Say letters instead of typing</div>
-                <div>📚 Words from your current lessons</div>
-                <div>🏆 6 tries to guess the word</div>
+              <div className="bg-white/10 rounded-lg p-4 space-y-3">
+                <div className="text-sm text-white/80 flex items-center justify-center gap-2">
+                  🎙️ <span>Voice-controlled letter guessing</span>
+                </div>
+                <div className="text-sm text-white/80 flex items-center justify-center gap-2">
+                  📚 <span>Vocabulary from your lessons</span>
+                </div>
+                <div className="text-sm text-white/80 flex items-center justify-center gap-2">
+                  🏆 <span>6 attempts to solve each word</span>
+                </div>
               </div>
               <Button 
-                className="w-full mt-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-medium"
-                onClick={() => setSelectedGame('hangman')}
+                className="w-full mt-6 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedGame('hangman');
+                }}
               >
-                Start Hangman
+                ⚡ Start Playing
               </Button>
             </CardContent>
           </Card>
 
           {/* Flashcards Game Card */}
           <Card 
-            className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl border border-white/20 cursor-pointer hover:from-white/20 hover:to-white/10 transition-all duration-300 group"
+            className="bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-xl border border-white/20 cursor-pointer hover:from-white/25 hover:to-white/15 transition-all duration-500 group hover:scale-105 hover:shadow-2xl"
             onClick={() => setSelectedGame('flashcards')}
           >
-            <CardHeader className="text-center">
-              <div className="mx-auto mb-4 p-4 bg-gradient-to-r from-green-500/20 to-teal-500/20 rounded-full w-fit">
-                <BookOpen className="h-8 w-8 text-green-400" />
+            <CardHeader className="text-center pb-4">
+              <div className="mx-auto mb-6 p-6 bg-gradient-to-r from-green-500/30 to-teal-500/30 rounded-full w-fit group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                <BookOpen className="h-10 w-10 text-green-300 group-hover:text-green-200 transition-colors" />
               </div>
-              <CardTitle className="text-xl font-bold text-white group-hover:text-green-300 transition-colors">
-                🃏 Flashcards
+              <CardTitle className="text-2xl font-bold text-white group-hover:text-green-300 transition-colors mb-2">
+                🃏 Smart Flashcards
               </CardTitle>
+              <p className="text-sm text-green-200/80 font-medium">Pronunciation Mastery</p>
             </CardHeader>
-            <CardContent className="text-center space-y-3">
-              <p className="text-white/80 text-sm">
-                Practice pronunciation with interactive flashcards and speaking challenges.
+            <CardContent className="text-center space-y-4">
+              <p className="text-white/90 text-base leading-relaxed">
+                Master pronunciation with AI-powered flashcards that listen and give instant feedback.
               </p>
-              <div className="space-y-2 text-xs text-white/60">
-                <div>🔊 Listen to correct pronunciation</div>
-                <div>🎙️ Practice speaking each word</div>
-                <div>⭐ Get feedback on your pronunciation</div>
+              <div className="bg-white/10 rounded-lg p-4 space-y-3">
+                <div className="text-sm text-white/80 flex items-center justify-center gap-2">
+                  🔊 <span>Native speaker pronunciation</span>
+                </div>
+                <div className="text-sm text-white/80 flex items-center justify-center gap-2">
+                  🎙️ <span>AI pronunciation scoring</span>
+                </div>
+                <div className="text-sm text-white/80 flex items-center justify-center gap-2">
+                  ⭐ <span>Star ratings & achievements</span>
+                </div>
               </div>
               <Button 
-                className="w-full mt-4 bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white font-medium"
-                onClick={() => setSelectedGame('flashcards')}
+                className="w-full mt-6 bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white font-bold py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedGame('flashcards');
+                }}
               >
-                Start Flashcards
+                🚀 Start Learning
               </Button>
             </CardContent>
           </Card>
         </div>
 
-        <div className="mt-8 text-center">
-          <p className="text-white/60 text-sm">
-            🎯 Both games use vocabulary from your current lesson progress
-          </p>
-          <p className="text-white/40 text-xs mt-2">
-            Practice speaking and listening to improve your English skills!
-          </p>
+        <div className="mt-12 text-center space-y-6">
+          <div className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-white/20 rounded-xl p-6 backdrop-blur-xl">
+            <div className="flex items-center justify-center gap-3 mb-3">
+              <span className="text-2xl">🎯</span>
+              <h3 className="text-white font-bold text-lg">Smart Learning</h3>
+            </div>
+            <p className="text-white/80 text-base leading-relaxed">
+              Both games automatically adapt to your current lesson vocabulary and speaking level
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-3 gap-4 text-center">
+            <div className="space-y-2">
+              <div className="text-3xl">🎤</div>
+              <p className="text-white/70 text-sm font-medium">Voice Practice</p>
+            </div>
+            <div className="space-y-2">
+              <div className="text-3xl">🏆</div>
+              <p className="text-white/70 text-sm font-medium">Earn XP</p>
+            </div>
+            <div className="space-y-2">
+              <div className="text-3xl">📈</div>
+              <p className="text-white/70 text-sm font-medium">Track Progress</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
