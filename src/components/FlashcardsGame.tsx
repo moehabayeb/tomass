@@ -225,23 +225,26 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
           console.log('📊 Evaluation result:', evaluation);
           setPronunciationFeedback(evaluation.feedback);
           
-          // Check if the spoken word matches the expected English translation
-          const spokenWord = transcription.toLowerCase().trim();
-          const expectedWord = currentCard.english.toLowerCase().trim();
+          // Clean and normalize both spoken and expected words
+          const cleanSpokenWord = transcription.toLowerCase().trim().replace(/[^\w\s]/gi, '');
+          const cleanExpectedWord = currentCard.english.toLowerCase().trim().replace(/[^\w\s]/gi, '');
           
-          console.log('🔍 Word comparison:', {
-            spoken: spokenWord,
-            expected: expectedWord,
-            match: spokenWord === expectedWord
+          console.log('🔍 Word comparison (cleaned):', {
+            originalSpoken: transcription,
+            cleanSpoken: cleanSpokenWord,
+            cleanExpected: cleanExpectedWord,
+            match: cleanSpokenWord === cleanExpectedWord
           });
           
-          // STRICT word matching for vocabulary learning - only exact matches are correct
-          const isCorrect = spokenWord === expectedWord;
+          // BULLETPROOF strict word matching - only exact matches are correct
+          const isCorrect = cleanSpokenWord === cleanExpectedWord;
           const xpEarned = isCorrect ? 20 : 5;
           
-          // Override AI feedback for wrong word matches
-          let finalFeedback = evaluation.feedback;
-          if (!isCorrect) {
+          // Custom feedback for vocabulary learning
+          let finalFeedback;
+          if (isCorrect) {
+            finalFeedback = `✅ Perfect! You correctly said "${currentCard.english}"!`;
+          } else {
             finalFeedback = `❌ Wrong word! You said "${transcription}" but the correct answer is "${currentCard.english}". Keep practicing!`;
           }
           
