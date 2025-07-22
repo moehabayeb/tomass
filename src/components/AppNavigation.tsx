@@ -190,7 +190,7 @@ export default function AppNavigation() {
 
       {/* Avatar Display - Only show in speaking mode */}
       {currentMode === 'speaking' && userProfile && (
-        <div className="fixed top-4 left-4 z-20">
+        <div className="fixed top-4 left-4 z-20 cursor-pointer" onClick={() => window.location.href = '/profile'}>
           <AvatarDisplay
             level={userProfile.level}
             xp={Math.max(0, xpProgress.current)}

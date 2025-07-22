@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Calendar, Clock, Users, ChevronDown, ChevronUp, Bell, AlertCircle, LogIn } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, Users, ChevronDown, ChevronUp, Bell, AlertCircle, LogIn, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -320,9 +320,15 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
         
         {isAuthenticated ? (
           <div className="flex items-center gap-3">
-            <span className="text-white/80 text-sm">
-              {user?.email}
-            </span>
+            <Button
+              onClick={() => navigate('/profile')}
+              variant="ghost"
+              size="sm"
+              className="text-white/80 hover:text-white hover:bg-white/10"
+            >
+              <User className="h-4 w-4 mr-2" />
+              Profile
+            </Button>
             <Button
               onClick={signOut}
               variant="ghost"
