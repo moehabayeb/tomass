@@ -3,8 +3,7 @@ import { ArrowLeft, Edit2, LogOut, User, Mail, Trophy, Calendar, Upload, Trash2 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuthReady } from '@/hooks/useAuthReady';
-import { useGamification } from '@/hooks/useGamification';
-import { useStreakTracker } from '@/hooks/useStreakTracker';
+import { useUserData } from '@/hooks/useUserData';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -29,8 +28,7 @@ interface ProfileData {
 
 export default function Profile() {
   const { user, session, isAuthenticated, isLoading, signOut } = useAuthReady();
-  const { getXPProgress, level, totalXP } = useGamification();
-  const { streakData, getStreakMessage } = useStreakTracker();
+  const { userProfile } = useUserData();
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
@@ -44,6 +42,37 @@ export default function Profile() {
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Use fallback values for gamification data since we're now auth-based
+  const level = userProfile?.level || 1;
+  const totalXP = userProfile?.xp || 0;
+  const streakData = {
+    currentStreak: userProfile?.currentStreak || 0,
+    bestStreak: userProfile?.bestStreak || 0
+  };
+  
+  const getXPProgress = () => {
+    const xpPerLevel = 500;
+    const currentLevelBase = (level - 1) * xpPerLevel;
+    const nextLevelBase = level * xpPerLevel;
+    const current = totalXP - currentLevelBase;
+    const max = nextLevelBase - currentLevelBase;
+    return {
+      current: Math.max(0, current),
+      max,
+      percentage: Math.max(0, (current / max) * 100)
+    };
+  };
+
+  const getStreakMessage = () => {
+    const { currentStreak } = streakData;
+    if (currentStreak === 0) return "Start your learning streak today!";
+    if (currentStreak === 1) return "🔥 Day 1 - Great start!";
+    if (currentStreak < 7) return `🔥 Day ${currentStreak} - Keep going!`;
+    if (currentStreak === 7) return "🎉 Week completed! Amazing!";
+    if (currentStreak < 30) return `🔥 ${currentStreak} days strong!`;
+    return `👑 ${currentStreak} days - Legendary!`;
+  };
 
   const xpProgress = getXPProgress();
 
