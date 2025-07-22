@@ -225,7 +225,13 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
           console.log('📊 Evaluation result:', evaluation);
           setPronunciationFeedback(evaluation.feedback);
           
-          const isCorrect = evaluation.score >= 3; // 3/5 or higher is considered correct
+          // Check if the spoken word matches the expected English translation
+          const spokenWord = transcription.toLowerCase().trim();
+          const expectedWord = currentCard.english.toLowerCase().trim();
+          
+          // Direct word match for vocabulary learning
+          const isExactMatch = spokenWord === expectedWord;
+          const isCorrect = isExactMatch && evaluation.score >= 3; // Must match word AND have good pronunciation
           const xpEarned = isCorrect ? 20 : 5; // Reward even small attempts
           
           setCardResults(prev => [...prev, { 
@@ -557,11 +563,11 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
             {gamePhase === 'speaking' && (
               <div className="text-center space-y-6">
                 {currentCard && (
-                   <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-white/20 rounded-xl p-4 backdrop-blur-sm">
-                     <p className="text-white text-xl font-bold mb-2">🎯 Say the English word for:</p>
-                     <p className="text-2xl font-bold text-cyan-300 mb-2">"{currentCard.turkish}"</p>
-                     <p className="text-white/60 text-sm">Expected: {currentCard.english}</p>
-                   </div>
+                    <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-white/20 rounded-xl p-4 backdrop-blur-sm">
+                      <p className="text-white text-xl font-bold mb-2">🎯 Say the English word for:</p>
+                      <p className="text-3xl font-bold text-cyan-300">"{currentCard.turkish}"</p>
+                      <p className="text-white/60 text-sm mt-2">🎤 Speak the correct English translation</p>
+                    </div>
                 )}
                 
                  {userResponse && (
