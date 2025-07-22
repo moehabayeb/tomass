@@ -368,44 +368,46 @@ export default function Profile() {
         }} 
       />
 
-      <div className="relative z-10 container mx-auto px-4 py-8 max-w-4xl">
+      <div className="relative z-10 container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-4xl">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-4 sm:mb-8 gap-2">
           <Button
             onClick={() => navigate('/?tab=meetings')}
             variant="ghost"
-            className="text-white/70 hover:text-white hover:bg-white/10"
+            size="sm"
+            className="text-white/70 hover:text-white hover:bg-white/10 p-2 sm:px-4"
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Meetings
+            <ArrowLeft className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Back to Meetings</span>
           </Button>
           
-          <h1 className="text-3xl font-bold text-white">My Profile</h1>
+          <h1 className="text-xl sm:text-3xl font-bold text-white text-center">My Profile</h1>
           
           <Button
             onClick={handleSignOut}
             variant="outline"
-            className="text-white border-white/20 hover:bg-white/10"
+            size="sm"
+            className="text-white border-white/20 hover:bg-white/10 p-2 sm:px-4"
           >
-            <LogOut className="h-4 w-4 mr-2" />
-            Sign Out
+            <LogOut className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Sign Out</span>
           </Button>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
           {/* Profile Info Card */}
           <Card className="bg-white/10 backdrop-blur-xl border-white/20">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
-                <User className="h-5 w-5" />
+            <CardHeader className="pb-3 sm:pb-6">
+              <CardTitle className="text-white flex items-center gap-2 text-base sm:text-lg">
+                <User className="h-4 w-4 sm:h-5 sm:w-5" />
                 Profile Information
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4 sm:space-y-6">
               {/* Avatar Section with Upload */}
-              <div className="space-y-4">
-                <Label className="text-white/80">Profile Picture</Label>
-                <div className="flex flex-col items-center space-y-4">
+              <div className="space-y-3 sm:space-y-4">
+                <Label className="text-white/80 text-sm">Profile Picture</Label>
+                <div className="flex flex-col items-center space-y-3 sm:space-y-4">
                   <div className="relative">
                     <AvatarDisplay
                       level={level}
@@ -418,7 +420,7 @@ export default function Profile() {
                     />
                   </div>
                   
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                     <input
                       ref={fileInputRef}
                       type="file"
@@ -431,10 +433,10 @@ export default function Profile() {
                       disabled={isUploadingAvatar}
                       size="sm"
                       variant="outline"
-                      className="text-white border-white/20 hover:bg-white/10"
+                      className="text-white border-white/20 hover:bg-white/10 text-xs sm:text-sm"
                     >
-                      <Upload className="h-4 w-4 mr-2" />
-                      {isUploadingAvatar ? 'Uploading...' : 'Upload Photo'}
+                      <Upload className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                      {isUploadingAvatar ? 'Uploading...' : 'Upload'}
                     </Button>
                     {profile.avatar_url && (
                       <Button
@@ -442,9 +444,9 @@ export default function Profile() {
                         disabled={isUploadingAvatar}
                         size="sm"
                         variant="outline"
-                        className="text-red-300 border-red-300/20 hover:bg-red-500/10"
+                        className="text-red-300 border-red-300/20 hover:bg-red-500/10 text-xs sm:text-sm"
                       >
-                        <Trash2 className="h-4 w-4 mr-2" />
+                        <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                         Remove
                       </Button>
                     )}
@@ -457,45 +459,49 @@ export default function Profile() {
 
               {/* Name Field */}
               <div className="space-y-2">
-                <Label className="text-white/80">Full Name</Label>
+                <Label className="text-white/80 text-sm">Full Name</Label>
                 {isEditingName ? (
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <Input
                       value={editedName}
                       onChange={(e) => setEditedName(e.target.value)}
-                      className="bg-white/5 border-white/20 text-white"
+                      className="bg-white/5 border-white/20 text-white text-sm"
                       placeholder="Enter your name"
                     />
-                    <Button
-                      onClick={handleUpdateName}
-                      disabled={isUpdatingProfile || !editedName.trim()}
-                      size="sm"
-                    >
-                      Save
-                    </Button>
-                    <Button
-                      onClick={() => {
-                        setIsEditingName(false);
-                        setEditedName(profile.full_name || '');
-                      }}
-                      variant="outline"
-                      size="sm"
-                    >
-                      Cancel
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={handleUpdateName}
+                        disabled={isUpdatingProfile || !editedName.trim()}
+                        size="sm"
+                        className="flex-1 sm:flex-none"
+                      >
+                        Save
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          setIsEditingName(false);
+                          setEditedName(profile.full_name || '');
+                        }}
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 sm:flex-none"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
                   </div>
                 ) : (
-                  <div className="flex items-center justify-between p-3 bg-white/5 rounded-md border border-white/20">
-                     <span className="text-white">
+                  <div className="flex items-center justify-between p-2 sm:p-3 bg-white/5 rounded-md border border-white/20">
+                     <span className="text-white text-sm truncate mr-2">
                        {profile.full_name || 'No name set'}
                      </span>
                     <Button
                       onClick={() => setIsEditingName(true)}
                       variant="ghost"
                       size="sm"
-                      className="text-white/70 hover:text-white"
+                      className="text-white/70 hover:text-white p-1 sm:p-2"
                     >
-                      <Edit2 className="h-4 w-4" />
+                      <Edit2 className="h-3 w-3 sm:h-4 sm:w-4" />
                     </Button>
                   </div>
                 )}
@@ -503,10 +509,10 @@ export default function Profile() {
 
               {/* Email Field */}
               <div className="space-y-2">
-                <Label className="text-white/80">Email</Label>
-                <div className="flex items-center gap-2 p-3 bg-white/5 rounded-md border border-white/20">
-                  <Mail className="h-4 w-4 text-white/60" />
-                  <span className="text-white">{user.email}</span>
+                <Label className="text-white/80 text-sm">Email</Label>
+                <div className="flex items-center gap-2 p-2 sm:p-3 bg-white/5 rounded-md border border-white/20">
+                  <Mail className="h-3 w-3 sm:h-4 sm:w-4 text-white/60 flex-shrink-0" />
+                  <span className="text-white text-sm truncate">{user.email}</span>
                 </div>
               </div>
             </CardContent>
@@ -514,50 +520,50 @@ export default function Profile() {
 
           {/* Stats Card */}
           <Card className="bg-white/10 backdrop-blur-xl border-white/20">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
-                <Trophy className="h-5 w-5" />
+            <CardHeader className="pb-3 sm:pb-6">
+              <CardTitle className="text-white flex items-center gap-2 text-base sm:text-lg">
+                <Trophy className="h-4 w-4 sm:h-5 sm:w-5" />
                 Learning Progress
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3 sm:space-y-4">
               {/* Level & XP */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="text-center p-4 bg-white/5 rounded-lg border border-white/20">
-                  <div className="text-2xl font-bold text-white">Level {level}</div>
-                  <div className="text-white/60 text-sm">Current Level</div>
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                <div className="text-center p-3 sm:p-4 bg-white/5 rounded-lg border border-white/20">
+                  <div className="text-lg sm:text-2xl font-bold text-white">Level {level}</div>
+                  <div className="text-white/60 text-xs sm:text-sm">Current Level</div>
                 </div>
-                <div className="text-center p-4 bg-white/5 rounded-lg border border-white/20">
-                  <div className="text-2xl font-bold text-white">{totalXP}</div>
-                  <div className="text-white/60 text-sm">Total XP</div>
+                <div className="text-center p-3 sm:p-4 bg-white/5 rounded-lg border border-white/20">
+                  <div className="text-lg sm:text-2xl font-bold text-white">{totalXP}</div>
+                  <div className="text-white/60 text-xs sm:text-sm">Total XP</div>
                 </div>
               </div>
 
               {/* Streak Info */}
-              <div className="p-4 bg-white/5 rounded-lg border border-white/20">
+              <div className="p-3 sm:p-4 bg-white/5 rounded-lg border border-white/20">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-white font-medium">Current Streak</span>
-                  <Badge variant="secondary" className="bg-orange-500/20 text-orange-300">
+                  <span className="text-white font-medium text-sm sm:text-base">Current Streak</span>
+                  <Badge variant="secondary" className="bg-orange-500/20 text-orange-300 text-xs">
                     {streakData.currentStreak} days
                   </Badge>
                 </div>
-                <div className="text-white/60 text-sm">{getStreakMessage()}</div>
+                <div className="text-white/60 text-xs sm:text-sm">{getStreakMessage()}</div>
                 <Separator className="my-2 bg-white/20" />
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between text-xs sm:text-sm">
                   <span className="text-white/60">Best Streak</span>
                   <span className="text-white">{streakData.bestStreak} days</span>
                 </div>
               </div>
 
               {/* XP Progress */}
-              <div className="p-4 bg-white/5 rounded-lg border border-white/20">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-white font-medium">Progress to Level {level + 1}</span>
-                  <span className="text-white/60 text-sm">
+              <div className="p-3 sm:p-4 bg-white/5 rounded-lg border border-white/20">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-2 gap-1">
+                  <span className="text-white font-medium text-sm sm:text-base">Progress to Level {level + 1}</span>
+                  <span className="text-white/60 text-xs sm:text-sm">
                     {Math.max(0, xpProgress.current)} / {xpProgress.max} XP
                   </span>
                 </div>
-                <div className="w-full bg-white/10 rounded-full h-2">
+                <div className="w-full bg-white/10 rounded-full h-2 sm:h-2">
                   <div 
                     className="bg-gradient-to-r from-blue-400 to-purple-400 h-2 rounded-full transition-all duration-300"
                     style={{ width: `${Math.max(0, xpProgress.percentage)}%` }}
@@ -568,38 +574,38 @@ export default function Profile() {
           </Card>
 
           {/* Reminders Card */}
-          <Card className="bg-white/10 backdrop-blur-xl border-white/20 md:col-span-2">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
+          <Card className="bg-white/10 backdrop-blur-xl border-white/20 lg:col-span-2">
+            <CardHeader className="pb-3 sm:pb-6">
+              <CardTitle className="text-white flex items-center gap-2 text-base sm:text-lg">
+                <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
                 Upcoming Meeting Reminders
               </CardTitle>
             </CardHeader>
             <CardContent>
               {isLoadingReminders ? (
-                <div className="text-white/60 text-center py-4">Loading reminders...</div>
+                <div className="text-white/60 text-center py-4 text-sm">Loading reminders...</div>
               ) : reminders.length === 0 ? (
-                <div className="text-center py-8">
-                  <Calendar className="h-12 w-12 text-white/40 mx-auto mb-3" />
-                  <div className="text-white/60">No upcoming reminders</div>
-                  <div className="text-white/40 text-sm mt-1">
+                <div className="text-center py-6 sm:py-8">
+                  <Calendar className="h-8 w-8 sm:h-12 sm:w-12 text-white/40 mx-auto mb-2 sm:mb-3" />
+                  <div className="text-white/60 text-sm sm:text-base">No upcoming reminders</div>
+                  <div className="text-white/40 text-xs sm:text-sm mt-1">
                     Set reminders for meetings to see them here
                   </div>
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-2 sm:space-y-3">
                   {reminders.map((reminder) => (
                     <div
                       key={reminder.id}
-                      className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/20"
+                      className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 bg-white/5 rounded-lg border border-white/20 gap-2"
                     >
-                      <div>
-                        <div className="text-white font-medium">{reminder.meeting_title}</div>
-                        <div className="text-white/60 text-sm">
+                      <div className="flex-1">
+                        <div className="text-white font-medium text-sm sm:text-base truncate">{reminder.meeting_title}</div>
+                        <div className="text-white/60 text-xs sm:text-sm">
                           {formatDate(reminder.scheduled_at)}
                         </div>
                       </div>
-                      <Badge variant="outline" className="border-white/20 text-white/70">
+                      <Badge variant="outline" className="border-white/20 text-white/70 text-xs self-start sm:self-center">
                         {reminder.reminder_type}
                       </Badge>
                     </div>
