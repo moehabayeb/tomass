@@ -29,6 +29,7 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
     score: number;
     success: boolean;
     xpEarned: number;
+    motivationalText?: string;
   }>>([]);
   const [roundComplete, setRoundComplete] = useState(false);
   const [totalXPEarned, setTotalXPEarned] = useState(0);
@@ -197,13 +198,7 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
             return;
           }
 
-          // Display what we heard
-          setUserResponse(`✅ We heard: "${transcription}"`);
-          
-          // Keep the message visible for 3 seconds
-          setTimeout(() => {
-            setUserResponse(`✅ We heard: "${transcription}"`);
-          }, 3000);
+          // Skip the initial display - go directly to evaluation
 
           // Then evaluate pronunciation
           console.log('🤖 Evaluating pronunciation...');
@@ -247,17 +242,29 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
           });
           const xpEarned = isCorrect ? 20 : 5;
           
-          // Custom feedback for vocabulary learning
+          // Enhanced feedback for gamified experience
           let finalFeedback;
+          let motivationalText = '';
+          
           if (isCorrect) {
-            finalFeedback = `✅ Perfect! You correctly said "${currentCard.english}"!`;
+            finalFeedback = `Perfect! You correctly said "${currentCard.english}"!`;
           } else {
             if (cleanedUserInput.includes(' ')) {
-              finalFeedback = `❌ Please say only one word! You said "${transcription}" but the correct answer is just "${currentCard.english}".`;
+              finalFeedback = `Please say only one word! You said "${transcription}" but the correct answer is just "${currentCard.english}".`;
+              motivationalText = "You're close! Try again!";
             } else {
-              finalFeedback = `❌ Wrong word! You said "${transcription}" but the correct answer is "${currentCard.english}". Keep practicing!`;
+              finalFeedback = `Wrong word! You said "${transcription}" but the correct answer is "${currentCard.english}".`;
+              motivationalText = "Almost there, keep going!";
             }
           }
+          
+          // Store additional data for enhanced feedback display
+          const feedbackData = {
+            isCorrect,
+            userSaid: transcription,
+            correctAnswer: currentCard.english,
+            motivationalText
+          };
           
           setCardResults(prev => [...prev, { 
             word: currentCard, 
@@ -265,7 +272,8 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
             feedback: finalFeedback,
             score: evaluation.score,
             success: isCorrect,
-            xpEarned
+            xpEarned,
+            motivationalText
           }]);
 
           setPronunciationFeedback(finalFeedback);
@@ -645,36 +653,56 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
 
             {gamePhase === 'feedback' && (
               <div className="text-center space-y-6">
-                <div className={`border-2 rounded-xl p-6 backdrop-blur-sm animate-fade-in ${
-                  cardResults[cardResults.length - 1]?.success 
-                    ? 'bg-green-500/30 border-green-300/50' 
-                    : 'bg-orange-500/30 border-orange-300/50'
-                }`}>
-                  <div className="text-4xl mb-3">
-                    {cardResults[cardResults.length - 1]?.success ? '🎉' : '💪'}
-                  </div>
-                  <h3 className="text-2xl font-bold mb-3">
-                    {cardResults[cardResults.length - 1]?.success ? 'Excellent!' : 'Keep Growing!'}
-                  </h3>
-                  <p className="text-lg leading-relaxed">{pronunciationFeedback}</p>
-                  
-                  {cardResults[cardResults.length - 1]?.success && (
-                    <div className="mt-4 text-yellow-400 text-lg font-bold">
-                      +{cardResults[cardResults.length - 1]?.xpEarned || 20} XP Earned! ⭐
+                {cardResults[cardResults.length - 1]?.success ? (
+                  // ✅ CORRECT ANSWER - Success Screen
+                  <div className="bg-gradient-to-br from-green-400/30 to-emerald-500/30 border-2 border-green-300/60 rounded-2xl p-8 backdrop-blur-sm animate-scale-in shadow-2xl">
+                    <div className="text-6xl mb-4 animate-bounce">🎉</div>
+                    <h3 className="text-3xl font-bold mb-4 text-green-100">Excellent!</h3>
+                    <div className="bg-white/10 rounded-xl p-4 mb-4 backdrop-blur-sm">
+                      <p className="text-lg text-white/90">Perfect! You correctly said</p>
+                      <p className="text-2xl font-bold text-green-200 mt-1">"{cardResults[cardResults.length - 1]?.word.english}"</p>
                     </div>
-                  )}
-                </div>
+                    <div className="bg-gradient-to-r from-yellow-400/20 to-orange-400/20 border border-yellow-300/40 rounded-xl p-4 mb-6">
+                      <div className="text-yellow-200 text-2xl font-bold flex items-center justify-center gap-2">
+                        <Star className="h-6 w-6 fill-current" />
+                        +{cardResults[cardResults.length - 1]?.xpEarned || 20} XP Earned!
+                        <Star className="h-6 w-6 fill-current" />
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  // ❌ WRONG ANSWER - Retry Screen  
+                  <div className="bg-gradient-to-br from-orange-400/30 to-red-500/30 border-2 border-orange-300/60 rounded-2xl p-8 backdrop-blur-sm animate-scale-in shadow-2xl">
+                    <div className="text-6xl mb-4 animate-pulse">💪</div>
+                    <h3 className="text-3xl font-bold mb-4 text-orange-100">Keep Growing!</h3>
+                    <div className="bg-white/10 rounded-xl p-4 mb-4 backdrop-blur-sm">
+                      <p className="text-lg text-white/80 mb-2">We heard: <span className="font-bold text-red-200">"{cardResults[cardResults.length - 1]?.userSaid}"</span></p>
+                      <p className="text-lg text-white/80 mb-2">Correct answer: <span className="font-bold text-green-200">"{cardResults[cardResults.length - 1]?.word.english}"</span></p>
+                    </div>
+                    <div className="bg-gradient-to-r from-purple-400/20 to-pink-400/20 border border-purple-300/40 rounded-xl p-4 mb-6">
+                      <p className="text-xl font-semibold text-purple-200">
+                        {cardResults[cardResults.length - 1]?.motivationalText || "Almost there, keep going!"}
+                      </p>
+                    </div>
+                    <div className="text-yellow-400 text-lg font-medium">
+                      +{cardResults[cardResults.length - 1]?.xpEarned || 5} XP for trying! ⭐
+                    </div>
+                  </div>
+                )}
                 
                 <Button
                   onClick={nextCard}
-                  className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 py-4 text-lg font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+                  className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 py-4 text-xl font-bold rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105"
                 >
                   {currentCardIndex < flashcardWords.length - 1 ? (
                     <>
-                      🚀 Next Card <ChevronRight className="h-5 w-5 ml-2" />
+                      🚀 Next Card <ChevronRight className="h-6 w-6 ml-2" />
                     </>
                   ) : (
-                    '📊 View Final Results'
+                    <>
+                      <Trophy className="h-6 w-6 mr-2" />
+                      📊 View Final Results
+                    </>
                   )}
                 </Button>
               </div>
