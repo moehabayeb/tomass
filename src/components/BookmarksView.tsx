@@ -102,60 +102,60 @@ export default function BookmarksView({ onBack, onContinueFromMessage }: Bookmar
 
   return (
     <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: 'hsl(var(--app-bg))' }}>
-      <div className="relative z-10 p-4 max-w-sm mx-auto">
+      <div className="relative z-10 p-2 sm:p-4 max-w-sm sm:max-w-md lg:max-w-2xl mx-auto">
         {/* Header */}
         <div 
-          className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-3xl p-6 mb-6 mt-safe-area-inset-top"
+          className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-2xl sm:rounded-3xl p-4 sm:p-6 mb-4 sm:mb-6 mt-safe-area-inset-top"
           style={{ boxShadow: 'var(--shadow-medium), inset 0 1px 0 rgba(255,255,255,0.1)' }}
         >
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
             <Button
               onClick={onBack}
               variant="ghost"
               size="icon"
-              className="text-white hover:bg-white/10 rounded-full"
+              className="text-white hover:bg-white/10 rounded-full h-8 w-8 sm:h-10 sm:w-10"
             >
-              <ArrowLeft className="h-5 w-5" />
+              <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
-            <h1 className="text-white font-bold text-xl">My Bookmarks</h1>
-            <div className="w-10" /> {/* Spacer */}
+            <h1 className="text-white font-bold text-lg sm:text-xl">My Bookmarks</h1>
+            <div className="w-8 sm:w-10" /> {/* Spacer */}
           </div>
           
           <div className="text-center">
-            <p className="text-white/80 text-sm">
+            <p className="text-white/80 text-xs sm:text-sm">
               Saved messages, lessons & tips
             </p>
-            <div className="mt-2 text-white/60 text-xs">
+            <div className="mt-1 sm:mt-2 text-white/60 text-xs">
               {bookmarks.length} bookmark{bookmarks.length !== 1 ? 's' : ''}
             </div>
           </div>
         </div>
 
         {/* Tabs */}
-        <Tabs value={selectedTab} onValueChange={(value) => setSelectedTab(value as any)} className="mb-6">
-          <TabsList className="grid w-full grid-cols-4 bg-white/10 backdrop-blur-sm border border-white/20">
-            <TabsTrigger value="all" className="text-white data-[state=active]:bg-white data-[state=active]:text-gray-900">
+        <Tabs value={selectedTab} onValueChange={(value) => setSelectedTab(value as any)} className="mb-4 sm:mb-6">
+          <TabsList className="grid w-full grid-cols-4 bg-white/10 backdrop-blur-sm border border-white/20 h-8 sm:h-10">
+            <TabsTrigger value="all" className="text-white data-[state=active]:bg-white data-[state=active]:text-gray-900 text-xs sm:text-sm px-1 sm:px-3">
               All
             </TabsTrigger>
-            <TabsTrigger value="message" className="text-white data-[state=active]:bg-white data-[state=active]:text-gray-900">
+            <TabsTrigger value="message" className="text-white data-[state=active]:bg-white data-[state=active]:text-gray-900 text-xs sm:text-sm px-1 sm:px-3">
               Chat
             </TabsTrigger>
-            <TabsTrigger value="lesson" className="text-white data-[state=active]:bg-white data-[state=active]:text-gray-900">
+            <TabsTrigger value="lesson" className="text-white data-[state=active]:bg-white data-[state=active]:text-gray-900 text-xs sm:text-sm px-1 sm:px-3">
               Lessons
             </TabsTrigger>
-            <TabsTrigger value="tip" className="text-white data-[state=active]:bg-white data-[state=active]:text-gray-900">
+            <TabsTrigger value="tip" className="text-white data-[state=active]:bg-white data-[state=active]:text-gray-900 text-xs sm:text-sm px-1 sm:px-3">
               Tips
             </TabsTrigger>
           </TabsList>
         </Tabs>
 
         {/* Bookmarks List */}
-        <div className="space-y-4 pb-8">
+        <div className="space-y-3 sm:space-y-4 pb-6 sm:pb-8">
           {filteredBookmarks.length === 0 ? (
             <Card className="bg-white/20 backdrop-blur-sm border border-white/30">
-              <CardContent className="p-6 text-center">
-                <Bookmark className="h-12 w-12 text-white/40 mx-auto mb-4" />
-                <p className="text-white/70 text-sm">
+              <CardContent className="p-4 sm:p-6 text-center">
+                <Bookmark className="h-8 w-8 sm:h-12 sm:w-12 text-white/40 mx-auto mb-3 sm:mb-4" />
+                <p className="text-white/70 text-xs sm:text-sm">
                   {selectedTab === 'all' 
                     ? "No bookmarks yet! Start saving useful messages and lessons."
                     : `No ${selectedTab}s bookmarked yet.`
@@ -169,19 +169,21 @@ export default function BookmarksView({ onBack, onContinueFromMessage }: Bookmar
                 key={bookmark.id}
                 className="bg-white backdrop-blur-sm border border-white/20 hover:shadow-lg transition-all duration-200"
               >
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center space-x-2">
-                      <div className={`p-1.5 rounded-lg border ${getTypeColor(bookmark.type)}`}>
-                        {getTypeIcon(bookmark.type)}
+                <CardHeader className="pb-2 sm:pb-3 p-3 sm:p-6">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="flex items-center space-x-2 min-w-0 flex-1">
+                      <div className={`p-1 sm:p-1.5 rounded-lg border flex-shrink-0 ${getTypeColor(bookmark.type)}`}>
+                        <div className="h-3 w-3 sm:h-4 sm:w-4">
+                          {getTypeIcon(bookmark.type)}
+                        </div>
                       </div>
                       {bookmark.title && (
-                        <CardTitle className="text-gray-800 text-sm font-semibold">
+                        <CardTitle className="text-gray-800 text-xs sm:text-sm font-semibold truncate">
                           {bookmark.title}
                         </CardTitle>
                       )}
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center justify-between sm:justify-end space-x-2 flex-shrink-0">
                       <div className="flex items-center text-gray-400 text-xs">
                         <Calendar className="h-3 w-3 mr-1" />
                         {formatDate(bookmark.timestamp)}
@@ -190,20 +192,20 @@ export default function BookmarksView({ onBack, onContinueFromMessage }: Bookmar
                         onClick={() => deleteBookmark(bookmark.id)}
                         variant="ghost"
                         size="sm"
-                        className="h-6 w-6 p-0 text-red-400 hover:text-red-600 hover:bg-red-50"
+                        className="h-6 w-6 sm:h-7 sm:w-7 p-0 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-full"
                       >
                         <Trash2 className="h-3 w-3" />
                       </Button>
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="pt-0">
-                  <p className="text-gray-700 text-sm leading-relaxed line-clamp-4">
+                <CardContent className="pt-0 p-3 sm:px-6 sm:pb-6">
+                  <p className="text-gray-700 text-xs sm:text-sm leading-relaxed line-clamp-3 sm:line-clamp-4 mb-3">
                     {bookmark.content}
                   </p>
                   
-                  <div className="mt-3 flex items-center justify-between">
-                    <span className={`text-xs font-medium px-2 py-1 rounded-full ${getTypeColor(bookmark.type)}`}>
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <span className={`text-xs font-medium px-2 py-1 rounded-full self-start ${getTypeColor(bookmark.type)}`}>
                       {bookmark.type.charAt(0).toUpperCase() + bookmark.type.slice(1)}
                     </span>
                     
@@ -215,11 +217,12 @@ export default function BookmarksView({ onBack, onContinueFromMessage }: Bookmar
                         }}
                         variant="ghost"
                         size="sm"
-                        className="h-7 px-2 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50 border border-blue-200"
+                        className="h-7 sm:h-8 px-2 sm:px-3 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50 border border-blue-200 rounded-full"
                         title="Bring this content back to continue the conversation"
                       >
                         <Reply className="h-3 w-3 mr-1" />
-                        Continue Here
+                        <span className="hidden sm:inline">Continue Here</span>
+                        <span className="sm:hidden">Continue</span>
                       </Button>
                     )}
                   </div>
