@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Calendar, Clock, Users, ChevronDown, ChevronUp, Bell, AlertCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, Calendar, Clock, Users, ChevronDown, ChevronUp, Bell, AlertCircle, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuthReady } from '@/hooks/useAuthReady';
 
 interface MeetingsAppProps {
   onBack: () => void;
@@ -56,18 +58,13 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
   const [canJoin, setCanJoin] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const { isAuthenticated, user, signOut } = useAuthReady();
+  const navigate = useNavigate();
 
   // Load meetings and user data
   useEffect(() => {
     loadMeetingsData();
-    checkUser();
   }, []);
-
-  const checkUser = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    setCurrentUser(user);
-  };
 
   const loadMeetingsData = async () => {
     try {
@@ -97,7 +94,6 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
       }
 
       // Load user reminders if user is logged in
-      const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         const { data: reminders } = await supabase
           .from('user_reminders')
@@ -167,12 +163,13 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
   const handleSetReminder = async () => {
     if (!nextMeeting) return;
 
-    if (!currentUser) {
+    if (!isAuthenticated || !user) {
       toast({
         title: "Login required",
-        description: "Please log in to set reminders for classes.",
+        description: "Please sign in to set reminders for classes.",
         variant: "destructive"
       });
+      navigate('/auth?redirectTo=' + encodeURIComponent('/?tab=meetings'));
       return;
     }
 
@@ -211,7 +208,7 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
       const { error } = await supabase
         .from('user_reminders')
         .insert({
-          user_id: currentUser.id,
+          user_id: user.id,
           meeting_id: nextMeeting.id,
           reminder_type: 'browser'
         });
@@ -320,6 +317,32 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back
         </Button>
+        
+        {isAuthenticated ? (
+          <div className="flex items-center gap-3">
+            <span className="text-white/80 text-sm">
+              {user?.email}
+            </span>
+            <Button
+              onClick={signOut}
+              variant="ghost"
+              size="sm"
+              className="text-white/80 hover:text-white hover:bg-white/10"
+            >
+              Sign Out
+            </Button>
+          </div>
+        ) : (
+          <Button
+            onClick={() => navigate('/auth')}
+            variant="ghost"
+            size="sm"
+            className="text-white/80 hover:text-white hover:bg-white/10 gap-2"
+          >
+            <LogIn className="h-4 w-4" />
+            Sign In
+          </Button>
+        )}
       </div>
 
         <div className="max-w-4xl mx-auto space-y-6">
