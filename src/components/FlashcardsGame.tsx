@@ -234,11 +234,17 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
             cleanedUserInput: cleanedUserInput,
             cleanedExpected: cleanedExpected,
             exactMatch: cleanedUserInput === cleanedExpected,
-            isSingleWord: !cleanedUserInput.includes(' ')
+            isSingleWord: !cleanedUserInput.includes(' '),
+            currentCardData: currentCard
           });
           
-          // Only accept if it's an exact single-word match
+          // BULLETPROOF: Only accept if it's an exact single-word match
           const isCorrect = cleanedUserInput === cleanedExpected && !cleanedUserInput.includes(' ');
+          
+          console.log('🎯 FINAL DECISION:', {
+            isCorrect,
+            reason: isCorrect ? 'Exact match found' : `"${cleanedUserInput}" !== "${cleanedExpected}" or contains spaces`
+          });
           const xpEarned = isCorrect ? 20 : 5;
           
           // Custom feedback for vocabulary learning
