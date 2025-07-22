@@ -169,41 +169,41 @@ export default function DailyTips({ onClose }: DailyTipsProps) {
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md mx-auto bg-white shadow-2xl border-0 animate-scale-in">
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4">
+        <Card className="w-full max-w-sm sm:max-w-md mx-auto bg-white shadow-2xl border-0 animate-scale-in">
           <CardContent className="p-0">
             {/* Header */}
-            <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-4 text-white relative">
+            <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-3 sm:p-4 text-white relative">
               <Button
                 onClick={onClose}
                 variant="ghost"
                 size="icon"
-                className="absolute top-2 right-2 text-white hover:bg-white/20 rounded-full"
+                className="absolute top-1 right-1 sm:top-2 sm:right-2 text-white hover:bg-white/20 rounded-full h-8 w-8 sm:h-10 sm:w-10"
               >
-                <X className="h-5 w-5" />
+                <X className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
               
-              <div className="flex items-center space-x-2 mb-2">
-                <Lightbulb className="h-6 w-6" />
-                <h2 className="text-lg font-bold">💡 Today's Tip</h2>
+              <div className="flex items-center space-x-2 mb-2 pr-8">
+                <Lightbulb className="h-5 w-5 sm:h-6 sm:w-6" />
+                <h2 className="text-base sm:text-lg font-bold">💡 Today's Tip</h2>
               </div>
               
-              <div className="text-white/80 text-sm">
+              <div className="text-white/80 text-xs sm:text-sm pr-8">
                 {new Date().toLocaleDateString('en-US', { 
-                  weekday: 'long', 
+                  weekday: window.innerWidth < 640 ? 'short' : 'long', 
                   year: 'numeric', 
-                  month: 'long', 
+                  month: window.innerWidth < 640 ? 'short' : 'long', 
                   day: 'numeric' 
                 })}
               </div>
             </div>
 
             {/* Today's Tip Content */}
-            <div className="p-6">
-              <div className="text-center mb-6">
-                <div className="text-5xl mb-4">{todaysTip.emoji}</div>
-                <div className="flex items-center justify-center space-x-2 mb-3">
-                  <h3 className="text-xl font-bold text-gray-800">
+            <div className="p-4 sm:p-6">
+              <div className="text-center mb-4 sm:mb-6">
+                <div className="text-4xl sm:text-5xl mb-3 sm:mb-4">{todaysTip.emoji}</div>
+                <div className="flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-2 mb-3">
+                  <h3 className="text-lg sm:text-xl font-bold text-gray-800 text-center">
                     {todaysTip.title}
                   </h3>
                   <BookmarkButton
@@ -213,7 +213,7 @@ export default function DailyTips({ onClose }: DailyTipsProps) {
                     className="text-gray-600 hover:text-yellow-500"
                   />
                 </div>
-                <p className="text-gray-600 text-base leading-relaxed">
+                <p className="text-gray-600 text-sm sm:text-base leading-relaxed px-2">
                   {todaysTip.content}
                 </p>
               </div>
@@ -222,9 +222,9 @@ export default function DailyTips({ onClose }: DailyTipsProps) {
               <Button
                 onClick={() => setShowHistory(true)}
                 variant="outline"
-                className="w-full flex items-center justify-center space-x-2 hover:bg-gray-50"
+                className="w-full flex items-center justify-center space-x-2 hover:bg-gray-50 py-2 sm:py-3 text-sm sm:text-base"
               >
-                <History className="h-4 w-4" />
+                <History className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span>View Past Tips</span>
               </Button>
             </div>
@@ -234,28 +234,28 @@ export default function DailyTips({ onClose }: DailyTipsProps) {
 
       {/* History Modal */}
       <Dialog open={showHistory} onOpenChange={setShowHistory}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-sm sm:max-w-md mx-2">
           <DialogHeader>
-            <DialogTitle className="flex items-center space-x-2">
-              <History className="h-5 w-5" />
+            <DialogTitle className="flex items-center space-x-2 text-base sm:text-lg">
+              <History className="h-4 w-4 sm:h-5 sm:w-5" />
               <span>Previous Tips</span>
             </DialogTitle>
           </DialogHeader>
           
-          <ScrollArea className="max-h-96">
-            <div className="space-y-3">
+          <ScrollArea className="max-h-80 sm:max-h-96">
+            <div className="space-y-2 sm:space-y-3">
               {getHistoryTips().map(({ date, tip }, index) => (
-                <Card key={index} className="p-3 hover:bg-gray-50 transition-colors">
-                  <div className="flex items-start space-x-3">
-                    <div className="text-2xl">{tip.emoji}</div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-1">
-                        <h4 className="font-medium text-sm">{tip.title}</h4>
-                        <span className="text-xs text-gray-500">
+                <Card key={index} className="p-2 sm:p-3 hover:bg-gray-50 transition-colors">
+                  <div className="flex items-start space-x-2 sm:space-x-3">
+                    <div className="text-lg sm:text-2xl shrink-0">{tip.emoji}</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1 gap-2">
+                        <h4 className="font-medium text-xs sm:text-sm truncate">{tip.title}</h4>
+                        <span className="text-xs text-gray-500 shrink-0">
                           {new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                         </span>
                       </div>
-                      <p className="text-xs text-gray-600 leading-relaxed">
+                      <p className="text-xs text-gray-600 leading-relaxed line-clamp-3">
                         {tip.content}
                       </p>
                     </div>
@@ -264,10 +264,10 @@ export default function DailyTips({ onClose }: DailyTipsProps) {
               ))}
               
               {getHistoryTips().length === 0 && (
-                <div className="text-center py-8 text-gray-500">
-                  <Lightbulb className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-                  <p>No previous tips yet!</p>
-                  <p className="text-sm">Come back tomorrow for another tip.</p>
+                <div className="text-center py-6 sm:py-8 text-gray-500 px-4">
+                  <Lightbulb className="h-6 w-6 sm:h-8 sm:w-8 mx-auto mb-2 text-gray-300" />
+                  <p className="text-sm sm:text-base">No previous tips yet!</p>
+                  <p className="text-xs sm:text-sm">Come back tomorrow for another tip.</p>
                 </div>
               )}
             </div>

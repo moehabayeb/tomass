@@ -36,12 +36,12 @@ export default function DailyTipsBadge({ onClick }: DailyTipsBadgeProps) {
         }
       `}
     >
-      <Lightbulb className={`h-4 w-4 mr-2 ${hasNewTip ? 'text-yellow-600' : 'text-gray-600'}`} />
-      {hasNewTip ? "💡 New Tip!" : "Daily Tips"}
+      <Lightbulb className={`h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 ${hasNewTip ? 'text-yellow-600' : 'text-gray-600'}`} />
+      <span className="text-xs sm:text-sm">{hasNewTip ? "💡 New Tip!" : "Daily Tips"}</span>
       
       {/* Pulse animation for new tips */}
       {hasNewTip && (
-        <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full animate-pulse"></span>
+        <span className="absolute -top-1 -right-1 h-2 w-2 sm:h-3 sm:w-3 bg-red-500 rounded-full animate-pulse"></span>
       )}
     </Button>
   );
