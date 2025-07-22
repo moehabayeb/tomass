@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Mic, BookOpen, Bookmark, Award, GraduationCap, Gamepad2, Users } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { UserDropdown } from './UserDropdown';
+import { NavigationDropdown } from './NavigationDropdown';
 import { useAuthReady } from '@/hooks/useAuthReady';
 import SpeakingApp from './SpeakingApp';
 import GrammarModules from './GrammarModules';
@@ -126,105 +125,11 @@ export default function AppNavigation() {
         </div>
       )}
 
-      {/* Navigation Tab - Always visible */}
-      <div 
-        className="fixed top-4 right-4 z-20 bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-2xl border border-white/20 min-w-fit"
-        style={{ boxShadow: 'var(--shadow-medium)' }}
-      >
-        <div className="flex space-x-2 p-2 flex-wrap">
-          <Button
-            onClick={() => setCurrentMode('speaking')}
-            variant="ghost"
-            size="sm"
-            className={`rounded-xl transition-all duration-200 ${
-              currentMode === 'speaking' 
-                ? 'bg-white/20 text-white shadow-sm' 
-                : 'text-white/70 hover:bg-white/10 hover:text-white'
-            }`}
-          >
-            <Mic className="h-4 w-4 mr-2" />
-            Speaking
-          </Button>
-          <Button
-            onClick={() => setCurrentMode('lessons')}
-            variant="ghost"
-            size="sm"
-            className={`rounded-xl transition-all duration-200 ${
-              currentMode === 'lessons' 
-                ? 'bg-white/20 text-white shadow-sm' 
-                : 'text-white/70 hover:bg-white/10 hover:text-white'
-            }`}
-          >
-            <BookOpen className="h-4 w-4 mr-2" />
-            Lessons
-          </Button>
-          <Button
-            onClick={() => setCurrentMode('bookmarks')}
-            variant="ghost"
-            size="sm"
-            className={`rounded-xl transition-all duration-200 ${
-              currentMode === 'bookmarks' 
-                ? 'bg-white/20 text-white shadow-sm' 
-                : 'text-white/70 hover:bg-white/10 hover:text-white'
-            }`}
-          >
-            <Bookmark className="h-4 w-4 mr-2" />
-            Saved
-          </Button>
-          <Button
-            onClick={() => setCurrentMode('badges')}
-            variant="ghost"
-            size="sm"
-            className={`rounded-xl transition-all duration-200 ${
-              currentMode === 'badges' 
-                ? 'bg-white/20 text-white shadow-sm' 
-                : 'text-white/70 hover:bg-white/10 hover:text-white'
-            }`}
-          >
-            <Award className="h-4 w-4 mr-2" />
-            Badges
-          </Button>
-          <Button
-            onClick={() => setCurrentMode('games')}
-            variant="ghost"
-            size="sm"
-            className={`rounded-xl transition-all duration-200 ${
-              currentMode === 'games' 
-                ? 'bg-white/20 text-white shadow-sm' 
-                : 'text-white/70 hover:bg-white/10 hover:text-white'
-            }`}
-          >
-            <Gamepad2 className="h-4 w-4 mr-2" />
-            Games
-          </Button>
-          <Button
-            onClick={() => setCurrentMode('meetings')}
-            variant="ghost"
-            size="sm"
-            className={`rounded-xl transition-all duration-200 ${
-              currentMode === 'meetings' 
-                ? 'bg-white/20 text-white shadow-sm' 
-                : 'text-white/70 hover:bg-white/10 hover:text-white'
-            }`}
-          >
-            <Users className="h-4 w-4 mr-2" />
-            Meetings
-          </Button>
-          <Button
-            onClick={() => setCurrentMode('placement-test')}
-            variant="ghost"
-            size="sm"
-            className={`rounded-xl transition-all duration-200 text-white font-medium ${
-              currentMode === 'placement-test' 
-                ? 'bg-white/20 shadow-sm' 
-                : 'text-white/90 hover:bg-white/15 hover:text-white'
-            }`}
-          >
-            <Mic className="h-4 w-4 mr-2 flex-shrink-0" />
-            <span className="whitespace-nowrap">Speaking Test</span>
-          </Button>
-        </div>
-      </div>
+      {/* Navigation Dropdown - Always visible */}
+      <NavigationDropdown 
+        currentMode={currentMode} 
+        onModeChange={setCurrentMode} 
+      />
 
       {/* XP Avatar Display - Only show in speaking mode, positioned below user dropdown */}
       {currentMode === 'speaking' && userProfile && (
