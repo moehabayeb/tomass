@@ -14,7 +14,86 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      meetings: {
+        Row: {
+          created_at: string
+          description: string | null
+          duration_minutes: number | null
+          focus_topic: string
+          id: string
+          is_active: boolean | null
+          max_participants: number | null
+          scheduled_at: string
+          teacher_name: string
+          title: string
+          updated_at: string
+          zoom_link: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number | null
+          focus_topic: string
+          id?: string
+          is_active?: boolean | null
+          max_participants?: number | null
+          scheduled_at: string
+          teacher_name: string
+          title: string
+          updated_at?: string
+          zoom_link: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number | null
+          focus_topic?: string
+          id?: string
+          is_active?: boolean | null
+          max_participants?: number | null
+          scheduled_at?: string
+          teacher_name?: string
+          title?: string
+          updated_at?: string
+          zoom_link?: string
+        }
+        Relationships: []
+      }
+      user_reminders: {
+        Row: {
+          created_at: string
+          id: string
+          is_sent: boolean | null
+          meeting_id: string
+          reminder_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_sent?: boolean | null
+          meeting_id: string
+          reminder_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_sent?: boolean | null
+          meeting_id?: string
+          reminder_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_reminders_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "meetings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
