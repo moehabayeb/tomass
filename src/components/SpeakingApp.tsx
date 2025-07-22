@@ -494,12 +494,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           </div>
         </div>
 
-        {/* Streak Counter */}
-        <StreakCounter 
-          currentStreak={streakData.currentStreak}
-          message={getStreakMessage()}
-          bestStreak={streakData.bestStreak}
-        />
+        {/* Enhanced spacing for cleaner layout */}
 
         {/* Sample Answer Button */}
         <SampleAnswerButton 

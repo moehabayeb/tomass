@@ -145,15 +145,25 @@ export default function AppNavigation() {
         </div>
       )}
 
-      {/* Streak Counter - Only show in speaking mode */}
+      {/* Enhanced Centered Streak Counter - Clean, rewarding design */}
       {currentMode === 'speaking' && (
-        <div className="fixed bottom-4 left-4 z-20 max-w-72">
-          <StreakCounter
-            currentStreak={streakData.currentStreak}
-            message={getStreakMessage()}
-            bestStreak={streakData.bestStreak}
-            nextMilestone={getNextMilestone()}
-          />
+        <div className="fixed top-24 left-1/2 transform -translate-x-1/2 z-30">
+          <div className="bg-gradient-to-r from-orange-500/90 to-red-500/90 backdrop-blur-xl rounded-2xl px-6 py-4 shadow-xl border border-white/30 animate-fade-in">
+            <div className="flex items-center space-x-4">
+              <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center animate-pulse">
+                <span className="text-xl">🔥</span>
+              </div>
+              <div className="text-white">
+                <div className="font-bold text-xl">{streakData.currentStreak} Days</div>
+                <div className="text-sm opacity-90">Current Streak ✨</div>
+              </div>
+              {streakData.bestStreak > streakData.currentStreak && (
+                <div className="text-white/70 text-sm border-l border-white/30 pl-4">
+                  🏆 Best: {streakData.bestStreak}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       )}
 
