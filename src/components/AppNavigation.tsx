@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Mic, BookOpen, Bookmark, Award, GraduationCap, Gamepad2 } from 'lucide-react';
+import { Mic, BookOpen, Bookmark, Award, GraduationCap, Gamepad2, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import SpeakingApp from './SpeakingApp';
 import GrammarModules from './GrammarModules';
 import LessonsApp from './LessonsApp';
 import { SpeakingPlacementTest } from './SpeakingPlacementTest';
 import { GamesApp } from './GamesApp';
+import MeetingsApp from './MeetingsApp';
 import DailyTips from './DailyTips';
 import DailyTipsBadge from './DailyTipsBadge';
 import BookmarksView from './BookmarksView';
@@ -21,7 +22,7 @@ import { useStreakTracker } from '@/hooks/useStreakTracker';
 import { useBadgeSystem } from '@/hooks/useBadgeSystem';
 import { Toaster } from '@/components/ui/toaster';
 
-type AppMode = 'speaking' | 'lessons' | 'bookmarks' | 'badges' | 'placement-test' | 'games';
+type AppMode = 'speaking' | 'lessons' | 'bookmarks' | 'badges' | 'placement-test' | 'games' | 'meetings';
 
 export default function AppNavigation() {
   const [currentMode, setCurrentMode] = useState<AppMode>('speaking');
@@ -159,6 +160,19 @@ export default function AppNavigation() {
             Games
           </Button>
           <Button
+            onClick={() => setCurrentMode('meetings')}
+            variant="ghost"
+            size="sm"
+            className={`rounded-xl transition-all duration-200 ${
+              currentMode === 'meetings' 
+                ? 'bg-white/20 text-white shadow-sm' 
+                : 'text-white/70 hover:bg-white/10 hover:text-white'
+            }`}
+          >
+            <Users className="h-4 w-4 mr-2" />
+            Meetings
+          </Button>
+          <Button
             onClick={() => setCurrentMode('placement-test')}
             variant="ghost"
             size="sm"
@@ -235,6 +249,10 @@ export default function AppNavigation() {
       
       {currentMode === 'games' && (
         <GamesApp onBack={() => setCurrentMode('speaking')} />
+      )}
+      
+      {currentMode === 'meetings' && (
+        <MeetingsApp onBack={() => setCurrentMode('speaking')} />
       )}
       
       {currentMode === 'speaking' && (
