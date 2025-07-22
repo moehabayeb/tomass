@@ -432,10 +432,10 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
 
   return (
     <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: 'hsl(var(--app-bg))' }}>
-      <div className="relative z-10 p-4 max-w-sm mx-auto">
+      <div className="relative z-10 p-2 sm:p-4 max-w-sm sm:max-w-md mx-auto">
         {/* Header */}
         <div 
-          className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-3xl p-6 mb-6 mt-safe-area-inset-top"
+          className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-2xl sm:rounded-3xl p-4 sm:p-6 mb-4 sm:mb-6 mt-safe-area-inset-top"
           style={{ boxShadow: 'var(--shadow-medium), inset 0 1px 0 rgba(255,255,255,0.1)' }}
         >
           <div className="flex items-center justify-between mb-4">
@@ -447,7 +447,7 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <h1 className="text-white font-bold text-xl">Grammar Lessons - {currentLevel}</h1>
+            <h1 className="text-white font-bold text-lg sm:text-xl line-clamp-1">Grammar Lessons - {currentLevel}</h1>
             <div className="w-10" /> {/* Spacer */}
           </div>
           
@@ -580,12 +580,12 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
                     </div>
                     <span className="text-white text-lg">📚</span>
                   </div>
-                  <CardTitle className="text-white text-lg font-bold leading-tight mt-2">
+                  <CardTitle className="text-white text-base sm:text-lg font-bold leading-tight mt-2 line-clamp-2">
                     {topic.title}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <p className="text-white/90 text-sm mb-4 leading-relaxed">
+                  <p className="text-white/90 text-xs sm:text-sm mb-3 sm:mb-4 leading-relaxed line-clamp-3">
                     {topic.description}
                   </p>
                   <div className="flex items-center justify-between">
