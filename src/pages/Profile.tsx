@@ -124,22 +124,22 @@ export default function Profile() {
     
     setIsUpdatingProfile(true);
     try {
-      // For now, we'll update the local profile since we're using localStorage
-      // TODO: Update Supabase profiles table when integrated
-      const currentProfile = userProfile;
-      if (currentProfile) {
-        currentProfile.name = editedName.trim();
-        localStorage.setItem('userProfile', JSON.stringify(currentProfile));
-        
-        toast({
-          title: "Profile updated",
-          description: "Your name has been updated successfully.",
-        });
-        
-        setIsEditingName(false);
-        // Force a page refresh to update the UI
-        window.location.reload();
-      }
+      // Update the profiles table in Supabase
+      const { error } = await supabase
+        .from('profiles')
+        .update({ full_name: editedName.trim() })
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Profile updated",
+        description: "Your name has been updated successfully.",
+      });
+      
+      setIsEditingName(false);
+      // Force a page refresh to update the UI
+      window.location.reload();
     } catch (error) {
       console.error('Error updating profile:', error);
       toast({
