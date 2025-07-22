@@ -86,7 +86,7 @@ export function UserDropdown({ user, profile, className }: UserDropdownProps) {
           title={`Signed in as ${displayName}`}
         >
           <Avatar className="h-8 w-8">
-            <AvatarImage src={profile?.avatar_url} alt={displayName} />
+            <AvatarImage src={profile?.avatar_url || undefined} alt={displayName} />
             <AvatarFallback className="bg-primary/20 text-primary-foreground text-sm font-medium">
               {getInitials()}
             </AvatarFallback>
@@ -101,7 +101,7 @@ export function UserDropdown({ user, profile, className }: UserDropdownProps) {
       >
         <div className="flex items-center justify-start gap-2 p-2">
           <Avatar className="h-8 w-8">
-            <AvatarImage src={profile?.avatar_url} alt={displayName} />
+            <AvatarImage src={profile?.avatar_url || undefined} alt={displayName} />
             <AvatarFallback className="bg-primary/20 text-primary-foreground text-sm">
               {getInitials()}
             </AvatarFallback>

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Edit2, LogOut, User, Mail, Trophy, Calendar } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { ArrowLeft, Edit2, LogOut, User, Mail, Trophy, Calendar, Upload, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuthReady } from '@/hooks/useAuthReady';
@@ -21,19 +21,29 @@ interface Reminder {
   reminder_type: string;
 }
 
+interface ProfileData {
+  user_id: string;
+  full_name: string | null;
+  avatar_url: string | null;
+}
+
 export default function Profile() {
   const { user, session, isAuthenticated, isLoading, signOut } = useAuthReady();
-  const { userProfile, getXPProgress, level, totalXP } = useGamification();
+  const { getXPProgress, level, totalXP } = useGamification();
   const { streakData, getStreakMessage } = useStreakTracker();
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
   
   const [reminders, setReminders] = useState<Reminder[]>([]);
+  const [profile, setProfile] = useState<ProfileData | null>(null);
   const [isEditingName, setIsEditingName] = useState(false);
   const [editedName, setEditedName] = useState('');
   const [isLoadingReminders, setIsLoadingReminders] = useState(true);
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const xpProgress = getXPProgress();
 
@@ -86,12 +96,32 @@ export default function Profile() {
     loadReminders();
   }, [user]);
 
-  // Initialize edited name when userProfile loads
+  // Load user profile from Supabase
   useEffect(() => {
-    if (userProfile?.name) {
-      setEditedName(userProfile.name);
-    }
-  }, [userProfile?.name]);
+    const loadProfile = async () => {
+      if (!user) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('user_id, full_name, avatar_url')
+          .eq('user_id', user.id)
+          .single();
+
+        if (error) throw error;
+        setProfile(data);
+        if (data?.full_name) {
+          setEditedName(data.full_name);
+        }
+      } catch (error) {
+        console.error('Error loading profile:', error);
+      } finally {
+        setIsLoadingProfile(false);
+      }
+    };
+
+    loadProfile();
+  }, [user]);
 
   const handleSignOut = async () => {
     try {
@@ -152,6 +182,130 @@ export default function Profile() {
     }
   };
 
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !user) return;
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload a JPG, PNG, or WebP image.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate file size (2MB limit)
+    if (file.size > 2 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Please upload an image smaller than 2MB.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsUploadingAvatar(true);
+    try {
+      // Delete existing avatar if it exists
+      if (profile?.avatar_url) {
+        const oldPath = profile.avatar_url.split('/').pop();
+        if (oldPath) {
+          await supabase.storage
+            .from('avatars')
+            .remove([`${user.id}/${oldPath}`]);
+        }
+      }
+
+      // Upload new avatar
+      const fileExt = file.name.split('.').pop();
+      const fileName = `avatar-${Date.now()}.${fileExt}`;
+      const filePath = `${user.id}/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      // Update profile with new avatar URL
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: publicUrl })
+        .eq('user_id', user.id);
+
+      if (updateError) throw updateError;
+
+      toast({
+        title: "Avatar updated",
+        description: "Your profile picture has been updated successfully.",
+      });
+
+      // Force a page refresh to update the UI
+      window.location.reload();
+    } catch (error) {
+      console.error('Error uploading avatar:', error);
+      toast({
+        title: "Upload failed",
+        description: "Failed to upload avatar. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploadingAvatar(false);
+      // Clear the file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleRemoveAvatar = async () => {
+    if (!user || !profile?.avatar_url) return;
+
+    setIsUploadingAvatar(true);
+    try {
+      // Delete from storage
+      const oldPath = profile.avatar_url.split('/').pop();
+      if (oldPath) {
+        await supabase.storage
+          .from('avatars')
+          .remove([`${user.id}/${oldPath}`]);
+      }
+
+      // Update profile to remove avatar URL
+      const { error } = await supabase
+        .from('profiles')
+        .update({ avatar_url: null })
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Avatar removed",
+        description: "Your profile picture has been removed.",
+      });
+
+      // Force a page refresh to update the UI
+      window.location.reload();
+    } catch (error) {
+      console.error('Error removing avatar:', error);
+      toast({
+        title: "Remove failed",
+        description: "Failed to remove avatar. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       weekday: 'short',
@@ -162,7 +316,7 @@ export default function Profile() {
     });
   };
 
-  if (isLoading) {
+  if (isLoading || isLoadingProfile) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-violet-900 via-blue-900 to-indigo-900 flex items-center justify-center">
         <div className="text-white">Loading...</div>
@@ -170,7 +324,7 @@ export default function Profile() {
     );
   }
 
-  if (!isAuthenticated || !user || !userProfile) {
+  if (!isAuthenticated || !user || !profile) {
     return null; // Will redirect in useEffect
   }
 
@@ -219,16 +373,57 @@ export default function Profile() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Avatar Display */}
-              <div className="flex justify-center">
-                  <AvatarDisplay
-                    level={level}
-                    xp={Math.max(0, xpProgress.current)}
-                    maxXP={xpProgress.max}
-                    userName={userProfile.name || 'User'}
-                    showXPBar={true}
-                    size="lg"
-                  />
+              {/* Avatar Section with Upload */}
+              <div className="space-y-4">
+                <Label className="text-white/80">Profile Picture</Label>
+                <div className="flex flex-col items-center space-y-4">
+                  <div className="relative">
+                    <AvatarDisplay
+                      level={level}
+                      xp={Math.max(0, xpProgress.current)}
+                      maxXP={xpProgress.max}
+                      userName={profile.full_name || 'User'}
+                      showXPBar={true}
+                      size="lg"
+                      avatarUrl={profile.avatar_url}
+                    />
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".jpg,.jpeg,.png,.webp"
+                      onChange={handleAvatarUpload}
+                      className="hidden"
+                    />
+                    <Button
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isUploadingAvatar}
+                      size="sm"
+                      variant="outline"
+                      className="text-white border-white/20 hover:bg-white/10"
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      {isUploadingAvatar ? 'Uploading...' : 'Upload Photo'}
+                    </Button>
+                    {profile.avatar_url && (
+                      <Button
+                        onClick={handleRemoveAvatar}
+                        disabled={isUploadingAvatar}
+                        size="sm"
+                        variant="outline"
+                        className="text-red-300 border-red-300/20 hover:bg-red-500/10"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Remove
+                      </Button>
+                    )}
+                  </div>
+                  <p className="text-white/60 text-xs text-center">
+                    JPG, PNG, or WebP up to 2MB
+                  </p>
+                </div>
               </div>
 
               {/* Name Field */}
@@ -252,7 +447,7 @@ export default function Profile() {
                     <Button
                       onClick={() => {
                         setIsEditingName(false);
-                        setEditedName(userProfile.name || '');
+                        setEditedName(profile.full_name || '');
                       }}
                       variant="outline"
                       size="sm"
@@ -262,9 +457,9 @@ export default function Profile() {
                   </div>
                 ) : (
                   <div className="flex items-center justify-between p-3 bg-white/5 rounded-md border border-white/20">
-                    <span className="text-white">
-                      {userProfile.name || 'No name set'}
-                    </span>
+                     <span className="text-white">
+                       {profile.full_name || 'No name set'}
+                     </span>
                     <Button
                       onClick={() => setIsEditingName(true)}
                       variant="ghost"
