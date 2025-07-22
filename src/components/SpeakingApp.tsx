@@ -66,17 +66,13 @@ const ChatBubble = ({
   className?: string; 
 }) => (
   <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-3 sm:mb-4 ${className}`}>
-    <div className="flex items-start space-x-1 sm:space-x-2 max-w-[90%] sm:max-w-[85%]">
+    <div className="flex items-start space-x-2 sm:space-x-3 max-w-[90%] sm:max-w-[85%]">
       <div 
-        className={`px-3 py-2 sm:px-4 sm:py-3 rounded-xl sm:rounded-2xl font-medium text-sm sm:text-base leading-relaxed transition-all duration-200 hover:scale-[1.02] flex-1 ${
+        className={`conversation-bubble px-4 py-3 sm:px-5 sm:py-4 font-medium text-sm sm:text-base leading-relaxed flex-1 ${
           isUser 
-            ? 'bg-white/95 text-gray-800 border border-yellow-200' 
-            : 'text-gray-800'
+            ? 'bg-gradient-to-br from-white/95 to-white/85 text-gray-800 border-l-4 border-orange-400' 
+            : 'bg-gradient-to-br from-blue-50/90 to-blue-100/80 text-gray-800 border-l-4 border-blue-400'
         }`}
-        style={{
-          background: isUser ? 'var(--gradient-card)' : 'hsl(var(--chat-bubble-ai))',
-          boxShadow: 'var(--shadow-bubble)'
-        }}
       >
         {message}
       </div>
@@ -86,7 +82,7 @@ const ChatBubble = ({
         <BookmarkButton
           content={message}
           type="message"
-          className="mt-1 sm:mt-2 opacity-60 hover:opacity-100 text-xs sm:text-sm"
+          className="mt-2 sm:mt-3 opacity-60 hover:opacity-100 text-xs sm:text-sm pill-button"
         />
       )}
     </div>
@@ -477,20 +473,28 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-2xl sm:rounded-3xl p-4 sm:p-6 mb-4 sm:mb-6 mt-safe-area-inset-top"
           style={{ boxShadow: 'var(--shadow-medium), inset 0 1px 0 rgba(255,255,255,0.1)' }}
         >
-          <div className="flex items-center justify-center mb-4 sm:mb-6">
-            <CanvasAvatar 
-              size="lg"
-              state={avatarState}
-              className="border-3 sm:border-4 border-white/20 transition-all duration-300 hover:scale-105"
-            />
-          </div>
-          
-          <div className="text-center mb-3 sm:mb-4">
-            <h1 className="text-white font-bold text-xl sm:text-2xl mb-2 sm:mb-3 tracking-wide">Tomas Hoca</h1>
-            <div className="inline-flex items-center bg-gradient-to-r from-white/25 to-white/15 backdrop-blur-sm rounded-full px-4 sm:px-5 py-2 sm:py-2.5 mb-3 sm:mb-5 border border-white/20">
-              <span className="text-white font-bold text-base sm:text-lg">Level {level}</span>
+          {/* Teacher Card */}
+          <div className="glass-card glass-card-hover rounded-3xl p-4 sm:p-6 mb-6 sm:mb-8">
+            <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
+              <div className="relative">
+                <CanvasAvatar 
+                  size="lg"
+                  state={avatarState}
+                  className="border-3 sm:border-4 border-white/30 shadow-lg transition-all duration-500 hover:scale-105 hover:rotate-1"
+                />
+                <div className="absolute -bottom-1 -right-1 w-6 h-6 sm:w-8 sm:h-8 bg-green-500 rounded-full border-3 border-white/30 animate-pulse"></div>
+              </div>
+              
+              <div className="text-center sm:text-left flex-1">
+                <h1 className="text-white font-bold text-xl sm:text-2xl mb-2 tracking-wide drop-shadow-lg">Tomas Hoca</h1>
+                <div className="pill-button bg-gradient-to-r from-orange-500/20 to-orange-400/15 backdrop-blur-sm px-4 sm:px-6 py-2 sm:py-3 mb-4 border border-white/20 inline-block">
+                  <span className="text-white font-semibold text-sm sm:text-base drop-shadow-sm">📚 Level {level} Teacher</span>
+                </div>
+                <div className="max-w-sm">
+                  <XPProgressBar current={xp} max={500} />
+                </div>
+              </div>
             </div>
-            <XPProgressBar current={xp} max={500} />
           </div>
         </div>
 
@@ -503,13 +507,10 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         />
 
         {/* Premium Chat Area */}
-        <div 
-          className="bg-gradient-to-b from-white/8 to-white/3 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-3 sm:p-5 mb-4 sm:mb-6 overflow-y-auto border border-white/10"
-          style={{ 
-            height: '250px',
-            boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.1), var(--shadow-soft)'
-          }}
-        >
+        <div className="glass-card rounded-2xl sm:rounded-3xl p-4 sm:p-6 mb-6 sm:mb-8 overflow-y-auto min-h-[280px] max-h-[320px] space-y-2">
+          <div className="text-center mb-4">
+            <span className="text-white/80 text-sm font-medium bg-white/10 backdrop-blur-sm rounded-full px-3 py-1">💬 Conversation</span>
+          </div>
           {messages.map((message, index) => (
             <ChatBubble 
               key={index}
@@ -521,34 +522,38 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         </div>
 
         {/* Premium Speaking Button */}
-        <div className="flex flex-col items-center space-y-3 sm:space-y-4 pb-6 sm:pb-8">
+        <div className="flex flex-col items-center space-y-4 sm:space-y-6 pb-6 sm:pb-8">
           <Button 
             onClick={startSpeaking}
             disabled={isRecording}
-            className={`w-full max-w-xs py-6 sm:py-8 text-lg sm:text-xl font-bold rounded-full border-0 hover:scale-105 transition-all duration-300 disabled:opacity-50 shadow-xl ${isRecording ? 'animate-pulse' : ''}`}
+            className={`pill-button w-full max-w-sm py-6 sm:py-8 text-lg sm:text-xl font-bold border-0 shadow-xl min-h-[64px] ${isRecording ? 'animate-pulse' : ''}`}
             size="lg"
             style={{
-              backgroundColor: 'hsl(var(--mic-button))',
-              color: 'hsl(var(--text-white))',
               background: isRecording 
-                ? 'linear-gradient(45deg, hsl(var(--mic-button)), hsl(350, 85%, 75%))' 
-                : 'linear-gradient(45deg, hsl(var(--mic-button)), hsl(350, 85%, 70%))',
-              boxShadow: isRecording ? '0 0 40px hsl(var(--mic-button))' : 'var(--shadow-strong)',
-              minHeight: '56px'
+                ? 'linear-gradient(135deg, #ff4f80, #ff6b9d, #c084fc)' 
+                : 'linear-gradient(135deg, #ff4f80, #ff6b9d)',
+              color: 'white',
+              boxShadow: isRecording 
+                ? '0 0 60px rgba(255, 79, 128, 0.6), 0 8px 32px rgba(255, 107, 157, 0.4)' 
+                : '0 8px 32px rgba(255, 79, 128, 0.3), 0 4px 16px rgba(255, 107, 157, 0.2)',
             }}
           >
-            {isRecording ? "🎙️ Recording..." : "🎤 Start Speaking"}
+            <div className="flex items-center gap-3">
+              {isRecording ? "🎙️" : "🎤"}
+              <span className="drop-shadow-sm">
+                {isRecording ? "Recording..." : "Start Speaking"}
+              </span>
+            </div>
           </Button>
 
           {/* Premium Controls */}
-          <div className="flex flex-col items-center space-y-2 sm:space-y-3">
+          <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
             <div 
-              className="flex items-center space-x-2 sm:space-x-3 bg-white/95 backdrop-blur-sm rounded-full px-4 sm:px-6 py-2 sm:py-3 cursor-pointer transition-all duration-300 hover:scale-105 hover:bg-white border border-white/50"
+              className="pill-button glass-card glass-card-hover flex items-center gap-3 px-5 py-3 cursor-pointer border border-white/20"
               onClick={toggleSound}
-              style={{ boxShadow: 'var(--shadow-medium)' }}
             >
-              <Volume2 className="w-4 h-4 sm:w-5 sm:h-5 text-gray-700" />
-              <span className="text-gray-700 font-semibold text-sm sm:text-base">
+              <Volume2 className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+              <span className="text-white font-medium text-sm sm:text-base drop-shadow-sm">
                 Sound {soundEnabled ? 'ON' : 'OFF'}
               </span>
             </div>
@@ -556,12 +561,11 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
             <select 
               value={userLevel}
               onChange={(e) => setUserLevel(e.target.value as typeof userLevel)}
-              className="bg-white/95 backdrop-blur-sm rounded-full px-4 sm:px-6 py-2 sm:py-3 text-gray-700 font-semibold border border-white/50 outline-none cursor-pointer transition-all duration-300 hover:bg-white hover:scale-105 text-sm sm:text-base"
-              style={{ boxShadow: 'var(--shadow-medium)' }}
+              className="pill-button glass-card px-5 py-3 text-white font-medium border border-white/20 outline-none cursor-pointer text-sm sm:text-base appearance-none bg-transparent"
             >
-              <option value="beginner">🌱 Beginner</option>
-              <option value="intermediate">🌿 Intermediate</option>
-              <option value="advanced">🌳 Advanced</option>
+              <option value="beginner" className="bg-gray-800 text-white">🌱 Beginner</option>
+              <option value="intermediate" className="bg-gray-800 text-white">🌿 Intermediate</option>
+              <option value="advanced" className="bg-gray-800 text-white">🌳 Advanced</option>
             </select>
           </div>
         </div>

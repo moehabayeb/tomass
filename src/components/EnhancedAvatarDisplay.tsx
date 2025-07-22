@@ -60,11 +60,11 @@ export const EnhancedAvatarDisplay = ({
 
   return (
     <div className="relative">
-      <div className="bg-gradient-to-br from-background/90 to-background/70 backdrop-blur-sm border border-border/50 rounded-xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
-        <div className="flex items-center gap-3">
+      <div className="glass-card glass-card-hover rounded-2xl p-4 sm:p-5">
+        <div className="flex items-center gap-3 sm:gap-4">
           {/* Avatar */}
           <div className="relative">
-            <div className={`${getAvatarSize()} rounded-full bg-gradient-to-br from-primary/20 to-primary/10 border-2 border-primary/30 flex items-center justify-center overflow-hidden transition-all duration-300 hover:border-primary/50`}>
+            <div className={`${getAvatarSize()} rounded-full glass-card border-2 border-white/30 flex items-center justify-center overflow-hidden transition-all duration-500 hover:border-white/50 hover:scale-105`}>
               {avatarUrl ? (
                 <img 
                   src={avatarUrl} 
@@ -72,28 +72,28 @@ export const EnhancedAvatarDisplay = ({
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <span className={`${getTextSize()} font-bold text-primary`}>
+                <span className={`${getTextSize()} font-bold text-white drop-shadow-sm`}>
                   {userName.charAt(0).toUpperCase()}
                 </span>
               )}
             </div>
             
             {/* Level Badge */}
-            <div className={`absolute -top-1 -right-1 ${getLevelBadgeSize()} bg-gradient-to-r from-primary to-primary/80 rounded-full flex items-center justify-center shadow-lg border-2 border-background transition-all duration-300 ${isAnimating ? 'animate-pulse scale-110' : ''}`}>
-              <span className="text-primary-foreground font-bold">{level}</span>
+            <div className={`absolute -top-1 -right-1 ${getLevelBadgeSize()} bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600 rounded-full flex items-center justify-center shadow-lg border-2 border-white/30 transition-all duration-500 ${isAnimating ? 'animate-pulse scale-110 shadow-orange-500/50' : ''} hover:scale-110 hover:rotate-6`}>
+              <span className="text-white font-bold drop-shadow-sm">{level}</span>
             </div>
           </div>
 
           {/* User Info */}
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <h3 className={`${getTextSize()} font-semibold text-foreground truncate`}>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className={`${getTextSize()} font-semibold text-white truncate drop-shadow-sm`}>
                 {userName}
               </h3>
               {/* Streak Badge */}
               {streakCount > 0 && (
-                <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-full px-2 py-0.5 flex items-center gap-1 shadow-sm">
-                  <span className="text-white text-xs font-bold">
+                <div className="pill-button bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 px-3 py-1 flex items-center gap-1.5 min-h-[28px]">
+                  <span className="text-white text-xs font-bold drop-shadow-sm">
                     🔥 {streakCount}
                   </span>
                 </div>
@@ -102,7 +102,7 @@ export const EnhancedAvatarDisplay = ({
             
             {/* XP Progress */}
             {showXPBar && (
-              <div className="mt-2">
+              <div className="mt-3">
                 <XPProgressBar
                   currentXP={xp}
                   totalXP={maxXP}

@@ -53,40 +53,38 @@ export const SampleAnswerButton = ({ question, onSpeak }: SampleAnswerButtonProp
   const sampleAnswers = generateSampleAnswers(question);
 
   return (
-    <div className="mb-6">
+    <div className="mb-6 sm:mb-8">
       <Button
         onClick={() => setShowSamples(!showSamples)}
-        className="w-full bg-white/90 hover:bg-white text-gray-700 hover:text-gray-900 border-0 rounded-full py-3 px-6 font-semibold transition-all duration-300 hover:scale-105"
-        style={{ boxShadow: 'var(--shadow-soft)' }}
+        className="pill-button w-full glass-card glass-card-hover text-white font-semibold py-4 px-6 border border-white/30"
       >
         {showSamples ? (
           <>
             <X className="w-5 h-5 mr-2" />
-            Hide Sample Answers
+            <span className="drop-shadow-sm">Hide Sample Answers</span>
           </>
         ) : (
           <>
             <Lightbulb className="w-5 h-5 mr-2" />
-            💡 See Sample Answers
+            <span className="drop-shadow-sm">💡 See Sample Answers</span>
           </>
         )}
       </Button>
       
       {showSamples && (
-        <div className="mt-4 space-y-3 animate-in slide-in-from-top duration-300">
+        <div className="mt-5 space-y-3 animate-in slide-in-from-top duration-300">
           {sampleAnswers.map((answer, index) => (
             <div 
               key={index}
-              className="bg-white/95 backdrop-blur-sm p-4 rounded-xl border border-blue-100"
-              style={{ boxShadow: 'var(--shadow-soft)' }}
+              className="conversation-bubble bg-gradient-to-br from-white/95 to-white/85 text-gray-800 p-4 border-l-4 border-blue-400"
             >
               <div className="flex justify-between items-center">
-                <span className="text-gray-700 font-medium">{answer}</span>
+                <span className="font-medium flex-1">{answer}</span>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => onSpeak(answer)}
-                  className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-full px-3 py-1 transition-all"
+                  className="pill-button text-blue-600 hover:text-blue-800 hover:bg-blue-50/80 px-3 py-2 ml-3 shrink-0"
                 >
                   🔊
                 </Button>

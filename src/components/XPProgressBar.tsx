@@ -35,17 +35,20 @@ export const XPProgressBar = ({
   };
 
   return (
-    <div className={`w-full space-y-1 ${className}`}>
+    <div className={`w-full space-y-2 ${className}`}>
       {showLabels && (
-        <div className={`flex justify-between ${getTextSize()} text-muted-foreground`}>
-          <span>{safeCurrentXP} XP</span>
-          <span>{totalXP} XP</span>
+        <div className={`flex justify-between ${getTextSize()} text-white/80 font-medium`}>
+          <span className="drop-shadow-sm">{safeCurrentXP} XP</span>
+          <span className="drop-shadow-sm">{totalXP} XP</span>
         </div>
       )}
-      <Progress 
-        value={percentage} 
-        className={`${getHeight()} transition-all duration-500`}
-      />
+      <div className="relative">
+        <Progress 
+          value={percentage} 
+          className={`${getHeight()} transition-all duration-700 ease-out bg-white/20 border border-white/10 shadow-inner backdrop-blur-sm rounded-full overflow-hidden`}
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse opacity-50 rounded-full"></div>
+      </div>
     </div>
   );
 };

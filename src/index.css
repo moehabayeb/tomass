@@ -47,13 +47,24 @@
     --gradient-xp: linear-gradient(90deg, hsl(45, 100%, 55%), hsl(39, 100%, 50%));
     --gradient-streak: linear-gradient(135deg, hsl(45, 100%, 95%), hsl(39, 100%, 90%));
     --gradient-card: linear-gradient(135deg, hsl(0, 0%, 100%), hsl(0, 0%, 98%));
+    --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    --gradient-frosted: linear-gradient(145deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
+    --gradient-card-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
     
-    /* Premium shadows */
+    /* Premium shadows with glass effects */
     --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.08);
     --shadow-medium: 0 8px 30px rgba(0, 0, 0, 0.12);
     --shadow-strong: 0 12px 40px rgba(0, 0, 0, 0.15);
     --shadow-glow: 0 0 20px rgba(245, 158, 11, 0.3);
     --shadow-bubble: 0 2px 10px rgba(0, 0, 0, 0.06);
+    --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.12), 0 4px 16px rgba(0, 0, 0, 0.08);
+    --shadow-elevated: 0 16px 64px rgba(0, 0, 0, 0.16), 0 8px 32px rgba(0, 0, 0, 0.12);
+    --shadow-premium: 0 20px 80px rgba(0, 0, 0, 0.2), 0 10px 40px rgba(0, 0, 0, 0.15);
+    
+    /* Glass morphism effects */
+    --glass-bg: rgba(255, 255, 255, 0.1);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --glass-hover: rgba(255, 255, 255, 0.15);
 
     --radius: 1.5rem;
 
@@ -312,5 +323,50 @@
     50% {
       transform: scale(1.05);
     }
+  }
+
+  /* Glass morphism utilities */
+  .glass-card {
+    background: var(--gradient-glass);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-glass);
+  }
+
+  .glass-card-hover {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .glass-card-hover:hover {
+    background: var(--gradient-frosted);
+    box-shadow: var(--shadow-elevated);
+    transform: translateY(-2px);
+  }
+
+  .pill-button {
+    border-radius: 2rem;
+    backdrop-filter: blur(10px);
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .pill-button:hover {
+    box-shadow: var(--shadow-glow);
+    transform: translateY(-1px) scale(1.02);
+  }
+
+  /* Conversation bubble styles */
+  .conversation-bubble {
+    background: var(--gradient-card-glass);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1.25rem;
+    box-shadow: var(--shadow-bubble);
+    transition: all 0.3s ease;
+  }
+
+  .conversation-bubble:hover {
+    box-shadow: var(--shadow-medium);
+    transform: translateY(-1px);
   }
 }
