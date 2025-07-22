@@ -268,52 +268,37 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     // Stop all tracks to release microphone
     stream.getTracks().forEach(track => track.stop());
 
-    // Step 2: Send Audio to Whisper Transcription
-    const formData = new FormData();
-    formData.append("audio", audioBlob, "recording.webm");
+    // Step 2: Convert audio to base64 for transcription function
+    const arrayBuffer = await audioBlob.arrayBuffer();
+    const base64Audio = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
 
     console.log('Sending audio for transcription, size:', audioBlob.size, 'bytes');
 
-    const transcribeRes = await fetch("https://sgzhbiknaiqsuknwgvjr.supabase.co/functions/v1/transcribe", {
-      method: "POST",
-      headers: {
-        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNnemhiaWtuYWlxc3VrbmdndmpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIzNDkyNTUsImV4cCI6MjA2NzkyNTI1NX0.zi3agHTlckDVeDOQ-rFvC9X_TI21QOxiXzqbNs2UrG4',
-        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNnemhiaWtuYWlxc3VrbndndmpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIzNDkyNTUsImV4cCI6MjA2NzkyNTI1NX0.zi3agHTlckDVeDOQ-rFvC9X_TI21QOxiXzqbNs2UrG4'
-      },
-      body: formData
+    const transcribeRes = await supabase.functions.invoke('transcribe', {
+      body: { audio: base64Audio }
     });
 
-    if (!transcribeRes.ok) {
-      const errorData = await transcribeRes.json();
-      throw new Error(errorData.error || 'Transcription failed');
+    if (transcribeRes.error) {
+      throw new Error(transcribeRes.error.message || 'Transcription failed');
     }
 
-    const transcribeData = await transcribeRes.json();
-    console.log('Transcription result:', transcribeData.transcript);
-    return transcribeData.transcript;
+    console.log('Transcription result:', transcribeRes.data.transcript);
+    return transcribeRes.data.transcript;
   };
 
   // Helper function to send text for grammar feedback
   const sendToFeedback = async (text: string): Promise<{ message: string; corrected: string }> => {
-    const feedbackRes = await fetch("https://sgzhbiknaiqsuknwgvjr.supabase.co/functions/v1/feedback", {
-      method: "POST",
-      headers: {
-        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNnemhiaWtuYWlxc3VrbndndmpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIzNDkyNTUsImV4cCI6MjA2NzkyNTI1NX0.zi3agHTlckDVeDOQ-rFvC9X_TI21QOxiXzqbNs2UrG4',
-        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNnemhiaWtuYWlxc3VrbndndmpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIzNDkyNTUsImV4cCI6MjA2NzkyNTI1NX0.zi3agHTlckDVeDOQ-rFvC9X_TI21QOxiXzqbNs2UrG4',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ text })
+    const feedbackRes = await supabase.functions.invoke('feedback', {
+      body: { text }
     });
 
-    if (!feedbackRes.ok) {
-      const errorData = await feedbackRes.json();
-      throw new Error(errorData.error || 'Feedback failed');
+    if (feedbackRes.error) {
+      throw new Error(feedbackRes.error.message || 'Feedback failed');
     }
 
-    const feedbackData = await feedbackRes.json();
     return {
-      message: feedbackData.corrected,
-      corrected: feedbackData.corrected
+      message: feedbackRes.data.corrected,
+      corrected: feedbackRes.data.corrected
     };
   };
 
