@@ -323,39 +323,39 @@ export default function PlacementTest({ onBack, onComplete }: PlacementTestProps
 
   if (showResult) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
-        <div className="max-w-2xl mx-auto">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-3 sm:p-4">
+        <div className="max-w-xl sm:max-w-2xl mx-auto">
           <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm">
-            <CardHeader className="text-center space-y-4">
-              <div className="mx-auto w-16 h-16 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center">
-                <CheckCircle className="h-8 w-8 text-white" />
+            <CardHeader className="text-center space-y-3 sm:space-y-4">
+              <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center">
+                <CheckCircle className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
               </div>
-              <CardTitle className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <CardTitle className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 Test Complete!
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6 text-center">
-              <div className="space-y-4">
+            <CardContent className="space-y-4 sm:space-y-6 text-center">
+              <div className="space-y-3 sm:space-y-4">
                 <div>
-                  <p className="text-lg text-gray-600 mb-2">Your English level is:</p>
+                  <p className="text-base sm:text-lg text-gray-600 mb-2">Your English level is:</p>
                   <Badge 
-                    className={`text-2xl py-3 px-6 font-bold ${getLevelColor(finalLevel)}`}
+                    className={`text-xl sm:text-2xl py-2 sm:py-3 px-4 sm:px-6 font-bold ${getLevelColor(finalLevel)}`}
                   >
                     {finalLevel}
                   </Badge>
                 </div>
                 
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <p className="text-gray-700">
+                <div className="bg-blue-50 p-3 sm:p-4 rounded-lg">
+                  <p className="text-gray-700 text-sm sm:text-base">
                     We recommend starting at: <strong>{finalLevel} - Module {recommendedModule}</strong>
                   </p>
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <div className="flex flex-col gap-2 sm:gap-3 justify-center">
                 <Button 
                   onClick={() => onComplete(finalLevel, recommendedModule)}
-                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-2 px-6"
+                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-2.5 sm:py-3 px-6 text-sm sm:text-base"
                 >
                   Start Learning
                 </Button>
@@ -368,7 +368,7 @@ export default function PlacementTest({ onBack, onComplete }: PlacementTestProps
                     setUserResponse('');
                   }}
                   variant="outline"
-                  className="border-blue-200 text-blue-600 hover:bg-blue-50"
+                  className="border-blue-200 text-blue-600 hover:bg-blue-50 py-2.5 sm:py-3 text-sm sm:text-base"
                 >
                   Take Again
                 </Button>
@@ -381,26 +381,27 @@ export default function PlacementTest({ onBack, onComplete }: PlacementTestProps
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
-      <div className="max-w-3xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-3 sm:p-4">
+      <div className="max-w-2xl sm:max-w-3xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-4 sm:mb-6">
           <Button 
             onClick={onBack}
             variant="ghost" 
-            className="text-blue-600 hover:bg-blue-100"
+            className="text-blue-600 hover:bg-blue-100 text-sm sm:text-base"
+            size="sm"
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
             Back
           </Button>
-          <Badge className={`${getLevelColor(currentQuestion.level)}`}>
+          <Badge className={`text-xs sm:text-sm ${getLevelColor(currentQuestion.level)}`}>
             {currentQuestion.level} Level
           </Badge>
         </div>
 
         {/* Progress */}
-        <div className="mb-6">
-          <div className="flex justify-between text-sm text-gray-600 mb-2">
+        <div className="mb-4 sm:mb-6">
+          <div className="flex justify-between text-xs sm:text-sm text-gray-600 mb-2">
             <span>Question {currentQuestionIndex + 1} of {questions.length}</span>
             <span>{Math.round(testProgress)}% Complete</span>
           </div>
@@ -409,25 +410,25 @@ export default function PlacementTest({ onBack, onComplete }: PlacementTestProps
 
         {/* Question Card */}
         <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm">
-          <CardHeader>
-            <CardTitle className="text-xl">
+          <CardHeader className="pb-4 sm:pb-6">
+            <CardTitle className="text-lg sm:text-xl">
               {currentQuestion.type === 'listening' && (
-                <div className="flex items-center gap-3 mb-4">
+                <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
                   <Button
                     onClick={() => currentQuestion.audio && playAudio(currentQuestion.audio)}
                     variant="outline"
                     size="sm"
                     disabled={isSpeaking}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm"
                   >
-                    <Volume2 className="h-4 w-4" />
+                    <Volume2 className="h-3 w-3 sm:h-4 sm:w-4" />
                     {isSpeaking ? 'Playing...' : 'Play Audio'}
                   </Button>
                 </div>
               )}
               
               {currentQuestion.type === 'reading' && currentQuestion.text && (
-                <div className="bg-gray-50 p-4 rounded-lg mb-4 text-base font-normal">
+                <div className="bg-gray-50 p-3 sm:p-4 rounded-lg mb-3 sm:mb-4 text-sm sm:text-base font-normal leading-relaxed">
                   {currentQuestion.text}
                 </div>
               )}
@@ -436,16 +437,16 @@ export default function PlacementTest({ onBack, onComplete }: PlacementTestProps
             </CardTitle>
           </CardHeader>
           
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3 sm:space-y-4">
             {currentQuestion.type === 'speaking' ? (
-              <div className="space-y-4">
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <p className="text-blue-800 font-medium">{currentQuestion.speakingPrompt}</p>
+              <div className="space-y-3 sm:space-y-4">
+                <div className="bg-blue-50 p-3 sm:p-4 rounded-lg">
+                  <p className="text-blue-800 font-medium text-sm sm:text-base">{currentQuestion.speakingPrompt}</p>
                 </div>
                 
                 {userResponse && (
                   <div className="bg-green-50 p-3 rounded-lg">
-                    <p className="text-green-800">
+                    <p className="text-green-800 text-sm sm:text-base">
                       <strong>You said:</strong> "{userResponse}"
                     </p>
                   </div>
@@ -454,37 +455,37 @@ export default function PlacementTest({ onBack, onComplete }: PlacementTestProps
                 <Button
                   onClick={startRecording}
                   disabled={isRecording}
-                  className={`w-full py-6 text-lg font-semibold ${
+                  className={`w-full py-4 sm:py-6 text-base sm:text-lg font-semibold ${
                     isRecording 
                       ? 'bg-red-500 hover:bg-red-600' 
                       : 'bg-blue-500 hover:bg-blue-600'
                   } text-white`}
                 >
-                  <Mic className="h-5 w-5 mr-2" />
+                  <Mic className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
                   {isRecording ? 'Recording... (5s max)' : 'Start Recording'}
                 </Button>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 {currentQuestion.options?.map((option, index) => (
                   <Button
                     key={index}
                     onClick={() => handleMultipleChoice(index)}
                     variant={selectedOption === index ? "default" : "outline"}
-                    className={`w-full text-left justify-start p-4 h-auto ${
+                    className={`w-full text-left justify-start p-3 sm:p-4 h-auto text-sm sm:text-base leading-relaxed ${
                       selectedOption === index 
                         ? 'bg-blue-500 text-white border-blue-500' 
                         : 'hover:bg-blue-50 border-gray-200'
                     }`}
                   >
-                    <span className="font-semibold mr-3">{String.fromCharCode(65 + index)}.</span>
-                    {option}
+                    <span className="font-semibold mr-2 sm:mr-3 flex-shrink-0">{String.fromCharCode(65 + index)}.</span>
+                    <span className="flex-1">{option}</span>
                   </Button>
                 ))}
               </div>
             )}
             
-            <div className="pt-4">
+            <div className="pt-3 sm:pt-4">
               <Button
                 onClick={handleNext}
                 disabled={
@@ -492,7 +493,7 @@ export default function PlacementTest({ onBack, onComplete }: PlacementTestProps
                     ? !userResponse 
                     : selectedOption === null
                 }
-                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-3"
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-2.5 sm:py-3 text-sm sm:text-base"
               >
                 {isLastQuestion ? 'Finish Test' : 'Next Question'}
               </Button>
