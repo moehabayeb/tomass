@@ -17,6 +17,7 @@ import { LevelUpPopup } from './LevelUpPopup';
 import { XPBoostAnimation } from './XPBoostAnimation';
 import { StreakCounter } from './StreakCounter';
 import { StreakRewardPopup } from './StreakRewardPopup';
+import { StreakWelcomePopup } from './StreakWelcomePopup';
 import { BadgeAchievement } from './BadgeAchievement';
 import { useGamification } from '@/hooks/useGamification';
 import { useStreakTracker } from '@/hooks/useStreakTracker';
@@ -30,12 +31,25 @@ export default function AppNavigation() {
   const [currentMode, setCurrentMode] = useState<AppMode>('speaking');
   const [continuedMessage, setContinuedMessage] = useState<string | undefined>();
   const [showDailyTips, setShowDailyTips] = useState(false);
+  const [showStreakWelcome, setShowStreakWelcome] = useState(false);
   const [hasCompletedPlacement, setHasCompletedPlacement] = useState(false);
   const [profile, setProfile] = useState<any>(null);
   const { user, isAuthenticated } = useAuthReady();
   const { userProfile, xpBoosts, showLevelUpPopup, pendingLevelUp, closeLevelUpPopup, getXPProgress, addXP } = useGamification();
   const { streakData, getStreakMessage, getNextMilestone, streakReward } = useStreakTracker(addXP);
   const { newlyUnlockedBadge, closeBadgeNotification, getFeatureProgress } = useBadgeSystem();
+
+  // Show streak welcome popup on first load
+  useEffect(() => {
+    const hasShownToday = sessionStorage.getItem('streakWelcomeShown');
+    if (!hasShownToday && streakData.currentStreak > 0) {
+      const timer = setTimeout(() => {
+        setShowStreakWelcome(true);
+        sessionStorage.setItem('streakWelcomeShown', 'true');
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [streakData.currentStreak]);
 
   const xpProgress = getXPProgress();
 
@@ -98,6 +112,14 @@ export default function AppNavigation() {
         onClose={closeLevelUpPopup} 
       />
 
+      {/* Streak Welcome Popup */}
+      <StreakWelcomePopup
+        currentStreak={streakData.currentStreak}
+        bestStreak={streakData.bestStreak}
+        isVisible={showStreakWelcome}
+        onClose={() => setShowStreakWelcome(false)}
+      />
+
       {/* Streak Reward Popup */}
       <StreakRewardPopup
         reward={streakReward}
@@ -131,38 +153,26 @@ export default function AppNavigation() {
         onModeChange={setCurrentMode} 
       />
 
-      {/* XP Avatar Display - Only show in speaking mode, positioned below user dropdown */}
+      {/* User Avatar with Streak Badge - Only show in speaking mode */}
       {currentMode === 'speaking' && userProfile && (
         <div className="fixed top-16 left-4 z-20">
-          <AvatarDisplay
-            level={userProfile.level}
-            xp={Math.max(0, xpProgress.current)}
-            maxXP={xpProgress.max}
-            userName={userProfile.name}
-            showXPBar={true}
-            size="md"
-          />
-        </div>
-      )}
-
-      {/* Enhanced Centered Streak Counter - Clean, rewarding design */}
-      {currentMode === 'speaking' && (
-        <div className="fixed top-24 left-1/2 transform -translate-x-1/2 z-30">
-          <div className="bg-gradient-to-r from-orange-500/90 to-red-500/90 backdrop-blur-xl rounded-2xl px-6 py-4 shadow-xl border border-white/30 animate-fade-in">
-            <div className="flex items-center space-x-4">
-              <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center animate-pulse">
-                <span className="text-xl">🔥</span>
+          <div className="relative">
+            <AvatarDisplay
+              level={userProfile.level}
+              xp={Math.max(0, xpProgress.current)}
+              maxXP={xpProgress.max}
+              userName={userProfile.name}
+              showXPBar={true}
+              size="md"
+            />
+            {/* Streak Badge */}
+            {streakData.currentStreak > 0 && (
+              <div className="absolute -top-2 -right-2 bg-gradient-to-r from-orange-500 to-red-500 rounded-full px-2 py-1 min-w-[32px] h-8 flex items-center justify-center shadow-lg border-2 border-white">
+                <span className="text-white text-sm font-bold flex items-center gap-1">
+                  🔥 {streakData.currentStreak}
+                </span>
               </div>
-              <div className="text-white">
-                <div className="font-bold text-xl">{streakData.currentStreak} Days</div>
-                <div className="text-sm opacity-90">Current Streak ✨</div>
-              </div>
-              {streakData.bestStreak > streakData.currentStreak && (
-                <div className="text-white/70 text-sm border-l border-white/30 pl-4">
-                  🏆 Best: {streakData.bestStreak}
-                </div>
-              )}
-            </div>
+            )}
           </div>
         </div>
       )}
