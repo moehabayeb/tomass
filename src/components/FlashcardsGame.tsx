@@ -225,19 +225,20 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
           console.log('📊 Evaluation result:', evaluation);
           setPronunciationFeedback(evaluation.feedback);
           
-          // Clean and normalize both spoken and expected words
-          const cleanSpokenWord = transcription.toLowerCase().trim().replace(/[^\w\s]/gi, '');
-          const cleanExpectedWord = currentCard.english.toLowerCase().trim().replace(/[^\w\s]/gi, '');
+          // STRICT single-word matching implementation
+          const cleanedUserInput = transcription.toLowerCase().trim().replace(/[^\w\s]/g, '');
+          const cleanedExpected = currentCard.english.toLowerCase().trim();
           
-          console.log('🔍 Word comparison (cleaned):', {
+          console.log('🔍 STRICT Word comparison:', {
             originalSpoken: transcription,
-            cleanSpoken: cleanSpokenWord,
-            cleanExpected: cleanExpectedWord,
-            match: cleanSpokenWord === cleanExpectedWord
+            cleanedUserInput: cleanedUserInput,
+            cleanedExpected: cleanedExpected,
+            exactMatch: cleanedUserInput === cleanedExpected,
+            isSingleWord: !cleanedUserInput.includes(' ')
           });
           
-          // BULLETPROOF strict word matching - only exact matches are correct
-          const isCorrect = cleanSpokenWord === cleanExpectedWord;
+          // Only accept if it's an exact single-word match
+          const isCorrect = cleanedUserInput === cleanedExpected && !cleanedUserInput.includes(' ');
           const xpEarned = isCorrect ? 20 : 5;
           
           // Custom feedback for vocabulary learning
@@ -245,7 +246,11 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
           if (isCorrect) {
             finalFeedback = `✅ Perfect! You correctly said "${currentCard.english}"!`;
           } else {
-            finalFeedback = `❌ Wrong word! You said "${transcription}" but the correct answer is "${currentCard.english}". Keep practicing!`;
+            if (cleanedUserInput.includes(' ')) {
+              finalFeedback = `❌ Please say only one word! You said "${transcription}" but the correct answer is just "${currentCard.english}".`;
+            } else {
+              finalFeedback = `❌ Wrong word! You said "${transcription}" but the correct answer is "${currentCard.english}". Keep practicing!`;
+            }
           }
           
           setCardResults(prev => [...prev, { 
