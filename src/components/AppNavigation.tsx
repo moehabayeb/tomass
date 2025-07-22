@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Mic, BookOpen, Bookmark, Award, GraduationCap, Gamepad2, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { UserDropdown } from './UserDropdown';
+import { useAuthReady } from '@/hooks/useAuthReady';
 import SpeakingApp from './SpeakingApp';
 import GrammarModules from './GrammarModules';
 import LessonsApp from './LessonsApp';
@@ -21,6 +23,7 @@ import { useGamification } from '@/hooks/useGamification';
 import { useStreakTracker } from '@/hooks/useStreakTracker';
 import { useBadgeSystem } from '@/hooks/useBadgeSystem';
 import { Toaster } from '@/components/ui/toaster';
+import { supabase } from '@/integrations/supabase/client';
 
 type AppMode = 'speaking' | 'lessons' | 'bookmarks' | 'badges' | 'placement-test' | 'games' | 'meetings';
 
@@ -29,11 +32,36 @@ export default function AppNavigation() {
   const [continuedMessage, setContinuedMessage] = useState<string | undefined>();
   const [showDailyTips, setShowDailyTips] = useState(false);
   const [hasCompletedPlacement, setHasCompletedPlacement] = useState(false);
+  const [profile, setProfile] = useState<any>(null);
+  const { user, isAuthenticated } = useAuthReady();
   const { userProfile, xpBoosts, showLevelUpPopup, pendingLevelUp, closeLevelUpPopup, getXPProgress, addXP } = useGamification();
   const { streakData, getStreakMessage, getNextMilestone, streakReward } = useStreakTracker(addXP);
   const { newlyUnlockedBadge, closeBadgeNotification, getFeatureProgress } = useBadgeSystem();
 
   const xpProgress = getXPProgress();
+
+  // Fetch user profile when authenticated
+  useEffect(() => {
+    if (user && isAuthenticated) {
+      const fetchProfile = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('user_id', user.id)
+            .single();
+          
+          if (!error && data) {
+            setProfile(data);
+          }
+        } catch (error) {
+          console.error('Error fetching profile:', error);
+        }
+      };
+
+      fetchProfile();
+    }
+  }, [user, isAuthenticated]);
 
   // Clear continued message after it's used
   useEffect(() => {
@@ -86,6 +114,16 @@ export default function AppNavigation() {
       {/* Daily Tips Modal */}
       {showDailyTips && (
         <DailyTips onClose={() => setShowDailyTips(false)} />
+      )}
+
+      {/* User Dropdown - Always visible when authenticated */}
+      {user && isAuthenticated && (
+        <div className="fixed top-4 left-4 z-20">
+          <UserDropdown 
+            user={user} 
+            profile={profile} 
+          />
+        </div>
       )}
 
       {/* Navigation Tab - Always visible */}
@@ -188,9 +226,9 @@ export default function AppNavigation() {
         </div>
       </div>
 
-      {/* Avatar Display - Only show in speaking mode */}
+      {/* XP Avatar Display - Only show in speaking mode, positioned below user dropdown */}
       {currentMode === 'speaking' && userProfile && (
-        <div className="fixed top-4 left-4 z-20 cursor-pointer" onClick={() => window.location.href = '/profile'}>
+        <div className="fixed top-16 left-4 z-20">
           <AvatarDisplay
             level={userProfile.level}
             xp={Math.max(0, xpProgress.current)}
