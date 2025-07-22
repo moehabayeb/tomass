@@ -229,19 +229,32 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
           const spokenWord = transcription.toLowerCase().trim();
           const expectedWord = currentCard.english.toLowerCase().trim();
           
-          // Direct word match for vocabulary learning
-          const isExactMatch = spokenWord === expectedWord;
-          const isCorrect = isExactMatch && evaluation.score >= 3; // Must match word AND have good pronunciation
-          const xpEarned = isCorrect ? 20 : 5; // Reward even small attempts
+          console.log('🔍 Word comparison:', {
+            spoken: spokenWord,
+            expected: expectedWord,
+            match: spokenWord === expectedWord
+          });
+          
+          // STRICT word matching for vocabulary learning - only exact matches are correct
+          const isCorrect = spokenWord === expectedWord;
+          const xpEarned = isCorrect ? 20 : 5;
+          
+          // Override AI feedback for wrong word matches
+          let finalFeedback = evaluation.feedback;
+          if (!isCorrect) {
+            finalFeedback = `❌ Wrong word! You said "${transcription}" but the correct answer is "${currentCard.english}". Keep practicing!`;
+          }
           
           setCardResults(prev => [...prev, { 
             word: currentCard, 
             userSaid: transcription,
-            feedback: evaluation.feedback,
+            feedback: finalFeedback,
             score: evaluation.score,
             success: isCorrect,
             xpEarned
           }]);
+
+          setPronunciationFeedback(finalFeedback);
 
           setTotalXPEarned(prev => prev + xpEarned);
 
