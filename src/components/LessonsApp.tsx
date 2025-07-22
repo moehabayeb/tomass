@@ -2287,7 +2287,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
       const { transcript, text } = transcribeResponse.data || {};
       const finalTranscript = transcript || text || '';
       
-      console.log('📝 Transcribed text:', finalTranscript);
+      console.log('📝 Raw transcribed text (verbatim):', finalTranscript);
       
       if (!finalTranscript || finalTranscript.trim() === '') {
         console.warn('⚠️ Empty transcript received');
@@ -2299,6 +2299,10 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
         }, 3000);
         return;
       }
+
+      // Show the user exactly what they said (verbatim)
+      setFeedback(`You said: "${finalTranscript}"`);
+      setFeedbackType('info');
 
       // Step 2: Get feedback on the transcribed text
       console.log('Sending to feedback endpoint:', finalTranscript);
@@ -2317,14 +2321,14 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
       
       // 🔒 CRITICAL: Use LOCKED values - these cannot change during processing
       const expectedSentence = capturedExpectedSentence.toLowerCase();
-      const userSentence = finalTranscript.toLowerCase();
+      const userSentence = finalTranscript.toLowerCase(); // Use raw transcript, not corrected
       
       console.log('🔒 VALIDATION PHASE');
       console.log('🔒 Expected (LOCKED):', expectedSentence);
-      console.log('🔒 User said:', userSentence);
+      console.log('🔒 User said (RAW):', userSentence);
       console.log('🔒 Index (LOCKED):', capturedSpeakingIndex);
       console.log('🔒 Module (LOCKED):', currentModuleData.title);
-      console.log('AI feedback:', corrected);
+      console.log('AI feedback/correction:', corrected);
       
       // Double-check that we're still processing the correct question
       const currentValidationItem = currentModuleData.speakingPractice[capturedSpeakingIndex];
@@ -2380,15 +2384,25 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
           setIsProcessing(false);
         }, 1500);
       } else {
-        // 🔒 Show corrective feedback using LOCKED expected sentence
+        // 🔒 Show what user said vs what was expected
         console.log('🔒 Showing correction for LOCKED sentence:', capturedExpectedSentence);
-        setFeedback(`Try saying: "${capturedExpectedSentence}"`);
+        
+        // Check if the AI provided a correction different from what user said
+        const hasGrammarErrors = corrected && corrected.toLowerCase() !== finalTranscript.toLowerCase();
+        
+        let feedbackMessage = `You said: "${finalTranscript}"`;
+        if (hasGrammarErrors) {
+          feedbackMessage += `\n\nCorrection: "${corrected}"`;
+        }
+        feedbackMessage += `\n\nTry saying: "${capturedExpectedSentence}"`;
+        
+        setFeedback(feedbackMessage);
         setFeedbackType('error');
         
         setTimeout(() => {
           setFeedback('');
           setIsProcessing(false);
-        }, 3000);
+        }, 5000); // Longer timeout for more complex feedback
       }
     } catch (error) {
       console.error('🔒 Error processing audio for LOCKED index:', capturedSpeakingIndex, error);

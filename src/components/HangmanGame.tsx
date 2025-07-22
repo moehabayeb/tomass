@@ -201,8 +201,11 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
             return;
           }
 
-          const transcription = data?.transcript?.toLowerCase().trim() || '';
-          console.log('🎯 Transcription received:', transcription);
+          const transcription = data?.transcript || '';
+          console.log('🎯 Raw transcription received:', transcription);
+          
+          // Show user what they actually said first
+          setHeardLetter(`You said: "${transcription}"`);
           
           // Extract first letter from transcription with enhanced logic
           const extractedLetter = extractLetterFromSpeech(transcription);

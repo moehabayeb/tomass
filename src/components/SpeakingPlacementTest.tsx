@@ -22,6 +22,8 @@ interface SpeakingScore {
   vocabularyScore: number;
   pronunciationScore: number;
   totalScore: number;
+  hasErrors: boolean;
+  correctedVersion: string;
   feedback: string;
 }
 
@@ -328,8 +330,14 @@ export const SpeakingPlacementTest: React.FC<SpeakingPlacementTestProps> = ({ on
               </div>
             </div>
             
-            <div className="bg-white/10 rounded-lg p-4">
+            <div className="bg-white/10 rounded-lg p-4 space-y-3">
               <p className="text-green-300 text-sm">✨ {scores.feedback}</p>
+              {scores.hasErrors && scores.correctedVersion && (
+                <div className="text-left">
+                  <p className="text-orange-300 text-xs font-medium">Suggestion:</p>
+                  <p className="text-orange-200 text-sm italic">"{scores.correctedVersion}"</p>
+                </div>
+              )}
             </div>
           </div>
         </CardContent>

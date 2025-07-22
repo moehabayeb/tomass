@@ -30,7 +30,7 @@ serve(async (req) => {
     openAIFormData.append('model', 'whisper-1')
     openAIFormData.append('language', 'en') // Specify English for better accuracy
     openAIFormData.append('temperature', '0') // More deterministic results
-    // Note: Removed response_format to get JSON response by default
+    openAIFormData.append('prompt', 'Transcribe exactly what the user said, including any grammatical errors, incomplete sentences, or mispronunciations. Do not correct or improve the speech.') // Force verbatim transcription
 
     console.log('Sending to OpenAI Whisper...')
 

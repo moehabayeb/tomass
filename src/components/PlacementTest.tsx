@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Mic, Volume2, ArrowLeft, CheckCircle, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useTextToSpeech } from '@/hooks/useTextToSpeech';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Question {
   id: number;
@@ -221,18 +222,21 @@ export default function PlacementTest({ onBack, onComplete }: PlacementTestProps
       reader.onload = async () => {
         const base64Audio = (reader.result as string).split(',')[1];
         
-        const response = await fetch('https://sgzhbiknaiqsuknwgvjr.functions.supabase.co/transcribe', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ audio: base64Audio })
+        const response = await supabase.functions.invoke('transcribe', {
+          body: { audio: base64Audio }
         });
 
-        const data = await response.json();
-        if (data.text) {
-          setUserResponse(data.text);
+        if (response.error) {
+          throw response.error;
+        }
+
+        const transcription = response.data?.transcript || '';
+        if (transcription) {
+          // Show verbatim transcription
+          setUserResponse(transcription);
           toast({
             title: "Speech Recorded",
-            description: `You said: "${data.text}"`,
+            description: `What you said: "${transcription}"`,
           });
         }
       };

@@ -27,12 +27,16 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are an English speaking assessment AI. Evaluate the user's spoken response based on these 4 specific criteria, each scored out of 10:
+            content: `You are an English speaking assessment AI. You will receive the EXACT verbatim transcript of what the user said, including any grammatical errors, incomplete sentences, or mispronunciations.
 
-            1. Grammar (0-10 points): Evaluate verb tenses, articles, sentence structure, word order
-            2. Speaking Fluency (0-10 points): Assess speech flow, natural pace, hesitations, confidence
-            3. Vocabulary (0-10 points): Range of vocabulary, word choice appropriateness, variety
-            4. Pronunciation/Clarity (0-10 points): Understandability, accent clarity, articulation
+            Your task is to:
+            1. Analyze the RAW transcript exactly as spoken (without correcting it in your mind)
+            2. Evaluate it based on these 4 criteria, each scored out of 10:
+
+            - Grammar (0-10 points): Evaluate verb tenses, articles, sentence structure, word order based on what was ACTUALLY said
+            - Speaking Fluency (0-10 points): Assess speech flow, natural pace, hesitations, confidence from the transcript
+            - Vocabulary (0-10 points): Range of vocabulary, word choice appropriateness, variety in what was said
+            - Pronunciation/Clarity (0-10 points): Understandability, clarity (infer from transcript quality)
             
             Expected level: ${level}
             
@@ -43,12 +47,18 @@ serve(async (req) => {
             - 3-4: Fair, significant room for improvement
             - 1-2: Needs much improvement
             
+            IMPORTANT: If the transcript contains grammatical errors, reflect this in your grammar score. If it shows incomplete sentences or hesitations, reflect this in fluency. Do NOT assume what the user meant to say.
+
+            3. Provide a corrected version ONLY if there are errors. If the speech was correct, do not provide corrections.
+            
             Return a JSON response with:
             - grammarScore: number (0-10)
             - fluencyScore: number (0-10)
             - vocabularyScore: number (0-10)
             - pronunciationScore: number (0-10)
             - totalScore: number (sum of all 4 scores out of 40)
+            - hasErrors: boolean (true if there were any errors)
+            - correctedVersion: string (only if hasErrors is true, otherwise empty string)
             - feedback: string (encouraging sentence with specific improvements, max 20 words)`
           },
           {

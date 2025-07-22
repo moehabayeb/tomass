@@ -187,7 +187,7 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
           }
 
           const transcription = transcribeData?.text || transcribeData?.transcript || '';
-          console.log('✅ Transcription received:', transcription);
+          console.log('✅ Raw transcription received:', transcription);
           
           if (!transcription.trim()) {
             setUserResponse('❌ No audio detected - please try speaking louder');
@@ -197,6 +197,10 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
             }, 3000);
             return;
           }
+
+          // Show what the user actually said first
+          setUserResponse(`What you said: "${transcription}"`);
+          console.log('🗣️ User said:', transcription);
 
           // Skip the initial display - go directly to evaluation
 

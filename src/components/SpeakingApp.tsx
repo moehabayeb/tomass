@@ -363,9 +363,9 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       setIsRecording(true);
       setRecordingStartTime(Date.now());
       
-      // Step 1: Record and transcribe
+      // Step 1: Record and transcribe (verbatim)
       const transcript = await sendToTranscribe();
-      addChatBubble(transcript, "user");
+      addChatBubble(`💭 What you said: "${transcript}"`, "user");
 
       // Set processing state while getting feedback
       setIsProcessing(true);
@@ -373,14 +373,22 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       // Calculate response time for XP bonus
       const responseTime = recordingStartTime ? Date.now() - recordingStartTime : 0;
 
-      // Step 2: Get grammar feedback
+      // Step 2: Get grammar feedback with potential corrections
       const feedback = await sendToFeedback(transcript);
       
       setIsProcessing(false);
 
       // Step 3: Display feedback with text-to-speech, wait for completion
+      // Show if there are errors or improvements
+      let feedbackMessage = feedback.message;
+      
+      // If the response contains corrections, show both the feedback and the corrected version
+      if (feedback.corrected && feedback.corrected !== transcript) {
+        feedbackMessage = `${feedback.message} You could also say: "${feedback.corrected}"`;
+      }
+      
       await new Promise<void>((resolve) => {
-        showBotMessage(feedback.message, () => {
+        showBotMessage(feedbackMessage, () => {
           console.log('Feedback TTS completed');
           resolve();
         });
