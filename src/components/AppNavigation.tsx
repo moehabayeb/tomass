@@ -12,7 +12,7 @@ import DailyTips from './DailyTips';
 import DailyTipsBadge from './DailyTipsBadge';
 import BookmarksView from './BookmarksView';
 import BadgesView from './BadgesView';
-import { AvatarDisplay } from './AvatarDisplay';
+import { EnhancedAvatarDisplay } from './EnhancedAvatarDisplay';
 import { LevelUpPopup } from './LevelUpPopup';
 import { XPBoostAnimation } from './XPBoostAnimation';
 import { StreakCounter } from './StreakCounter';
@@ -137,15 +137,22 @@ export default function AppNavigation() {
         <DailyTips onClose={() => setShowDailyTips(false)} />
       )}
 
-      {/* User Dropdown - Always visible when authenticated */}
-      {user && isAuthenticated && (
-        <div className="fixed top-4 left-4 z-20">
+      {/* User Authentication Section */}
+      <div className="fixed top-4 left-4 z-20">
+        {user && isAuthenticated ? (
           <UserDropdown 
             user={user} 
             profile={profile} 
           />
-        </div>
-      )}
+        ) : (
+          <a
+            href="/auth"
+            className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground px-4 py-2 rounded-lg shadow-lg transition-all duration-200 hover:shadow-xl hover:scale-105 flex items-center gap-2 font-medium"
+          >
+            <span>Sign In to Track XP</span>
+          </a>
+        )}
+      </div>
 
       {/* Navigation Dropdown - Always visible */}
       <NavigationDropdown 
@@ -153,27 +160,18 @@ export default function AppNavigation() {
         onModeChange={setCurrentMode} 
       />
 
-      {/* User Avatar with Streak Badge - Only show in speaking mode */}
-      {currentMode === 'speaking' && userProfile && (
+      {/* User Avatar with Streak Badge - Only show in speaking mode when authenticated */}
+      {currentMode === 'speaking' && userProfile && user && isAuthenticated && (
         <div className="fixed top-16 left-4 z-20">
-          <div className="relative">
-            <AvatarDisplay
-              level={userProfile.level}
-              xp={Math.max(0, xpProgress.current)}
-              maxXP={xpProgress.max}
-              userName={userProfile.name}
-              showXPBar={true}
-              size="md"
-            />
-            {/* Streak Badge */}
-            {streakData.currentStreak > 0 && (
-              <div className="absolute -top-2 -right-2 bg-gradient-to-r from-orange-500 to-red-500 rounded-full px-2 py-1 min-w-[32px] h-8 flex items-center justify-center shadow-lg border-2 border-white">
-                <span className="text-white text-sm font-bold flex items-center gap-1">
-                  🔥 {streakData.currentStreak}
-                </span>
-              </div>
-            )}
-          </div>
+          <EnhancedAvatarDisplay
+            level={userProfile.level}
+            xp={Math.max(0, xpProgress.current)}
+            maxXP={xpProgress.max}
+            userName={userProfile.name}
+            showXPBar={true}
+            size="md"
+            streakCount={streakData.currentStreak}
+          />
         </div>
       )}
 

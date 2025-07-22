@@ -1,5 +1,5 @@
-// Data Service Layer - Prepares for easy Supabase Auth integration
-// Currently uses localStorage, can be easily switched to Supabase tables
+// Data Service Layer - Uses Supabase for data persistence
+import { supabase } from '@/integrations/supabase/client';
 
 export interface UserProfileData {
   userId?: string;
@@ -31,22 +31,76 @@ export interface ConversationMessage {
 class DataService {
   // User Profile Management
   async getUserProfile(userId?: string): Promise<UserProfileData | null> {
-    // TODO: Replace with Supabase query when auth is implemented
-    // const { data, error } = await supabase.from('profiles').select('*').eq('user_id', userId).single();
-    
-    const savedProfile = localStorage.getItem('userProfile');
-    if (savedProfile) {
-      return JSON.parse(savedProfile);
+    if (!userId) {
+      // Fallback to localStorage for non-authenticated users
+      const savedProfile = localStorage.getItem('userProfile');
+      if (savedProfile) {
+        return JSON.parse(savedProfile);
+      }
+      return null;
     }
-    
-    return null;
+
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching user profile:', error);
+        return null;
+      }
+
+      if (data) {
+        return {
+          userId: data.user_id,
+          name: data.name,
+          level: data.level,
+          xp: data.xp,
+          currentStreak: data.current_streak,
+          bestStreak: data.best_streak,
+          lastVisitDate: data.last_visit_date,
+          userLevel: data.user_level as 'beginner' | 'intermediate' | 'advanced',
+          soundEnabled: data.sound_enabled
+        };
+      }
+
+      return null;
+    } catch (error) {
+      console.error('Error in getUserProfile:', error);
+      return null;
+    }
   }
 
   async saveUserProfile(profile: UserProfileData): Promise<void> {
-    // TODO: Replace with Supabase upsert when auth is implemented
-    // const { error } = await supabase.from('profiles').upsert(profile);
-    
-    localStorage.setItem('userProfile', JSON.stringify(profile));
+    if (!profile.userId) {
+      // Fallback to localStorage for non-authenticated users
+      localStorage.setItem('userProfile', JSON.stringify(profile));
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('user_profiles')
+        .upsert({
+          user_id: profile.userId,
+          name: profile.name,
+          level: profile.level,
+          xp: profile.xp,
+          current_streak: profile.currentStreak,
+          best_streak: profile.bestStreak,
+          last_visit_date: profile.lastVisitDate,
+          user_level: profile.userLevel,
+          sound_enabled: profile.soundEnabled
+        });
+
+      if (error) {
+        console.error('Error saving user profile:', error);
+      }
+    } catch (error) {
+      console.error('Error in saveUserProfile:', error);
+    }
   }
 
   // Streak Management
@@ -127,10 +181,14 @@ class DataService {
 
   // Clear all data (for logout or reset)
   async clearUserData(): Promise<void> {
+    // Clear localStorage data
     localStorage.removeItem('userProfile');
     localStorage.removeItem('streakData');
     localStorage.removeItem('chatHistory');
     localStorage.removeItem('conversationMessages');
+    
+    // Clear session storage
+    sessionStorage.clear();
   }
 }
 

@@ -1,36 +1,41 @@
-// User Data Hook - Prepares for easy Supabase Auth integration
-// This hook will make it easy to switch from localStorage to Supabase when auth is added
-
+// User Data Hook - Integrated with Supabase Auth
 import { useState, useEffect } from 'react';
 import { dataService, UserProfileData } from '@/services/dataService';
+import { useAuthReady } from '@/hooks/useAuthReady';
 
 export const useUserData = () => {
   const [userProfile, setUserProfile] = useState<UserProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { user, isAuthenticated } = useAuthReady();
 
-  // Load user data on mount
+  // Load user data when auth state changes
   useEffect(() => {
-    loadUserData();
-  }, []);
+    if (isAuthenticated && user) {
+      loadUserData();
+    } else {
+      setUserProfile(null);
+      setIsLoading(false);
+    }
+  }, [user, isAuthenticated]);
 
   const loadUserData = async () => {
     try {
       setIsLoading(true);
-      // TODO: Get userId from auth context when implemented
-      const userId = undefined; // Will be: auth.user?.id
+      const userId = user?.id;
       
       const profile = await dataService.getUserProfile(userId);
       
       if (profile) {
         setUserProfile(profile);
-      } else {
-        // Create default profile for new user
+      } else if (userId) {
+        // Create default profile for new authenticated user
         const defaultProfile: UserProfileData = {
-          name: 'Tomas Hoca',
-          level: 5,
-          xp: 230,
-          currentStreak: 1,
-          bestStreak: 1,
+          userId,
+          name: user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Student',
+          level: 1,
+          xp: 0,
+          currentStreak: 0,
+          bestStreak: 0,
           lastVisitDate: new Date().toDateString(),
           userLevel: 'beginner',
           soundEnabled: true
@@ -62,7 +67,6 @@ export const useUserData = () => {
     try {
       await dataService.clearUserData();
       setUserProfile(null);
-      // TODO: Call supabase.auth.signOut() when auth is implemented
     } catch (error) {
       console.error('Error during logout:', error);
     }

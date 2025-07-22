@@ -14,6 +14,63 @@ export type Database = {
   }
   public: {
     Tables: {
+      chat_sessions: {
+        Row: {
+          corrected: string
+          created_at: string
+          id: string
+          input: string
+          session_time: string
+          user_id: string
+        }
+        Insert: {
+          corrected: string
+          created_at?: string
+          id?: string
+          input: string
+          session_time: string
+          user_id: string
+        }
+        Update: {
+          corrected?: string
+          created_at?: string
+          id?: string
+          input?: string
+          session_time?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      conversation_messages: {
+        Row: {
+          created_at: string
+          id: string
+          is_system: boolean
+          is_user: boolean
+          message_timestamp: number | null
+          text: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_system?: boolean
+          is_user?: boolean
+          message_timestamp?: number | null
+          text: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_system?: boolean
+          is_user?: boolean
+          message_timestamp?: number | null
+          text?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       meetings: {
         Row: {
           created_at: string
@@ -83,6 +140,51 @@ export type Database = {
           id?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      user_profiles: {
+        Row: {
+          best_streak: number
+          created_at: string
+          current_streak: number
+          id: string
+          last_visit_date: string
+          level: number
+          name: string
+          sound_enabled: boolean
+          updated_at: string
+          user_id: string
+          user_level: string
+          xp: number
+        }
+        Insert: {
+          best_streak?: number
+          created_at?: string
+          current_streak?: number
+          id?: string
+          last_visit_date?: string
+          level?: number
+          name?: string
+          sound_enabled?: boolean
+          updated_at?: string
+          user_id: string
+          user_level?: string
+          xp?: number
+        }
+        Update: {
+          best_streak?: number
+          created_at?: string
+          current_streak?: number
+          id?: string
+          last_visit_date?: string
+          level?: number
+          name?: string
+          sound_enabled?: boolean
+          updated_at?: string
+          user_id?: string
+          user_level?: string
+          xp?: number
         }
         Relationships: []
       }
