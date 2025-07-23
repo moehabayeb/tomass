@@ -210,27 +210,27 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         analyser.getByteFrequencyData(dataArray);
         const average = dataArray.reduce((sum, value) => sum + value, 0) / bufferLength;
         
-        // Voice activity threshold
-        const isCurrentlySpeaking = average > 30;
-        
-        if (isCurrentlySpeaking && !isCurrentlySpeakingLocal) {
-          // Speech started
-          isCurrentlySpeakingLocal = true;
-          speechStartTime = Date.now();
-          clearTimeout(silenceTimeout);
-          console.log('Speech detected, recording...');
-        } else if (!isCurrentlySpeaking && isCurrentlySpeakingLocal) {
-          // Potential silence detected
-          silenceTimeout = setTimeout(() => {
-            // Stop recording after 1.5 seconds of silence
-            if (Date.now() - speechStartTime > 1000) { // Minimum 1 second of speech
-              console.log('Silence detected, stopping recording');
-              mediaRecorder.stop();
-              audioContext.close();
-              resolve(undefined);
-            }
-          }, 1500);
-        }
+      // Voice activity threshold - lowered for better sensitivity
+      const isCurrentlySpeaking = average > 20;
+      
+      if (isCurrentlySpeaking && !isCurrentlySpeakingLocal) {
+        // Speech started
+        isCurrentlySpeakingLocal = true;
+        speechStartTime = Date.now();
+        clearTimeout(silenceTimeout);
+        console.log('Speech detected, recording...', { average });
+      } else if (!isCurrentlySpeaking && isCurrentlySpeakingLocal) {
+        // Potential silence detected
+        silenceTimeout = setTimeout(() => {
+          // Stop recording after 2.5 seconds of silence, minimum 1.5 seconds of speech
+          if (Date.now() - speechStartTime > 1500) {
+            console.log('Silence detected, stopping recording');
+            mediaRecorder.stop();
+            audioContext.close();
+            resolve(undefined);
+          }
+        }, 2500);
+      }
         
         if (mediaRecorder.state === 'recording') {
           requestAnimationFrame(checkAudio);
@@ -346,6 +346,13 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       
       // Step 1: Record and transcribe (verbatim)
       const transcript = await sendToTranscribe();
+      
+      // Check if transcript is empty
+      if (!transcript || transcript.trim() === "") {
+        addChatBubble("We couldn't hear you clearly. Try speaking louder or check your microphone.", "system");
+        return;
+      }
+      
       addChatBubble(`💭 What you said: "${transcript}"`, "user");
 
       // Set processing state while getting feedback
