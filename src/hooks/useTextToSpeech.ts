@@ -34,23 +34,45 @@ export const useTextToSpeech = () => {
       utterance.pitch = 1;
       utterance.volume = 1.0; // Maximum volume
       
-      // Choose appropriate voice based on language
+      // Explicitly select voice based on language with fallback logic
       const voices = speechSynthesis.getVoices();
-      let preferredVoice;
+      let selectedVoice = null;
       
       if (detectedLang === 'tr-TR') {
-        preferredVoice = voices.find(voice => 
-          voice.lang?.includes('tr') || voice.lang?.includes('TR')
-        );
+        // Priority order for Turkish voices
+        selectedVoice = voices.find(voice => 
+          voice.lang === 'tr-TR' && (
+            voice.name.includes('Google') || 
+            voice.name.includes('TTS') || 
+            voice.name.includes('Turkish') ||
+            voice.name.includes('Filiz') ||
+            voice.name.includes('Zeynep')
+          )
+        ) || voices.find(voice => voice.lang === 'tr-TR') || 
+           voices.find(voice => voice.lang?.includes('tr'));
+        
+        if (!selectedVoice) {
+          console.warn('No Turkish voice found - using system default');
+          // Could add toast notification here if needed
+        }
       } else {
-        preferredVoice = voices.find(voice => 
-          voice.lang?.includes('en') && 
-          (voice.name?.includes('Female') || voice.name?.includes('Google') || voice.name?.includes('US'))
-        );
+        // Priority order for English voices
+        selectedVoice = voices.find(voice => 
+          voice.lang === 'en-US' && (
+            voice.name.includes('Google') || 
+            voice.name.includes('Female') || 
+            voice.name.includes('Samantha') ||
+            voice.name.includes('Karen')
+          )
+        ) || voices.find(voice => voice.lang === 'en-US') ||
+           voices.find(voice => voice.lang?.includes('en'));
       }
       
-      if (preferredVoice) {
-        utterance.voice = preferredVoice;
+      if (selectedVoice) {
+        utterance.voice = selectedVoice;
+        console.log(`Selected voice: ${selectedVoice.name} (${selectedVoice.lang})`);
+      } else {
+        console.warn(`No suitable voice found for ${detectedLang}`);
       }
 
       utterance.onstart = () => {
