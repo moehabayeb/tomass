@@ -731,12 +731,22 @@ function ModulePractice({ module, onComplete, onBack }: ModulePracticeProps) {
   const [isTeacherReading, setIsTeacherReading] = useState(false);
   const [readingComplete, setReadingComplete] = useState(false);
   const [correctAnswers, setCorrectAnswers] = useState(0);
+  const [hasBeenRead, setHasBeenRead] = useState<Record<string, boolean>>({});
   const { incrementTotalExercises } = useBadgeSystem();
   const { speak, isSpeaking } = useTextToSpeech();
   const { avatarState } = useAvatarState({
     isSpeaking,
     isProcessing: isTeacherReading
   });
+
+  const moduleKey = `grammar-${module.id}`;
+
+  // Auto-start reading for first-time visitors
+  useEffect(() => {
+    if (showLesson && !hasBeenRead[moduleKey] && !isTeacherReading) {
+      startTeacherReading();
+    }
+  }, [showLesson, module.id]);
 
   // Teacher reading functionality
   const startTeacherReading = async () => {
@@ -793,6 +803,8 @@ function ModulePractice({ module, onComplete, onBack }: ModulePracticeProps) {
     
     setIsTeacherReading(false);
     setReadingComplete(true);
+    // Mark this module as read
+    setHasBeenRead(prev => ({ ...prev, [moduleKey]: true }));
   };
 
   // ENHANCED DEBUG LOGGING
@@ -901,30 +913,58 @@ function ModulePractice({ module, onComplete, onBack }: ModulePracticeProps) {
 
           {/* Teacher Reading or Start Button */}
           {!readingComplete ? (
-            <Button
-              onClick={startTeacherReading}
-              className="w-full py-6 text-lg font-bold rounded-2xl mb-4"
-              style={{
-                background: 'linear-gradient(45deg, hsl(var(--secondary)), hsl(var(--accent)))',
-                color: 'white',
-                boxShadow: 'var(--shadow-strong)'
-              }}
-              disabled={isTeacherReading || isSpeaking}
-            >
-              {isTeacherReading ? "👨‍🏫 Tomas is Reading..." : "▶️ Let Tomas Read This Lesson"}
-            </Button>
+            <>
+              {!hasBeenRead[moduleKey] && (
+                <Button
+                  onClick={startTeacherReading}
+                  className="w-full py-6 text-lg font-bold rounded-2xl mb-4"
+                  style={{
+                    background: 'linear-gradient(45deg, hsl(var(--secondary)), hsl(var(--accent)))',
+                    color: 'white',
+                    boxShadow: 'var(--shadow-strong)'
+                  }}
+                  disabled={isTeacherReading || isSpeaking}
+                >
+                  {isTeacherReading ? "👨‍🏫 Tomas is Reading..." : "▶️ Let Tomas Read This Lesson"}
+                </Button>
+              )}
+              {hasBeenRead[moduleKey] && (
+                <Button
+                  onClick={startTeacherReading}
+                  variant="outline"
+                  size="sm"
+                  className="w-full mb-4 bg-white/10 border-white/30 text-white hover:bg-white/20"
+                  disabled={isTeacherReading || isSpeaking}
+                >
+                  🔁 Replay Tomas
+                </Button>
+              )}
+            </>
           ) : (
-            <Button
-              onClick={startExercises}
-              className="w-full py-6 text-lg font-bold rounded-2xl"
-              style={{
-                background: 'linear-gradient(45deg, hsl(var(--primary)), hsl(var(--primary-variant)))',
-                color: 'white',
-                boxShadow: 'var(--shadow-strong)'
-              }}
-            >
-              🎯 Start Practice ({module.exercises.length} questions)
-            </Button>
+            <div className="space-y-3">
+              <Button
+                onClick={startExercises}
+                className="w-full py-6 text-lg font-bold rounded-2xl"
+                style={{
+                  background: 'linear-gradient(45deg, hsl(var(--primary)), hsl(var(--primary-variant)))',
+                  color: 'white',
+                  boxShadow: 'var(--shadow-strong)'
+                }}
+              >
+                🎯 Start Practice ({module.exercises.length} questions)
+              </Button>
+              {hasBeenRead[moduleKey] && (
+                <Button
+                  onClick={startTeacherReading}
+                  variant="outline"
+                  size="sm"
+                  className="w-full bg-white/10 border-white/30 text-white hover:bg-white/20"
+                  disabled={isTeacherReading || isSpeaking}
+                >
+                  🔁 Replay Tomas
+                </Button>
+              )}
+            </div>
           )}
           
           {/* Teacher Reading Phase */}

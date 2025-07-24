@@ -1934,6 +1934,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
   const [currentPhase, setCurrentPhase] = useState<LessonPhase>('intro');
   const [isTeacherReading, setIsTeacherReading] = useState(false);
   const [readingComplete, setReadingComplete] = useState(false);
+  const [hasBeenRead, setHasBeenRead] = useState<Record<string, boolean>>({});
   const [listeningIndex, setListeningIndex] = useState(0);
   const [speakingIndex, setSpeakingIndex] = useState(0);
   const [correctAnswers, setCorrectAnswers] = useState(0);
@@ -1998,6 +1999,14 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
   const currentModuleData = getCurrentModuleData();
   const totalQuestions = currentModuleData.speakingPractice.length;
   const overallProgress = ((speakingIndex + (correctAnswers > 0 ? 1 : 0)) / totalQuestions) * 100;
+  const lessonKey = `${selectedLevel}-${selectedModule}`;
+
+  // Auto-start reading for first-time visitors
+  useEffect(() => {
+    if (currentPhase === 'intro' && !hasBeenRead[lessonKey] && !isTeacherReading) {
+      startTeacherReading();
+    }
+  }, [selectedModule, selectedLevel, currentPhase]);
 
   // Teacher reading functionality
   const startTeacherReading = async () => {
@@ -2032,6 +2041,8 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     setIsTeacherReading(false);
     setReadingComplete(true);
     setCurrentPhase('listening');
+    // Mark this lesson as read
+    setHasBeenRead(prev => ({ ...prev, [lessonKey]: true }));
   };
 
   // Audio recording setup
@@ -3019,15 +3030,30 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
                 </div>
               )}
 
-              <div className="text-center pt-4">
-                <Button
-                  onClick={startTeacherReading}
-                  className="bg-white/20 text-white hover:bg-white/30"
-                  disabled={isSpeaking}
-                >
-                  {isSpeaking ? "Tomas is Reading..." : "▶️ Let Tomas Read This Lesson"}
-                </Button>
-              </div>
+              {!hasBeenRead[lessonKey] && (
+                <div className="text-center pt-4">
+                  <Button
+                    onClick={startTeacherReading}
+                    className="bg-white/20 text-white hover:bg-white/30"
+                    disabled={isSpeaking}
+                  >
+                    {isSpeaking ? "Tomas is Reading..." : "▶️ Let Tomas Read This Lesson"}
+                  </Button>
+                </div>
+              )}
+              {hasBeenRead[lessonKey] && (
+                <div className="text-center pt-4">
+                  <Button
+                    onClick={startTeacherReading}
+                    variant="outline"
+                    size="sm"
+                    className="bg-white/10 text-white hover:bg-white/20"
+                    disabled={isSpeaking}
+                  >
+                    🔁 Replay Tomas
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
