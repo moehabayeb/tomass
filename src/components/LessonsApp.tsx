@@ -2013,25 +2013,23 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     setIsTeacherReading(true);
     setCurrentPhase('teacher-reading');
     
-    // Read Turkish introduction
-    const turkishIntro = currentModuleData.intro.split('\n').find(line => line.includes('Bu modülde') || line.includes('modülde'));
-    if (turkishIntro) {
-      await new Promise<void>((resolve) => {
-        speak(turkishIntro, resolve);
-      });
-    }
+    // Read full lesson content line by line
+    const introLines = currentModuleData.intro.split('\n');
     
-    // Read English examples from listening examples
-    for (const example of currentModuleData.listeningExamples.slice(0, 3)) {
-      await new Promise<void>((resolve) => {
-        speak(example, resolve);
-      });
+    for (const line of introLines) {
+      if (line.trim() && !line.includes('Tabela') && !line.includes('tablo')) {
+        await new Promise<void>((resolve) => {
+          // Explicitly set language for Turkish content
+          const isTurkish = line.includes('Bu modülde') || line.includes('modülde') || line.match(/[çğıöşüÇĞIİÖŞÜ]/);
+          speak(line, resolve, isTurkish ? 'tr-TR' : 'en-US');
+        });
+      }
     }
     
     // Check if there's a table and announce it
     if ('table' in currentModuleData && currentModuleData.table) {
       await new Promise<void>((resolve) => {
-        speak("Şimdi lütfen aşağıdaki tabloya göz atın.", resolve);
+        speak("Şimdi lütfen aşağıdaki tabloya göz atın.", resolve, 'tr-TR');
       });
       
       // Wait for user to explore table (3 seconds)

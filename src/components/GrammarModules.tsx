@@ -752,49 +752,24 @@ function ModulePractice({ module, onComplete, onBack }: ModulePracticeProps) {
   const startTeacherReading = async () => {
     setIsTeacherReading(true);
     
-    // Read lesson content
+    // Read full lesson content line by line
     const lessonContent = module.lesson || "";
-    
-    // Extract Turkish parts (lines containing "Bu modülde", "✓", etc.)
     const lines = lessonContent.split('\n');
-    const turkishLines = lines.filter(line => 
-      line.includes('Bu modülde') || 
-      line.includes('modülde') || 
-      line.includes('Türkçe')
-    );
     
-    // Read Turkish explanation first
-    for (const turkishLine of turkishLines.slice(0, 1)) {
-      if (turkishLine.trim()) {
+    for (const line of lines) {
+      if (line.trim() && !line.includes('Examples:') && !line.includes('Practice:')) {
         await new Promise<void>((resolve) => {
-          speak(turkishLine.trim(), resolve);
+          // Explicitly set language for Turkish content
+          const isTurkish = line.includes('Bu modülde') || line.includes('modülde') || line.match(/[çğıöşüÇĞIİÖŞÜ]/);
+          speak(line, resolve, isTurkish ? 'tr-TR' : 'en-US');
         });
-      }
-    }
-    
-    // Read English examples from the lesson content
-    const englishLines = lines.filter(line => 
-      line.includes('✓') || 
-      line.includes('Example') ||
-      (line.includes('(') && line.includes(')')) ||
-      line.includes('am ') || line.includes('is ') || line.includes('are ')
-    );
-    
-    for (const example of englishLines.slice(0, 3)) {
-      if (example.trim() && !example.includes('Use')) {
-        const cleanExample = example.replace('✓', '').replace(/[()]/g, '').trim();
-        if (cleanExample) {
-          await new Promise<void>((resolve) => {
-            speak(cleanExample, resolve);
-          });
-        }
       }
     }
     
     // Announce table exploration if content suggests there should be a table
     if (lessonContent.includes('table') || lessonContent.includes('chart') || module.title.includes('Tablosu')) {
       await new Promise<void>((resolve) => {
-        speak("Şimdi lütfen aşağıdaki tabloya göz atın.", resolve);
+        speak("Şimdi lütfen aşağıdaki tabloya göz atın.", resolve, 'tr-TR');
       });
       
       // Wait for user to explore (3 seconds)
