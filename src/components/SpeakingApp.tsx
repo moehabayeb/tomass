@@ -183,13 +183,11 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       audioChunks.push(event.data);
     };
 
-    mediaRecorder.start();
-
     // Show recording message
     addChatBubble("🎙️ Listening...", "system");
 
     // Use voice activity detection with longer timeout for complete sentences
-    await new Promise(resolve => {
+    const audioBlob = await new Promise<Blob>(resolve => {
       let silenceTimeout: NodeJS.Timeout;
       let recordingTimeout: NodeJS.Timeout;
       
@@ -210,34 +208,43 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         analyser.getByteFrequencyData(dataArray);
         const average = dataArray.reduce((sum, value) => sum + value, 0) / bufferLength;
         
-      // Voice activity threshold - lowered for better sensitivity
-      const isCurrentlySpeaking = average > 20;
-      
-      if (isCurrentlySpeaking && !isCurrentlySpeakingLocal) {
-        // Speech started
-        isCurrentlySpeakingLocal = true;
-        speechStartTime = Date.now();
-        clearTimeout(silenceTimeout);
-        console.log('Speech detected, recording...', { average });
-      } else if (!isCurrentlySpeaking && isCurrentlySpeakingLocal) {
-        // Potential silence detected
-        silenceTimeout = setTimeout(() => {
-          // Stop recording after 2.5 seconds of silence, minimum 1.5 seconds of speech
-          if (Date.now() - speechStartTime > 1500) {
-            console.log('Silence detected, stopping recording');
-            mediaRecorder.stop();
-            audioContext.close();
-            resolve(undefined);
-          }
-        }, 2500);
-      }
+        // Voice activity threshold - lowered for better sensitivity
+        const isCurrentlySpeaking = average > 20;
+        
+        if (isCurrentlySpeaking && !isCurrentlySpeakingLocal) {
+          // Speech started
+          isCurrentlySpeakingLocal = true;
+          speechStartTime = Date.now();
+          clearTimeout(silenceTimeout);
+          console.log('Speech detected, recording...', { average });
+        } else if (!isCurrentlySpeaking && isCurrentlySpeakingLocal) {
+          // Potential silence detected
+          silenceTimeout = setTimeout(() => {
+            // Stop recording after 2.5 seconds of silence, minimum 1.5 seconds of speech
+            if (Date.now() - speechStartTime > 1500) {
+              console.log('Silence detected, stopping recording');
+              mediaRecorder.stop();
+            }
+          }, 2500);
+        }
         
         if (mediaRecorder.state === 'recording') {
           requestAnimationFrame(checkAudio);
         }
       };
       
-      // Start voice activity detection
+      // Set up recording stop handler
+      mediaRecorder.onstop = () => {
+        clearTimeout(silenceTimeout);
+        clearTimeout(recordingTimeout);
+        audioContext.close();
+        const blob = new Blob(audioChunks, { type: 'audio/webm' });
+        console.log('Recording stopped, audio blob size:', blob.size, 'bytes');
+        resolve(blob);
+      };
+      
+      // Start recording and voice activity detection
+      mediaRecorder.start();
       checkAudio();
       
       // Maximum recording time (10 seconds for complete sentences)
@@ -245,24 +252,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         if (mediaRecorder.state === 'recording') {
           console.log('Maximum recording time reached, stopping');
           mediaRecorder.stop();
-          audioContext.close();
-          resolve(undefined);
         }
       }, 10000);
-      
-      // Cleanup on stop
-      mediaRecorder.onstop = () => {
-        clearTimeout(silenceTimeout);
-        clearTimeout(recordingTimeout);
-        audioContext.close();
-      };
-    });
-
-    const audioBlob = await new Promise<Blob>(resolve => {
-      mediaRecorder.onstop = () => {
-        const blob = new Blob(audioChunks, { type: 'audio/webm' });
-        resolve(blob);
-      };
     });
 
     // Stop all tracks to release microphone
