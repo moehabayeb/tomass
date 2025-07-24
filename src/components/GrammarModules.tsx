@@ -759,19 +759,9 @@ function ModulePractice({ module, onComplete, onBack }: ModulePracticeProps) {
     for (const line of lines) {
       if (line.trim() && !line.includes('Examples:') && !line.includes('Practice:')) {
         await new Promise<void>((resolve) => {
-          // Improved language detection - check for clear English patterns first
-          const isEnglish = line.match(/^[a-zA-Z0-9\s.,!?():-]+$/) && !line.match(/[çğıöşüÇĞIİÖŞÜ]/) && 
-                           (line.includes('I am') || line.includes('He is') || line.includes('She is') || 
-                            line.includes('They are') || line.includes('We are') || line.includes('You are') ||
-                            line.match(/\b(am|is|are|the|and|to|in|of|for|when|use|with)\b/));
-          
-          const isTurkish = !isEnglish && (line.includes('Bu modülde') || line.includes('modülde') || 
-                           line.includes('öğreneceğiz') || line.includes('Örnek') || line.includes('cümle') ||
-                           line.match(/[çğıöşüÇĞIİÖŞÜ]/) || line.includes('fiil'));
-          
-          const language = isEnglish ? 'en-US' : (isTurkish ? 'tr-TR' : 'en-US');
-          console.log(`Line: "${line}" -> Language: ${language}`);
-          speak(line, resolve, language);
+          // Explicitly set language for Turkish content
+          const isTurkish = line.includes('Bu modülde') || line.includes('modülde') || line.match(/[çğıöşüÇĞIİÖŞÜ]/);
+          speak(line, resolve, isTurkish ? 'tr-TR' : 'en-US');
         });
       }
     }
