@@ -9,6 +9,9 @@ import { useWindowSize } from '@react-hook/window-size';
 import BookmarkButton from './BookmarkButton';
 import { useGamification } from '@/hooks/useGamification';
 import { useBadgeSystem } from '@/hooks/useBadgeSystem';
+import { useTextToSpeech } from '@/hooks/useTextToSpeech';
+import { useAvatarState } from '@/hooks/useAvatarState';
+import AnimatedAvatar from './AnimatedAvatar';
 
 // Simple confetti animation data (placeholder)
 const confettiAnimation = {
@@ -725,8 +728,72 @@ function ModulePractice({ module, onComplete, onBack }: ModulePracticeProps) {
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
   const [showLesson, setShowLesson] = useState(true);
+  const [isTeacherReading, setIsTeacherReading] = useState(false);
+  const [readingComplete, setReadingComplete] = useState(false);
   const [correctAnswers, setCorrectAnswers] = useState(0);
   const { incrementTotalExercises } = useBadgeSystem();
+  const { speak, isSpeaking } = useTextToSpeech();
+  const { avatarState } = useAvatarState({
+    isSpeaking,
+    isProcessing: isTeacherReading
+  });
+
+  // Teacher reading functionality
+  const startTeacherReading = async () => {
+    setIsTeacherReading(true);
+    
+    // Read lesson content
+    const lessonContent = module.lesson || "";
+    
+    // Extract Turkish parts (lines containing "Bu modülde", "✓", etc.)
+    const lines = lessonContent.split('\n');
+    const turkishLines = lines.filter(line => 
+      line.includes('Bu modülde') || 
+      line.includes('modülde') || 
+      line.includes('Türkçe')
+    );
+    
+    // Read Turkish explanation first
+    for (const turkishLine of turkishLines.slice(0, 1)) {
+      if (turkishLine.trim()) {
+        await new Promise<void>((resolve) => {
+          speak(turkishLine.trim(), resolve);
+        });
+      }
+    }
+    
+    // Read English examples from the lesson content
+    const englishLines = lines.filter(line => 
+      line.includes('✓') || 
+      line.includes('Example') ||
+      (line.includes('(') && line.includes(')')) ||
+      line.includes('am ') || line.includes('is ') || line.includes('are ')
+    );
+    
+    for (const example of englishLines.slice(0, 3)) {
+      if (example.trim() && !example.includes('Use')) {
+        const cleanExample = example.replace('✓', '').replace(/[()]/g, '').trim();
+        if (cleanExample) {
+          await new Promise<void>((resolve) => {
+            speak(cleanExample, resolve);
+          });
+        }
+      }
+    }
+    
+    // Announce table exploration if content suggests there should be a table
+    if (lessonContent.includes('table') || lessonContent.includes('chart') || module.title.includes('Tablosu')) {
+      await new Promise<void>((resolve) => {
+        speak("Şimdi lütfen aşağıdaki tabloya göz atın.", resolve);
+      });
+      
+      // Wait for user to explore (3 seconds)
+      await new Promise(resolve => setTimeout(resolve, 3000));
+    }
+    
+    setIsTeacherReading(false);
+    setReadingComplete(true);
+  };
 
   // ENHANCED DEBUG LOGGING
   console.log('🚨🚨🚨 MODULEPRACTICE COMPONENT IS LOADING! 🚨🚨🚨');
@@ -832,18 +899,58 @@ function ModulePractice({ module, onComplete, onBack }: ModulePracticeProps) {
             </CardContent>
           </Card>
 
-          {/* Start Button */}
-          <Button
-            onClick={startExercises}
-            className="w-full py-6 text-lg font-bold rounded-2xl"
-            style={{
-              background: 'linear-gradient(45deg, hsl(var(--primary)), hsl(var(--primary-variant)))',
-              color: 'white',
-              boxShadow: 'var(--shadow-strong)'
-            }}
-          >
-            🎯 Start Practice ({module.exercises.length} questions)
-          </Button>
+          {/* Teacher Reading or Start Button */}
+          {!readingComplete ? (
+            <Button
+              onClick={startTeacherReading}
+              className="w-full py-6 text-lg font-bold rounded-2xl mb-4"
+              style={{
+                background: 'linear-gradient(45deg, hsl(var(--secondary)), hsl(var(--accent)))',
+                color: 'white',
+                boxShadow: 'var(--shadow-strong)'
+              }}
+              disabled={isTeacherReading || isSpeaking}
+            >
+              {isTeacherReading ? "👨‍🏫 Tomas is Reading..." : "▶️ Let Tomas Read This Lesson"}
+            </Button>
+          ) : (
+            <Button
+              onClick={startExercises}
+              className="w-full py-6 text-lg font-bold rounded-2xl"
+              style={{
+                background: 'linear-gradient(45deg, hsl(var(--primary)), hsl(var(--primary-variant)))',
+                color: 'white',
+                boxShadow: 'var(--shadow-strong)'
+              }}
+            >
+              🎯 Start Practice ({module.exercises.length} questions)
+            </Button>
+          )}
+          
+          {/* Teacher Reading Phase */}
+          {isTeacherReading && (
+            <Card className="bg-white/10 border-white/20 mb-6">
+              <CardContent className="p-6">
+                <div className="text-center">
+                  <div className="mb-6">
+                    <AnimatedAvatar 
+                      size="lg" 
+                      state={avatarState}
+                      className="mx-auto mb-4"
+                    />
+                  </div>
+                  <div className="text-white/90 text-base">
+                    <p className="mb-4">🎧 Listen carefully as Tomas reads through this lesson...</p>
+                    <div className="flex items-center justify-center space-x-2">
+                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
+                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     );

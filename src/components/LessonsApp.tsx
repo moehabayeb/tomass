@@ -8,6 +8,7 @@ import { useTextToSpeech } from '@/hooks/useTextToSpeech';
 import { useGamification } from '@/hooks/useGamification';
 import { useBadgeSystem } from '@/hooks/useBadgeSystem';
 import CanvasAvatar from './CanvasAvatar';
+import AnimatedAvatar from './AnimatedAvatar';
 import { useAvatarState } from '@/hooks/useAvatarState';
 import { supabase } from '@/integrations/supabase/client';
 import Confetti from 'react-confetti';
@@ -18,7 +19,7 @@ interface LessonsAppProps {
 }
 
 type ViewState = 'levels' | 'modules' | 'lesson';
-type LessonPhase = 'intro' | 'listening' | 'speaking' | 'completed';
+type LessonPhase = 'intro' | 'teacher-reading' | 'listening' | 'speaking' | 'completed';
 
 // Levels data
 const LEVELS = [
@@ -1931,6 +1932,8 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
   
   // Lesson state
   const [currentPhase, setCurrentPhase] = useState<LessonPhase>('intro');
+  const [isTeacherReading, setIsTeacherReading] = useState(false);
+  const [readingComplete, setReadingComplete] = useState(false);
   const [listeningIndex, setListeningIndex] = useState(0);
   const [speakingIndex, setSpeakingIndex] = useState(0);
   const [correctAnswers, setCorrectAnswers] = useState(0);
@@ -1995,6 +1998,41 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
   const currentModuleData = getCurrentModuleData();
   const totalQuestions = currentModuleData.speakingPractice.length;
   const overallProgress = ((speakingIndex + (correctAnswers > 0 ? 1 : 0)) / totalQuestions) * 100;
+
+  // Teacher reading functionality
+  const startTeacherReading = async () => {
+    setIsTeacherReading(true);
+    setCurrentPhase('teacher-reading');
+    
+    // Read Turkish introduction
+    const turkishIntro = currentModuleData.intro.split('\n').find(line => line.includes('Bu modülde') || line.includes('modülde'));
+    if (turkishIntro) {
+      await new Promise<void>((resolve) => {
+        speak(turkishIntro, resolve);
+      });
+    }
+    
+    // Read English examples from listening examples
+    for (const example of currentModuleData.listeningExamples.slice(0, 3)) {
+      await new Promise<void>((resolve) => {
+        speak(example, resolve);
+      });
+    }
+    
+    // Check if there's a table and announce it
+    if ('table' in currentModuleData && currentModuleData.table) {
+      await new Promise<void>((resolve) => {
+        speak("Şimdi lütfen aşağıdaki tabloya göz atın.", resolve);
+      });
+      
+      // Wait for user to explore table (3 seconds)
+      await new Promise(resolve => setTimeout(resolve, 3000));
+    }
+    
+    setIsTeacherReading(false);
+    setReadingComplete(true);
+    setCurrentPhase('listening');
+  };
 
   // Audio recording setup
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
@@ -2805,6 +2843,37 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
           </Card>
         )}
 
+        {/* Teacher Reading Phase */}
+        {currentPhase === 'teacher-reading' && (
+          <Card className="bg-white/10 border-white/20 mb-6">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center">
+                <BookOpen className="h-5 w-5 mr-2" />
+                Tomas is Teaching 👨‍🏫
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="text-center">
+                <div className="mb-6">
+                  <AnimatedAvatar 
+                    size="lg" 
+                    state={avatarState}
+                    className="mx-auto mb-4"
+                  />
+                </div>
+                <div className="text-white/90 text-base">
+                  <p className="mb-4">🎧 Listen carefully as Tomas reads through this lesson...</p>
+                  <div className="flex items-center justify-center space-x-2">
+                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
+                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Intro Phase */}
         {currentPhase === 'intro' && (
           <Card className="bg-white/10 border-white/20 mb-6">
@@ -2952,10 +3021,11 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
 
               <div className="text-center pt-4">
                 <Button
-                  onClick={() => setCurrentPhase('listening')}
+                  onClick={startTeacherReading}
                   className="bg-white/20 text-white hover:bg-white/30"
+                  disabled={isSpeaking}
                 >
-                  Continue to Practice
+                  {isSpeaking ? "Tomas is Reading..." : "▶️ Let Tomas Read This Lesson"}
                 </Button>
               </div>
             </CardContent>
