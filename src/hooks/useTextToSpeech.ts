@@ -17,9 +17,19 @@ export const useTextToSpeech = () => {
     setTimeout(() => {
       const utterance = new SpeechSynthesisUtterance(text);
       
-      // Auto-detect language if not specified
-      const detectedLang = language || (text.match(/[çğıöşüÇĞIİÖŞÜ]/) ? 'tr-TR' : 'en-US');
+      // Improved Turkish language detection
+      let detectedLang = language;
+      if (!detectedLang) {
+        // Check for Turkish characters, common Turkish words, or Turkish-specific patterns
+        const hasTurkishChars = text.match(/[çğıöşüÇĞIİÖŞÜ]/);
+        const hasTurkishWords = text.match(/\b(bu|modülde|cümle|fiil|kullan|öğren|İngilizce|tabloya|bakın|lütfen|şimdi|aşağıdaki)\b/i);
+        const hasTurkishPatterns = text.includes('Bu modülde') || text.includes('modülde') || text.includes('öğreneceğiz');
+        
+        detectedLang = (hasTurkishChars || hasTurkishWords || hasTurkishPatterns) ? 'tr-TR' : 'en-US';
+      }
+      
       utterance.lang = detectedLang;
+      console.log(`TTS Language set to: ${detectedLang} for text: "${text.substring(0, 50)}..."`)
       utterance.rate = 0.85; // Slightly slower for better clarity
       utterance.pitch = 1;
       utterance.volume = 1.0; // Maximum volume
