@@ -37,7 +37,7 @@ const A1Lessons = [
   "Articles (a, an, the)",
 ];
 
-// A1 Grammar Topics - 24 Modules in Correct Pedagogical Order
+// A1 Grammar Topics - 25 Modules in Reordered Pedagogical Structure
 const grammarTopics = [
   {
     id: 1,
@@ -119,32 +119,6 @@ const grammarTopics = [
   },
   {
     id: 4,
-    title: "Verb to Be – Short Answers",
-    description: "Learn to give short answers to Yes/No questions",
-    lesson: "Kısa cevaplarda özne + yardımcı fiil kullanırız.\n\nOlumlu cevaplar:\n✓ Yes, I am.\n✓ Yes, you are.\n✓ Yes, he/she/it is.\n✓ Yes, we are.\n✓ Yes, they are.\n\nOlumsuz cevaplar:\n✓ No, I'm not.\n✓ No, you aren't.\n✓ No, he/she/it isn't.\n✓ No, we aren't.\n✓ No, they aren't.",
-    exercises: [
-      {
-        question: "Answer: 'Are you a student?' (Yes)",
-        options: ["Yes, I'm", "Yes, I am", "Yes, you are"],
-        correct: 1,
-        explanation: "Kısa cevaplarda 'Yes, I am.' şeklinde cevap veririz."
-      },
-      {
-        question: "Answer: 'Is she a teacher?' (No)",
-        options: ["No, she's not", "No, she isn't", "No, she not"],
-        correct: 1,
-        explanation: "Olumsuz kısa cevap: 'No, she isn't.' veya 'No, she's not.'"
-      },
-      {
-        question: "Answer: 'Are they at home?' (Yes)",
-        options: ["Yes, they're", "Yes, they are", "Yes, we are"],
-        correct: 1,
-        explanation: "Kısa cevaplarda 'Yes, they are.' şeklinde cevap veririz."
-      }
-    ]
-  },
-  {
-    id: 5,
     title: "Subject Pronouns (I, you, he, she, it, we, they)",
     description: "Master the basic subject pronouns",
     lesson: "Özne zamirleri cümlenin öznesi olan kelimelerdir. İsimlerin yerine kullanılırlar.\n\n✓ I (Ben) - kendimizi kastederken\n✓ You (Sen/Siz) - karşımızdaki kişi/kişiler\n✓ He (O - erkek) - erkek kişiler için\n✓ She (O - kadın) - kadın kişiler için\n✓ It (O - nesne/hayvan) - nesneler ve hayvanlar için\n✓ We (Biz) - kendimiz dahil grup\n✓ They (Onlar) - başka kişi/nesne grubu\n\nÖrnek: Ali is tall. → He is tall.",
@@ -166,6 +140,110 @@ const grammarTopics = [
         options: ["We", "They", "You"],
         correct: 0,
         explanation: "Kendimizi de dahil edince 'We' kullanırız."
+      }
+    ]
+  },
+  {
+    id: 5,
+    title: "Object Pronouns (me, you, him, her, it, us, them)",
+    description: "Learn object pronouns to replace nouns in object position",
+    lesson: "Nesne zamirleri cümlenin nesnesi konumundaki isimlerin yerine kullanılır.\n\n✓ me (beni/bana) - I → me\n✓ you (seni/sana, sizi/size) - you → you\n✓ him (onu/ona - erkek) - he → him\n✓ her (onu/ona - kadın) - she → her\n✓ it (onu/ona - nesne/hayvan) - it → it\n✓ us (bizi/bize) - we → us\n✓ them (onları/onlara) - they → them\n\nÖrnekler:\n- I love my mother. → I love her.\n- Call John! → Call him!",
+    exercises: [
+      {
+        question: "Replace 'Sarah': I know ___.",
+        options: ["she", "her", "him"],
+        correct: 1,
+        explanation: "Nesne konumunda kadın için 'her' kullanırız."
+      },
+      {
+        question: "Replace 'my parents': I visit ___ every week.",
+        options: ["they", "them", "their"],
+        correct: 1,
+        explanation: "Çoğul nesne için 'them' kullanırız."
+      },
+      {
+        question: "Replace 'the book': Please give ___ to me.",
+        options: ["he", "she", "it"],
+        correct: 2,
+        explanation: "Nesne ve hayvanlar için 'it' kullanırız."
+      }
+    ]
+  },
+  {
+    id: 6,
+    title: "Possessive Adjectives (my, your, his, her, its, our, their)",
+    description: "Learn possessive adjectives to show ownership",
+    lesson: "İyelik sıfatları sahiplik bildiren kelimelerdir. İsimden önce kullanılırlar.\n\n✓ My (Benim) - I → my\n✓ Your (Senin/Sizin) - You → your\n✓ His (Onun - erkek) - He → his\n✓ Her (Onun - kadın) - She → her\n✓ Its (Onun - nesne/hayvan) - It → its\n✓ Our (Bizim) - We → our\n✓ Their (Onların) - They → their\n\nÖrnekler:\n- This is my book. (Bu benim kitabım.)\n- Her name is Sarah. (Onun adı Sarah.)",
+    exercises: [
+      {
+        question: "Complete: This is ___ car. (Ben)",
+        options: ["my", "your", "his"],
+        correct: 0,
+        explanation: "'I' için iyelik sıfatı 'my'dir."
+      },
+      {
+        question: "Complete: ___ house is big. (O - kadın)",
+        options: ["His", "Her", "Its"],
+        correct: 1,
+        explanation: "Kadın için iyelik sıfatı 'her'dir."
+      },
+      {
+        question: "Complete: ___ children are at school. (Onlar)",
+        options: ["Our", "Your", "Their"],
+        correct: 2,
+        explanation: "'They' için iyelik sıfatı 'their'dir."
+      }
+    ]
+  },
+  {
+    id: 7,
+    title: "Possessive Pronouns (mine, yours, his, hers, ours, theirs)",
+    description: "Learn possessive pronouns that replace possessive adjective + noun",
+    lesson: "İyelik zamirleri sahiplik gösteren ve ismin yerine geçen kelimelerdir.\n\n✓ mine (benimki) - my book → mine\n✓ yours (seninki/sizinki) - your car → yours\n✓ his (onunki - erkek) - his pen → his\n✓ hers (onunki - kadın) - her bag → hers\n✓ ours (bizimki) - our house → ours\n✓ theirs (onlarınki) - their books → theirs\n\nDikkat: 'its' için iyelik zamiri yoktur!\n\nÖrnekler:\n- This book is mine. (Bu kitap benimki.)\n- That car is theirs. (Şu araba onlarınki.)",
+    exercises: [
+      {
+        question: "Complete: This book is ___. (benim)",
+        options: ["my", "mine", "me"],
+        correct: 1,
+        explanation: "İyelik zamiri olarak 'mine' kullanırız."
+      },
+      {
+        question: "Complete: The red car is ___. (onların)",
+        options: ["their", "theirs", "them"],
+        correct: 1,
+        explanation: "Çoğul için iyelik zamiri 'theirs'dir."
+      },
+      {
+        question: "Complete: Is this pen ___? (senin)",
+        options: ["your", "yours", "you"],
+        correct: 1,
+        explanation: "İyelik zamiri olarak 'yours' kullanırız."
+      }
+    ]
+  },
+  {
+    id: 8,
+    title: "This / That / These / Those",
+    description: "Learn demonstrative adjectives and pronouns",
+    lesson: "İşaret sıfat ve zamirleri uzaklığı ve sayıyı belirtir.\n\n✓ This (Bu - tekil, yakın) - yakındaki tek nesne\n✓ That (Şu/O - tekil, uzak) - uzaktaki tek nesne\n✓ These (Bunlar - çoğul, yakın) - yakındaki çok nesne\n✓ Those (Şunlar/Onlar - çoğul, uzak) - uzaktaki çok nesne\n\nÖrnekler:\n- This book is mine. (Bu kitap benim.)\n- Those cars are expensive. (Şu arabalar pahalı.)",
+    exercises: [
+      {
+        question: "Choose: ___ pen is mine. (yakındaki tek kalem)",
+        options: ["This", "That", "These"],
+        correct: 0,
+        explanation: "Yakındaki tek nesne için 'This' kullanırız."
+      },
+      {
+        question: "Choose: ___ books are heavy. (yakındaki kitaplar)",
+        options: ["This", "That", "These"],
+        correct: 2,
+        explanation: "Yakındaki çoğul nesneler için 'These' kullanırız."
+      },
+      {
+        question: "Choose: ___ house is beautiful. (uzaktaki ev)",
+        options: ["This", "That", "Those"],
+        correct: 1,
+        explanation: "Uzaktaki tek nesne için 'That' kullanırız."
       }
     ]
   },
