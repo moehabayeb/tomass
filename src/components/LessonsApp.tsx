@@ -2605,7 +2605,8 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
 
   const speakCurrentSentence = () => {
     const currentPracticeItem = currentModuleData.speakingPractice[speakingIndex];
-    const currentSentence = typeof currentPracticeItem === 'string' ? currentPracticeItem : currentPracticeItem.answer;
+    // Only speak the question part, not the answer - like a real teacher would do
+    const currentSentence = typeof currentPracticeItem === 'string' ? currentPracticeItem : currentPracticeItem.question;
     speak(currentSentence);
   };
 
