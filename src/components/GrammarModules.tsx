@@ -37,11 +37,11 @@ const A1Lessons = [
   "Articles (a, an, the)",
 ];
 
-// A1 Grammar Topics - 25 Modules in Reordered Pedagogical Structure
+// A1 Grammar Topics - 24 Modules in Final Fixed Pedagogical Structure
 const grammarTopics = [
   {
     id: 1,
-    title: "Verb to Be (am, is, are) Positive Sentences",
+    title: "Verb to Be - Positive",
     description: "Learn how to use am, is, and are correctly in positive sentences",
     lesson: "The verb 'to be' is the foundation of English grammar. Türkçedeki 'olmak' fiili gibi, cümlelerimizin temelini oluşturur.\n\n✓ I am (Ben...) - Always use 'am' with 'I'\n✓ You are (Sen.../Siz...) - Use 'are' with 'you'\n✓ He/She/It is (O...) - Use 'is' with third person singular\n✓ We are (Biz...) - Use 'are' with 'we'\n✓ They are (Onlar...) - Use 'are' with 'they'\n\nÖrnekler:\n- I am happy. (Ben mutluyum.)\n- She is a teacher. (O bir öğretmendir.)\n- They are students. (Onlar öğrencilerdir.)",
     exercises: [
@@ -67,7 +67,7 @@ const grammarTopics = [
   },
   {
     id: 2,
-    title: "Verb to Be (am, is, are) Negative Sentences",
+    title: "Verb to Be - Negative",
     description: "Learn how to make negative sentences with 'to be'",
     lesson: "Olumsuz cümlelerde 'not' kelimesini fiilden sonra ekliyoruz.\n\n✓ I am not (I'm not) - Ben değilim\n✓ You are not (You're not / You aren't) - Sen değilsin\n✓ He/She/It is not (isn't) - O değil\n✓ We are not (We're not / We aren't) - Biz değiliz\n✓ They are not (They're not / They aren't) - Onlar değil\n\nKısaltmalar:\n- is not = isn't\n- are not = aren't\n- I am not kısaltılamaz (I amn't diye bir şey yoktur)",
     exercises: [
@@ -93,7 +93,7 @@ const grammarTopics = [
   },
   {
     id: 3,
-    title: "Verb to Be (am, is, are) Yes/No Questions",
+    title: "Verb to Be - Questions",
     description: "Learn to form Yes/No questions with 'to be'",
     lesson: "Evet/Hayır soruları için fiili öznenin önüne getiriyoruz.\n\n✓ Am I...? (Ben ... mıyım?)\n✓ Are you...? (Sen ... mısın?)\n✓ Is he/she/it...? (O ... mı?)\n✓ Are we...? (Biz ... mıyız?)\n✓ Are they...? (Onlar ... mı?)\n\nÖrnekler:\n- Am I late? (Geç kaldım mı?)\n- Is she a teacher? (O öğretmen mi?)\n- Are they students? (Onlar öğrenci mi?)",
     exercises: [
@@ -119,7 +119,7 @@ const grammarTopics = [
   },
   {
     id: 4,
-    title: "Subject Pronouns (I, you, he, she, it, we, they)",
+    title: "Subject Pronouns",
     description: "Master the basic subject pronouns",
     lesson: "Özne zamirleri cümlenin öznesi olan kelimelerdir. İsimlerin yerine kullanılırlar.\n\n✓ I (Ben) - kendimizi kastederken\n✓ You (Sen/Siz) - karşımızdaki kişi/kişiler\n✓ He (O - erkek) - erkek kişiler için\n✓ She (O - kadın) - kadın kişiler için\n✓ It (O - nesne/hayvan) - nesneler ve hayvanlar için\n✓ We (Biz) - kendimiz dahil grup\n✓ They (Onlar) - başka kişi/nesne grubu\n\nÖrnek: Ali is tall. → He is tall.",
     exercises: [
@@ -145,7 +145,7 @@ const grammarTopics = [
   },
   {
     id: 5,
-    title: "Object Pronouns (me, you, him, her, it, us, them)",
+    title: "Object Pronouns",
     description: "Learn object pronouns to replace nouns in object position",
     lesson: "Nesne zamirleri cümlenin nesnesi konumundaki isimlerin yerine kullanılır.\n\n✓ me (beni/bana) - I → me\n✓ you (seni/sana, sizi/size) - you → you\n✓ him (onu/ona - erkek) - he → him\n✓ her (onu/ona - kadın) - she → her\n✓ it (onu/ona - nesne/hayvan) - it → it\n✓ us (bizi/bize) - we → us\n✓ them (onları/onlara) - they → them\n\nÖrnekler:\n- I love my mother. → I love her.\n- Call John! → Call him!",
     exercises: [
@@ -171,7 +171,7 @@ const grammarTopics = [
   },
   {
     id: 6,
-    title: "Possessive Adjectives (my, your, his, her, its, our, their)",
+    title: "Possessive Adjectives",
     description: "Learn possessive adjectives to show ownership",
     lesson: "İyelik sıfatları sahiplik bildiren kelimelerdir. İsimden önce kullanılırlar.\n\n✓ My (Benim) - I → my\n✓ Your (Senin/Sizin) - You → your\n✓ His (Onun - erkek) - He → his\n✓ Her (Onun - kadın) - She → her\n✓ Its (Onun - nesne/hayvan) - It → its\n✓ Our (Bizim) - We → our\n✓ Their (Onların) - They → their\n\nÖrnekler:\n- This is my book. (Bu benim kitabım.)\n- Her name is Sarah. (Onun adı Sarah.)",
     exercises: [
@@ -197,7 +197,7 @@ const grammarTopics = [
   },
   {
     id: 7,
-    title: "Possessive Pronouns (mine, yours, his, hers, ours, theirs)",
+    title: "Possessive Pronouns",
     description: "Learn possessive pronouns that replace possessive adjective + noun",
     lesson: "İyelik zamirleri sahiplik gösteren ve ismin yerine geçen kelimelerdir.\n\n✓ mine (benimki) - my book → mine\n✓ yours (seninki/sizinki) - your car → yours\n✓ his (onunki - erkek) - his pen → his\n✓ hers (onunki - kadın) - her bag → hers\n✓ ours (bizimki) - our house → ours\n✓ theirs (onlarınki) - their books → theirs\n\nDikkat: 'its' için iyelik zamiri yoktur!\n\nÖrnekler:\n- This book is mine. (Bu kitap benimki.)\n- That car is theirs. (Şu araba onlarınki.)",
     exercises: [
@@ -248,60 +248,60 @@ const grammarTopics = [
     ]
   },
   {
-    id: 6,
-    title: "Possessive Adjectives (my, your, his, her, its, our, their)",
-    description: "Learn possessive adjectives to show ownership",
-    lesson: "İyelik sıfatları sahiplik bildiren kelimelerdir. İsimden önce kullanılırlar.\n\n✓ My (Benim) - I → my\n✓ Your (Senin/Sizin) - You → your\n✓ His (Onun - erkek) - He → his\n✓ Her (Onun - kadın) - She → her\n✓ Its (Onun - nesne/hayvan) - It → its\n✓ Our (Bizim) - We → our\n✓ Their (Onların) - They → their\n\nÖrnekler:\n- This is my book. (Bu benim kitabım.)\n- Her name is Sarah. (Onun adı Sarah.)",
+    id: 9,
+    title: "Articles - Basic Usage",
+    description: "Master the basic use of English articles",
+    lesson: "Belirsiz ve belirli tanımlıklar isimleri tanımlamak için kullanılır.\n\n✓ A + ünsüz sesle başlayan kelimeler (a car, a house)\n✓ An + ünlü sesle başlayan kelimeler (an apple, an hour)\n✓ The + belirli, özel şeyler (the sun, the book I bought)\n\nDikkat: Harfe değil, SESE bakın!\n- a university (yu- ünsüz ses)\n- an hour (h sessiz, o- ünlü ses)",
     exercises: [
       {
-        question: "Complete: This is ___ car. (Ben)",
-        options: ["my", "your", "his"],
+        question: "Choose: I need ___ pen.",
+        options: ["a", "an", "the"],
         correct: 0,
-        explanation: "'I' için iyelik sıfatı 'my'dir."
+        explanation: "'Pen' ünsüz sesle başladığı için 'a' kullanırız."
       },
       {
-        question: "Complete: ___ house is big. (O - kadın)",
-        options: ["His", "Her", "Its"],
+        question: "Choose: She is ___ honest person.",
+        options: ["a", "an", "the"],
         correct: 1,
-        explanation: "Kadın için iyelik sıfatı 'her'dir."
+        explanation: "'Honest' ünlü sesle başladığı için (h sessiz) 'an' kullanırız."
       },
       {
-        question: "Complete: ___ children are at school. (Onlar)",
-        options: ["Our", "Your", "Their"],
+        question: "Choose: ___ book you gave me is great.",
+        options: ["A", "An", "The"],
         correct: 2,
-        explanation: "'They' için iyelik sıfatı 'their'dir."
+        explanation: "Belirli kitaptan bahsediyoruz, 'the' kullanırız."
       }
     ]
   },
   {
-    id: 7,
-    title: "This / That / These / Those",
-    description: "Learn demonstrative adjectives and pronouns",
-    lesson: "İşaret sıfat ve zamirleri uzaklığı ve sayıyı belirtir.\n\n✓ This (Bu - tekil, yakın) - yakındaki tek nesne\n✓ That (Şu/O - tekil, uzak) - uzaktaki tek nesne\n✓ These (Bunlar - çoğul, yakın) - yakındaki çok nesne\n✓ Those (Şunlar/Onlar - çoğul, uzak) - uzaktaki çok nesne\n\nÖrnekler:\n- This book is mine. (Bu kitap benim.)\n- Those cars are expensive. (Şu arabalar pahalı.)",
+    id: 10,
+    title: "Plural Nouns - Regular & Irregular",
+    description: "Learn how to form plural nouns with regular and irregular patterns",
+    lesson: "Çoğul isimleri düzenli ve düzensiz kurallarla yapıyoruz.\n\n✓ Düzenli çoğullar: +s (book → books)\n✓ -s, -x, -z, -ch, -sh ile biten: +es (box → boxes)\n✓ Ünsüz+y ile biten: y→ies (city → cities)\n✓ Düzensiz çoğullar: child → children, foot → feet, man → men",
     exercises: [
       {
-        question: "Choose: ___ pen is mine. (yakındaki tek kalem)",
-        options: ["This", "That", "These"],
-        correct: 0,
-        explanation: "Yakındaki tek nesne için 'This' kullanırız."
-      },
-      {
-        question: "Choose: ___ books are heavy. (yakındaki kitaplar)",
-        options: ["This", "That", "These"],
-        correct: 2,
-        explanation: "Yakındaki çoğul nesneler için 'These' kullanırız."
-      },
-      {
-        question: "Choose: ___ house is beautiful. (uzaktaki ev)",
-        options: ["This", "That", "Those"],
+        question: "What's the plural of 'child'?",
+        options: ["childs", "children", "childes"],
         correct: 1,
-        explanation: "Uzaktaki tek nesne için 'That' kullanırız."
+        explanation: "'Child' düzensiz çoğul: children"
+      },
+      {
+        question: "What's the plural of 'box'?",
+        options: ["boxs", "boxes", "boxies"],
+        correct: 1,
+        explanation: "-x ile biten kelimeler +es alır: boxes"
+      },
+      {
+        question: "What's the plural of 'city'?",
+        options: ["citys", "cities", "cityes"],
+        correct: 1,
+        explanation: "Ünsüz+y: y değişir ies olur: cities"
       }
     ]
   },
   {
-    id: 8,
-    title: "There is / There are – Positive",
+    id: 11,
+    title: "There is / There are - Positive",
     description: "Learn to talk about existence and location",
     lesson: "'There is/are' varlık ve konum bildirmek için kullanılır. Türkçede 'var' anlamındadır.\n\n✓ There is + tekil isim (There is vardır - tekil)\n✓ There are + çoğul isim (There are vardır - çoğul)\n\nÖrnekler:\n- There is a book on the table. (Masada bir kitap var.)\n- There are students in the classroom. (Sınıfta öğrenciler var.)\n\nDikkat: İsim tekil ise 'is', çoğul ise 'are' kullanırız.",
     exercises: [
@@ -326,526 +326,340 @@ const grammarTopics = [
     ]
   },
   {
-    id: 9,
-    title: "There is / There are – Negative",
-    description: "Learn negative forms of 'there is/are'",
-    lesson: "Olumsuz formlarda 'not' kelimesini ekliyoruz.\n\n✓ There is not (There isn't) + tekil isim\n✓ There are not (There aren't) + çoğul isim\n\nÖrnekler:\n- There isn't a dog in the house. (Evde köpek yok.)\n- There aren't any cars in the street. (Sokakta araba yok.)\n\nKısaltmalar:\n- is not = isn't\n- are not = aren't",
-    exercises: [
-      {
-        question: "Complete: There ___ any milk in the fridge.",
-        options: ["isn't", "aren't"],
-        correct: 0,
-        explanation: "'Milk' sayılamayan tekil isim olduğu için 'isn't' kullanırız."
-      },
-      {
-        question: "Complete: There ___ students in the library.",
-        options: ["isn't", "aren't"],
-        correct: 1,
-        explanation: "'Students' çoğul olduğu için 'aren't' kullanırız."
-      },
-      {
-        question: "Complete: There ___ a computer here.",
-        options: ["isn't", "aren't"],
-        correct: 0,
-        explanation: "'A computer' tekil olduğu için 'isn't' kullanırız."
-      }
-    ]
-  },
-  {
-    id: 10,
-    title: "There is / There are – Questions",
-    description: "Learn to form questions with 'there is/are'",
-    lesson: "Sorularda 'is/are' kelimesini 'there'dan önce getiriyoruz.\n\n✓ Is there + tekil isim?\n✓ Are there + çoğul isim?\n\nÖrnekler:\n- Is there a bank near here? (Yakında banka var mı?)\n- Are there any books on the shelf? (Rafta kitap var mı?)\n\nKısa cevaplar:\n- Yes, there is. / No, there isn't.\n- Yes, there are. / No, there aren't.",
-    exercises: [
-      {
-        question: "Form a question: ___ there a park near here?",
-        options: ["Is", "Are"],
-        correct: 0,
-        explanation: "'A park' tekil olduğu için 'Is there' kullanırız."
-      },
-      {
-        question: "Form a question: ___ there any apples?",
-        options: ["Is", "Are"],
-        correct: 1,
-        explanation: "'Apples' çoğul olduğu için 'Are there' kullanırız."
-      },
-      {
-        question: "Answer: 'Is there a post office here?' (No)",
-        options: ["No, there isn't", "No, there aren't", "No, it isn't"],
-        correct: 0,
-        explanation: "Tekil soru için olumsuz cevap: 'No, there isn't.'"
-      }
-    ]
-  },
-  {
-    id: 11,
-    title: "Articles: a / an / the – Basic Usage",
-    description: "Master the basic use of English articles",
-    lesson: "Belirsiz ve belirli tanımlıklar isimleri tanımlamak için kullanılır.\n\n✓ A + ünsüz sesle başlayan kelimeler (a car, a house)\n✓ An + ünlü sesle başlayan kelimeler (an apple, an hour)\n✓ The + belirli, özel şeyler (the sun, the book I bought)\n\nDikkat: Harfe değil, SESE bakın!\n- a university (yu- ünsüz ses)\n- an hour (h sessiz, o- ünlü ses)",
-    exercises: [
-      {
-        question: "Choose: I need ___ pen.",
-        options: ["a", "an", "the"],
-        correct: 0,
-        explanation: "'Pen' ünsüz sesle başladığı için 'a' kullanırız."
-      },
-      {
-        question: "Choose: She bought ___ umbrella.",
-        options: ["a", "an", "the"],
-        correct: 1,
-        explanation: "'Umbrella' ünlü sesle başladığı için 'an' kullanırız."
-      },
-      {
-        question: "Choose: ___ moon is beautiful tonight.",
-        options: ["A", "An", "The"],
-        correct: 2,
-        explanation: "Ay tek olduğu için 'the' kullanırız."
-      }
-    ]
-  },
-  {
     id: 12,
-    title: "Plurals: Regular and Irregular Nouns",
-    description: "Learn how to form plural nouns",
-    lesson: "Çoğul isimleri farklı şekillerde yapıyoruz.\n\nDüzenli çoğullar:\n✓ +s: book → books, car → cars\n✓ +es: box → boxes, dress → dresses\n✓ y→ies: city → cities, baby → babies\n\nDüzensiz çoğullar:\n✓ child → children\n✓ man → men, woman → women\n✓ tooth → teeth, foot → feet\n✓ mouse → mice, goose → geese",
+    title: "Prepositions of Place",
+    description: "Learn prepositions like in, on, at, under, next to for describing location",
+    lesson: "Yer bildiren edatlar nesnelerin konumunu açıklar.\n\n✓ in (içinde) - in the box, in the room\n✓ on (üzerinde) - on the table, on the wall\n✓ at (belirli noktada) - at school, at home\n✓ under (altında) - under the bed\n✓ next to (yanında) - next to the bank\n✓ behind (arkasında) - behind the house\n✓ in front of (önünde) - in front of the store",
     exercises: [
       {
-        question: "What's the plural of 'book'?",
-        options: ["books", "bookes", "book"],
-        correct: 0,
-        explanation: "Düzenli isimler için sadece 's' ekleriz: book → books"
-      },
-      {
-        question: "What's the plural of 'child'?",
-        options: ["childs", "childes", "children"],
-        correct: 2,
-        explanation: "'Child' düzensiz çoğuldur: child → children"
-      },
-      {
-        question: "What's the plural of 'box'?",
-        options: ["boxs", "boxes", "boxies"],
+        question: "Choose: The book is ___ the table.",
+        options: ["in", "on", "at"],
         correct: 1,
-        explanation: "'x' ile biten kelimeler için 'es' ekleriz: box → boxes"
+        explanation: "Masa yüzeyinde olan şeyler için 'on' kullanırız."
+      },
+      {
+        question: "Choose: I am ___ home.",
+        options: ["in", "on", "at"],
+        correct: 2,
+        explanation: "Ev gibi belirli yerler için 'at' kullanırız."
+      },
+      {
+        question: "Choose: The cat is hiding ___ the bed.",
+        options: ["under", "on", "in"],
+        correct: 0,
+        explanation: "Altında olan şeyler için 'under' kullanırız."
       }
     ]
   },
   {
     id: 13,
-    title: "Have got / Has got – Positive",
-    description: "Learn to express possession with 'have got'",
-    lesson: "'Have got/Has got' sahiplik bildirmek için kullanılır. Türkçede '...var/sahip olmak' anlamındadır.\n\n✓ I have got (I've got)\n✓ You have got (You've got)\n✓ He/She/It has got (He's/She's/It's got)\n✓ We have got (We've got)\n✓ They have got (They've got)\n\nÖrnekler:\n- I have got a car. (Benim bir arabam var.)\n- She has got blue eyes. (Onun mavi gözleri var.)",
+    title: "Prepositions of Time",
+    description: "Learn prepositions like at, on, in for describing when things happen",
+    lesson: "Zaman bildiren edatlar ne zaman olduğunu açıklar.\n\n✓ at + saatler (at 3 o'clock, at noon)\n✓ on + günler/tarihler (on Monday, on May 15th)\n✓ in + aylar/yıllar/mevsimler (in January, in 2023, in summer)\n\nÖrnekler:\n- I wake up at 7 AM. (Sabah 7'de uyanırım.)\n- We have class on Friday. (Cuma günü dersimiz var.)\n- It's cold in winter. (Kışın soğuk olur.)",
     exercises: [
       {
-        question: "Complete: I ___ got a new phone.",
-        options: ["have", "has", "am"],
+        question: "Choose: I have an appointment ___ 2 PM.",
+        options: ["at", "on", "in"],
         correct: 0,
-        explanation: "'I' ile 'have got' kullanırız."
+        explanation: "Saatler için 'at' kullanırız."
       },
       {
-        question: "Complete: She ___ got a beautiful dress.",
-        options: ["have", "has", "is"],
+        question: "Choose: My birthday is ___ March.",
+        options: ["at", "on", "in"],
+        correct: 2,
+        explanation: "Aylar için 'in' kullanırız."
+      },
+      {
+        question: "Choose: The meeting is ___ Wednesday.",
+        options: ["at", "on", "in"],
         correct: 1,
-        explanation: "'She' ile 'has got' kullanırız."
-      },
-      {
-        question: "Complete: They ___ got a big house.",
-        options: ["have", "has", "are"],
-        correct: 0,
-        explanation: "'They' ile 'have got' kullanırız."
+        explanation: "Günler için 'on' kullanırız."
       }
     ]
   },
   {
     id: 14,
-    title: "Have got / Has got – Negative",
-    description: "Learn negative forms of 'have got'",
-    lesson: "Olumsuz formlarda 'not' kelimesini 'have/has'tan sonra ekliyoruz.\n\n✓ I have not got (I haven't got)\n✓ You have not got (You haven't got)\n✓ He/She/It has not got (He/She/It hasn't got)\n✓ We have not got (We haven't got)\n✓ They have not got (They haven't got)\n\nÖrnekler:\n- I haven't got time. (Vaktim yok.)\n- He hasn't got a car. (Onun arabası yok.)",
+    title: "Present Simple - Positive (I/You/We/They)",
+    description: "Learn how to form positive present simple sentences",
+    lesson: "Basit şimdiki zaman alışkanlıkları ve genel gerçekleri anlatır.\n\n✓ I/You/We/They + fiil (temel hali)\n\nÖrnekler:\n- I work in an office. (Bir ofiste çalışırım.)\n- They live in Istanbul. (İstanbul'da yaşarlar.)\n- We study English. (İngilizce çalışırız.)",
     exercises: [
       {
-        question: "Complete: I ___ got any money.",
-        options: ["haven't", "hasn't", "am not"],
+        question: "Complete: I ___ coffee every morning.",
+        options: ["drink", "drinks", "drinking"],
         correct: 0,
-        explanation: "'I' ile 'haven't got' kullanırız."
+        explanation: "'I' ile fiil temel halinde kullanılır: drink"
       },
       {
-        question: "Complete: She ___ got a sister.",
-        options: ["haven't", "hasn't", "isn't"],
-        correct: 1,
-        explanation: "'She' ile 'hasn't got' kullanırız."
+        question: "Complete: They ___ in a big house.",
+        options: ["live", "lives", "living"],
+        correct: 0,
+        explanation: "'They' ile fiil temel halinde kullanılır: live"
       },
       {
-        question: "Complete: We ___ got tickets.",
-        options: ["haven't", "hasn't", "aren't"],
+        question: "Complete: We ___ to school by bus.",
+        options: ["go", "goes", "going"],
         correct: 0,
-        explanation: "'We' ile 'haven't got' kullanırız."
+        explanation: "'We' ile fiil temel halinde kullanılır: go"
       }
     ]
   },
   {
     id: 15,
-    title: "Have got / Has got – Questions",
-    description: "Learn to form questions with 'have got'",
-    lesson: "Sorularda 'have/has' kelimesini öznenin önüne getiriyoruz.\n\n✓ Have I got...?\n✓ Have you got...?\n✓ Has he/she/it got...?\n✓ Have we got...?\n✓ Have they got...?\n\nKısa cevaplar:\n- Yes, I have. / No, I haven't.\n- Yes, she has. / No, she hasn't.\n\nÖrnekler:\n- Have you got a pen? (Kaleminiz var mı?)\n- Has she got children? (Onun çocukları var mı?)",
-    exercises: [
-      {
-        question: "Form a question: ___ you got a car?",
-        options: ["Have", "Has", "Are"],
-        correct: 0,
-        explanation: "'You' ile 'Have you got...?' kullanırız."
-      },
-      {
-        question: "Form a question: ___ she got a dog?",
-        options: ["Have", "Has", "Is"],
-        correct: 1,
-        explanation: "'She' ile 'Has she got...?' kullanırız."
-      },
-      {
-        question: "Answer: 'Have you got brothers?' (Yes)",
-        options: ["Yes, I am", "Yes, I have", "Yes, I do"],
-        correct: 1,
-        explanation: "'Have got' sorusuna 'Yes, I have.' şeklinde cevap veririz."
-      }
-    ]
-  },
-  {
-    id: 16,
-    title: "Simple Present Affirmative (I/You/We/They)",
-    description: "Learn Simple Present tense for I, you, we, they",
-    lesson: "Geniş Zaman alışkanlıklar, gerçekler ve rutin işler için kullanılır.\n\nI/You/We/They + fiil (taban hali)\n\n✓ I work every day. (Her gün çalışırım.)\n✓ You live in Istanbul. (İstanbul'da yaşıyorsun.)\n✓ We play football. (Futbol oynarız.)\n✓ They study English. (İngilizce çalışırlar.)\n\nDikkat: I, you, we, they ile fiil hiç değişmez!",
-    exercises: [
-      {
-        question: "Complete: I ___ English every day.",
-        options: ["study", "studies", "studying"],
-        correct: 0,
-        explanation: "'I' ile fiilin taban halini kullanırız: study"
-      },
-      {
-        question: "Complete: They ___ in London.",
-        options: ["live", "lives", "living"],
-        correct: 0,
-        explanation: "'They' ile fiilin taban halini kullanırız: live"
-      },
-      {
-        question: "Complete: We ___ coffee in the morning.",
-        options: ["drink", "drinks", "drinking"],
-        correct: 0,
-        explanation: "'We' ile fiilin taban halini kullanırız: drink"
-      }
-    ]
-  },
-  {
-    id: 17,
-    title: "Simple Present Affirmative (He/She/It)",
-    description: "Learn Simple Present tense for he, she, it",
-    lesson: "He/She/It ile fiile '-s' veya '-es' ekliyoruz.\n\nKurallar:\n✓ Normal fiiller: +s (work → works)\n✓ s,x,ch,sh,o ile bitenler: +es (go → goes)\n✓ ünsüz+y ile bitenler: y→ies (study → studies)\n\nÖrnekler:\n- He works in a bank. (Bankada çalışır.)\n- She goes to school. (Okula gider.)\n- It rains a lot. (Çok yağmur yağar.)",
+    title: "Present Simple - Positive (He/She/It)",
+    description: "Learn how to add -s or -es to verbs with he, she, it",
+    lesson: "Üçüncü tekil şahıslar (he/she/it) ile fiillere -s/-es ekliyoruz.\n\n✓ He/She/It + fiil + s/es\n✓ Çoğu fiil: +s (work → works)\n✓ -s, -x, -z, -ch, -sh ile biten: +es (watch → watches)\n✓ Ünsüz+y ile biten: y→ies (study → studies)\n\nÖrnekler:\n- She works in a hospital. (Hastanede çalışır.)\n- He watches TV. (Televizyon izler.)",
     exercises: [
       {
         question: "Complete: She ___ English very well.",
         options: ["speak", "speaks", "speaking"],
         correct: 1,
-        explanation: "'She' ile fiile 's' ekliyoruz: speaks"
+        explanation: "'She' ile fiil +s alır: speaks"
       },
       {
-        question: "Complete: He ___ to work by bus.",
-        options: ["go", "goes", "going"],
+        question: "Complete: He ___ his homework every day.",
+        options: ["do", "does", "doing"],
         correct: 1,
-        explanation: "'Go' fiili 'o' ile bittiği için 'es' ekliyoruz: goes"
+        explanation: "'Do' fiili üçüncü tekil şahıs ile 'does' olur"
       },
       {
-        question: "Complete: It ___ math at university.",
-        options: ["study", "studies", "studying"],
+        question: "Complete: The cat ___ on the sofa.",
+        options: ["sleep", "sleeps", "sleeping"],
         correct: 1,
-        explanation: "'Study' fiili ünsüz+y ile bittiği için y→ies: studies"
+        explanation: "'It' (the cat) ile fiil +s alır: sleeps"
       }
     ]
   },
   {
-    id: 18,
-    title: "Simple Present Negative (Don't / Doesn't)",
-    description: "Learn negative forms in Simple Present",
-    lesson: "Olumsuz cümlelerde 'do not (don't)' veya 'does not (doesn't)' kullanırız.\n\n✓ I/You/We/They + don't + fiil (taban hali)\n✓ He/She/It + doesn't + fiil (taban hali)\n\nÖrnekler:\n- I don't like coffee. (Kahveyi sevmem.)\n- She doesn't work on Sundays. (Pazar günleri çalışmaz.)\n\nDikkat: 'doesn't' kullandığımızda fiile 's' eklemeyin!",
+    id: 16,
+    title: "Present Simple - Negative",
+    description: "Learn how to form negative sentences using don't and doesn't",
+    lesson: "Olumsuz cümlelerde 'do not (don't)' ve 'does not (doesn't)' kullanırız.\n\n✓ I/You/We/They + don't + fiil (temel hali)\n✓ He/She/It + doesn't + fiil (temel hali)\n\nDikkat: Olumsuzda fiil her zaman temel haliyle kullanılır!\n\nÖrnekler:\n- I don't like coffee. (Kahveyi sevmem.)\n- She doesn't work here. (Burada çalışmaz.)",
     exercises: [
       {
-        question: "Complete: I ___ watch TV much.",
+        question: "Complete: I ___ eat meat.",
         options: ["don't", "doesn't", "not"],
         correct: 0,
-        explanation: "'I' ile 'don't' kullanırız."
+        explanation: "'I' ile 'don't' kullanırız"
       },
       {
-        question: "Complete: She ___ like swimming.",
+        question: "Complete: He ___ speak French.",
         options: ["don't", "doesn't", "not"],
         correct: 1,
-        explanation: "'She' ile 'doesn't' kullanırız."
+        explanation: "'He' ile 'doesn't' kullanırız"
       },
       {
         question: "Complete: They ___ live here.",
         options: ["don't", "doesn't", "not"],
         correct: 0,
-        explanation: "'They' ile 'don't' kullanırız."
+        explanation: "'They' ile 'don't' kullanırız"
+      }
+    ]
+  },
+  {
+    id: 17,
+    title: "Present Simple - Yes/No Questions",
+    description: "Learn how to form and answer yes/no questions in present simple",
+    lesson: "Evet/Hayır soruları için 'do/does' kullanırız.\n\n✓ Do + I/you/we/they + fiil?\n✓ Does + he/she/it + fiil?\n\nKısa cevaplar:\n- Yes, I do. / No, I don't.\n- Yes, she does. / No, she doesn't.\n\nÖrnekler:\n- Do you like pizza? (Pizza sever misin?)\n- Does he work here? (Burada çalışır mı?)",
+    exercises: [
+      {
+        question: "Form a question: ___ you speak English?",
+        options: ["Do", "Does", "Are"],
+        correct: 0,
+        explanation: "'You' ile 'Do' kullanırız"
+      },
+      {
+        question: "Form a question: ___ she live in Turkey?",
+        options: ["Do", "Does", "Is"],
+        correct: 1,
+        explanation: "'She' ile 'Does' kullanırız"
+      },
+      {
+        question: "Answer: 'Do they work here?' (No)",
+        options: ["No, they don't", "No, they doesn't", "No, they aren't"],
+        correct: 0,
+        explanation: "'They' için olumsuz cevap: 'No, they don't'"
+      }
+    ]
+  },
+  {
+    id: 18,
+    title: "Present Simple - Wh- Questions",
+    description: "Learn how to form information questions using what, where, when, who, why, how",
+    lesson: "Bilgi soruları için soru kelimeleri + do/does kullanırız.\n\n✓ What/Where/When/Who/Why/How + do/does + özne + fiil?\n\nÖrnekler:\n- What do you do? (Ne iş yaparsın?)\n- Where does she live? (Nerede yaşar?)\n- When do they arrive? (Ne zaman gelirler?)\n- How do you come to work? (İşe nasıl gelirsin?)",
+    exercises: [
+      {
+        question: "Complete: ___ do you live?",
+        options: ["What", "Where", "When"],
+        correct: 1,
+        explanation: "Yer sormak için 'Where' kullanırız"
+      },
+      {
+        question: "Complete: ___ does she start work?",
+        options: ["What", "Where", "When"],
+        correct: 2,
+        explanation: "Zaman sormak için 'When' kullanırız"
+      },
+      {
+        question: "Complete: ___ do they do?",
+        options: ["What", "Where", "How"],
+        correct: 0,
+        explanation: "Meslek/iş sormak için 'What' kullanırız"
       }
     ]
   },
   {
     id: 19,
-    title: "Simple Present – Yes/No Questions",
-    description: "Learn to form Yes/No questions in Simple Present",
-    lesson: "Evet/Hayır soruları için 'Do' veya 'Does' kullanırız.\n\n✓ Do + I/you/we/they + fiil?\n✓ Does + he/she/it + fiil?\n\nÖrnekler:\n- Do you speak English? (İngilizce biliyor musun?)\n- Does she work here? (Burada çalışıyor mu?)\n\nKısa cevaplar:\n- Yes, I do. / No, I don't.\n- Yes, she does. / No, she doesn't.",
+    title: "Adverbs of Frequency",
+    description: "Learn how to use always, usually, often, sometimes, rarely, never",
+    lesson: "Sıklık zarfları ne sıklıkla yaptığımızı anlatır.\n\n✓ always (her zaman) - %100\n✓ usually (genellikle) - %80\n✓ often (sık sık) - %60\n✓ sometimes (bazen) - %40\n✓ rarely (nadiren) - %20\n✓ never (hiçbir zaman) - %0\n\nKonumu: özne + sıklık zarfı + fiil\n\nÖrnek: I always drink coffee. (Her zaman kahve içerim.)",
     exercises: [
       {
-        question: "Form a question: ___ you like pizza?",
-        options: ["Do", "Does", "Are"],
+        question: "Complete: I ___ go to bed late.",
+        options: ["always", "never", "sometimes"],
+        correct: 2,
+        explanation: "Bazen için 'sometimes' kullanırız"
+      },
+      {
+        question: "Where does the adverb go? 'She is late.'",
+        options: ["She always is late", "She is always late", "Always she is late"],
+        correct: 1,
+        explanation: "Be fiili ile: özne + be + sıklık zarfı"
+      },
+      {
+        question: "Complete: They ___ eat breakfast.",
+        options: ["always", "never", "usually"],
         correct: 0,
-        explanation: "'You' ile 'Do' kullanırız."
-      },
-      {
-        question: "Form a question: ___ he play football?",
-        options: ["Do", "Does", "Is"],
-        correct: 1,
-        explanation: "'He' ile 'Does' kullanırız."
-      },
-      {
-        question: "Answer: 'Do you work?' (Yes)",
-        options: ["Yes, I work", "Yes, I do", "Yes, I am"],
-        correct: 1,
-        explanation: "'Do' sorusuna 'Yes, I do.' şeklinde cevap veririz."
+        explanation: "Context'e göre en mantıklı seçenek"
       }
     ]
   },
   {
     id: 20,
-    title: "Simple Present – Wh- Questions (What, Where, Who...)",
-    description: "Learn to form information questions",
-    lesson: "Bilgi soruları soru kelimeleri ile başlar.\n\nSoru kelimeleri:\n✓ What (Ne?) - nesne/şey sorar\n✓ Where (Nerede?) - yer sorar\n✓ Who (Kim?) - kişi sorar\n✓ When (Ne zaman?) - zaman sorar\n✓ Why (Neden?) - sebep sorar\n✓ How (Nasıl?) - yöntem sorar\n\nYapı: Soru kelimesi + do/does + özne + fiil?\nÖrnek: Where do you live? (Nerede yaşıyorsun?)",
+    title: "Can / Can't for Ability",
+    description: "Learn how to express ability and inability using can and can't",
+    lesson: "Yetenek ve beceriyi ifade etmek için 'can/can't' kullanırız.\n\n✓ can + fiil (temel hali) - yapabilmek\n✓ can't + fiil (temel hali) - yapamamak\n\nÖrnekler:\n- I can swim. (Yüzebilirim.)\n- She can't drive. (Araba kullanamaz.)\n- Can you speak Turkish? (Türkçe konuşabiliyor musun?)",
     exercises: [
       {
-        question: "Complete: ___ do you live?",
-        options: ["What", "Where", "Who"],
-        correct: 1,
-        explanation: "Yer sormak için 'Where' kullanırız."
+        question: "Complete: I ___ play the piano.",
+        options: ["can", "can't", "could"],
+        correct: 0,
+        explanation: "Yetenek için 'can' kullanırız"
       },
       {
-        question: "Complete: ___ does she work?",
-        options: ["What", "Where", "When"],
-        correct: 1,
-        explanation: "Çalıştığı yer için 'Where' kullanırız."
+        question: "Complete: She ___ swim very well.",
+        options: ["can", "can't", "could"],
+        correct: 0,
+        explanation: "İyi yüzme yeteneği için 'can' kullanırız"
       },
       {
-        question: "Complete: ___ do you study English?",
-        options: ["What", "Why", "Who"],
+        question: "Form a question: ___ you cook?",
+        options: ["Do", "Can", "Are"],
         correct: 1,
-        explanation: "Sebep sormak için 'Why' kullanırız."
+        explanation: "Yetenek sorusu için 'Can' kullanırız"
       }
     ]
   },
   {
     id: 21,
-    title: "Adverbs of Frequency (always, usually, sometimes, never)",
-    description: "Learn frequency adverbs to express how often",
-    lesson: "Sıklık zarfları bir şeyin ne sıklıkla yapıldığını belirtir.\n\n✓ Always (Her zaman) - %100\n✓ Usually (Genellikle) - %80\n✓ Often (Sık sık) - %60\n✓ Sometimes (Bazen) - %40\n✓ Rarely (Nadiren) - %20\n✓ Never (Hiçbir zaman) - %0\n\nKonum: Özne + sıklık zarfı + ana fiil\nÖrnek: I always drink coffee. (Her zaman kahve içerim.)",
+    title: "Countable and Uncountable Nouns",
+    description: "Learn the difference between nouns you can count and nouns you cannot count",
+    lesson: "Sayılabilen ve sayılamayan isimler arasındaki farkı öğrenelim.\n\n✓ Sayılabilen: one book, two books (tekil/çoğul olabilir)\n✓ Sayılamayan: water, rice, information (sadece tekil)\n\nSayılabilen: apple, car, student, house\nSayılamayan: water, money, music, advice",
     exercises: [
       {
-        question: "Complete: I ___ eat breakfast. (%100)",
-        options: ["sometimes", "usually", "always"],
-        correct: 2,
-        explanation: "%100 için 'always' kullanırız."
-      },
-      {
-        question: "Complete: She ___ goes to gym. (%40)",
-        options: ["always", "sometimes", "never"],
+        question: "Which is countable?",
+        options: ["water", "book", "music"],
         correct: 1,
-        explanation: "%40 için 'sometimes' kullanırız."
+        explanation: "'Book' sayılabilir: one book, two books"
       },
       {
-        question: "Complete: They ___ smoke. (%0)",
-        options: ["always", "usually", "never"],
-        correct: 2,
-        explanation: "%0 için 'never' kullanırız."
+        question: "Which is uncountable?",
+        options: ["car", "information", "student"],
+        correct: 1,
+        explanation: "'Information' sayılamaz: two informations diyemeyiz"
+      },
+      {
+        question: "Complete: I need some ___.",
+        options: ["advices", "advice", "an advice"],
+        correct: 1,
+        explanation: "'Advice' sayılamayan isim, çoğul eki almaz"
       }
     ]
   },
   {
     id: 22,
-    title: "Can / Can't for Ability",
-    description: "Express ability and inability with 'can'",
-    lesson: "'Can' yetenek ve beceri bildirmek için kullanılır. Türkçede '-abilmek' anlamındadır.\n\nOlumlu: Özne + can + fiil (taban hali)\nOlumsuz: Özne + can't (cannot) + fiil\n\nÖrnekler:\n- I can swim. (Yüzebilirim.)\n- She can speak English. (İngilizce konuşabilir.)\n- He can't drive. (Araba kullanamaz.)\n\nDikkat: 'can'dan sonra fiil hiç değişmez!",
+    title: "Some / Any",
+    description: "Learn when to use some and any with countable and uncountable nouns",
+    lesson: "Some ve any kullanımını öğrenelim.\n\n✓ Some: olumlu cümlelerde, rica/teklif sorularında\n✓ Any: olumsuz cümlelerde ve çoğu soruda\n\nÖrnekler:\n- I have some money. (Biraz param var.)\n- I don't have any money. (Hiç param yok.)\n- Do you have any questions? (Sorun var mı?)\n- Would you like some tea? (Çay ister misin?)",
     exercises: [
       {
-        question: "Complete: I ___ play the piano.",
-        options: ["can", "can't", "cans"],
+        question: "Complete: I have ___ books.",
+        options: ["some", "any"],
         correct: 0,
-        explanation: "Yetenek bildirmek için 'can' kullanırız."
+        explanation: "Olumlu cümlede 'some' kullanırız"
       },
       {
-        question: "Complete: She ___ speak French. (yetenek yok)",
-        options: ["can", "can't", "cannot"],
+        question: "Complete: I don't have ___ time.",
+        options: ["some", "any"],
         correct: 1,
-        explanation: "Yetenek olmadığını belirtmek için 'can't' kullanırız."
+        explanation: "Olumsuz cümlede 'any' kullanırız"
       },
       {
-        question: "Complete: They ___ cook very well.",
-        options: ["can", "cans", "could"],
+        question: "Complete: Would you like ___ coffee?",
+        options: ["some", "any"],
         correct: 0,
-        explanation: "'Can' hiçbir özne ile değişmez."
+        explanation: "Teklif sorularında 'some' kullanırız"
       }
     ]
   },
   {
     id: 23,
-    title: "Can / Can't for Permission",
-    description: "Use 'can' to ask for and give permission",
-    lesson: "'Can' izin istemek ve vermek için de kullanılır.\n\nİzin isteme:\n✓ Can I...? (... yapabilir miyim?)\n✓ Can we...? (... yapabilir miyiz?)\n\nİzin verme/vermeme:\n✓ Yes, you can. (Evet, yapabilirsin.)\n✓ No, you can't. (Hayır, yapamazsın.)\n\nÖrnekler:\n- Can I go home? (Eve gidebilir miyim?)\n- Can we use your phone? (Telefonunuzu kullanabilir miyiz?)",
+    title: "Much / Many",
+    description: "Learn how to use much with uncountable nouns and many with countable nouns",
+    lesson: "Much ve many kullanımını öğrenelim.\n\n✓ Much + sayılamayan isimler (much water, much time)\n✓ Many + sayılabilen isimler (many books, many people)\n\nGenellikle sorularda ve olumsuzlarda kullanılır.\n\nÖrnekler:\n- How much money do you have?\n- How many students are there?\n- I don't have much time.\n- There aren't many people here.",
     exercises: [
       {
-        question: "Ask for permission: ___ I open the window?",
-        options: ["Can", "Do", "Am"],
+        question: "Complete: How ___ water do you need?",
+        options: ["much", "many"],
         correct: 0,
-        explanation: "İzin istemek için 'Can I...?' kullanırız."
+        explanation: "'Water' sayılamayan, 'much' kullanırız"
       },
       {
-        question: "Give permission: 'Can I sit here?' - 'Yes, you ___.'",
-        options: ["do", "can", "are"],
+        question: "Complete: How ___ books do you have?",
+        options: ["much", "many"],
         correct: 1,
-        explanation: "'Can' sorusuna 'Yes, you can.' şeklinde cevap veririz."
+        explanation: "'Books' sayılabilen, 'many' kullanırız"
       },
       {
-        question: "Refuse permission: 'Can we leave?' - 'No, you ___.'",
-        options: ["don't", "can't", "aren't"],
+        question: "Complete: I don't have ___ friends.",
+        options: ["much", "many"],
         correct: 1,
-        explanation: "İzin vermemek için 'No, you can't.' deriz."
+        explanation: "'Friends' sayılabilen, 'many' kullanırız"
       }
     ]
   },
   {
     id: 24,
-    title: "Like / Love / Hate + -ing",
-    description: "Express preferences with gerunds",
-    lesson: "Sevme/sevmeme duygularını '-ing' ile ifade ederiz.\n\n✓ Like + V-ing (sevmek)\n✓ Love + V-ing (çok sevmek)\n✓ Hate + V-ing (nefret etmek)\n✓ Enjoy + V-ing (keyif almak)\n\nÖrnekler:\n- I like reading books. (Kitap okumayı severim.)\n- She loves dancing. (Dans etmeyi çok sever.)\n- He hates waiting. (Beklemeyi nefret eder.)\n\nDikkat: Bu fiillerden sonra her zaman '-ing' gelir!",
+    title: "A lot of / Lots of",
+    description: "Learn how to use a lot of and lots of with both countable and uncountable nouns",
+    lesson: "A lot of ve lots of kullanımını öğrenelim.\n\n✓ A lot of = lots of (aynı anlam)\n✓ Hem sayılabilen hem sayılamayan isimlerle kullanılır\n✓ Çok miktarda anlamında\n\nÖrnekler:\n- I have a lot of books. (Çok kitabım var.)\n- She drinks lots of water. (Çok su içer.)\n- There are a lot of people here. (Burada çok insan var.)",
     exercises: [
       {
-        question: "Complete: I like ___ music.",
-        options: ["listen", "listening", "to listen"],
-        correct: 1,
-        explanation: "'Like' fiilinden sonra '-ing' gelir: listening"
-      },
-      {
-        question: "Complete: She loves ___ in the sea.",
-        options: ["swim", "swimming", "to swim"],
-        correct: 1,
-        explanation: "'Love' fiilinden sonra '-ing' gelir: swimming"
-      },
-      {
-        question: "Complete: They hate ___ homework.",
-        options: ["do", "doing", "to do"],
-        correct: 1,
-        explanation: "'Hate' fiilinden sonra '-ing' gelir: doing"
-      }
-    ]
-  }
-];
-
-// A2 Grammar Topics
-const a2GrammarTopics = [
-  {
-    id: 7,
-    title: "Simple Past Tense",
-    description: "Learn how to talk about completed actions in the past",
-    lesson: "The simple past tense is used for completed actions in the past.\n\n✓ Regular verbs: add -ed (walk → walked)\n✓ Irregular verbs: memorize forms (go → went)\n✓ Questions: Did + subject + base verb?\n✓ Negatives: didn't + base verb\n\nExamples:\n- I walked to school yesterday.\n- She didn't eat breakfast.\n- Did you see the movie?",
-    exercises: [
-      {
-        question: "Complete: Yesterday, I ___ to the store.",
-        options: ["walk", "walked", "walking"],
-        correct: 1,
-        explanation: "Use 'walked' for a completed past action"
-      },
-      {
-        question: "Choose the correct negative: She ___ watch TV last night.",
-        options: ["didn't", "doesn't", "don't"],
+        question: "Complete: She has ___ friends.",
+        options: ["a lot of", "much", "many"],
         correct: 0,
-        explanation: "Use 'didn't' for past tense negatives"
+        explanation: "'A lot of' hem sayılabilen hem sayılamayan ile kullanılır"
       },
       {
-        question: "Form a question: ___ you ___ your homework?",
-        options: ["Do/finish", "Did/finish", "Did/finished"],
-        correct: 1,
-        explanation: "Use 'Did + base verb' for past tense questions"
-      }
-    ]
-  },
-  {
-    id: 8,
-    title: "Past Continuous Tense",
-    description: "Express ongoing actions in the past",
-    lesson: "Past continuous shows actions that were in progress at a specific time in the past.\n\n✓ Form: was/were + verb-ing\n✓ Use 'was' with I/he/she/it\n✓ Use 'were' with you/we/they\n\nExamples:\n- I was reading when you called.\n- They were playing football at 3 PM.\n- What were you doing yesterday?",
-    exercises: [
-      {
-        question: "Complete: At 8 PM, I ___ dinner.",
-        options: ["was eating", "were eating", "ate"],
+        question: "Complete: I drink ___ coffee.",
+        options: ["lots of", "many", "a few"],
         correct: 0,
-        explanation: "Use 'was eating' for ongoing past action with 'I'"
+        explanation: "'Lots of' sayılamayan 'coffee' ile kullanılır"
       },
       {
-        question: "Choose: They ___ when it started to rain.",
-        options: ["was playing", "were playing", "played"],
+        question: "Which is correct?",
+        options: ["a lot of informations", "a lot of information", "much informations"],
         correct: 1,
-        explanation: "Use 'were playing' with 'they' for ongoing past action"
-      },
-      {
-        question: "What ___ you ___ at midnight?",
-        options: ["was/doing", "were/doing", "did/do"],
-        correct: 1,
-        explanation: "Use 'were you doing' for past continuous questions"
-      }
-    ]
-  },
-  {
-    id: 9,
-    title: "Comparative and Superlative",
-    description: "Compare things and express extremes",
-    lesson: "Use comparatives to compare two things, superlatives for three or more.\n\n✓ Short adjectives: add -er/-est (tall → taller → tallest)\n✓ Long adjectives: more/most + adjective (beautiful → more beautiful → most beautiful)\n✓ Irregular forms: good → better → best, bad → worse → worst\n\nExamples:\n- This book is more interesting than that one.\n- She is the tallest in the class.",
-    exercises: [
-      {
-        question: "Complete: This car is ___ than that one.",
-        options: ["fast", "faster", "fastest"],
-        correct: 1,
-        explanation: "Use 'faster' to compare two cars"
-      },
-      {
-        question: "Choose: She is the ___ student in class.",
-        options: ["more intelligent", "most intelligent", "intelligenter"],
-        correct: 1,
-        explanation: "Use 'most intelligent' for superlative with long adjectives"
-      },
-      {
-        question: "Which is correct for comparing two books?",
-        options: ["This book is good", "This book is better", "This book is best"],
-        correct: 1,
-        explanation: "Use 'better' to compare two things"
-      }
-    ]
-  },
-  {
-    id: 10,
-    title: "Present Perfect Tense",
-    description: "Connect past actions to the present",
-    lesson: "Present perfect connects past actions to now.\n\n✓ Form: have/has + past participle\n✓ Use 'have' with I/you/we/they\n✓ Use 'has' with he/she/it\n✓ Common uses: experience, unfinished time, recent past\n\nExamples:\n- I have visited Paris. (experience)\n- She has lived here for 5 years. (unfinished time)\n- They have just arrived. (recent past)",
-    exercises: [
-      {
-        question: "Complete: I ___ never ___ sushi.",
-        options: ["have/eat", "have/eaten", "has/eaten"],
-        correct: 1,
-        explanation: "Use 'have eaten' for past experience with 'I'"
-      },
-      {
-        question: "Choose: She ___ in London since 2010.",
-        options: ["has lived", "have lived", "lived"],
-        correct: 0,
-        explanation: "Use 'has lived' with 'she' for unfinished time period"
-      },
-      {
-        question: "Form the question: ___ you ___ your homework?",
-        options: ["Do/finish", "Have/finished", "Did/finish"],
-        correct: 1,
-        explanation: "Use 'Have you finished' for present perfect questions"
+        explanation: "'Information' sayılamayan, çoğul eki alamaz"
       }
     ]
   }
@@ -853,9 +667,7 @@ const a2GrammarTopics = [
 
 // Combined topics based on current level
 const getTopicsForLevel = (level: string) => {
-  if (level === "A1") return grammarTopics;
-  if (level === "A2") return a2GrammarTopics;
-  return grammarTopics; // default to A1
+  return grammarTopics; // Currently only A1 is available
 };
 
 interface GrammarModulesProps {
