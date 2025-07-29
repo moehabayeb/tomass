@@ -2388,15 +2388,73 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
         return;
       }
       
-      // Check if the transcript contains the key parts of the expected sentence
-      const expectedWords = expectedSentence.replace(/[.,!?]/g, '').split(' ');
-      const userWords = userSentence.replace(/[.,!?]/g, '').split(' ');
+      // Normalize text for comparison
+      const normalizeText = (text) => {
+        return text
+          .toLowerCase()
+          .replace(/[.,!?";]/g, '') // Remove punctuation
+          .replace(/'/g, '') // Remove apostrophes for contractions
+          .replace(/\s+/g, ' ') // Multiple spaces to single space
+          .trim();
+      };
       
-      // Must contain at least 70% of the expected words
-      const matchingWords = expectedWords.filter(word => 
-        userWords.some(userWord => userWord.includes(word) || word.includes(userWord))
-      );
-      const isCorrect = matchingWords.length >= expectedWords.length * 0.7;
+      const normalizedExpected = normalizeText(expectedSentence);
+      const normalizedUser = normalizeText(userSentence);
+      
+      // Handle common contractions and variations
+      const handleContractions = (text) => {
+        return text
+          .replace(/isn't/g, 'is not')
+          .replace(/aren't/g, 'are not')
+          .replace(/don't/g, 'do not')
+          .replace(/doesn't/g, 'does not')
+          .replace(/won't/g, 'will not')
+          .replace(/can't/g, 'cannot')
+          .replace(/i'm/g, 'i am')
+          .replace(/you're/g, 'you are')
+          .replace(/he's/g, 'he is')
+          .replace(/she's/g, 'she is')
+          .replace(/it's/g, 'it is')
+          .replace(/we're/g, 'we are')
+          .replace(/they're/g, 'they are');
+      };
+      
+      const expandedExpected = handleContractions(normalizedExpected);
+      const expandedUser = handleContractions(normalizedUser);
+      
+      let isCorrect = false;
+      let matchingWords = [];
+      let expectedWords = [];
+      
+      // Check exact match first
+      if (expandedUser === expandedExpected) {
+        console.log('✅ Exact match found');
+        isCorrect = true;
+      } else {
+        // Check word-by-word matching with flexibility
+        expectedWords = expandedExpected.split(' ').filter(w => w.length > 0);
+        const userWords = expandedUser.split(' ').filter(w => w.length > 0);
+        
+        // Must contain at least 80% of the expected words in any order
+        matchingWords = expectedWords.filter(word => 
+          userWords.some(userWord => 
+            userWord === word || 
+            userWord.includes(word) || 
+            word.includes(userWord) ||
+            // Handle common A1 variations
+            (word === 'am' && userWord === 'im') ||
+            (word === 'im' && userWord === 'am')
+          )
+        );
+        
+        const matchPercentage = matchingWords.length / expectedWords.length;
+        isCorrect = matchPercentage >= 0.8; // 80% threshold
+        
+        console.log('Expected words:', expectedWords);
+        console.log('User words:', userWords);
+        console.log('Matching words:', matchingWords);
+        console.log('Match percentage:', Math.round(matchPercentage * 100) + '%');
+      }
       
       console.log('Matching words:', matchingWords.length, 'of', expectedWords.length);
       console.log('Is correct:', isCorrect);
