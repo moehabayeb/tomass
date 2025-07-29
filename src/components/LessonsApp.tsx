@@ -2388,76 +2388,129 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
         return;
       }
       
-      // Normalize text for comparison
-      const normalizeText = (text) => {
+      // Enhanced normalization and semantic comparison
+      const normalizeForComparison = (text) => {
         return text
           .toLowerCase()
           .replace(/[.,!?";]/g, '') // Remove punctuation
-          .replace(/'/g, '') // Remove apostrophes for contractions
-          .replace(/\s+/g, ' ') // Multiple spaces to single space
+          .replace(/'/g, '') // Remove apostrophes
+          .replace(/\s+/g, ' ') // Normalize spaces
           .trim();
       };
       
-      const normalizedExpected = normalizeText(expectedSentence);
-      const normalizedUser = normalizeText(userSentence);
-      
-      // Handle common contractions and variations
-      const handleContractions = (text) => {
-        return text
-          .replace(/isn't/g, 'is not')
-          .replace(/aren't/g, 'are not')
-          .replace(/don't/g, 'do not')
-          .replace(/doesn't/g, 'does not')
-          .replace(/won't/g, 'will not')
-          .replace(/can't/g, 'cannot')
-          .replace(/i'm/g, 'i am')
-          .replace(/you're/g, 'you are')
-          .replace(/he's/g, 'he is')
-          .replace(/she's/g, 'she is')
-          .replace(/it's/g, 'it is')
-          .replace(/we're/g, 'we are')
-          .replace(/they're/g, 'they are');
+      // More comprehensive contraction handling (both directions)
+      const expandContractions = (text) => {
+        const contractions = {
+          "isn't": "is not", "isnt": "is not", "is not": "isnt",
+          "aren't": "are not", "arent": "are not", "are not": "arent", 
+          "don't": "do not", "dont": "do not", "do not": "dont",
+          "doesn't": "does not", "doesnt": "does not", "does not": "doesnt",
+          "won't": "will not", "wont": "will not", "will not": "wont",
+          "can't": "cannot", "cant": "cannot", "cannot": "cant",
+          "i'm": "i am", "im": "i am", "i am": "im",
+          "you're": "you are", "youre": "you are", "you are": "youre",
+          "he's": "he is", "hes": "he is", "he is": "hes",
+          "she's": "she is", "shes": "she is", "she is": "shes",
+          "it's": "it is", "its": "it is", "it is": "its",
+          "we're": "we are", "were": "we are", "we are": "were",
+          "they're": "they are", "theyre": "they are", "they are": "theyre"
+        };
+        
+        let result = text;
+        for (const [contraction, expanded] of Object.entries(contractions)) {
+          result = result.replace(new RegExp('\\b' + contraction + '\\b', 'g'), expanded);
+        }
+        return result;
       };
+
+      // Check if AI says response is grammatically correct
+      const isGrammaticallyCorrect = corrected && (
+        corrected.toLowerCase().includes('grammatically correct') ||
+        corrected.toLowerCase().includes('grammar is correct') ||
+        corrected.toLowerCase().includes('sentence is correct') ||
+        corrected.toLowerCase() === finalTranscript.toLowerCase().trim()
+      );
+
+      console.log('🤖 AI feedback analysis:');
+      console.log('   Original:', finalTranscript);
+      console.log('   AI corrected:', corrected);
+      console.log('   AI says grammatically correct:', isGrammaticallyCorrect);
+
+      const normalizedExpected = normalizeForComparison(expectedSentence);
+      const normalizedUser = normalizeForComparison(userSentence);
       
-      const expandedExpected = handleContractions(normalizedExpected);
-      const expandedUser = handleContractions(normalizedUser);
+      // Expand contractions for both variants
+      const expectedFull = expandContractions(normalizedExpected);
+      const expectedContract = normalizedExpected; // Keep original contractions
+      const userExpanded = expandContractions(normalizedUser);
       
       let isCorrect = false;
-      let matchingWords = [];
-      let expectedWords = [];
       
-      // Check exact match first
-      if (expandedUser === expandedExpected) {
-        console.log('✅ Exact match found');
+      // 1. Check if AI confirms it's grammatically correct
+      if (isGrammaticallyCorrect) {
+        console.log('✅ AI confirmed grammatically correct');
         isCorrect = true;
-      } else {
-        // Check word-by-word matching with flexibility
-        expectedWords = expandedExpected.split(' ').filter(w => w.length > 0);
-        const userWords = expandedUser.split(' ').filter(w => w.length > 0);
+      }
+      // 2. Check multiple semantic matches
+      else if (
+        normalizedUser === normalizedExpected ||
+        userExpanded === expectedFull ||
+        userExpanded === normalizedExpected ||
+        normalizedUser === expectedFull
+      ) {
+        console.log('✅ Semantic match found');
+        isCorrect = true;
+      }
+      // 3. Flexible word matching with high tolerance for A1 learners
+      else {
+        const expectedWords = expectedFull.split(' ').filter(w => w.length > 0);
+        const userWords = userExpanded.split(' ').filter(w => w.length > 0);
         
-        // Must contain at least 80% of the expected words in any order
-        matchingWords = expectedWords.filter(word => 
-          userWords.some(userWord => 
-            userWord === word || 
-            userWord.includes(word) || 
-            word.includes(userWord) ||
-            // Handle common A1 variations
-            (word === 'am' && userWord === 'im') ||
-            (word === 'im' && userWord === 'am')
-          )
+        // Very flexible matching for A1 level
+        const matchingWords = expectedWords.filter(expectedWord => 
+          userWords.some(userWord => {
+            // Exact match
+            if (userWord === expectedWord) return true;
+            
+            // Common A1 word variations and mishearings
+            const variations = {
+              'not': ['nt', 'note', 'nott'],
+              'my': ['me', 'mai'],
+              'friend': ['frend', 'friends'],
+              'teacher': ['teachr', 'teachers'],
+              'student': ['studnt', 'students'],
+              'doctor': ['doctr', 'doctors'],
+              'she': ['he', 'shi'],
+              'he': ['she', 'hi'],
+              'no': ['now', 'know']
+            };
+            
+            // Check variations
+            if (variations[expectedWord]?.includes(userWord)) return true;
+            if (variations[userWord]?.includes(expectedWord)) return true;
+            
+            // Partial matches for longer words
+            if (expectedWord.length > 3 && userWord.length > 3) {
+              return userWord.includes(expectedWord) || expectedWord.includes(userWord);
+            }
+            
+            return false;
+          })
         );
         
         const matchPercentage = matchingWords.length / expectedWords.length;
-        isCorrect = matchPercentage >= 0.8; // 80% threshold
+        // Lower threshold for A1 learners (70% instead of 80%)
+        isCorrect = matchPercentage >= 0.7;
         
-        console.log('Expected words:', expectedWords);
-        console.log('User words:', userWords);
-        console.log('Matching words:', matchingWords);
-        console.log('Match percentage:', Math.round(matchPercentage * 100) + '%');
+        console.log('📊 Word matching analysis:');
+        console.log('   Expected words:', expectedWords);
+        console.log('   User words:', userWords);
+        console.log('   Matching words:', matchingWords);
+        console.log('   Match percentage:', Math.round(matchPercentage * 100) + '%');
+        console.log('   Threshold: 70%');
       }
       
-      console.log('Matching words:', matchingWords.length, 'of', expectedWords.length);
-      console.log('Is correct:', isCorrect);
+      console.log('Final result: Is correct:', isCorrect);
       
       if (isCorrect) {
         setCorrectAnswers(prev => prev + 1);
