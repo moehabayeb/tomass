@@ -42,7 +42,7 @@ const MODULES_BY_LEVEL = {
            i === 4 ? '' :
            i === 5 ? 'Possessive Adjectives' :
            i === 6 ? '' :
-           i === 7 ? '' :
+           i === 7 ? 'This / That / These / Those' :
            i === 8 ? '' :
             i === 9 ? '' :
             i === 10 ? '' :
@@ -66,7 +66,7 @@ const MODULES_BY_LEVEL = {
                  i === 4 ? '' :
                  i === 5 ? 'Learn to use possessive adjectives my, your, his, her, its, our, their' :
                  i === 6 ? '' :
-                 i === 7 ? '' :
+                 i === 7 ? 'Learn to use demonstrative words This, That, These, Those' :
                  i === 8 ? '' :
                   i === 9 ? '' :
                   i === 10 ? '' :
@@ -633,73 +633,76 @@ Konu Anlatımı:
 
 // Module 8 Data: There is / There are - Positive Sentences
 const MODULE_8_DATA = {
-  title: "Modül 8 – There is / There are – Positive Sentences",
-  description: "Bu modülde İngilizcede 'There is' ve 'There are' kullanarak olumlu cümleler kurmayı öğreneceğiz.",
-  intro: `Bu modülde İngilizcede 'There is' ve 'There are' kullanarak olumlu cümleler kurmayı öğreneceğiz.
+  title: "Module 8: This / That / These / Those",
+  description: "Learn how to use demonstrative words in English: This, That, These, Those",
+  intro: `In this module, students will learn how to use demonstrative words in English:
 
-'There is' = Tekil nesneler için kullanılır.
-'There are' = Çoğul nesneler için kullanılır.
+This = Bu (near, singular)
+That = Şu (far, singular) 
+These = Bunlar (near, plural)
+Those = Şunlar (far, plural)
 
-Örnekler:
-There is a book on the table.
-There are two cars in the garage.
-There is an apple in the basket.
-There are many people in the park.`,
-  tip: "Use 'There is' for singular nouns and 'There are' for plural nouns. 'There is' can also be used with uncountable nouns.",
+Example Sentences:
+- This is my book.
+- That is her car.
+- These are our friends.
+- Those are their houses.`,
+  tip: "Use 'This' and 'These' for things that are near you. Use 'That' and 'Those' for things that are far from you. 'This/That' are singular, 'These/Those' are plural.",
   
   table: [
-    { structure: "There is + singular noun", example: "There is a dog in the garden." },
-    { structure: "There are + plural noun", example: "There are flowers in the vase." },
-    { structure: "There is + uncountable noun", example: "There is water in the glass." }
+    { word: "This", usage: "Near, singular", example: "This is a chair." },
+    { word: "That", usage: "Far, singular", example: "That is a tree." },
+    { word: "These", usage: "Near, plural", example: "These are my shoes." },
+    { word: "Those", usage: "Far, plural", example: "Those are birds." }
   ],
   
   listeningExamples: [
-    "There is a book on the table.",
-    "There are two cars in the garage.",
-    "There is water in the glass."
+    "This is my book.",
+    "That is her car.",
+    "These are our friends."
   ],
   
   speakingPractice: [
-    { question: "What is on the table?", answer: "There is a book on the table." },
-    { question: "What is in the kitchen?", answer: "There is a fridge in the kitchen." },
-    { question: "What is in the garden?", answer: "There is a cat in the garden." },
-    { question: "What is in the room?", answer: "There is a chair in the room." },
-    { question: "What is on the wall?", answer: "There is a picture on the wall." },
-    { question: "What is in the basket?", answer: "There is an apple in the basket." },
-    { question: "What are in the garage?", answer: "There are two cars in the garage." },
-    { question: "What are in the park?", answer: "There are many people in the park." },
-    { question: "What are on the desk?", answer: "There are some pens on the desk." },
-    { question: "What are in the box?", answer: "There are toys in the box." },
-    { question: "What is in the bottle?", answer: "There is water in the bottle." },
-    { question: "What is in the bag?", answer: "There is a notebook in the bag." },
-    { question: "What are in the classroom?", answer: "There are students in the classroom." },
-    { question: "What are on the shelves?", answer: "There are books on the shelves." },
-    { question: "What is under the bed?", answer: "There is a box under the bed." },
-    { question: "What is on the sofa?", answer: "There is a pillow on the sofa." },
-    { question: "What are in the fridge?", answer: "There are eggs in the fridge." },
-    { question: "What are on the plate?", answer: "There are sandwiches on the plate." },
-    { question: "What is in the cup?", answer: "There is tea in the cup." },
-    { question: "What is near the door?", answer: "There is a bag near the door." },
-    { question: "What is on the table?", answer: "There is a book on the table." },
-    { question: "What is in the kitchen?", answer: "There is a fridge in the kitchen." },
-    { question: "What is in the garden?", answer: "There is a cat in the garden." },
-    { question: "What is in the room?", answer: "There is a chair in the room." },
-    { question: "What is on the wall?", answer: "There is a picture on the wall." },
-    { question: "What is in the basket?", answer: "There is an apple in the basket." },
-    { question: "What are in the garage?", answer: "There are two cars in the garage." },
-    { question: "What are in the park?", answer: "There are many people in the park." },
-    { question: "What are on the desk?", answer: "There are some pens on the desk." },
-    { question: "What are in the box?", answer: "There are toys in the box." },
-    { question: "What is in the bottle?", answer: "There is water in the bottle." },
-    { question: "What is in the bag?", answer: "There is a notebook in the bag." },
-    { question: "What are in the classroom?", answer: "There are students in the classroom." },
-    { question: "What are on the shelves?", answer: "There are books on the shelves." },
-    { question: "What is under the bed?", answer: "There is a box under the bed." },
-    { question: "What is on the sofa?", answer: "There is a pillow on the sofa." },
-    { question: "What are in the fridge?", answer: "There are eggs in the fridge." },
-    { question: "What are on the plate?", answer: "There are sandwiches on the plate." },
-    { question: "What is in the cup?", answer: "There is tea in the cup." },
-    { question: "What is near the door?", answer: "There is a bag near the door." }
+    { question: "What is this?", answer: "This is my phone." },
+    { question: "What is that?", answer: "That is her house." },
+    { question: "What are these?", answer: "These are our books." },
+    { question: "What are those?", answer: "Those are cars." },
+    { question: "Is this your bag?", answer: "Yes, this is my bag." },
+    { question: "Is that your dog?", answer: "No, that is not my dog." },
+    { question: "Are these your keys?", answer: "Yes, these are my keys." },
+    { question: "Are those your shoes?", answer: "No, those are not my shoes." },
+    { question: "Which is this?", answer: "This is the blue one." },
+    { question: "Which is that?", answer: "That is the red one." },
+    { question: "Who are these?", answer: "These are my friends." },
+    { question: "Who are those?", answer: "Those are teachers." },
+    { question: "Is this a book?", answer: "Yes, it is a book." },
+    { question: "Is that a school?", answer: "Yes, that is a school." },
+    { question: "Are these apples?", answer: "Yes, these are apples." },
+    { question: "Are those chairs?", answer: "No, those are tables." },
+    { question: "What's this?", answer: "This is a pencil." },
+    { question: "What's that?", answer: "That is a window." },
+    { question: "What are these?", answer: "These are oranges." },
+    { question: "What are those?", answer: "Those are buildings." },
+    { question: "What is this?", answer: "This is my phone." },
+    { question: "What is that?", answer: "That is her house." },
+    { question: "What are these?", answer: "These are our books." },
+    { question: "What are those?", answer: "Those are cars." },
+    { question: "Is this your bag?", answer: "Yes, this is my bag." },
+    { question: "Is that your dog?", answer: "No, that is not my dog." },
+    { question: "Are these your keys?", answer: "Yes, these are my keys." },
+    { question: "Are those your shoes?", answer: "No, those are not my shoes." },
+    { question: "Which is this?", answer: "This is the blue one." },
+    { question: "Which is that?", answer: "That is the red one." },
+    { question: "Who are these?", answer: "These are my friends." },
+    { question: "Who are those?", answer: "Those are teachers." },
+    { question: "Is this a book?", answer: "Yes, it is a book." },
+    { question: "Is that a school?", answer: "Yes, that is a school." },
+    { question: "Are these apples?", answer: "Yes, these are apples." },
+    { question: "Are those chairs?", answer: "No, those are tables." },
+    { question: "What's this?", answer: "This is a pencil." },
+    { question: "What's that?", answer: "That is a window." },
+    { question: "What are these?", answer: "These are oranges." },
+    { question: "What are those?", answer: "Those are buildings." }
   ]
 };
 
