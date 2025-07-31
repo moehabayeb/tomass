@@ -45,7 +45,7 @@ const MODULES_BY_LEVEL = {
            i === 7 ? 'This / That / These / Those' :
            i === 8 ? '' :
             i === 9 ? '' :
-            i === 10 ? '' :
+             i === 10 ? 'There is / There are – Positive Sentences' :
             i === 11 ? '' :
             i === 12 ? 'Have got / Has got – Negative Sentences' :
              i === 13 ? 'Have got / Has got – Question Sentences' :
@@ -69,7 +69,7 @@ const MODULES_BY_LEVEL = {
                  i === 7 ? 'Learn to use demonstrative words This, That, These, Those' :
                  i === 8 ? '' :
                   i === 9 ? '' :
-                  i === 10 ? '' :
+                  i === 10 ? 'Learn to use There is and There are in positive sentences' :
                   i === 11 ? '' :
                   i === 12 ? 'Learn to use Haven\'t got and Hasn\'t got in negative sentences' :
                   i === 13 ? 'Learn to ask questions with Have got and Has got' :
@@ -852,77 +852,74 @@ Are there any books in your bag? (Çantanda kitap var mı?)`,
 
 // Module 11 Data: Articles (a / an / the)
 const MODULE_11_DATA = {
-  title: "Modül 11 - Articles: a / an / the – Basic Usage",
-  description: "Bu modülde İngilizcede Articles (a, an, the) konusunu öğreneceğiz.",
-  intro: `Bu modülde İngilizcede Articles (a, an, the) konusunu öğreneceğiz.
+  title: "Module 11: There is / There are – Positive Sentences",
+  description: "Learn how to use There is and There are in positive sentences",
+  intro: `In this module, learners will practice how to use "There is" and "There are" in positive English sentences.
 
-Konu Anlatımı:
-- 'a' = sessiz harfle başlayan sayılabilir tekil isimler için
-- 'an' = sesli harfle başlayan sayılabilir tekil isimler için  
-- 'the' = belirli bir nesneden bahsederken
+Use:
+- There is for singular and uncountable nouns
+- There are for plural nouns
 
-Örnek Cümleler:
-I see a cat. (Herhangi bir kedi)
-She has an apple. (Herhangi bir elma)
-The sun is bright. (Belirli: Güneş)`,
+Example Sentences:
+- There is a book on the table.
+- There are two cars in the garage.
+- There is water in the glass.
+- There are many people in the park.`,
+  tip: "Use 'There is' for singular nouns and 'There are' for plural nouns. 'There is' can also be used with uncountable nouns.",
   
   table: [
-    { article: "a", usage: "Sessiz harf ile başlayan tekil isim", example: "a dog, a car, a house" },
-    { article: "an", usage: "Sesli harf ile başlayan tekil isim", example: "an apple, an hour" },
-    { article: "the", usage: "Belirli nesneler veya tek olanlar", example: "the sun, the book on the table" }
+    { structure: "There is + singular", example: "There is a dog in the garden." },
+    { structure: "There are + plural", example: "There are flowers in the vase." },
+    { structure: "There is + uncountable", example: "There is water in the glass." }
   ],
   
   listeningExamples: [
-    "I have a book.",
-    "She eats an apple.",
-    "The cat is sleeping.",
-    "He has a car.",
-    "We need an umbrella.",
-    "The door is open.",
-    "There is a dog in the garden."
+    "There is a book on the table.",
+    "There are two cars in the garage.",
+    "There is water in the glass."
   ],
   
   speakingPractice: [
-    { question: "What do you see?", answer: "I see a cat." },
-    { question: "What does she have?", answer: "She has an apple." },
-    { question: "What is bright?", answer: "The sun is bright." },
-    { question: "What do you need?", answer: "I need a pen." },
-    { question: "What do they want?", answer: "They want an orange." },
-    { question: "What is on the table?", answer: "The book is on the table." },
-    { question: "What do you have?", answer: "I have a phone." },
-    { question: "What does he need?", answer: "He needs an umbrella." },
-    { question: "What is in the sky?", answer: "The moon is in the sky." },
-    { question: "What do you want?", answer: "I want a sandwich." },
-    { question: "What does she eat?", answer: "She eats an egg." },
-    { question: "What is closed?", answer: "The window is closed." },
-    { question: "What do you see?", answer: "I see a bird." },
-    { question: "What do they need?", answer: "They need an hour." },
-    { question: "What is open?", answer: "The door is open." },
-    { question: "What do you have?", answer: "I have a computer." },
-    { question: "What does he want?", answer: "He wants an ice cream." },
-    { question: "What is shining?", answer: "The star is shining." },
-    { question: "What do you need?", answer: "I need a chair." },
-    { question: "What does she have?", answer: "She has an idea." },
-    { question: "What is beautiful?", answer: "The flower is beautiful." },
-    { question: "What do you see?", answer: "I see a house." },
-    { question: "What do they want?", answer: "They want an answer." },
-    { question: "What is big?", answer: "The elephant is big." },
-    { question: "What do you have?", answer: "I have a bag." },
-    { question: "What does he need?", answer: "He needs an eraser." },
-    { question: "What is red?", answer: "The apple is red." },
-    { question: "What do you want?", answer: "I want a coffee." },
-    { question: "What does she see?", answer: "She sees an owl." },
-    { question: "What is long?", answer: "The river is long." },
-    { question: "What do you have?", answer: "I have a watch." },
-    { question: "What do they need?", answer: "They need an envelope." },
-    { question: "What is small?", answer: "The ant is small." },
-    { question: "What do you see?", answer: "I see a tree." },
-    { question: "What does he want?", answer: "He wants an orange juice." },
-    { question: "What is loud?", answer: "The music is loud." },
-    { question: "What do you need?", answer: "I need a map." },
-    { question: "What does she have?", answer: "She has an umbrella." },
-    { question: "What is warm?", answer: "The sun is warm." },
-    { question: "What do you want?", answer: "I want a pizza." }
+    { question: "What is on the table?", answer: "There is a book on the table." },
+    { question: "What is in the kitchen?", answer: "There is a fridge in the kitchen." },
+    { question: "What is in the garden?", answer: "There is a cat in the garden." },
+    { question: "What is in the room?", answer: "There is a chair in the room." },
+    { question: "What is on the wall?", answer: "There is a picture on the wall." },
+    { question: "What is in the basket?", answer: "There is an apple in the basket." },
+    { question: "What are in the garage?", answer: "There are two cars in the garage." },
+    { question: "What are in the park?", answer: "There are many people in the park." },
+    { question: "What are on the desk?", answer: "There are some pens on the desk." },
+    { question: "What are in the box?", answer: "There are toys in the box." },
+    { question: "What is in the bottle?", answer: "There is water in the bottle." },
+    { question: "What is in the bag?", answer: "There is a notebook in the bag." },
+    { question: "What are in the classroom?", answer: "There are students in the classroom." },
+    { question: "What are on the shelves?", answer: "There are books on the shelves." },
+    { question: "What is under the bed?", answer: "There is a box under the bed." },
+    { question: "What is on the sofa?", answer: "There is a pillow on the sofa." },
+    { question: "What are in the fridge?", answer: "There are eggs in the fridge." },
+    { question: "What are on the plate?", answer: "There are sandwiches on the plate." },
+    { question: "What is in the cup?", answer: "There is tea in the cup." },
+    { question: "What is near the door?", answer: "There is a bag near the door." },
+    { question: "What is on the table?", answer: "There is a book on the table." },
+    { question: "What is in the kitchen?", answer: "There is a fridge in the kitchen." },
+    { question: "What is in the garden?", answer: "There is a cat in the garden." },
+    { question: "What is in the room?", answer: "There is a chair in the room." },
+    { question: "What is on the wall?", answer: "There is a picture on the wall." },
+    { question: "What is in the basket?", answer: "There is an apple in the basket." },
+    { question: "What are in the garage?", answer: "There are two cars in the garage." },
+    { question: "What are in the park?", answer: "There are many people in the park." },
+    { question: "What are on the desk?", answer: "There are some pens on the desk." },
+    { question: "What are in the box?", answer: "There are toys in the box." },
+    { question: "What is in the bottle?", answer: "There is water in the bottle." },
+    { question: "What is in the bag?", answer: "There is a notebook in the bag." },
+    { question: "What are in the classroom?", answer: "There are students in the classroom." },
+    { question: "What are on the shelves?", answer: "There are books on the shelves." },
+    { question: "What is under the bed?", answer: "There is a box under the bed." },
+    { question: "What is on the sofa?", answer: "There is a pillow on the sofa." },
+    { question: "What are in the fridge?", answer: "There are eggs in the fridge." },
+    { question: "What are on the plate?", answer: "There are sandwiches on the plate." },
+    { question: "What is in the cup?", answer: "There is tea in the cup." },
+    { question: "What is near the door?", answer: "There is a bag near the door." }
   ]
 };
 
