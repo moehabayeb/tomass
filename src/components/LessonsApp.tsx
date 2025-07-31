@@ -38,7 +38,7 @@ const MODULES_BY_LEVEL = {
     title: i === 0 ? 'Verb To Be - Positive Sentences' : 
            i === 1 ? 'Negative Sentences' : 
            i === 2 ? 'Question Sentences' :
-           i === 3 ? '' :
+           i === 3 ? 'Subject Pronouns' :
            i === 4 ? '' :
            i === 5 ? '' :
            i === 6 ? '' :
@@ -62,7 +62,7 @@ const MODULES_BY_LEVEL = {
     description: i === 0 ? 'Learn to use am, is, and are' : 
                  i === 1 ? 'Learn to use "am", "is", and "are" with "not"' :
                  i === 2 ? 'Learn to form questions with "am", "is", and "are"' :
-                 i === 3 ? '' :
+                 i === 3 ? 'Learn to use subject pronouns I, You, He, She, It, We, They' :
                  i === 4 ? '' :
                  i === 5 ? '' :
                  i === 6 ? '' :
@@ -333,77 +333,82 @@ Are they students?`,
   ]
 };
 
-// Module 4 Data: Short Answers
+// Module 4 Data: Subject Pronouns
 const MODULE_4_DATA = {
-  title: "Modül 4 - Verb To Be – Short Answers",
-  description: "Bu modülde İngilizcede 'am, is, are' kullanarak kısa cevaplar vermeyi öğreneceğiz.",
-  intro: `Bu modülde İngilizcede 'am, is, are' kullanarak kısa cevaplar vermeyi öğreneceğiz.
+  title: "Module 4 - Subject Pronouns",
+  description: "Learn to use subject pronouns I, You, He, She, It, We, They",
+  intro: `In this module, we teach subject pronouns in English:
+I, You, He, She, It, We, They
 
-Konu Anlatımı:
-Yes + subject + to be / No + subject + to be + not
+Use them as the subject of a sentence.
+Example sentences:
 
-Örnek Cümleler:
-Are you a teacher? → Yes, I am. / No, I'm not.
-Is he at home? → Yes, he is. / No, he isn't.
-Are they students? → Yes, they are. / No, they aren't.`,
-  tip: "Short answers use: Yes/No + pronoun + am/is/are (or am not/isn't/aren't). Examples: 'Yes, I am.' 'No, he isn't.' 'Yes, we are.'",
+I am a student.
+She is a teacher.  
+They are friends.`,
+  tip: "Subject pronouns replace the subject in a sentence. Use: I (for yourself), You (for the person you're talking to), He (for a male), She (for a female), It (for things/animals), We (for yourself and others), They (for other people or things).",
   
   table: [
-    { question: "Are you a teacher?", positive: "Yes, I am.", negative: "No, I'm not." },
-    { question: "Is she happy?", positive: "Yes, she is.", negative: "No, she isn't." },
-    { question: "Are they here?", positive: "Yes, they are.", negative: "No, they aren't." },
-    { question: "Am I late?", positive: "Yes, you are.", negative: "No, you aren't." },
-    { question: "Is it cold?", positive: "Yes, it is.", negative: "No, it isn't." },
-    { question: "Are we ready?", positive: "Yes, we are.", negative: "No, we aren't." }
+    { pronoun: "I", example: "I am a student." },
+    { pronoun: "You", example: "You are my friend." },
+    { pronoun: "He", example: "He is a doctor." },
+    { pronoun: "She", example: "She is happy." },
+    { pronoun: "It", example: "It is a book." },
+    { pronoun: "We", example: "We are teachers." },
+    { pronoun: "They", example: "They are at school." }
   ],
   
   listeningExamples: [
-    "Yes, I am.",
-    "No, she isn't.",
-    "Yes, they are."
+    "I am a student.",
+    "You are my friend.",
+    "He is a doctor.",
+    "She is happy.",
+    "It is a book.",
+    "We are teachers.",
+    "They are at school."
   ],
   
   speakingPractice: [
-    { question: "Are you a student?", answer: "Yes, I am." },
-    { question: "Are you a student?", answer: "No, I am not." },
-    { question: "Are you a teacher?", answer: "Yes, I am." },
-    { question: "Are you a teacher?", answer: "No, I am not." },
-    { question: "Are you happy?", answer: "Yes, I am." },
-    { question: "Are you happy?", answer: "No, I am not." },
-    { question: "Is she a nurse?", answer: "Yes, she is." },
-    { question: "Is she a nurse?", answer: "No, she isn't." },
-    { question: "Is she tired?", answer: "Yes, she is." },
-    { question: "Is she tired?", answer: "No, she isn't." },
-    { question: "Is he a doctor?", answer: "Yes, he is." },
-    { question: "Is he a doctor?", answer: "No, he isn't." },
-    { question: "Is he busy?", answer: "Yes, he is." },
-    { question: "Is he busy?", answer: "No, he isn't." },
-    { question: "Are you ready?", answer: "Yes, I am." },
-    { question: "Are you ready?", answer: "No, I am not." },
-    { question: "Are you late?", answer: "Yes, I am." },
-    { question: "Are you late?", answer: "No, I am not." },
-    { question: "Is it cold?", answer: "Yes, it is." },
-    { question: "Is it cold?", answer: "No, it isn't." },
-    { question: "Is it big?", answer: "Yes, it is." },
-    { question: "Is it big?", answer: "No, it isn't." },
-    { question: "Are we friends?", answer: "Yes, we are." },
-    { question: "Are we friends?", answer: "No, we aren't." },
-    { question: "Are we students?", answer: "Yes, we are." },
-    { question: "Are we students?", answer: "No, we aren't." },
-    { question: "Are they engineers?", answer: "Yes, they are." },
-    { question: "Are they engineers?", answer: "No, they aren't." },
-    { question: "Are they married?", answer: "Yes, they are." },
-    { question: "Are they married?", answer: "No, they aren't." },
-    { question: "Am I correct?", answer: "Yes, you are." },
-    { question: "Am I correct?", answer: "No, you aren't." },
-    { question: "Am I early?", answer: "Yes, you are." },
-    { question: "Am I early?", answer: "No, you aren't." },
-    { question: "Is she beautiful?", answer: "Yes, she is." },
-    { question: "Is she beautiful?", answer: "No, she isn't." },
-    { question: "Is he strong?", answer: "Yes, he is." },
-    { question: "Is he strong?", answer: "No, he isn't." },
-    { question: "Are you excited?", answer: "Yes, I am." },
-    { question: "Are you excited?", answer: "No, I am not." }
+    { question: "Who am I?", answer: "You are my teacher." },
+    { question: "Who is he?", answer: "He is my brother." },
+    { question: "Who is she?", answer: "She is my friend." },
+    { question: "Who are they?", answer: "They are students." },
+    { question: "Who are we?", answer: "We are classmates." },
+    { question: "Who is it?", answer: "It is my cat." },
+    { question: "Who are you?", answer: "I am your student." },
+    { question: "Is he your father?", answer: "Yes, he is my father." },
+    { question: "Is she your sister?", answer: "Yes, she is my sister." },
+    { question: "Are they your friends?", answer: "Yes, they are my friends." },
+    { question: "Am I your teacher?", answer: "Yes, you are my teacher." },
+    { question: "Is it a dog?", answer: "Yes, it is a dog." },
+    { question: "Who is speaking?", answer: "I am speaking." },
+    { question: "Who is in the room?", answer: "She is in the room." },
+    { question: "Are we late?", answer: "No, we are not late." },
+    { question: "Are they ready?", answer: "Yes, they are ready." },
+    { question: "Who is this?", answer: "This is my mother." },
+    { question: "Who are those?", answer: "They are my neighbors." },
+    { question: "Am I right?", answer: "Yes, you are right." },
+    { question: "Is he a teacher?", answer: "Yes, he is a teacher." },
+    { question: "Who am I?", answer: "You are my teacher." },
+    { question: "Who is he?", answer: "He is my brother." },
+    { question: "Who is she?", answer: "She is my friend." },
+    { question: "Who are they?", answer: "They are students." },
+    { question: "Who are we?", answer: "We are classmates." },
+    { question: "Who is it?", answer: "It is my cat." },
+    { question: "Who are you?", answer: "I am your student." },
+    { question: "Is he your father?", answer: "Yes, he is my father." },
+    { question: "Is she your sister?", answer: "Yes, she is my sister." },
+    { question: "Are they your friends?", answer: "Yes, they are my friends." },
+    { question: "Am I your teacher?", answer: "Yes, you are my teacher." },
+    { question: "Is it a dog?", answer: "Yes, it is a dog." },
+    { question: "Who is speaking?", answer: "I am speaking." },
+    { question: "Who is in the room?", answer: "She is in the room." },
+    { question: "Are we late?", answer: "No, we are not late." },
+    { question: "Are they ready?", answer: "Yes, they are ready." },
+    { question: "Who is this?", answer: "This is my mother." },
+    { question: "Who are those?", answer: "They are my neighbors." },
+    { question: "Am I right?", answer: "Yes, you are right." },
+    { question: "Is he a teacher?", answer: "Yes, he is a teacher." }
   ]
 };
 
@@ -3055,9 +3060,8 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
                             </>
                           ) : selectedModule === 4 ? (
                             <>
-                              <th className="text-left py-2 px-1">Question</th>
-                              <th className="text-left py-2 px-1">Positive Short Answer</th>
-                              <th className="text-left py-2 px-1">Negative Short Answer</th>
+                              <th className="text-left py-2 px-1">Subject Pronoun</th>
+                              <th className="text-left py-2 px-1">Example</th>
                             </>
                           ) : selectedModule === 5 ? (
                             <>
@@ -3109,9 +3113,8 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
                               </>
                             ) : selectedModule === 4 ? (
                               <>
-                                <td className="py-2 px-1 font-medium">{(row as any).question}</td>
-                                <td className="py-2 px-1 text-green-300">{(row as any).positive}</td>
-                                <td className="py-2 px-1 text-red-300">{(row as any).negative}</td>
+                                <td className="py-2 px-1 text-purple-300 font-medium">{(row as any).pronoun}</td>
+                                <td className="py-2 px-1 italic">{(row as any).example}</td>
                               </>
                             ) : selectedModule === 5 ? (
                               <>
