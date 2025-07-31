@@ -21,12 +21,14 @@ interface LessonsAppProps {
 type ViewState = 'levels' | 'modules' | 'lesson';
 type LessonPhase = 'intro' | 'teacher-reading' | 'listening' | 'speaking' | 'completed';
 
-// Levels data
+// Levels data - TEMPORARILY UNLOCKED FOR DEVELOPMENT
 const LEVELS = [
   { id: 'A1', name: 'A1 - Beginner', description: 'Start your English journey', moduleCount: 50, color: 'bg-blue-500' },
-  { id: 'A2', name: 'A2 - Elementary', description: 'Build basic skills', moduleCount: 50, color: 'bg-green-500', locked: true },
-  { id: 'B1', name: 'B1 - Intermediate', description: 'Expand your knowledge', moduleCount: 50, color: 'bg-orange-500', locked: true },
-  { id: 'B2', name: 'B2 - Upper Intermediate', description: 'Advanced concepts', moduleCount: 50, color: 'bg-purple-500', locked: true },
+  { id: 'A2', name: 'A2 - Elementary', description: 'Build basic skills', moduleCount: 50, color: 'bg-green-500' },
+  { id: 'B1', name: 'B1 - Intermediate', description: 'Expand your knowledge', moduleCount: 50, color: 'bg-orange-500' },
+  { id: 'B2', name: 'B2 - Upper Intermediate', description: 'Advanced concepts', moduleCount: 50, color: 'bg-purple-500' },
+  { id: 'C1', name: 'C1 - Advanced', description: 'Master complex concepts', moduleCount: 50, color: 'bg-red-500' },
+  { id: 'C2', name: 'C2 - Proficiency', description: 'Near-native fluency', moduleCount: 50, color: 'bg-indigo-500' },
 ];
 
 // A1 modules data
@@ -83,7 +85,7 @@ const A1_MODULES = Array.from({ length: 50 }, (_, i) => ({
                   i === 23 ? 'Learn to express likes, loves, and hates with -ing verbs' :
                   'Coming soon',
   completed: false,
-  locked: i > 0, // Only Module 1 is unlocked initially
+  locked: false, // TEMPORARILY UNLOCKED FOR DEVELOPMENT - All modules accessible
 }));
 
 // Module 1 Data: Verb To Be - Positive Sentences
@@ -2748,22 +2750,16 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
             {LEVELS.map((level) => (
               <Card 
                 key={level.id} 
-                className={`bg-white/10 border-white/20 cursor-pointer transition-all hover:bg-white/15 ${level.locked ? 'opacity-50' : ''}`}
+                className="bg-white/10 border-white/20 cursor-pointer transition-all hover:bg-white/15"
                 onClick={() => {
-                  if (!level.locked) {
-                    setSelectedLevel(level.id);
-                    setViewState('modules');
-                  }
+                  setSelectedLevel(level.id);
+                  setViewState('modules');
                 }}
               >
                 <CardContent className="p-4">
                   <div className="flex items-center space-x-4">
                     <div className={`w-12 h-12 rounded-full ${level.color} flex items-center justify-center flex-shrink-0`}>
-                      {level.locked ? (
-                        <Lock className="h-6 w-6 text-white" />
-                      ) : (
-                        <BookOpen className="h-6 w-6 text-white" />
-                      )}
+                      <BookOpen className="h-6 w-6 text-white" />
                     </div>
                     
                     <div className="flex-1">
