@@ -33,58 +33,16 @@ const LEVELS = [
 
 // Modules data for each level - TEMPORARILY UNLOCKED FOR DEVELOPMENT
 const MODULES_BY_LEVEL = {
-  A1: Array.from({ length: 50 }, (_, i) => ({
+  A1: Array.from({ length: 3 }, (_, i) => ({
     id: i + 1,
     title: i === 0 ? 'Verb To Be - Positive Sentences' : 
            i === 1 ? 'Negative Sentences' : 
            i === 2 ? 'Question Sentences' :
-           i === 3 ? 'Short Answers' :
-           i === 4 ? 'Subject Pronouns' :
-           i === 5 ? 'Possessive Adjectives' :
-           i === 6 ? 'This / That / These / Those' :
-           i === 7 ? 'There is / There are - Positive Sentences' :
-           i === 8 ? 'There is / There are - Negative Sentences' :
-            i === 9 ? 'There is / There are - Question Sentences' :
-            i === 10 ? 'Articles: a / an / the – Basic Usage' :
-            i === 11 ? 'Plural Nouns – Regular and Irregular' :
-            i === 12 ? 'Have got / Has got – Positive Sentences' :
-            i === 13 ? 'Have got / Has got – Negative Sentences' :
-             i === 14 ? 'Have got / Has got – Question Sentences' :
-             i === 15 ? 'Simple Present – Positive Sentences (I / You / We / They)' :
-             i === 16 ? 'Simple Present – Positive Sentences (He / She / It)' :
-              i === 17 ? 'Simple Present – Negative Sentences (don\'t / doesn\'t)' :
-              i === 18 ? 'Simple Present – Yes/No Questions' :
-               i === 19 ? 'Simple Present – Wh- Questions (What, Where, Who, etc.)' :
-               i === 20 ? 'Adverbs of Frequency (Sıklık Zarfları)' :
-               i === 21 ? 'Can / Can\'t for Abilities' :
-               i === 22 ? 'Can / Can\'t for Permission' :
-               i === 23 ? 'Like/Love/Hate + -ing' :
-               `A1 Module ${i + 1}`,
+           `A1 Module ${i + 1}`,
     description: i === 0 ? 'Learn to use am, is, and are' : 
                  i === 1 ? 'Learn to use "am", "is", and "are" with "not"' :
                  i === 2 ? 'Learn to form questions with "am", "is", and "are"' :
-                 i === 3 ? 'Practice short Yes/No answers with "am", "is", and "are"' :
-                 i === 4 ? 'Learn and practice Subject Pronouns (I, You, He, She, It, We, They)' :
-                 i === 5 ? 'Practice possessive adjectives (my, your, his, her, its, our, their)' :
-                 i === 6 ? 'Learn to use This, That, These, and Those correctly' :
-                 i === 7 ? 'Learn to use There is and There are in positive sentences' :
-                 i === 8 ? 'Learn to use There isn\'t and There aren\'t in negative sentences' :
-                  i === 9 ? 'Learn to ask questions with Is there and Are there' :
-                  i === 10 ? 'Learn the basic usage of articles a, an, and the' :
-                  i === 11 ? 'Learn regular and irregular plural nouns in English' :
-                  i === 12 ? 'Learn to use Have got and Has got in positive sentences' :
-                  i === 13 ? 'Learn to use Haven\'t got and Hasn\'t got in negative sentences' :
-                  i === 14 ? 'Learn to ask questions with Have got and Has got' :
-                  i === 15 ? 'Learn to form positive sentences using Simple Present tense with I, You, We, They' :
-                  i === 16 ? 'Learn to form positive sentences using Simple Present tense with He, She, It (+s/es)' :
-                   i === 17 ? 'Learn to form negative sentences using Simple Present tense with don\'t and doesn\'t' :
-                   i === 18 ? 'Learn to form Yes/No questions using Simple Present tense with Do and Does' :
-                    i === 19 ? 'Learn to form Wh- questions using Simple Present tense with What, Where, Who, When, Why, How' :
-                    i === 20 ? 'Learn to use adverbs of frequency (always, usually, sometimes, never) in English sentences' :
-                    i === 21 ? 'Learn to express abilities and inabilities using can and can\'t' :
-                    i === 22 ? 'Learn to ask for and give permission using can and can\'t' :
-                    i === 23 ? 'Learn to express likes, loves, and hates with -ing verbs' :
-                    'Coming soon',
+                 'Coming soon',
     completed: false,
     locked: false, // TEMPORARILY UNLOCKED FOR DEVELOPMENT
   })),
