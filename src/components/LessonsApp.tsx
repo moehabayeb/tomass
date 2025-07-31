@@ -31,62 +31,264 @@ const LEVELS = [
   { id: 'C2', name: 'C2 - Proficiency', description: 'Near-native fluency', moduleCount: 50, color: 'bg-indigo-500' },
 ];
 
-// A1 modules data
-const A1_MODULES = Array.from({ length: 50 }, (_, i) => ({
-  id: i + 1,
-  title: i === 0 ? 'Verb To Be - Positive Sentences' : 
-         i === 1 ? 'Negative Sentences' : 
-         i === 2 ? 'Question Sentences' :
-         i === 3 ? 'Short Answers' :
-         i === 4 ? 'Subject Pronouns' :
-         i === 5 ? 'Possessive Adjectives' :
-         i === 6 ? 'This / That / These / Those' :
-         i === 7 ? 'There is / There are - Positive Sentences' :
-         i === 8 ? 'There is / There are - Negative Sentences' :
-          i === 9 ? 'There is / There are - Question Sentences' :
-          i === 10 ? 'Articles: a / an / the – Basic Usage' :
-          i === 11 ? 'Plural Nouns – Regular and Irregular' :
-          i === 12 ? 'Have got / Has got – Positive Sentences' :
-          i === 13 ? 'Have got / Has got – Negative Sentences' :
-           i === 14 ? 'Have got / Has got – Question Sentences' :
-           i === 15 ? 'Simple Present – Positive Sentences (I / You / We / They)' :
-           i === 16 ? 'Simple Present – Positive Sentences (He / She / It)' :
-            i === 17 ? 'Simple Present – Negative Sentences (don\'t / doesn\'t)' :
-            i === 18 ? 'Simple Present – Yes/No Questions' :
-             i === 19 ? 'Simple Present – Wh- Questions (What, Where, Who, etc.)' :
-             i === 20 ? 'Adverbs of Frequency (Sıklık Zarfları)' :
-             i === 21 ? 'Can / Can\'t for Abilities' :
-             i === 22 ? 'Can / Can\'t for Permission' :
-             i === 23 ? 'Like/Love/Hate + -ing' :
-             `Module ${i + 1}`,
-  description: i === 0 ? 'Learn to use am, is, and are' : 
-               i === 1 ? 'Learn to use "am", "is", and "are" with "not"' :
-               i === 2 ? 'Learn to form questions with "am", "is", and "are"' :
-               i === 3 ? 'Practice short Yes/No answers with "am", "is", and "are"' :
-               i === 4 ? 'Learn and practice Subject Pronouns (I, You, He, She, It, We, They)' :
-               i === 5 ? 'Practice possessive adjectives (my, your, his, her, its, our, their)' :
-               i === 6 ? 'Learn to use This, That, These, and Those correctly' :
-               i === 7 ? 'Learn to use There is and There are in positive sentences' :
-               i === 8 ? 'Learn to use There isn\'t and There aren\'t in negative sentences' :
-                i === 9 ? 'Learn to ask questions with Is there and Are there' :
-                i === 10 ? 'Learn the basic usage of articles a, an, and the' :
-                i === 11 ? 'Learn regular and irregular plural nouns in English' :
-                i === 12 ? 'Learn to use Have got and Has got in positive sentences' :
-                i === 13 ? 'Learn to use Haven\'t got and Hasn\'t got in negative sentences' :
-                i === 14 ? 'Learn to ask questions with Have got and Has got' :
-                i === 15 ? 'Learn to form positive sentences using Simple Present tense with I, You, We, They' :
-                i === 16 ? 'Learn to form positive sentences using Simple Present tense with He, She, It (+s/es)' :
-                 i === 17 ? 'Learn to form negative sentences using Simple Present tense with don\'t and doesn\'t' :
-                 i === 18 ? 'Learn to form Yes/No questions using Simple Present tense with Do and Does' :
-                  i === 19 ? 'Learn to form Wh- questions using Simple Present tense with What, Where, Who, When, Why, How' :
-                  i === 20 ? 'Learn to use adverbs of frequency (always, usually, sometimes, never) in English sentences' :
-                  i === 21 ? 'Learn to express abilities and inabilities using can and can\'t' :
-                  i === 22 ? 'Learn to ask for and give permission using can and can\'t' :
-                  i === 23 ? 'Learn to express likes, loves, and hates with -ing verbs' :
-                  'Coming soon',
-  completed: false,
-  locked: false, // TEMPORARILY UNLOCKED FOR DEVELOPMENT - All modules accessible
-}));
+// Modules data for each level - TEMPORARILY UNLOCKED FOR DEVELOPMENT
+const MODULES_BY_LEVEL = {
+  A1: Array.from({ length: 50 }, (_, i) => ({
+    id: i + 1,
+    title: i === 0 ? 'Verb To Be - Positive Sentences' : 
+           i === 1 ? 'Negative Sentences' : 
+           i === 2 ? 'Question Sentences' :
+           i === 3 ? 'Short Answers' :
+           i === 4 ? 'Subject Pronouns' :
+           i === 5 ? 'Possessive Adjectives' :
+           i === 6 ? 'This / That / These / Those' :
+           i === 7 ? 'There is / There are - Positive Sentences' :
+           i === 8 ? 'There is / There are - Negative Sentences' :
+            i === 9 ? 'There is / There are - Question Sentences' :
+            i === 10 ? 'Articles: a / an / the – Basic Usage' :
+            i === 11 ? 'Plural Nouns – Regular and Irregular' :
+            i === 12 ? 'Have got / Has got – Positive Sentences' :
+            i === 13 ? 'Have got / Has got – Negative Sentences' :
+             i === 14 ? 'Have got / Has got – Question Sentences' :
+             i === 15 ? 'Simple Present – Positive Sentences (I / You / We / They)' :
+             i === 16 ? 'Simple Present – Positive Sentences (He / She / It)' :
+              i === 17 ? 'Simple Present – Negative Sentences (don\'t / doesn\'t)' :
+              i === 18 ? 'Simple Present – Yes/No Questions' :
+               i === 19 ? 'Simple Present – Wh- Questions (What, Where, Who, etc.)' :
+               i === 20 ? 'Adverbs of Frequency (Sıklık Zarfları)' :
+               i === 21 ? 'Can / Can\'t for Abilities' :
+               i === 22 ? 'Can / Can\'t for Permission' :
+               i === 23 ? 'Like/Love/Hate + -ing' :
+               `A1 Module ${i + 1}`,
+    description: i === 0 ? 'Learn to use am, is, and are' : 
+                 i === 1 ? 'Learn to use "am", "is", and "are" with "not"' :
+                 i === 2 ? 'Learn to form questions with "am", "is", and "are"' :
+                 i === 3 ? 'Practice short Yes/No answers with "am", "is", and "are"' :
+                 i === 4 ? 'Learn and practice Subject Pronouns (I, You, He, She, It, We, They)' :
+                 i === 5 ? 'Practice possessive adjectives (my, your, his, her, its, our, their)' :
+                 i === 6 ? 'Learn to use This, That, These, and Those correctly' :
+                 i === 7 ? 'Learn to use There is and There are in positive sentences' :
+                 i === 8 ? 'Learn to use There isn\'t and There aren\'t in negative sentences' :
+                  i === 9 ? 'Learn to ask questions with Is there and Are there' :
+                  i === 10 ? 'Learn the basic usage of articles a, an, and the' :
+                  i === 11 ? 'Learn regular and irregular plural nouns in English' :
+                  i === 12 ? 'Learn to use Have got and Has got in positive sentences' :
+                  i === 13 ? 'Learn to use Haven\'t got and Hasn\'t got in negative sentences' :
+                  i === 14 ? 'Learn to ask questions with Have got and Has got' :
+                  i === 15 ? 'Learn to form positive sentences using Simple Present tense with I, You, We, They' :
+                  i === 16 ? 'Learn to form positive sentences using Simple Present tense with He, She, It (+s/es)' :
+                   i === 17 ? 'Learn to form negative sentences using Simple Present tense with don\'t and doesn\'t' :
+                   i === 18 ? 'Learn to form Yes/No questions using Simple Present tense with Do and Does' :
+                    i === 19 ? 'Learn to form Wh- questions using Simple Present tense with What, Where, Who, When, Why, How' :
+                    i === 20 ? 'Learn to use adverbs of frequency (always, usually, sometimes, never) in English sentences' :
+                    i === 21 ? 'Learn to express abilities and inabilities using can and can\'t' :
+                    i === 22 ? 'Learn to ask for and give permission using can and can\'t' :
+                    i === 23 ? 'Learn to express likes, loves, and hates with -ing verbs' :
+                    'Coming soon',
+    completed: false,
+    locked: false, // TEMPORARILY UNLOCKED FOR DEVELOPMENT
+  })),
+  
+  A2: Array.from({ length: 50 }, (_, i) => ({
+    id: i + 1,
+    title: i === 0 ? 'Simple Past - Regular Verbs' : 
+           i === 1 ? 'Simple Past - Irregular Verbs' : 
+           i === 2 ? 'Simple Past - Negative Sentences' :
+           i === 3 ? 'Simple Past - Question Sentences' :
+           i === 4 ? 'Past Continuous - Positive Sentences' :
+           i === 5 ? 'Past Continuous - Negative Sentences' :
+           i === 6 ? 'Past Continuous - Question Sentences' :
+           i === 7 ? 'Present Perfect - Introduction' :
+           i === 8 ? 'Present Perfect - Just, Already, Yet' :
+           i === 9 ? 'Present Perfect - For and Since' :
+           i === 10 ? 'Future with Going To - Plans' :
+           i === 11 ? 'Future with Will - Predictions' :
+           i === 12 ? 'Comparative Adjectives' :
+           i === 13 ? 'Superlative Adjectives' :
+           i === 14 ? 'Should / Shouldn\'t for Advice' :
+           i === 15 ? 'Have to / Don\'t have to' :
+           `A2 Module ${i + 1}`,
+    description: i === 0 ? 'Learn regular past tense verbs' : 
+                 i === 1 ? 'Master irregular past tense forms' :
+                 i === 2 ? 'Form negative sentences in past tense' :
+                 i === 3 ? 'Ask questions in past tense' :
+                 i === 4 ? 'Learn past continuous for ongoing actions' :
+                 i === 5 ? 'Form negative past continuous sentences' :
+                 i === 6 ? 'Ask questions with past continuous' :
+                 i === 7 ? 'Introduction to present perfect tense' :
+                 i === 8 ? 'Use just, already, yet with present perfect' :
+                 i === 9 ? 'Use for and since with present perfect' :
+                 i === 10 ? 'Express future plans with going to' :
+                 i === 11 ? 'Make predictions with will' :
+                 i === 12 ? 'Compare two things with comparative adjectives' :
+                 i === 13 ? 'Express the highest degree with superlatives' :
+                 i === 14 ? 'Give advice using should/shouldn\'t' :
+                 i === 15 ? 'Express obligation with have to' :
+                 'Coming soon',
+    completed: false,
+    locked: false, // TEMPORARILY UNLOCKED FOR DEVELOPMENT
+  })),
+  
+  B1: Array.from({ length: 50 }, (_, i) => ({
+    id: i + 1,
+    title: i === 0 ? 'Present Perfect Continuous' : 
+           i === 1 ? 'Past Perfect - Introduction' : 
+           i === 2 ? 'Conditional Type 1 (If Clauses)' :
+           i === 3 ? 'Conditional Type 2 (Hypothetical)' :
+           i === 4 ? 'Passive Voice - Present Simple' :
+           i === 5 ? 'Passive Voice - Past Simple' :
+           i === 6 ? 'Modal Verbs - May/Might/Could' :
+           i === 7 ? 'Modal Verbs - Must/Mustn\'t' :
+           i === 8 ? 'Relative Clauses - Who/Which/That' :
+           i === 9 ? 'Reported Speech - Statements' :
+           i === 10 ? 'Reported Speech - Questions' :
+           i === 11 ? 'Gerunds and Infinitives' :
+           i === 12 ? 'Phrasal Verbs - Common Ones' :
+           i === 13 ? 'Articles - Advanced Usage' :
+           i === 14 ? 'Prepositions of Time' :
+           i === 15 ? 'Prepositions of Place' :
+           `B1 Module ${i + 1}`,
+    description: i === 0 ? 'Learn present perfect continuous tense' : 
+                 i === 1 ? 'Understand past perfect tense' :
+                 i === 2 ? 'Master first conditional sentences' :
+                 i === 3 ? 'Learn second conditional for hypothetical situations' :
+                 i === 4 ? 'Use passive voice in present simple' :
+                 i === 5 ? 'Use passive voice in past simple' :
+                 i === 6 ? 'Express possibility with modal verbs' :
+                 i === 7 ? 'Express obligation and prohibition' :
+                 i === 8 ? 'Connect ideas with relative clauses' :
+                 i === 9 ? 'Report what others said' :
+                 i === 10 ? 'Report questions from others' :
+                 i === 11 ? 'Use gerunds and infinitives correctly' :
+                 i === 12 ? 'Learn common phrasal verbs' :
+                 i === 13 ? 'Master advanced article usage' :
+                 i === 14 ? 'Use prepositions with time expressions' :
+                 i === 15 ? 'Use prepositions with place expressions' :
+                 'Coming soon',
+    completed: false,
+    locked: false, // TEMPORARILY UNLOCKED FOR DEVELOPMENT
+  })),
+  
+  B2: Array.from({ length: 50 }, (_, i) => ({
+    id: i + 1,
+    title: i === 0 ? 'Future Perfect and Future Continuous' : 
+           i === 1 ? 'Past Perfect Continuous' : 
+           i === 2 ? 'Third Conditional' :
+           i === 3 ? 'Mixed Conditionals' :
+           i === 4 ? 'Advanced Passive Voice' :
+           i === 5 ? 'Modal Verbs - Deduction' :
+           i === 6 ? 'Reported Speech - Advanced' :
+           i === 7 ? 'Emphasis and Inversion' :
+           i === 8 ? 'Advanced Relative Clauses' :
+           i === 9 ? 'Participle Clauses' :
+           i === 10 ? 'Subjunctive Mood' :
+           i === 11 ? 'Advanced Phrasal Verbs' :
+           i === 12 ? 'Discourse Markers' :
+           i === 13 ? 'Formal and Informal Language' :
+           i === 14 ? 'Advanced Vocabulary Building' :
+           i === 15 ? 'Complex Sentence Structures' :
+           `B2 Module ${i + 1}`,
+    description: i === 0 ? 'Master future perfect and continuous' : 
+                 i === 1 ? 'Learn past perfect continuous usage' :
+                 i === 2 ? 'Understand third conditional sentences' :
+                 i === 3 ? 'Mix different conditional types' :
+                 i === 4 ? 'Use advanced passive constructions' :
+                 i === 5 ? 'Make deductions with modal verbs' :
+                 i === 6 ? 'Master complex reported speech' :
+                 i === 7 ? 'Use emphasis and inversion techniques' :
+                 i === 8 ? 'Handle complex relative clauses' :
+                 i === 9 ? 'Use participle clauses effectively' :
+                 i === 10 ? 'Understand subjunctive mood' :
+                 i === 11 ? 'Master advanced phrasal verbs' :
+                 i === 12 ? 'Connect ideas with discourse markers' :
+                 i === 13 ? 'Distinguish formal/informal language' :
+                 i === 14 ? 'Build advanced vocabulary skills' :
+                 i === 15 ? 'Create complex sentence structures' :
+                 'Coming soon',
+    completed: false,
+    locked: false, // TEMPORARILY UNLOCKED FOR DEVELOPMENT
+  })),
+  
+  C1: Array.from({ length: 50 }, (_, i) => ({
+    id: i + 1,
+    title: i === 0 ? 'Advanced Grammar Nuances' : 
+           i === 1 ? 'Subtle Meaning Distinctions' : 
+           i === 2 ? 'Academic Writing Structures' :
+           i === 3 ? 'Professional Communication' :
+           i === 4 ? 'Advanced Idiomatic Expressions' :
+           i === 5 ? 'Complex Argumentation' :
+           i === 6 ? 'Stylistic Variations' :
+           i === 7 ? 'Advanced Listening Skills' :
+           i === 8 ? 'Critical Analysis Language' :
+           i === 9 ? 'Presentation Skills' :
+           i === 10 ? 'Negotiation Language' :
+           i === 11 ? 'Cultural Sensitivity' :
+           i === 12 ? 'Advanced Reading Techniques' :
+           i === 13 ? 'Sophisticated Vocabulary' :
+           i === 14 ? 'Debate and Discussion' :
+           i === 15 ? 'Advanced Writing Styles' :
+           `C1 Module ${i + 1}`,
+    description: i === 0 ? 'Master advanced grammar subtleties' : 
+                 i === 1 ? 'Distinguish subtle meaning differences' :
+                 i === 2 ? 'Write academic papers effectively' :
+                 i === 3 ? 'Communicate professionally' :
+                 i === 4 ? 'Use advanced idiomatic expressions' :
+                 i === 5 ? 'Build complex arguments' :
+                 i === 6 ? 'Adapt to different writing styles' :
+                 i === 7 ? 'Develop advanced listening skills' :
+                 i === 8 ? 'Use language for critical analysis' :
+                 i === 9 ? 'Give effective presentations' :
+                 i === 10 ? 'Master negotiation language' :
+                 i === 11 ? 'Navigate cultural communication' :
+                 i === 12 ? 'Apply advanced reading strategies' :
+                 i === 13 ? 'Build sophisticated vocabulary' :
+                 i === 14 ? 'Engage in debates and discussions' :
+                 i === 15 ? 'Master various writing styles' :
+                 'Coming soon',
+    completed: false,
+    locked: false, // TEMPORARILY UNLOCKED FOR DEVELOPMENT
+  })),
+  
+  C2: Array.from({ length: 50 }, (_, i) => ({
+    id: i + 1,
+    title: i === 0 ? 'Native-like Fluency Patterns' : 
+           i === 1 ? 'Advanced Literary Analysis' : 
+           i === 2 ? 'Complex Philosophical Discussions' :
+           i === 3 ? 'Specialized Academic Discourse' :
+           i === 4 ? 'Advanced Business Communication' :
+           i === 5 ? 'Artistic and Creative Expression' :
+           i === 6 ? 'Technical and Scientific Language' :
+           i === 7 ? 'Advanced Cross-cultural Communication' :
+           i === 8 ? 'Expert-level Presentations' :
+           i === 9 ? 'Advanced Diplomatic Language' :
+           i === 10 ? 'Mastery of English Varieties' :
+           i === 11 ? 'Advanced Translation Skills' :
+           i === 12 ? 'Expert Writing Techniques' :
+           i === 13 ? 'Advanced Interpretation Skills' :
+           i === 14 ? 'Mastery of Register and Style' :
+           i === 15 ? 'Near-native Communication' :
+           `C2 Module ${i + 1}`,
+    description: i === 0 ? 'Achieve native-like fluency patterns' : 
+                 i === 1 ? 'Analyze literature at advanced level' :
+                 i === 2 ? 'Engage in complex philosophical discussions' :
+                 i === 3 ? 'Master specialized academic discourse' :
+                 i === 4 ? 'Excel in advanced business communication' :
+                 i === 5 ? 'Express artistic and creative ideas' :
+                 i === 6 ? 'Use technical and scientific language' :
+                 i === 7 ? 'Master cross-cultural communication' :
+                 i === 8 ? 'Deliver expert-level presentations' :
+                 i === 9 ? 'Use advanced diplomatic language' :
+                 i === 10 ? 'Master different English varieties' :
+                 i === 11 ? 'Develop advanced translation skills' :
+                 i === 12 ? 'Master expert writing techniques' :
+                 i === 13 ? 'Excel in interpretation skills' :
+                 i === 14 ? 'Master register and style variations' :
+                 i === 15 ? 'Achieve near-native communication' :
+                 'Coming soon',
+    completed: false,
+    locked: false, // TEMPORARILY UNLOCKED FOR DEVELOPMENT
+  }))
+};
 
 // Module 1 Data: Verb To Be - Positive Sentences
 const MODULE_1_DATA = {
@@ -2804,7 +3006,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
 
           {/* Modules Grid */}
           <div className="space-y-3">
-            {A1_MODULES.map((module) => {
+            {MODULES_BY_LEVEL[selectedLevel as keyof typeof MODULES_BY_LEVEL].map((module) => {
               const isUnlocked = isModuleUnlocked(module.id);
               const isCompleted = completedModules.includes(`module-${module.id}`);
               
