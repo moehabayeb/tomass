@@ -40,7 +40,7 @@ const MODULES_BY_LEVEL = {
            i === 2 ? 'Question Sentences' :
            i === 3 ? 'Subject Pronouns' :
            i === 4 ? '' :
-           i === 5 ? '' :
+           i === 5 ? 'Possessive Adjectives' :
            i === 6 ? '' :
            i === 7 ? '' :
            i === 8 ? '' :
@@ -64,7 +64,7 @@ const MODULES_BY_LEVEL = {
                  i === 2 ? 'Learn to form questions with "am", "is", and "are"' :
                  i === 3 ? 'Learn to use subject pronouns I, You, He, She, It, We, They' :
                  i === 4 ? '' :
-                 i === 5 ? '' :
+                 i === 5 ? 'Learn to use possessive adjectives my, your, his, her, its, our, their' :
                  i === 6 ? '' :
                  i === 7 ? '' :
                  i === 8 ? '' :
@@ -489,19 +489,18 @@ I, You, He, She, It, We, They
 
 // Module 6 Data: Possessive Adjectives
 const MODULE_6_DATA = {
-  title: "Modül 6 - Possessive Adjectives",
-  description: "Bu modülde İngilizcede Possessive Adjectives (iyelik sıfatları) konusunu öğreneceğiz.",
-  intro: `Bu modülde İngilizcede Possessive Adjectives (iyelik sıfatları) konusunu öğreneceğiz.
-
-Konu Anlatımı:
-Possessive Adjectives bir ismin önüne gelerek onun kime ait olduğunu gösterir.
+  title: "Module 6: Possessive Adjectives",
+  description: "This module teaches possessive adjectives in English: my, your, his, her, its, our, their",
+  intro: `This module teaches possessive adjectives in English:
 my, your, his, her, its, our, their
 
-Örnek Cümleler:
-This is my book.
-That is her car.
-These are their friends.`,
-  tip: "Possessive Adjectives show who something belongs to. Use: my (for I), your (for you), his (for he), her (for she), its (for it), our (for we), their (for they).",
+These adjectives come before a noun and show ownership.
+
+Example Sentences:
+- This is my book.
+- That is her car.
+- These are their friends.`,
+  tip: "Possessive adjectives show who something belongs to. They always come before a noun and show ownership.",
   
   table: [
     { pronoun: "I", possessive: "my", example: "This is my house." },
@@ -521,45 +520,45 @@ These are their friends.`,
   
   speakingPractice: [
     { question: "Whose book is this?", answer: "It is my book." },
-    { question: "Whose pen is this?", answer: "Yes, it is my pen." },
-    { question: "Whose car is that?", answer: "His car is in the garage." },
+    { question: "Is this your pen?", answer: "Yes, it is my pen." },
+    { question: "Where is his car?", answer: "His car is in the garage." },
     { question: "Whose house is that?", answer: "That is their house." },
-    { question: "Whose phone is this?", answer: "Yes, it is her phone." },
-    { question: "Whose bag is this?", answer: "This is my bag." },
-    { question: "Whose book is on the table?", answer: "Your book is on the table." },
-    { question: "Whose sister is a doctor?", answer: "Her sister is a doctor." },
-    { question: "What color is it?", answer: "Its color is red." },
-    { question: "Who is your teacher?", answer: "Our teacher is nice." },
-    { question: "Whose dog is big?", answer: "Their dog is big." },
-    { question: "What is your name?", answer: "My name is Tom." },
-    { question: "What color is your car?", answer: "Your car is blue." },
-    { question: "Where is his house?", answer: "His house is small." },
-    { question: "How is her dress?", answer: "Her dress is beautiful." },
-    { question: "How long is its tail?", answer: "Its tail is long." },
-    { question: "How is your classroom?", answer: "Our classroom is clean." },
-    { question: "How are their children?", answer: "Their children are happy." },
-    { question: "Is your phone new?", answer: "My phone is new." },
-    { question: "Is your job important?", answer: "Your job is important." },
-    { question: "How is his family?", answer: "His family is large." },
-    { question: "What color are her eyes?", answer: "Her eyes are green." },
-    { question: "What color are its wings?", answer: "Its wings are white." },
-    { question: "How is your garden?", answer: "Our garden is beautiful." },
-    { question: "How was their vacation?", answer: "Their vacation was fun." },
-    { question: "How is your coffee?", answer: "My coffee is hot." },
-    { question: "How is your idea?", answer: "Your idea is great." },
-    { question: "How is his voice?", answer: "His voice is deep." },
-    { question: "How is her smile?", answer: "Her smile is lovely." },
-    { question: "How is its sound?", answer: "Its sound is loud." },
-    { question: "When is your meeting?", answer: "Our meeting is tomorrow." },
-    { question: "Who won the game?", answer: "Their team won the game." },
-    { question: "When is your birthday?", answer: "My birthday is next week." },
-    { question: "Is your answer correct?", answer: "Your answer is correct." },
-    { question: "How is his story?", answer: "His story is interesting." },
-    { question: "How is her cooking?", answer: "Her cooking is delicious." },
-    { question: "How is its price?", answer: "Its price is high." },
-    { question: "What happened to your flight?", answer: "Our flight is delayed." },
-    { question: "How is their wedding?", answer: "Their wedding is beautiful." },
-    { question: "What happened to your dream?", answer: "My dream came true." }
+    { question: "Is this her phone?", answer: "Yes, it is her phone." },
+    { question: "Where is our classroom?", answer: "Our classroom is upstairs." },
+    { question: "Whose dog is barking?", answer: "It is their dog." },
+    { question: "Are these your shoes?", answer: "Yes, they are my shoes." },
+    { question: "Is this his bag?", answer: "Yes, it is his bag." },
+    { question: "Is her dress new?", answer: "Yes, her dress is new." },
+    { question: "Where is its food?", answer: "Its food is in the bowl." },
+    { question: "Do you like our garden?", answer: "Yes, I like your garden." },
+    { question: "Are those their books?", answer: "Yes, those are their books." },
+    { question: "Is my answer correct?", answer: "Yes, your answer is correct." },
+    { question: "Who owns this house?", answer: "This is their house." },
+    { question: "Is this our meeting room?", answer: "Yes, it is our meeting room." },
+    { question: "Whose bag is on the chair?", answer: "It is her bag." },
+    { question: "Is this his hat?", answer: "Yes, it is his hat." },
+    { question: "Are these my keys?", answer: "Yes, they are your keys." },
+    { question: "Where is its tail?", answer: "Its tail is short." },
+    { question: "Whose book is this?", answer: "It is my book." },
+    { question: "Is this your pen?", answer: "Yes, it is my pen." },
+    { question: "Where is his car?", answer: "His car is in the garage." },
+    { question: "Whose house is that?", answer: "That is their house." },
+    { question: "Is this her phone?", answer: "Yes, it is her phone." },
+    { question: "Where is our classroom?", answer: "Our classroom is upstairs." },
+    { question: "Whose dog is barking?", answer: "It is their dog." },
+    { question: "Are these your shoes?", answer: "Yes, they are my shoes." },
+    { question: "Is this his bag?", answer: "Yes, it is his bag." },
+    { question: "Is her dress new?", answer: "Yes, her dress is new." },
+    { question: "Where is its food?", answer: "Its food is in the bowl." },
+    { question: "Do you like our garden?", answer: "Yes, I like your garden." },
+    { question: "Are those their books?", answer: "Yes, those are their books." },
+    { question: "Is my answer correct?", answer: "Yes, your answer is correct." },
+    { question: "Who owns this house?", answer: "This is their house." },
+    { question: "Is this our meeting room?", answer: "Yes, it is our meeting room." },
+    { question: "Whose bag is on the chair?", answer: "It is her bag." },
+    { question: "Is this his hat?", answer: "Yes, it is his hat." },
+    { question: "Are these my keys?", answer: "Yes, they are your keys." },
+    { question: "Where is its tail?", answer: "Its tail is short." }
   ]
 };
 
