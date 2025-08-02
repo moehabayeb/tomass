@@ -98,6 +98,15 @@ const MODULES_BY_LEVEL = {
            i === 5 ? 'Would for Politeness and Offers' :
            i === 6 ? 'Be Going To vs Will (Future)' :
            i === 7 ? 'Future Continuous' :
+           i === 8 ? 'Present Perfect (Ever / Never)' :
+           i === 9 ? 'Present Perfect: just / already / yet' :
+           i === 10 ? 'Present Perfect: for / since' :
+           i === 11 ? 'Present Perfect vs Past Simple' :
+           i === 12 ? 'Too / Enough' :
+           i === 13 ? 'So / Such' :
+           i === 14 ? 'Modal Verbs: Should / Ought to' :
+           i === 15 ? 'Modal Verb: "Could" (Possibility)' :
+           i === 16 ? 'Modal Verbs: "May" and "Might" (Possibility)' :
            `A2 Module ${i + 51}`,
     description: i === 0 ? 'Learn to form and use affirmative sentences in the past simple tense' : 
                  i === 1 ? 'Learn to form affirmative past simple sentences using irregular verbs' :
@@ -106,7 +115,16 @@ const MODULES_BY_LEVEL = {
                  i === 4 ? 'Use "used to" to describe past habits or states that no longer happen' :
                  i === 5 ? 'Use "Would" to make polite requests and offers' :
                  i === 6 ? 'Understand the difference between "will" and "be going to"' :
-                 i === 7 ? 'Learn to use the Future Continuous Tense for actions in progress at a specific time in the future' :
+                  i === 7 ? 'Learn to use the Future Continuous Tense for actions in progress at a specific time in the future' :
+                  i === 8 ? 'Use Present Perfect Tense to describe life experiences with "ever" and "never"' :
+                  i === 9 ? 'Understand how to use just, already, and yet with the Present Perfect tense' :
+                  i === 10 ? 'Understand how to use for and since with Present Perfect tense' :
+                  i === 11 ? 'Distinguish between Present Perfect and Past Simple' :
+                  i === 12 ? 'Learn to use "too" for excess and "enough" for sufficiency' :
+                  i === 13 ? 'Learn to use "so" with adjectives/adverbs and "such" with nouns for emphasis' :
+                  i === 14 ? 'Learn to give advice using "should" and "ought to"' :
+                  i === 15 ? 'Learn to use "could" to express possibility and uncertainty' :
+                  i === 16 ? 'Learn to use "may" and "might" to express different levels of possibility' :
                  'Coming soon',
     completed: false,
     locked: false, // TEMPORARILY UNLOCKED FOR DEVELOPMENT
@@ -2543,6 +2561,659 @@ Yapı: Subject + will be + verb-ing
   ]
 };
 
+// Module 59 Data: Present Perfect (Ever / Never)
+const MODULE_59_DATA = {
+  title: "Module 59: Present Perfect (Ever / Never)",
+  description: "Learn to use Present Perfect with 'ever' and 'never' to describe life experiences",
+  intro: `Present Perfect Tense, geçmişte yaşanmış ancak etkisi hâlen devam eden olayları anlatmak için kullanılır.
+
+Yapı: Subject + have/has + V3 (fiilin 3. hali)
+
+"Ever": Sorularda, daha önce hiç anlamında.
+Örnek: Have you ever eaten sushi? (Hiç sushi yedin mi?)
+
+"Never": Hiçbir zaman anlamında, olumsuz cümlelerde.
+Örnek: I have never flown in a helicopter. (Hiç helikoptere binmedim.)`,
+  tip: "Use 'ever' in questions about life experiences. Use 'never' in negative statements about things you haven't done.",
+  
+  table: [
+    { tense: "Present Perfect", affirmative: "I have visited London.", negative: "I have never visited London.", question: "Have you ever visited London?" },
+    { tense: "", affirmative: "She has tried sushi.", negative: "She has never tried sushi.", question: "Has she ever tried sushi?" },
+    { tense: "", affirmative: "They have seen that movie.", negative: "They have never seen that movie.", question: "Have they ever seen that movie?" }
+  ],
+  
+  listeningExamples: [
+    "I have climbed Mount Erciyes.",
+    "She has never eaten octopus.",
+    "Have you ever met a celebrity?"
+  ],
+  
+  speakingPractice: [
+    { question: "Have you ever climbed a mountain?", answer: "Yes, I have climbed Mount Erciyes." },
+    { question: "Has she ever eaten octopus?", answer: "No, she has never eaten octopus." },
+    { question: "Have they ever traveled to Asia?", answer: "Yes, they have been to Japan and Thailand." },
+    { question: "Have you ever broken a bone?", answer: "No, I have never broken a bone." },
+    { question: "Has he ever driven a sports car?", answer: "Yes, he has driven a Ferrari once." },
+    { question: "Have you ever met a celebrity?", answer: "Yes, I have met a famous actor." },
+    { question: "Have your parents ever flown in a helicopter?", answer: "No, they have never flown in one." },
+    { question: "Has she ever gone scuba diving?", answer: "Yes, she has gone scuba diving in the Maldives." },
+    { question: "Have you ever cooked Turkish kebab?", answer: "Yes, I have cooked it many times." },
+    { question: "Has he ever been to New York?", answer: "No, he has never been to New York." },
+    { question: "Have you ever watched a horror movie alone?", answer: "Yes, I have. It was scary!" },
+    { question: "Has she ever written a poem?", answer: "Yes, she has written several poems." },
+    { question: "Have they ever visited a museum in Paris?", answer: "No, they have never been to Paris." },
+    { question: "Have you ever tried skiing?", answer: "Yes, I have tried skiing once." },
+    { question: "Has he ever played the guitar?", answer: "Yes, he has played it for 5 years." },
+    { question: "Have you ever failed an exam?", answer: "Yes, I have failed one math test." },
+    { question: "Has your brother ever worked abroad?", answer: "No, he has never worked abroad." },
+    { question: "Have you ever eaten something very spicy?", answer: "Yes, I have eaten extremely spicy curry." },
+    { question: "Has she ever lived in another country?", answer: "Yes, she has lived in Spain." },
+    { question: "Have you ever forgotten someone's birthday?", answer: "Yes, unfortunately I have." },
+    { question: "Have they ever danced in the rain?", answer: "Yes, they have. It was fun." },
+    { question: "Has he ever painted a picture?", answer: "No, he has never painted anything." },
+    { question: "Have you ever lost your phone?", answer: "Yes, I have lost it twice." },
+    { question: "Has she ever sung in public?", answer: "Yes, she has sung at a wedding." },
+    { question: "Have you ever been late for a flight?", answer: "No, I have never been late." },
+    { question: "Has he ever eaten raw fish?", answer: "Yes, he has tried sushi." },
+    { question: "Have they ever seen snow?", answer: "No, they have never seen snow." },
+    { question: "Has she ever read a Harry Potter book?", answer: "Yes, she has read all of them." },
+    { question: "Have you ever cried during a movie?", answer: "Yes, I have cried many times." },
+    { question: "Has your teacher ever shouted in class?", answer: "No, she has never shouted." },
+    { question: "Have you ever played chess?", answer: "Yes, I have played with my uncle." },
+    { question: "Has your dog ever run away?", answer: "No, he has never run away." },
+    { question: "Have you ever taken a dance class?", answer: "Yes, I have taken salsa classes." },
+    { question: "Has he ever flown a drone?", answer: "Yes, he has flown it in the park." },
+    { question: "Have your friends ever tried Turkish delight?", answer: "Yes, they have loved it." },
+    { question: "Has she ever forgotten her keys?", answer: "Yes, she has forgotten them a few times." },
+    { question: "Have you ever painted your room?", answer: "Yes, I have painted it light blue." },
+    { question: "Has he ever fallen asleep in class?", answer: "Yes, he has. It was embarrassing." },
+    { question: "Have they ever ridden a horse?", answer: "Yes, they have ridden horses on a farm." },
+    { question: "Has your dad ever made breakfast?", answer: "Yes, he has. He makes great omelets!" }
+  ]
+};
+
+// Module 60 Data: Present Perfect: just / already / yet
+const MODULE_60_DATA = {
+  title: "Module 60: Present Perfect: just / already / yet",
+  description: "Learn to use Present Perfect with time adverbs just, already, and yet",
+  intro: `Present Perfect (have/has + V3) geçmişte tamamlanan ama etkisi şu ana kadar süren olayları anlatmak için kullanılır.
+
+just → "Az önce / yeni" anlamında, çok kısa zaman önce yapılmış bir şey için.
+already → "Zaten / çoktan" anlamında, beklenenden önce gerçekleşmiş bir eylem için.
+yet → "Henüz" anlamında, sadece soru ve olumsuz cümlelerde kullanılır.
+
+Yapı:
+• Affirmative: S + have/has + V3 + just/already → She has already eaten.
+• Negative: S + haven't/hasn't + V3 + yet → I haven't seen it yet.
+• Question: Have/Has + S + V3 + yet? → Have you done your homework yet?`,
+  tip: "Use 'just' for very recent actions, 'already' for earlier than expected completion, and 'yet' only in questions and negatives.",
+  
+  table: [
+    { type: "just", structure: "have/has + just + V3", example: "I have just finished my homework." },
+    { type: "already", structure: "have/has + already + V3", example: "She has already eaten lunch." },
+    { type: "yet (question)", structure: "Have/Has + S + V3 + yet?", example: "Have you finished yet?" },
+    { type: "yet (negative)", structure: "haven't/hasn't + V3 + yet", example: "I haven't seen it yet." }
+  ],
+  
+  listeningExamples: [
+    "I have already finished my homework.",
+    "Have you called your friend yet?",
+    "I have just arrived home."
+  ],
+  
+  speakingPractice: [
+    { question: "Have you already finished your homework?", answer: "Yes, I have already finished my homework." },
+    { question: "Have you called your friend yet?", answer: "No, I haven't called my friend yet." },
+    { question: "Have you just seen the new movie?", answer: "Yes, I have just seen the new movie." },
+    { question: "Have you already cleaned your room?", answer: "Yes, I have already cleaned it." },
+    { question: "Have you eaten dinner yet?", answer: "No, I haven't eaten yet." },
+    { question: "Have you just arrived home?", answer: "Yes, I've just arrived." },
+    { question: "Have you already paid the bill?", answer: "Yes, I've already paid it." },
+    { question: "Has she called you yet?", answer: "No, she hasn't called me yet." },
+    { question: "Have they just left the house?", answer: "Yes, they've just left." },
+    { question: "Has he already started the project?", answer: "Yes, he has already started." },
+    { question: "Have you washed the dishes yet?", answer: "No, not yet." },
+    { question: "Have you just talked to your teacher?", answer: "Yes, I have." },
+    { question: "Have you already finished the book?", answer: "Yes, I have already finished it." },
+    { question: "Has your mom cooked dinner yet?", answer: "No, she hasn't." },
+    { question: "Have you just woken up?", answer: "Yes, I've just woken up." },
+    { question: "Have you already taken a shower?", answer: "Yes, I've already taken it." },
+    { question: "Have you submitted your homework yet?", answer: "No, I haven't submitted it yet." },
+    { question: "Have you just sent the email?", answer: "Yes, I've just sent it." },
+    { question: "Have you already bought the tickets?", answer: "Yes, I've already bought them." },
+    { question: "Have you seen the news yet?", answer: "No, I haven't seen it yet." },
+    { question: "Has he just joined the meeting?", answer: "Yes, he has." },
+    { question: "Has your teacher explained the topic yet?", answer: "No, not yet." },
+    { question: "Have you already spoken to the manager?", answer: "Yes, I have." },
+    { question: "Have they just finished their meal?", answer: "Yes, they have." },
+    { question: "Have you cleaned your desk yet?", answer: "No, I haven't cleaned it yet." },
+    { question: "Have you already chosen your course?", answer: "Yes, I have." },
+    { question: "Have you sent the file yet?", answer: "No, not yet." },
+    { question: "Have you just come back from work?", answer: "Yes, I have." },
+    { question: "Have you already visited the museum?", answer: "Yes, I've already been there." },
+    { question: "Have you written the report yet?", answer: "No, I haven't written it yet." },
+    { question: "Have you already eaten lunch?", answer: "Yes, I've already eaten." },
+    { question: "Have you called your mom yet?", answer: "No, not yet." },
+    { question: "Have you just arrived at school?", answer: "Yes, just now." },
+    { question: "Has he already gone to bed?", answer: "Yes, he has." },
+    { question: "Have you checked your messages yet?", answer: "No, I haven't checked yet." },
+    { question: "Have you already done your project?", answer: "Yes, I have." },
+    { question: "Have they finished their homework yet?", answer: "No, not yet." },
+    { question: "Have you just finished your tea?", answer: "Yes, I have." },
+    { question: "Has she replied to the email yet?", answer: "No, she hasn't." },
+    { question: "Have you already decided your vacation plan?", answer: "Yes, I've already planned it." }
+  ]
+};
+
+// Module 61 Data: Present Perfect: for / since
+const MODULE_61_DATA = {
+  title: "Module 61: Present Perfect: for / since",
+  description: "Learn to use Present Perfect with 'for' and 'since' to express duration",
+  intro: `Present Perfect Tense (have/has + V3), geçmişte başlayıp şu ana kadar devam eden olayları anlatmak için kullanılır.
+
+for → belirli bir zaman süresi boyunca
+since → belli bir başlangıç zamanından beri
+
+Yapı:
+• Affirmative: S + have/has + V3 + for/since → I have lived here for 10 years.
+• Negative: S + haven't/hasn't + V3 + for/since → She hasn't seen him since Monday.
+• Question: Have/Has + S + V3 + for/since? → Have you worked here since 2020?`,
+  tip: "Use 'for' with periods of time (for 3 years). Use 'since' with starting points in time (since 2020).",
+  
+  table: [
+    { timeWord: "for", usage: "+ period of time", example: "I have lived here for 10 years." },
+    { timeWord: "since", usage: "+ starting point", example: "She has worked here since 2015." },
+    { timeWord: "for", usage: "+ duration", example: "They have been married for 5 years." },
+    { timeWord: "since", usage: "+ specific time", example: "We have known each other since childhood." }
+  ],
+  
+  listeningExamples: [
+    "I have known my best friend since 2010.",
+    "I have lived in this city for 5 years.",
+    "She has worked here since June."
+  ],
+  
+  speakingPractice: [
+    { question: "How long have you known your best friend?", answer: "I have known my best friend since 2010." },
+    { question: "How long have you lived in this city?", answer: "I have lived in this city for 5 years." },
+    { question: "How long have you studied English?", answer: "I have studied English since 2018." },
+    { question: "How long has she worked here?", answer: "She has worked here for 2 years." },
+    { question: "Have you lived here since childhood?", answer: "Yes, I have lived here since I was a child." },
+    { question: "How long have they been married?", answer: "They have been married for 10 years." },
+    { question: "Have you known him for a long time?", answer: "Yes, I have known him for 7 years." },
+    { question: "How long has he been sick?", answer: "He has been sick since yesterday." },
+    { question: "How long have you had that phone?", answer: "I have had it since last summer." },
+    { question: "Have you worked there for long?", answer: "Yes, for over 3 years." },
+    { question: "How long has she lived in Paris?", answer: "Since 2020." },
+    { question: "How long have you been awake?", answer: "I've been awake for 2 hours." },
+    { question: "Has he stayed with you since Monday?", answer: "Yes, he has." },
+    { question: "How long have they waited?", answer: "They've waited for 45 minutes." },
+    { question: "Have you used this computer since morning?", answer: "Yes, I have." },
+    { question: "How long have you had that dog?", answer: "I've had him since 2019." },
+    { question: "How long have you loved music?", answer: "Since I was a kid." },
+    { question: "Has your teacher taught you for a year?", answer: "Yes, she has." },
+    { question: "How long has she worn glasses?", answer: "For 6 months." },
+    { question: "Have you been at home since the morning?", answer: "Yes, I have." },
+    { question: "How long has he played the piano?", answer: "Since high school." },
+    { question: "How long have they had that car?", answer: "For 2 years." },
+    { question: "Has she worked in that office since June?", answer: "Yes, she has." },
+    { question: "How long have you been friends?", answer: "Since childhood." },
+    { question: "Have you studied here for 3 years?", answer: "Yes, I have." },
+    { question: "How long have they lived together?", answer: "For a few months." },
+    { question: "Has your mom worked since morning?", answer: "Yes, nonstop!" },
+    { question: "How long have you had your job?", answer: "Since 2021." },
+    { question: "Have you lived in this house for long?", answer: "Yes, for 10 years." },
+    { question: "How long has your dad driven trucks?", answer: "Since 2005." },
+    { question: "How long have you played football?", answer: "For 6 years." },
+    { question: "Have you known her since high school?", answer: "Yes, I have." },
+    { question: "How long have you been in Turkey?", answer: "Since April." },
+    { question: "How long have you waited in line?", answer: "For 30 minutes." },
+    { question: "Has he worn that jacket since winter?", answer: "Yes, he loves it." },
+    { question: "How long have you felt sick?", answer: "Since last night." },
+    { question: "Have they watched that show for a week?", answer: "Yes, every day." },
+    { question: "How long have you kept this secret?", answer: "Since last year." },
+    { question: "How long has your grandma lived there?", answer: "Since 1990." },
+    { question: "How long have you used this app?", answer: "For 2 months." }
+  ]
+};
+
+// Module 62 Data: Present Perfect vs Past Simple
+const MODULE_62_DATA = {
+  title: "Module 62: Present Perfect vs Past Simple",
+  description: "Learn the differences between Present Perfect and Past Simple tenses",
+  intro: `Present Perfect (have/has + V3) → Geçmişte ne zaman olduğu önemli olmayan olaylar, sonucu şu anı etkiler.
+Past Simple (V2) → Geçmişte belirli bir zamanda olan olaylar.
+
+Present Perfect için kullanılan zaman ifadeleri: ever, never, just, already, yet, for, since
+Past Simple için zaman ifadeleri: yesterday, last year, in 2020, two days ago, etc.
+
+Örnek:
+– I have eaten lunch. → Present Perfect (Ne zaman olduğu önemli değil.)
+– I ate lunch at 12. → Past Simple (Zaman belli.)`,
+  tip: "Use Present Perfect when time is not specified or continues to now. Use Past Simple when time is specified and finished.",
+  
+  table: [
+    { tense: "Present Perfect", example: "I have seen that movie before.", explanation: "Zaman belirtilmemiş" },
+    { tense: "Past Simple", example: "I saw that movie last week.", explanation: "Belirli zaman var" },
+    { tense: "Present Perfect", example: "She has worked here for five years.", explanation: "Hala çalışıyor" },
+    { tense: "Past Simple", example: "She worked here in 2010.", explanation: "Geçmişte tamamlanmış" }
+  ],
+  
+  listeningExamples: [
+    "I have visited London before.",
+    "I visited London in 2023.",
+    "Have you ever eaten sushi?"
+  ],
+  
+  speakingPractice: [
+    { question: "Have you ever visited London?", answer: "Yes, I have visited London before." },
+    { question: "Did you visit London last year?", answer: "Yes, I visited London in 2023." },
+    { question: "Have you ever eaten sushi?", answer: "Yes, I have eaten sushi before." },
+    { question: "Did you eat sushi yesterday?", answer: "Yes, I ate it for dinner." },
+    { question: "Have you ever met a famous person?", answer: "Yes, I have met one." },
+    { question: "Did you meet anyone famous last week?", answer: "No, I didn't." },
+    { question: "Have you traveled abroad?", answer: "Yes, I have traveled to Italy." },
+    { question: "Did you travel last summer?", answer: "Yes, I went to Spain." },
+    { question: "Have you ever broken a bone?", answer: "Yes, I have broken my arm." },
+    { question: "Did you break your arm last year?", answer: "Yes, I did." },
+    { question: "Have you seen this movie before?", answer: "Yes, I have seen it." },
+    { question: "Did you see this movie on Monday?", answer: "Yes, I saw it." },
+    { question: "Have you ever ridden a horse?", answer: "Yes, I have." },
+    { question: "Did you ride a horse last weekend?", answer: "No, not last weekend." },
+    { question: "Have you visited Paris?", answer: "Yes, I have visited it." },
+    { question: "Did you visit Paris in 2020?", answer: "Yes, I did." },
+    { question: "Have you ever lost your phone?", answer: "Yes, once." },
+    { question: "Did you lose your phone yesterday?", answer: "No, not yesterday." },
+    { question: "Have you read this book?", answer: "Yes, I have read it." },
+    { question: "Did you read the book last week?", answer: "Yes, I did." },
+    { question: "Have you heard this song before?", answer: "Yes, I've heard it." },
+    { question: "Did you hear the song this morning?", answer: "Yes, I did." },
+    { question: "Have you cleaned your room yet?", answer: "Yes, I have." },
+    { question: "Did you clean your room yesterday?", answer: "No, I didn't." },
+    { question: "Have you ever been to a concert?", answer: "Yes, I have." },
+    { question: "Did you go to the concert on Saturday?", answer: "Yes, I went." },
+    { question: "Have you ever tried Turkish food?", answer: "Yes, I have tried it." },
+    { question: "Did you eat Turkish food last night?", answer: "No, I didn't." },
+    { question: "Have you finished your homework?", answer: "Yes, I have." },
+    { question: "Did you finish it this morning?", answer: "Yes, I did." },
+    { question: "Have you seen Ali today?", answer: "No, not yet." },
+    { question: "Did you see Ali yesterday?", answer: "Yes, I did." },
+    { question: "Have you spoken to your boss?", answer: "Yes, I have." },
+    { question: "Did you speak to him yesterday?", answer: "No, I didn't." },
+    { question: "Have you written the email?", answer: "Yes, I've written it." },
+    { question: "Did you write the email on Friday?", answer: "Yes, I did." },
+    { question: "Have you ever been to Cappadocia?", answer: "Yes, I've been there once." },
+    { question: "Did you go there last year?", answer: "No, I didn't." },
+    { question: "Have you cleaned the kitchen?", answer: "Yes, I've already cleaned it." },
+    { question: "Did you clean the kitchen last night?", answer: "Yes, I did." }
+  ]
+};
+
+// Module 63 Data: Too / Enough
+const MODULE_63_DATA = {
+  title: "Module 63: Too / Enough",
+  description: "Learn to use 'too' for excess and 'enough' for sufficiency",
+  intro: `Too → Gereğinden fazla anlamına gelir. Genellikle olumsuz bir anlam taşır.
+→ Yapı: too + sıfat/zarf
+• Örnek: This coffee is too hot. (Bu kahve çok sıcak, içemem.)
+
+Enough → Yeterli miktarda anlamına gelir. Olumlu veya olumsuz olabilir.
+→ Yapılar:
+• sıfat/zarf + enough (örn: tall enough)
+• enough + isim (örn: enough money)
+• Örnek: We have enough chairs. (Yeterince sandalyemiz var.)`,
+  tip: "Use 'too' before adjectives/adverbs to show excess. Use 'enough' after adjectives or before nouns to show sufficiency.",
+  
+  table: [
+    { structure: "too + adjective", example: "This coffee is too hot.", turkish: "Bu kahve çok sıcak." },
+    { structure: "adjective + enough", example: "He isn't fast enough to win.", turkish: "Kazanacak kadar hızlı değil." },
+    { structure: "enough + noun", example: "We don't have enough chairs.", turkish: "Yeterince sandalyemiz yok." },
+    { structure: "too + adjective + to", example: "The bag is too heavy to carry.", turkish: "Çanta taşımak için çok ağır." }
+  ],
+  
+  listeningExamples: [
+    "The soup was too salty.",
+    "It's too heavy for him.",
+    "We have enough space for everyone."
+  ],
+  
+  speakingPractice: [
+    { question: "Why didn't she eat the soup?", answer: "Because it was too salty." },
+    { question: "Can he lift that box?", answer: "No, it's too heavy for him." },
+    { question: "Is there enough space in the car for everyone?", answer: "Yes, there is enough space for all of us." },
+    { question: "Why can't you reach the shelf?", answer: "Because I'm not tall enough." },
+    { question: "Did you buy the dress?", answer: "No, it was too expensive." },
+    { question: "Can we start the meeting?", answer: "Yes, we have enough people here." },
+    { question: "Why didn't you finish the marathon?", answer: "Because I wasn't fit enough." },
+    { question: "Is the music too loud?", answer: "Yes, it's too loud for studying." },
+    { question: "Do you have enough money for the trip?", answer: "Yes, I have enough money." },
+    { question: "Why can't the child ride the bike?", answer: "Because he's too young." },
+    { question: "Is the coffee hot enough?", answer: "Yes, it's hot enough to drink." },
+    { question: "Why didn't you buy more bread?", answer: "Because we have enough bread." },
+    { question: "Can you hear the teacher?", answer: "No, her voice is too quiet." },
+    { question: "Is your English good enough for the job?", answer: "Yes, it's good enough." },
+    { question: "Why didn't you eat all the food?", answer: "Because there was too much food." },
+    { question: "Can the students understand the lesson?", answer: "No, it's too difficult for them." },
+    { question: "Do we have enough time for lunch?", answer: "Yes, we have enough time." },
+    { question: "Why didn't you wear the sweater?", answer: "Because it was too big." },
+    { question: "Is the water warm enough for swimming?", answer: "Yes, it's warm enough." },
+    { question: "Why can't you lift the table alone?", answer: "Because it's too heavy for one person." },
+    { question: "Do you have enough chairs for the party?", answer: "Yes, we have enough chairs." },
+    { question: "Why didn't you finish reading the book?", answer: "Because it was too boring." },
+    { question: "Is your car fast enough for the highway?", answer: "Yes, it's fast enough." },
+    { question: "Why didn't you go to the concert?", answer: "Because the tickets were too expensive." },
+    { question: "Do we have enough ingredients for the cake?", answer: "Yes, we have enough ingredients." },
+    { question: "Why can't you see the movie screen?", answer: "Because the person in front is too tall." },
+    { question: "Is the room big enough for the meeting?", answer: "Yes, it's big enough for everyone." },
+    { question: "Why didn't you buy the phone?", answer: "Because it was too complicated." },
+    { question: "Do you have enough experience for this job?", answer: "Yes, I have enough experience." },
+    { question: "Why can't the baby walk yet?", answer: "Because he's too young to walk." },
+    { question: "Is the soup salty enough?", answer: "Yes, it's salty enough." },
+    { question: "Why didn't you attend the party?", answer: "Because I was too tired." },
+    { question: "Do we have enough gas for the trip?", answer: "Yes, we have enough gas." },
+    { question: "Why can't you read that sign?", answer: "Because it's too far away." },
+    { question: "Is your computer fast enough for gaming?", answer: "Yes, it's fast enough." },
+    { question: "Why didn't you eat the pizza?", answer: "Because it was too spicy for me." },
+    { question: "Do you have enough batteries for the remote?", answer: "Yes, I have enough batteries." },
+    { question: "Why can't you solve this problem?", answer: "Because it's too difficult." },
+    { question: "Is the weather warm enough for a picnic?", answer: "Yes, it's warm enough." },
+    { question: "Why didn't you finish the race?", answer: "Because I was too exhausted." }
+  ]
+};
+
+// Module 64 Data: So / Such
+const MODULE_64_DATA = {
+  title: "Module 64: So / Such",
+  description: "Learn to use 'so' with adjectives/adverbs and 'such' with nouns for emphasis",
+  intro: `So → Bir sıfat veya zarfla birlikte kullanılır, bir şeyin derecesini vurgular.
+→ Yapı: so + sıfat/zarf
+• Örnek: The movie was so interesting. (Film çok ilginçti.)
+
+Such → Bir isimle birlikte kullanılır, genellikle önünde sıfat olur.
+→ Yapı: such + (sıfat) + isim
+• Örnek: It was such a beautiful day. (O kadar güzel bir gündü ki.)`,
+  tip: "Use 'so' before adjectives and adverbs. Use 'such' before nouns (usually with adjectives).",
+  
+  table: [
+    { structure: "so + adjective", example: "He is so tall.", turkish: "O çok uzun boylu." },
+    { structure: "so + adverb", example: "They arrived so early.", turkish: "Çok erken geldiler." },
+    { structure: "such + adj + noun", example: "It was such a cold night.", turkish: "O kadar soğuk bir geceydi ki." },
+    { structure: "such + adj + noun", example: "She has such nice friends.", turkish: "Çok hoş arkadaşları var." }
+  ],
+  
+  listeningExamples: [
+    "She is such a good teacher.",
+    "The concert was so exciting!",
+    "It was such an amazing movie."
+  ],
+  
+  speakingPractice: [
+    { question: "What kind of teacher is she?", answer: "She is such a good teacher." },
+    { question: "Why did you like the concert?", answer: "Because it was so exciting!" },
+    { question: "How was the movie last night?", answer: "It was such an amazing movie." },
+    { question: "Why are you so tired?", answer: "Because I worked so hard today." },
+    { question: "What do you think of her house?", answer: "It's such a beautiful house." },
+    { question: "How was the weather yesterday?", answer: "It was so sunny and warm." },
+    { question: "Why didn't you finish the book?", answer: "Because it was such a boring story." },
+    { question: "How did the students perform?", answer: "They did so well on the test." },
+    { question: "What's your opinion of the restaurant?", answer: "They serve such delicious food." },
+    { question: "Why are you laughing?", answer: "Because he told such a funny joke." },
+    { question: "How was your vacation?", answer: "We had such a great time." },
+    { question: "Why did you buy that car?", answer: "Because it was so affordable." },
+    { question: "What do you think of her singing?", answer: "She has such a lovely voice." },
+    { question: "How was the traffic this morning?", answer: "It was so heavy and slow." },
+    { question: "Why do you like that café?", answer: "Because they make such good coffee." },
+    { question: "How did you find the exam?", answer: "It was so difficult and long." },
+    { question: "What's special about her garden?", answer: "She grows such beautiful flowers." },
+    { question: "Why are you speaking quietly?", answer: "Because the baby is sleeping so peacefully." },
+    { question: "How was the party last night?", answer: "We met such interesting people." },
+    { question: "Why didn't you like the hotel?", answer: "Because the rooms were so small." },
+    { question: "What impressed you about the city?", answer: "It has such amazing architecture." },
+    { question: "How did you sleep last night?", answer: "I slept so deeply and comfortably." },
+    { question: "Why do you recommend that book?", answer: "Because it has such an interesting plot." },
+    { question: "How was the presentation?", answer: "The speaker was so clear and confident." },
+    { question: "What do you think of their new house?", answer: "They have such a spacious kitchen." },
+    { question: "Why are you worried about the test?", answer: "Because the questions are so challenging." },
+    { question: "How was your first day at work?", answer: "I met such helpful colleagues." },
+    { question: "Why did you enjoy the concert?", answer: "Because the music was so beautiful." },
+    { question: "What makes her special as a friend?", answer: "She has such a kind heart." },
+    { question: "How was the food at the wedding?", answer: "Everything was so delicious and fresh." },
+    { question: "Why do you like living here?", answer: "Because it's such a peaceful neighborhood." },
+    { question: "How did the children behave?", answer: "They were so well-behaved and polite." },
+    { question: "What impressed you about the museum?", answer: "They have such rare artifacts." },
+    { question: "Why are you excited about tomorrow?", answer: "Because we're going to such an amazing place." },
+    { question: "How was the customer service?", answer: "The staff were so friendly and helpful." },
+    { question: "What do you think of her new job?", answer: "She found such a perfect opportunity." },
+    { question: "Why did you choose this university?", answer: "Because it has such excellent professors." },
+    { question: "How was your hiking experience?", answer: "The views were so breathtaking." },
+    { question: "What makes this restaurant unique?", answer: "They create such creative dishes." },
+    { question: "Why are you proud of your team?", answer: "Because they worked so hard together." }
+  ]
+};
+
+// Module 65 Data: Modal Verbs: Should / Ought to
+const MODULE_65_DATA = {
+  title: "Module 65: Modal Verbs: Should / Ought to",
+  description: "Learn to give advice using 'should' and 'ought to'",
+  intro: `Should → Tavsiye vermek için kullanılır.
+→ Yapı: should + fiil
+• Örnek: You should eat more vegetables. (Daha fazla sebze yemelisin.)
+
+Ought to → "Should" ile aynı anlama gelir, ama daha resmidir.
+→ Yapı: ought to + fiil
+• Örnek: You ought to apologize. (Özür dilemelisin.)
+
+Yapı:
+• Affirmative: S + should/ought to + base verb → You should rest. / You ought to study.
+• Negative: S + shouldn't + base verb → He shouldn't drive so fast.
+• Question: Should + S + base verb? → Should we go now?`,
+  tip: "Use 'should' and 'ought to' to give advice. 'Should' is more common in everyday conversation.",
+  
+  table: [
+    { type: "Affirmative", structure: "S + should/ought to + base verb", example: "You should rest." },
+    { type: "Negative", structure: "S + shouldn't + base verb", example: "He shouldn't drive so fast." },
+    { type: "Question", structure: "Should + S + base verb?", example: "Should we go now?" },
+    { type: "Ought to", structure: "S + ought to + base verb", example: "You ought to apologize." }
+  ],
+  
+  listeningExamples: [
+    "You should see a doctor.",
+    "He should be more responsible.",
+    "Should we leave now?"
+  ],
+  
+  speakingPractice: [
+    { question: "What should I do if I'm sick?", answer: "You should see a doctor." },
+    { question: "Should he be more responsible?", answer: "Yes, he should be more responsible." },
+    { question: "What ought I to say?", answer: "You ought to tell the truth." },
+    { question: "Should we leave now?", answer: "Yes, we should leave before it gets dark." },
+    { question: "What should I wear to the interview?", answer: "You should wear formal clothes." },
+    { question: "Should she study more for the exam?", answer: "Yes, she should study harder." },
+    { question: "What ought we to do about the problem?", answer: "We ought to discuss it with the manager." },
+    { question: "Should I call him back?", answer: "Yes, you should call him immediately." },
+    { question: "What should they bring to the party?", answer: "They should bring some snacks." },
+    { question: "Should we book the tickets early?", answer: "Yes, you should book them now." },
+    { question: "What should I eat for breakfast?", answer: "You should eat something healthy." },
+    { question: "Should he apologize for his mistake?", answer: "Yes, he should apologize immediately." },
+    { question: "What ought I to buy for her birthday?", answer: "You ought to buy something she likes." },
+    { question: "Should we take an umbrella?", answer: "Yes, you should take one." },
+    { question: "What should I do to improve my English?", answer: "You should practice speaking daily." },
+    { question: "Should they save more money?", answer: "Yes, they should save for the future." },
+    { question: "What ought we to tell the children?", answer: "We ought to tell them the truth." },
+    { question: "Should I exercise more often?", answer: "Yes, you should exercise regularly." },
+    { question: "What should she do about her job?", answer: "She should talk to her boss." },
+    { question: "Should we invite more people?", answer: "Yes, you should invite your friends." },
+    { question: "What should I cook for dinner?", answer: "You should cook something simple." },
+    { question: "Should he drive more carefully?", answer: "Yes, he should be more careful." },
+    { question: "What ought I to say in the meeting?", answer: "You ought to express your opinion clearly." },
+    { question: "Should we arrive early?", answer: "Yes, you should arrive on time." },
+    { question: "What should I do with my free time?", answer: "You should learn a new hobby." },
+    { question: "Should she change her major?", answer: "She should think carefully about it." },
+    { question: "What ought we to do for the environment?", answer: "We ought to recycle more." },
+    { question: "Should I buy a new phone?", answer: "You should only if you need it." },
+    { question: "What should they do for vacation?", answer: "They should visit somewhere relaxing." },
+    { question: "Should we help our neighbors?", answer: "Yes, we should be helpful." },
+    { question: "What should I read to improve my knowledge?", answer: "You should read educational books." },
+    { question: "Should he quit his job?", answer: "He should consider all options first." },
+    { question: "What ought I to do about my health?", answer: "You ought to see a specialist." },
+    { question: "Should we trust him?", answer: "You should be careful about trust." },
+    { question: "What should I do to make friends?", answer: "You should join social activities." },
+    { question: "Should she learn a new language?", answer: "Yes, she should start with Spanish." },
+    { question: "What ought we to do about the noise?", answer: "We ought to complain to the landlord." },
+    { question: "Should I invest my money?", answer: "You should research investments first." },
+    { question: "What should they do for their anniversary?", answer: "They should celebrate together." },
+    { question: "Should we prepare for the presentation?", answer: "Yes, you should practice beforehand." }
+  ]
+};
+
+// Module 66 Data: Modal Verb: "Could" (Possibility)
+const MODULE_66_DATA = {
+  title: "Module 66: Modal Verb: 'Could' (Possibility)",
+  description: "Learn to use 'could' to express possibility and uncertainty",
+  intro: `"Could" → Bir olayın mümkün olabileceğini ama kesin olmadığını anlatır.
+
+Kullanım Alanları:
+1. Olasılık Bildirme → It could rain tomorrow. (Yarın yağmur yağabilir.)
+2. Varsayım Bildirme → He could be at home now. (Şu anda evde olabilir.)
+3. Koşullu Cümleler → If we hurry, we could catch the train. (Acele edersek treni yakalayabiliriz.)
+
+Yapı (Structure): Özne + could + fiil
+(Not: Bu modülde "could" sadece olasılık anlamında kullanılır.)`,
+  tip: "Use 'could' to express possibility when you're not certain about something.",
+  
+  table: [
+    { subject: "I", could: "could", baseVerb: "win", exampleSentence: "I could win the game." },
+    { subject: "She", could: "could", baseVerb: "be", exampleSentence: "She could be late." },
+    { subject: "We", could: "could", baseVerb: "go", exampleSentence: "We could go to the cinema." },
+    { subject: "They", could: "could", baseVerb: "arrive", exampleSentence: "They could arrive early." }
+  ],
+  
+  listeningExamples: [
+    "It could rain tomorrow.",
+    "She could be at the office now.",
+    "We could visit them next week."
+  ],
+  
+  speakingPractice: [
+    { question: "Could it rain tomorrow?", answer: "Yes, it could." },
+    { question: "Could she be at the office now?", answer: "Yes, she could." },
+    { question: "Could they come to the party?", answer: "Yes, they could." },
+    { question: "Could he be tired after work?", answer: "Yes, he could." },
+    { question: "Could we visit them next week?", answer: "Yes, we could." },
+    { question: "Could you help me later?", answer: "Yes, I could." },
+    { question: "Could the dog be hungry?", answer: "Yes, it could." },
+    { question: "Could it be dangerous?", answer: "Yes, it could." },
+    { question: "Could she win the contest?", answer: "Yes, she could." },
+    { question: "Could he forget his keys?", answer: "Yes, he could." },
+    { question: "Could I join the club?", answer: "Yes, you could." },
+    { question: "Could they be lost?", answer: "Yes, they could." },
+    { question: "Could it snow tonight?", answer: "Yes, it could." },
+    { question: "Could she be sleeping?", answer: "Yes, she could." },
+    { question: "Could the kids be at school?", answer: "Yes, they could." },
+    { question: "Could we be wrong?", answer: "Yes, we could." },
+    { question: "Could this be the solution?", answer: "Yes, it could." },
+    { question: "Could you explain it again?", answer: "Yes, I could." },
+    { question: "Could he be watching TV?", answer: "Yes, he could." },
+    { question: "Could I talk to the manager?", answer: "Yes, you could." },
+    { question: "Could she understand the question?", answer: "Yes, she could." },
+    { question: "Could the train be late?", answer: "Yes, it could." },
+    { question: "Could they call us tomorrow?", answer: "Yes, they could." },
+    { question: "Could it happen again?", answer: "Yes, it could." },
+    { question: "Could I try that?", answer: "Yes, you could." },
+    { question: "Could he finish it today?", answer: "Yes, he could." },
+    { question: "Could we meet at 6?", answer: "Yes, we could." },
+    { question: "Could you wait a minute?", answer: "Yes, I could." },
+    { question: "Could she be your teacher?", answer: "Yes, she could." },
+    { question: "Could they be playing outside?", answer: "Yes, they could." },
+    { question: "Could it be broken?", answer: "Yes, it could." },
+    { question: "Could he be lying?", answer: "Yes, he could." },
+    { question: "Could you do it alone?", answer: "Yes, I could." },
+    { question: "Could she be your neighbor?", answer: "Yes, she could." },
+    { question: "Could we win the game?", answer: "Yes, we could." },
+    { question: "Could the weather change?", answer: "Yes, it could." },
+    { question: "Could it be a mistake?", answer: "Yes, it could." },
+    { question: "Could he be famous?", answer: "Yes, he could." },
+    { question: "Could they know the answer?", answer: "Yes, they could." },
+    { question: "Could I be wrong?", answer: "Yes, you could." }
+  ]
+};
+
+// Module 67 Data: Modal Verbs: "May" and "Might" (Possibility)
+const MODULE_67_DATA = {
+  title: "Module 67: Modal Verbs: 'May' and 'Might' (Possibility)",
+  description: "Learn to use 'may' and 'might' to express different levels of possibility",
+  intro: `"May" ve "might", bir şeyin olabileceğini ifade eder (olasılık bildirir).
+
+Farkları:
+• May → Daha yüksek ihtimal
+• Might → Daha düşük ihtimal (ama benzer anlamda kullanılır)
+
+Günlük konuşmalarda birbirlerinin yerine kullanılabilirler.
+
+Yapı (Structure): Özne + may/might + fiil
+
+Örnekler:
+• It may rain later. → Daha sonra yağmur yağabilir.
+• She might come to the party. → Partiye gelebilir.`,
+  tip: "Use 'may' and 'might' to express possibility. 'May' suggests slightly higher probability than 'might'.",
+  
+  table: [
+    { subject: "I", modal: "may", baseVerb: "go", exampleSentence: "I may go home early." },
+    { subject: "She", modal: "might", baseVerb: "be", exampleSentence: "She might be at work." },
+    { subject: "They", modal: "may", baseVerb: "visit", exampleSentence: "They may visit us tomorrow." },
+    { subject: "He", modal: "might", baseVerb: "call", exampleSentence: "He might call you." }
+  ],
+  
+  listeningExamples: [
+    "May I use your phone?",
+    "It might rain later.",
+    "They may visit us tomorrow."
+  ],
+  
+  speakingPractice: [
+    { question: "May I use your phone?", answer: "Yes, you may." },
+    { question: "What might happen if it rains?", answer: "We might cancel the picnic." },
+    { question: "Where may we meet tomorrow?", answer: "We may meet at the café." },
+    { question: "Might he be late?", answer: "Yes, he might." },
+    { question: "Who might visit us today?", answer: "My uncle might visit us." },
+    { question: "May she call you tonight?", answer: "Yes, she may." },
+    { question: "Why might they cancel the trip?", answer: "They might cancel it because of the weather." },
+    { question: "May I come in?", answer: "Yes, you may." },
+    { question: "When might she arrive?", answer: "She might arrive at 8 PM." },
+    { question: "Might the movie be boring?", answer: "Yes, it might." },
+    { question: "What may I bring to the party?", answer: "You may bring some snacks." },
+    { question: "Might he win the race?", answer: "Yes, he might." },
+    { question: "May she take a day off?", answer: "Yes, she may." },
+    { question: "Where might we go this weekend?", answer: "We might go to the mountains." },
+    { question: "May it snow today?", answer: "Yes, it may." },
+    { question: "Who may join us later?", answer: "Alice may join us." },
+    { question: "May we come with you?", answer: "Yes, you may." },
+    { question: "Why might she be sad?", answer: "She might be sad because of bad news." },
+    { question: "May they start early?", answer: "Yes, they may." },
+    { question: "When might it stop raining?", answer: "It might stop raining in the evening." },
+    { question: "May I help you?", answer: "Yes, you may." },
+    { question: "What might he bring?", answer: "He might bring a cake." },
+    { question: "May I stay here?", answer: "Yes, you may." },
+    { question: "Where might she travel?", answer: "She might travel to Italy." },
+    { question: "May we talk later?", answer: "Yes, you may." },
+    { question: "What may I say in the meeting?", answer: "You may share your opinion." },
+    { question: "May I borrow your pen?", answer: "Yes, you may." },
+    { question: "Why might he be tired?", answer: "He might be tired after work." },
+    { question: "May she answer the phone?", answer: "Yes, she may." },
+    { question: "Where might we find the book?", answer: "We might find it in the library." },
+    { question: "May I come tomorrow?", answer: "Yes, you may." },
+    { question: "Who might come to dinner?", answer: "My cousins might come." },
+    { question: "May we help you?", answer: "Yes, you may." },
+    { question: "How might he know her?", answer: "He might know her from school." },
+    { question: "May she be home now?", answer: "Yes, she may." },
+    { question: "Why might they need help?", answer: "They might be lost." },
+    { question: "May I ask something?", answer: "Yes, you may." },
+    { question: "When might it start?", answer: "It might start at noon." },
+    { question: "May he come in?", answer: "Yes, he may." },
+    { question: "What might we need?", answer: "We might need more information." }
+  ]
+};
+
 export default function LessonsApp({ onBack }: LessonsAppProps) {
   const [width, height] = useWindowSize();
   const [viewState, setViewState] = useState<ViewState>('levels');
@@ -2620,6 +3291,16 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     if (selectedModule === 56) return MODULE_56_DATA;
     if (selectedModule === 57) return MODULE_57_DATA;
     if (selectedModule === 58) return MODULE_58_DATA;
+    // A2 Level modules (59-67)
+    if (selectedModule === 59) return MODULE_59_DATA;
+    if (selectedModule === 60) return MODULE_60_DATA;
+    if (selectedModule === 61) return MODULE_61_DATA;
+    if (selectedModule === 62) return MODULE_62_DATA;
+    if (selectedModule === 63) return MODULE_63_DATA;
+    if (selectedModule === 64) return MODULE_64_DATA;
+    if (selectedModule === 65) return MODULE_65_DATA;
+    if (selectedModule === 66) return MODULE_66_DATA;
+    if (selectedModule === 67) return MODULE_67_DATA;
     return MODULE_1_DATA; // fallback
   };
 
