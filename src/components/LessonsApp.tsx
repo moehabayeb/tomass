@@ -129,6 +129,17 @@ const MODULES_BY_LEVEL = {
            i === 36 ? 'Making Requests (Could you / Would you mind)' :
            i === 37 ? 'Shopping Vocabulary and Phrases' :
            i === 38 ? 'Health Problems and Solutions Vocabulary' :
+           i === 39 ? 'Travel and Transport Vocabulary' :
+           i === 40 ? 'House and Furniture Vocabulary' :
+           i === 41 ? 'Technology Vocabulary' :
+           i === 42 ? 'School and Education Vocabulary' :
+           i === 43 ? 'Festivals and Celebrations Vocabulary' :
+           i === 44 ? 'Emotions and Feelings Vocabulary' :
+           i === 45 ? 'Nature and Environment Vocabulary' :
+           i === 46 ? 'Entertainment Vocabulary (Movies & Music)' :
+           i === 47 ? 'Describing People (Appearance & Personality)' :
+           i === 48 ? 'Describing Places (Towns, Cities, Nature)' :
+           i === 49 ? 'Giving Directions and Instructions' :
            `A2 Module ${i + 51}`,
     description: i === 0 ? 'Learn to form and use affirmative sentences in the past simple tense' : 
                  i === 1 ? 'Learn to form affirmative past simple sentences using irregular verbs' :
@@ -169,6 +180,17 @@ const MODULES_BY_LEVEL = {
                   i === 36 ? 'Practice making polite requests in English' :
                   i === 37 ? 'Learn basic shopping-related vocabulary' :
                   i === 38 ? 'Recognize common health problems in English' :
+                  i === 39 ? 'Learn common transport and travel vocabulary' :
+                  i === 40 ? 'Learn essential vocabulary for rooms and furniture' :
+                  i === 41 ? 'Learn essential vocabulary for technology and digital tools' :
+                  i === 42 ? 'Learn essential vocabulary related to school and education' :
+                  i === 43 ? 'Learn key vocabulary related to holidays and celebrations' :
+                  i === 44 ? 'Learn and use essential emotion and feeling vocabulary' :
+                  i === 45 ? 'Learn essential nature and environment vocabulary' :
+                  i === 46 ? 'Learn vocabulary related to movies and music' :
+                  i === 47 ? 'Learn vocabulary to describe people\'s physical appearance and personality' :
+                  i === 48 ? 'Learn vocabulary to describe different places' :
+                  i === 49 ? 'Learn essential vocabulary for giving and understanding directions' :
                  'Coming soon',
     completed: false,
     locked: false, // TEMPORARILY UNLOCKED FOR DEVELOPMENT
