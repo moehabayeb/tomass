@@ -107,6 +107,18 @@ const MODULES_BY_LEVEL = {
            i === 14 ? 'Modal Verbs: Should / Ought to' :
            i === 15 ? 'Modal Verb: "Could" (Possibility)' :
            i === 16 ? 'Modal Verbs: "May" and "Might" (Possibility)' :
+           i === 17 ? 'Zero Conditional (If + Present, Present)' :
+           i === 18 ? 'First Conditional (If + Present, Will)' :
+           i === 19 ? 'Second Conditional (If + Past, Would)' :
+           i === 20 ? 'Reflexive Pronouns (myself, yourself, etc.)' :
+           i === 21 ? 'Gerunds and Infinitives (to do / doing)' :
+           i === 22 ? 'Question Tags' :
+           i === 23 ? 'Relative Clauses (who, which, that)' :
+           i === 24 ? 'Either / Neither / Both / All' :
+           i === 25 ? 'Each / Every' :
+           i === 26 ? 'Too Much / Too Many / Enough' :
+           i === 27 ? 'Reported Speech: Statements' :
+           i === 28 ? 'Reported Speech: Questions' :
            `A2 Module ${i + 51}`,
     description: i === 0 ? 'Learn to form and use affirmative sentences in the past simple tense' : 
                  i === 1 ? 'Learn to form affirmative past simple sentences using irregular verbs' :
@@ -125,6 +137,18 @@ const MODULES_BY_LEVEL = {
                   i === 14 ? 'Learn to give advice using "should" and "ought to"' :
                   i === 15 ? 'Learn to use "could" to express possibility and uncertainty' :
                   i === 16 ? 'Learn to use "may" and "might" to express different levels of possibility' :
+                  i === 17 ? 'Understand and use the Zero Conditional to describe general truths and facts' :
+                  i === 18 ? 'Understand and use the First Conditional to talk about future possibilities' :
+                  i === 19 ? 'Understand and use the Second Conditional to talk about imaginary or unlikely situations' :
+                  i === 20 ? 'Understand the use of reflexive pronouns when the subject and object are the same' :
+                  i === 21 ? 'Understand the difference between gerunds (verb + ing) and infinitives (to + verb)' :
+                  i === 22 ? 'Understand how to use question tags for confirmation and agreement' :
+                  i === 23 ? 'Learn how to use relative clauses to give more information about nouns' :
+                  i === 24 ? 'Understand the difference between either, neither, both, and all' :
+                  i === 25 ? 'Understand the difference between each and every' :
+                  i === 26 ? 'Understand the use of too much, too many, and enough' :
+                  i === 27 ? 'Understand how to report statements using Reported Speech' :
+                  i === 28 ? 'Learn how to report Yes/No and Wh- questions using reported speech' :
                  'Coming soon',
     completed: false,
     locked: false, // TEMPORARILY UNLOCKED FOR DEVELOPMENT
