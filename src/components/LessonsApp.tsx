@@ -119,6 +119,16 @@ const MODULES_BY_LEVEL = {
            i === 26 ? 'Too Much / Too Many / Enough' :
            i === 27 ? 'Reported Speech: Statements' :
            i === 28 ? 'Reported Speech: Questions' :
+           i === 29 ? 'Passive Voice: Present Simple' :
+           i === 30 ? 'Passive Voice: Past Simple' :
+           i === 31 ? 'Expressing Opinions (I think / I believe)' :
+           i === 32 ? 'Giving Advice (should / Why don\'t you...)' :
+           i === 33 ? 'Making Suggestions (Let\'s / How about...)' :
+           i === 34 ? 'Apologizing and Responding' :
+           i === 35 ? 'Invitations and Responses' :
+           i === 36 ? 'Making Requests (Could you / Would you mind)' :
+           i === 37 ? 'Shopping Vocabulary and Phrases' :
+           i === 38 ? 'Health Problems and Solutions Vocabulary' :
            `A2 Module ${i + 51}`,
     description: i === 0 ? 'Learn to form and use affirmative sentences in the past simple tense' : 
                  i === 1 ? 'Learn to form affirmative past simple sentences using irregular verbs' :
@@ -149,6 +159,16 @@ const MODULES_BY_LEVEL = {
                   i === 26 ? 'Understand the use of too much, too many, and enough' :
                   i === 27 ? 'Understand how to report statements using Reported Speech' :
                   i === 28 ? 'Learn how to report Yes/No and Wh- questions using reported speech' :
+                  i === 29 ? 'Understand how to form passive voice sentences in the Present Simple tense' :
+                  i === 30 ? 'Learn how to form passive voice structures using the Past Simple tense' :
+                  i === 31 ? 'Learn to express personal thoughts and beliefs using polite structures' :
+                  i === 32 ? 'Learn how to give polite suggestions and advice' :
+                  i === 33 ? 'Learn how to make friendly and polite suggestions' :
+                  i === 34 ? 'Learn how to apologize in everyday English situations' :
+                  i === 35 ? 'Learn how to make polite invitations in English' :
+                  i === 36 ? 'Practice making polite requests in English' :
+                  i === 37 ? 'Learn basic shopping-related vocabulary' :
+                  i === 38 ? 'Recognize common health problems in English' :
                  'Coming soon',
     completed: false,
     locked: false, // TEMPORARILY UNLOCKED FOR DEVELOPMENT
