@@ -87,8 +87,30 @@ const MODULES_BY_LEVEL = {
     locked: false, // TEMPORARILY UNLOCKED FOR DEVELOPMENT
   })),
   
-  // Empty arrays for higher levels - content to be added later
-  A2: [],
+  // A2 Level modules
+  A2: Array.from({ length: 50 }, (_, i) => ({
+    id: i + 51, // Starting from 51 for A2 level
+    title: i === 0 ? 'Past Simple Affirmative' : 
+           i === 1 ? 'Past Simple: Irregular Verbs (Affirmative)' : 
+           i === 2 ? 'Past Simple: Negative Sentences' :
+           i === 3 ? 'Past Simple: Questions (Yes/No & Wh-)' :
+           i === 4 ? 'Used to (Past Habits)' :
+           i === 5 ? 'Would for Politeness and Offers' :
+           i === 6 ? 'Be Going To vs Will (Future)' :
+           i === 7 ? 'Future Continuous' :
+           `A2 Module ${i + 51}`,
+    description: i === 0 ? 'Learn to form and use affirmative sentences in the past simple tense' : 
+                 i === 1 ? 'Learn to form affirmative past simple sentences using irregular verbs' :
+                 i === 2 ? 'Learn to form negative sentences in the past simple tense using "did not / didn\'t"' :
+                 i === 3 ? 'Learn to form and answer yes/no and wh- questions in the past simple tense' :
+                 i === 4 ? 'Use "used to" to describe past habits or states that no longer happen' :
+                 i === 5 ? 'Use "Would" to make polite requests and offers' :
+                 i === 6 ? 'Understand the difference between "will" and "be going to"' :
+                 i === 7 ? 'Learn to use the Future Continuous Tense for actions in progress at a specific time in the future' :
+                 'Coming soon',
+    completed: false,
+    locked: false, // TEMPORARILY UNLOCKED FOR DEVELOPMENT
+  })),
   B1: [],
   B2: [],
   C1: [],
@@ -1937,6 +1959,590 @@ Cevap: Yes, I can. / No, I can't.`,
   ]
 };
 
+// A2 Level Module Data
+
+// Module 51 Data: Past Simple Affirmative
+const MODULE_51_DATA = {
+  title: "Module 51: Past Simple Affirmative",
+  description: "Students will learn how to form and use affirmative sentences in the past simple tense (regular and irregular verbs).",
+  intro: `Geçmişte gerçekleşmiş olayları anlatmak için Past Simple Tense kullanılır.
+Bu zamanda fiillerin 2. hali (V2) kullanılır.
+• Düzenli fiillere "-ed" takısı gelir.
+• Düzensiz fiillerin ikinci halleri ezberlenmelidir.
+
+Use the past simple affirmative to describe actions that happened at a specific time in the past.
+• Regular verbs → verb + -ed (e.g. play → played)
+• Irregular verbs → second form (e.g. go → went, eat → ate)`,
+  tip: "Use Past Simple for completed actions in the past. Regular verbs add -ed, irregular verbs have special forms.",
+  
+  table: [
+    { subject: "I", verb: "watched", rest: "a movie.", example: "I watched a movie." },
+    { subject: "She", verb: "went", rest: "to school.", example: "She went to school." },
+    { subject: "They", verb: "cooked", rest: "pasta.", example: "They cooked pasta." },
+    { subject: "We", verb: "cleaned", rest: "the room.", example: "We cleaned the room." }
+  ],
+  
+  listeningExamples: [
+    "I visited my grandparents.",
+    "She went to the supermarket.",
+    "They watched a comedy."
+  ],
+  
+  speakingPractice: [
+    { question: "What did you do last weekend?", answer: "I visited my grandparents." },
+    { question: "Where did she go yesterday?", answer: "She went to the supermarket." },
+    { question: "Did they watch a movie?", answer: "Yes, they watched a comedy." },
+    { question: "What time did he arrive at the party?", answer: "He arrived at 8 p.m." },
+    { question: "Who did you meet at the conference?", answer: "I met my old teacher." },
+    { question: "Did you enjoy the concert?", answer: "Yes, I really enjoyed it." },
+    { question: "Where did they travel last summer?", answer: "They traveled to Italy." },
+    { question: "Did she call you last night?", answer: "Yes, she called me at 10." },
+    { question: "What did you eat for dinner?", answer: "I ate chicken and rice." },
+    { question: "How did he learn to swim?", answer: "He learned at a swimming course." },
+    { question: "What did the children do at the park?", answer: "They played football." },
+    { question: "Did your friend pass the exam?", answer: "Yes, he passed with a high score." },
+    { question: "Where did you buy your shoes?", answer: "I bought them at the mall." },
+    { question: "Did she like the gift?", answer: "Yes, she loved it." },
+    { question: "When did they leave the office?", answer: "They left at 6 p.m." },
+    { question: "Did you walk to school today?", answer: "Yes, I walked because the weather was nice." },
+    { question: "Who cooked dinner last night?", answer: "My mother cooked dinner." },
+    { question: "What did you write in the email?", answer: "I wrote about our meeting." },
+    { question: "Did he fix the car?", answer: "Yes, he fixed it this morning." },
+    { question: "What did you do on your birthday?", answer: "I had a small party at home." },
+    { question: "Where did your parents grow up?", answer: "They grew up in a small village." },
+    { question: "Did she bring her camera?", answer: "Yes, she brought it to take photos." },
+    { question: "How did you feel after the match?", answer: "I felt very tired." },
+    { question: "What did the teacher say?", answer: "He said we had a test tomorrow." },
+    { question: "Did you sleep well?", answer: "Yes, I slept very well." },
+    { question: "Where did they have lunch?", answer: "They had lunch at a café." },
+    { question: "Who did you sit next to?", answer: "I sat next to my best friend." },
+    { question: "Did he understand the lesson?", answer: "Yes, he understood everything." },
+    { question: "What did she wear to the wedding?", answer: "She wore a beautiful dress." },
+    { question: "Did you find your keys?", answer: "Yes, I found them under the table." },
+    { question: "How did the story end?", answer: "It ended happily." },
+    { question: "What games did you play?", answer: "We played chess and cards." },
+    { question: "Did your brother enjoy the film?", answer: "Yes, he really enjoyed it." },
+    { question: "When did they arrive?", answer: "They arrived yesterday morning." },
+    { question: "What did your sister say?", answer: "She said she was busy." },
+    { question: "Did you hear the news?", answer: "Yes, I heard it on the radio." },
+    { question: "Where did he stay during his trip?", answer: "He stayed in a hotel." },
+    { question: "Did she forget her umbrella?", answer: "Yes, she forgot it at home." },
+    { question: "What songs did they sing?", answer: "They sang some classic songs." },
+    { question: "Did you go out on Saturday?", answer: "Yes, I went to a restaurant." },
+    { question: "What did he build in the garden?", answer: "He built a wooden bench." }
+  ]
+};
+
+// Module 52 Data: Past Simple: Irregular Verbs (Affirmative)
+const MODULE_52_DATA = {
+  title: "Module 52: Past Simple: Irregular Verbs (Affirmative)",
+  description: "Students will learn to form affirmative past simple sentences using irregular verbs in English.",
+  intro: `Geçmişte gerçekleşmiş ve bitmiş olayları anlatmak için Past Simple (Geçmiş Zaman) kullanılır.
+Düzenli fiiller "-ed" takısı alırken, irregular verbs (düzensiz fiiller) farklı şekillerde değişir.
+Bu fiillerin ikinci halleri (V2) ezberlenmelidir.
+
+Yapı: Özne + V2 (fiilin 2. hali) + nesne/tümleç
+
+Past Simple affirmative is used to describe completed past actions. Irregular verbs do not follow a rule — each must be memorized in its V2 form.`,
+  tip: "Irregular verbs have unique past forms that must be memorized: go→went, eat→ate, see→saw, etc.",
+  
+  table: [
+    { baseForm: "go", pastSimple: "went", turkish: "gitmek", example: "I went to the park." },
+    { baseForm: "eat", pastSimple: "ate", turkish: "yemek", example: "She ate an apple." },
+    { baseForm: "see", pastSimple: "saw", turkish: "görmek", example: "We saw a movie last night." },
+    { baseForm: "write", pastSimple: "wrote", turkish: "yazmak", example: "He wrote a letter." },
+    { baseForm: "take", pastSimple: "took", turkish: "almak", example: "They took the bus." },
+    { baseForm: "come", pastSimple: "came", turkish: "gelmek", example: "She came early." },
+    { baseForm: "drink", pastSimple: "drank", turkish: "içmek", example: "I drank coffee." },
+    { baseForm: "run", pastSimple: "ran", turkish: "koşmak", example: "He ran in the park." }
+  ],
+  
+  listeningExamples: [
+    "I wrote a book two days ago.",
+    "She gave a gift an hour ago.",
+    "We read the book last Monday."
+  ],
+  
+  speakingPractice: [
+    { question: "What did I write two days ago?", answer: "I wrote a book two days ago." },
+    { question: "What did she give an hour ago?", answer: "She gave a gift an hour ago." },
+    { question: "What did we read last Monday?", answer: "We read the book last Monday." },
+    { question: "Where did you go last weekend?", answer: "I went to the movies last weekend." },
+    { question: "What did we take last weekend?", answer: "We took a cake last weekend." },
+    { question: "Who did they meet last Monday?", answer: "They met their teacher last Monday." },
+    { question: "What did she see yesterday?", answer: "She saw a cat yesterday." },
+    { question: "What did she give last weekend?", answer: "She gave her homework last weekend." },
+    { question: "What did I drink a minute ago?", answer: "I drank coffee a minute ago." },
+    { question: "What did they take last night?", answer: "They took a taxi last night." },
+    { question: "What did we eat last night?", answer: "We ate a cake last night." },
+    { question: "What did we speak two days ago?", answer: "We spoke about homework two days ago." },
+    { question: "What did you drink a minute ago?", answer: "I drank tea a minute ago." },
+    { question: "What did you drink in 2010?", answer: "I drank orange juice in 2010." },
+    { question: "Where did you come this morning?", answer: "I came to school this morning." },
+    { question: "What did you take last week?", answer: "I took a photo last week." },
+    { question: "What did we take last week?", answer: "We took lunch last week." },
+    { question: "What did I give a minute ago?", answer: "I gave a letter a minute ago." },
+    { question: "What did she say two days ago?", answer: "She said something important two days ago." },
+    { question: "When did I come an hour ago?", answer: "I came to the office an hour ago." },
+    { question: "What did they know yesterday?", answer: "They knew the answer yesterday." },
+    { question: "What did I leave this morning?", answer: "I left my keys this morning." },
+    { question: "What did you make last Monday?", answer: "I made lunch last Monday." },
+    { question: "What did you drink last Monday?", answer: "I drank tea last Monday." },
+    { question: "What did she make yesterday?", answer: "She made a cake yesterday." },
+    { question: "What did you make yesterday?", answer: "I made a letter yesterday." },
+    { question: "What did we speak this morning?", answer: "We spoke about the meeting this morning." },
+    { question: "Where did I come yesterday?", answer: "You came to the office yesterday." },
+    { question: "What did I see last night?", answer: "I saw a movie last night." },
+    { question: "What did they eat last Monday?", answer: "They ate lunch last Monday." },
+    { question: "What did I have two days ago?", answer: "I had a gift two days ago." },
+    { question: "What did you have last Monday?", answer: "I had coffee last Monday." },
+    { question: "What did he write in 2010?", answer: "He wrote a letter in 2010." },
+    { question: "What did we speak last week?", answer: "We spoke about a letter last week." },
+    { question: "Where did he go last night?", answer: "He went to see a friend last night." },
+    { question: "What did he write last Monday?", answer: "He wrote a story last Monday." },
+    { question: "Who did I meet last Monday?", answer: "You met a friend last Monday." },
+    { question: "What did you make yesterday?", answer: "I made a drawing yesterday." },
+    { question: "What did I say last Monday?", answer: "You said something funny last Monday." },
+    { question: "What did we write two days ago?", answer: "We wrote a gift card two days ago." }
+  ]
+};
+
+// Module 53 Data: Past Simple: Negative Sentences
+const MODULE_53_DATA = {
+  title: "Module 53: Past Simple: Negative Sentences",
+  description: "Students will learn how to form negative sentences in the past simple tense using \"did not / didn't\" + base verb (V1).",
+  intro: `Geçmiş zamanda olumsuz cümle kurarken, "did not" (veya "didn't") kullanılır.
+Fiil her zaman yalın hali (V1) ile kullanılır — ikinci hali (V2) kullanılmaz.
+
+Yapı: Özne + didn't + fiil (V1) + nesne/zarf
+
+In the past simple negative form, use "didn't" followed by the base verb (V1).
+Never use V2 in negative sentences.`,
+  tip: "Use didn't + base verb (V1) for negative past simple sentences. Never use V2 with didn't.",
+  
+  table: [
+    { subject: "I", auxiliary: "didn't", verb: "eat", object: "dinner yesterday", example: "I didn't eat dinner yesterday." },
+    { subject: "You", auxiliary: "didn't", verb: "see", object: "the movie", example: "You didn't see the movie." },
+    { subject: "He", auxiliary: "didn't", verb: "write", object: "a letter", example: "He didn't write a letter." },
+    { subject: "She", auxiliary: "didn't", verb: "go", object: "to the park", example: "She didn't go to the park." },
+    { subject: "They", auxiliary: "didn't", verb: "take", object: "the test", example: "They didn't take the test." }
+  ],
+  
+  listeningExamples: [
+    "I didn't go to school yesterday.",
+    "She didn't eat breakfast.",
+    "They didn't see the movie."
+  ],
+  
+  speakingPractice: [
+    { question: "What didn't they say this morning?", answer: "They didn't say anything this morning." },
+    { question: "What didn't you take a minute ago?", answer: "I didn't take a letter a minute ago." },
+    { question: "What didn't she have yesterday?", answer: "She didn't have any coffee yesterday." },
+    { question: "What didn't I drink an hour ago?", answer: "I didn't drink tea an hour ago." },
+    { question: "What didn't we get yesterday?", answer: "We didn't get any messages yesterday." },
+    { question: "What didn't he eat in 2010?", answer: "He didn't eat pizza in 2010." },
+    { question: "What didn't they have an hour ago?", answer: "They didn't have a book an hour ago." },
+    { question: "What didn't he eat in 2010?", answer: "He didn't eat a sandwich in 2010." },
+    { question: "Where didn't you go two days ago?", answer: "I didn't go to the park two days ago." },
+    { question: "What didn't they read last weekend?", answer: "They didn't read any books last weekend." },
+    { question: "What didn't you leave last night?", answer: "I didn't leave my phone last night." },
+    { question: "What didn't we find in 2010?", answer: "We didn't find the answer in 2010." },
+    { question: "What didn't I eat last weekend?", answer: "I didn't eat lunch last weekend." },
+    { question: "Where didn't he go last night?", answer: "He didn't go to the restaurant last night." },
+    { question: "What didn't we make in 2010?", answer: "We didn't make a presentation in 2010." },
+    { question: "What didn't he write in 2010?", answer: "He didn't write the report in 2010." },
+    { question: "What didn't we get this morning?", answer: "We didn't get any calls this morning." },
+    { question: "What didn't we take an hour ago?", answer: "We didn't take the paper an hour ago." },
+    { question: "What didn't they buy in 2010?", answer: "They didn't buy a car in 2010." },
+    { question: "What didn't they find last Monday?", answer: "They didn't find the keys last Monday." },
+    { question: "Where didn't I go yesterday?", answer: "I didn't go to school yesterday." },
+    { question: "What didn't I eat last week?", answer: "I didn't eat dinner last week." },
+    { question: "Where didn't they go last weekend?", answer: "They didn't go to the cinema last weekend." },
+    { question: "What didn't you find last night?", answer: "I didn't find my bag last night." },
+    { question: "When didn't they come?", answer: "They didn't come a minute ago." },
+    { question: "What didn't she run two days ago?", answer: "She didn't run in the park two days ago." },
+    { question: "What didn't I speak about last weekend?", answer: "I didn't speak about the gift last weekend." },
+    { question: "What didn't they have a minute ago?", answer: "They didn't have their homework a minute ago." },
+    { question: "When didn't we come?", answer: "We didn't come an hour ago." },
+    { question: "What didn't they run last Monday?", answer: "They didn't run a race last Monday." },
+    { question: "What didn't they see yesterday?", answer: "They didn't see the news yesterday." },
+    { question: "What didn't he say yesterday?", answer: "He didn't say anything yesterday." },
+    { question: "What didn't you speak two days ago?", answer: "I didn't speak English two days ago." },
+    { question: "What didn't she give in 2010?", answer: "She didn't give homework in 2010." },
+    { question: "What didn't I give this morning?", answer: "I didn't give a photo this morning." },
+    { question: "What didn't you write two days ago?", answer: "I didn't write a message two days ago." },
+    { question: "What didn't I have two days ago?", answer: "I didn't have a gift two days ago." },
+    { question: "What didn't she drink last Monday?", answer: "She didn't drink coffee last Monday." },
+    { question: "What didn't they read last night?", answer: "They didn't read any books last night." },
+    { question: "What didn't she see in 2010?", answer: "She didn't see the news in 2010." }
+  ]
+};
+
+// Module 54 Data: Past Simple: Questions (Yes/No & Wh-)
+const MODULE_54_DATA = {
+  title: "Module 54: Past Simple: Questions (Yes/No & Wh-)",
+  description: "Students will learn to form and answer yes/no and wh- questions in the past simple tense.",
+  intro: `Past Simple Questions (Geçmiş Zaman Soru Cümleleri), geçmişteki eylemleri sorgulamak için kullanılır.
+İki tür soru vardır:
+
+1. Yes/No Questions (Evet/Hayır Soruları)
+Yapı: Did + özne + fiil (V1) + nesne/zarf?
+Örnek: Did you see the movie? → Yes, I did. / No, I didn't.
+
+2. Wh- Questions (Bilgi Soruları)
+Yapı: Wh- kelimesi + did + özne + fiil (V1)?
+Örnek: What did you eat? → I ate pizza.
+
+• Yes/No Questions: Did + subject + base verb (V1)?
+→ Did she go to school? Yes, she did.
+• Wh- Questions: Wh- + did + subject + V1?
+→ What did they eat? They ate lunch.`,
+  tip: "Form questions with Did + subject + base verb for Yes/No questions, or Wh-word + did + subject + base verb for information questions.",
+  
+  table: [
+    { questionType: "Yes/No", structure: "Did + subject + V1 + ...?", example: "Did she write a letter?", answer: "Yes, she did. She wrote a letter." },
+    { questionType: "Wh-", structure: "Wh- + did + subject + V1 + ...?", example: "What did they eat?", answer: "They ate lunch." }
+  ],
+  
+  listeningExamples: [
+    "Did he see a friend a minute ago?",
+    "What did we speak about last week?",
+    "Where did we find the gift last night?"
+  ],
+  
+  speakingPractice: [
+    { question: "Did he see a friend a minute ago?", answer: "Yes, he did. He saw a friend a minute ago." },
+    { question: "Did he leave a letter two days ago?", answer: "Yes, he did. He left a letter two days ago." },
+    { question: "Did she find a cake in 2010?", answer: "Yes, she did. She found a cake in 2010." },
+    { question: "Did I get a gift last Monday?", answer: "Yes, I did. I got a gift last Monday." },
+    { question: "Did we read something this morning?", answer: "Yes, we did. We read a story this morning." },
+    { question: "Did we speak about something two days ago?", answer: "Yes, we did. We spoke about a topic two days ago." },
+    { question: "Did she have a book yesterday?", answer: "Yes, she did. She had a book yesterday." },
+    { question: "Did they read last night?", answer: "Yes, they did. They read a magazine last night." },
+    { question: "Did I run yesterday?", answer: "Yes, I did. I ran yesterday." },
+    { question: "Did I meet someone last week?", answer: "Yes, I did. I met a friend last week." },
+    { question: "Did you find a photo last weekend?", answer: "Yes, I did. I found a photo last weekend." },
+    { question: "Did she give a gift in 2010?", answer: "Yes, she did. She gave a gift in 2010." },
+    { question: "Did I give a gift last weekend?", answer: "Yes, I did. I gave a gift last weekend." },
+    { question: "Did I eat lunch last night?", answer: "Yes, I did. I ate lunch last night." },
+    { question: "Did she eat something a minute ago?", answer: "Yes, she did. She ate a sandwich a minute ago." },
+    { question: "Did we go to school this morning?", answer: "Yes, we did. We went to school this morning." },
+    { question: "Did we go out a minute ago?", answer: "Yes, we did. We went out a minute ago." },
+    { question: "Did they write to a friend yesterday?", answer: "Yes, they did. They wrote a letter yesterday." },
+    { question: "Did you say something yesterday?", answer: "Yes, I did. I said something yesterday." },
+    { question: "Did she drink something a minute ago?", answer: "Yes, she did. She drank water a minute ago." },
+    { question: "Where did we make something this morning?", answer: "We made breakfast this morning." },
+    { question: "What did I have last Monday?", answer: "I had some coffee last Monday." },
+    { question: "When did he take something last week?", answer: "He took a photo last week." },
+    { question: "Who did you drink with a minute ago?", answer: "I drank tea with my friend a minute ago." },
+    { question: "Why did she give a gift this morning?", answer: "She gave it because it was his birthday." },
+    { question: "When did they come last night?", answer: "They came at 9 p.m. last night." },
+    { question: "How did I make something last weekend?", answer: "I made it with my hands last weekend." },
+    { question: "Where did he see something in 2010?", answer: "He saw the Eiffel Tower in 2010." },
+    { question: "Why did they know the answer an hour ago?", answer: "Because they studied before." },
+    { question: "How did you go yesterday?", answer: "I went by bus yesterday." },
+    { question: "What did we speak about last week?", answer: "We spoke about the project last week." },
+    { question: "Where did we find the gift last night?", answer: "We found it under the table." },
+    { question: "Where did I have coffee an hour ago?", answer: "I had it at the café an hour ago." },
+    { question: "When did they eat a minute ago?", answer: "They ate lunch a minute ago." },
+    { question: "Why did she take her notebook this morning?", answer: "Because she had class." },
+    { question: "What did you come for last Monday?", answer: "I came for a meeting last Monday." },
+    { question: "What did we read last weekend?", answer: "We read a novel last weekend." },
+    { question: "How did I find the answer yesterday?", answer: "I found it online." },
+    { question: "When did you find the book?", answer: "I found it a minute ago." },
+    { question: "How did we come last Monday?", answer: "We came by car last Monday." }
+  ]
+};
+
+// Module 55 Data: Used to (Past Habits)
+const MODULE_55_DATA = {
+  title: "Module 55: Used to (Past Habits)",
+  description: "Use \"used to\" to describe past habits or states that no longer happen.",
+  intro: `"Used to" geçmişte alışkanlık olan ama artık yapılmayan şeyler için kullanılır.
+Örnek: "Eskiden sinemaya giderdim." → I used to go to the cinema.
+
+Olumsuz hâli: "Eskiden yapmazdım." → I didn't use to…
+Soru hâli: "Eskiden yapar mıydın?" → Did you use to…?
+
+Affirmative: I used to play football when I was a child.
+Negative: I didn't use to like vegetables.
+Question: Did you use to watch cartoons?`,
+  tip: "Use 'used to' for past habits that don't happen anymore. In questions and negatives, use 'use to' (without 'd').",
+  
+  table: [
+    { sentenceType: "Affirmative", structure: "Subject + used to + V1", example: "I used to smoke." },
+    { sentenceType: "Negative", structure: "Subject + didn't use to + V1", example: "I didn't use to smoke." },
+    { sentenceType: "Question", structure: "Did + subject + use to + V1?", example: "Did you use to smoke?" }
+  ],
+  
+  listeningExamples: [
+    "I used to play with toys all the time.",
+    "She used to go to ballet every Saturday.",
+    "They used to live in a big house near the park."
+  ],
+  
+  speakingPractice: [
+    { question: "Did you use to play with toys when you were a child?", answer: "Yes, I used to play with toys all the time." },
+    { question: "Did your sister use to go to ballet classes?", answer: "Yes, she used to go to ballet every Saturday." },
+    { question: "Did they use to live in a big house?", answer: "Yes, they used to live in a big house near the park." },
+    { question: "Did your father use to smoke?", answer: "Yes, he used to smoke, but he quit years ago." },
+    { question: "Did you use to read comic books?", answer: "Yes, I used to read comic books after school." },
+    { question: "Did she use to wear glasses?", answer: "Yes, she used to wear glasses before her eye surgery." },
+    { question: "Did your teacher use to give a lot of homework?", answer: "Yes, he used to give us homework every day." },
+    { question: "Did your family use to eat dinner together?", answer: "Yes, we used to eat dinner together every night." },
+    { question: "Did you use to ride your bike to school?", answer: "Yes, I used to ride my bike every morning." },
+    { question: "Did your grandparents use to tell you stories?", answer: "Yes, they used to tell me bedtime stories." },
+    { question: "Did you use to like broccoli as a child?", answer: "No, I didn't use to like broccoli at all." },
+    { question: "Did your brother use to clean his room?", answer: "No, he didn't use to clean it. It was always messy." },
+    { question: "Did you use to play any musical instruments?", answer: "No, I didn't use to play any instruments." },
+    { question: "Did they use to travel often?", answer: "No, they didn't use to travel much." },
+    { question: "Did your mother use to drive a car?", answer: "No, she didn't use to drive. She took the bus." },
+    { question: "Did you use to wake up early on weekends?", answer: "No, I didn't use to wake up early on weekends." },
+    { question: "Did your friends use to watch horror movies?", answer: "No, they didn't use to watch horror movies." },
+    { question: "Did your school use to have a library?", answer: "No, it didn't use to have a library." },
+    { question: "Did you use to eat spicy food?", answer: "No, I didn't use to eat spicy food." },
+    { question: "Did your sister use to play sports?", answer: "No, she didn't use to play any sports." },
+    { question: "What did you use to do on summer holidays?", answer: "I used to go to my uncle's farm and ride horses." },
+    { question: "Where did your parents use to live?", answer: "They used to live in a small village in the mountains." },
+    { question: "What games did you use to play?", answer: "I used to play hide and seek and tag with my friends." },
+    { question: "What subjects did you use to like in school?", answer: "I used to like math and science." },
+    { question: "What did your best friend use to look like?", answer: "He used to have long hair and glasses." },
+    { question: "Where did you use to go shopping?", answer: "I used to go shopping at the local market." },
+    { question: "What food did you use to eat every day?", answer: "I used to eat rice and vegetables for lunch." },
+    { question: "Where did your family use to go on Sundays?", answer: "We used to go to the beach or the park." },
+    { question: "What did you use to do before bed?", answer: "I used to read a book before going to sleep." },
+    { question: "What cartoons did you use to watch?", answer: "I used to watch Tom and Jerry and SpongeBob." },
+    { question: "Did you use to wear a school uniform?", answer: "Yes, I used to wear a white shirt and black pants." },
+    { question: "Did your parents use to work in the same city?", answer: "Yes, they used to work downtown." },
+    { question: "What did your family use to do in the evenings?", answer: "We used to watch TV and talk together." },
+    { question: "Did you use to sleep with a teddy bear?", answer: "Yes, I used to sleep with my favorite bear every night." },
+    { question: "Where did you use to hang out with your friends?", answer: "We used to hang out at the playground near school." },
+    { question: "Did your dog use to bark a lot?", answer: "Yes, he used to bark at everything!" },
+    { question: "What did your teacher use to do when students were late?", answer: "She used to write their names on the board." },
+    { question: "Did your city use to have a tram system?", answer: "No, it didn't use to have trams, only buses." },
+    { question: "What kind of music did you use to listen to?", answer: "I used to listen to pop and rock music." },
+    { question: "Did you use to believe in Santa Claus?", answer: "Yes, I used to believe in him when I was five." }
+  ]
+};
+
+// Module 56 Data: Would for Politeness and Offers
+const MODULE_56_DATA = {
+  title: "Module 56: Would for Politeness and Offers",
+  description: "Use \"Would\" to make polite requests and offers.",
+  intro: `"Would" kelimesi, İngilizce'de tekliflerde ve kibar isteklerde kullanılır.
+• "Would you like…?" → "İster misiniz?" anlamında teklif.
+Örnek: Would you like some water? → Biraz su ister misiniz?
+• "Would you…?" → "Yapar mısınız?" anlamında kibar rica.
+Örnek: Would you carry this bag, please? → Bu çantayı taşır mısınız, lütfen?
+
+Making Offers: Would you like some tea?
+Making Polite Requests: Would you help me, please?
+Responses: Yes, please. That would be great. / No, thank you. I'm fine.`,
+  tip: "Use 'Would you like...?' for offers and 'Would you...?' for polite requests. Always be polite in responses.",
+  
+  table: [
+    { sentenceType: "Offer", structure: "Would you like + noun/verb (to)", example: "Would you like a drink?" },
+    { sentenceType: "Polite Request", structure: "Would you + base verb", example: "Would you help me, please?" },
+    { sentenceType: "Response", structure: "Yes/No + polite reply", example: "Yes, please. / No, thank you." }
+  ],
+  
+  listeningExamples: [
+    "Would you like some coffee?",
+    "Would you help me with this box?",
+    "Would you close the window, please?"
+  ],
+  
+  speakingPractice: [
+    { question: "Would you like some coffee?", answer: "Yes, please. I'd love some." },
+    { question: "Would you like a glass of water?", answer: "No, thank you. I'm not thirsty." },
+    { question: "Would you like to sit down?", answer: "Yes, I've been standing all day." },
+    { question: "Would you like a piece of cake?", answer: "Yes, please. It looks delicious." },
+    { question: "Would you like to come with us?", answer: "Sure, I'd love to!" },
+    { question: "Would you like some more soup?", answer: "No, thank you. I'm full." },
+    { question: "Would you like to visit the museum?", answer: "Yes, I enjoy museums." },
+    { question: "Would you like a sandwich or a salad?", answer: "I'd like a salad, please." },
+    { question: "Would you like to watch a movie tonight?", answer: "Yes, that sounds great!" },
+    { question: "Would you like to try this dessert?", answer: "No, thank you. I don't eat sugar." },
+    { question: "Would you help me with this box?", answer: "Of course. Let me take it." },
+    { question: "Would you close the window, please?", answer: "Sure. It's getting cold." },
+    { question: "Would you lend me your pen?", answer: "No problem. Here you go." },
+    { question: "Would you show me the way?", answer: "Yes, follow me." },
+    { question: "Would you answer the phone for me?", answer: "Sure, I'll get it." },
+    { question: "Would you turn down the music?", answer: "Okay, I'll lower the volume." },
+    { question: "Would you check my homework?", answer: "Yes, I'd be happy to help." },
+    { question: "Would you wait for me at the bus stop?", answer: "Yes, I'll be there." },
+    { question: "Would you drive me to the airport?", answer: "I'm sorry, I'm busy at that time." },
+    { question: "Would you mind helping me clean?", answer: "No, not at all." },
+    { question: "Would you like to play a game with us?", answer: "Sure, what are you playing?" },
+    { question: "Would you explain this question again?", answer: "Of course. Let me repeat it." },
+    { question: "Would you like to join our team?", answer: "Yes, I'd be happy to!" },
+    { question: "Would you pick up some milk on the way home?", answer: "No problem, I'll stop by the store." },
+    { question: "Would you like to see my new phone?", answer: "Yes, show me!" },
+    { question: "Would you take a photo of us, please?", answer: "Sure, say cheese!" },
+    { question: "Would you come to the party on Friday?", answer: "I'd love to. What time is it?" },
+    { question: "Would you please write your name here?", answer: "Yes, here it is." },
+    { question: "Would you explain the homework again?", answer: "Sure. It's on page 35." },
+    { question: "Would you like to dance?", answer: "No, thank you. I'm too tired." },
+    { question: "Would you like anything else?", answer: "No, that's all for now. Thanks." },
+    { question: "Would you please sign this form?", answer: "Yes, where should I sign?" },
+    { question: "Would you like me to call a taxi?", answer: "Yes, please. That would be great." },
+    { question: "Would you mind if I sat here?", answer: "Not at all. Go ahead." },
+    { question: "Would you pass me the bread?", answer: "Here you go." },
+    { question: "Would you like your coffee with milk?", answer: "No, black is fine." },
+    { question: "Would you prefer tea or coffee?", answer: "I'd prefer coffee, please." },
+    { question: "Would you help me move this table?", answer: "Sure, let's do it together." },
+    { question: "Would you like a receipt?", answer: "Yes, please." },
+    { question: "Would you stay for dinner?", answer: "I'd love to. Thank you." }
+  ]
+};
+
+// Module 57 Data: Be Going To vs Will (Future)
+const MODULE_57_DATA = {
+  title: "Module 57: Be Going To vs Will (Future)",
+  description: "Understand the difference between 'will' and 'be going to' for future expressions.",
+  intro: `Will: Ani kararlar, teklifler, sözler ve tahmine dayalı gelecek olaylar için kullanılır.
+Örnek: "Kapıyı ben açacağım." → I will open the door.
+
+Be going to: Planlanmış gelecek olaylar ve güçlü kanıta dayalı tahminler için kullanılır.
+Örnek: "Yarın annemi ziyaret edeceğim." → I am going to visit my mom tomorrow.
+
+Will (instant decisions / predictions / offers): I will help you. / I think it will rain tomorrow.
+Be going to (plans / evidence-based predictions): I am going to visit my aunt. / Look at the clouds. It's going to rain.`,
+  tip: "Use 'will' for spontaneous decisions and predictions. Use 'be going to' for planned actions and evidence-based predictions.",
+  
+  table: [
+    { tense: "Will (Aff.)", structure: "Subject + will + verb", example: "She will call you." },
+    { tense: "Will (Neg.)", structure: "Subject + will not (won't) + verb", example: "He won't come." },
+    { tense: "Will (Ques.)", structure: "Will + subject + verb?", example: "Will you help me?" },
+    { tense: "Be Going To (Aff.)", structure: "Subject + be + going to + verb", example: "I'm going to study." },
+    { tense: "Be Going To (Neg.)", structure: "Subject + be + not + going to + V", example: "We're not going to travel." },
+    { tense: "Be Going To (Ques.)", structure: "Be + subject + going to + verb?", example: "Are you going to eat?" }
+  ],
+  
+  listeningExamples: [
+    "I'm going to visit my grandparents.",
+    "I'll help you.",
+    "Are you going to study tonight?"
+  ],
+  
+  speakingPractice: [
+    { question: "What are you going to do this weekend?", answer: "I'm going to visit my grandparents." },
+    { question: "Will you help me with the dishes?", answer: "Sure, I'll help you." },
+    { question: "Are you going to study tonight?", answer: "Yes, I'm going to study English." },
+    { question: "Will she come to the party?", answer: "No, she won't come." },
+    { question: "Is it going to rain today?", answer: "Yes, look at the clouds. It's going to rain." },
+    { question: "What will you eat for lunch?", answer: "I think I'll eat a sandwich." },
+    { question: "Are they going to play football tomorrow?", answer: "Yes, they're going to play at 4 PM." },
+    { question: "Will you be at the meeting on time?", answer: "Yes, I'll be there at 9." },
+    { question: "What are you going to wear to the wedding?", answer: "I'm going to wear a black dress." },
+    { question: "Will your brother call you later?", answer: "Yes, he'll call me tonight." },
+    { question: "Are we going to have homework today?", answer: "Yes, we're going to have a short task." },
+    { question: "Will he pass the test?", answer: "I think he will. He studied hard." },
+    { question: "Are you going to cook dinner tonight?", answer: "Yes, I'm going to cook pasta." },
+    { question: "Will it be sunny tomorrow?", answer: "No, it won't. It'll be cloudy." },
+    { question: "Is she going to start a new job?", answer: "Yes, she's going to start next Monday." },
+    { question: "Will you carry this bag for me?", answer: "Of course, I'll carry it." },
+    { question: "What are you going to buy at the store?", answer: "I'm going to buy some fruit." },
+    { question: "Will your parents arrive early?", answer: "No, they won't arrive before 10." },
+    { question: "Are they going to watch a movie?", answer: "Yes, they're going to watch a comedy." },
+    { question: "Will you open the window, please?", answer: "Sure, I'll open it." },
+    { question: "Is he going to fix the car?", answer: "Yes, he's going to fix it tomorrow." },
+    { question: "Will you go out tonight?", answer: "No, I'll stay home." },
+    { question: "Are we going to have lunch together?", answer: "Yes, we're going to eat at 1." },
+    { question: "Will they understand the lesson?", answer: "I think they'll understand." },
+    { question: "What are you going to do after the course?", answer: "I'm going to travel abroad." },
+    { question: "Will you lend me your book?", answer: "Yes, I'll bring it tomorrow." },
+    { question: "Is it going to be a long meeting?", answer: "Yes, it's going to take two hours." },
+    { question: "Will she visit her cousin in Germany?", answer: "No, she won't go this year." },
+    { question: "What are you going to eat for breakfast?", answer: "I'm going to eat eggs and toast." },
+    { question: "Will we take a test next week?", answer: "Yes, we'll take a short test." },
+    { question: "Are they going to build a new school?", answer: "Yes, they're going to build it next year." },
+    { question: "Will he come with us to the cinema?", answer: "Maybe. He'll decide later." },
+    { question: "What are you going to say in your speech?", answer: "I'm going to thank everyone." },
+    { question: "Will you call me when you arrive?", answer: "Yes, I'll call you right away." },
+    { question: "Is the teacher going to explain the topic again?", answer: "Yes, she's going to explain it tomorrow." },
+    { question: "Will it snow this weekend?", answer: "I think it will. It's very cold." },
+    { question: "What are you going to study at university?", answer: "I'm going to study engineering." },
+    { question: "Will you bring your laptop to the meeting?", answer: "Yes, I'll bring it with me." },
+    { question: "Are your friends going to come to the picnic?", answer: "Yes, they're going to join us." },
+    { question: "Will the shop be open on Sunday?", answer: "No, it won't be open." }
+  ]
+};
+
+// Module 58 Data: Future Continuous
+const MODULE_58_DATA = {
+  title: "Module 58: Future Continuous",
+  description: "Learn to use the Future Continuous Tense to describe actions in progress at a specific time in the future.",
+  intro: `Future Continuous Tense, gelecekte belirli bir zamanda devam etmekte olan eylemleri anlatmak için kullanılır.
+
+Kullanımı:
+1. Belirli bir zamanda devam eden gelecek eylemleri tanımlamak:
+→ At 10 PM, I will be studying.
+2. Kibar bir şekilde gelecek planlarını sormak:
+→ Will you be using the car tonight?
+3. O anda neler oluyor olabileceğini tahmin etmek:
+→ She will be working now.
+
+Yapı: Subject + will be + verb-ing
+Örnek: I will be working.`,
+  tip: "Use Future Continuous for actions that will be in progress at a specific time in the future: will be + verb-ing.",
+  
+  table: [
+    { tense: "Future Cont.", exampleAff: "I will be working.", exampleNeg: "I will not be working.", exampleQuestion: "Will you be working?" },
+    { tense: "", exampleAff: "She will be sleeping.", exampleNeg: "She will not be sleeping.", exampleQuestion: "Will she be sleeping?" },
+    { tense: "", exampleAff: "They will be traveling.", exampleNeg: "They will not be traveling.", exampleQuestion: "Will they be traveling?" }
+  ],
+  
+  listeningExamples: [
+    "I will be watching a documentary.",
+    "They will be going to the countryside.",
+    "He will be arriving at 6 PM."
+  ],
+  
+  speakingPractice: [
+    { question: "What will you be doing at 10 PM tonight?", answer: "I will be watching a documentary." },
+    { question: "Will she be attending the meeting tomorrow?", answer: "Yes, she will be attending the meeting." },
+    { question: "Where will they be going next weekend?", answer: "They will be going to the countryside." },
+    { question: "Who will be using the computer in the morning?", answer: "My brother will be using it." },
+    { question: "What time will he be arriving?", answer: "He will be arriving at 6 PM." },
+    { question: "Will you be working on Saturday?", answer: "No, I won't be working." },
+    { question: "Why will she be crying?", answer: "She will be watching a sad movie." },
+    { question: "Will they be sleeping when we arrive?", answer: "Yes, they will be sleeping." },
+    { question: "What will your parents be doing at this time tomorrow?", answer: "They will be flying to Germany." },
+    { question: "Will we be staying at a hotel?", answer: "Yes, we will be staying at a hotel." },
+    { question: "What will John be cooking for dinner?", answer: "He will be cooking spaghetti." },
+    { question: "Will you be using the car tonight?", answer: "No, I'll be walking." },
+    { question: "Why will she be studying all night?", answer: "Because she has a big test tomorrow." },
+    { question: "What will you be wearing to the party?", answer: "I'll be wearing a blue dress." },
+    { question: "Will he be playing football this weekend?", answer: "No, he will be resting." },
+    { question: "What will the kids be doing during the trip?", answer: "They'll be watching movies." },
+    { question: "Will the teacher be explaining the new topic?", answer: "Yes, she will be explaining it." },
+    { question: "What will you be reading this evening?", answer: "I'll be reading a mystery novel." },
+    { question: "When will she be arriving at the station?", answer: "She'll be arriving at 4 PM." },
+    { question: "Will Tom be joining us for lunch?", answer: "Yes, he will be joining." },
+    { question: "What will the dog be doing at home?", answer: "It will be sleeping on the sofa." },
+    { question: "Will we be traveling by plane?", answer: "No, we'll be going by train." },
+    { question: "Why will they be shouting?", answer: "Because they will be at a football match." },
+    { question: "What will your sister be doing at noon?", answer: "She'll be eating lunch." },
+    { question: "Will your mom be using the kitchen at 8 AM?", answer: "Yes, she'll be making breakfast." },
+    { question: "Who will be working the night shift?", answer: "James will be working it." },
+    { question: "Will the sun be shining tomorrow?", answer: "Yes, the forecast says it will." },
+    { question: "What will you be buying at the store?", answer: "I'll be buying some vegetables." },
+    { question: "Will they be dancing at the party?", answer: "Yes, everyone will be dancing." },
+    { question: "Where will you be staying in London?", answer: "I'll be staying at a friend's house." },
+    { question: "Will it be raining in the morning?", answer: "Probably, yes." },
+    { question: "What will the children be watching?", answer: "They'll be watching cartoons." },
+    { question: "Who will be driving us to the airport?", answer: "My uncle will be driving us." },
+    { question: "What time will the guests be arriving?", answer: "They'll be arriving at 7 PM." },
+    { question: "Will your brother be studying during the summer?", answer: "No, he'll be relaxing." },
+    { question: "Why will you be meeting your boss?", answer: "To discuss a new project." },
+    { question: "What will Anna be doing in Italy?", answer: "She'll be visiting historical sites." },
+    { question: "Will we be using Zoom for the meeting?", answer: "Yes, the link has already been sent." },
+    { question: "Where will the musicians be performing?", answer: "They'll be performing in the park." },
+    { question: "What will your friends be talking about?", answer: "They'll be discussing their travel plans." }
+  ]
+};
+
 export default function LessonsApp({ onBack }: LessonsAppProps) {
   const [width, height] = useWindowSize();
   const [viewState, setViewState] = useState<ViewState>('levels');
@@ -2005,6 +2611,15 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     if (selectedModule === 22) return MODULE_22_DATA;
     if (selectedModule === 23) return MODULE_23_DATA;
     if (selectedModule === 24) return MODULE_24_DATA;
+    // A2 Level modules (51-58)
+    if (selectedModule === 51) return MODULE_51_DATA;
+    if (selectedModule === 52) return MODULE_52_DATA;
+    if (selectedModule === 53) return MODULE_53_DATA;
+    if (selectedModule === 54) return MODULE_54_DATA;
+    if (selectedModule === 55) return MODULE_55_DATA;
+    if (selectedModule === 56) return MODULE_56_DATA;
+    if (selectedModule === 57) return MODULE_57_DATA;
+    if (selectedModule === 58) return MODULE_58_DATA;
     return MODULE_1_DATA; // fallback
   };
 
