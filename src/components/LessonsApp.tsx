@@ -3414,6 +3414,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
   // Check if module is unlocked
   const isModuleUnlocked = (moduleId: number) => {
     if (moduleId === 1) return true; // Module 1 is always unlocked
+    if (moduleId === 51) return true; // Module 51 (first A2 module) is unlocked for testing
     return completedModules.includes(`module-${moduleId - 1}`);
   };
 
