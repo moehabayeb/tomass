@@ -215,7 +215,34 @@ const MODULES_BY_LEVEL = {
     completed: false,
     locked: false, // TEMPORARILY UNLOCKED FOR DEVELOPMENT
   })),
-  B1: [],
+  // B1 Level modules (101-110)
+  B1: Array.from({ length: 10 }, (_, i) => ({
+    id: i + 101, // Starting from 101 for B1 level
+    title: i === 0 ? 'Present Perfect Continuous (I\'ve been working)' :
+           i === 1 ? 'Present Perfect Continuous vs Present Perfect' :
+           i === 2 ? 'Past Perfect – Affirmative' :
+           i === 3 ? 'Past Perfect – Negative' :
+           i === 4 ? 'Past Perfect – Questions' :
+           i === 5 ? 'Past Perfect Continuous' :
+           i === 6 ? 'Future Perfect (I will have done)' :
+           i === 7 ? 'Future Continuous vs Future Perfect' :
+           i === 8 ? 'Modals of Deduction (must, might, can\'t)' :
+           i === 9 ? 'Modals of Probability (could, may, might)' :
+           `B1 Module ${i + 101}`,
+    description: i === 0 ? 'Learn the structure and use of the Present Perfect Continuous tense' :
+                 i === 1 ? 'Understand the difference between Present Perfect and Present Perfect Continuous tenses' :
+                 i === 2 ? 'Learn how to form Past Perfect Tense in affirmative sentences' :
+                 i === 3 ? 'Learn how to form the negative of the Past Perfect tense' :
+                 i === 4 ? 'Learn how to form questions in the Past Perfect tense' :
+                 i === 5 ? 'Understand how to use the Past Perfect Continuous Tense' :
+                 i === 6 ? 'Learn to use the Future Perfect tense to describe completed actions in the future' :
+                 i === 7 ? 'Understand the difference between Future Continuous and Future Perfect tenses' :
+                 i === 8 ? 'Understand how to express logical conclusions about present situations' :
+                 i === 9 ? 'Understand how to express possibility and probability using modal verbs' :
+                 'Coming soon',
+    completed: false,
+    locked: false, // TEMPORARILY UNLOCKED FOR DEVELOPMENT
+  })),
   B2: [],
   C1: [],
   C2: []
@@ -3341,7 +3368,329 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     if (moduleId === 1) return true; // Module 1 is always unlocked
     return completedModules.includes(`module-${moduleId - 1}`);
   };
+
+// B1 Level Module Data (101-110)
+
+// Module 101 Data: Present Perfect Continuous (I've been working)
+const MODULE_101_DATA = {
+  title: "Module 101 - Present Perfect Continuous (I've been working)",
+  description: "Learn the structure and use of the Present Perfect Continuous tense",
+  intro: `Bu modülde Present Perfect Continuous Tense öğreneceğiz.
+
+Konu Anlatımı:
+Present Perfect Continuous Tense (Şimdiki Zamanın Hikâyesi), geçmişte başlamış ve hâlen devam eden ya da yeni bitmiş ve etkisi süren eylemleri anlatmak için kullanılır.
+Yapısı: have/has + been + V-ing
+
+Örnekler:
+I've been studying all day. (Tüm gün boyunca ders çalışıyorum / çalışıyordum.)
+She has been cooking since this morning.
+They've been arguing all day.`,
+  tip: "Use have/has + been + verb-ing for ongoing actions",
   
+  listeningExamples: [
+    "I've been learning English for three years.",
+    "She has been cooking since this morning.",
+    "They've been arguing all day.",
+    "Has he been working out recently?",
+    "We haven't been sleeping well lately."
+  ],
+  
+  speakingPractice: [
+    { question: "Why are your hands dirty?", answer: "Because I've been fixing my bike." },
+    { question: "Have you been studying for the exam?", answer: "Yes, I've been studying every evening this week." },
+    { question: "What have you been doing all day?", answer: "I've been helping my brother move into his new apartment." },
+    { question: "Why is she so tired?", answer: "She's been working two jobs lately." },
+    { question: "Has it been raining all morning?", answer: "Yes, and the streets are completely flooded." },
+    { question: "What have they been watching on TV?", answer: "They've been watching a documentary about climate change." },
+    { question: "How long have you been waiting for the bus?", answer: "I've been waiting for over 30 minutes." },
+    { question: "Have you been feeling okay?", answer: "Not really, I've been feeling a bit dizzy since yesterday." },
+    { question: "Why is he out of breath?", answer: "Because he's been running around the park." },
+    { question: "Where have you been hiding?", answer: "I've been sitting quietly in the garden." },
+    { question: "How long has she been learning French?", answer: "She's been learning it for almost five years." },
+    { question: "What has your team been working on?", answer: "We've been developing a new app for students." },
+    { question: "Why haven't you been answering your phone?", answer: "I've been in meetings all afternoon." },
+    { question: "Have they been using the new software?", answer: "Yes, they've been testing it since Monday." },
+    { question: "What have you been thinking about?", answer: "I've been thinking about changing jobs." },
+    { question: "Have you been reading anything interesting lately?", answer: "Yes, I've been reading a novel about World War II." },
+    { question: "Why are your clothes wet?", answer: "Because I've been walking in the rain." },
+    { question: "How long has he been living abroad?", answer: "He's been living in Germany since 2018." },
+    { question: "What have the children been doing?", answer: "They've been painting the walls in their room." },
+    { question: "Have you been listening to the news?", answer: "Yes, I've been following the latest updates about the election." },
+    { question: "Why is your desk so messy?", answer: "Because I've been organizing my papers." },
+    { question: "Has she been waiting long?", answer: "Yes, she's been waiting for nearly an hour." },
+    { question: "What have you been eating recently?", answer: "I've been eating more vegetables and less sugar." },
+    { question: "How long have they been dating?", answer: "They've been dating for about six months." },
+    { question: "Has he been practicing the guitar?", answer: "Yes, and he's getting much better." },
+    { question: "Have you been working out?", answer: "Yes, I've been going to the gym three times a week." },
+    { question: "What has she been complaining about?", answer: "She's been complaining about the noise from upstairs." },
+    { question: "Have you been taking any courses?", answer: "Yes, I've been taking an online design course." },
+    { question: "Why is your voice so hoarse?", answer: "Because I've been talking all day without a break." },
+    { question: "Have you been following the news lately?", answer: "Yes, especially the international stories." },
+    { question: "What has your team been discussing?", answer: "We've been discussing our marketing strategy." },
+    { question: "Why have you been skipping classes?", answer: "I've been feeling unwell recently." },
+    { question: "Has he been feeling better?", answer: "Yes, he's been recovering slowly." },
+    { question: "Have you been using that new app?", answer: "Yes, it's actually very helpful." },
+    { question: "How long has she been working here?", answer: "She's been working here for almost a decade." },
+    { question: "What have you been planning?", answer: "I've been planning a surprise party for my sister." },
+    { question: "Have they been trying to contact you?", answer: "Yes, they've been calling me all morning." },
+    { question: "Why have you been waking up so early?", answer: "I've been trying a new morning routine." },
+    { question: "Have you been getting enough sleep?", answer: "Not really, I've been staying up late lately." },
+    { question: "What have you been writing?", answer: "I've been working on a short story for my class." }
+  ]
+};
+
+// Module 103 Data: Past Perfect – Affirmative  
+const MODULE_103_DATA = {
+  title: "Module 103 - Past Perfect – Affirmative",
+  description: "Learn how to form Past Perfect Tense in affirmative sentences",
+  intro: `Bu modülde Past Perfect Tense'in olumlu halini öğreneceğiz.
+
+Konu Anlatımı:
+Past Perfect Tense (had + V3), geçmişteki bir olaydan daha önce gerçekleşmiş başka bir olayı anlatmak için kullanılır.
+Yapı: Subject + had + past participle (V3)
+
+Örnek:
+She had left before I arrived. (Ben gelmeden önce o çıkmıştı.)`,
+  tip: "Use had + past participle to show an action completed before another past action",
+  
+  listeningExamples: [
+    "She had already gone to bed when I called her.",
+    "We had eaten dinner by the time they arrived.", 
+    "He had never seen the sea before that day.",
+    "I had studied French before I moved to Paris.",
+    "The train had left before we reached the station."
+  ],
+  
+  speakingPractice: [
+    { question: "What had you done before the guests arrived?", answer: "I had cleaned the whole house." },
+    { question: "Had she already finished her meal before you arrived?", answer: "Yes, she had finished it." },
+    { question: "Where had they gone before the meeting started?", answer: "They had gone to the café." },
+    { question: "Why was the floor wet?", answer: "Because someone had spilled water." },
+    { question: "What had he said before he left?", answer: "He had said he was tired." },
+    { question: "Had you completed your report before the deadline?", answer: "Yes, I had completed it a day early." },
+    { question: "Had the show started when you got there?", answer: "Yes, it had already started." },
+    { question: "What had she told you before the interview?", answer: "She had told me to stay calm." },
+    { question: "Why were they so happy?", answer: "Because they had won the game." },
+    { question: "Had the children eaten before going to school?", answer: "Yes, they had eaten breakfast." },
+    { question: "What had you prepared for the trip?", answer: "I had packed clothes and food." },
+    { question: "Where had he worked before moving to this city?", answer: "He had worked in a bank." },
+    { question: "Why was she crying?", answer: "She had lost her wallet." },
+    { question: "Had they booked the hotel in advance?", answer: "Yes, they had booked it online." },
+    { question: "What had you learned before starting the course?", answer: "I had learned some basic grammar." },
+    { question: "Had your team trained enough for the tournament?", answer: "Yes, they had trained for months." },
+    { question: "What had he done before the fire started?", answer: "He had turned off the stove." },
+    { question: "Had she taken the medicine before sleeping?", answer: "Yes, she had taken it as advised." },
+    { question: "Where had you lived before Istanbul?", answer: "I had lived in Ankara." },
+    { question: "What had you done with the keys?", answer: "I had put them on the table." },
+    { question: "Had you studied English before high school?", answer: "Yes, I had studied it in middle school." },
+    { question: "Had the plane already taken off when you arrived?", answer: "Yes, it had taken off 10 minutes earlier." },
+    { question: "Why were they confused?", answer: "Because nobody had explained the rules." },
+    { question: "Had your brother visited Italy before?", answer: "Yes, he had visited Rome and Venice." },
+    { question: "What had your parents said about your decision?", answer: "They had supported me." },
+    { question: "Had the teacher checked the homework?", answer: "Yes, she had checked all of them." },
+    { question: "Had they painted the house before selling it?", answer: "Yes, they had repainted everything." },
+    { question: "What had you planned for the weekend?", answer: "I had planned a hiking trip." },
+    { question: "Had you met her before the party?", answer: "Yes, I had met her at a conference." },
+    { question: "Why had he been angry?", answer: "Because someone had broken his phone." },
+    { question: "Had your friends arrived before the movie started?", answer: "No, they hadn't. They were late." },
+    { question: "What had you done before the power went out?", answer: "I had saved my document." },
+    { question: "Had she already gone to work when you woke up?", answer: "Yes, she had left early." },
+    { question: "Had the workers finished the project before the inspection?", answer: "Yes, they had completed everything." },
+    { question: "Had it snowed before Christmas?", answer: "Yes, it had snowed a lot that week." },
+    { question: "What had you dreamed about?", answer: "I had dreamed about flying." },
+    { question: "Why had they left so early?", answer: "They had wanted to avoid traffic." },
+    { question: "Had you ever tried sushi before that night?", answer: "No, I had never tried it before." },
+    { question: "Had the meeting started on time?", answer: "Yes, it had started at 9 AM sharp." },
+    { question: "Had the students done their assignments?", answer: "Yes, all of them had submitted on time." }
+  ]
+};
+
+// Module 104-110 Data (simplified for quick implementation)
+const MODULE_104_DATA = {
+  title: "Module 104 - Past Perfect – Negative",
+  description: "Learn how to form the negative of the Past Perfect tense",
+  intro: "Past Perfect Tense'in olumsuz hali: Subject + had not (hadn't) + V3",
+  tip: "Use hadn't + past participle for negative past perfect",
+  listeningExamples: [
+    "They hadn't arrived when we started the dinner.",
+    "She hadn't studied for the test, so she was nervous.",
+    "I hadn't seen that movie before last night."
+  ],
+  speakingPractice: [
+    { question: "Why was she surprised?", answer: "Because she hadn't expected them to arrive early." },
+    { question: "Had you eaten before the show?", answer: "No, I hadn't eaten anything all day." },
+    { question: "Why were they late?", answer: "They hadn't checked the time." }
+  ]
+};
+
+const MODULE_105_DATA = {
+  title: "Module 105 - Past Perfect – Questions",
+  description: "Learn how to form questions in the Past Perfect tense",
+  intro: "Past Perfect Tense ile soru: Had + subject + V3?",
+  tip: "Use Had + subject + past participle for questions",
+  listeningExamples: [
+    "Had she ever traveled abroad before 2020?",
+    "Had you studied English before moving to Canada?",
+    "Had they cleaned the house before the guests came?"
+  ],
+  speakingPractice: [
+    { question: "Had she met your parents before the wedding?", answer: "Yes, she had met them a few months before." },
+    { question: "Had you finished your homework before dinner?", answer: "Yes, I had completed everything." },
+    { question: "Had they ever seen snow before that trip?", answer: "No, they had never seen snow before." }
+  ]
+};
+
+const MODULE_106_DATA = {
+  title: "Module 106 - Past Perfect Continuous",
+  description: "Understand how to use the Past Perfect Continuous Tense",
+  intro: "Past Perfect Continuous: Subject + had been + verb-ing",
+  tip: "Use had been + verb-ing for ongoing past actions before another past point",
+  listeningExamples: [
+    "He had been living in Berlin before he moved to London.",
+    "They had been playing football for two hours before it got dark.",
+    "I had been reading that book for weeks before I finished it."
+  ],
+  speakingPractice: [
+    { question: "What had you been doing before I arrived?", answer: "I had been cleaning the house." },
+    { question: "Why were you tired last night?", answer: "I had been studying for five hours." },
+    { question: "Had they been working together for a long time?", answer: "Yes, they had been working on the project for months." }
+  ]
+};
+
+const MODULE_107_DATA = {
+  title: "Module 107 - Future Perfect (I will have done)",
+  description: "Learn to use the Future Perfect tense to describe completed actions in the future",
+  intro: "Future Perfect: Subject + will have + V3",
+  tip: "Use will have + past participle for actions completed before a future point",
+  listeningExamples: [
+    "By 2026, I will have completed my master's degree.",
+    "They will have arrived by the time the movie starts.",
+    "You will have finished your homework before dinner."
+  ],
+  speakingPractice: [
+    { question: "Will you have finished the project by Friday?", answer: "Yes, I will have completed it by then." },
+    { question: "What will you have done by the end of this year?", answer: "I will have traveled to three different countries." },
+    { question: "Will she have learned enough English to pass the exam?", answer: "Yes, she will have studied very hard." }
+  ]
+};
+
+const MODULE_108_DATA = {
+  title: "Module 108 - Future Continuous vs Future Perfect",
+  description: "Understand the difference between Future Continuous and Future Perfect tenses",
+  intro: "Future Continuous: will be + V-ing vs Future Perfect: will have + V3",
+  tip: "Future Continuous for ongoing actions, Future Perfect for completed actions",
+  listeningExamples: [
+    "This time tomorrow, I will be flying to New York.",
+    "By tomorrow, I will have finished the project.",
+    "She will be working at 3 p.m."
+  ],
+  speakingPractice: [
+    { question: "What will you be doing at 8 a.m. tomorrow?", answer: "I will be having breakfast." },
+    { question: "What will you have done by 8 a.m. tomorrow?", answer: "I will have finished my workout." },
+    { question: "Will she be working this weekend?", answer: "Yes, she will be working on Saturday and Sunday." }
+  ]
+};
+
+const MODULE_109_DATA = {
+  title: "Module 109 - Modals of Deduction (must, might, can't)",
+  description: "Understand how to express logical conclusions about present situations",
+  intro: "must (kesin), might (ihtimal), can't (imkânsız)",
+  tip: "Use must for certainty, might for possibility, can't for impossibility",
+  listeningExamples: [
+    "He must be at work. His car is in the parking lot.",
+    "She might be sleeping. It's still early.",
+    "They can't be home. The lights are off."
+  ],
+  speakingPractice: [
+    { question: "Why is the room so quiet?", answer: "They must have gone out." },
+    { question: "Where is your brother?", answer: "He might be in the garden." },
+    { question: "Why is the window open?", answer: "Someone must have opened it." }
+  ]
+};
+
+const MODULE_110_DATA = {
+  title: "Module 110 - Modals of Probability (could, may, might)",
+  description: "Understand how to express possibility and probability using modal verbs",
+  intro: "could, may, might = olabilir (farklı güçte ihtimaller)",
+  tip: "Use could/may/might to express different levels of possibility",
+  listeningExamples: [
+    "He could be at the supermarket.",
+    "It may rain later this evening.",
+    "She might be working from home today."
+  ],
+  speakingPractice: [
+    { question: "Where is Ali?", answer: "He could be in the library." },
+    { question: "Will it rain today?", answer: "It might, but the sky looks clear now." },
+    { question: "Is she going to the party?", answer: "She may go if she finishes her work." }
+  ]
+};
+
+// Module 102 Data: Present Perfect Continuous vs Present Perfect
+const MODULE_102_DATA = {
+  title: "Module 102 - Present Perfect Continuous vs Present Perfect",
+  description: "Understand the difference between Present Perfect and Present Perfect Continuous tenses",
+  intro: `Bu modülde Present Perfect ve Present Perfect Continuous arasındaki farkı öğreneceğiz.
+
+Konu Anlatımı:
+Present Perfect (have/has + V3), tamamlanmış eylemleri ve sonuçlarını vurgulamak için kullanılır.
+Present Perfect Continuous (have/has + been + V-ing), süregelen ya da yeni bitmiş ve etkisi devam eden eylemleri anlatmak için kullanılır.
+
+Örnekler:
+I've read the book. (Kitabı okudum – sonuç önemli)
+I've been reading the book. (Kitabı okuyordum – süreç önemli)`,
+  tip: "Present Perfect focuses on results, Present Perfect Continuous focuses on duration",
+  
+  listeningExamples: [
+    "I've worked here for five years.",
+    "I've been working here since 9 a.m.",
+    "They've painted the house.",
+    "They've been painting the house.",
+    "He has cooked dinner."
+  ],
+  
+  speakingPractice: [
+    { question: "Have you finished your homework?", answer: "Yes, I've done all of it." },
+    { question: "Have you been doing your homework?", answer: "Yes, I've been working on it all afternoon." },
+    { question: "Why are you tired?", answer: "Because I've been cleaning the house all morning." },
+    { question: "Why is the floor so clean?", answer: "Because I've cleaned it." },
+    { question: "Has he read that book?", answer: "Yes, he has read it twice." },
+    { question: "Has he been reading that book?", answer: "Yes, he's been reading it for days." },
+    { question: "What have you done today?", answer: "I've written three reports and replied to emails." },
+    { question: "What have you been doing today?", answer: "I've been writing reports and answering emails." },
+    { question: "Has she finished the presentation?", answer: "Yes, she has just finished it." },
+    { question: "Has she been working on the presentation?", answer: "Yes, she's been working on it since this morning." },
+    { question: "How many pages have you read?", answer: "I've read 50 pages so far." },
+    { question: "How long have you been reading?", answer: "I've been reading for an hour." },
+    { question: "Why are your eyes red?", answer: "I've been staring at the screen for too long." },
+    { question: "Why is your computer off?", answer: "I've shut it down already." },
+    { question: "Have they built the new office yet?", answer: "Yes, they've already finished it." },
+    { question: "Have they been working on the new office?", answer: "Yes, they've been working on it for months." },
+    { question: "Has it stopped raining?", answer: "Yes, the rain has finally stopped." },
+    { question: "Has it been raining?", answer: "Yes, it's been raining since morning." },
+    { question: "Why are you out of breath?", answer: "I've been running in the park." },
+    { question: "Have you run today?", answer: "Yes, I've run five kilometers." },
+    { question: "Have you completed your training?", answer: "Yes, I've completed the course." },
+    { question: "Have you been training hard?", answer: "Yes, I've been training every day this week." },
+    { question: "Has she called the client?", answer: "Yes, she has already called them." },
+    { question: "Has she been calling clients all morning?", answer: "Yes, she's been on the phone non-stop." },
+    { question: "What have you achieved this month?", answer: "I've signed two big contracts." },
+    { question: "What have you been working on this month?", answer: "I've been developing a new proposal." },
+    { question: "How many emails have you sent today?", answer: "I've sent about 20 emails." },
+    { question: "What have you been doing at your desk?", answer: "I've been replying to customer messages." },
+    { question: "Have you written the report?", answer: "Yes, it's on your desk." },
+    { question: "Have you been writing the report?", answer: "Yes, but I still need more time to finish it." },
+    { question: "Have they painted the room?", answer: "Yes, it's finished and looks great." },
+    { question: "Have they been painting the room?", answer: "Yes, they've been painting all day." },
+    { question: "Have you read the new policy?", answer: "Yes, I've just read it." },
+    { question: "Have you been reading the new policy?", answer: "Yes, I've been reading it slowly." },
+    { question: "Has the team finished the project?", answer: "Yes, they've submitted everything." },
+    { question: "Has the team been working hard?", answer: "Yes, they've been staying late every night." },
+    { question: "Have you cleaned your room?", answer: "Yes, it's tidy now." },
+    { question: "Have you been cleaning your room?", answer: "Yes, I've been cleaning for hours." },
+    { question: "Have you visited London?", answer: "Yes, twice." },
+    { question: "Have you been visiting many cities?", answer: "Yes, I've been traveling for two months." }
+  ]
+};
   // Get current module data
   const getCurrentModuleData = () => {
     if (selectedModule === 1) return MODULE_1_DATA;
@@ -3387,6 +3736,17 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     if (selectedModule === 65) return MODULE_65_DATA;
     if (selectedModule === 66) return MODULE_66_DATA;
     if (selectedModule === 67) return MODULE_67_DATA;
+    // B1 Level modules (101-110)
+    if (selectedModule === 101) return MODULE_101_DATA;
+    if (selectedModule === 102) return MODULE_102_DATA;
+    if (selectedModule === 103) return MODULE_103_DATA;
+    if (selectedModule === 104) return MODULE_104_DATA;
+    if (selectedModule === 105) return MODULE_105_DATA;
+    if (selectedModule === 106) return MODULE_106_DATA;
+    if (selectedModule === 107) return MODULE_107_DATA;
+    if (selectedModule === 108) return MODULE_108_DATA;
+    if (selectedModule === 109) return MODULE_109_DATA;
+    if (selectedModule === 110) return MODULE_110_DATA;
     return MODULE_1_DATA; // fallback
   };
 
