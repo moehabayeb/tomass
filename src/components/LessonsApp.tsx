@@ -216,7 +216,7 @@ const MODULES_BY_LEVEL = {
     locked: false, // TEMPORARILY UNLOCKED FOR DEVELOPMENT
   })),
   // B1 Level modules (101-110)
-  B1: Array.from({ length: 10 }, (_, i) => ({
+  B1: Array.from({ length: 20 }, (_, i) => ({
     id: i + 101, // Starting from 101 for B1 level
     title: i === 0 ? 'Present Perfect Continuous (I\'ve been working)' :
            i === 1 ? 'Present Perfect Continuous vs Present Perfect' :
@@ -228,6 +228,16 @@ const MODULES_BY_LEVEL = {
            i === 7 ? 'Future Continuous vs Future Perfect' :
            i === 8 ? 'Modals of Deduction (must, might, can\'t)' :
            i === 9 ? 'Modals of Probability (could, may, might)' :
+           i === 10 ? 'Modals of Obligation (must, have to, should)' :
+           i === 11 ? 'Modals of Prohibition (mustn\'t, can\'t)' :
+           i === 12 ? 'Reported Speech: Requests and Commands' :
+           i === 13 ? 'Reported Speech – Questions' :
+           i === 14 ? 'Passive Voice – Present Perfect' :
+           i === 15 ? 'Passive Voice – Future Simple' :
+           i === 16 ? 'Conditionals – Review (Zero, First, Second, Third)' :
+           i === 17 ? 'Third Conditional' :
+           i === 18 ? 'Mixed Conditionals' :
+           i === 19 ? 'Wish / If only + Past Simple (Present Regrets)' :
            `B1 Module ${i + 101}`,
     description: i === 0 ? 'Learn the structure and use of the Present Perfect Continuous tense' :
                  i === 1 ? 'Understand the difference between Present Perfect and Present Perfect Continuous tenses' :
@@ -239,6 +249,16 @@ const MODULES_BY_LEVEL = {
                  i === 7 ? 'Understand the difference between Future Continuous and Future Perfect tenses' :
                  i === 8 ? 'Understand how to express logical conclusions about present situations' :
                  i === 9 ? 'Understand how to express possibility and probability using modal verbs' :
+                 i === 10 ? 'Understand how to express rules, duties, and advice using modal verbs' :
+                 i === 11 ? 'Learn how to express prohibition and lack of permission using mustn\'t and can\'t' :
+                 i === 12 ? 'Learn how to report commands and requests using correct reporting verbs' :
+                 i === 13 ? 'Learn how to report both Yes/No and WH-Questions' :
+                 i === 14 ? 'Learn how to use the passive voice in the present perfect tense' :
+                 i === 15 ? 'Learn how to use the passive voice in the future simple tense' :
+                 i === 16 ? 'Review and compare all four main conditional sentence types' :
+                 i === 17 ? 'Learn how to use the third conditional to describe unreal situations in the past' :
+                 i === 18 ? 'Learn how to use mixed conditionals for different time references' :
+                 i === 19 ? 'Learn how to express present regrets using wish and if only' :
                  'Coming soon',
     completed: false,
     locked: false, // TEMPORARILY UNLOCKED FOR DEVELOPMENT
