@@ -140,7 +140,17 @@ const MODULES_BY_LEVEL = {
            i === 47 ? 'Describing People (Appearance & Personality)' :
            i === 48 ? 'Describing Places (Towns, Cities, Nature)' :
            i === 49 ? 'Giving Directions and Instructions' :
-           `A2 Module ${i + 51}`,
+           i === 50 ? 'Present Perfect Continuous (I\'ve been working)' :
+           i === 51 ? 'Present Perfect Continuous vs Present Perfect' :
+           i === 52 ? 'Past Perfect – Affirmative' :
+           i === 53 ? 'Past Perfect – Negative' :
+           i === 54 ? 'Past Perfect – Questions' :
+           i === 55 ? 'Past Perfect Continuous' :
+           i === 56 ? 'Future Perfect (I will have done)' :
+           i === 57 ? 'Future Continuous vs Future Perfect' :
+           i === 58 ? 'Modals of Deduction (must, might, can\'t)' :
+           i === 59 ? 'Modals of Probability (could, may, might)' :
+           `B1 Module ${i + 51}`,
     description: i === 0 ? 'Learn to form and use affirmative sentences in the past simple tense' : 
                  i === 1 ? 'Learn to form affirmative past simple sentences using irregular verbs' :
                  i === 2 ? 'Learn to form negative sentences in the past simple tense using "did not / didn\'t"' :
@@ -191,6 +201,16 @@ const MODULES_BY_LEVEL = {
                   i === 47 ? 'Learn vocabulary to describe people\'s physical appearance and personality' :
                   i === 48 ? 'Learn vocabulary to describe different places' :
                   i === 49 ? 'Learn essential vocabulary for giving and understanding directions' :
+                  i === 50 ? 'Learn the structure and use of the Present Perfect Continuous tense' :
+                  i === 51 ? 'Understand the difference between Present Perfect and Present Perfect Continuous tenses' :
+                  i === 52 ? 'Learn how to form Past Perfect Tense in affirmative sentences' :
+                  i === 53 ? 'Learn how to form the negative of the Past Perfect tense' :
+                  i === 54 ? 'Learn how to form questions in the Past Perfect tense' :
+                  i === 55 ? 'Understand how to use the Past Perfect Continuous Tense' :
+                  i === 56 ? 'Learn to use the Future Perfect tense to describe completed actions in the future' :
+                  i === 57 ? 'Understand the difference between Future Continuous and Future Perfect tenses' :
+                  i === 58 ? 'Understand how to express logical conclusions about present situations' :
+                  i === 59 ? 'Understand how to express possibility and probability using modal verbs' :
                  'Coming soon',
     completed: false,
     locked: false, // TEMPORARILY UNLOCKED FOR DEVELOPMENT
