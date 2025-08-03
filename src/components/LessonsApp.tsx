@@ -4383,15 +4383,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     if (selectedModule === 118) return MODULE_118_DATA;
     if (selectedModule === 119) return MODULE_119_DATA;
     if (selectedModule === 120) return MODULE_120_DATA;
-    if (selectedModule === 121) return MODULE_121_DATA;
-    if (selectedModule === 122) return MODULE_122_DATA;
-    if (selectedModule === 123) return MODULE_123_DATA;
-    if (selectedModule === 124) return MODULE_124_DATA;
-    if (selectedModule === 125) return MODULE_125_DATA;
-    if (selectedModule === 126) return MODULE_126_DATA;
-    if (selectedModule === 127) return MODULE_127_DATA;
-    if (selectedModule === 128) return MODULE_128_DATA;
-    if (selectedModule === 129) return MODULE_129_DATA;
+    // Modules 121-129 will be added in next update
     return MODULE_1_DATA; // fallback
   };
 
