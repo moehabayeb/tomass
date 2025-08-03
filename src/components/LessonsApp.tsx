@@ -215,8 +215,8 @@ const MODULES_BY_LEVEL = {
     completed: false,
     locked: false, // TEMPORARILY UNLOCKED FOR DEVELOPMENT
   })),
-  // B1 Level modules (101-110)
-  B1: Array.from({ length: 20 }, (_, i) => ({
+  // B1 Level modules (101-129)
+  B1: Array.from({ length: 29 }, (_, i) => ({
     id: i + 101, // Starting from 101 for B1 level
     title: i === 0 ? 'Present Perfect Continuous (I\'ve been working)' :
            i === 1 ? 'Present Perfect Continuous vs Present Perfect' :
@@ -238,6 +238,15 @@ const MODULES_BY_LEVEL = {
            i === 17 ? 'Third Conditional' :
            i === 18 ? 'Mixed Conditionals' :
            i === 19 ? 'Wish / If only + Past Simple (Present Regrets)' :
+           i === 20 ? 'Wish / If only + Past Perfect (Past Regrets)' :
+           i === 21 ? 'Used to / Be used to / Get used to' :
+           i === 22 ? 'Causative – Have/Get Something Done' :
+           i === 23 ? 'Relative Clauses – Defining & Non-defining' :
+           i === 24 ? 'Gerunds and Infinitives – Review' :
+           i === 25 ? 'Expressions with Get (get ready, get tired, etc.)' :
+           i === 26 ? 'Expressions with Take (take part, take place, etc.)' :
+           i === 27 ? 'Phrasal Verbs – Separable and Inseparable' :
+           i === 28 ? 'Phrasal Verbs – Common Everyday Verbs' :
            `B1 Module ${i + 101}`,
     description: i === 0 ? 'Learn the structure and use of the Present Perfect Continuous tense' :
                  i === 1 ? 'Understand the difference between Present Perfect and Present Perfect Continuous tenses' :
@@ -259,6 +268,15 @@ const MODULES_BY_LEVEL = {
                  i === 17 ? 'Learn how to use the third conditional to describe unreal situations in the past' :
                  i === 18 ? 'Learn how to use mixed conditionals for different time references' :
                  i === 19 ? 'Learn how to express present regrets using wish and if only' :
+                 i === 20 ? 'Learn how to express regrets about the past using wish and if only with past perfect' :
+                 i === 21 ? 'Understand the differences between used to, be used to, and get used to' :
+                 i === 22 ? 'Learn how to use the causative structure to express arrangements with others' :
+                 i === 23 ? 'Learn how to use defining and non-defining relative clauses' :
+                 i === 24 ? 'Review and consolidate understanding of gerunds and infinitives' :
+                 i === 25 ? 'Learn and practice common expressions with the verb get' :
+                 i === 26 ? 'Learn and practice common expressions with the verb take' :
+                 i === 27 ? 'Learn to distinguish between separable and inseparable phrasal verbs' :
+                 i === 28 ? 'Learn and practice common phrasal verbs used in everyday English' :
                  'Coming soon',
     completed: false,
     locked: false, // TEMPORARILY UNLOCKED FOR DEVELOPMENT
@@ -4365,6 +4383,15 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     if (selectedModule === 118) return MODULE_118_DATA;
     if (selectedModule === 119) return MODULE_119_DATA;
     if (selectedModule === 120) return MODULE_120_DATA;
+    if (selectedModule === 121) return MODULE_121_DATA;
+    if (selectedModule === 122) return MODULE_122_DATA;
+    if (selectedModule === 123) return MODULE_123_DATA;
+    if (selectedModule === 124) return MODULE_124_DATA;
+    if (selectedModule === 125) return MODULE_125_DATA;
+    if (selectedModule === 126) return MODULE_126_DATA;
+    if (selectedModule === 127) return MODULE_127_DATA;
+    if (selectedModule === 128) return MODULE_128_DATA;
+    if (selectedModule === 129) return MODULE_129_DATA;
     return MODULE_1_DATA; // fallback
   };
 
