@@ -3399,7 +3399,17 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
   });
 
   // Get completed modules from localStorage
-  const completedModules = JSON.parse(localStorage.getItem('completedModules') || '[]');
+  const getCompletedModules = () => {
+    try {
+      const stored = localStorage.getItem('completedModules');
+      const parsed = JSON.parse(stored || '[]');
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+      console.warn('Error parsing completedModules from localStorage:', error);
+      return [];
+    }
+  };
+  const completedModules = getCompletedModules();
 
   // Check if module is unlocked
   const isModuleUnlocked = (moduleId: number) => {
