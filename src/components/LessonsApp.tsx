@@ -3691,6 +3691,594 @@ I've been reading the book. (Kitabı okuyordum – süreç önemli)`,
     { question: "Have you been visiting many cities?", answer: "Yes, I've been traveling for two months." }
   ]
 };
+
+// Module 111 Data: Modals of Obligation (must, have to, should)
+const MODULE_111_DATA = {
+  title: "Module 111 - Modals of Obligation (must, have to, should)",
+  description: "Understand how to express rules, duties, and advice using modal verbs",
+  intro: `'Must', 'have to' ve 'should' modal fiilleri zorunluluk, gereklilik ve tavsiye ifade etmek için kullanılır.
+  
+• must → güçlü zorunluluk (kural, yasa, kişisel mecburiyet)
+• have to → dışsal zorunluluk (kurallar, programlar)  
+• should → tavsiye (yapılması iyi olur)`,
+  tip: "Use must for strong obligations, have to for external requirements, and should for advice",
+  listeningExamples: [
+    "You must wear a seatbelt.",
+    "I have to wake up early tomorrow.",
+    "You should drink more water."
+  ],
+  speakingPractice: [
+    { question: "Do I have to finish this today?", answer: "Yes, it's the deadline." },
+    { question: "Must I pay in cash?", answer: "No, you can use a credit card too." },
+    { question: "Should I study more for the exam?", answer: "Yes, it would be a good idea." },
+    { question: "What must visitors do when they enter?", answer: "They must sign in at the front desk." },
+    { question: "Do I have to bring my passport?", answer: "Yes, you have to show ID." },
+    { question: "Should I call before visiting?", answer: "Yes, you should. It's polite." },
+    { question: "Does he have to wear a suit?", answer: "Yes, it's required for the event." },
+    { question: "Must we arrive on time?", answer: "Absolutely, the show starts exactly at 8." },
+    { question: "Should we take a break?", answer: "Yes, we've been working for hours." },
+    { question: "Do they have to clean the room?", answer: "Yes, before the inspection." },
+    { question: "Should I apply for the job?", answer: "Yes, you have the right qualifications." },
+    { question: "Must she leave early?", answer: "Yes, she has an appointment." },
+    { question: "Do you have to pay a fee?", answer: "No, entry is free." },
+    { question: "Should we bring anything to the party?", answer: "Yes, you should bring a gift." },
+    { question: "Does he have to do all the work alone?", answer: "No, we will help him." },
+    { question: "Must I be there in person?", answer: "Yes, it's mandatory." },
+    { question: "Should I talk to the manager?", answer: "Yes, if you have a complaint." },
+    { question: "Do we have to register in advance?", answer: "Yes, online registration is required." },
+    { question: "Must they follow the rules?", answer: "Of course, it's for safety." },
+    { question: "Should I wear formal clothes?", answer: "Yes, it's a formal event." },
+    { question: "Do I have to stay until the end?", answer: "No, but it's better if you do." },
+    { question: "Must you work late every day?", answer: "Yes, it's part of the job this week." },
+    { question: "Should we check the weather?", answer: "Yes, it might rain." },
+    { question: "Does she have to attend the meeting?", answer: "Yes, her presence is important." },
+    { question: "Should I tell the truth?", answer: "Yes, you always should." },
+    { question: "Must we book in advance?", answer: "Yes, especially during holidays." },
+    { question: "Do you have to leave now?", answer: "Yes, I have another appointment." },
+    { question: "Should we write this down?", answer: "Yes, it's useful for the exam." },
+    { question: "Does he have to take that course?", answer: "Yes, it's a requirement." },
+    { question: "Must I answer all the questions?", answer: "Yes, unless stated otherwise." },
+    { question: "Should I apologize?", answer: "Yes, if you made a mistake." },
+    { question: "Do we have to wait outside?", answer: "Yes, until they call us in." },
+    { question: "Must they bring their own tools?", answer: "Yes, the company doesn't provide any." },
+    { question: "Should I talk to her now?", answer: "Yes, before she leaves." },
+    { question: "Do I have to get up early?", answer: "Yes, your train leaves at 7 a.m." },
+    { question: "Must I pay now or later?", answer: "Now, please." },
+    { question: "Should we help him with the task?", answer: "Yes, it's a good idea." },
+    { question: "Do they have to wear helmets?", answer: "Yes, it's for safety reasons." },
+    { question: "Must she work on weekends?", answer: "Yes, it's part of her contract." },
+    { question: "Should we remind him again?", answer: "Yes, just to be sure." }
+  ]
+};
+
+// Module 112 Data: Modals of Prohibition (mustn't, can't)
+const MODULE_112_DATA = {
+  title: "Module 112 - Modals of Prohibition (mustn't, can't)",
+  description: "Learn how to express prohibition and lack of permission using mustn't and can't",
+  intro: `'Mustn't' ve 'can't' modal fiilleri, yasaklama ve izin verilmediğini belirtmek için kullanılır.
+
+• mustn't → kesin yasak (yapılmaması gereken eylemler, kurallar)
+• can't → izin verilmez, mantıksal olarak mümkün değil`,
+  tip: "Use mustn't for strict prohibitions and can't for lack of permission",
+  listeningExamples: [
+    "You mustn't park here.",
+    "They can't use their phones in class.",
+    "We mustn't forget to lock the door."
+  ],
+  speakingPractice: [
+    { question: "Can I smoke in this room?", answer: "No, you mustn't. It's a non-smoking area." },
+    { question: "Can students use their phones during the test?", answer: "No, they can't. It's against the rules." },
+    { question: "May I park here?", answer: "No, you mustn't. This is a fire lane." },
+    { question: "Can we bring food into the museum?", answer: "No, you can't eat inside." },
+    { question: "Are we allowed to touch the artwork?", answer: "No, you mustn't touch anything." },
+    { question: "Can she talk during the movie?", answer: "No, she mustn't disturb others." },
+    { question: "Can I stay after closing time?", answer: "No, you can't stay past 6 p.m." },
+    { question: "Are visitors allowed to enter this room?", answer: "No, they mustn't go in without permission." },
+    { question: "Can they park in front of the entrance?", answer: "No, they can't block it." },
+    { question: "Is it okay to take photos here?", answer: "No, you mustn't use a flash camera." },
+    { question: "Can I leave my bag here?", answer: "No, you can't. It must stay with you." },
+    { question: "Can employees access the server room?", answer: "No, only IT staff. Others mustn't enter." },
+    { question: "Can I use this computer?", answer: "No, you mustn't. It's for staff only." },
+    { question: "Can kids go near the edge of the pool?", answer: "No, they mustn't. It's dangerous." },
+    { question: "Can we write on this wall?", answer: "No, you mustn't. It's prohibited." },
+    { question: "Are phones allowed in this area?", answer: "No, you can't make calls here." },
+    { question: "Can I take this document home?", answer: "No, you mustn't remove it from the office." },
+    { question: "Can they cross the street here?", answer: "No, they mustn't. It's not a pedestrian crossing." },
+    { question: "Can I feed the animals at the zoo?", answer: "No, you mustn't feed them." },
+    { question: "Can we enter the park after 9 p.m.?", answer: "No, we can't. It closes at 9." },
+    { question: "Can she skip the safety briefing?", answer: "No, she mustn't. It's mandatory." },
+    { question: "Can I bring my dog inside?", answer: "No, you can't. Pets aren't allowed." },
+    { question: "Can students leave class early?", answer: "No, they mustn't leave without permission." },
+    { question: "Can we record this conversation?", answer: "No, you can't without consent." },
+    { question: "Can I enter without a badge?", answer: "No, you mustn't. Security won't allow it." },
+    { question: "Can I park in the manager's space?", answer: "No, you can't. It's reserved." },
+    { question: "Can I use this software without a license?", answer: "No, you mustn't. That's illegal." },
+    { question: "Can they leave the hospital without discharge?", answer: "No, they can't leave until cleared." },
+    { question: "Can I stay in the classroom alone?", answer: "No, you mustn't. It's not safe." },
+    { question: "Can I skip the training session?", answer: "No, you mustn't. It's part of your onboarding." },
+    { question: "Can we block the fire exit?", answer: "No, you mustn't. It's a safety risk." },
+    { question: "Can children go into this lab?", answer: "No, they can't. It's restricted." },
+    { question: "Can we drink alcohol here?", answer: "No, you mustn't. It's a dry zone." },
+    { question: "Can we use this area for lunch?", answer: "No, you can't eat here." },
+    { question: "Can I borrow this without asking?", answer: "No, you mustn't take it without permission." },
+    { question: "Can he drive without a license?", answer: "No, he can't. That's illegal." },
+    { question: "Can we enter through this door?", answer: "No, we mustn't. It's an emergency exit." },
+    { question: "Can you talk loudly in the library?", answer: "No, you mustn't disturb others." },
+    { question: "Can students use calculators in this exam?", answer: "No, they can't for this part." },
+    { question: "Can I ignore safety instructions?", answer: "No, you mustn't. It's dangerous." }
+  ]
+};
+
+// Module 113 Data: Reported Speech: Requests and Commands
+const MODULE_113_DATA = {
+  title: "Module 113 - Reported Speech: Requests and Commands",
+  description: "Learn how to report commands and requests using correct reporting verbs",
+  intro: `İstek ve emir cümleleri dolaylı anlatılırken genellikle aşağıdaki fiiller kullanılır:
+
+• tell / ask + someone + to + verb → Emirlerde
+• tell / ask + someone + not to + verb → Olumsuz emirlerde  
+• ask / request + someone + to + verb → İsteklerde`,
+  tip: "Use 'tell' for commands and 'ask' for requests. Add 'not to' for negative commands.",
+  listeningExamples: [
+    "She told me to close the window.",
+    "The teacher told us not to talk.",
+    "He asked me to help him."
+  ],
+  speakingPractice: [
+    { question: "Open your books.", answer: "The teacher told the students to open their books." },
+    { question: "Don't touch that.", answer: "The mother told the child not to touch that." },
+    { question: "Help me with the boxes.", answer: "He asked me to help him with the boxes." },
+    { question: "Please close the window.", answer: "She asked me to close the window." },
+    { question: "Don't run in the hallway.", answer: "The teacher told the students not to run in the hallway." },
+    { question: "Could you call me later?", answer: "She asked him to call her later." },
+    { question: "Turn off your phones.", answer: "The exam supervisor told the candidates to turn off their phones." },
+    { question: "Don't forget to feed the cat.", answer: "She reminded me not to forget to feed the cat." },
+    { question: "Wait for me here.", answer: "He told her to wait for him there." },
+    { question: "Please write your name.", answer: "The receptionist asked the visitor to write their name." },
+    { question: "Don't be late.", answer: "The boss told the employees not to be late." },
+    { question: "Help your brother.", answer: "The mother told the child to help his brother." },
+    { question: "Please send the report.", answer: "The manager asked the assistant to send the report." },
+    { question: "Don't speak loudly.", answer: "The librarian told the students not to speak loudly." },
+    { question: "Come here.", answer: "He told me to come there." },
+    { question: "Don't go alone.", answer: "The friend told his friend not to go alone." },
+    { question: "Take this medicine.", answer: "The doctor told the patient to take the medicine." },
+    { question: "Please don't tell anyone.", answer: "She asked me not to tell anyone." },
+    { question: "Clean your room.", answer: "The parent told the child to clean their room." },
+    { question: "Call me tonight.", answer: "He told me to call him that night." },
+    { question: "Don't play in the street.", answer: "The parent told the children not to play in the street." },
+    { question: "Pass me the salt.", answer: "He told her to pass him the salt." },
+    { question: "Please don't forget the keys.", answer: "She asked me not to forget the keys." },
+    { question: "Don't lie to me.", answer: "He told her not to lie to him." },
+    { question: "Please be careful.", answer: "She asked him to be careful." },
+    { question: "Don't open the door.", answer: "The security guard told the visitors not to open the door." },
+    { question: "Get some rest.", answer: "The friend told his friend to get some rest." },
+    { question: "Please take a seat.", answer: "The host asked the guest to take a seat." },
+    { question: "Turn left at the corner.", answer: "The police officer told the driver to turn left at the corner." },
+    { question: "Don't park here.", answer: "The sign told us not to park there." },
+    { question: "Please be on time.", answer: "The manager asked the team to be on time." },
+    { question: "Call the doctor.", answer: "The wife told her husband to call the doctor." },
+    { question: "Don't worry.", answer: "He told me not to worry." },
+    { question: "Take your umbrella.", answer: "The mother told the child to take their umbrella." },
+    { question: "Please don't shout.", answer: "She asked him not to shout." },
+    { question: "Submit your homework.", answer: "The teacher told the student to submit their homework." },
+    { question: "Don't forget your ID.", answer: "The officer told the applicant not to forget their ID." },
+    { question: "Don't disturb them.", answer: "The manager told the staff not to disturb them." },
+    { question: "Please stay here.", answer: "The nurse asked the patient to stay there." },
+    { question: "Don't take pictures.", answer: "The museum staff told the visitor not to take pictures." }
+  ]
+};
+
+// Module 114 Data: Reported Speech – Questions
+const MODULE_114_DATA = {
+  title: "Module 114 - Reported Speech – Questions",
+  description: "Learn how to report both Yes/No and WH-Questions",
+  intro: `Dolaylı anlatımda soru cümleleri çevrilirken:
+
+• Soru yapısı düz cümle yapısına çevrilir (yardımcı fiil kaldırılır).
+• Genellikle ask ve want to know gibi fiiller kullanılır.
+• Yes/No soruları için: if veya whether
+• WH soruları için: wh-question kelimesi ile devam edilir`,
+  tip: "Change question word order to statement order and use 'if' for Yes/No questions",
+  listeningExamples: [
+    "He asked if I lived there.",
+    "She asked what time the train left.",
+    "He asked if I was tired."
+  ],
+  speakingPractice: [
+    { question: "Do you like coffee?", answer: "She asked if I liked coffee." },
+    { question: "Where do you work?", answer: "He asked where I worked." },
+    { question: "Can you drive?", answer: "She asked if I could drive." },
+    { question: "Did you go to the meeting?", answer: "He asked if I had gone to the meeting." },
+    { question: "What are you doing?", answer: "She asked what I was doing." },
+    { question: "Is it raining?", answer: "He asked if it was raining." },
+    { question: "Why are you sad?", answer: "She asked why I was sad." },
+    { question: "Do they live nearby?", answer: "He asked if they lived nearby." },
+    { question: "When did you arrive?", answer: "She asked when I had arrived." },
+    { question: "Have you ever been to London?", answer: "He asked if I had ever been to London." },
+    { question: "Are you coming to the party?", answer: "She asked if I was coming to the party." },
+    { question: "What time does the shop open?", answer: "He asked what time the shop opened." },
+    { question: "Did you finish the project?", answer: "She asked if I had finished the project." },
+    { question: "Where is your phone?", answer: "He asked where my phone was." },
+    { question: "Will you be late?", answer: "She asked if I would be late." },
+    { question: "Do you speak Spanish?", answer: "He asked if I spoke Spanish." },
+    { question: "What did you say?", answer: "She asked what I had said." },
+    { question: "Are they ready?", answer: "He asked if they were ready." },
+    { question: "When will you return?", answer: "She asked when I would return." },
+    { question: "How are you feeling?", answer: "He asked how I was feeling." },
+    { question: "Do you have a pen?", answer: "She asked if I had a pen." },
+    { question: "Why did she leave?", answer: "He asked why she had left." },
+    { question: "Can I help you?", answer: "She asked if she could help me." },
+    { question: "Where have you been?", answer: "He asked where I had been." },
+    { question: "What does he want?", answer: "She asked what he wanted." },
+    { question: "Is this your book?", answer: "He asked if that was my book." },
+    { question: "Did you call her?", answer: "She asked if I had called her." },
+    { question: "Where is the nearest bank?", answer: "He asked where the nearest bank was." },
+    { question: "Are you free tomorrow?", answer: "She asked if I was free the next day." },
+    { question: "Have you seen my keys?", answer: "He asked if I had seen his keys." },
+    { question: "Why are you laughing?", answer: "She asked why I was laughing." },
+    { question: "Can you swim?", answer: "He asked if I could swim." },
+    { question: "When does the class start?", answer: "She asked when the class started." },
+    { question: "Do you want something to drink?", answer: "He asked if I wanted something to drink." },
+    { question: "What are you thinking about?", answer: "She asked what I was thinking about." },
+    { question: "Did you read the book?", answer: "He asked if I had read the book." },
+    { question: "Are they coming today?", answer: "She asked if they were coming that day." },
+    { question: "Have you eaten lunch?", answer: "He asked if I had eaten lunch." },
+    { question: "Where do you live now?", answer: "She asked where I lived then." },
+    { question: "Why are you so quiet?", answer: "He asked why I was so quiet." },
+    { question: "Is she your sister?", answer: "She asked if she was my sister." }
+  ]
+};
+
+// Module 115 Data: Passive Voice – Present Perfect
+const MODULE_115_DATA = {
+  title: "Module 115 - Passive Voice – Present Perfect",
+  description: "Learn how to use the passive voice in the present perfect tense",
+  intro: `Passive Voice (edilgen yapı), eylemi yapan kişi bilinmediğinde ya da önemli olmadığında kullanılır.
+
+Present Perfect Tense'de passive yapı:
+have/has + been + V3 (past participle)`,
+  tip: "Use passive voice when the doer is unknown or unimportant",
+  listeningExamples: [
+    "The house has been sold.",
+    "Many mistakes have been made.",
+    "The package has been delivered."
+  ],
+  speakingPractice: [
+    { question: "They have repaired the road.", answer: "The road has been repaired." },
+    { question: "She has written three poems.", answer: "Three poems have been written." },
+    { question: "We have finished the project.", answer: "The project has been finished." },
+    { question: "He has painted the kitchen.", answer: "The kitchen has been painted." },
+    { question: "They have built a new school.", answer: "A new school has been built." },
+    { question: "Someone has stolen my bike.", answer: "My bike has been stolen." },
+    { question: "People have used this software.", answer: "This software has been used." },
+    { question: "He has opened the door.", answer: "The door has been opened." },
+    { question: "She has cooked dinner.", answer: "Dinner has been cooked." },
+    { question: "We have cleaned the windows.", answer: "The windows have been cleaned." },
+    { question: "They have canceled the concert.", answer: "The concert has been canceled." },
+    { question: "She has organized the files.", answer: "The files have been organized." },
+    { question: "The manager has approved the plan.", answer: "The plan has been approved." },
+    { question: "He has fixed the computer.", answer: "The computer has been fixed." },
+    { question: "They have signed the contract.", answer: "The contract has been signed." },
+    { question: "Someone has closed the gate.", answer: "The gate has been closed." },
+    { question: "We have watered the flowers.", answer: "The flowers have been watered." },
+    { question: "She has designed a new logo.", answer: "A new logo has been designed." },
+    { question: "He has cleaned the carpet.", answer: "The carpet has been cleaned." },
+    { question: "They have delivered the package.", answer: "The package has been delivered." },
+    { question: "The chef has prepared the meal.", answer: "The meal has been prepared." },
+    { question: "The workers have finished the job.", answer: "The job has been finished." },
+    { question: "Someone has taken the documents.", answer: "The documents have been taken." },
+    { question: "She has composed a song.", answer: "A song has been composed." },
+    { question: "They have repaired the machine.", answer: "The machine has been repaired." },
+    { question: "We have posted the letters.", answer: "The letters have been posted." },
+    { question: "He has printed the report.", answer: "The report has been printed." },
+    { question: "She has cleaned her office.", answer: "Her office has been cleaned." },
+    { question: "They have changed the schedule.", answer: "The schedule has been changed." },
+    { question: "He has updated the website.", answer: "The website has been updated." },
+    { question: "They have set the table.", answer: "The table has been set." },
+    { question: "The engineer has tested the system.", answer: "The system has been tested." },
+    { question: "We have collected the data.", answer: "The data has been collected." },
+    { question: "She has translated the article.", answer: "The article has been translated." },
+    { question: "The assistant has arranged the meeting.", answer: "The meeting has been arranged." },
+    { question: "They have washed the cars.", answer: "The cars have been washed." },
+    { question: "He has closed all the windows.", answer: "All the windows have been closed." },
+    { question: "We have emailed the invitations.", answer: "The invitations have been emailed." },
+    { question: "She has sent the photos.", answer: "The photos have been sent." },
+    { question: "They have repaired the fence.", answer: "The fence has been repaired." }
+  ]
+};
+
+// Module 116 Data: Passive Voice – Future Simple
+const MODULE_116_DATA = {
+  title: "Module 116 - Passive Voice – Future Simple",
+  description: "Learn how to use the passive voice in the future simple tense",
+  intro: `Gelecekte edilgen (passive) yapı, bir işin gelecekte yapılacağını belirtmek için kullanılır.
+
+Yapı: will + be + V3 (past participle)`,
+  tip: "Use future passive to describe actions that will be done by someone in the future",
+  listeningExamples: [
+    "The room will be cleaned.",
+    "A new bridge will be built.",
+    "The report will be written by Friday."
+  ],
+  speakingPractice: [
+    { question: "They will paint the house.", answer: "The house will be painted." },
+    { question: "She will bake a cake.", answer: "A cake will be baked." },
+    { question: "We will hold the meeting at 10 a.m.", answer: "The meeting will be held at 10 a.m." },
+    { question: "They will build a new mall.", answer: "A new mall will be built." },
+    { question: "He will write a new article.", answer: "A new article will be written." },
+    { question: "The workers will repair the road.", answer: "The road will be repaired." },
+    { question: "She will organize the event.", answer: "The event will be organized." },
+    { question: "They will send the package.", answer: "The package will be sent." },
+    { question: "He will open the store.", answer: "The store will be opened." },
+    { question: "We will announce the winner.", answer: "The winner will be announced." },
+    { question: "They will clean the classroom.", answer: "The classroom will be cleaned." },
+    { question: "She will submit the report.", answer: "The report will be submitted." },
+    { question: "He will prepare the documents.", answer: "The documents will be prepared." },
+    { question: "We will launch the campaign.", answer: "The campaign will be launched." },
+    { question: "They will fix the printer.", answer: "The printer will be fixed." },
+    { question: "He will give a presentation.", answer: "A presentation will be given." },
+    { question: "We will arrange the chairs.", answer: "The chairs will be arranged." },
+    { question: "She will deliver the speech.", answer: "The speech will be delivered." },
+    { question: "They will finish the project.", answer: "The project will be finished." },
+    { question: "We will send invitations.", answer: "Invitations will be sent." },
+    { question: "He will draw the design.", answer: "The design will be drawn." },
+    { question: "She will explain the process.", answer: "The process will be explained." },
+    { question: "We will hold a press conference.", answer: "A press conference will be held." },
+    { question: "They will close the road.", answer: "The road will be closed." },
+    { question: "She will make a reservation.", answer: "A reservation will be made." },
+    { question: "He will update the website.", answer: "The website will be updated." },
+    { question: "We will replace the old signs.", answer: "The old signs will be replaced." },
+    { question: "They will choose the new manager.", answer: "The new manager will be chosen." },
+    { question: "He will check the results.", answer: "The results will be checked." },
+    { question: "She will decorate the room.", answer: "The room will be decorated." },
+    { question: "They will cancel the flight.", answer: "The flight will be canceled." },
+    { question: "He will repair the car.", answer: "The car will be repaired." },
+    { question: "We will paint the walls.", answer: "The walls will be painted." },
+    { question: "They will conduct a survey.", answer: "A survey will be conducted." },
+    { question: "He will answer all questions.", answer: "All questions will be answered." },
+    { question: "She will serve dinner at 7.", answer: "Dinner will be served at 7." },
+    { question: "We will hold a meeting.", answer: "A meeting will be held." },
+    { question: "They will open a new office.", answer: "A new office will be opened." },
+    { question: "He will lead the discussion.", answer: "The discussion will be led." },
+    { question: "She will plan the trip.", answer: "The trip will be planned." }
+  ]
+};
+
+// Module 117 Data: Conditionals – Review (Zero, First, Second, Third)
+const MODULE_117_DATA = {
+  title: "Module 117 - Conditionals – Review (Zero, First, Second, Third)",
+  description: "Review and compare all four main conditional sentence types",
+  intro: `Koşul cümleleri (conditionals), bir eylemin sonucunu belirtmek için kullanılır. Bu modülde dört temel conditional tipi gözden geçirilir:
+
+🔹 0. Conditional – Genel gerçekler: If + present simple, present simple
+🔹 1. Conditional – Gerçek gelecek: If + present simple, will + V1  
+🔹 2. Conditional – Hayali durumlar (şimdi/gelecek): If + past simple, would + V1
+🔹 3. Conditional – Geçmişe dair hayali durumlar: If + past perfect, would have + V3`,
+  tip: "Each conditional type expresses different levels of reality and time references",
+  listeningExamples: [
+    "If water reaches 100°C, it boils.", // Zero
+    "If he calls me, I will answer.", // First
+    "If I were you, I would apologize.", // Second
+    "If we had left on time, we would have arrived earlier." // Third
+  ],
+  speakingPractice: [
+    { question: "If you heat ice, what happens?", answer: "It melts." },
+    { question: "What will you do if it rains tomorrow?", answer: "I will stay home." },
+    { question: "If you had studied, what would have happened?", answer: "I would have passed." },
+    { question: "If I were rich, what would I do?", answer: "You would buy a big house." },
+    { question: "If people don't drink water, what happens?", answer: "They get dehydrated." },
+    { question: "If I finish early, what will I do?", answer: "You will go out." },
+    { question: "If she knew the answer, what would she do?", answer: "She would tell us." },
+    { question: "If he had listened, what would have happened?", answer: "He would have avoided the mistake." },
+    { question: "What happens if you mix red and yellow?", answer: "You get orange." },
+    { question: "If the sun shines tomorrow, what will we do?", answer: "We will go to the beach." },
+    { question: "If I were taller, what sport would I play?", answer: "You would play basketball." },
+    { question: "If they had invited me, what would I have done?", answer: "You would have gone to the party." },
+    { question: "If you drop this glass, what happens?", answer: "It breaks." },
+    { question: "If you study hard, what will happen?", answer: "You will succeed." },
+    { question: "If I had more time, what would I do?", answer: "You would read more books." },
+    { question: "If she had worn a coat, what would have happened?", answer: "She wouldn't have gotten cold." },
+    { question: "If I don't eat, what happens?", answer: "You feel hungry." },
+    { question: "If you call her, what will she do?", answer: "She will answer." },
+    { question: "If we lived in Spain, what would we do?", answer: "We would speak Spanish." },
+    { question: "If they had studied, what would have happened?", answer: "They would have passed the exam." },
+    { question: "If fire gets no oxygen, what happens?", answer: "It goes out." },
+    { question: "If I see him, what will I say?", answer: "You will say hello." },
+    { question: "If I won the lottery, what would I do?", answer: "You would buy a car." },
+    { question: "If you had set an alarm, what would have happened?", answer: "You wouldn't have been late." },
+    { question: "If sugar dissolves in tea, what happens?", answer: "It becomes sweet." },
+    { question: "If she comes, what will you do?", answer: "I will talk to her." },
+    { question: "If he spoke slower, what would happen?", answer: "We would understand him." },
+    { question: "If we had known, what would we have done?", answer: "We would have changed our plan." },
+    { question: "If you boil water, what happens?", answer: "It turns into steam." },
+    { question: "If I go shopping, what will I buy?", answer: "You will buy some bread." },
+    { question: "If I were a bird, what would I do?", answer: "You would fly away." },
+    { question: "If she had asked for help, what would have happened?", answer: "She would have received it." },
+    { question: "If metal is heated, what happens?", answer: "It expands." },
+    { question: "If you don't sleep enough, what will happen?", answer: "You will feel tired." },
+    { question: "If I lived in New York, what would I do?", answer: "You would visit Central Park." },
+    { question: "If they had checked the weather, what would they have done?", answer: "They would have brought umbrellas." },
+    { question: "If plants don't get light, what happens?", answer: "They die." },
+    { question: "If I pass the exam, what will I do?", answer: "You will celebrate." },
+    { question: "If he were a teacher, what would he do?", answer: "He would explain things well." },
+    { question: "If she had taken notes, what would she have done?", answer: "She would have remembered the lesson." }
+  ]
+};
+
+// Module 118 Data: Third Conditional
+const MODULE_118_DATA = {
+  title: "Module 118 - Third Conditional",
+  description: "Learn how to use the third conditional to describe unreal situations in the past",
+  intro: `3. tip koşul cümleleri (Third Conditional), geçmişte gerçekleşmemiş olaylar ve onların hayali sonuçları hakkında konuşmak için kullanılır.
+
+✅ If + past perfect, would have + V3`,
+  tip: "Use third conditional to express regrets and hypothetical past situations",
+  listeningExamples: [
+    "If I had gone to bed early, I wouldn't have been tired.",
+    "If they had booked the tickets, they wouldn't have missed the concert.",
+    "If you had reminded me, I wouldn't have forgotten."
+  ],
+  speakingPractice: [
+    { question: "If I had seen the sign, what would I have done?", answer: "You would have stopped." },
+    { question: "If she had listened, what would have happened?", answer: "She wouldn't have made the mistake." },
+    { question: "If we had left earlier, what would we have done?", answer: "We would have caught the bus." },
+    { question: "If he had asked for help, what would you have done?", answer: "I would have helped him." },
+    { question: "If they had practiced more, what would they have done?", answer: "They would have won the match." },
+    { question: "If it had rained, what would have happened?", answer: "The ground would have been wet." },
+    { question: "If you had taken your umbrella, what would have happened?", answer: "You wouldn't have gotten wet." },
+    { question: "If she had studied, what would she have done?", answer: "She would have passed the exam." },
+    { question: "If we had known the truth, what would we have done?", answer: "We would have acted differently." },
+    { question: "If he had apologized, what would she have done?", answer: "She would have forgiven him." },
+    { question: "If you had set an alarm, what would have happened?", answer: "You wouldn't have been late." },
+    { question: "If they had trained harder, what would have happened?", answer: "They would have finished the race." },
+    { question: "If I had charged my phone, what would have happened?", answer: "I would have called you." },
+    { question: "If she had taken the medicine, what would have happened?", answer: "She would have felt better." },
+    { question: "If we had made a reservation, what would have happened?", answer: "We would have had a table." },
+    { question: "If he had driven carefully, what would have happened?", answer: "He wouldn't have had an accident." },
+    { question: "If I had read the instructions, what would I have done?", answer: "You would have assembled it correctly." },
+    { question: "If they had invited us, what would we have done?", answer: "We would have attended the wedding." },
+    { question: "If you had remembered my birthday, what would you have done?", answer: "I would have bought you a gift." },
+    { question: "If she had worn a coat, what would have happened?", answer: "She wouldn't have been cold." },
+    { question: "If we had bought tickets earlier, what would we have done?", answer: "We would have seen the movie." },
+    { question: "If he had called me, what would I have done?", answer: "You would have answered." },
+    { question: "If you had paid attention, what would have happened?", answer: "You wouldn't have made that error." },
+    { question: "If I had saved money, what would I have done?", answer: "You would have gone on vacation." },
+    { question: "If she had joined the meeting, what would she have done?", answer: "She would have shared her ideas." },
+    { question: "If we had followed the map, what would have happened?", answer: "We wouldn't have gotten lost." },
+    { question: "If they had hired more staff, what would have happened?", answer: "The work would have been completed faster." },
+    { question: "If you had locked the door, what would have happened?", answer: "The burglar wouldn't have entered." },
+    { question: "If he had explained better, what would have happened?", answer: "We would have understood him." },
+    { question: "If I had taken the earlier train, what would I have done?", answer: "You would have arrived on time." },
+    { question: "If she had asked directions, what would have happened?", answer: "She wouldn't have gotten lost." },
+    { question: "If they had chosen another hotel, what would have happened?", answer: "They would have been happier." },
+    { question: "If we had planned ahead, what would have happened?", answer: "Everything would have gone smoothly." },
+    { question: "If you had gone to the doctor, what would have happened?", answer: "You would have gotten better sooner." },
+    { question: "If I had known the answer, what would I have done?", answer: "You would have told the teacher." },
+    { question: "If he had prepared more, what would have happened?", answer: "He would have done better in the interview." },
+    { question: "If you had eaten breakfast, what would have happened?", answer: "You wouldn't have been hungry." },
+    { question: "If she had spoken up, what would have happened?", answer: "We would have heard her idea." },
+    { question: "If we had checked the weather, what would we have done?", answer: "We would have brought umbrellas." },
+    { question: "If they had arrived earlier, what would have happened?", answer: "They would have gotten better seats." }
+  ]
+};
+
+// Module 119 Data: Mixed Conditionals
+const MODULE_119_DATA = {
+  title: "Module 119 - Mixed Conditionals",
+  description: "Learn how to use mixed conditionals to talk about hypothetical situations involving different time references",
+  intro: `Mixed Conditionals (karışık koşul yapıları), geçmiş ve şimdiki zamanları bir araya getirerek, hayali senaryoları ifade etmek için kullanılır.
+
+İki yaygın mixed conditional yapısı vardır:
+1. Geçmiş neden → şu anki sonuç: If + past perfect, would + V1
+2. Şimdiki neden → geçmiş sonuç: If + past simple, would have + V3`,
+  tip: "Mix different time references to show cause and effect across time periods",
+  listeningExamples: [
+    "If I had gone to university, I would have a better job now.",
+    "If she spoke French, she would have helped us in Paris.",
+    "If they had arrived earlier, they would be sitting in the front row."
+  ],
+  speakingPractice: [
+    { question: "If she had studied more, what would she be doing now?", answer: "She would be attending university." },
+    { question: "If I were more organized, what would I have done?", answer: "You would have finished on time." },
+    { question: "If we had left earlier, where would we be now?", answer: "We would be at the airport." },
+    { question: "If he were taller, what would he have done?", answer: "He would have joined the basketball team." },
+    { question: "If I had taken the other job, what would I be earning now?", answer: "You would be earning more money." },
+    { question: "If they were more careful, what wouldn't have happened?", answer: "They wouldn't have made that mistake." },
+    { question: "If I had learned coding earlier, what would I be working as now?", answer: "You would be a developer now." },
+    { question: "If she were more confident, what would she have done?", answer: "She would have given the presentation." },
+    { question: "If we had saved more money, what would we be doing now?", answer: "We would be traveling." },
+    { question: "If he were a better listener, what would he have understood?", answer: "He would have understood the instructions." },
+    { question: "If you had studied architecture, what would you be designing now?", answer: "I would be designing buildings." },
+    { question: "If they weren't so tired, what would they have done yesterday?", answer: "They would have gone out." },
+    { question: "If he had exercised regularly, how would he feel now?", answer: "He would feel healthier." },
+    { question: "If I were a faster runner, what would I have done?", answer: "You would have won the race." },
+    { question: "If she had gone to drama school, what would she be now?", answer: "She would be an actress." },
+    { question: "If we weren't busy today, what would we have done?", answer: "We would have visited grandma." },
+    { question: "If you had listened to me, how would things be now?", answer: "Things would be better." },
+    { question: "If he weren't afraid of water, what would he have done?", answer: "He would have learned to swim." },
+    { question: "If they had known about the traffic, where would they be now?", answer: "They would be here already." },
+    { question: "If I had studied computer science, what would I be working as now?", answer: "You would be a software engineer." },
+    { question: "If she weren't sick, what would she have done last night?", answer: "She would have come to the party." },
+    { question: "If I had taken the train, where would I be now?", answer: "You would be home already." },
+    { question: "If he were more ambitious, what would he have done?", answer: "He would have applied for that job." },
+    { question: "If we had planned better, how would the project be now?", answer: "It would be in better shape." },
+    { question: "If I weren't so lazy, what would I have done this weekend?", answer: "You would have cleaned the house." },
+    { question: "If they had practiced more, how would they be playing now?", answer: "They would be playing better." },
+    { question: "If you were friendlier, what would you have done?", answer: "I would have made more friends." },
+    { question: "If I had gotten up earlier, what would I be doing now?", answer: "You would be at the office." },
+    { question: "If she weren't so shy, what would she have done?", answer: "She would have joined the discussion." },
+    { question: "If we had taken a taxi, where would we be now?", answer: "We would be at the restaurant." },
+    { question: "If he had learned English earlier, what would he be doing now?", answer: "He would be working abroad." },
+    { question: "If I were more confident, what would I have done?", answer: "You would have spoken up." },
+    { question: "If they had taken the right road, where would they be now?", answer: "They would be at the hotel." },
+    { question: "If I weren't scared of dogs, what would I have done?", answer: "You would have petted it." },
+    { question: "If she had taken notes, what would she be doing now?", answer: "She would be studying effectively." },
+    { question: "If he were stronger, what would he have carried?", answer: "He would have carried the box." },
+    { question: "If we had brought jackets, how would we feel now?", answer: "We would feel warmer." },
+    { question: "If I had accepted the offer, what would I be doing now?", answer: "You would be working in Germany." },
+    { question: "If they were more polite, what would they have done?", answer: "They would have said thank you." },
+    { question: "If he had told the truth, how would people feel now?", answer: "People would trust him more." }
+  ]
+};
+
+// Module 120 Data: Wish / If only + Past Simple (Present Regrets)
+const MODULE_120_DATA = {
+  title: "Module 120 - Wish / If only + Past Simple (Present Regrets)",
+  description: "Learn how to express present regrets and hypothetical desires about the present",
+  intro: `"Wish" ve "If only" yapıları, şu anki durumlarla ilgili pişmanlıkları veya keşke şöyle olsaydı dediğimiz şeyleri ifade etmek için kullanılır.
+
+✅ Yapı: Wish / If only + past simple
+Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak için kullanılır.`,
+  tip: "Use wish/if only + past simple to express regrets about present situations",
+  listeningExamples: [
+    "I wish I spoke Spanish.",
+    "If only I had more free time.",
+    "She wishes she didn't live so far away."
+  ],
+  speakingPractice: [
+    { question: "You don't have a car. What do you say?", answer: "I wish I had a car." },
+    { question: "You are not tall. What do you say?", answer: "If only I were taller." },
+    { question: "He doesn't live near his school. What does he say?", answer: "He wishes he lived near his school." },
+    { question: "It's raining. What do you say?", answer: "If only it weren't raining." },
+    { question: "You don't know the answer. What do you say?", answer: "I wish I knew the answer." },
+    { question: "She doesn't speak English. What does she say?", answer: "She wishes she spoke English." },
+    { question: "You can't play the guitar. What do you say?", answer: "I wish I could play the guitar." },
+    { question: "He doesn't have a pet. What does he say?", answer: "He wishes he had a pet." },
+    { question: "She is always tired. What does she say?", answer: "If only I weren't always tired." },
+    { question: "You are not good at math. What do you say?", answer: "I wish I were good at math." },
+    { question: "He doesn't like his job. What does he say?", answer: "He wishes he had a different job." },
+    { question: "She can't cook. What does she say?", answer: "She wishes she could cook." },
+    { question: "You don't live in the city center. What do you say?", answer: "I wish I lived in the city center." },
+    { question: "He is not rich. What does he say?", answer: "He wishes he were rich." },
+    { question: "You are not good at sports. What do you say?", answer: "I wish I were better at sports." },
+    { question: "She has no siblings. What does she say?", answer: "She wishes she had siblings." },
+    { question: "You don't understand French. What do you say?", answer: "I wish I understood French." },
+    { question: "He can't drive. What does he say?", answer: "He wishes he could drive." },
+    { question: "You don't have enough time. What do you say?", answer: "If only I had more time." },
+    { question: "She is not confident. What does she say?", answer: "She wishes she were more confident." },
+    { question: "You are always busy. What do you say?", answer: "If only I weren't always busy." },
+    { question: "He can't paint well. What does he say?", answer: "He wishes he could paint better." },
+    { question: "You don't live near the beach. What do you say?", answer: "I wish I lived near the beach." },
+    { question: "She doesn't have many friends. What does she say?", answer: "She wishes she had more friends." },
+    { question: "He is shy. What does he say?", answer: "He wishes he weren't so shy." },
+    { question: "You don't go out much. What do you say?", answer: "I wish I went out more." },
+    { question: "She can't sing. What does she say?", answer: "She wishes she could sing." },
+    { question: "You are not in shape. What do you say?", answer: "I wish I were in better shape." },
+    { question: "He has a lot of homework. What does he say?", answer: "He wishes he had less homework." },
+    { question: "You're always tired. What do you say?", answer: "If only I had more energy." },
+    { question: "She doesn't have a passport. What does she say?", answer: "She wishes she had a passport." },
+    { question: "You live far from work. What do you say?", answer: "I wish I lived closer to work." },
+    { question: "He doesn't have any siblings. What does he say?", answer: "He wishes he had a brother or sister." },
+    { question: "You are always late. What do you say?", answer: "I wish I were more punctual." },
+    { question: "She can't swim. What does she say?", answer: "She wishes she could swim." },
+    { question: "You are not creative. What do you say?", answer: "If only I were more creative." },
+    { question: "He doesn't have any money. What does he say?", answer: "He wishes he had some money." },
+    { question: "You're not good at drawing. What do you say?", answer: "I wish I could draw." },
+    { question: "She doesn't enjoy her job. What does she say?", answer: "She wishes she had a more fun job." },
+    { question: "You have to work this weekend. What do you say?", answer: "I wish I didn't have to work this weekend." }
+  ]
+};
+
   // Get current module data
   const getCurrentModuleData = () => {
     if (selectedModule === 1) return MODULE_1_DATA;
@@ -3736,7 +4324,7 @@ I've been reading the book. (Kitabı okuyordum – süreç önemli)`,
     if (selectedModule === 65) return MODULE_65_DATA;
     if (selectedModule === 66) return MODULE_66_DATA;
     if (selectedModule === 67) return MODULE_67_DATA;
-    // B1 Level modules (101-110)
+    // B1 Level modules (101-120)
     if (selectedModule === 101) return MODULE_101_DATA;
     if (selectedModule === 102) return MODULE_102_DATA;
     if (selectedModule === 103) return MODULE_103_DATA;
@@ -3747,6 +4335,16 @@ I've been reading the book. (Kitabı okuyordum – süreç önemli)`,
     if (selectedModule === 108) return MODULE_108_DATA;
     if (selectedModule === 109) return MODULE_109_DATA;
     if (selectedModule === 110) return MODULE_110_DATA;
+    if (selectedModule === 111) return MODULE_111_DATA;
+    if (selectedModule === 112) return MODULE_112_DATA;
+    if (selectedModule === 113) return MODULE_113_DATA;
+    if (selectedModule === 114) return MODULE_114_DATA;
+    if (selectedModule === 115) return MODULE_115_DATA;
+    if (selectedModule === 116) return MODULE_116_DATA;
+    if (selectedModule === 117) return MODULE_117_DATA;
+    if (selectedModule === 118) return MODULE_118_DATA;
+    if (selectedModule === 119) return MODULE_119_DATA;
+    if (selectedModule === 120) return MODULE_120_DATA;
     return MODULE_1_DATA; // fallback
   };
 
