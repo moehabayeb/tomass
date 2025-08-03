@@ -5227,7 +5227,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
                   key={module.id} 
                   className={`bg-white/10 border-white/20 cursor-pointer transition-all hover:bg-white/15 ${!isUnlocked ? 'opacity-50' : ''}`}
                   onClick={() => {
-                    if (isUnlocked && (module.id >= 1 && module.id <= 19)) { // Modules 1-19 are implemented
+                    if (isUnlocked && ((module.id >= 1 && module.id <= 19) || module.id === 51)) { // Modules 1-19 and 51 are implemented
                       setSelectedModule(module.id);
                       setViewState('lesson');
                       setCurrentPhase('intro');
