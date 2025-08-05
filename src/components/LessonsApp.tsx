@@ -4927,25 +4927,18 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
         await earnXPForGrammarLesson(true);
         await incrementTotalExercises();
         
-        // Auto-advance after 1.5 seconds for A1 level
+        // Auto-advance after 1.5 seconds - Direct progression without safety checks
         setTimeout(() => {
-          // 🔒 Final verification before advancing using LOCKED index
-          console.log('🔍 DEBUG: About to check progression');
-          console.log('🔍 capturedSpeakingIndex:', capturedSpeakingIndex);
-          console.log('🔍 totalQuestions:', totalQuestions);
-          console.log('🔍 Module:', selectedModule);
-          console.log('🔍 Condition check:', capturedSpeakingIndex < totalQuestions - 1);
+          console.log('🔍 Auto-advancing from question:', capturedSpeakingIndex + 1);
           
-          if (capturedSpeakingIndex < totalQuestions - 1) {
-            console.log('🔍 Should advance - entering setSpeakingIndex');
-            // Use the captured index directly instead of relying on state comparison
+          if (capturedSpeakingIndex + 1 >= totalQuestions) {
+            console.log('🔍 Completing lesson - reached end of questions');
+            completeLesson();
+          } else {
             const nextIndex = capturedSpeakingIndex + 1;
-            console.log('🔒 ✅ Advancing from:', capturedSpeakingIndex, 'to:', nextIndex);
+            console.log('🔍 Moving to next question:', nextIndex + 1);
             setSpeakingIndex(nextIndex);
             setFeedback('');
-          } else {
-            console.log('🔍 Should complete lesson');
-            completeLesson();
           }
           setIsProcessing(false);
         }, 1500);
