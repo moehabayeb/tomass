@@ -4645,6 +4645,13 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     }
   }, [currentPhase, viewState]);
 
+  // Debug speakingIndex changes
+  useEffect(() => {
+    console.log('✅ speakingIndex changed to:', speakingIndex);
+    console.log('✅ Current module data total questions:', currentModuleData.speakingPractice.length);
+    console.log('✅ Current question:', currentModuleData.speakingPractice[speakingIndex]);
+  }, [speakingIndex, currentModuleData]);
+
   const processAudioRecording = useCallback(async (audioBlob: Blob) => {
     // 🔒 CRITICAL: Prevent concurrent processing and lock current state
     if (isProcessing) {
@@ -4929,17 +4936,23 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
         
         // Auto-advance after 1.5 seconds - Direct progression without safety checks
         setTimeout(() => {
-          console.log('🔍 Auto-advancing from question:', capturedSpeakingIndex + 1);
+          console.log('✅ TIMEOUT FIRED - About to advance');
+          console.log('✅ Current captured index:', capturedSpeakingIndex);
+          console.log('✅ Total questions available:', totalQuestions);
+          console.log('✅ Current speakingIndex state:', speakingIndex);
           
           if (capturedSpeakingIndex + 1 >= totalQuestions) {
-            console.log('🔍 Completing lesson - reached end of questions');
+            console.log('✅ Completing lesson - reached end of questions');
             completeLesson();
           } else {
             const nextIndex = capturedSpeakingIndex + 1;
-            console.log('🔍 Moving to next question:', nextIndex + 1);
+            console.log('✅ Advancing to question', nextIndex + 1, 'of', totalQuestions);
+            console.log('✅ Calling setSpeakingIndex with:', nextIndex);
             setSpeakingIndex(nextIndex);
             setFeedback('');
+            console.log('✅ State update completed');
           }
+          console.log('✅ Setting isProcessing to false');
           setIsProcessing(false);
         }, 1500);
       } else {
