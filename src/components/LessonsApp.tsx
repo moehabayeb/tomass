@@ -4938,17 +4938,10 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
           
           if (capturedSpeakingIndex < totalQuestions - 1) {
             console.log('🔍 Should advance - entering setSpeakingIndex');
-            setSpeakingIndex(prev => {
-              // Extra safety check
-              console.log('🔍 Inside setSpeakingIndex - prev:', prev, 'captured:', capturedSpeakingIndex);
-              if (prev === capturedSpeakingIndex) {
-                console.log('🔒 ✅ Safe advance from:', capturedSpeakingIndex, 'to:', prev + 1);
-                return prev + 1;
-              } else {
-                console.log('🔒 ⚠️ State changed during processing. Current:', prev, 'Expected:', capturedSpeakingIndex);
-                return prev; // Don't advance if state changed
-              }
-            });
+            // Use the captured index directly instead of relying on state comparison
+            const nextIndex = capturedSpeakingIndex + 1;
+            console.log('🔒 ✅ Advancing from:', capturedSpeakingIndex, 'to:', nextIndex);
+            setSpeakingIndex(nextIndex);
             setFeedback('');
           } else {
             console.log('🔍 Should complete lesson');
