@@ -4414,11 +4414,6 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     }
   }, [selectedModule, selectedLevel, currentPhase]);
 
-  // Debug speaking index changes
-  useEffect(() => {
-    console.log('📊 SPEAKING INDEX CHANGED:', speakingIndex);
-  }, [speakingIndex]);
-
   // Teacher reading functionality
   const startTeacherReading = async () => {
     setIsTeacherReading(true);
@@ -4928,37 +4923,31 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
         setFeedback('Great job! Your sentence is correct.');
         setFeedbackType('success');
         
-        console.log('🏆 CORRECT ANSWER - Starting progression logic');
-        console.log('🏆 Current capturedSpeakingIndex:', capturedSpeakingIndex);
-        console.log('🏆 Total questions in module:', totalQuestions);
-        console.log('🏆 Module:', selectedModule);
-        
         // Award XP for correct answer
         await earnXPForGrammarLesson(true);
         await incrementTotalExercises();
         
         // Auto-advance after 1.5 seconds for A1 level
         setTimeout(() => {
-          console.log('🚀 TIMEOUT FIRED - Starting progression check');
-          console.log('🚀 capturedSpeakingIndex:', capturedSpeakingIndex);
-          console.log('🚀 totalQuestions:', totalQuestions);
-          console.log('🚀 Module:', selectedModule);
-          console.log('🚀 Condition (should be true):', capturedSpeakingIndex < totalQuestions - 1);
-          console.log('🚀 Next index would be:', capturedSpeakingIndex + 1);
+          // 🔒 Final verification before advancing using LOCKED index
+          console.log('🔍 DEBUG: About to check progression');
+          console.log('🔍 capturedSpeakingIndex:', capturedSpeakingIndex);
+          console.log('🔍 totalQuestions:', totalQuestions);
+          console.log('🔍 Module:', selectedModule);
+          console.log('🔍 Condition check:', capturedSpeakingIndex < totalQuestions - 1);
           
           if (capturedSpeakingIndex < totalQuestions - 1) {
-            console.log('✅ ADVANCING TO NEXT QUESTION');
+            console.log('🔍 Should advance - entering setSpeakingIndex');
+            // Use the captured index directly instead of relying on state comparison
             const nextIndex = capturedSpeakingIndex + 1;
-            console.log('✅ Setting speakingIndex from', capturedSpeakingIndex, 'to', nextIndex);
+            console.log('🔒 ✅ Advancing from:', capturedSpeakingIndex, 'to:', nextIndex);
             setSpeakingIndex(nextIndex);
             setFeedback('');
-            console.log('✅ Advanced successfully!');
           } else {
-            console.log('🏁 COMPLETING LESSON - reached final question');
+            console.log('🔍 Should complete lesson');
             completeLesson();
           }
           setIsProcessing(false);
-          console.log('🚀 TIMEOUT COMPLETE');
         }, 1500);
       } else {
         // 🔒 Show what user said vs what was expected
