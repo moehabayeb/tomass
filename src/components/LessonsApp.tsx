@@ -5632,7 +5632,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
 
         {/* Speaking Phase */}
         {currentPhase === 'speaking' && (
-          <Card className="bg-white/10 border-white/20">
+          <Card key={speakingIndex} className="bg-white/10 border-white/20">
             <CardHeader>
               <CardTitle className="text-white flex items-center justify-between">
                 <div className="flex items-center">
