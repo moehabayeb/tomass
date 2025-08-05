@@ -4930,9 +4930,17 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
         // Auto-advance after 1.5 seconds for A1 level
         setTimeout(() => {
           // 🔒 Final verification before advancing using LOCKED index
+          console.log('🔍 DEBUG: About to check progression');
+          console.log('🔍 capturedSpeakingIndex:', capturedSpeakingIndex);
+          console.log('🔍 totalQuestions:', totalQuestions);
+          console.log('🔍 Module:', selectedModule);
+          console.log('🔍 Condition check:', capturedSpeakingIndex < totalQuestions - 1);
+          
           if (capturedSpeakingIndex < totalQuestions - 1) {
+            console.log('🔍 Should advance - entering setSpeakingIndex');
             setSpeakingIndex(prev => {
               // Extra safety check
+              console.log('🔍 Inside setSpeakingIndex - prev:', prev, 'captured:', capturedSpeakingIndex);
               if (prev === capturedSpeakingIndex) {
                 console.log('🔒 ✅ Safe advance from:', capturedSpeakingIndex, 'to:', prev + 1);
                 return prev + 1;
@@ -4943,6 +4951,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
             });
             setFeedback('');
           } else {
+            console.log('🔍 Should complete lesson');
             completeLesson();
           }
           setIsProcessing(false);
