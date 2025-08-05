@@ -4330,6 +4330,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
 
   // Get current module data
   const getCurrentModuleData = () => {
+    // A1 Modules
     if (selectedModule === 1) return MODULE_1_DATA;
     if (selectedModule === 2) return MODULE_2_DATA;
     if (selectedModule === 3) return MODULE_3_DATA;
@@ -4354,7 +4355,8 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     if (selectedModule === 22) return MODULE_22_DATA;
     if (selectedModule === 23) return MODULE_23_DATA;
     if (selectedModule === 24) return MODULE_24_DATA;
-    // A2 Level modules (51-58)
+    
+    // A2 Modules
     if (selectedModule === 51) return MODULE_51_DATA;
     if (selectedModule === 52) return MODULE_52_DATA;
     if (selectedModule === 53) return MODULE_53_DATA;
@@ -4363,7 +4365,6 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     if (selectedModule === 56) return MODULE_56_DATA;
     if (selectedModule === 57) return MODULE_57_DATA;
     if (selectedModule === 58) return MODULE_58_DATA;
-    // A2 Level modules (59-67)
     if (selectedModule === 59) return MODULE_59_DATA;
     if (selectedModule === 60) return MODULE_60_DATA;
     if (selectedModule === 61) return MODULE_61_DATA;
@@ -4373,7 +4374,8 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     if (selectedModule === 65) return MODULE_65_DATA;
     if (selectedModule === 66) return MODULE_66_DATA;
     if (selectedModule === 67) return MODULE_67_DATA;
-    // B1 Level modules (101-120)
+    
+    // B1 Modules
     if (selectedModule === 101) return MODULE_101_DATA;
     if (selectedModule === 102) return MODULE_102_DATA;
     if (selectedModule === 103) return MODULE_103_DATA;
@@ -4394,8 +4396,9 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     if (selectedModule === 118) return MODULE_118_DATA;
     if (selectedModule === 119) return MODULE_119_DATA;
     if (selectedModule === 120) return MODULE_120_DATA;
-    // Modules 121-129 will be added in next update
-    return MODULE_1_DATA; // fallback
+    
+    // Fallback to Module 1 for unknown modules
+    return MODULE_1_DATA;
   };
 
   // Calculate progress
