@@ -4650,7 +4650,14 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     console.log('✅ speakingIndex changed to:', speakingIndex);
     console.log('✅ Current module data total questions:', currentModuleData.speakingPractice.length);
     console.log('✅ Current question:', currentModuleData.speakingPractice[speakingIndex]);
-  }, [speakingIndex, currentModuleData]);
+    console.log('✅ Moved to question:', speakingIndex + 1);
+    
+    // Safety: Ensure isProcessing is reset when moving to new question
+    if (isProcessing) {
+      console.log('⚠️ isProcessing was still true when question changed - resetting it');
+      setIsProcessing(false);
+    }
+  }, [speakingIndex, currentModuleData, isProcessing]);
 
   const processAudioRecording = useCallback(async (audioBlob: Blob) => {
     // 🔒 CRITICAL: Prevent concurrent processing and lock current state
@@ -4673,6 +4680,8 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     
     setIsProcessing(true);
     setAttempts(prev => prev + 1);
+    
+    console.log('🔒 PROCESSING STARTED - isProcessing set to TRUE');
     
     // Clear any previous feedback to prevent confusion
     setFeedback('');
@@ -4934,8 +4943,11 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
         await earnXPForGrammarLesson(true);
         await incrementTotalExercises();
         
+        console.log('✅ CORRECT ANSWER - Setting up auto-advance timeout');
+        console.log('✅ isProcessing currently:', isProcessing);
+        
         // Auto-advance after 1.5 seconds - Direct progression without safety checks
-        setTimeout(() => {
+        const timeoutId = setTimeout(() => {
           console.log('✅ TIMEOUT FIRED - About to advance');
           console.log('✅ Current captured index:', capturedSpeakingIndex);
           console.log('✅ Total questions available:', totalQuestions);
@@ -4943,6 +4955,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
           
           if (capturedSpeakingIndex + 1 >= totalQuestions) {
             console.log('✅ Completing lesson - reached end of questions');
+            setIsProcessing(false);
             completeLesson();
           } else {
             const nextIndex = capturedSpeakingIndex + 1;
@@ -4951,10 +4964,12 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
             setSpeakingIndex(nextIndex);
             setFeedback('');
             console.log('✅ State update completed');
+            console.log('✅ Setting isProcessing to false');
+            setIsProcessing(false);
           }
-          console.log('✅ Setting isProcessing to false');
-          setIsProcessing(false);
         }, 1500);
+        
+        console.log('✅ Timeout scheduled with ID:', timeoutId);
       } else {
         // 🔒 Show what user said vs what was expected
         console.log('🔒 Showing correction for LOCKED sentence:', capturedExpectedSentence);
