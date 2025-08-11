@@ -3390,7 +3390,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
   const moduleGuardRef = useRef<number | null>(null);
   const timeoutRef = useRef<number | null>(null);
   
-  const { speak, isSpeaking, soundEnabled, toggleSound } = useTextToSpeech();
+  const { isSpeaking, soundEnabled, toggleSound } = useTextToSpeech();
   const { earnXPForGrammarLesson, addXP } = useGamification();
   const { incrementGrammarLessons, incrementTotalExercises } = useBadgeSystem();
   
@@ -4406,7 +4406,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
 
   // Calculate progress
   const currentModuleData = getCurrentModuleData();
-  const totalQuestions = currentModuleData.speakingPractice.length;
+  const totalQuestions = currentModuleData?.speakingPractice?.length ?? 0;
   const overallProgress = ((speakingIndex + (correctAnswers > 0 ? 1 : 0)) / totalQuestions) * 100;
   const lessonKey = `${selectedLevel}-${selectedModule}`;
 
@@ -4457,8 +4457,11 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
 
   // QA logging
   useEffect(() => {
-    console.log('[Progress] index:', speakingIndex, 'of', totalQuestions, 'module:', selectedModule);
-  }, [speakingIndex, totalQuestions, selectedModule]);
+    const total = currentModuleData?.speakingPractice?.length ?? 0;
+    const item = currentModuleData?.speakingPractice?.[speakingIndex];
+    console.log('[Progress] index:', speakingIndex, 'of', total, 'module:', selectedModule);
+    if (!item) console.warn('[Progress] No item at index', speakingIndex);
+  }, [speakingIndex, selectedModule, currentModuleData]);
 
   // Robust advancement helpers
   function advanceSpeaking() {
@@ -4498,9 +4501,9 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     for (const line of introLines) {
       if (line.trim() && !line.includes('Tabela') && !line.includes('tablo')) {
         await new Promise<void>((resolve) => {
-          // Explicitly set language for Turkish content
-          const isTurkish = line.includes('Bu modülde') || line.includes('modülde') || line.match(/[çğıöşüÇĞIİÖŞÜ]/);
-          speak(line, resolve, isTurkish ? 'tr-TR' : 'en-US');
+          narration.speak(line);
+          const ms = Math.max(1200, line.split(' ').length * 350);
+          setTimeout(resolve, ms);
         });
       }
     }
@@ -4508,7 +4511,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     // Check if there's a table and announce it
     if ('table' in currentModuleData && currentModuleData.table) {
       await new Promise<void>((resolve) => {
-        speak("Şimdi lütfen aşağıdaki tabloya göz atın.", resolve, 'tr-TR');
+        narration.speak("Şimdi lütfen aşağıdaki tabloya göz atın.", resolve, 'tr-TR');
       });
       
       // Wait for user to explore table (3 seconds)
@@ -4720,9 +4723,11 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
 
   // Debug speakingIndex changes
   useEffect(() => {
+    const total = currentModuleData?.speakingPractice?.length ?? 0;
+    const item = currentModuleData?.speakingPractice?.[speakingIndex];
     console.log('✅ speakingIndex changed to:', speakingIndex);
-    console.log('✅ Current module data total questions:', currentModuleData.speakingPractice.length);
-    console.log('✅ Current question:', currentModuleData.speakingPractice[speakingIndex]);
+    console.log('✅ Current module data total questions:', total);
+    console.log('✅ Current question:', item);
     console.log('✅ Moved to question:', speakingIndex + 1);
     
     // Safety: Ensure isProcessing is reset when moving to new question
@@ -4847,7 +4852,12 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
 
       const { corrected } = feedbackResponse.data;
       // Compute expected sentence based on the latest state to avoid stale captures
-      const currentItem = currentModuleData.speakingPractice[speakingIndex];
+      const currentItem = currentModuleData?.speakingPractice?.[speakingIndex];
+      if (!currentItem) {
+        console.warn('No current practice item to validate at index', speakingIndex);
+        setIsProcessing(false);
+        return;
+      }
       const expectedSentenceRaw = typeof currentItem === 'string' ? currentItem : currentItem.answer;
       const expectedSentence = (expectedSentenceRaw || '').toLowerCase();
       const userSentence = finalTranscript.toLowerCase();
@@ -5168,7 +5178,8 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
   };
 
   const speakCurrentSentence = () => {
-    const currentPracticeItem = currentModuleData.speakingPractice[speakingIndex];
+    const currentPracticeItem = currentModuleData?.speakingPractice?.[speakingIndex];
+    if (!currentPracticeItem) return;
     // Only speak the question part, not the answer - like a real teacher would do
     const currentSentence = typeof currentPracticeItem === 'string' ? currentPracticeItem : currentPracticeItem.question;
     narration.cancel();
@@ -5688,7 +5699,12 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
               <div className="text-center">
                 <div className="bg-white/5 rounded-xl p-4 mb-4">
                   {(() => {
-                    const currentPracticeItem = currentModuleData.speakingPractice[speakingIndex];
+                    const currentPracticeItem = currentModuleData?.speakingPractice?.[speakingIndex];
+                    if (!currentPracticeItem) {
+                      return (
+                        <p className="text-white/70 text-sm">Preparing next question...</p>
+                      );
+                    }
                     if (typeof currentPracticeItem === 'string') {
                       return (
                         <p className="text-white text-lg font-medium mb-2">
