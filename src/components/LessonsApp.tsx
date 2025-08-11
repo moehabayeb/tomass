@@ -4490,10 +4490,10 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
         completeLesson();
 
         // Auto-jump to next module (adjust helper if needed)
-        const next =
-          typeof getNextModuleIdForLevel === 'function'
-            ? getNextModuleIdForLevel(selectedLevel, selectedModule)
-            : (selectedModule != null ? selectedModule + 1 : null);
+        const nextHelper = (globalThis as any).getNextModuleIdForLevel as undefined | ((level: string, module: number) => number);
+        const next = typeof nextHelper === 'function'
+          ? nextHelper(selectedLevel, selectedModule)
+          : (selectedModule != null ? selectedModule + 1 : null);
 
         if (typeof next === 'number') setSelectedModule(next);
       }
