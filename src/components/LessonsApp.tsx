@@ -4500,7 +4500,6 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
       timeoutRef.current = null;
     }, 900);
   }
-  }
 
 
   // Teacher reading functionality
@@ -4877,7 +4876,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
 
       const expectedSentenceRaw = typeof practiceItem === 'string'
         ? practiceItem
-        : (practiceItem.answer ?? practiceItem.say ?? practiceItem.question);
+        : (practiceItem.answer ?? practiceItem.question);
 
       function normalizeForCompare(s: string) {
         return s
