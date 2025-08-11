@@ -4426,7 +4426,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
       startTeacherReading();
     }
     return () => narration.cancel();
-  }, [viewState, selectedModule, currentPhase, currentModuleData?.intro, hasBeenRead[lessonKey], isTeacherReading]);
+  }, [viewState, selectedModule, selectedLevel, currentPhase, currentModuleData?.intro, hasBeenRead[lessonKey], isTeacherReading]);
 
   // Guard module changes and clear pending timers
   useEffect(() => {
@@ -4485,23 +4485,6 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     }, 1200);
   }
 
-  // Cancel narration and start reading only when visible lesson intro is active
-  useEffect(() => {
-    narration.cancel();
-    const canNarrate =
-      viewState === 'lesson' &&
-      currentPhase === 'intro' &&
-      selectedModule != null &&
-      !!currentModuleData?.intro &&
-      !hasBeenRead[lessonKey] &&
-      !isTeacherReading;
-
-    if (canNarrate) {
-      // Start controlled teacher reading for the active lesson only
-      startTeacherReading();
-    }
-    return () => narration.cancel();
-  }, [viewState, selectedModule, selectedLevel, currentPhase, currentModuleData?.intro, hasBeenRead[lessonKey], isTeacherReading]);
 
   // Teacher reading functionality
   const startTeacherReading = async () => {
