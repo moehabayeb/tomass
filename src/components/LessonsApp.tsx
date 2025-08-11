@@ -14,6 +14,22 @@ import { supabase } from '@/integrations/supabase/client';
 import Confetti from 'react-confetti';
 import { useWindowSize } from '@react-hook/window-size';
 import { narration } from '@/utils/narration';
+
+// Speaking strict evaluator helpers
+function normalize(s: string) {
+  return s
+    .toLowerCase()
+    .replace(/[“”"'.!?]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function evaluateStrict(user: string, expected: string) {
+  const u = normalize(user);
+  const e = normalize(expected);
+  return { ok: u === e, u, e };
+}
+
 interface LessonsAppProps {
   onBack: () => void;
 }
@@ -3389,7 +3405,8 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
   // Guards for module-scoped timers and safe progression
   const moduleGuardRef = useRef<number | null>(null);
   const timeoutRef = useRef<number | null>(null);
-  
+  const lessonCompletedRef = useRef(false);
+
   const { isSpeaking, soundEnabled, toggleSound } = useTextToSpeech();
   const { earnXPForGrammarLesson, addXP } = useGamification();
   const { incrementGrammarLessons, incrementTotalExercises } = useBadgeSystem();
@@ -4438,14 +4455,15 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     setIsProcessing(false);
   }, [selectedModule]);
 
-  // Reset speaking index when entering speaking phase
+  // Reset speaking index and completion guard when entering speaking phase or changing module
   useEffect(() => {
     if (currentPhase === 'speaking') {
+      lessonCompletedRef.current = false;
       setSpeakingIndex(0);
       if (timeoutRef.current) { clearTimeout(timeoutRef.current); timeoutRef.current = null; }
       setIsProcessing(false);
     }
-  }, [currentPhase]);
+  }, [currentPhase, selectedModule]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -4465,39 +4483,32 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
 
   // Centralized advancement with boundary guard
   function advanceSpeakingOnce() {
-    const total = currentModuleData?.speakingPractice?.length ?? 0;
-    // If we’re at the last question, finish right now
-    if (speakingIndex + 1 >= total) {
-      // cancel any stray timers and narration
-      if (timeoutRef.current) { clearTimeout(timeoutRef.current); timeoutRef.current = null; }
-      narration.cancel();
-      // show celebration UI, mark lesson as complete, and route to next module
-      completeLesson(); // keep existing celebration here
+    if (speakingIndex + 1 >= totalQuestions) {
+      if (!lessonCompletedRef.current) {
+        lessonCompletedRef.current = true;
+        narration.cancel();
+        completeLesson();
 
-      // Optional: immediately move to the next module if that’s desired UX
-      // goToNextModule(); // if you have a helper
-      // or:
-      // setSelectedModule(getNextModuleIdForLevel(selectedLevel, selectedModule));
+        // Auto-jump to next module (adjust helper if needed)
+        const next =
+          typeof getNextModuleIdForLevel === 'function'
+            ? getNextModuleIdForLevel(selectedLevel, selectedModule)
+            : (selectedModule != null ? selectedModule + 1 : null);
 
+        if (typeof next === 'number') setSelectedModule(next);
+      }
       return;
     }
-    setSpeakingIndex(prev => prev + 1);
+    setSpeakingIndex(i => Math.min(i + 1, totalQuestions - 1));
   }
 
   // Call this only when the current answer is accepted as correct.
   function onAnswerCorrect() {
     if (isProcessing) return;
     setIsProcessing(true);
-
-    const myModule = moduleGuardRef.current;
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-
-    // small pause so users see the “Correct” state, then advance or complete
-    timeoutRef.current = window.setTimeout(() => {
-      if (moduleGuardRef.current !== myModule) return;
+    setTimeout(() => {
       advanceSpeakingOnce();
       setIsProcessing(false);
-      timeoutRef.current = null;
     }, 900);
   }
 
@@ -4878,36 +4889,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
         ? practiceItem
         : (practiceItem.answer ?? practiceItem.question);
 
-      function normalizeForCompare(s: string) {
-        return s
-          .toLowerCase()
-          .replace(/[“”"']/g, "'")
-          .replace(/[^a-z0-9'\s-]/g, '') // strip punctuation except apostrophes/hyphens
-          .replace(/\s+/g, ' ')
-          .trim();
-      }
-
-      function evaluateStrict(expectedRaw: string, userRaw: string): { ok: boolean; feedback?: string } {
-        const expected = normalizeForCompare(expectedRaw);
-        const user = normalizeForCompare(userRaw);
-
-        if (user === expected) return { ok: true };
-
-        // Build a very short correction. Show the correct sentence and one tiny tip.
-        const expTokens = expected.split(' ');
-        const usrTokens = user.split(' ');
-
-        let tip = '';
-        if (expected.includes('went') && user.includes('go')) tip = "Use past of 'go' → 'went'.";
-        else if (expected.includes('was') && user.includes('is')) tip = "Use past form 'was', not 'is'.";
-        else if (expected.includes('were') && user.includes('are')) tip = "Use past form 'were', not 'are'.";
-        else if (expTokens.length !== usrTokens.length) tip = 'Word order/number of words doesn’t match.';
-        else tip = 'Match the sentence exactly.';
-
-        return { ok: false, feedback: `Not quite.\nCorrect: “${expectedRaw}”.\nTip: ${tip}` };
-      }
-
-      const result = evaluateStrict(expectedSentenceRaw || '', finalTranscript);
+      const { ok } = evaluateStrict(finalTranscript, expectedSentenceRaw || '');
 
       console.log('VALIDATION PHASE');
       console.log('Expected:', expectedSentenceRaw);
@@ -4915,7 +4897,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
       console.log('Index:', speakingIndex);
       console.log('Module:', currentModuleData.title);
 
-      if (result.ok) {
+      if (ok) {
         setCorrectAnswers(prev => prev + 1);
         setFeedback('Great job! Your sentence is correct.');
         setFeedbackType('success');
@@ -4927,7 +4909,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
         console.log('✅ CORRECT ANSWER - Scheduling guarded advance');
         onAnswerCorrect();
       } else {
-        setFeedback(result.feedback || 'Please match the sentence exactly.');
+        setFeedback(`Not quite. Correct: "${expectedSentenceRaw}"`);
         setFeedbackType('error');
         setTimeout(() => {
           setFeedback('');
