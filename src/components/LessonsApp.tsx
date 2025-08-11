@@ -4410,17 +4410,95 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
   const overallProgress = ((speakingIndex + (correctAnswers > 0 ? 1 : 0)) / totalQuestions) * 100;
   const lessonKey = `${selectedLevel}-${selectedModule}`;
 
-  // Auto-start reading for first-time visitors
+  // Cancel narration and start reading only when visible lesson intro is active
   useEffect(() => {
-    if (currentPhase === 'intro' && !hasBeenRead[lessonKey] && !isTeacherReading) {
+    narration.cancel();
+    const canNarrate =
+      viewState === 'lesson' &&
+      currentPhase === 'intro' &&
+      selectedModule != null &&
+      !!currentModuleData?.intro &&
+      !hasBeenRead[lessonKey] &&
+      !isTeacherReading;
+
+    if (canNarrate) {
+      // Start controlled teacher reading for the active lesson only
       startTeacherReading();
     }
-  }, [selectedModule, selectedLevel, currentPhase]);
+    return () => narration.cancel();
+  }, [viewState, selectedModule, selectedLevel, currentPhase, currentModuleData?.intro, hasBeenRead[lessonKey], isTeacherReading]);
+
+  // Guard module changes and clear pending timers
+  useEffect(() => {
+    moduleGuardRef.current = selectedModule;
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    setIsProcessing(false);
+  }, [selectedModule]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      narration.cancel();
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, []);
+
+  // QA logging
+  useEffect(() => {
+    console.log('[Progress] index:', speakingIndex, 'of', totalQuestions, 'module:', selectedModule);
+  }, [speakingIndex, totalQuestions, selectedModule]);
+
+  // Robust advancement helpers
+  function advanceSpeaking() {
+    const total = currentModuleData?.speakingPractice?.length ?? 0;
+    if (speakingIndex + 1 >= total) {
+      completeLesson();
+      return;
+    }
+    setSpeakingIndex(prev => prev + 1);
+  }
+
+  // call this only when the current answer is accepted as correct
+  function onAnswerCorrect() {
+    if (isProcessing) return;           // debounce double fires
+    setIsProcessing(true);
+
+    const myModule = moduleGuardRef.current;
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = window.setTimeout(() => {
+      if (moduleGuardRef.current !== myModule) return;  // ignore stale timer
+      advanceSpeaking();
+      setIsProcessing(false);
+      timeoutRef.current = null;
+    }, 1200);
+  }
+
+  // Cancel narration and start reading only when visible lesson intro is active
+  useEffect(() => {
+    narration.cancel();
+    const canNarrate =
+      viewState === 'lesson' &&
+      currentPhase === 'intro' &&
+      selectedModule != null &&
+      !!currentModuleData?.intro &&
+      !hasBeenRead[lessonKey] &&
+      !isTeacherReading;
+
+    if (canNarrate) {
+      // Start controlled teacher reading for the active lesson only
+      startTeacherReading();
+    }
+    return () => narration.cancel();
+  }, [viewState, selectedModule, selectedLevel, currentPhase, currentModuleData?.intro, hasBeenRead[lessonKey], isTeacherReading]);
 
   // Teacher reading functionality
   const startTeacherReading = async () => {
     setIsTeacherReading(true);
     setCurrentPhase('teacher-reading');
+    narration.cancel();
     
     // Read full lesson content line by line
     const introLines = currentModuleData.intro.split('\n');
@@ -4946,33 +5024,8 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
         await earnXPForGrammarLesson(true);
         await incrementTotalExercises();
         
-        console.log('✅ CORRECT ANSWER - Setting up auto-advance timeout');
-        console.log('✅ isProcessing currently:', isProcessing);
-        
-        // Auto-advance after 1.5 seconds - Direct progression without safety checks
-        const timeoutId = setTimeout(() => {
-          console.log('✅ TIMEOUT FIRED - About to advance');
-          console.log('✅ Current captured index:', capturedSpeakingIndex);
-          console.log('✅ Total questions available:', totalQuestions);
-          console.log('✅ Current speakingIndex state:', speakingIndex);
-          
-          if (capturedSpeakingIndex + 1 >= totalQuestions) {
-            console.log('✅ Completing lesson - reached end of questions');
-            setIsProcessing(false);
-            completeLesson();
-          } else {
-            const nextIndex = capturedSpeakingIndex + 1;
-            console.log('✅ Advancing to question', nextIndex + 1, 'of', totalQuestions);
-            console.log('✅ Calling setSpeakingIndex with:', nextIndex);
-            setSpeakingIndex(nextIndex);
-            setFeedback('');
-            console.log('✅ State update completed');
-            console.log('✅ Setting isProcessing to false');
-            setIsProcessing(false);
-          }
-        }, 1500);
-        
-        console.log('✅ Timeout scheduled with ID:', timeoutId);
+        console.log('✅ CORRECT ANSWER - Scheduling guarded advance');
+        onAnswerCorrect();
       } else {
         // 🔒 Show what user said vs what was expected
         console.log('🔒 Showing correction for LOCKED sentence:', capturedExpectedSentence);
@@ -5137,12 +5190,14 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
       setListeningIndex(prev => prev + 1);
     } else {
       setCurrentPhase('speaking');
+      narration.cancel();
       speak('Now let\'s practice speaking! Say each sentence clearly.');
     }
   };
 
   const repeatExample = () => {
     const currentExample = currentModuleData.listeningExamples[listeningIndex];
+    narration.cancel();
     speak(currentExample);
   };
 
@@ -5150,6 +5205,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     const currentPracticeItem = currentModuleData.speakingPractice[speakingIndex];
     // Only speak the question part, not the answer - like a real teacher would do
     const currentSentence = typeof currentPracticeItem === 'string' ? currentPracticeItem : currentPracticeItem.question;
+    narration.cancel();
     speak(currentSentence);
   };
 
