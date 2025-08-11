@@ -4463,29 +4463,43 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     if (!item) console.warn('[Progress] No item at index', speakingIndex);
   }, [speakingIndex, selectedModule, currentModuleData]);
 
-  // Robust advancement helpers
-  function advanceSpeaking() {
+  // Centralized advancement with boundary guard
+  function advanceSpeakingOnce() {
     const total = currentModuleData?.speakingPractice?.length ?? 0;
+    // If we’re at the last question, finish right now
     if (speakingIndex + 1 >= total) {
-      completeLesson();
+      // cancel any stray timers and narration
+      if (timeoutRef.current) { clearTimeout(timeoutRef.current); timeoutRef.current = null; }
+      narration.cancel();
+      // show celebration UI, mark lesson as complete, and route to next module
+      completeLesson(); // keep existing celebration here
+
+      // Optional: immediately move to the next module if that’s desired UX
+      // goToNextModule(); // if you have a helper
+      // or:
+      // setSelectedModule(getNextModuleIdForLevel(selectedLevel, selectedModule));
+
       return;
     }
     setSpeakingIndex(prev => prev + 1);
   }
 
-  // call this only when the current answer is accepted as correct
+  // Call this only when the current answer is accepted as correct.
   function onAnswerCorrect() {
-    if (isProcessing) return;           // debounce double fires
+    if (isProcessing) return;
     setIsProcessing(true);
 
     const myModule = moduleGuardRef.current;
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
+
+    // small pause so users see the “Correct” state, then advance or complete
     timeoutRef.current = window.setTimeout(() => {
-      if (moduleGuardRef.current !== myModule) return;  // ignore stale timer
-      advanceSpeaking();
+      if (moduleGuardRef.current !== myModule) return;
+      advanceSpeakingOnce();
       setIsProcessing(false);
       timeoutRef.current = null;
-    }, 1200);
+    }, 900);
+  }
   }
 
 
@@ -4852,176 +4866,74 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
       }
 
       const { corrected } = feedbackResponse.data;
-      // Compute expected sentence based on the latest state to avoid stale captures
-      const currentItem = currentModuleData?.speakingPractice?.[speakingIndex];
-      if (!currentItem) {
+
+      // Strict evaluator: compare user's speech to the exact expected sentence
+      const practiceItem = currentModuleData?.speakingPractice?.[speakingIndex];
+      if (!practiceItem) {
         console.warn('No current practice item to validate at index', speakingIndex);
         setIsProcessing(false);
         return;
       }
-      const expectedSentenceRaw = typeof currentItem === 'string' ? currentItem : currentItem.answer;
-      const expectedSentence = (expectedSentenceRaw || '').toLowerCase();
-      const userSentence = finalTranscript.toLowerCase();
-      
+
+      const expectedSentenceRaw = typeof practiceItem === 'string'
+        ? practiceItem
+        : (practiceItem.answer ?? practiceItem.say ?? practiceItem.question);
+
+      function normalizeForCompare(s: string) {
+        return s
+          .toLowerCase()
+          .replace(/[“”"']/g, "'")
+          .replace(/[^a-z0-9'\s-]/g, '') // strip punctuation except apostrophes/hyphens
+          .replace(/\s+/g, ' ')
+          .trim();
+      }
+
+      function evaluateStrict(expectedRaw: string, userRaw: string): { ok: boolean; feedback?: string } {
+        const expected = normalizeForCompare(expectedRaw);
+        const user = normalizeForCompare(userRaw);
+
+        if (user === expected) return { ok: true };
+
+        // Build a very short correction. Show the correct sentence and one tiny tip.
+        const expTokens = expected.split(' ');
+        const usrTokens = user.split(' ');
+
+        let tip = '';
+        if (expected.includes('went') && user.includes('go')) tip = "Use past of 'go' → 'went'.";
+        else if (expected.includes('was') && user.includes('is')) tip = "Use past form 'was', not 'is'.";
+        else if (expected.includes('were') && user.includes('are')) tip = "Use past form 'were', not 'are'.";
+        else if (expTokens.length !== usrTokens.length) tip = 'Word order/number of words doesn’t match.';
+        else tip = 'Match the sentence exactly.';
+
+        return { ok: false, feedback: `Not quite.\nCorrect: “${expectedRaw}”.\nTip: ${tip}` };
+      }
+
+      const result = evaluateStrict(expectedSentenceRaw || '', finalTranscript);
+
       console.log('VALIDATION PHASE');
       console.log('Expected:', expectedSentenceRaw);
-      console.log('User said (RAW):', userSentence);
+      console.log('User said (RAW):', finalTranscript);
       console.log('Index:', speakingIndex);
       console.log('Module:', currentModuleData.title);
-      console.log('AI feedback/correction:', corrected);
-      
-      // Enhanced normalization and semantic comparison
-      const normalizeForComparison = (text) => {
-        return text
-          .toLowerCase()
-          .replace(/[.,!?";]/g, '') // Remove punctuation
-          .replace(/'/g, '') // Remove apostrophes
-          .replace(/\s+/g, ' ') // Normalize spaces
-          .trim();
-      };
-      
-      // More comprehensive contraction handling (both directions)
-      const expandContractions = (text) => {
-        const contractions = {
-          "isn't": "is not", "isnt": "is not", "is not": "isnt",
-          "aren't": "are not", "arent": "are not", "are not": "arent", 
-          "don't": "do not", "dont": "do not", "do not": "dont",
-          "doesn't": "does not", "doesnt": "does not", "does not": "doesnt",
-          "won't": "will not", "wont": "will not", "will not": "wont",
-          "can't": "cannot", "cant": "cannot", "cannot": "cant",
-          "i'm": "i am", "im": "i am", "i am": "im",
-          "you're": "you are", "youre": "you are", "you are": "youre",
-          "he's": "he is", "hes": "he is", "he is": "hes",
-          "she's": "she is", "shes": "she is", "she is": "shes",
-          "it's": "it is", "its": "it is", "it is": "its",
-          "we're": "we are", "were": "we are", "we are": "were",
-          "they're": "they are", "theyre": "they are", "they are": "theyre"
-        };
-        
-        let result = text;
-        for (const [contraction, expanded] of Object.entries(contractions)) {
-          result = result.replace(new RegExp('\\b' + contraction + '\\b', 'g'), expanded);
-        }
-        return result;
-      };
 
-      // Check if AI says response is grammatically correct
-      const isGrammaticallyCorrect = corrected && (
-        corrected.toLowerCase().includes('grammatically correct') ||
-        corrected.toLowerCase().includes('grammar is correct') ||
-        corrected.toLowerCase().includes('sentence is correct') ||
-        corrected.toLowerCase() === finalTranscript.toLowerCase().trim()
-      );
-
-      console.log('🤖 AI feedback analysis:');
-      console.log('   Original:', finalTranscript);
-      console.log('   AI corrected:', corrected);
-      console.log('   AI says grammatically correct:', isGrammaticallyCorrect);
-
-      const normalizedExpected = normalizeForComparison(expectedSentence);
-      const normalizedUser = normalizeForComparison(userSentence);
-      
-      // Expand contractions for both variants
-      const expectedFull = expandContractions(normalizedExpected);
-      const expectedContract = normalizedExpected; // Keep original contractions
-      const userExpanded = expandContractions(normalizedUser);
-      
-      let isCorrect = false;
-      
-      // 1. Check if AI confirms it's grammatically correct
-      if (isGrammaticallyCorrect) {
-        console.log('✅ AI confirmed grammatically correct');
-        isCorrect = true;
-      }
-      // 2. Check multiple semantic matches
-      else if (
-        normalizedUser === normalizedExpected ||
-        userExpanded === expectedFull ||
-        userExpanded === normalizedExpected ||
-        normalizedUser === expectedFull
-      ) {
-        console.log('✅ Semantic match found');
-        isCorrect = true;
-      }
-      // 3. Flexible word matching with high tolerance for A1 learners
-      else {
-        const expectedWords = expectedFull.split(' ').filter(w => w.length > 0);
-        const userWords = userExpanded.split(' ').filter(w => w.length > 0);
-        
-        // Very flexible matching for A1 level
-        const matchingWords = expectedWords.filter(expectedWord => 
-          userWords.some(userWord => {
-            // Exact match
-            if (userWord === expectedWord) return true;
-            
-            // Common A1 word variations and mishearings
-            const variations = {
-              'not': ['nt', 'note', 'nott'],
-              'my': ['me', 'mai'],
-              'friend': ['frend', 'friends'],
-              'teacher': ['teachr', 'teachers'],
-              'student': ['studnt', 'students'],
-              'doctor': ['doctr', 'doctors'],
-              'she': ['he', 'shi'],
-              'he': ['she', 'hi'],
-              'no': ['now', 'know']
-            };
-            
-            // Check variations
-            if (variations[expectedWord]?.includes(userWord)) return true;
-            if (variations[userWord]?.includes(expectedWord)) return true;
-            
-            // Partial matches for longer words
-            if (expectedWord.length > 3 && userWord.length > 3) {
-              return userWord.includes(expectedWord) || expectedWord.includes(userWord);
-            }
-            
-            return false;
-          })
-        );
-        
-        const matchPercentage = matchingWords.length / expectedWords.length;
-        // Lower threshold for A1 learners (70% instead of 80%)
-        isCorrect = matchPercentage >= 0.7;
-        
-        console.log('📊 Word matching analysis:');
-        console.log('   Expected words:', expectedWords);
-        console.log('   User words:', userWords);
-        console.log('   Matching words:', matchingWords);
-        console.log('   Match percentage:', Math.round(matchPercentage * 100) + '%');
-        console.log('   Threshold: 70%');
-      }
-      
-      console.log('Final result: Is correct:', isCorrect);
-      
-      if (isCorrect) {
+      if (result.ok) {
         setCorrectAnswers(prev => prev + 1);
         setFeedback('Great job! Your sentence is correct.');
         setFeedbackType('success');
-        
+
         // Award XP for correct answer
         await earnXPForGrammarLesson(true);
         await incrementTotalExercises();
-        
+
         console.log('✅ CORRECT ANSWER - Scheduling guarded advance');
         onAnswerCorrect();
       } else {
-        // Check if the AI provided a correction different from what user said
-        const hasGrammarErrors = corrected && corrected.toLowerCase() !== finalTranscript.toLowerCase();
-        
-        let feedbackMessage = `You said: "${finalTranscript}"`;
-        if (hasGrammarErrors) {
-          feedbackMessage += `\n\nCorrection: "${corrected}"`;
-        }
-        feedbackMessage += `\n\nTry saying: "${expectedSentenceRaw}"`;
-        
-        setFeedback(feedbackMessage);
+        setFeedback(result.feedback || 'Please match the sentence exactly.');
         setFeedbackType('error');
-        
         setTimeout(() => {
           setFeedback('');
           setIsProcessing(false);
-        }, 5000); // Longer timeout for more complex feedback
+        }, 3000);
       }
     } catch (error) {
       console.error('Error processing audio for current index:', error);
@@ -5216,6 +5128,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
                 key={level.id} 
                 className="bg-white/10 border-white/20 cursor-pointer transition-all hover:bg-white/15"
                 onClick={() => {
+                  narration.cancel();
                   setSelectedLevel(level.id);
                   setViewState('modules');
                 }}
@@ -5291,6 +5204,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
                   className={`bg-white/10 border-white/20 cursor-pointer transition-all hover:bg-white/15 ${!isUnlocked ? 'opacity-50' : ''}`}
                   onClick={() => {
                     if (isUnlocked && ((module.id >= 1 && module.id <= 19) || module.id === 51)) { // Modules 1-19 and 51 are implemented
+                      narration.cancel();
                       setSelectedModule(module.id);
                       setViewState('lesson');
                       setCurrentPhase('intro');
@@ -5364,7 +5278,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
             </div>
 
             <Button 
-              onClick={() => setViewState('modules')}
+              onClick={() => { narration.cancel(); setViewState('modules'); }}
               className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30"
             >
               Back to Modules
@@ -5383,7 +5297,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
         <div className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-3xl p-6 mb-6 mt-safe-area-inset-top">
           <div className="flex items-center justify-between mb-4">
             <Button
-              onClick={() => setViewState('modules')}
+              onClick={() => { narration.cancel(); setViewState('modules'); }}
               variant="ghost"
               size="icon"
               className="text-white hover:bg-white/10 rounded-full"
