@@ -4426,7 +4426,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
       startTeacherReading();
     }
     return () => narration.cancel();
-  }, [viewState, selectedModule, selectedLevel, currentPhase, currentModuleData?.intro, hasBeenRead[lessonKey], isTeacherReading]);
+  }, [viewState, selectedModule, currentPhase, currentModuleData?.intro, hasBeenRead[lessonKey], isTeacherReading]);
 
   // Guard module changes and clear pending timers
   useEffect(() => {
@@ -4437,6 +4437,15 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     }
     setIsProcessing(false);
   }, [selectedModule]);
+
+  // Reset speaking index when entering speaking phase
+  useEffect(() => {
+    if (currentPhase === 'speaking') {
+      setSpeakingIndex(0);
+      if (timeoutRef.current) { clearTimeout(timeoutRef.current); timeoutRef.current = null; }
+      setIsProcessing(false);
+    }
+  }, [currentPhase]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -4747,17 +4756,6 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
       return;
     }
 
-    // CRITICAL: Capture the current speaking index and expected sentence at the START
-    // This creates an immutable snapshot that cannot be changed during async operations
-    const capturedSpeakingIndex = speakingIndex;
-    const currentPracticeItem = currentModuleData.speakingPractice[capturedSpeakingIndex];
-    const capturedExpectedSentence = typeof currentPracticeItem === 'string' ? currentPracticeItem : currentPracticeItem.answer;
-    
-    // Validate captured data before proceeding
-    if (!capturedExpectedSentence) {
-      console.error('❌ No expected sentence found for index:', capturedSpeakingIndex);
-      return;
-    }
     
     setIsProcessing(true);
     setAttempts(prev => prev + 1);
@@ -4775,9 +4773,6 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
         type: audioBlob.type,
         isEmpty: audioBlob.size === 0
       });
-      console.log('🔒 LOCKED speaking index:', capturedSpeakingIndex);
-      console.log('🔒 LOCKED expected sentence:', capturedExpectedSentence);
-      console.log('🔒 Current module:', currentModuleData.title);
       
       // Validate audio blob
       if (!audioBlob || audioBlob.size === 0) {
@@ -4868,28 +4863,18 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
       }
 
       const { corrected } = feedbackResponse.data;
+      // Compute expected sentence based on the latest state to avoid stale captures
+      const currentItem = currentModuleData.speakingPractice[speakingIndex];
+      const expectedSentenceRaw = typeof currentItem === 'string' ? currentItem : currentItem.answer;
+      const expectedSentence = (expectedSentenceRaw || '').toLowerCase();
+      const userSentence = finalTranscript.toLowerCase();
       
-      // 🔒 CRITICAL: Use LOCKED values - these cannot change during processing
-      const expectedSentence = capturedExpectedSentence.toLowerCase();
-      const userSentence = finalTranscript.toLowerCase(); // Use raw transcript, not corrected
-      
-      console.log('🔒 VALIDATION PHASE');
-      console.log('🔒 Expected (LOCKED):', expectedSentence);
-      console.log('🔒 User said (RAW):', userSentence);
-      console.log('🔒 Index (LOCKED):', capturedSpeakingIndex);
-      console.log('🔒 Module (LOCKED):', currentModuleData.title);
+      console.log('VALIDATION PHASE');
+      console.log('Expected:', expectedSentenceRaw);
+      console.log('User said (RAW):', userSentence);
+      console.log('Index:', speakingIndex);
+      console.log('Module:', currentModuleData.title);
       console.log('AI feedback/correction:', corrected);
-      
-      // Double-check that we're still processing the correct question
-      const currentValidationItem = currentModuleData.speakingPractice[capturedSpeakingIndex];
-      const currentValidationSentence = typeof currentValidationItem === 'string' ? currentValidationItem : currentValidationItem.answer;
-      if (capturedExpectedSentence !== currentValidationSentence) {
-        console.error('🚨 CRITICAL: Expected sentence mismatch detected! Aborting to prevent confusion.');
-        setFeedback('System error. Please try again.');
-        setFeedbackType('error');
-        setIsProcessing(false);
-        return;
-      }
       
       // Enhanced normalization and semantic comparison
       const normalizeForComparison = (text) => {
@@ -5027,9 +5012,6 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
         console.log('✅ CORRECT ANSWER - Scheduling guarded advance');
         onAnswerCorrect();
       } else {
-        // 🔒 Show what user said vs what was expected
-        console.log('🔒 Showing correction for LOCKED sentence:', capturedExpectedSentence);
-        
         // Check if the AI provided a correction different from what user said
         const hasGrammarErrors = corrected && corrected.toLowerCase() !== finalTranscript.toLowerCase();
         
@@ -5037,7 +5019,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
         if (hasGrammarErrors) {
           feedbackMessage += `\n\nCorrection: "${corrected}"`;
         }
-        feedbackMessage += `\n\nTry saying: "${capturedExpectedSentence}"`;
+        feedbackMessage += `\n\nTry saying: "${expectedSentenceRaw}"`;
         
         setFeedback(feedbackMessage);
         setFeedbackType('error');
@@ -5048,7 +5030,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
         }, 5000); // Longer timeout for more complex feedback
       }
     } catch (error) {
-      console.error('🔒 Error processing audio for LOCKED index:', capturedSpeakingIndex, error);
+      console.error('Error processing audio for current index:', error);
       setFeedback('Sorry, there was an error processing your audio. Please try again.');
       setFeedbackType('error');
       
@@ -5077,7 +5059,8 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
       localStorage.setItem('completedModules', JSON.stringify(newCompletedModules));
     }
     
-    speak(`Congratulations! You have completed Module ${selectedModule}. Well done!`);
+    narration.cancel();
+    narration.speak(`Congratulations! You have completed Module ${selectedModule}. Well done!`);
     
     setTimeout(() => {
       setShowConfetti(false);
@@ -5191,14 +5174,14 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     } else {
       setCurrentPhase('speaking');
       narration.cancel();
-      speak('Now let\'s practice speaking! Say each sentence clearly.');
+      narration.speak('Now let\'s practice speaking! Say each sentence clearly.');
     }
   };
 
   const repeatExample = () => {
     const currentExample = currentModuleData.listeningExamples[listeningIndex];
     narration.cancel();
-    speak(currentExample);
+    narration.speak(currentExample);
   };
 
   const speakCurrentSentence = () => {
@@ -5206,7 +5189,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     // Only speak the question part, not the answer - like a real teacher would do
     const currentSentence = typeof currentPracticeItem === 'string' ? currentPracticeItem : currentPracticeItem.question;
     narration.cancel();
-    speak(currentSentence);
+    narration.speak(currentSentence);
   };
 
   // Render levels view
