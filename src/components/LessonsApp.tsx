@@ -4511,7 +4511,8 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     // Check if there's a table and announce it
     if ('table' in currentModuleData && currentModuleData.table) {
       await new Promise<void>((resolve) => {
-        narration.speak("Şimdi lütfen aşağıdaki tabloya göz atın.", resolve, 'tr-TR');
+        narration.speak("Şimdi lütfen aşağıdaki tabloya göz atın.");
+        setTimeout(resolve, 2000);
       });
       
       // Wait for user to explore table (3 seconds)
