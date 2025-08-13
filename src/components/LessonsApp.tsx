@@ -3507,6 +3507,10 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
   // Stable ref for the target to avoid stale closures
   const evaluatorTargetRef = useRef<string>('');
 
+  // Track live speaking index to avoid stale closures
+  const speakingIndexRef = useRef(0);
+  useEffect(() => { speakingIndexRef.current = speakingIndex; }, [speakingIndex]);
+
   const { isSpeaking, soundEnabled, toggleSound } = useTextToSpeech();
   const { earnXPForGrammarLesson, addXP } = useGamification();
   const { incrementGrammarLessons, incrementTotalExercises } = useBadgeSystem();
@@ -4635,37 +4639,86 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     if (!item) console.warn('[Progress] No item at index', speakingIndex);
   }, [speakingIndex, selectedModule, currentModuleData]);
 
-  // Centralized advancement with boundary guard
-  function advanceSpeakingOnce() {
-    if (speakingIndex + 1 >= totalQuestions) {
-      if (!lessonCompletedRef.current) {
-        lessonCompletedRef.current = true;
-        narration.cancel();
-        completeLesson();
+  // Helper to get next module ID for the current level
+  function getNextModuleId(level: string, module: number): number | null {
+    // Simple logic: increment module number, you can customize this
+    // based on your actual module structure
+    const nextModule = module + 1;
+    // Assuming modules go up to a reasonable limit per level
+    const maxModules = 100; // adjust based on your content
+    return nextModule <= maxModules ? nextModule : null;
+  }
 
-        // Auto-jump to next module (adjust helper if needed)
-        const nextHelper = (globalThis as any).getNextModuleIdForLevel as undefined | ((level: string, module: number) => number);
-        const next = typeof nextHelper === 'function'
-          ? nextHelper(selectedLevel, selectedModule)
-          : (selectedModule != null ? selectedModule + 1 : null);
+  // Centralized celebration and advancement logic
+  function celebrateAndAdvance() {
+    // show confetti briefly
+    setShowConfetti(true);
 
-        if (typeof next === 'number') setSelectedModule(next);
+    // Award bonus XP for completion
+    addXP(100, 'grammar');
+    incrementGrammarLessons();
+
+    // persist completion before moving
+    try {
+      const snap = snapshotProgress();
+      if (snap) {
+        setProgress({
+          ...snap,
+          speakingIndex: (currentModuleData?.speakingPractice?.length ?? 1) - 1,
+          completed: true,
+          phase: 'complete' as const
+        });
       }
+    } catch {}
+
+    // Save progress to completed modules
+    const newCompletedModules = [...completedModules];
+    const moduleKey = `module-${selectedModule}`;
+    if (!newCompletedModules.includes(moduleKey)) {
+      newCompletedModules.push(moduleKey);
+      localStorage.setItem('completedModules', JSON.stringify(newCompletedModules));
+    }
+
+    narration.cancel();
+    narration.speak(`Congratulations! You have completed Module ${selectedModule}. Well done!`);
+
+    const nextModule = getNextModuleId(selectedLevel, selectedModule);
+    window.setTimeout(() => {
+      setShowConfetti(false);
+
+      if (nextModule != null) {
+        // reset lesson state for the next module
+        setSelectedModule(nextModule);
+        setCurrentPhase('intro');
+        setListeningIndex(0);
+        setSpeakingIndex(0);
+        setFeedback('');
+        setFeedbackType('info');
+        lessonCompletedRef.current = false;
+      } else {
+        // if there is no next module, go back to the modules list
+        setViewState('modules');
+      }
+    }, 1600);
+  }
+
+  // Centralized advance logic using live index ref
+  function advanceSpeakingOnce() {
+    const total = currentModuleData?.speakingPractice?.length ?? 0;
+    const curr = speakingIndexRef.current;
+
+    // still inside the range → move to next question
+    if (curr + 1 < total) {
+      setSpeakingIndex(curr + 1);
+      setIsProcessing(false);
       return;
     }
-    setSpeakingIndex(i => Math.min(i + 1, totalQuestions - 1));
+
+    // curr is the last index → celebrate and move on
+    setIsProcessing(false);
+    celebrateAndAdvance();
   }
 
-  // Call this only when the current answer is accepted as correct.
-  function onAnswerCorrect() {
-    if (isProcessing) return;
-    setIsProcessing(true);
-    setTimeout(() => {
-      advanceSpeakingOnce();
-      saveProgressDebounced(); // Save after advancing
-      setIsProcessing(false);
-    }, 900);
-  }
 
 
   // Teacher reading functionality
@@ -5051,7 +5104,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
           setFeedbackType('success');
           earnXPForGrammarLesson(true);
           incrementTotalExercises();
-          onAnswerCorrect();         // centralized guarded advance
+          advanceSpeakingOnce();     // Use the centralized, guarded advance
         } else {
           setFeedback(`Not quite. Correct: "${target}".`);
           setFeedbackType('error');
@@ -5083,33 +5136,6 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     setLastResponseTime(Date.now());
   }, [speakingIndex, earnXPForGrammarLesson, incrementTotalExercises]);
 
-  const completeLesson = async () => {
-    setCurrentPhase('completed');
-    setShowConfetti(true);
-    
-    // Award bonus XP for completion
-    await addXP(100, 'grammar');
-    await incrementGrammarLessons();
-    
-    // Save as completed
-    const snap = snapshotProgress();
-    if (snap) setProgress({ ...snap, completed: true, phase: 'complete' });
-    
-    // Save progress
-    const newCompletedModules = [...completedModules];
-    const moduleKey = `module-${selectedModule}`;
-    if (!newCompletedModules.includes(moduleKey)) {
-      newCompletedModules.push(moduleKey);
-      localStorage.setItem('completedModules', JSON.stringify(newCompletedModules));
-    }
-    
-    narration.cancel();
-    narration.speak(`Congratulations! You have completed Module ${selectedModule}. Well done!`);
-    
-    setTimeout(() => {
-      setShowConfetti(false);
-    }, 5000);
-  };
 
   // Optional: Reset progress for current module
   function resetThisModuleProgress() {
