@@ -18,6 +18,56 @@ import Confetti from 'react-confetti';
 import { useWindowSize } from '@react-hook/window-size';
 import { narration } from '@/utils/narration';
 
+// ---------- Persistent Progress (localStorage) ----------
+type LessonProgress = {
+  v: 1;
+  userId: string;           // pick your user identifier (or 'anon')
+  level: number | string;
+  module: number | string;
+  phase: 'intro' | 'listening' | 'speaking';
+  listeningIndex: number;
+  speakingIndex: number;
+  completed: boolean;
+  ts: number;               // last updated timestamp
+};
+
+const PROGRESS_VERSION = 1;
+
+function progressKey(userId: string, level: number | string, module: number | string) {
+  return `lessonProgress:${userId}:${level}:${module}`;
+}
+
+function clamp(n: number, min: number, max: number) {
+  return Math.max(min, Math.min(max, n));
+}
+
+function loadProgress(userId: string, level: number | string, module: number | string, totals: {listening: number; speaking: number;}): LessonProgress | null {
+  try {
+    const raw = localStorage.getItem(progressKey(userId, level, module));
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as LessonProgress;
+    if (!parsed || parsed.v !== PROGRESS_VERSION) return null;
+
+    // validate bounds in case content changed
+    const li = clamp(parsed.listeningIndex ?? 0, 0, Math.max(0, totals.listening - 1));
+    const si = clamp(parsed.speakingIndex ?? 0, 0, Math.max(0, totals.speaking - 1));
+    const phase: LessonProgress['phase'] =
+      parsed.phase === 'listening' || parsed.phase === 'speaking' ? parsed.phase : 'intro';
+
+    return { ...parsed, listeningIndex: li, speakingIndex: si, phase };
+  } catch {
+    return null;
+  }
+}
+
+function saveProgress(p: Omit<LessonProgress,'ts'|'v'>) {
+  const record: LessonProgress = { ...p, v: PROGRESS_VERSION, ts: Date.now() };
+  try { localStorage.setItem(progressKey(p.userId, p.level, p.module), JSON.stringify(record)); } catch {}
+}
+
+function clearLessonProgress(userId: string, level: number | string, module: number | string) {
+  try { localStorage.removeItem(progressKey(userId, level, module)); } catch {}
+}
 
 function normalize(s: string) {
   return s
@@ -3405,9 +3455,14 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
   const timeoutRef = useRef<number | null>(null);
   const lessonCompletedRef = useRef(false);
   
+  // Track the live speaking index (no stale closures)
+  const speakingIndexRef = useRef(0);
+  
   // ---- Autosave helpers ----
   const SAVE_DEBOUNCE_MS = 250;
   const saveTimerRef = useRef<number | null>(null);
+  const restoredOnceRef = useRef(false);
+  const autosaveTimeoutRef = useRef<number | null>(null);
 
   function snapshotProgress(): ModuleProgress | null {
     if (!currentModuleData || !selectedLevel || selectedModule == null) return null;
@@ -3507,8 +3562,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
   // Stable ref for the target to avoid stale closures
   const evaluatorTargetRef = useRef<string>('');
 
-  // Track live speaking index to avoid stale closures
-  const speakingIndexRef = useRef(0);
+  // Update the speaking index ref when it changes
   useEffect(() => { speakingIndexRef.current = speakingIndex; }, [speakingIndex]);
 
   const { isSpeaking, soundEnabled, toggleSound } = useTextToSpeech();
@@ -4559,45 +4613,80 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     setIsProcessing(false);
   }, [selectedModule]);
 
-  // Resume on module/level change
+  // Restore progress safely when a module opens
+  const userId = 'anon'; // TODO: adapt to your auth; fallback to 'anon'
+  const totals = {
+    listening: currentModuleData?.listeningExamples?.length ?? 0,
+    speaking: currentModuleData?.speakingPractice?.length ?? 0,
+  };
+
   useEffect(() => {
-    if (!currentModuleData || selectedModule == null || !selectedLevel) return;
+    // Run when module changes; restore once.
+    if (!selectedModule || !currentModuleData || restoredOnceRef.current) return;
 
-    const totalListening = currentModuleData?.listeningExamples?.length ?? 0;
-    const totalSpeaking  = currentModuleData?.speakingPractice?.length ?? 0;
-
-    const saved = getProgress(selectedLevel, selectedModule);
-    if (saved) {
-      // Clamp in case content changed
-      const li = Math.min(Math.max(saved.listeningIndex ?? 0, 0), Math.max(totalListening - 1, 0));
-      const si = Math.min(Math.max(saved.speakingIndex ?? 0, 0), Math.max(totalSpeaking - 1, 0));
-
-      // Restore phase and indexes (don't jump to 'complete' immediately; show "done" UI if needed)
-      setCurrentPhase(saved.completed ? 'completed' : saved.phase as LessonPhase);
-      setListeningIndex(li);
-      setSpeakingIndex(si);
+    const saved = loadProgress(userId, selectedLevel, selectedModule, totals);
+    if (saved && saved.completed !== true) {
+      // restore
+      setCurrentPhase(saved.phase);
+      setListeningIndex(saved.listeningIndex);
+      setSpeakingIndex(saved.speakingIndex);
     } else {
-      // Fresh start
+      // fresh start for this module
       setCurrentPhase('intro');
       setListeningIndex(0);
       setSpeakingIndex(0);
     }
-  }, [selectedLevel, selectedModule, currentModuleData]);
 
-  // Reset speaking index and completion guard when entering speaking phase or changing module
+    restoredOnceRef.current = true;
+    // also cancel any stray timers/narration here
+    narration.cancel?.();
+    if (timeoutRef?.current) { clearTimeout(timeoutRef.current); timeoutRef.current = null; }
+  }, [selectedModule, currentModuleData, selectedLevel]);
+
+  // Stop resetting to Q1 when entering "speaking" - only reset for fresh modules
   useEffect(() => {
-    if (currentPhase === 'speaking') {
-      lessonCompletedRef.current = false;
+    if (currentPhase !== 'speaking') return;
+    // Do not reset if we already restored or if we have progress saved.
+    // Only set to 0 when starting a truly fresh module.
+    const saved = loadProgress(userId, selectedLevel, selectedModule, totals);
+    if (!saved || saved.completed) {
       setSpeakingIndex(0);
-      if (timeoutRef.current) { clearTimeout(timeoutRef.current); timeoutRef.current = null; }
-      setIsProcessing(false);
     }
-  }, [currentPhase, selectedModule]);
+    // else: keep restored index
+    lessonCompletedRef.current = false;
+    if (timeoutRef.current) { clearTimeout(timeoutRef.current); timeoutRef.current = null; }
+    setIsProcessing(false);
+  }, [currentPhase, userId, selectedLevel, selectedModule]);
 
-  // Save on any meaningful change
+  // Save on any meaningful change (using old progress store)
   useEffect(() => {
     saveProgressDebounced();
   }, [selectedLevel, selectedModule, currentPhase, listeningIndex, speakingIndex]);
+
+  // Autosave on every meaningful change (debounced & guarded) - new progress store
+  useEffect(() => {
+    if (!selectedModule || !currentModuleData) return;
+
+    // debounce a bit to avoid hammering storage
+    if (autosaveTimeoutRef.current) window.clearTimeout(autosaveTimeoutRef.current);
+    autosaveTimeoutRef.current = window.setTimeout(() => {
+      saveProgress({
+        userId,
+        level: selectedLevel,
+        module: selectedModule,
+        phase: (currentPhase === 'listening' || currentPhase === 'speaking') ? currentPhase : 'intro',
+        listeningIndex,
+        speakingIndex,
+        completed: false,
+      });
+      autosaveTimeoutRef.current = null;
+    }, 250);
+  }, [userId, selectedLevel, selectedModule, currentPhase, listeningIndex, speakingIndex, currentModuleData]);
+
+  // Clean up on unmount
+  useEffect(() => () => {
+    if (autosaveTimeoutRef.current) clearTimeout(autosaveTimeoutRef.current);
+  }, []);
 
   // Also save on tab hide/close
   useEffect(() => {
@@ -4671,6 +4760,17 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
       }
     } catch {}
 
+    // persist completion in new progress store
+    saveProgress({
+      userId,
+      level: selectedLevel,
+      module: selectedModule,
+      phase: 'speaking',
+      listeningIndex,
+      speakingIndex: speakingIndexRef.current, // last answered
+      completed: true,
+    });
+
     // Save progress to completed modules
     const newCompletedModules = [...completedModules];
     const moduleKey = `module-${selectedModule}`;
@@ -4689,6 +4789,8 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
       if (nextModule != null) {
         // reset lesson state for the next module
         setSelectedModule(nextModule);
+        // restoredOnceRef needs to be reset so the new module can be restored
+        restoredOnceRef.current = false;
         setCurrentPhase('intro');
         setListeningIndex(0);
         setSpeakingIndex(0);
