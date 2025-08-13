@@ -4585,23 +4585,28 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
   const overallProgress = ((speakingIndex + (correctAnswers > 0 ? 1 : 0)) / totalQuestions) * 100;
   const lessonKey = `${selectedLevel}-${selectedModule}`;
 
-  // Cancel narration and start reading only when visible lesson intro is active
+  // Speak only on intro, once per module, and cancel on any change
   useEffect(() => {
     narration.cancel();
-    const canNarrate =
+
+    const canRead =
       viewState === 'lesson' &&
       currentPhase === 'intro' &&
       selectedModule != null &&
       !!currentModuleData?.intro &&
-      !hasBeenRead[lessonKey] &&
-      !isTeacherReading;
+      !hasBeenRead[lessonKey];
 
-    if (canNarrate) {
-      // Start controlled teacher reading for the active lesson only
-      startTeacherReading();
-    }
+    if (canRead) startTeacherReading();
+
     return () => narration.cancel();
-  }, [viewState, selectedModule, selectedLevel, currentPhase, currentModuleData?.intro, hasBeenRead[lessonKey], isTeacherReading]);
+  }, [
+    viewState,
+    currentPhase,
+    selectedModule,
+    lessonKey,
+    currentModuleData?.intro,
+    hasBeenRead[lessonKey]
+  ]);
 
   // Guard module changes and clear pending timers
   useEffect(() => {
@@ -5628,8 +5633,8 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
           </Card>
         )}
 
-        {/* Teacher Reading Phase */}
-        {currentPhase === 'teacher-reading' && (
+        {/* INTRO ONLY */}
+        {currentPhase === 'intro' && (
           <Card className="bg-white/10 border-white/20 mb-6">
             <CardHeader>
               <CardTitle className="text-white flex items-center">
@@ -5640,10 +5645,13 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
             <CardContent className="space-y-4">
               <div className="text-center">
                 <div className="mb-6">
-                  <AnimatedAvatar 
-                    size="lg" 
-                    state={avatarState}
-                    className="mx-auto mb-4"
+                  {!isMobile && (
+                    <AnimatedAvatar 
+                      size="lg" 
+                      state={avatarState}
+                      className="mx-auto mb-4"
+                    />
+                  )}
                   />
                 </div>
                 <div className="text-white/90 text-base">
