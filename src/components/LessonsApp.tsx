@@ -5013,32 +5013,40 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
       const { corrected } = feedbackResponse.data;
 
       // Use expectedRef for current question evaluation
-      function evaluateSpoken(userRaw: string) {
-        // Get the exact target sentence for this card
+      function evaluateSpoken(asrText: string) {
+        // --- Get target for THIS card only ---
         const item = currentModuleData.speakingPractice[speakingIndex];
-        const target = typeof item === 'string' ? item : (item.answer ?? item.question ?? '');
-        const ok = isExactlyCorrect(userRaw, target);
+        const targetRaw =
+          typeof item === 'string'
+            ? item
+            : (item?.answer ?? item?.question ?? '');
+
+        // --- Normalize & compare (diacritics/punct/quotes ignored) ---
+        const userNorm   = normalizeAnswer(asrText);
+        const targetNorm = normalizeAnswer(targetRaw);
+        const ok = isExactlyCorrect(userNorm, targetNorm);
 
         if (ok) {
           setCorrectAnswers(prev => prev + 1);
           setFeedback('Great job! Your sentence is correct.');
           setFeedbackType('success');
 
-          // Award XP for correct answer
+          // award + counters
           earnXPForGrammarLesson(true);
           incrementTotalExercises();
 
-          console.log('✅ CORRECT ANSWER - Scheduling guarded advance');
-          onAnswerCorrect();              // centralized advancement
+          // advance (debounced, guarded)
+          onAnswerCorrect();
         } else {
-          // Short, focused correction
-          setFeedback(`Not quite. Correct: "${target}".`);
+          // show the ORIGINAL target with diacritics preserved
+          setFeedback(`Not quite. Correct: "${targetRaw}".`);
           setFeedbackType('error');
+
+          // don't advance on wrong answer; clear after a short delay
           setTimeout(() => {
             setFeedback('');
             setIsProcessing(false);
-          }, 3000);
-          // no advance on wrong answer
+          }, 2500);
         }
       }
 
