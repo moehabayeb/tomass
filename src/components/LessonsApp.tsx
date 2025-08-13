@@ -3489,6 +3489,24 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     return spoken === target;
   }
 
+  function stripOuterQuotes(s: string) {
+    const t = s.trim();
+    if ((t.startsWith('"') && t.endsWith('"')) || (t.startsWith("'") && t.endsWith("'"))) {
+      return t.slice(1, -1).trim();
+    }
+    return t;
+  }
+
+  function computeTargetFromItem(item: any): string {
+    // Prefer explicit answer fields; otherwise fall back to the visible "Say:" text
+    const raw =
+      (item && (item.answer ?? item.say ?? item.sentence ?? item.target ?? item.expected ?? item.text ?? item.question)) || '';
+    return stripOuterQuotes(String(raw));
+  }
+
+  // Stable ref for the target to avoid stale closures
+  const evaluatorTargetRef = useRef<string>('');
+
   const { isSpeaking, soundEnabled, toggleSound } = useTextToSpeech();
   const { earnXPForGrammarLesson, addXP } = useGamification();
   const { incrementGrammarLessons, incrementTotalExercises } = useBadgeSystem();
@@ -4593,11 +4611,13 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     };
   }, []);
 
-  // Keep expectedRef up to date whenever the question changes
+  // Keep evaluator target fresh when index or module changes
   useEffect(() => {
     const item = currentModuleData?.speakingPractice?.[speakingIndex];
-    expectedRef.current = item ? getExpectedFromItem(item) : '';
-  }, [currentModuleData, speakingIndex]);
+    evaluatorTargetRef.current = computeTargetFromItem(item);
+    // QA log to confirm we're using the right target
+    console.log('[Eval] index', speakingIndex, 'target:', evaluatorTargetRef.current);
+  }, [selectedModule, speakingIndex, currentModuleData]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -5013,40 +5033,32 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
       const { corrected } = feedbackResponse.data;
 
       // Use expectedRef for current question evaluation
-      function evaluateSpoken(asrText: string) {
-        // --- Get target for THIS card only ---
-        const item = currentModuleData.speakingPractice[speakingIndex];
-        const targetRaw =
-          typeof item === 'string'
-            ? item
-            : (item?.answer ?? item?.question ?? '');
+      function evaluateSpoken(transcript: string) {
+        const userRaw = transcript?.trim() || '';
+        let target = evaluatorTargetRef.current;
 
-        // --- Normalize & compare (diacritics/punct/quotes ignored) ---
-        const userNorm   = normalizeAnswer(asrText);
-        const targetNorm = normalizeAnswer(targetRaw);
-        const ok = isExactlyCorrect(userNorm, targetNorm);
+        // If, for any reason, the ref is empty, compute on the fly from the live card
+        if (!target) {
+          const item = currentModuleData?.speakingPractice?.[speakingIndex];
+          target = computeTargetFromItem(item);
+        }
+
+        const ok = isExactlyCorrect(userRaw, target); // uses the normalization that ignores diacritics and punctuation
 
         if (ok) {
           setCorrectAnswers(prev => prev + 1);
           setFeedback('Great job! Your sentence is correct.');
           setFeedbackType('success');
-
-          // award + counters
           earnXPForGrammarLesson(true);
           incrementTotalExercises();
-
-          // advance (debounced, guarded)
-          onAnswerCorrect();
+          onAnswerCorrect();         // centralized guarded advance
         } else {
-          // show the ORIGINAL target with diacritics preserved
-          setFeedback(`Not quite. Correct: "${targetRaw}".`);
+          setFeedback(`Not quite. Correct: "${target}".`);
           setFeedbackType('error');
-
-          // don't advance on wrong answer; clear after a short delay
           setTimeout(() => {
             setFeedback('');
             setIsProcessing(false);
-          }, 2500);
+          }, 3000);
         }
       }
 
@@ -5742,7 +5754,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
                   Speaking Practice
                 </div>
                 <Badge variant="outline" className="text-white border-white/30">
-                  {speakingIndex + 1} / {totalQuestions}
+                  {Math.min(speakingIndex + 1, totalQuestions)} / {totalQuestions}
                 </Badge>
               </CardTitle>
             </CardHeader>
