@@ -15,7 +15,7 @@ import Confetti from 'react-confetti';
 import { useWindowSize } from '@react-hook/window-size';
 import { narration } from '@/utils/narration';
 
-// Speaking strict evaluator helpers
+
 function normalize(s: string) {
   return s
     .toLowerCase()
@@ -24,11 +24,6 @@ function normalize(s: string) {
     .trim();
 }
 
-function evaluateStrict(user: string, expected: string) {
-  const u = normalize(user);
-  const e = normalize(expected);
-  return { ok: u === e, u, e };
-}
 
 interface LessonsAppProps {
   onBack: () => void;
@@ -3406,6 +3401,34 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
   const moduleGuardRef = useRef<number | null>(null);
   const timeoutRef = useRef<number | null>(null);
   const lessonCompletedRef = useRef(false);
+  
+  // --- Speaking evaluation helpers ---
+  const expectedRef = useRef<string>('');  // live expected, never stale across timeouts
+
+  function stripSayPrefix(s: string): string {
+    if (!s) return '';
+    return s
+      .replace(/^say:\s*/i, '')   // drop "Say:"
+      .replace(/^"|^"|\s*"$|\s*"$/g, '') // drop surrounding quotes
+      .trim();
+  }
+
+  function getExpectedFromItem(
+    item: string | { question?: string; answer?: string; say?: string }
+  ): string {
+    if (typeof item === 'string') return stripSayPrefix(item);
+    const candidate = item?.answer ?? item?.say ?? item?.question ?? '';
+    return stripSayPrefix(candidate);
+  }
+
+  // normalize for strict-but-fair compare (ignore case, punctuation, extra spaces)
+  function normalize(s: string): string {
+    return (s || '')
+      .toLowerCase()
+      .replace(/["""'.!?]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
 
   const { isSpeaking, soundEnabled, toggleSound } = useTextToSpeech();
   const { earnXPForGrammarLesson, addXP } = useGamification();
@@ -4465,6 +4488,12 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     }
   }, [currentPhase, selectedModule]);
 
+  // Keep expectedRef up to date whenever the question changes
+  useEffect(() => {
+    const item = currentModuleData?.speakingPractice?.[speakingIndex];
+    expectedRef.current = item ? getExpectedFromItem(item) : '';
+  }, [currentModuleData, speakingIndex]);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -4877,45 +4906,42 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
 
       const { corrected } = feedbackResponse.data;
 
-      // Strict evaluator: compare user's speech to the exact expected sentence
-      const practiceItem = currentModuleData?.speakingPractice?.[speakingIndex];
-      if (!practiceItem) {
-        console.warn('No current practice item to validate at index', speakingIndex);
-        setIsProcessing(false);
-        return;
+      // Use expectedRef for current question evaluation
+      function evaluateSpoken(userRaw: string) {
+        const expected = expectedRef.current;           // always the CURRENT question
+        if (!expected) return;                          // guard bad data
+
+        const ok = normalize(userRaw) === normalize(expected);
+
+        if (ok) {
+          setCorrectAnswers(prev => prev + 1);
+          setFeedback('Great job!');                // short success message
+          setFeedbackType('success');
+
+          // Award XP for correct answer
+          earnXPForGrammarLesson(true);
+          incrementTotalExercises();
+
+          console.log('✅ CORRECT ANSWER - Scheduling guarded advance');
+          onAnswerCorrect();              // centralized advancement
+        } else {
+          setFeedback(`Not quite. Correct: "${expected}".`);
+          setFeedbackType('error');
+          setTimeout(() => {
+            setFeedback('');
+            setIsProcessing(false);
+          }, 3000);
+          // no advance on wrong answer
+        }
       }
 
-      const expectedSentenceRaw = typeof practiceItem === 'string'
-        ? practiceItem
-        : (practiceItem.answer ?? practiceItem.question);
-
-      const { ok } = evaluateStrict(finalTranscript, expectedSentenceRaw || '');
-
       console.log('VALIDATION PHASE');
-      console.log('Expected:', expectedSentenceRaw);
+      console.log('Expected:', expectedRef.current);
       console.log('User said (RAW):', finalTranscript);
       console.log('Index:', speakingIndex);
       console.log('Module:', currentModuleData.title);
 
-      if (ok) {
-        setCorrectAnswers(prev => prev + 1);
-        setFeedback('Great job! Your sentence is correct.');
-        setFeedbackType('success');
-
-        // Award XP for correct answer
-        await earnXPForGrammarLesson(true);
-        await incrementTotalExercises();
-
-        console.log('✅ CORRECT ANSWER - Scheduling guarded advance');
-        onAnswerCorrect();
-      } else {
-        setFeedback(`Not quite. Correct: "${expectedSentenceRaw}"`);
-        setFeedbackType('error');
-        setTimeout(() => {
-          setFeedback('');
-          setIsProcessing(false);
-        }, 3000);
-      }
+      evaluateSpoken(finalTranscript);
     } catch (error) {
       console.error('Error processing audio for current index:', error);
       setFeedback('Sorry, there was an error processing your audio. Please try again.');
