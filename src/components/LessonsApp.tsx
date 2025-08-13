@@ -1,5 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { ArrowLeft, Play, Pause, Mic, MicOff, Volume2, RefreshCw, Star, CheckCircle, AlertCircle, Lock, BookOpen, Trophy } from 'lucide-react';
+import {
+  getProgress, setProgress, clearProgress, keyFor, ModuleProgress
+} from '../utils/ProgressStore';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -30,7 +33,7 @@ interface LessonsAppProps {
 }
 
 type ViewState = 'levels' | 'modules' | 'lesson';
-type LessonPhase = 'intro' | 'teacher-reading' | 'listening' | 'speaking' | 'completed';
+type LessonPhase = 'intro' | 'teacher-reading' | 'listening' | 'speaking' | 'completed' | 'complete';
 
 // Levels data - TEMPORARILY UNLOCKED FOR DEVELOPMENT
 const LEVELS = [
@@ -3402,6 +3405,43 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
   const timeoutRef = useRef<number | null>(null);
   const lessonCompletedRef = useRef(false);
   
+  // ---- Autosave helpers ----
+  const SAVE_DEBOUNCE_MS = 250;
+  const saveTimerRef = useRef<number | null>(null);
+
+  function snapshotProgress(): ModuleProgress | null {
+    if (!currentModuleData || !selectedLevel || selectedModule == null) return null;
+
+    const totalListening = currentModuleData?.listeningExamples?.length ?? 0;
+    const totalSpeaking  = currentModuleData?.speakingPractice?.length ?? 0;
+
+    // Clamp indexes in case content changed between sessions
+    const safeListeningIndex = Math.min(Math.max(listeningIndex ?? 0, 0), Math.max(totalListening - 1, 0));
+    const safeSpeakingIndex  = Math.min(Math.max(speakingIndex ?? 0, 0), Math.max(totalSpeaking - 1, 0));
+
+    return {
+      level: String(selectedLevel),
+      module: Number(selectedModule),
+      phase: currentPhase as any,
+      listeningIndex: safeListeningIndex,
+      speakingIndex: safeSpeakingIndex,
+      completed: currentPhase === 'complete',
+      totalListening,
+      totalSpeaking,
+      updatedAt: Date.now(),
+      v: 1,
+    };
+  }
+
+  function saveProgressDebounced() {
+    if (saveTimerRef.current) window.clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = window.setTimeout(() => {
+      const snap = snapshotProgress();
+      if (snap) setProgress(snap);
+      saveTimerRef.current = null;
+    }, SAVE_DEBOUNCE_MS) as unknown as number;
+  }
+  
   // --- Speaking evaluation helpers ---
   const expectedRef = useRef<string>('');  // live expected, never stale across timeouts
 
@@ -4478,6 +4518,31 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     setIsProcessing(false);
   }, [selectedModule]);
 
+  // Resume on module/level change
+  useEffect(() => {
+    if (!currentModuleData || selectedModule == null || !selectedLevel) return;
+
+    const totalListening = currentModuleData?.listeningExamples?.length ?? 0;
+    const totalSpeaking  = currentModuleData?.speakingPractice?.length ?? 0;
+
+    const saved = getProgress(selectedLevel, selectedModule);
+    if (saved) {
+      // Clamp in case content changed
+      const li = Math.min(Math.max(saved.listeningIndex ?? 0, 0), Math.max(totalListening - 1, 0));
+      const si = Math.min(Math.max(saved.speakingIndex ?? 0, 0), Math.max(totalSpeaking - 1, 0));
+
+      // Restore phase and indexes (don't jump to 'complete' immediately; show "done" UI if needed)
+      setCurrentPhase(saved.completed ? 'completed' : saved.phase as LessonPhase);
+      setListeningIndex(li);
+      setSpeakingIndex(si);
+    } else {
+      // Fresh start
+      setCurrentPhase('intro');
+      setListeningIndex(0);
+      setSpeakingIndex(0);
+    }
+  }, [selectedLevel, selectedModule, currentModuleData]);
+
   // Reset speaking index and completion guard when entering speaking phase or changing module
   useEffect(() => {
     if (currentPhase === 'speaking') {
@@ -4487,6 +4552,27 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
       setIsProcessing(false);
     }
   }, [currentPhase, selectedModule]);
+
+  // Save on any meaningful change
+  useEffect(() => {
+    saveProgressDebounced();
+  }, [selectedLevel, selectedModule, currentPhase, listeningIndex, speakingIndex]);
+
+  // Also save on tab hide/close
+  useEffect(() => {
+    const handler = () => {
+      const snap = snapshotProgress();
+      if (snap) setProgress(snap);
+    };
+    window.addEventListener('beforeunload', handler);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') handler();
+    });
+    return () => {
+      window.removeEventListener('beforeunload', handler);
+      document.removeEventListener('visibilitychange', handler as any);
+    };
+  }, []);
 
   // Keep expectedRef up to date whenever the question changes
   useEffect(() => {
@@ -4537,6 +4623,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     setIsProcessing(true);
     setTimeout(() => {
       advanceSpeakingOnce();
+      saveProgressDebounced(); // Save after advancing
       setIsProcessing(false);
     }, 900);
   }
@@ -4964,6 +5051,10 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     await addXP(100, 'grammar');
     await incrementGrammarLessons();
     
+    // Save as completed
+    const snap = snapshotProgress();
+    if (snap) setProgress({ ...snap, completed: true, phase: 'complete' });
+    
     // Save progress
     const newCompletedModules = [...completedModules];
     const moduleKey = `module-${selectedModule}`;
@@ -4979,6 +5070,16 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
       setShowConfetti(false);
     }, 5000);
   };
+
+  // Optional: Reset progress for current module
+  function resetThisModuleProgress() {
+    if (selectedLevel && selectedModule != null) {
+      clearProgress(selectedLevel, selectedModule);
+      setCurrentPhase('intro');
+      setListeningIndex(0);
+      setSpeakingIndex(0);
+    }
+  }
 
   const startRecording = async () => {
     console.log('🎯 Start recording clicked');
