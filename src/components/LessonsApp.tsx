@@ -3461,13 +3461,32 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     return stripSayPrefix(candidate);
   }
 
-  // normalize for strict-but-fair compare (ignore case, punctuation, extra spaces)
-  function normalize(s: string): string {
-    return (s || '')
-      .toLowerCase()
-      .replace(/["""'.!?]/g, '')
+  // Strip accents, visual punctuation, and normalize spacing/case
+  function normalizeAnswer(raw: string): string {
+    if (!raw) return '';
+    return raw
+      // Unicode normalize, then strip combining marks (accents/diacritics)
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      // Unify quotes/apostrophes and dashes
+      .replace(/[""„«»]/g, '"')
+      .replace(/[''']/g, "'")
+      .replace(/[–—]/g, '-')
+      // Remove punctuation that shouldn't affect correctness
+      .replace(/[.,!?;:()"]/g, '')
+      // Remove apostrophes too (so cafe's vs cafes isn't conflated; we keep words strict,
+      // but apostrophes in cafe/café or don't → dont won't matter visually)
+      .replace(/'/g, '')
+      // Collapse whitespace and lowercase
       .replace(/\s+/g, ' ')
-      .trim();
+      .trim()
+      .toLowerCase();
+  }
+
+  // Strict compare after normalization
+  function isExactlyCorrect(spokenRaw: string, targetRaw: string): boolean {
+    const spoken = normalizeAnswer(spokenRaw);
+    const target = normalizeAnswer(targetRaw);
+    return spoken === target;
   }
 
   const { isSpeaking, soundEnabled, toggleSound } = useTextToSpeech();
@@ -4995,14 +5014,14 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
 
       // Use expectedRef for current question evaluation
       function evaluateSpoken(userRaw: string) {
-        const expected = expectedRef.current;           // always the CURRENT question
-        if (!expected) return;                          // guard bad data
-
-        const ok = normalize(userRaw) === normalize(expected);
+        // Get the exact target sentence for this card
+        const item = currentModuleData.speakingPractice[speakingIndex];
+        const target = typeof item === 'string' ? item : (item.answer ?? item.question ?? '');
+        const ok = isExactlyCorrect(userRaw, target);
 
         if (ok) {
           setCorrectAnswers(prev => prev + 1);
-          setFeedback('Great job!');                // short success message
+          setFeedback('Great job! Your sentence is correct.');
           setFeedbackType('success');
 
           // Award XP for correct answer
@@ -5012,7 +5031,8 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
           console.log('✅ CORRECT ANSWER - Scheduling guarded advance');
           onAnswerCorrect();              // centralized advancement
         } else {
-          setFeedback(`Not quite. Correct: "${expected}".`);
+          // Short, focused correction
+          setFeedback(`Not quite. Correct: "${target}".`);
           setFeedbackType('error');
           setTimeout(() => {
             setFeedback('');
