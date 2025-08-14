@@ -37,19 +37,7 @@ function getNextModuleId(level: 'A1'|'A2'|'B1', current: number): number | null 
   return idx < order.length - 1 ? order[idx + 1] : null;
 }
 
-// ---------- Persistent Progress (localStorage) ----------
-type ModuleProgress = {
-  lastIndex: number;           // 0-based speakingIndex
-  completed: boolean;          // finished all questions
-  completedAt?: number;        // timestamp
-};
-
-type UserProgress = {
-  [level: string]: {
-    [moduleId: number]: ModuleProgress
-  },
-  lastVisited?: { level: string; moduleId: number };
-};
+// Using ProgressStore for persistence - no local types needed
 
 type LessonProgress = {
   v: 1;
@@ -101,24 +89,7 @@ function clearLessonProgress(userId: string, level: number | string, module: num
   try { localStorage.removeItem(progressKey(userId, level, module)); } catch {}
 }
 
-// ---------- Module Progress Helpers ----------
-function saveModuleProgress(level: string, moduleId: number, patch: Partial<ModuleProgress>) {
-  const key = `progress-v2`;
-  const raw = localStorage.getItem(key);
-  const data: UserProgress = raw ? JSON.parse(raw) : {};
-  const levelBag = data[level] ?? {};
-  const cur: ModuleProgress = levelBag[moduleId] ?? { lastIndex: 0, completed: false };
-  levelBag[moduleId] = { ...cur, ...patch };
-  data[level] = levelBag;
-  localStorage.setItem(key, JSON.stringify(data));
-}
-
-function loadModuleProgress(level: string, moduleId: number): ModuleProgress | null {
-  const raw = localStorage.getItem(`progress-v2`);
-  if (!raw) return null;
-  const data: UserProgress = JSON.parse(raw);
-  return data[level]?.[moduleId] ?? null;
-}
+// Using ProgressStore for all module progress
 
 function normalize(s: string) {
   return s
@@ -3518,7 +3489,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
   const restoredOnceRef = useRef(false);
   const autosaveTimeoutRef = useRef<number | null>(null);
 
-  function snapshotProgress(): ModuleProgress | null {
+  function snapshotProgress(): StoreModuleProgress | null {
     if (!currentModuleData || !selectedLevel || selectedModule == null) return null;
 
     const totalListening = currentModuleData?.listeningExamples?.length ?? 0;
@@ -3556,10 +3527,17 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     const total = currentModuleData?.speakingPractice?.length ?? 0;
 
     // persist completion
-    saveModuleProgress(selectedLevel, selectedModule, {
+    setProgress({
+      level: selectedLevel,
+      module: selectedModule,
+      phase: 'complete',
+      listeningIndex: 0,
+      speakingIndex: Math.max(0, total - 1),
       completed: true,
-      completedAt: Date.now(),
-      lastIndex: Math.max(0, total - 1),
+      totalListening: currentModuleData?.intro?.length ?? 0,
+      totalSpeaking: total,
+      updatedAt: Date.now(),
+      v: 1
     });
 
     // celebration
@@ -3567,19 +3545,15 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     setTimeout(() => {
       setShowCelebration(false);
 
-      // compute next module
-      const nextId = getNextModuleId(selectedLevel as 'A1'|'A2'|'B1', selectedModule);
+    // compute next module
+    const nextId = getNextModuleId(selectedLevel as 'A1' | 'A2' | 'B1', selectedModule);
       if (nextId) {
         narration.cancel();
         // reset local UI state
         setSpeakingIndex(0);
         setCurrentPhase('intro');
         setSelectedModule(nextId);
-        // record last visited
-        const raw = localStorage.getItem('progress-v2');
-        const data: UserProgress = raw ? JSON.parse(raw) : {};
-        data.lastVisited = { level: selectedLevel, moduleId: nextId };
-        localStorage.setItem('progress-v2', JSON.stringify(data));
+      // The next module will be set, no need for separate lastVisited tracking
       } else {
         // no next module: stay on completion screen or show a CTA to change level
       }
@@ -4680,13 +4654,13 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     window.matchMedia &&
     window.matchMedia('(max-width: 480px)').matches;
 
-  // Restore progress when module changes
+  // Load progress on module change
   useEffect(() => {
-    const p = loadModuleProgress(selectedLevel, selectedModule);
+    const p = getProgress(selectedLevel, selectedModule);
     if (p) {
       // resume at next unanswered item, but never past last
       const total = currentModuleData?.speakingPractice?.length ?? 0;
-      const idx = Math.min(p.lastIndex, total > 0 ? total - 1 : 0);
+      const idx = Math.min(p.speakingIndex, total > 0 ? total - 1 : 0);
       setSpeakingIndex(idx);
     } else {
       setSpeakingIndex(0);
@@ -4921,7 +4895,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     narration.cancel();
     narration.speak(`Congratulations! You have completed Module ${selectedModule}. Well done!`);
 
-    const nextModule = getNextModuleId(selectedLevel, selectedModule);
+    const nextModule = getNextModuleId(selectedLevel as 'A1' | 'A2' | 'B1', selectedModule);
     window.setTimeout(() => {
       setShowConfetti(false);
 
