@@ -4585,6 +4585,12 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
   const overallProgress = ((speakingIndex + (correctAnswers > 0 ? 1 : 0)) / totalQuestions) * 100;
   const lessonKey = `${selectedLevel}-${selectedModule}`;
 
+  // Mobile detection helper
+  const isMobile =
+    typeof window !== 'undefined' &&
+    window.matchMedia &&
+    window.matchMedia('(max-width: 480px)').matches;
+
   // Speak only on intro, once per module, and cancel on any change
   useEffect(() => {
     narration.cancel();
@@ -5616,8 +5622,8 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
           <CanvasAvatar state={avatarState} size="lg" />
         </div>
 
-        {/* Tip Card */}
-        {'tip' in currentModuleData && currentModuleData.tip && (
+        {/* Tip Card - Hidden on mobile */}
+        {!isMobile && 'tip' in currentModuleData && currentModuleData.tip && (
           <Card className="mb-6 bg-white/10 border-white/20">
             <CardContent className="p-4">
               <div className="flex items-start space-x-3">
@@ -5652,7 +5658,6 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
                       className="mx-auto mb-4"
                     />
                   )}
-                  />
                 </div>
                 <div className="text-white/90 text-base">
                   <p className="mb-4">🎧 Listen carefully as Tomas reads through this lesson...</p>
