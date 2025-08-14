@@ -38,7 +38,7 @@ function getNextModuleId(level: 'A1'|'A2'|'B1', current: number): number | null 
 }
 
 // ---------- Persistent Progress (localStorage) ----------
-type ModuleProgress = {
+type LocalModuleProgress = {
   lastIndex: number;           // 0-based speakingIndex
   completed: boolean;          // finished all questions
   completedAt?: number;        // timestamp
@@ -46,7 +46,7 @@ type ModuleProgress = {
 
 type UserProgress = {
   [level: string]: {
-    [moduleId: number]: ModuleProgress
+    [moduleId: number]: LocalModuleProgress
   },
   lastVisited?: { level: string; moduleId: number };
 };
@@ -102,18 +102,18 @@ function clearLessonProgress(userId: string, level: number | string, module: num
 }
 
 // ---------- Module Progress Helpers ----------
-function saveModuleProgress(level: string, moduleId: number, patch: Partial<ModuleProgress>) {
+function saveModuleProgress(level: string, moduleId: number, patch: Partial<LocalModuleProgress>) {
   const key = `progress-v2`;
   const raw = localStorage.getItem(key);
   const data: UserProgress = raw ? JSON.parse(raw) : {};
   const levelBag = data[level] ?? {};
-  const cur: ModuleProgress = levelBag[moduleId] ?? { lastIndex: 0, completed: false };
+  const cur: LocalModuleProgress = levelBag[moduleId] ?? { lastIndex: 0, completed: false };
   levelBag[moduleId] = { ...cur, ...patch };
   data[level] = levelBag;
   localStorage.setItem(key, JSON.stringify(data));
 }
 
-function loadModuleProgress(level: string, moduleId: number): ModuleProgress | null {
+function loadModuleProgress(level: string, moduleId: number): LocalModuleProgress | null {
   const raw = localStorage.getItem(`progress-v2`);
   if (!raw) return null;
   const data: UserProgress = JSON.parse(raw);
@@ -3518,7 +3518,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
   const restoredOnceRef = useRef(false);
   const autosaveTimeoutRef = useRef<number | null>(null);
 
-  function snapshotProgress(): ModuleProgress | null {
+  function snapshotProgress(): StoreModuleProgress | null {
     if (!currentModuleData || !selectedLevel || selectedModule == null) return null;
 
     const totalListening = currentModuleData?.listeningExamples?.length ?? 0;
@@ -4921,7 +4921,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     narration.cancel();
     narration.speak(`Congratulations! You have completed Module ${selectedModule}. Well done!`);
 
-    const nextModule = getNextModuleId(selectedLevel, selectedModule);
+    const nextModule = getNextModuleId(selectedLevel as 'A1'|'A2'|'B1', selectedModule);
     window.setTimeout(() => {
       setShowConfetti(false);
 
