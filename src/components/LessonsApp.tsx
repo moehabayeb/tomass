@@ -106,6 +106,7 @@ interface LessonsAppProps {
 
 type ViewState = 'levels' | 'modules' | 'lesson';
 type LessonPhase = 'intro' | 'teacher-reading' | 'listening' | 'speaking' | 'completed' | 'complete';
+type SpeakStatus = 'idle'|'prompting'|'recording'|'transcribing'|'evaluating'|'advancing';
 
 // Levels data - TEMPORARILY UNLOCKED FOR DEVELOPMENT
 const LEVELS = [
@@ -3481,7 +3482,36 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
   // Track the live speaking index (no stale closures)
   const speakingIndexRef = useRef(0);
 
-  // Move this after currentModuleData is declared
+  // ---- Robust speaking run state ----
+  const [speakStatus, setSpeakStatus] = useState<SpeakStatus>('idle');
+  const runIdRef = useRef<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
+  const retryRef = useRef<number>(0);
+  const MAX_RETRIES = 3;
+
+  function newRunId() {
+    return `${Date.now()}-${Math.random().toString(36).slice(2,7)}`;
+  }
+  function isStale(id: string) {
+    return runIdRef.current !== id;
+  }
+  function resetRun() {
+    if (abortRef.current) abortRef.current.abort();
+    abortRef.current = null;
+    runIdRef.current = null;
+    retryRef.current = 0;
+    setSpeakStatus('idle');
+  }
+  function withTimeout<T>(p: Promise<T>, ms: number, label: string) {
+    return new Promise<T>((resolve, reject) => {
+      const t = setTimeout(() => reject(new Error(`${label}:timeout`)), ms);
+      p.then(v => { clearTimeout(t); resolve(v); })
+       .catch(e => { clearTimeout(t); reject(e); });
+    });
+  }
+
+  // Always cancel any pending ASR/TTS when module/view changes
+  useEffect(() => resetRun(), [selectedModule, selectedLevel, viewState]);
   
   // ---- Autosave helpers ----
   const SAVE_DEBOUNCE_MS = 250;
@@ -5339,13 +5369,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
       evaluateSpoken(finalTranscript);
     } catch (error) {
       console.error('Error processing audio for current index:', error);
-      setFeedback('Sorry, there was an error processing your audio. Please try again.');
-      setFeedbackType('error');
-      
-      setTimeout(() => {
-        setFeedback('');
-        setIsProcessing(false);
-      }, 3000);
+      // No generic error feedback - let the flow auto-retry
     }
     
     setLastResponseTime(Date.now());
@@ -5359,6 +5383,42 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
       setCurrentPhase('intro');
       setListeningIndex(0);
       setSpeakingIndex(0);
+    }
+  }
+
+  // ---- New Robust Speaking Flow ----
+  async function startSpeakingFlow() {
+    // prevent parallel runs
+    if (speakStatus !== 'idle') return;
+
+    const id = newRunId();
+    runIdRef.current = id;
+    abortRef.current = new AbortController();
+
+    // Set status and start the existing recording flow
+    setSpeakStatus('recording');
+    
+    try {
+      // Use existing recording system
+      if (!isRecording) {
+        await startRecording();
+      }
+    } catch (error) {
+      // Silent retry - no error feedback
+      console.log('Speaking flow error, retrying...', error);
+      
+      // Reset and retry with backoff
+      retryRef.current += 1;
+      if (retryRef.current <= MAX_RETRIES) {
+        await new Promise(r => setTimeout(r, 400 * retryRef.current));
+        if (!isStale(id)) {
+          await startSpeakingFlow(); // Retry
+        }
+      }
+    } finally {
+      if (!isStale(id)) {
+        resetRun();
+      }
     }
   }
 
@@ -6047,7 +6107,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
                 {/* Recording Button */}
                 <div className="mb-4">
                   <Button
-                    onClick={isRecording ? stopRecording : startRecording}
+                    onClick={isRecording ? stopRecording : startSpeakingFlow}
                     size="lg"
                     className={`rounded-full w-20 h-20 ${
                       isRecording 
