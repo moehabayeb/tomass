@@ -3489,8 +3489,152 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
   const retryRef   = useRef(0);
   const MAX_RETRIES = 3;
 
-  // one-shot resolver the ASR will call with the final transcript
-  const asrResultOnceRef = useRef<null | ((text: string) => void)>(null);
+  // ---- Mic + ASR utilities (robust) ----
+  type Abortable = { signal?: AbortSignal };
+
+  // TypeScript interfaces for Web Speech API
+  interface SpeechRecognition extends EventTarget {
+    lang: string;
+    continuous: boolean;
+    interimResults: boolean;
+    start(): void;
+    stop(): void;
+    onresult: (event: SpeechRecognitionEvent) => void;
+    onerror: (event: any) => void;
+    onend: () => void;
+  }
+
+  interface SpeechRecognitionEvent {
+    results: SpeechRecognitionResultList;
+  }
+
+  interface SpeechRecognitionResultList {
+    length: number;
+    item(index: number): SpeechRecognitionResult;
+    [index: number]: SpeechRecognitionResult;
+  }
+
+  interface SpeechRecognitionResult {
+    length: number;
+    item(index: number): SpeechRecognitionAlternative;
+    [index: number]: SpeechRecognitionAlternative;
+    isFinal: boolean;
+  }
+
+  interface SpeechRecognitionAlternative {
+    transcript: string;
+    confidence: number;
+  }
+
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const streamRef   = useRef<MediaStream | null>(null);
+  const recognizerRef = useRef<SpeechRecognition | null>(null); // Web Speech API
+  const firstTapRef = useRef(false);
+
+  async function ensureAudioUnlocked() {
+    if (!firstTapRef.current) {
+      firstTapRef.current = true;
+    }
+    if (!audioCtxRef.current) {
+      const Ctx = (window.AudioContext || (window as any).webkitAudioContext);
+      if (Ctx) audioCtxRef.current = new Ctx();
+    }
+    if (audioCtxRef.current?.state === 'suspended') {
+      try { await audioCtxRef.current.resume(); } catch {}
+    }
+  }
+
+  async function getMicStream(): Promise<MediaStream> {
+    if (streamRef.current) return streamRef.current;
+    const constraints: MediaStreamConstraints = {
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+      },
+      video: false
+    };
+    streamRef.current = await navigator.mediaDevices.getUserMedia(constraints);
+    return streamRef.current;
+  }
+
+  function stopMicStream() {
+    streamRef.current?.getTracks().forEach(t => t.stop());
+    streamRef.current = null;
+  }
+
+  // Clean up on page leave/unmount
+  useEffect(() => {
+    const onHide = () => { recognizerRef.current?.stop?.(); stopMicStream(); };
+    document.addEventListener('visibilitychange', onHide);
+    return () => { document.removeEventListener('visibilitychange', onHide); onHide(); };
+  }, []);
+
+  async function startListening(opts: Abortable = {}): Promise<string> {
+    await ensureAudioUnlocked();
+
+    // 1) Prefer Web Speech API if present (best reliability on mobile)
+    const SR: any = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (SR) {
+      return new Promise<string>((resolve, reject) => {
+        const rec: SpeechRecognition = new SR();
+        recognizerRef.current = rec;
+        rec.lang = 'en-US';
+        rec.continuous = false;
+        rec.interimResults = false;
+        let done = false;
+
+        const finish = (fn: Function, val?: any) => {
+          if (!done) { done = true; try { rec.stop(); } catch {} fn(val); }
+        };
+
+        rec.onresult = (e: SpeechRecognitionEvent) => {
+          const txt = Array.from(e.results)
+            .map(r => r[0]?.transcript ?? '')
+            .join(' ')
+            .trim();
+          finish(resolve, txt);
+        };
+        rec.onerror = (e: any) => finish(reject, e.error || new Error('asr:error'));
+        rec.onend = () => finish(resolve, ''); // if nothing heard, return empty
+
+        // Abort support
+        opts.signal?.addEventListener('abort', () => finish(reject, new Error('aborted')), { once: true });
+
+        try { rec.start(); } catch (err) { finish(reject, err); }
+      });
+    }
+
+    // 2) Fallback: record to Blob and POST to our ASR endpoint (/api/asr)
+    const stream = await getMicStream();
+    const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+    const chunks: BlobPart[] = [];
+    return new Promise<string>((resolve, reject) => {
+      let done = false;
+      const finish = (fn: Function, val?: any) => { if (!done) { done = true; try { recorder.stop(); } catch{} fn(val); } };
+
+      recorder.ondataavailable = (e) => { if (e.data?.size) chunks.push(e.data); };
+      recorder.onerror = (e: any) => finish(reject, e.error || new Error('recorder:error'));
+      recorder.onstop = async () => {
+        try {
+          const blob = new Blob(chunks, { type: 'audio/webm' });
+          // Change this URL if your ASR endpoint differs; it should return { text: string }
+          const fd = new FormData();
+          fd.append('audio', blob, 'speech.webm');
+          const res = await fetch('/api/asr', { method: 'POST', body: fd });
+          const data = await res.json().catch(() => ({}));
+          finish(resolve, (data?.text ?? '').trim());
+        } catch (err) { finish(reject, err); }
+      };
+
+      // Abort support
+      opts.signal?.addEventListener('abort', () => finish(reject, new Error('aborted')), { once: true });
+
+      try { recorder.start(); } catch (err) { finish(reject, err); return; }
+      // Stop after 6s of capture (tweak if needed)
+      setTimeout(() => finish(() => recorder.requestData()), 6000);
+    });
+  }
 
   const newRunId = () => `${Date.now()}-${Math.random().toString(36).slice(2,7)}`;
   const isStale  = (id: string) => runIdRef.current !== id;
@@ -5297,9 +5441,6 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
       const { transcript, text } = transcribeResponse.data || {};
       const finalTranscript = transcript || text || '';
       
-      // NEW: hand transcript to the runner
-      asrResultOnceRef.current?.(finalTranscript);
-      asrResultOnceRef.current = null;
       
       console.log('📝 Raw transcribed text (verbatim):', finalTranscript);
       
@@ -5414,23 +5555,9 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
         await new Promise(r => setTimeout(r, Math.min(1200, Math.max(600, promptText.length * 40))));
         if (isStale(id)) return;
 
-        // 2) Record + wait for real final transcript via the bridge
+        // 2) Record and transcribe with robust startListening
         setSpeakStatus('recording');
-
-        // Start the existing recording flow (whatever you already use)
-        startRecording(); // do NOT await here; your recorder drives the pipeline
-
-        const transcript: string = await withTimeout<string>(
-          new Promise((resolve, reject) => {
-            // abort safety
-            abortRef.current!.signal.addEventListener('abort', () => reject(new Error('aborted')), { once: true });
-
-            // set one-shot resolver
-            asrResultOnceRef.current = (text: string) => resolve(text);
-          }),
-          12000,
-          'asr'
-        );
+        const transcript: string = await startListening({ signal: abortRef.current!.signal });
 
         if (isStale(id)) return;
 
