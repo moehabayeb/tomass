@@ -4591,28 +4591,63 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     window.matchMedia &&
     window.matchMedia('(max-width: 480px)').matches;
 
-  // Speak only on intro, once per module, and cancel on any change
+  // --- Visibility + narration guards ---
+  const introRef = useRef<HTMLDivElement | null>(null);
+  const introVisibleRef = useRef(false);
+  const cancelAllNarration = useCallback(() => {
+    try { narration.cancel(); } catch {}
+  }, []);
+
+  // Watch whether the actual Intro section is on screen
   useEffect(() => {
-    narration.cancel();
+    if (!introRef.current || !('IntersectionObserver' in window)) return;
+
+    const obs = new IntersectionObserver(
+      (entries) => {
+        const e = entries[0];
+        // consider "visible" only when ≥60% of Intro is in view
+        introVisibleRef.current = !!e && e.isIntersecting && e.intersectionRatio >= 0.6;
+        if (!introVisibleRef.current) cancelAllNarration();
+      },
+      { threshold: [0, 0.6, 1] }
+    );
+
+    obs.observe(introRef.current);
+    return () => obs.disconnect();
+  }, [cancelAllNarration]);
+
+  // Speak ONLY when Intro is the active phase AND the Intro block is visible.
+  // Stop on any change.
+  useEffect(() => {
+    cancelAllNarration();
 
     const canRead =
       viewState === 'lesson' &&
       currentPhase === 'intro' &&
       selectedModule != null &&
       !!currentModuleData?.intro &&
-      !hasBeenRead[lessonKey];
+      !hasBeenRead[lessonKey] &&
+      introVisibleRef.current; // must be on screen
 
     if (canRead) startTeacherReading();
 
-    return () => narration.cancel();
+    return () => cancelAllNarration();
   }, [
     viewState,
     currentPhase,
     selectedModule,
-    lessonKey,
     currentModuleData?.intro,
-    hasBeenRead[lessonKey]
+    hasBeenRead[lessonKey],
+    cancelAllNarration
   ]);
+
+  // Any phase that is not Intro must be silent
+  useEffect(() => {
+    if (currentPhase !== 'intro') cancelAllNarration();
+  }, [currentPhase, cancelAllNarration]);
+
+  // Cancel if menu opens or route/view changes
+  useEffect(() => { cancelAllNarration(); }, [viewState, cancelAllNarration]);
 
   // Guard module changes and clear pending timers
   useEffect(() => {
@@ -5672,9 +5707,10 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
           </Card>
         )}
 
-        {/* Intro Phase */}
+        {/* INTRO SECTION */}
         {currentPhase === 'intro' && (
-          <Card className="bg-white/10 border-white/20 mb-6">
+          <div ref={introRef}>
+            <Card className="bg-white/10 border-white/20 mb-6">
             <CardHeader>
               <CardTitle className="text-white flex items-center">
                 <BookOpen className="h-5 w-5 mr-2" />
@@ -5841,6 +5877,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
               )}
             </CardContent>
           </Card>
+          </div>
         )}
 
         {/* Listening Phase */}
