@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { ArrowLeft, Play, Pause, Mic, MicOff, Volume2, RefreshCw, Star, CheckCircle, AlertCircle, Lock, BookOpen, Trophy } from 'lucide-react';
 import {
-  getProgress, setProgress, clearProgress, keyFor, ModuleProgress
+  getProgress, setProgress, clearProgress, keyFor, ModuleProgress as StoreModuleProgress
 } from '../utils/ProgressStore';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,8 +17,40 @@ import { supabase } from '@/integrations/supabase/client';
 import Confetti from 'react-confetti';
 import { useWindowSize } from '@react-hook/window-size';
 import { narration } from '@/utils/narration';
+import { CelebrationOverlay } from './CelebrationOverlay';
+
+// ---------- Module Order and Next Module Logic ----------
+const ORDER_A1 = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50];
+const ORDER_A2 = [51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100];
+const ORDER_B1 = [101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129];
+
+function getOrderForLevel(level: 'A1'|'A2'|'B1'): number[] {
+  if (level === 'A1') return ORDER_A1;
+  if (level === 'A2') return ORDER_A2;
+  return ORDER_B1;
+}
+
+function getNextModuleId(level: 'A1'|'A2'|'B1', current: number): number | null {
+  const order = getOrderForLevel(level);
+  const idx = order.indexOf(current);
+  if (idx === -1) return null;
+  return idx < order.length - 1 ? order[idx + 1] : null;
+}
 
 // ---------- Persistent Progress (localStorage) ----------
+type ModuleProgress = {
+  lastIndex: number;           // 0-based speakingIndex
+  completed: boolean;          // finished all questions
+  completedAt?: number;        // timestamp
+};
+
+type UserProgress = {
+  [level: string]: {
+    [moduleId: number]: ModuleProgress
+  },
+  lastVisited?: { level: string; moduleId: number };
+};
+
 type LessonProgress = {
   v: 1;
   userId: string;           // pick your user identifier (or 'anon')
@@ -67,6 +99,25 @@ function saveProgress(p: Omit<LessonProgress,'ts'|'v'>) {
 
 function clearLessonProgress(userId: string, level: number | string, module: number | string) {
   try { localStorage.removeItem(progressKey(userId, level, module)); } catch {}
+}
+
+// ---------- Module Progress Helpers ----------
+function saveModuleProgress(level: string, moduleId: number, patch: Partial<ModuleProgress>) {
+  const key = `progress-v2`;
+  const raw = localStorage.getItem(key);
+  const data: UserProgress = raw ? JSON.parse(raw) : {};
+  const levelBag = data[level] ?? {};
+  const cur: ModuleProgress = levelBag[moduleId] ?? { lastIndex: 0, completed: false };
+  levelBag[moduleId] = { ...cur, ...patch };
+  data[level] = levelBag;
+  localStorage.setItem(key, JSON.stringify(data));
+}
+
+function loadModuleProgress(level: string, moduleId: number): ModuleProgress | null {
+  const raw = localStorage.getItem(`progress-v2`);
+  if (!raw) return null;
+  const data: UserProgress = JSON.parse(raw);
+  return data[level]?.[moduleId] ?? null;
 }
 
 function normalize(s: string) {
@@ -3442,6 +3493,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
   const [hasBeenRead, setHasBeenRead] = useState<Record<string, boolean>>({});
   const [listeningIndex, setListeningIndex] = useState(0);
   const [speakingIndex, setSpeakingIndex] = useState(0);
+  const [showCelebration, setShowCelebration] = useState(false);
   const [correctAnswers, setCorrectAnswers] = useState(0);
   const [attempts, setAttempts] = useState(0);
   const [isRecording, setIsRecording] = useState(false);
@@ -3457,6 +3509,8 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
   
   // Track the live speaking index (no stale closures)
   const speakingIndexRef = useRef(0);
+
+  // Move this after currentModuleData is declared
   
   // ---- Autosave helpers ----
   const SAVE_DEBOUNCE_MS = 250;
@@ -3485,7 +3539,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
       totalSpeaking,
       updatedAt: Date.now(),
       v: 1,
-    };
+    } as StoreModuleProgress;
   }
 
   function saveProgressDebounced() {
@@ -3495,6 +3549,41 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
       if (snap) setProgress(snap);
       saveTimerRef.current = null;
     }, SAVE_DEBOUNCE_MS) as unknown as number;
+  }
+
+  // --- Module Completion Logic ---
+  function completeLesson() {
+    const total = currentModuleData?.speakingPractice?.length ?? 0;
+
+    // persist completion
+    saveModuleProgress(selectedLevel, selectedModule, {
+      completed: true,
+      completedAt: Date.now(),
+      lastIndex: Math.max(0, total - 1),
+    });
+
+    // celebration
+    setShowCelebration(true);
+    setTimeout(() => {
+      setShowCelebration(false);
+
+      // compute next module
+      const nextId = getNextModuleId(selectedLevel as 'A1'|'A2'|'B1', selectedModule);
+      if (nextId) {
+        narration.cancel();
+        // reset local UI state
+        setSpeakingIndex(0);
+        setCurrentPhase('intro');
+        setSelectedModule(nextId);
+        // record last visited
+        const raw = localStorage.getItem('progress-v2');
+        const data: UserProgress = raw ? JSON.parse(raw) : {};
+        data.lastVisited = { level: selectedLevel, moduleId: nextId };
+        localStorage.setItem('progress-v2', JSON.stringify(data));
+      } else {
+        // no next module: stay on completion screen or show a CTA to change level
+      }
+    }, 2000);
   }
   
   // --- Speaking evaluation helpers ---
@@ -4591,6 +4680,19 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     window.matchMedia &&
     window.matchMedia('(max-width: 480px)').matches;
 
+  // Restore progress when module changes
+  useEffect(() => {
+    const p = loadModuleProgress(selectedLevel, selectedModule);
+    if (p) {
+      // resume at next unanswered item, but never past last
+      const total = currentModuleData?.speakingPractice?.length ?? 0;
+      const idx = Math.min(p.lastIndex, total > 0 ? total - 1 : 0);
+      setSpeakingIndex(idx);
+    } else {
+      setSpeakingIndex(0);
+    }
+  }, [selectedLevel, selectedModule, currentModuleData]);
+
   // --- Visibility + narration guards ---
   const introRef = useRef<HTMLDivElement | null>(null);
   const introVisibleRef = useRef(false);
@@ -4774,15 +4876,6 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     if (!item) console.warn('[Progress] No item at index', speakingIndex);
   }, [speakingIndex, selectedModule, currentModuleData]);
 
-  // Helper to get next module ID for the current level
-  function getNextModuleId(level: string, module: number): number | null {
-    // Simple logic: increment module number, you can customize this
-    // based on your actual module structure
-    const nextModule = module + 1;
-    // Assuming modules go up to a reasonable limit per level
-    const maxModules = 100; // adjust based on your content
-    return nextModule <= maxModules ? nextModule : null;
-  }
 
   // Centralized celebration and advancement logic
   function celebrateAndAdvance() {
@@ -6023,6 +6116,14 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
           </Card>
         )}
       </div>
+
+      {/* Celebration Overlay */}
+      {showCelebration && (
+        <CelebrationOverlay
+          title="Great job!"
+          subtitle="Module completed"
+        />
+      )}
     </div>
   );
 }
