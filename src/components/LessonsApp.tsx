@@ -3482,119 +3482,37 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
   // Track the live speaking index (no stale closures)
   const speakingIndexRef = useRef(0);
 
-  // ---- Robust Web Speech recognizer (single instance with guarded retries) ----
-  type RunStatus = 'idle' | 'prompting' | 'recording' | 'evaluating' | 'advancing';
+  // ---------- ASR guard & retry (single source of truth) ----------
+  const [speakStatus, setSpeakStatus] = useState<SpeakStatus>('idle');
+  const runIdRef   = useRef<string | null>(null);          // which attempt is active
+  const abortRef   = useRef<AbortController | null>(null); // cancel current attempt
+  const retryRef   = useRef(0);
+  const MAX_RETRIES = 3;
 
-  const speechRunIdRef = useRef<string | null>(null);
-  const speakStatusRef = useRef<RunStatus>('idle');
-  const recognizerRef = useRef<SpeechRecognition | null>(null);
-  const retryCountRef = useRef(0);
-  const MAX_ASR_RETRIES = 3;
+  // one-shot resolver the ASR will call with the final transcript
+  const asrResultOnceRef = useRef<null | ((text: string) => void)>(null);
 
-  // ---- Mic + ASR utilities (robust) ----
-  type Abortable = { signal?: AbortSignal };
+  const newRunId = () => `${Date.now()}-${Math.random().toString(36).slice(2,7)}`;
+  const isStale  = (id: string) => runIdRef.current !== id;
 
-  // TypeScript interfaces for Web Speech API
-  interface SpeechRecognition extends EventTarget {
-    lang: string;
-    continuous: boolean;
-    interimResults: boolean;
-    start(): void;
-    stop(): void;
-    onresult: (event: SpeechRecognitionEvent) => void;
-    onerror: (event: any) => void;
-    onend: () => void;
+  function resetASR() {
+    try { abortRef.current?.abort(); } catch {}
+    abortRef.current = null;
+    runIdRef.current = null;
+    retryRef.current = 0;
+    setSpeakStatus('idle');
   }
 
-  interface SpeechRecognitionEvent {
-    results: SpeechRecognitionResultList;
-  }
-
-  interface SpeechRecognitionResultList {
-    length: number;
-    item(index: number): SpeechRecognitionResult;
-    [index: number]: SpeechRecognitionResult;
-  }
-
-  interface SpeechRecognitionResult {
-    length: number;
-    item(index: number): SpeechRecognitionAlternative;
-    [index: number]: SpeechRecognitionAlternative;
-    isFinal: boolean;
-  }
-
-  interface SpeechRecognitionAlternative {
-    transcript: string;
-    confidence: number;
-  }
-
-  // Ensure user gesture unlocked audio on iOS
-  async function unlockAudioOnce() {
-    const Ctx = (window.AudioContext || (window as any).webkitAudioContext);
-    if (!Ctx) return;
-    const ctx = (window as any).__appAudioCtx || ((window as any).__appAudioCtx = new Ctx());
-    if (ctx.state === 'suspended') { try { await ctx.resume(); } catch {} }
-  }
-
-  // Create or reuse a SpeechRecognition with our settings
-  function getRecognizer(): SpeechRecognition | null {
-    const SR: any = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SR) return null;
-    if (recognizerRef.current) return recognizerRef.current;
-    const rec: SpeechRecognition = new SR();
-    rec.lang = 'en-US';
-    rec.continuous = false;
-    rec.interimResults = false;
-    (rec as any).maxAlternatives = 1;
-    recognizerRef.current = rec;
-    return rec;
-  }
-
-  // Promise wrapper: listen once, resolve transcript (empty string allowed), silent retry on transient errors
-  async function recognizeOnce(abortSignal?: AbortSignal): Promise<string> {
-    const rec = getRecognizer();
-    if (!rec) throw new Error('no-web-speech');
-
-    return new Promise<string>((resolve, reject) => {
-      let settled = false;
-      const done = (ok: boolean, value?: any) => {
-        if (settled) return;
-        settled = true;
-        try { rec.stop(); } catch {}
-        ok ? resolve(value) : reject(value);
-      };
-
-      // Abort support
-      if (abortSignal) {
-        if (abortSignal.aborted) return done(false, new Error('aborted'));
-        abortSignal.addEventListener('abort', () => done(false, new Error('aborted')), { once: true });
-      }
-
-      rec.onresult = (e: SpeechRecognitionEvent) => {
-        const txt = Array.from(e.results).map(r => r[0]?.transcript ?? '').join(' ').trim();
-        done(true, txt);
-      };
-      rec.onend = () => done(true, ''); // no speech → empty transcript (we'll handle above)
-      rec.onerror = (e: any) => {
-        const code = (e?.error || '').toString();
-        // Transient issues we silently retry outside: network/audio-capture/no-speech/not-allowed (first tap)
-        done(false, new Error(code || 'asr:error'));
-      };
-
-      try { rec.start(); } catch (err) { done(false, err); }
+  function withTimeout<T>(p: Promise<T>, ms: number, label: string) {
+    return new Promise<T>((resolve, reject) => {
+      const t = setTimeout(() => reject(new Error(`${label}:timeout`)), ms);
+      p.then(v => { clearTimeout(t); resolve(v); })
+       .catch(e => { clearTimeout(t); reject(e); });
     });
   }
 
-  // Guard helpers
-  function newRunId() { return `${Date.now()}-${Math.random().toString(36).slice(2,8)}`; }
-  function isStale(id: string) { return speechRunIdRef.current !== id; }
-
-  // Cancel any live recognition on nav/module change
-  useEffect(() => {
-    speechRunIdRef.current = null;
-    try { recognizerRef.current?.stop?.(); } catch {}
-  }, [selectedModule, selectedLevel, viewState]);
-  
+  // Cancel any in-flight ASR when user navigates/changes module/level/view
+  useEffect(() => { resetASR(); narration.cancel(); }, [selectedModule, selectedLevel, viewState]);
   
   // ---- Autosave helpers ----
   const SAVE_DEBOUNCE_MS = 250;
@@ -5379,6 +5297,9 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
       const { transcript, text } = transcribeResponse.data || {};
       const finalTranscript = transcript || text || '';
       
+      // NEW: hand transcript to the runner
+      asrResultOnceRef.current?.(finalTranscript);
+      asrResultOnceRef.current = null;
       
       console.log('📝 Raw transcribed text (verbatim):', finalTranscript);
       
@@ -5471,82 +5392,75 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
   // Start a complete speaking attempt; auto-retry on transient errors
   async function startSpeakingFlow() {
     // Block parallel runs
-    if (speakStatusRef.current !== 'idle') return;
+    if (speakStatus !== 'idle') return;
 
-    const runId = newRunId();
-    speechRunIdRef.current = runId;
-    retryCountRef.current = 0;
+    const id = newRunId();
+    runIdRef.current = id;
+    abortRef.current = new AbortController();
+    retryRef.current = 0;
 
     // Loop with bounded retries
-    while (!isStale(runId) && retryCountRef.current <= MAX_ASR_RETRIES) {
+    while (!isStale(id) && retryRef.current <= MAX_RETRIES) {
       try {
         // 1) Prompt current question (non-blocking if TTS fails)
         const item = currentModuleData?.speakingPractice?.[speakingIndex];
         const promptText = typeof item === 'string' ? item : (item?.question ?? '');
         if (!promptText) throw new Error('prompt:missing');
 
-        speakStatusRef.current = 'prompting';
+        // 1) Prompt (non-blocking if TTS fails)
+        setSpeakStatus('prompting');
         narration.cancel();
         narration.speak(promptText); // fire-and-forget; we do not block on TTS
         await new Promise(r => setTimeout(r, Math.min(1200, Math.max(600, promptText.length * 40))));
-        if (isStale(runId)) return;
+        if (isStale(id)) return;
 
-        // 2) Record and transcribe with robust Web Speech
-        await unlockAudioOnce();
-        speakStatusRef.current = 'recording';
+        // 2) Record + wait for real final transcript via the bridge
+        setSpeakStatus('recording');
 
-        const speechRunId = newRunId();
-        speechRunIdRef.current = speechRunId;
-        retryCountRef.current = 0;
+        // Start the existing recording flow (whatever you already use)
+        startRecording(); // do NOT await here; your recorder drives the pipeline
 
-        let transcript = '';
-        while (!isStale(speechRunId) && retryCountRef.current <= MAX_ASR_RETRIES) {
-          try {
-            transcript = await recognizeOnce();
-            break; // success (even if empty), leave retry loop
-          } catch (err: any) {
-            // Silent backoff on transient recognizer errors; do NOT show generic "error" banner
-            retryCountRef.current += 1;
-            if (retryCountRef.current > MAX_ASR_RETRIES || (err?.message || '').includes('aborted')) {
-              // Give control back to user without noisy UI
-              throw err;
-            }
-            await new Promise(r => setTimeout(r, 350 * retryCountRef.current)); // 350/700/1050ms
-          }
-        }
-        if (isStale(speechRunId)) return;
+        const transcript: string = await withTimeout<string>(
+          new Promise((resolve, reject) => {
+            // abort safety
+            abortRef.current!.signal.addEventListener('abort', () => reject(new Error('aborted')), { once: true });
+
+            // set one-shot resolver
+            asrResultOnceRef.current = (text: string) => resolve(text);
+          }),
+          12000,
+          'asr'
+        );
+
+        if (isStale(id)) return;
 
         // 3) Evaluate strictly (unchanged)
-        speakStatusRef.current = 'evaluating';
+        setSpeakStatus('evaluating');
         const target = typeof item === 'string' ? item : (item?.answer ?? item?.question ?? '');
         const ok = isExactlyCorrect(transcript, target);
-
         if (ok) {
           setFeedback('Great job! Your sentence is correct.');
           setFeedbackType('success');
           earnXPForGrammarLesson(true);
           incrementTotalExercises();
-          speakStatusRef.current = 'advancing';
-          advanceSpeakingOnce(); // your centralized advance
+          setSpeakStatus('advancing');
+          advanceSpeakingOnce();  // centralized progression (unchanged)
         } else {
-          // short correction only; no generic error banner
           setFeedback(`Not quite. Correct: "${target}".`);
           setFeedbackType('error');
         }
-
-        // Reset and exit
-        speakStatusRef.current = 'idle';
-        speechRunIdRef.current = null;
+        // done
+        resetASR();
         return;
       } catch (err) {
         // Transient failure → silent backoff retry; no generic UI error
-        retryCountRef.current += 1;
-        if (retryCountRef.current > MAX_ASR_RETRIES) {
-          speakStatusRef.current = 'idle'; // give control back to user; no scary message
+        retryRef.current += 1;
+        if (retryRef.current > MAX_RETRIES) {
+          resetASR(); // give control back to user; no scary message
           return;
         }
-        await new Promise(r => setTimeout(r, 350 * retryCountRef.current)); // 350/700/1050ms
-        if (isStale(runId)) return;
+        await new Promise(r => setTimeout(r, 350 * retryRef.current)); // 350/700/1050ms
+        if (isStale(id)) return;
         // loop continues
       }
     }
