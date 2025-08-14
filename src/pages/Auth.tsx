@@ -97,127 +97,161 @@ export default function Auth() {
     }
   };
 
+  const [activeTab, setActiveTab] = useState('signin');
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-secondary/20 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            Welcome to English Learning
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Join our live classes and improve your English
-          </p>
+    <div className="min-h-screen bg-gradient-to-b from-indigo-900 via-indigo-950 to-[#0B0E2C] text-white">
+      {/* Header */}
+      <header className="pt-10 pb-6 text-center">
+        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
+          Welcome to <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-300 via-cyan-300 to-sky-300">English Learning</span>
+        </h1>
+        <p className="mt-2 text-slate-300/80">Join our live classes and improve your English</p>
+      </header>
+
+      {/* Card shell */}
+      <div className="px-4 pb-16">
+        <div className="mx-auto w-full max-w-md rounded-3xl bg-white/5 backdrop-blur-xl ring-1 ring-white/10 shadow-2xl overflow-hidden">
+          {/* Tab navigation */}
+          <div className="grid grid-cols-2">
+            <button 
+              onClick={() => setActiveTab('signin')}
+              className={`py-3 text-sm font-semibold transition-colors ${
+                activeTab === 'signin' ? 'text-white' : 'text-slate-300 hover:text-white/90'
+              }`}
+            >
+              Sign In
+            </button>
+            <button 
+              onClick={() => setActiveTab('signup')}
+              className={`py-3 text-sm font-semibold transition-colors ${
+                activeTab === 'signup' ? 'text-white' : 'text-slate-300 hover:text-white/90'
+              }`}
+            >
+              Sign Up
+            </button>
+          </div>
+
+          {/* SIGN IN */}
+          {activeTab === 'signin' && (
+            <form onSubmit={handleSignIn} className="px-5 pb-6 pt-2 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-200">Email</label>
+                <input
+                  type="email" 
+                  inputMode="email" 
+                  autoComplete="email" 
+                  required
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="mt-1 w-full rounded-xl bg-white/10 text-white placeholder:text-slate-300/70
+                             px-4 py-3 outline-none ring-1 ring-white/10 focus:ring-2 focus:ring-sky-400
+                             shadow-inner selection:bg-sky-400/30"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-200">Password</label>
+                <input
+                  type="password" 
+                  autoComplete="current-password" 
+                  required
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="mt-1 w-full rounded-xl bg-white/10 text-white placeholder:text-slate-300/70
+                             px-4 py-3 outline-none ring-1 ring-white/10 focus:ring-2 focus:ring-sky-400
+                             shadow-inner selection:bg-sky-400/30"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full rounded-xl bg-gradient-to-r from-sky-400 to-emerald-300
+                           text-indigo-950 font-semibold py-3 shadow-lg shadow-emerald-500/20
+                           hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-sky-400
+                           disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+              >
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Sign In
+              </button>
+            </form>
+          )}
+
+          {/* SIGN UP */}
+          {activeTab === 'signup' && (
+            <form onSubmit={handleSignUp} className="px-5 pb-6 pt-2 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-200">Full Name</label>
+                <input
+                  type="text"
+                  autoComplete="name"
+                  required
+                  placeholder="Enter your full name"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  className="mt-1 w-full rounded-xl bg-white/10 text-white placeholder:text-slate-300/70
+                             px-4 py-3 outline-none ring-1 ring-white/10 focus:ring-2 focus:ring-sky-400
+                             shadow-inner selection:bg-sky-400/30"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-200">Email</label>
+                <input
+                  type="email"
+                  inputMode="email"
+                  autoComplete="email"
+                  required
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="mt-1 w-full rounded-xl bg-white/10 text-white placeholder:text-slate-300/70
+                             px-4 py-3 outline-none ring-1 ring-white/10 focus:ring-2 focus:ring-sky-400
+                             shadow-inner selection:bg-sky-400/30"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-200">Password</label>
+                <input
+                  type="password"
+                  autoComplete="new-password"
+                  required
+                  minLength={6}
+                  placeholder="Choose a password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="mt-1 w-full rounded-xl bg-white/10 text-white placeholder:text-slate-300/70
+                             px-4 py-3 outline-none ring-1 ring-white/10 focus:ring-2 focus:ring-sky-400
+                             shadow-inner selection:bg-sky-400/30"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full rounded-xl bg-gradient-to-r from-sky-400 to-emerald-300
+                           text-indigo-950 font-semibold py-3 shadow-lg shadow-emerald-500/20
+                           hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-sky-400
+                           disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+              >
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Create Account
+              </button>
+            </form>
+          )}
         </div>
 
-        <Tabs defaultValue="signin" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="signin">Sign In</TabsTrigger>
-            <TabsTrigger value="signup">Sign Up</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="signin">
-            <Card>
-              <CardHeader>
-                <CardTitle>Sign In</CardTitle>
-                <CardDescription>
-                  Enter your credentials to access your account
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSignIn} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="signin-email">Email</Label>
-                    <Input
-                      id="signin-email"
-                      type="email"
-                      placeholder="Enter your email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signin-password">Password</Label>
-                    <Input
-                      id="signin-password"
-                      type="password"
-                      placeholder="Enter your password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Sign In
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="signup">
-            <Card>
-              <CardHeader>
-                <CardTitle>Create Account</CardTitle>
-                <CardDescription>
-                  Join our community and start learning English
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSignUp} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-name">Full Name</Label>
-                    <Input
-                      id="signup-name"
-                      type="text"
-                      placeholder="Enter your full name"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-email">Email</Label>
-                    <Input
-                      id="signup-email"
-                      type="email"
-                      placeholder="Enter your email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-password">Password</Label>
-                    <Input
-                      id="signup-password"
-                      type="password"
-                      placeholder="Choose a password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      minLength={6}
-                    />
-                  </div>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Create Account
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-
         <div className="text-center mt-6">
-          <Button 
-            variant="ghost" 
+          <button 
             onClick={() => navigate('/')}
-            className="text-muted-foreground"
+            className="text-slate-300/80 hover:text-white transition-colors"
           >
             ← Back to Home
-          </Button>
+          </button>
         </div>
       </div>
     </div>
