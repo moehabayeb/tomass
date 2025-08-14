@@ -37,7 +37,19 @@ function getNextModuleId(level: 'A1'|'A2'|'B1', current: number): number | null 
   return idx < order.length - 1 ? order[idx + 1] : null;
 }
 
-// Using ProgressStore for persistence - no local types needed
+// ---------- Persistent Progress (localStorage) ----------
+type ModuleProgress = {
+  lastIndex: number;           // 0-based speakingIndex
+  completed: boolean;          // finished all questions
+  completedAt?: number;        // timestamp
+};
+
+type UserProgress = {
+  [level: string]: {
+    [moduleId: number]: ModuleProgress
+  },
+  lastVisited?: { level: string; moduleId: number };
+};
 
 type LessonProgress = {
   v: 1;
@@ -89,7 +101,24 @@ function clearLessonProgress(userId: string, level: number | string, module: num
   try { localStorage.removeItem(progressKey(userId, level, module)); } catch {}
 }
 
-// Using ProgressStore for all module progress
+// ---------- Module Progress Helpers ----------
+function saveModuleProgress(level: string, moduleId: number, patch: Partial<ModuleProgress>) {
+  const key = `progress-v2`;
+  const raw = localStorage.getItem(key);
+  const data: UserProgress = raw ? JSON.parse(raw) : {};
+  const levelBag = data[level] ?? {};
+  const cur: ModuleProgress = levelBag[moduleId] ?? { lastIndex: 0, completed: false };
+  levelBag[moduleId] = { ...cur, ...patch };
+  data[level] = levelBag;
+  localStorage.setItem(key, JSON.stringify(data));
+}
+
+function loadModuleProgress(level: string, moduleId: number): ModuleProgress | null {
+  const raw = localStorage.getItem(`progress-v2`);
+  if (!raw) return null;
+  const data: UserProgress = JSON.parse(raw);
+  return data[level]?.[moduleId] ?? null;
+}
 
 function normalize(s: string) {
   return s
@@ -106,7 +135,6 @@ interface LessonsAppProps {
 
 type ViewState = 'levels' | 'modules' | 'lesson';
 type LessonPhase = 'intro' | 'teacher-reading' | 'listening' | 'speaking' | 'completed' | 'complete';
-type SpeakStatus = 'idle'|'prompting'|'recording'|'transcribing'|'evaluating'|'advancing';
 
 // Levels data - TEMPORARILY UNLOCKED FOR DEVELOPMENT
 const LEVELS = [
@@ -3482,34 +3510,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
   // Track the live speaking index (no stale closures)
   const speakingIndexRef = useRef(0);
 
-  // ---------- ASR guard & retry (single source of truth) ----------
-  const [speakStatus, setSpeakStatus] = useState<SpeakStatus>('idle');
-  const runIdRef   = useRef<string | null>(null);          // which attempt is active
-  const abortRef   = useRef<AbortController | null>(null); // cancel current attempt
-  const retryRef   = useRef(0);
-  const MAX_RETRIES = 3;
-
-  const newRunId = () => `${Date.now()}-${Math.random().toString(36).slice(2,7)}`;
-  const isStale  = (id: string) => runIdRef.current !== id;
-
-  function resetASR() {
-    try { abortRef.current?.abort(); } catch {}
-    abortRef.current = null;
-    runIdRef.current = null;
-    retryRef.current = 0;
-    setSpeakStatus('idle');
-  }
-
-  function withTimeout<T>(p: Promise<T>, ms: number, label: string) {
-    return new Promise<T>((resolve, reject) => {
-      const t = setTimeout(() => reject(new Error(`${label}:timeout`)), ms);
-      p.then(v => { clearTimeout(t); resolve(v); })
-       .catch(e => { clearTimeout(t); reject(e); });
-    });
-  }
-
-  // Cancel any in-flight ASR when user navigates/changes module/level/view
-  useEffect(() => { resetASR(); narration.cancel(); }, [selectedModule, selectedLevel, viewState]);
+  // Move this after currentModuleData is declared
   
   // ---- Autosave helpers ----
   const SAVE_DEBOUNCE_MS = 250;
@@ -3517,7 +3518,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
   const restoredOnceRef = useRef(false);
   const autosaveTimeoutRef = useRef<number | null>(null);
 
-  function snapshotProgress(): StoreModuleProgress | null {
+  function snapshotProgress(): ModuleProgress | null {
     if (!currentModuleData || !selectedLevel || selectedModule == null) return null;
 
     const totalListening = currentModuleData?.listeningExamples?.length ?? 0;
@@ -3555,17 +3556,10 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     const total = currentModuleData?.speakingPractice?.length ?? 0;
 
     // persist completion
-    setProgress({
-      level: selectedLevel,
-      module: selectedModule,
-      phase: 'complete',
-      listeningIndex: 0,
-      speakingIndex: Math.max(0, total - 1),
+    saveModuleProgress(selectedLevel, selectedModule, {
       completed: true,
-      totalListening: currentModuleData?.intro?.length ?? 0,
-      totalSpeaking: total,
-      updatedAt: Date.now(),
-      v: 1
+      completedAt: Date.now(),
+      lastIndex: Math.max(0, total - 1),
     });
 
     // celebration
@@ -3573,15 +3567,19 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     setTimeout(() => {
       setShowCelebration(false);
 
-    // compute next module
-    const nextId = getNextModuleId(selectedLevel as 'A1' | 'A2' | 'B1', selectedModule);
+      // compute next module
+      const nextId = getNextModuleId(selectedLevel as 'A1'|'A2'|'B1', selectedModule);
       if (nextId) {
         narration.cancel();
         // reset local UI state
         setSpeakingIndex(0);
         setCurrentPhase('intro');
         setSelectedModule(nextId);
-      // The next module will be set, no need for separate lastVisited tracking
+        // record last visited
+        const raw = localStorage.getItem('progress-v2');
+        const data: UserProgress = raw ? JSON.parse(raw) : {};
+        data.lastVisited = { level: selectedLevel, moduleId: nextId };
+        localStorage.setItem('progress-v2', JSON.stringify(data));
       } else {
         // no next module: stay on completion screen or show a CTA to change level
       }
@@ -4682,13 +4680,13 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     window.matchMedia &&
     window.matchMedia('(max-width: 480px)').matches;
 
-  // Load progress on module change
+  // Restore progress when module changes
   useEffect(() => {
-    const p = getProgress(selectedLevel, selectedModule);
+    const p = loadModuleProgress(selectedLevel, selectedModule);
     if (p) {
       // resume at next unanswered item, but never past last
       const total = currentModuleData?.speakingPractice?.length ?? 0;
-      const idx = Math.min(p.speakingIndex, total > 0 ? total - 1 : 0);
+      const idx = Math.min(p.lastIndex, total > 0 ? total - 1 : 0);
       setSpeakingIndex(idx);
     } else {
       setSpeakingIndex(0);
@@ -4923,7 +4921,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     narration.cancel();
     narration.speak(`Congratulations! You have completed Module ${selectedModule}. Well done!`);
 
-    const nextModule = getNextModuleId(selectedLevel as 'A1' | 'A2' | 'B1', selectedModule);
+    const nextModule = getNextModuleId(selectedLevel, selectedModule);
     window.setTimeout(() => {
       setShowConfetti(false);
 
@@ -5126,7 +5124,9 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
       
       recorder.onerror = (event: any) => {
         console.error('❌ MediaRecorder error:', event.error || event);
-        // No generic error feedback - let the flow auto-retry
+        const errorMsg = event.error?.message || 'Unknown recording error';
+        setFeedback(`Recording error: ${errorMsg}. Please try again.`);
+        setFeedbackType('error');
         setIsRecording(false);
         setIsProcessing(false);
       };
@@ -5365,7 +5365,13 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
       evaluateSpoken(finalTranscript);
     } catch (error) {
       console.error('Error processing audio for current index:', error);
-      // No generic error feedback - let the flow auto-retry
+      setFeedback('Sorry, there was an error processing your audio. Please try again.');
+      setFeedbackType('error');
+      
+      setTimeout(() => {
+        setFeedback('');
+        setIsProcessing(false);
+      }, 3000);
     }
     
     setLastResponseTime(Date.now());
@@ -5379,83 +5385,6 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
       setCurrentPhase('intro');
       setListeningIndex(0);
       setSpeakingIndex(0);
-    }
-  }
-
-  // Start a complete speaking attempt; auto-retry on transient errors
-  async function startSpeakingFlow() {
-    // Block parallel runs
-    if (speakStatus !== 'idle') return;
-
-    const id = newRunId();
-    runIdRef.current = id;
-    abortRef.current = new AbortController();
-    retryRef.current = 0;
-
-    // Loop with bounded retries
-    while (!isStale(id) && retryRef.current <= MAX_RETRIES) {
-      try {
-        // 1) Prompt current question (non-blocking if TTS fails)
-        const item = currentModuleData?.speakingPractice?.[speakingIndex];
-        const promptText = typeof item === 'string' ? item : (item?.question ?? '');
-        if (!promptText) throw new Error('prompt:missing');
-
-        setSpeakStatus('prompting');
-        narration.cancel();
-        narration.speak(promptText);
-        
-        // Wait for prompt to finish (non-blocking)
-        await new Promise(resolve => setTimeout(resolve, Math.max(1000, promptText.length * 50)));
-
-        if (isStale(id)) return;
-
-        // 2) Record + transcribe with existing path
-        setSpeakStatus('recording');
-        // Use the existing recording system
-        await startRecording();
-        
-        // Simulate waiting for transcript from existing flow
-        const transcript = await new Promise<string>((resolve) => {
-          // The existing flow will handle the actual transcription
-          // For now, we'll resolve with empty string and let existing evaluation handle it
-          setTimeout(() => resolve(''), 100);
-        });
-
-        if (isStale(id)) return;
-
-        // 3) Evaluate STRICTLY with our current helpers (unchanged)
-        setSpeakStatus('evaluating');
-        const target = typeof item === 'string' ? item : (item?.answer ?? item?.question ?? '');
-
-        const ok = isExactlyCorrect(transcript, target); // already implemented in app
-        if (ok) {
-          setFeedback('Great job! Your sentence is correct.');
-          setFeedbackType('success');
-          earnXPForGrammarLesson(true);
-          incrementTotalExercises();
-
-          setSpeakStatus('advancing');
-          advanceSpeakingOnce();       // keep our centralized progression
-        } else {
-          setFeedback(`Not quite. Correct: "${target}".`);
-          setFeedbackType('error');
-          // No advance; user taps mic again to retry this card
-        }
-
-        // Finished this attempt (no error), exit retry loop
-        resetASR();
-        return;
-      } catch (err) {
-        // Transient failure → silent backoff retry; no generic UI error
-        retryRef.current += 1;
-        if (retryRef.current > MAX_RETRIES) {
-          resetASR(); // give control back to user; no scary message
-          return;
-        }
-        await new Promise(r => setTimeout(r, 350 * retryRef.current)); // 350/700/1050ms
-        if (isStale(id)) return;
-        // loop continues
-      }
     }
   }
 
@@ -6144,7 +6073,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
                 {/* Recording Button */}
                 <div className="mb-4">
                   <Button
-                    onClick={isRecording ? stopRecording : startSpeakingFlow}
+                    onClick={isRecording ? stopRecording : startRecording}
                     size="lg"
                     className={`rounded-full w-20 h-20 ${
                       isRecording 

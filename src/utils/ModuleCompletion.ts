@@ -16,4 +16,34 @@ export function getNextModuleId(level: 'A1'|'A2'|'B1', current: number): number 
   return idx < order.length - 1 ? order[idx + 1] : null;
 }
 
-// This file only handles module order - progress is handled by ProgressStore.ts
+// Module completion progress
+type ModuleProgress = {
+  lastIndex: number;
+  completed: boolean;
+  completedAt?: number;
+};
+
+type UserProgress = {
+  [level: string]: {
+    [moduleId: number]: ModuleProgress
+  },
+  lastVisited?: { level: string; moduleId: number };
+};
+
+export function saveModuleProgress(level: string, moduleId: number, patch: Partial<ModuleProgress>) {
+  const key = `progress-v2`;
+  const raw = localStorage.getItem(key);
+  const data: UserProgress = raw ? JSON.parse(raw) : {};
+  const levelBag = data[level] ?? {};
+  const cur: ModuleProgress = levelBag[moduleId] ?? { lastIndex: 0, completed: false };
+  levelBag[moduleId] = { ...cur, ...patch };
+  data[level] = levelBag;
+  localStorage.setItem(key, JSON.stringify(data));
+}
+
+export function loadModuleProgress(level: string, moduleId: number): ModuleProgress | null {
+  const raw = localStorage.getItem(`progress-v2`);
+  if (!raw) return null;
+  const data: UserProgress = JSON.parse(raw);
+  return data[level]?.[moduleId] ?? null;
+}
