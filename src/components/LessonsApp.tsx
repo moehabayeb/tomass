@@ -3489,6 +3489,9 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
   const retryRef   = useRef(0);
   const MAX_RETRIES = 3;
 
+  // one-shot resolver the ASR will call with the final transcript
+  const asrResultOnceRef = useRef<null | ((text: string) => void)>(null);
+
   const newRunId = () => `${Date.now()}-${Math.random().toString(36).slice(2,7)}`;
   const isStale  = (id: string) => runIdRef.current !== id;
 
@@ -5294,6 +5297,10 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
       const { transcript, text } = transcribeResponse.data || {};
       const finalTranscript = transcript || text || '';
       
+      // NEW: hand transcript to the runner
+      asrResultOnceRef.current?.(finalTranscript);
+      asrResultOnceRef.current = null;
+      
       console.log('📝 Raw transcribed text (verbatim):', finalTranscript);
       
       if (!finalTranscript || finalTranscript.trim() === '') {
@@ -5400,49 +5407,49 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
         const promptText = typeof item === 'string' ? item : (item?.question ?? '');
         if (!promptText) throw new Error('prompt:missing');
 
+        // 1) Prompt (non-blocking if TTS fails)
         setSpeakStatus('prompting');
         narration.cancel();
-        narration.speak(promptText);
-        
-        // Wait for prompt to finish (non-blocking)
-        await new Promise(resolve => setTimeout(resolve, Math.max(1000, promptText.length * 50)));
-
+        narration.speak(promptText); // fire-and-forget; we do not block on TTS
+        await new Promise(r => setTimeout(r, Math.min(1200, Math.max(600, promptText.length * 40))));
         if (isStale(id)) return;
 
-        // 2) Record + transcribe with existing path
+        // 2) Record + wait for real final transcript via the bridge
         setSpeakStatus('recording');
-        // Use the existing recording system
-        await startRecording();
-        
-        // Simulate waiting for transcript from existing flow
-        const transcript = await new Promise<string>((resolve) => {
-          // The existing flow will handle the actual transcription
-          // For now, we'll resolve with empty string and let existing evaluation handle it
-          setTimeout(() => resolve(''), 100);
-        });
+
+        // Start the existing recording flow (whatever you already use)
+        startRecording(); // do NOT await here; your recorder drives the pipeline
+
+        const transcript: string = await withTimeout<string>(
+          new Promise((resolve, reject) => {
+            // abort safety
+            abortRef.current!.signal.addEventListener('abort', () => reject(new Error('aborted')), { once: true });
+
+            // set one-shot resolver
+            asrResultOnceRef.current = (text: string) => resolve(text);
+          }),
+          12000,
+          'asr'
+        );
 
         if (isStale(id)) return;
 
-        // 3) Evaluate STRICTLY with our current helpers (unchanged)
+        // 3) Evaluate strictly (unchanged)
         setSpeakStatus('evaluating');
         const target = typeof item === 'string' ? item : (item?.answer ?? item?.question ?? '');
-
-        const ok = isExactlyCorrect(transcript, target); // already implemented in app
+        const ok = isExactlyCorrect(transcript, target);
         if (ok) {
           setFeedback('Great job! Your sentence is correct.');
           setFeedbackType('success');
           earnXPForGrammarLesson(true);
           incrementTotalExercises();
-
           setSpeakStatus('advancing');
-          advanceSpeakingOnce();       // keep our centralized progression
+          advanceSpeakingOnce();  // centralized progression (unchanged)
         } else {
           setFeedback(`Not quite. Correct: "${target}".`);
           setFeedbackType('error');
-          // No advance; user taps mic again to retry this card
         }
-
-        // Finished this attempt (no error), exit retry loop
+        // done
         resetASR();
         return;
       } catch (err) {
