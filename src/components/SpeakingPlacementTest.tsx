@@ -15,6 +15,14 @@ import { narration } from '../utils/narration';
 import CanvasAvatar from './CanvasAvatar';
 import { useGamification } from '@/hooks/useGamification';
 
+// Extend Window interface for audio context
+declare global {
+  interface Window {
+    _audioCtx?: AudioContext;
+    webkitAudioContext?: typeof AudioContext;
+  }
+}
+
 interface SpeakingPlacementTestProps {
   onBack: () => void;
   onComplete: (level: string, score: number) => void;
@@ -223,24 +231,40 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     return { grammar, vocab, pron, level };
   }
 
-  // ---------- iOS Safari-compatible mic handler ----------
+  // ---------- TRUE Bulletproof Mic Handler ----------
   async function onMicPress() {
     if (testState === 'ready') {
       try {
-        // Cancel any TTS before starting to avoid iOS block
+        // Stop any speech synthesis to prevent iOS audio lock
         if (window.speechSynthesis) {
           window.speechSynthesis.cancel();
         }
-        narration.cancel();
+        try { narration?.cancel?.(); } catch {}
 
-        // Ask for mic permission FIRST
-        const permission = await navigator.permissions.query({ name: 'microphone' as PermissionName }).catch(() => null);
-        if (permission && permission.state === 'denied') {
-          throw new Error('Microphone access denied by user');
+        // iOS Safari requires an audio context to be resumed on user gesture
+        if (!window._audioCtx) {
+          window._audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (window._audioCtx.state === 'suspended') {
+          await window._audioCtx.resume();
         }
 
-        // Wait for direct user tap before calling getUserMedia
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        // Request mic permissions explicitly before recording
+        const permission = await navigator.permissions
+          .query({ name: 'microphone' as PermissionName })
+          .catch(() => null);
+        if (permission && permission.state === 'denied') {
+          throw new Error('Microphone access denied');
+        }
+
+        // Must be called on direct tap for Safari
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true
+          }
+        });
+
         if (!stream || !stream.getTracks().length) {
           throw new Error('No audio stream available');
         }
@@ -249,55 +273,47 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
         setError('');
         setSecondsLeft(MAX_SECONDS);
         startTimeRef.current = Date.now();
-
         abortRef.current = new AbortController();
 
-        // UI timer
+        // Timer countdown
         let tick = MAX_SECONDS;
         const timer = setInterval(() => {
           tick -= 1;
           setSecondsLeft(tick);
           if (tick <= 0) {
             clearInterval(timer);
+            stopStream(stream);
             setTestState('ready');
             setError('Time limit reached. Try again.');
           }
         }, 1000);
 
-        try {
-          const transcript = await startASR({
-            signal: abortRef.current.signal,
-            maxSeconds: MAX_SECONDS,
-            silenceTimeoutMs: SILENCE_MS,
-          });
+        // Start ASR
+        const transcript = await startASR({
+          signal: abortRef.current.signal,
+          maxSeconds: MAX_SECONDS,
+          silenceTimeoutMs: SILENCE_MS,
+        });
 
-          clearInterval(timer);
+        clearInterval(timer);
+        stopStream(stream);
 
-          if (!transcript || transcript.trim().length < 2) {
-            setTestState('ready');
-            setError('I didn\'t hear you clearly. Please try again.');
-            return;
-          }
-
-          // PROCESS + SCORE
-          setTestState('processing');
-          saveAnswer(qIndex, transcript);
-
-          if (qIndex < PROMPTS.length - 1) {
-            setQIndex(qIndex + 1);
-            setTestState('prompting');
-          } else {
-            setTestState('done');
-            showResults();
-          }
-        } catch (e) {
-          clearInterval(timer);
+        if (!transcript || transcript.trim().length < 2) {
           setTestState('ready');
-          setError('Microphone error. Please allow mic and try again.');
-        } finally {
-          // Clean up stream
-          stream.getTracks().forEach(track => track.stop());
-          abortRef.current = null;
+          setError('I didn\'t hear you clearly. Please try again.');
+          return;
+        }
+
+        // Save and go to next
+        setTestState('processing');
+        saveAnswer(qIndex, transcript);
+
+        if (qIndex < PROMPTS.length - 1) {
+          setQIndex(qIndex + 1);
+          setTestState('prompting');
+        } else {
+          setTestState('done');
+          showResults();
         }
 
       } catch (err) {
@@ -306,9 +322,14 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
         setError('Microphone error. Please allow mic and try again.');
       }
     } else if (testState === 'recording') {
-      // STOP manually
       try { abortRef.current?.abort(); } catch {}
-    } // ignore taps in other states
+    }
+  }
+
+  function stopStream(stream: MediaStream) {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+    }
   }
 
   // ASR implementation (replace with your existing ASR)
