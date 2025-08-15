@@ -47,30 +47,70 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     "Talk about a past event. What did you do last weekend?",
     "What are your goals for learning English this year?"
   ], []);
+
+  // New state for improved mic handling
   const [questionIndex, setQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState<{ text: string; conf?: number }[]>([]);
-  const [speakStatus, setSpeakStatus] = useState<'idle'|'prompting'|'recording'|'evaluating'|'advancing'>('idle');
+  const [isRecording, setIsRecording] = useState(false);
+  const [secondsLeft, setSecondsLeft] = useState<number>(15);
+  const [runId, setRunId] = useState<string|null>(null);
+  const [error, setError] = useState<string>('');
+  const [answers, setAnswers] = useState<{ transcript: string; durationSec: number; wordsRecognized: number }[]>([]);
   const [result, setResult] = useState<null | {
     grammar: number; vocab: number; pron: number; level: 'A1'|'A2'|'B1'
   }>(null);
 
-  // ASR guards only for this page
-  const runIdRef = useRef<string | null>(null);
-  const abortRef = useRef<AbortController | null>(null);
+  // Constants
+  const MAX_SECONDS = 15;
+  const SILENCE_MS = 2000;
 
-  function newRunId() {
-    return `${Date.now()}-${Math.random().toString(36).slice(2,7)}`;
+  // ASR guards and timers
+  const recognizerRef = useRef<any>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const startTimeRef = useRef<number>(0);
+
+  const newRun = () => `${Date.now()}-${Math.random().toString(36).slice(2,7)}`;
+
+  function stopSafely(reason: 'time'|'silence'|'manual'|'error') {
+    try { 
+      recognizerRef.current?.stop?.(); 
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    } catch {}
+    setIsRecording(false);
+    setRunId(null);
+    setSecondsLeft(MAX_SECONDS);
   }
-  function isStale(id: string) {
-    return runIdRef.current !== id;
-  }
-  function resetRun() {
-    try { abortRef.current?.abort(); } catch {}
-    abortRef.current = null;
-    runIdRef.current = null;
-    setSpeakStatus('idle');
-  }
-  useEffect(() => () => resetRun(), []);
+
+  // Load saved progress on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('speakingTestProgress');
+    if (saved) {
+      try {
+        const { qIndex, answers: savedAnswers } = JSON.parse(saved);
+        if (qIndex < questions.length) {
+          setQuestionIndex(qIndex);
+          setAnswers(savedAnswers || []);
+        }
+      } catch {}
+    }
+  }, [questions.length]);
+
+  // Save progress whenever it changes
+  useEffect(() => {
+    if (answers.length > 0 || questionIndex > 0) {
+      localStorage.setItem('speakingTestProgress', JSON.stringify({
+        qIndex: questionIndex,
+        answers
+      }));
+    }
+  }, [questionIndex, answers]);
+
+  useEffect(() => () => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    stopSafely('manual');
+  }, []);
 
   // ---------- very light normalization helpers ----------
   function stripDiacritics(s: string) {
@@ -85,152 +125,177 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     return { tokens: t, uniqueCount: unique.size, length: t.length };
   }
 
-  // ---------- scoring (0–10 each) ----------
-  function scorePlacement(all: {text: string; conf?: number}[]) {
-    const joined = all.map(a => a.text).join(' . ');
-    const { tokens, uniqueCount, length } = tokenStats(joined);
-
-    // Grammar proxy: diversity of bigrams + presence of verbs/aux + sentence markers
-    const verbs = ['am','is','are','was','were','do','does','did','have','has','had',
-                   'go','went','come','came','eat','ate','like','play','work','study',
-                   'want','wanted','live','lived','visit','visited','be','been','being'];
-    const auxHits = tokens.filter(t => verbs.includes(t)).length;
-    const sentences = joined.split(/[.!?]/).map(s => s.trim()).filter(Boolean).length;
-    const bigrams = new Set(tokens.slice(1).map((t,i)=>tokens[i]+' '+t)).size;
-
-    let grammar = 0;
-    grammar += Math.min(4, auxHits / 2);          // up to 4
-    grammar += Math.min(3, bigrams / 12);         // up to 3
-    grammar += Math.min(3, sentences / 3);        // up to 3
-    grammar = Math.max(0, Math.min(10, grammar));
-
-    // Vocabulary proxy: type/token ratio + length
-    let vocab = 0;
-    vocab += Math.min(6, (uniqueCount / Math.max(1, length)) * 12); // up to 6
-    vocab += Math.min(4, length / 20);                               // up to 4
-    vocab = Math.max(0, Math.min(10, vocab));
-
-    // Pronunciation proxy: ASR confidence if present; fallback from kept tokens
-    const avgConf = all.map(a => a.conf ?? 0.75).reduce((a,b)=>a+b,0) / Math.max(1,all.length);
-    let pron = Math.round(Math.max(0, Math.min(10, avgConf * 10)));
-
-    // Level decision (keep simple & transparent)
-    const avgCore = (grammar + vocab) / 2;
-    const level: 'A1'|'A2'|'B1' =
-      avgCore < 4 ? 'A1' : avgCore < 7 ? 'A2' : 'B1';
-
-    return { grammar: Math.round(grammar), vocab: Math.round(vocab), pron, level };
+  // ---------- honest scoring (0–10 each) ----------
+  function scorePronunciation(wordsRecognized: number, durationSec: number) {
+    // proxy for clarity: words/second clamped 0.8–3.0 → 0–10
+    const wps = wordsRecognized / Math.max(1, durationSec);
+    return Math.round(10 * Math.min(1, Math.max(0, (wps-0.8)/(3.0-0.8))));
   }
 
-  // ---------- ASR integration ----------
-  async function recognizeOnce(): Promise<{text:string; confidence?:number}> {
-    // Simple Web Speech API implementation with timeout
-    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SR) throw new Error('Speech recognition not supported');
-    
-    const rec = new SR();
-    rec.lang = 'en-US';
-    rec.continuous = false;
-    rec.interimResults = false;
-    
-    return new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        rec.stop();
-        resolve({ text: '', confidence: 0.5 });
-      }, 12000); // 12 second timeout
-      
-      rec.onresult = (e: any) => {
-        clearTimeout(timeout);
-        const text = e.results[0]?.[0]?.transcript || '';
-        const confidence = e.results[0]?.[0]?.confidence || 0.8;
-        resolve({ text, confidence });
-      };
-      rec.onerror = () => {
-        clearTimeout(timeout);
-        reject(new Error('Recognition failed'));
-      };
-      rec.onend = () => {
-        clearTimeout(timeout);
-      };
-      rec.start();
-    });
+  function scoreVocabulary(transcript: string) {
+    const tokens = transcript.toLowerCase().replace(/[^a-z\s]/g,'').split(/\s+/).filter(Boolean);
+    const stop = new Set(['i','you','he','she','it','we','they','a','the','and','or','but','to','for','of','in','on','at','my','your','his','her','their','is','am','are','was','were','do','did','have','had']);
+    const content = tokens.filter(t => !stop.has(t));
+    const unique = new Set(content);
+    // 0 unique → 0, 12+ unique → 10
+    return Math.min(10, Math.round((unique.size/12)*10));
   }
 
-  // ---------- test turn ----------
-  async function speakTurn() {
-    if (speakStatus !== 'idle' || result) return;
-    setSpeakStatus('recording');
-    narration?.cancel?.();
+  function scoreGrammar(transcript: string) {
+    // crude: count basic structures: subject + verb (past/present) + object/prep
+    const t = transcript.toLowerCase();
+    const past = /\b(went|did|had|was|were|ate|saw|made|took|said|studied|worked|visited)\b/.test(t);
+    const present = /\b(go|do|have|am|is|are|eat|see|make|take|say|study|work|visit)\b/.test(t);
+    const pronoun = /\b(i|you|he|she|we|they)\b/.test(t);
+    const preps = (t.match(/\b(in|on|at|to|with|from|for|about|because)\b/g)||[]).length;
+    let pts = 0;
+    if (pronoun) pts += 3;
+    if (past || present) pts += 3;
+    pts += Math.min(4, preps);        // structure/phrases
+    return Math.min(10, pts);
+  }
 
-    const id = newRunId();
-    runIdRef.current = id;
-    abortRef.current = new AbortController();
+  function decideLevel(g: number, v: number, p: number): 'A1'|'A2'|'B1' {
+    const avg = (g+v+p)/3;
+    if (avg >= 8) return 'B1';
+    if (avg >= 5) return 'A2';
+    return 'A1';
+  }
 
-    // Play prompt (non-blocking)
-    try { narration?.speak?.(questions[questionIndex]); } catch {}
+  function scorePlacement(allAnswers: {transcript: string; durationSec: number; wordsRecognized: number}[]) {
+    const grammarScores = allAnswers.map(a => scoreGrammar(a.transcript));
+    const vocabScores = allAnswers.map(a => scoreVocabulary(a.transcript));
+    const pronScores = allAnswers.map(a => scorePronunciation(a.wordsRecognized, a.durationSec));
 
+    const grammar = Math.round(grammarScores.reduce((a,b) => a+b, 0) / Math.max(1, grammarScores.length));
+    const vocab = Math.round(vocabScores.reduce((a,b) => a+b, 0) / Math.max(1, vocabScores.length));
+    const pron = Math.round(pronScores.reduce((a,b) => a+b, 0) / Math.max(1, pronScores.length));
+    
+    const level = decideLevel(grammar, vocab, pron);
+    return { grammar, vocab, pron, level };
+  }
+
+  // ---------- mic controls ----------
+  async function handleStart() {
+    if (isRecording) return;
+    setError('');
+    const id = newRun(); 
+    setRunId(id);
+    setIsRecording(true);
+    setSecondsLeft(MAX_SECONDS);
+    startTimeRef.current = Date.now();
+
+    // UI timer
+    let tick = MAX_SECONDS;
+    timerRef.current = setInterval(() => {
+      tick -= 1;
+      setSecondsLeft(tick);
+      if (tick <= 0) {
+        if (timerRef.current) clearInterval(timerRef.current);
+        stopSafely('time');
+      }
+    }, 1000);
+
+    // Start recognizer with silence auto-stop
     try {
-      const { text, confidence } = await recognizeOnce();
-      if (isStale(id)) return;
+      const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (!SR) {
+        setError('Speech recognition not supported');
+        stopSafely('error');
+        return;
+      }
 
-      setSpeakStatus('evaluating');
-      
-      setAnswers(prev => [...prev, { text, conf: confidence }]);
-      if (questionIndex < questions.length - 1) {
-        setSpeakStatus('advancing');
-        setTimeout(() => {
+      const rec = new SR();
+      rec.lang = 'en-US';
+      rec.continuous = true;
+      rec.interimResults = false;
+      recognizerRef.current = rec;
+
+      let silenceTimer: NodeJS.Timeout;
+      let hasResult = false;
+
+      rec.onresult = (e: any) => {
+        hasResult = true;
+        clearTimeout(silenceTimer);
+        const transcript = e.results[e.results.length - 1]?.[0]?.transcript || '';
+        
+        // Process the final result
+        const duration = (Date.now() - startTimeRef.current) / 1000;
+        const words = transcript.trim().split(/\s+/).filter(Boolean).length;
+        
+        setAnswers(prev => [...prev, { 
+          transcript, 
+          durationSec: duration, 
+          wordsRecognized: words 
+        }]);
+
+        if (questionIndex < questions.length - 1) {
           setQuestionIndex(q => q + 1);
-          setSpeakStatus('idle');
-        }, 500);
-      } else {
-        const scored = scorePlacement([...answers, { text, conf: confidence }]);
-        setResult(scored);
-        // persist and unlock
-        try {
-          localStorage.setItem('placement.result', JSON.stringify(scored));
+        } else {
+          // Final question - compute results
+          const allAnswers = [...answers, { transcript, durationSec: duration, wordsRecognized: words }];
+          const scored = scorePlacement(allAnswers);
+          setResult(scored);
+          
+          // Save results and unlock
+          const placement = { level: scored.level, g: scored.grammar, v: scored.vocab, p: scored.pron, date: Date.now() };
+          localStorage.setItem('placement', JSON.stringify(placement));
           localStorage.setItem('userPlacement', JSON.stringify({ level: scored.level, scores: scored, at: Date.now() }));
           localStorage.setItem('unlockedLevel', scored.level);
-        } catch {}
-        unlockLevel(scored.level);
-        // fire confetti if your app exposes it
-        // @ts-ignore
-        window.triggerConfetti?.();
-        setTimeout(() => routeToLevel(scored.level), 1200);
-      }
-    } catch (e) {
-      // silent retry after short backoff
-      await new Promise(r => setTimeout(r, 350));
-      try {
-        const { text, confidence } = await recognizeOnce();
-        if (isStale(id)) return;
-        
-        setAnswers(prev => [...prev, { text, conf: confidence }]);
-        if (questionIndex < questions.length - 1) {
-          setSpeakStatus('advancing');
-          setTimeout(() => {
-            setQuestionIndex(q => q + 1);
-            setSpeakStatus('idle');
-          }, 500);
-        } else {
-          const scored = scorePlacement([...answers, { text, conf: confidence }]);
-          setResult(scored);
+          unlockLevel(scored.level);
+          
+          // Clear progress
+          localStorage.removeItem('speakingTestProgress');
+          
+          // @ts-ignore
+          window.triggerConfetti?.();
+          setTimeout(() => routeToLevel(scored.level), 1200);
         }
-      } catch {
-        // Final failure - just continue
-        setSpeakStatus('idle');
-      }
-    } finally {
-      if (!isStale(id) && !result) {
-        setSpeakStatus('idle');
-      }
+        
+        stopSafely('manual');
+      };
+
+      rec.onerror = () => {
+        setError('Microphone error. Please try again.');
+        stopSafely('error');
+      };
+
+      rec.onstart = () => {
+        // Start silence detection
+        silenceTimer = setTimeout(() => {
+          if (!hasResult) {
+            stopSafely('silence');
+          }
+        }, SILENCE_MS);
+      };
+
+      rec.start();
+    } catch (err) {
+      setError('Microphone error. Please try again.');
+      stopSafely('error');
     }
   }
+
+  async function handleStop() {
+    if (!isRecording) return;
+    stopSafely('manual');
+  }
+
+  // Play prompt on question change
+  useEffect(() => {
+    if (!isRecording && !result) {
+      narration?.cancel?.();
+      try { 
+        narration?.speak?.(questions[questionIndex]); 
+      } catch {}
+    }
+  }, [questionIndex, questions, isRecording, result]);
 
   // ---------- UI ----------
   const progressPercentage = ((questionIndex + 1) / questions.length) * 100;
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700">
+    <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700 pt-safe">
       {/* Header with Progress */}
       <div className="p-4 bg-black/10">
         <div className="flex items-center justify-between max-w-4xl mx-auto">
@@ -255,9 +320,9 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
       </div>
 
       {/* Main Content */}
-      <div className="p-4 max-w-2xl mx-auto">
+      <div className="p-4 max-w-2xl mx-auto" style={{ position: 'relative', zIndex: 3 }}>
         {!result ? (
-          <Card key={questionIndex} className="bg-white/10 border-white/20 backdrop-blur-sm">
+          <Card key={questionIndex} className="bg-white/10 border-white/20 backdrop-blur-sm mt-8">
             <CardHeader>
               <CardTitle className="text-white text-center">
                 Speaking Prompt
@@ -270,23 +335,56 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
                 </p>
               </div>
               
-              <div className="text-center">
+              {error && (
+                <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3 text-center">
+                  <p className="text-red-200 text-sm">{error}</p>
+                </div>
+              )}
+              
+              <div className="text-center relative">
+                {/* Circular progress ring */}
+                {isRecording && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <svg className="w-24 h-24 transform -rotate-90" viewBox="0 0 100 100">
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="45"
+                        stroke="rgba(255,255,255,0.2)"
+                        strokeWidth="2"
+                        fill="none"
+                      />
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="45"
+                        stroke="rgb(239,68,68)"
+                        strokeWidth="3"
+                        fill="none"
+                        strokeDasharray={283}
+                        strokeDashoffset={283 * (1 - (secondsLeft / MAX_SECONDS))}
+                        className="transition-all duration-1000 ease-linear"
+                      />
+                    </svg>
+                  </div>
+                )}
+                
                 <Button
-                  onClick={speakTurn}
-                  disabled={speakStatus !== 'idle'}
+                  onClick={isRecording ? handleStop : handleStart}
+                  disabled={runId !== null && !isRecording}
                   size="lg"
-                  className={`mic-button rounded-full w-20 h-20 ${
-                    speakStatus === 'recording' 
+                  className={`mic-button rounded-full w-20 h-20 relative z-10 ${
+                    isRecording 
                       ? 'bg-red-500 hover:bg-red-600 animate-pulse' 
                       : 'bg-white/20 hover:bg-white/30'
                   }`}
                   style={{
                     pointerEvents: 'auto',
-                    zIndex: 5,
+                    zIndex: 10,
                     touchAction: 'manipulation'
                   }}
                 >
-                  {speakStatus === 'recording' ? (
+                  {isRecording ? (
                     <MicOff className="h-8 w-8 text-white" />
                   ) : (
                     <Mic className="h-8 w-8 text-white" />
@@ -294,11 +392,19 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
                 </Button>
               </div>
 
+              {/* Timer display */}
+              {isRecording && (
+                <div className="text-center">
+                  <div className="text-white font-mono text-lg">
+                    00:{String(secondsLeft).padStart(2, '0')}
+                  </div>
+                </div>
+              )}
+
               <div className="text-center">
-                <p className="text-white/70 text-sm">
-                  {speakStatus === 'recording' ? 'Listening...' : 
-                   speakStatus === 'evaluating' ? 'Processing...' :
-                   speakStatus === 'advancing' ? 'Moving to next question...' :
+                <p className="text-white/70 text-sm" style={{ pointerEvents: 'none' }}>
+                  {isRecording ? 'Recording... Tap to stop' : 
+                   error ? 'Tap to try again' :
                    'Listen to the prompt, then tap to speak'}
                 </p>
               </div>
