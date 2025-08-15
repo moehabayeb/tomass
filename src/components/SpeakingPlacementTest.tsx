@@ -40,77 +40,125 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     onComplete(t.lvl, 75);
   }
 
-  // ---------- local, page-only state ----------
-  const questions = useMemo(() => [
-    "Tell me your name and where you are from. Speak clearly for about 15 seconds.",
-    "Describe your typical weekday. What do you usually do?",
-    "Talk about a past event. What did you do last weekend?",
-    "What are your goals for learning English this year?"
-  ], []);
-
-  // New state for improved mic handling
-  const [questionIndex, setQuestionIndex] = useState(0);
-  const [isRecording, setIsRecording] = useState(false);
+  // ---------- State + guards ----------
+  type TestState = 'idle'|'prompting'|'ready'|'recording'|'processing'|'done';
+  const [testState, setTestState] = useState<TestState>('idle');
+  const [qIndex, setQIndex] = useState(0);
   const [secondsLeft, setSecondsLeft] = useState<number>(15);
-  const [runId, setRunId] = useState<string|null>(null);
   const [error, setError] = useState<string>('');
   const [answers, setAnswers] = useState<{ transcript: string; durationSec: number; wordsRecognized: number }[]>([]);
   const [result, setResult] = useState<null | {
     grammar: number; vocab: number; pron: number; level: 'A1'|'A2'|'B1'
   }>(null);
 
-  // Constants
-  const MAX_SECONDS = 15;
-  const SILENCE_MS = 2000;
-
-  // ASR guards and timers
+  const runIdRef = useRef<string|null>(null);
+  const lastPromptRef = useRef<number>(-1);
+  const abortRef = useRef<AbortController|null>(null);
+  const timerRef = useRef<number|undefined>(undefined);
   const recognizerRef = useRef<any>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
   const startTimeRef = useRef<number>(0);
 
-  const newRun = () => `${Date.now()}-${Math.random().toString(36).slice(2,7)}`;
+  // Constants
+  const MAX_SECONDS = 15;
+  const SILENCE_MS = 1500;
+  
+  const PROMPTS = useMemo(() => [
+    "Tell me your name and where you are from. Speak clearly for about 15 seconds.",
+    "Describe your typical weekday. What do you usually do?",
+    "Talk about a past event. What did you do last weekend?",
+    "What are your goals for learning English this year?"
+  ], []);
 
-  function stopSafely(reason: 'time'|'silence'|'manual'|'error') {
-    try { 
-      recognizerRef.current?.stop?.(); 
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
-    } catch {}
-    setIsRecording(false);
-    setRunId(null);
-    setSecondsLeft(MAX_SECONDS);
+  function saveAnswer(qIndex: number, transcript: string) {
+    const words = transcript.trim().split(/\s+/).filter(Boolean).length;
+    const duration = (Date.now() - startTimeRef.current) / 1000;
+    
+    setAnswers(prev => [...prev, { 
+      transcript, 
+      durationSec: duration, 
+      wordsRecognized: words 
+    }]);
   }
+
+  function showResults() {
+    const scored = scorePlacement(answers);
+    setResult(scored);
+    
+    // Save results and unlock
+    const placement = { level: scored.level, g: scored.grammar, v: scored.vocab, p: scored.pron, date: Date.now() };
+    localStorage.setItem('placement', JSON.stringify(placement));
+    localStorage.setItem('userPlacement', JSON.stringify({ level: scored.level, scores: scored, at: Date.now() }));
+    localStorage.setItem('unlockedLevel', scored.level);
+    unlockLevel(scored.level);
+    
+    // Clear progress
+    localStorage.removeItem('speakingTestProgress');
+    
+    // @ts-ignore
+    window.triggerConfetti?.();
+    setTimeout(() => routeToLevel(scored.level), 1200);
+  }
+
+  // Speak the current prompt once per question
+  useEffect(() => {
+    // speak only when question index actually changes
+    if (qIndex === lastPromptRef.current) return;
+
+    // cancel any earlier run
+    abortRef.current?.abort();
+    window.clearTimeout(timerRef.current);
+
+    lastPromptRef.current = qIndex;
+    runIdRef.current = `${Date.now()}-${Math.random().toString(36).slice(2,7)}`;
+    setTestState('prompting');
+
+    narration.cancel();
+    const text = PROMPTS[qIndex];
+    narration.speak(text);
+
+    // Wait a reasonable amount so TTS can finish before enabling mic
+    const wait = Math.max(1200, Math.min(3000, text.length * 45));
+    timerRef.current = window.setTimeout(() => {
+      if (runIdRef.current) setTestState('ready');
+    }, wait);
+  }, [qIndex]);
 
   // Load saved progress on mount
   useEffect(() => {
     const saved = localStorage.getItem('speakingTestProgress');
     if (saved) {
       try {
-        const { qIndex, answers: savedAnswers } = JSON.parse(saved);
-        if (qIndex < questions.length) {
-          setQuestionIndex(qIndex);
+        const { qIndex: savedQIndex, answers: savedAnswers } = JSON.parse(saved);
+        if (savedQIndex < PROMPTS.length) {
+          setQIndex(savedQIndex);
           setAnswers(savedAnswers || []);
         }
       } catch {}
     }
-  }, [questions.length]);
+  }, [PROMPTS.length]);
 
   // Save progress whenever it changes
   useEffect(() => {
-    if (answers.length > 0 || questionIndex > 0) {
+    if (answers.length > 0 || qIndex > 0) {
       localStorage.setItem('speakingTestProgress', JSON.stringify({
-        qIndex: questionIndex,
+        qIndex,
         answers
       }));
     }
-  }, [questionIndex, answers]);
+  }, [qIndex, answers]);
 
+  // Cleanup on unmount
   useEffect(() => () => {
-    if (timerRef.current) clearInterval(timerRef.current);
-    stopSafely('manual');
+    narration.cancel();
+    abortRef.current?.abort();
+    window.clearTimeout(timerRef.current);
+    runIdRef.current = null;
   }, []);
+
+  // Optional: minimal logging to verify
+  useEffect(() => {
+    console.log('[TEST]', {state: testState, qIndex});
+  }, [testState, qIndex]);
 
   // ---------- very light normalization helpers ----------
   function stripDiacritics(s: string) {
@@ -175,33 +223,82 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     return { grammar, vocab, pron, level };
   }
 
-  // ---------- mic controls ----------
-  async function handleStart() {
-    if (isRecording) return;
-    setError('');
-    const id = newRun(); 
-    setRunId(id);
-    setIsRecording(true);
-    setSecondsLeft(MAX_SECONDS);
-    startTimeRef.current = Date.now();
+  // ---------- Mic button handler (single entry point) ----------
+  async function onMicPress() {
+    if (testState === 'ready') {
+      // START
+      setTestState('recording');
+      setError('');
+      setSecondsLeft(MAX_SECONDS);
+      startTimeRef.current = Date.now();
+      narration.cancel();
 
-    // UI timer
-    let tick = MAX_SECONDS;
-    timerRef.current = setInterval(() => {
-      tick -= 1;
-      setSecondsLeft(tick);
-      if (tick <= 0) {
-        if (timerRef.current) clearInterval(timerRef.current);
-        stopSafely('time');
+      abortRef.current = new AbortController();
+
+      // UI timer
+      let tick = MAX_SECONDS;
+      let currentTestState = 'recording'; // Capture state to avoid closure issues
+      const timer = setInterval(() => {
+        tick -= 1;
+        setSecondsLeft(tick);
+        if (tick <= 0) {
+          clearInterval(timer);
+          setTestState('ready');
+          setError('Time limit reached. Try again.');
+        }
+      }, 1000);
+
+      try {
+        const transcript = await startASR({
+          signal: abortRef.current.signal,
+          maxSeconds: MAX_SECONDS,
+          silenceTimeoutMs: SILENCE_MS,
+        });
+
+        clearInterval(timer);
+
+        // No transcript → don't advance, show gentle hint
+        if (!transcript || transcript.trim().split(/\s+/).length < 3) {
+          setTestState('ready');
+          setError('I didn\'t catch that. Try again a bit longer.');
+          return;
+        }
+
+        // PROCESS + SCORE
+        setTestState('processing');
+        saveAnswer(qIndex, transcript);
+
+        if (qIndex < PROMPTS.length - 1) {
+          setQIndex(qIndex + 1);
+          setTestState('prompting');
+        } else {
+          setTestState('done');
+          showResults();
+        }
+      } catch (e) {
+        clearInterval(timer);
+        // ASR failed or was aborted → keep user on same question
+        setTestState('ready');
+        setError('Mic error. Tap to try again.');
+      } finally {
+        abortRef.current = null;
       }
-    }, 1000);
+    } else if (testState === 'recording') {
+      // STOP manually
+      try { abortRef.current?.abort(); } catch {}
+    } // ignore taps in other states
+  }
 
-    // Start recognizer with silence auto-stop
-    try {
+  // ASR implementation (replace with your existing ASR)
+  async function startASR({ signal, maxSeconds, silenceTimeoutMs }: {
+    signal: AbortSignal;
+    maxSeconds: number;
+    silenceTimeoutMs: number;
+  }): Promise<string> {
+    return new Promise((resolve, reject) => {
       const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       if (!SR) {
-        setError('Speech recognition not supported');
-        stopSafely('error');
+        reject(new Error('Speech recognition not supported'));
         return;
       }
 
@@ -213,86 +310,59 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
 
       let silenceTimer: NodeJS.Timeout;
       let hasResult = false;
+      let maxTimer: NodeJS.Timeout;
+
+      // Max time limit
+      maxTimer = setTimeout(() => {
+        try { rec.stop(); } catch {}
+        if (!hasResult) reject(new Error('Max time reached'));
+      }, maxSeconds * 1000);
+
+      // Signal abort
+      signal.addEventListener('abort', () => {
+        try { rec.stop(); } catch {}
+        clearTimeout(silenceTimer);
+        clearTimeout(maxTimer);
+        reject(new Error('Aborted'));
+      });
 
       rec.onresult = (e: any) => {
         hasResult = true;
         clearTimeout(silenceTimer);
+        clearTimeout(maxTimer);
         const transcript = e.results[e.results.length - 1]?.[0]?.transcript || '';
-        
-        // Process the final result
-        const duration = (Date.now() - startTimeRef.current) / 1000;
-        const words = transcript.trim().split(/\s+/).filter(Boolean).length;
-        
-        setAnswers(prev => [...prev, { 
-          transcript, 
-          durationSec: duration, 
-          wordsRecognized: words 
-        }]);
-
-        if (questionIndex < questions.length - 1) {
-          setQuestionIndex(q => q + 1);
-        } else {
-          // Final question - compute results
-          const allAnswers = [...answers, { transcript, durationSec: duration, wordsRecognized: words }];
-          const scored = scorePlacement(allAnswers);
-          setResult(scored);
-          
-          // Save results and unlock
-          const placement = { level: scored.level, g: scored.grammar, v: scored.vocab, p: scored.pron, date: Date.now() };
-          localStorage.setItem('placement', JSON.stringify(placement));
-          localStorage.setItem('userPlacement', JSON.stringify({ level: scored.level, scores: scored, at: Date.now() }));
-          localStorage.setItem('unlockedLevel', scored.level);
-          unlockLevel(scored.level);
-          
-          // Clear progress
-          localStorage.removeItem('speakingTestProgress');
-          
-          // @ts-ignore
-          window.triggerConfetti?.();
-          setTimeout(() => routeToLevel(scored.level), 1200);
-        }
-        
-        stopSafely('manual');
+        resolve(transcript);
       };
 
       rec.onerror = () => {
-        setError('Microphone error. Please try again.');
-        stopSafely('error');
+        clearTimeout(silenceTimer);
+        clearTimeout(maxTimer);
+        reject(new Error('Recognition error'));
       };
 
       rec.onstart = () => {
         // Start silence detection
         silenceTimer = setTimeout(() => {
           if (!hasResult) {
-            stopSafely('silence');
+            try { rec.stop(); } catch {}
+            reject(new Error('Silence timeout'));
           }
-        }, SILENCE_MS);
+        }, silenceTimeoutMs);
       };
 
-      rec.start();
-    } catch (err) {
-      setError('Microphone error. Please try again.');
-      stopSafely('error');
-    }
+      try {
+        rec.start();
+      } catch (err) {
+        clearTimeout(silenceTimer);
+        clearTimeout(maxTimer);
+        reject(err);
+      }
+    });
   }
 
-  async function handleStop() {
-    if (!isRecording) return;
-    stopSafely('manual');
-  }
-
-  // Play prompt on question change
-  useEffect(() => {
-    if (!isRecording && !result) {
-      narration?.cancel?.();
-      try { 
-        narration?.speak?.(questions[questionIndex]); 
-      } catch {}
-    }
-  }, [questionIndex, questions, isRecording, result]);
 
   // ---------- UI ----------
-  const progressPercentage = ((questionIndex + 1) / questions.length) * 100;
+  const progressPercentage = ((qIndex + 1) / PROMPTS.length) * 100;
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700 pt-safe">
@@ -306,7 +376,7 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
                 Level Test
               </Badge>
               <div className="text-white/70 text-sm mt-1">
-                Question {questionIndex + 1} of {questions.length}
+                Question {qIndex + 1} of {PROMPTS.length}
               </div>
             </div>
           </div>
@@ -322,7 +392,7 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
       {/* Main Content */}
       <div className="p-4 max-w-2xl mx-auto" style={{ position: 'relative', zIndex: 3 }}>
         {!result ? (
-          <Card key={questionIndex} className="bg-white/10 border-white/20 backdrop-blur-sm mt-8">
+          <Card key={qIndex} className="bg-white/10 border-white/20 backdrop-blur-sm mt-8">
             <CardHeader>
               <CardTitle className="text-white text-center">
                 Speaking Prompt
@@ -331,7 +401,7 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
             <CardContent className="space-y-6">
               <div className="bg-white/5 rounded-xl p-6">
                 <p className="text-white text-lg font-medium text-center leading-relaxed">
-                  "{questions[questionIndex]}"
+                  "{PROMPTS[qIndex]}"
                 </p>
               </div>
               
@@ -343,7 +413,7 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
               
               <div className="text-center relative">
                 {/* Circular progress ring */}
-                {isRecording && (
+                {testState === 'recording' && (
                   <div className="absolute inset-0 flex items-center justify-center">
                     <svg className="w-24 h-24 transform -rotate-90" viewBox="0 0 100 100">
                       <circle
@@ -370,13 +440,15 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
                 )}
                 
                 <Button
-                  onClick={isRecording ? handleStop : handleStart}
-                  disabled={runId !== null && !isRecording}
+                  onClick={onMicPress}
+                  disabled={testState !== 'ready' && testState !== 'recording'}
                   size="lg"
                   className={`mic-button rounded-full w-20 h-20 relative z-10 ${
-                    isRecording 
+                    testState === 'recording'
                       ? 'bg-red-500 hover:bg-red-600 animate-pulse' 
-                      : 'bg-white/20 hover:bg-white/30'
+                      : testState === 'ready'
+                      ? 'bg-white/20 hover:bg-white/30'
+                      : 'bg-white/10 opacity-50 cursor-not-allowed'
                   }`}
                   style={{
                     pointerEvents: 'auto',
@@ -384,7 +456,7 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
                     touchAction: 'manipulation'
                   }}
                 >
-                  {isRecording ? (
+                  {testState === 'recording' ? (
                     <MicOff className="h-8 w-8 text-white" />
                   ) : (
                     <Mic className="h-8 w-8 text-white" />
@@ -393,7 +465,7 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
               </div>
 
               {/* Timer display */}
-              {isRecording && (
+              {testState === 'recording' && (
                 <div className="text-center">
                   <div className="text-white font-mono text-lg">
                     00:{String(secondsLeft).padStart(2, '0')}
@@ -403,9 +475,11 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
 
               <div className="text-center">
                 <p className="text-white/70 text-sm" style={{ pointerEvents: 'none' }}>
-                  {isRecording ? 'Recording... Tap to stop' : 
+                  {testState === 'recording' ? 'Listening... Tap to stop' : 
+                   testState === 'prompting' ? 'Listen to the prompt...' :
+                   testState === 'processing' ? 'Processing...' :
                    error ? 'Tap to try again' :
-                   'Listen to the prompt, then tap to speak'}
+                   testState === 'ready' ? 'Tap to speak' : 'Preparing...'}
                 </p>
               </div>
             </CardContent>
