@@ -6,21 +6,14 @@ import { Progress } from './ui/progress';
 import { 
   Mic, 
   MicOff, 
-  Play, 
   Volume2, 
-  ArrowLeft, 
   Award, 
   Star, 
-  CheckCircle, 
-  Target, 
-  Zap, 
-  MessageSquare, 
-  Volume, 
-  RotateCcw 
+  CheckCircle
 } from 'lucide-react';
-
-// If you already have these in context, import them instead:
-import { narration } from '../utils/narration'; // or your existing narration util
+import { narration } from '../utils/narration';
+import CanvasAvatar from './CanvasAvatar';
+import { useGamification } from '@/hooks/useGamification';
 
 interface SpeakingPlacementTestProps {
   onBack: () => void;
@@ -29,6 +22,7 @@ interface SpeakingPlacementTestProps {
 
 // --------- Speaking Test (isolated) ----------
 export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementTestProps) {
+  
   // ROUTING/UNLOCK HELPERS (use your existing app context if available)
   function unlockLevel(level: 'A1'|'A2'|'B1') {
     const key = 'unlocks';
@@ -41,7 +35,8 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     const t = map[level];
     localStorage.setItem('currentLevel', t.lvl);
     localStorage.setItem('currentModule', String(t.mod));
-    // If your app uses a lessons view name, change 'lesson' accordingly:
+    localStorage.setItem('userPlacement', JSON.stringify({ level: t.lvl, scores: {}, at: Date.now() }));
+    localStorage.setItem('unlockedLevel', t.lvl);
     onComplete(t.lvl, 75);
   }
 
@@ -52,9 +47,9 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     "Talk about a past event. What did you do last weekend?",
     "What are your goals for learning English this year?"
   ], []);
-  const [qIndex, setQIndex] = useState(0);
+  const [questionIndex, setQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<{ text: string; conf?: number }[]>([]);
-  const [busy, setBusy] = useState(false);
+  const [speakStatus, setSpeakStatus] = useState<'idle'|'prompting'|'recording'|'evaluating'|'advancing'>('idle');
   const [result, setResult] = useState<null | {
     grammar: number; vocab: number; pron: number; level: 'A1'|'A2'|'B1'
   }>(null);
@@ -73,7 +68,7 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     try { abortRef.current?.abort(); } catch {}
     abortRef.current = null;
     runIdRef.current = null;
-    setBusy(false);
+    setSpeakStatus('idle');
   }
   useEffect(() => () => resetRun(), []);
 
@@ -127,10 +122,9 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     return { grammar: Math.round(grammar), vocab: Math.round(vocab), pron, level };
   }
 
-  // ---------- ASR integration (use your existing recognizer) ----------
-  // Implement this wrapper with your current mic/ASR; return {text, confidence}
+  // ---------- ASR integration ----------
   async function recognizeOnce(): Promise<{text:string; confidence?:number}> {
-    // Simple Web Speech API implementation
+    // Simple Web Speech API implementation with timeout
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SR) throw new Error('Speech recognition not supported');
     
@@ -140,21 +134,32 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     rec.interimResults = false;
     
     return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        rec.stop();
+        resolve({ text: '', confidence: 0.5 });
+      }, 12000); // 12 second timeout
+      
       rec.onresult = (e: any) => {
+        clearTimeout(timeout);
         const text = e.results[0]?.[0]?.transcript || '';
         const confidence = e.results[0]?.[0]?.confidence || 0.8;
         resolve({ text, confidence });
       };
-      rec.onerror = () => reject(new Error('Recognition failed'));
-      rec.onend = () => resolve({ text: '', confidence: 0.5 });
+      rec.onerror = () => {
+        clearTimeout(timeout);
+        reject(new Error('Recognition failed'));
+      };
+      rec.onend = () => {
+        clearTimeout(timeout);
+      };
       rec.start();
     });
   }
 
   // ---------- test turn ----------
   async function speakTurn() {
-    if (busy || result) return;
-    setBusy(true);
+    if (speakStatus !== 'idle' || result) return;
+    setSpeakStatus('recording');
     narration?.cancel?.();
 
     const id = newRunId();
@@ -162,21 +167,29 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     abortRef.current = new AbortController();
 
     // Play prompt (non-blocking)
-    try { narration?.speak?.(questions[qIndex]); } catch {}
+    try { narration?.speak?.(questions[questionIndex]); } catch {}
 
     try {
       const { text, confidence } = await recognizeOnce();
       if (isStale(id)) return;
 
+      setSpeakStatus('evaluating');
+      
       setAnswers(prev => [...prev, { text, conf: confidence }]);
-      if (qIndex < questions.length - 1) {
-        setQIndex(q => q + 1);
+      if (questionIndex < questions.length - 1) {
+        setSpeakStatus('advancing');
+        setTimeout(() => {
+          setQuestionIndex(q => q + 1);
+          setSpeakStatus('idle');
+        }, 500);
       } else {
         const scored = scorePlacement([...answers, { text, conf: confidence }]);
         setResult(scored);
         // persist and unlock
         try {
           localStorage.setItem('placement.result', JSON.stringify(scored));
+          localStorage.setItem('userPlacement', JSON.stringify({ level: scored.level, scores: scored, at: Date.now() }));
+          localStorage.setItem('unlockedLevel', scored.level);
         } catch {}
         unlockLevel(scored.level);
         // fire confetti if your app exposes it
@@ -185,55 +198,176 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
         setTimeout(() => routeToLevel(scored.level), 1200);
       }
     } catch (e) {
-      // auto retry once after short backoff
-      await new Promise(r => setTimeout(r, 500));
+      // silent retry after short backoff
+      await new Promise(r => setTimeout(r, 350));
+      try {
+        const { text, confidence } = await recognizeOnce();
+        if (isStale(id)) return;
+        
+        setAnswers(prev => [...prev, { text, conf: confidence }]);
+        if (questionIndex < questions.length - 1) {
+          setSpeakStatus('advancing');
+          setTimeout(() => {
+            setQuestionIndex(q => q + 1);
+            setSpeakStatus('idle');
+          }, 500);
+        } else {
+          const scored = scorePlacement([...answers, { text, conf: confidence }]);
+          setResult(scored);
+        }
+      } catch {
+        // Final failure - just continue
+        setSpeakStatus('idle');
+      }
     } finally {
-      if (!isStale(id)) setBusy(false);
+      if (!isStale(id) && !result) {
+        setSpeakStatus('idle');
+      }
     }
   }
 
   // ---------- UI ----------
+  const progressPercentage = ((questionIndex + 1) / questions.length) * 100;
+  
   return (
-    <div className="placement-screen">
-      <div className="card">
-        <div className="header">
-          <h2>Speaking Prompt</h2>
-          <span className="chip">A1</span>
+    <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700">
+      {/* Header with Progress */}
+      <div className="p-4 bg-black/10">
+        <div className="flex items-center justify-between max-w-4xl mx-auto">
+          <div className="flex items-center space-x-4">
+            <CanvasAvatar className="w-12 h-12" />
+            <div>
+              <Badge variant="outline" className="text-white border-white/30 bg-white/10">
+                Level Test
+              </Badge>
+              <div className="text-white/70 text-sm mt-1">
+                Question {questionIndex + 1} of {questions.length}
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center space-x-4">
+            <div className="text-white/70 text-sm">
+              {Math.round(progressPercentage)}% Complete
+            </div>
+            <Progress value={progressPercentage} className="w-24" />
+          </div>
         </div>
+      </div>
 
+      {/* Main Content */}
+      <div className="p-4 max-w-2xl mx-auto">
         {!result ? (
-          <>
-            <p className="prompt">{questions[qIndex]}</p>
-            <div className={`mic ${busy ? 'busy' : ''}`} onClick={busy ? undefined : speakTurn} role="button" aria-disabled={busy} />
-            <p className="hint">{busy ? 'Listening…' : 'Tap to speak'}</p>
-            <div className="progress">{qIndex+1} / {questions.length}</div>
-          </>
+          <Card key={questionIndex} className="bg-white/10 border-white/20 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="text-white text-center">
+                Speaking Prompt
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="bg-white/5 rounded-xl p-6">
+                <p className="text-white text-lg font-medium text-center leading-relaxed">
+                  "{questions[questionIndex]}"
+                </p>
+              </div>
+              
+              <div className="text-center">
+                <Button
+                  onClick={speakTurn}
+                  disabled={speakStatus !== 'idle'}
+                  size="lg"
+                  className={`mic-button rounded-full w-20 h-20 ${
+                    speakStatus === 'recording' 
+                      ? 'bg-red-500 hover:bg-red-600 animate-pulse' 
+                      : 'bg-white/20 hover:bg-white/30'
+                  }`}
+                  style={{
+                    pointerEvents: 'auto',
+                    zIndex: 5,
+                    touchAction: 'manipulation'
+                  }}
+                >
+                  {speakStatus === 'recording' ? (
+                    <MicOff className="h-8 w-8 text-white" />
+                  ) : (
+                    <Mic className="h-8 w-8 text-white" />
+                  )}
+                </Button>
+              </div>
+
+              <div className="text-center">
+                <p className="text-white/70 text-sm">
+                  {speakStatus === 'recording' ? 'Listening...' : 
+                   speakStatus === 'evaluating' ? 'Processing...' :
+                   speakStatus === 'advancing' ? 'Moving to next question...' :
+                   'Listen to the prompt, then tap to speak'}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         ) : (
-          <ResultCard res={result} />
+          <ResultCard res={result} onStartLevel={() => routeToLevel(result.level)} />
         )}
       </div>
     </div>
   );
 }
 
-function ResultCard({ res }: { res: {grammar:number; vocab:number; pron:number; level:'A1'|'A2'|'B1'} }) {
+function ResultCard({ res, onStartLevel }: { 
+  res: {grammar:number; vocab:number; pron:number; level:'A1'|'A2'|'B1'}; 
+  onStartLevel: () => void;
+}) {
   return (
-    <div className="result">
-      <h3>Your level: <span className="level">{res.level}</span></h3>
-      <Meter label="Grammar" value={res.grammar} />
-      <Meter label="Vocabulary" value={res.vocab} />
-      <Meter label="Pronunciation" value={res.pron} />
-      <p>We'll take you to the best starting module for {res.level}.</p>
-    </div>
+    <Card className="bg-white/10 border-white/20 backdrop-blur-sm">
+      <CardHeader>
+        <CardTitle className="text-white text-center flex items-center justify-center space-x-2">
+          <Award className="h-6 w-6" />
+          <span>Placement Complete!</span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="text-center">
+          <div className="mb-4">
+            <Badge variant="secondary" className="text-2xl px-4 py-2 bg-white/20 text-white border-white/30">
+              Level {res.level}
+            </Badge>
+          </div>
+          
+          <div className="space-y-3 mb-6">
+            <Meter label="Grammar" value={res.grammar} />
+            <Meter label="Vocabulary" value={res.vocab} />
+            <Meter label="Pronunciation" value={res.pron} />
+          </div>
+          
+          <p className="text-white/80 mb-6">
+            Great! We'll take you to the best starting module for {res.level}.
+          </p>
+          
+          <Button 
+            onClick={onStartLevel}
+            size="lg"
+            className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+          >
+            Start {res.level} Now
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
+
 function Meter({label, value}:{label:string; value:number}) {
   return (
-    <div className="meter">
-      <div className="row">
-        <span>{label}</span><span>{value}/10</span>
+    <div className="flex items-center justify-between bg-white/5 rounded-lg p-3">
+      <span className="text-white/80 font-medium">{label}</span>
+      <div className="flex items-center space-x-3">
+        <div className="w-24 h-2 bg-white/10 rounded-full overflow-hidden">
+          <div 
+            className="h-full bg-gradient-to-r from-blue-400 to-purple-400 rounded-full transition-all duration-500"
+            style={{width: `${value*10}%`}} 
+          />
+        </div>
+        <span className="text-white font-semibold min-w-[3rem]">{value}/10</span>
       </div>
-      <div className="bar"><div className="fill" style={{width: `${value*10}%`}} /></div>
     </div>
   );
 }
