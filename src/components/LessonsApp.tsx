@@ -3487,6 +3487,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
 
   const speechRunIdRef = useRef<string | null>(null);
   const speakStatusRef = useRef<RunStatus>('idle');
+  const [speakStatus, setSpeakStatus] = useState<RunStatus>('idle');
   const recognizerRef = useRef<SpeechRecognition | null>(null);
   const retryCountRef = useRef(0);
   const MAX_ASR_RETRIES = 3;
@@ -3594,6 +3595,14 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     speechRunIdRef.current = null;
     try { recognizerRef.current?.stop?.(); } catch {}
   }, [selectedModule, selectedLevel, viewState]);
+
+  // Cancel any narration the moment we enter speaking (no TTS fighting taps)
+  useEffect(() => {
+    if (currentPhase === 'speaking') {
+      narration.cancel();          // nothing else should be talking now
+      setIsProcessing(false);
+    }
+  }, [currentPhase]);
   
   
   // ---- Autosave helpers ----
@@ -3733,6 +3742,15 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     const raw =
       (item && (item.answer ?? item.say ?? item.sentence ?? item.target ?? item.expected ?? item.text ?? item.question)) || '';
     return stripOuterQuotes(String(raw));
+  }
+
+  // Guarantee we evaluate the right sentence for the current index
+  function getCurrentPromptAndTarget() {
+    const item = currentModuleData?.speakingPractice?.[speakingIndex];
+    // if item is a string, it's both the prompt and target
+    const prompt = typeof item === 'string' ? item : (item?.question ?? '');
+    const target = typeof item === 'string' ? item : (item?.answer ?? item?.question ?? '');
+    return { prompt, target };
   }
 
   // Stable ref for the target to avoid stale closures
@@ -5038,11 +5056,13 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     // still inside the range → move to next question
     if (curr + 1 < total) {
       setSpeakingIndex(curr + 1);
+      setSpeakStatus('idle');
       setIsProcessing(false);
       return;
     }
 
     // curr is the last index → celebrate and move on
+    setSpeakStatus('idle');
     setIsProcessing(false);
     celebrateAndAdvance();
   }
@@ -5468,87 +5488,38 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     }
   }
 
-  // Start a complete speaking attempt; auto-retry on transient errors
+  // Single-source speaking start with internal guard
   async function startSpeakingFlow() {
-    // Block parallel runs
-    if (speakStatusRef.current !== 'idle') return;
+    // block parallel runs here (not via disabled button)
+    if (speakStatus !== 'idle' || currentPhase !== 'speaking' || viewState !== 'lesson') return;
 
-    const runId = newRunId();
-    speechRunIdRef.current = runId;
-    retryCountRef.current = 0;
+    try {
+      setSpeakStatus('recording');
+      await unlockAudioOnce();          // iOS resume AudioContext
+      const transcript = await recognizeOnce(); // from our robust ASR helper
+      if (transcript == null) return;
 
-    // Loop with bounded retries
-    while (!isStale(runId) && retryCountRef.current <= MAX_ASR_RETRIES) {
-      try {
-        // 1) Prompt current question (non-blocking if TTS fails)
-        const item = currentModuleData?.speakingPractice?.[speakingIndex];
-        const promptText = typeof item === 'string' ? item : (item?.question ?? '');
-        if (!promptText) throw new Error('prompt:missing');
+      setSpeakStatus('evaluating');
 
-        speakStatusRef.current = 'prompting';
-        narration.cancel();
-        narration.speak(promptText); // fire-and-forget; we do not block on TTS
-        await new Promise(r => setTimeout(r, Math.min(1200, Math.max(600, promptText.length * 40))));
-        if (isStale(runId)) return;
+      // Evaluate against the CURRENT card only
+      const { prompt, target } = getCurrentPromptAndTarget();
+      const ok = isExactlyCorrect(transcript, target);
 
-        // 2) Record and transcribe with robust Web Speech
-        await unlockAudioOnce();
-        speakStatusRef.current = 'recording';
-
-        const speechRunId = newRunId();
-        speechRunIdRef.current = speechRunId;
-        retryCountRef.current = 0;
-
-        let transcript = '';
-        while (!isStale(speechRunId) && retryCountRef.current <= MAX_ASR_RETRIES) {
-          try {
-            transcript = await recognizeOnce();
-            break; // success (even if empty), leave retry loop
-          } catch (err: any) {
-            // Silent backoff on transient recognizer errors; do NOT show generic "error" banner
-            retryCountRef.current += 1;
-            if (retryCountRef.current > MAX_ASR_RETRIES || (err?.message || '').includes('aborted')) {
-              // Give control back to user without noisy UI
-              throw err;
-            }
-            await new Promise(r => setTimeout(r, 350 * retryCountRef.current)); // 350/700/1050ms
-          }
-        }
-        if (isStale(speechRunId)) return;
-
-        // 3) Evaluate strictly (unchanged)
-        speakStatusRef.current = 'evaluating';
-        const target = typeof item === 'string' ? item : (item?.answer ?? item?.question ?? '');
-        const ok = isExactlyCorrect(transcript, target);
-
-        if (ok) {
-          setFeedback('Great job! Your sentence is correct.');
-          setFeedbackType('success');
-          earnXPForGrammarLesson(true);
-          incrementTotalExercises();
-          speakStatusRef.current = 'advancing';
-          advanceSpeakingOnce(); // your centralized advance
-        } else {
-          // short correction only; no generic error banner
-          setFeedback(`Not quite. Correct: "${target}".`);
-          setFeedbackType('error');
-        }
-
-        // Reset and exit
-        speakStatusRef.current = 'idle';
-        speechRunIdRef.current = null;
-        return;
-      } catch (err) {
-        // Transient failure → silent backoff retry; no generic UI error
-        retryCountRef.current += 1;
-        if (retryCountRef.current > MAX_ASR_RETRIES) {
-          speakStatusRef.current = 'idle'; // give control back to user; no scary message
-          return;
-        }
-        await new Promise(r => setTimeout(r, 350 * retryCountRef.current)); // 350/700/1050ms
-        if (isStale(runId)) return;
-        // loop continues
+      if (ok) {
+        setFeedback('Great job! Your sentence is correct.');
+        setFeedbackType('success');
+        earnXPForGrammarLesson(true);
+        incrementTotalExercises();
+        setSpeakStatus('advancing');
+        advanceSpeakingOnce();              // centralized progression
+      } else {
+        setFeedback(`Not quite. Correct: "${target}".`);
+        setFeedbackType('error');
+        setSpeakStatus('idle');
       }
+    } catch {
+      // silent failure; user can tap again
+      setSpeakStatus('idle');
     }
   }
 
@@ -5670,12 +5641,9 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
   };
 
   const speakCurrentSentence = () => {
-    const currentPracticeItem = currentModuleData?.speakingPractice?.[speakingIndex];
-    if (!currentPracticeItem) return;
-    // Only speak the question part, not the answer - like a real teacher would do
-    const currentSentence = typeof currentPracticeItem === 'string' ? currentPracticeItem : currentPracticeItem.question;
+    const { prompt } = getCurrentPromptAndTarget();
     narration.cancel();
-    narration.speak(currentSentence);
+    narration.speak(prompt);
   };
 
   // Render levels view
@@ -6237,16 +6205,30 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
                 {/* Recording Button */}
                 <div className="mb-4">
                   <Button
-                    onClick={isRecording ? stopRecording : startSpeakingFlow}
+                    id="micButton"
+                    key={`mic-${speakingIndex}`}
+                    onClick={() => {
+                      const canSpeak = viewState === 'lesson' && currentPhase === 'speaking';
+                      if (!canSpeak) return;
+                      // single-source speaking entry; safe-guard inside
+                      startSpeakingFlow();
+                    }}
+                    // DO NOT disable the button; we guard internally
+                    disabled={false}
+                    aria-disabled={false}
+                    style={{
+                      pointerEvents: 'auto',
+                      zIndex: 5,                  // sit above any card overlays
+                      touchAction: 'manipulation' // iOS tap reliability
+                    }}
                     size="lg"
-                    className={`rounded-full w-20 h-20 ${
-                      isRecording 
+                    className={`mic-button rounded-full w-20 h-20 ${
+                      speakStatus === 'recording' 
                         ? 'bg-red-500 hover:bg-red-600 animate-pulse' 
                         : 'bg-white/20 hover:bg-white/30'
                     }`}
-                    disabled={isProcessing || isSpeaking}
                   >
-                    {isRecording ? (
+                    {speakStatus === 'recording' ? (
                       <MicOff className="h-8 w-8" />
                     ) : (
                       <Mic className="h-8 w-8" />
@@ -6254,9 +6236,11 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
                   </Button>
                 </div>
 
-                <p className="text-white/70 text-sm mb-4">
-                  {isRecording ? 'Listening...' : 'Tap to speak the sentence'}
-                </p>
+                <div style={{ pointerEvents: 'none' }}>
+                  <p className="text-white/70 text-sm mb-4">
+                    {speakStatus === 'recording' ? 'Listening...' : 'Tap to speak the sentence'}
+                  </p>
+                </div>
 
                 {/* Feedback */}
                 {feedback && (
