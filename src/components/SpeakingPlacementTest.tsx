@@ -223,65 +223,87 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     return { grammar, vocab, pron, level };
   }
 
-  // ---------- Mic button handler (single entry point) ----------
+  // ---------- iOS Safari-compatible mic handler ----------
   async function onMicPress() {
     if (testState === 'ready') {
-      // START
-      setTestState('recording');
-      setError('');
-      setSecondsLeft(MAX_SECONDS);
-      startTimeRef.current = Date.now();
-      narration.cancel();
+      try {
+        // Cancel any TTS before starting to avoid iOS block
+        if (window.speechSynthesis) {
+          window.speechSynthesis.cancel();
+        }
+        narration.cancel();
 
-      abortRef.current = new AbortController();
+        // Ask for mic permission FIRST
+        const permission = await navigator.permissions.query({ name: 'microphone' as PermissionName }).catch(() => null);
+        if (permission && permission.state === 'denied') {
+          throw new Error('Microphone access denied by user');
+        }
 
-      // UI timer
-      let tick = MAX_SECONDS;
-      let currentTestState = 'recording'; // Capture state to avoid closure issues
-      const timer = setInterval(() => {
-        tick -= 1;
-        setSecondsLeft(tick);
-        if (tick <= 0) {
+        // Wait for direct user tap before calling getUserMedia
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        if (!stream || !stream.getTracks().length) {
+          throw new Error('No audio stream available');
+        }
+
+        setTestState('recording');
+        setError('');
+        setSecondsLeft(MAX_SECONDS);
+        startTimeRef.current = Date.now();
+
+        abortRef.current = new AbortController();
+
+        // UI timer
+        let tick = MAX_SECONDS;
+        const timer = setInterval(() => {
+          tick -= 1;
+          setSecondsLeft(tick);
+          if (tick <= 0) {
+            clearInterval(timer);
+            setTestState('ready');
+            setError('Time limit reached. Try again.');
+          }
+        }, 1000);
+
+        try {
+          const transcript = await startASR({
+            signal: abortRef.current.signal,
+            maxSeconds: MAX_SECONDS,
+            silenceTimeoutMs: SILENCE_MS,
+          });
+
+          clearInterval(timer);
+
+          if (!transcript || transcript.trim().length < 2) {
+            setTestState('ready');
+            setError('I didn\'t hear you clearly. Please try again.');
+            return;
+          }
+
+          // PROCESS + SCORE
+          setTestState('processing');
+          saveAnswer(qIndex, transcript);
+
+          if (qIndex < PROMPTS.length - 1) {
+            setQIndex(qIndex + 1);
+            setTestState('prompting');
+          } else {
+            setTestState('done');
+            showResults();
+          }
+        } catch (e) {
           clearInterval(timer);
           setTestState('ready');
-          setError('Time limit reached. Try again.');
-        }
-      }, 1000);
-
-      try {
-        const transcript = await startASR({
-          signal: abortRef.current.signal,
-          maxSeconds: MAX_SECONDS,
-          silenceTimeoutMs: SILENCE_MS,
-        });
-
-        clearInterval(timer);
-
-        // No transcript → don't advance, show gentle hint
-        if (!transcript || transcript.trim().split(/\s+/).length < 3) {
-          setTestState('ready');
-          setError('I didn\'t catch that. Try again a bit longer.');
-          return;
+          setError('Microphone error. Please allow mic and try again.');
+        } finally {
+          // Clean up stream
+          stream.getTracks().forEach(track => track.stop());
+          abortRef.current = null;
         }
 
-        // PROCESS + SCORE
-        setTestState('processing');
-        saveAnswer(qIndex, transcript);
-
-        if (qIndex < PROMPTS.length - 1) {
-          setQIndex(qIndex + 1);
-          setTestState('prompting');
-        } else {
-          setTestState('done');
-          showResults();
-        }
-      } catch (e) {
-        clearInterval(timer);
-        // ASR failed or was aborted → keep user on same question
+      } catch (err) {
+        console.error('Mic error:', err);
         setTestState('ready');
-        setError('Mic error. Tap to try again.');
-      } finally {
-        abortRef.current = null;
+        setError('Microphone error. Please allow mic and try again.');
       }
     } else if (testState === 'recording') {
       // STOP manually
