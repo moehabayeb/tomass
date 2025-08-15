@@ -1,674 +1,239 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Mic, MicOff, Play, RotateCcw, Volume2, Award, Star, CheckCircle, Zap, Target, MessageSquare, Volume } from 'lucide-react';
-import { useTextToSpeech } from '@/hooks/useTextToSpeech';
-import { supabase } from '@/integrations/supabase/client';
-import { useGamification } from '@/hooks/useGamification';
-import { AvatarDisplay } from './AvatarDisplay';
-import { useUserData } from '@/hooks/useUserData';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Button } from './ui/button';
+import { Badge } from './ui/badge';
+import { Progress } from './ui/progress';
+import { 
+  Mic, 
+  MicOff, 
+  Play, 
+  Volume2, 
+  ArrowLeft, 
+  Award, 
+  Star, 
+  CheckCircle, 
+  Target, 
+  Zap, 
+  MessageSquare, 
+  Volume, 
+  RotateCcw 
+} from 'lucide-react';
+
+// If you already have these in context, import them instead:
+import { narration } from '../utils/narration'; // or your existing narration util
 
 interface SpeakingPlacementTestProps {
   onBack: () => void;
   onComplete: (level: string, score: number) => void;
 }
 
-interface SpeakingScore {
-  grammarScore: number;
-  fluencyScore: number;
-  vocabularyScore: number;
-  pronunciationScore: number;
-  totalScore: number;
-  hasErrors: boolean;
-  correctedVersion: string;
-  feedback: string;
+// --------- Speaking Test (isolated) ----------
+export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementTestProps) {
+  // ROUTING/UNLOCK HELPERS (use your existing app context if available)
+  function unlockLevel(level: 'A1'|'A2'|'B1') {
+    const key = 'unlocks';
+    const data = JSON.parse(localStorage.getItem(key) || '{}');
+    data[level] = true;
+    localStorage.setItem(key, JSON.stringify(data));
+  }
+  function routeToLevel(level: 'A1'|'A2'|'B1') {
+    const map = { A1: {lvl:'A1', mod:1}, A2: {lvl:'A2', mod:51}, B1: {lvl:'B1', mod:101} };
+    const t = map[level];
+    localStorage.setItem('currentLevel', t.lvl);
+    localStorage.setItem('currentModule', String(t.mod));
+    // If your app uses a lessons view name, change 'lesson' accordingly:
+    onComplete(t.lvl, 75);
+  }
+
+  // ---------- local, page-only state ----------
+  const questions = useMemo(() => [
+    "Tell me your name and where you are from. Speak clearly for about 15 seconds.",
+    "Describe your typical weekday. What do you usually do?",
+    "Talk about a past event. What did you do last weekend?",
+    "What are your goals for learning English this year?"
+  ], []);
+  const [qIndex, setQIndex] = useState(0);
+  const [answers, setAnswers] = useState<{ text: string; conf?: number }[]>([]);
+  const [busy, setBusy] = useState(false);
+  const [result, setResult] = useState<null | {
+    grammar: number; vocab: number; pron: number; level: 'A1'|'A2'|'B1'
+  }>(null);
+
+  // ASR guards only for this page
+  const runIdRef = useRef<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
+
+  function newRunId() {
+    return `${Date.now()}-${Math.random().toString(36).slice(2,7)}`;
+  }
+  function isStale(id: string) {
+    return runIdRef.current !== id;
+  }
+  function resetRun() {
+    try { abortRef.current?.abort(); } catch {}
+    abortRef.current = null;
+    runIdRef.current = null;
+    setBusy(false);
+  }
+  useEffect(() => () => resetRun(), []);
+
+  // ---------- very light normalization helpers ----------
+  function stripDiacritics(s: string) {
+    return (s || '')
+      .normalize('NFD').replace(/\p{Diacritic}/gu, '')
+      .toLowerCase().replace(/[^a-z0-9\s']/g, ' ')
+      .replace(/\s+/g, ' ').trim();
+  }
+  function tokenStats(text: string) {
+    const t = stripDiacritics(text).split(' ').filter(Boolean);
+    const unique = new Set(t);
+    return { tokens: t, uniqueCount: unique.size, length: t.length };
+  }
+
+  // ---------- scoring (0–10 each) ----------
+  function scorePlacement(all: {text: string; conf?: number}[]) {
+    const joined = all.map(a => a.text).join(' . ');
+    const { tokens, uniqueCount, length } = tokenStats(joined);
+
+    // Grammar proxy: diversity of bigrams + presence of verbs/aux + sentence markers
+    const verbs = ['am','is','are','was','were','do','does','did','have','has','had',
+                   'go','went','come','came','eat','ate','like','play','work','study',
+                   'want','wanted','live','lived','visit','visited','be','been','being'];
+    const auxHits = tokens.filter(t => verbs.includes(t)).length;
+    const sentences = joined.split(/[.!?]/).map(s => s.trim()).filter(Boolean).length;
+    const bigrams = new Set(tokens.slice(1).map((t,i)=>tokens[i]+' '+t)).size;
+
+    let grammar = 0;
+    grammar += Math.min(4, auxHits / 2);          // up to 4
+    grammar += Math.min(3, bigrams / 12);         // up to 3
+    grammar += Math.min(3, sentences / 3);        // up to 3
+    grammar = Math.max(0, Math.min(10, grammar));
+
+    // Vocabulary proxy: type/token ratio + length
+    let vocab = 0;
+    vocab += Math.min(6, (uniqueCount / Math.max(1, length)) * 12); // up to 6
+    vocab += Math.min(4, length / 20);                               // up to 4
+    vocab = Math.max(0, Math.min(10, vocab));
+
+    // Pronunciation proxy: ASR confidence if present; fallback from kept tokens
+    const avgConf = all.map(a => a.conf ?? 0.75).reduce((a,b)=>a+b,0) / Math.max(1,all.length);
+    let pron = Math.round(Math.max(0, Math.min(10, avgConf * 10)));
+
+    // Level decision (keep simple & transparent)
+    const avgCore = (grammar + vocab) / 2;
+    const level: 'A1'|'A2'|'B1' =
+      avgCore < 4 ? 'A1' : avgCore < 7 ? 'A2' : 'B1';
+
+    return { grammar: Math.round(grammar), vocab: Math.round(vocab), pron, level };
+  }
+
+  // ---------- ASR integration (use your existing recognizer) ----------
+  // Implement this wrapper with your current mic/ASR; return {text, confidence}
+  async function recognizeOnce(): Promise<{text:string; confidence?:number}> {
+    // Simple Web Speech API implementation
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SR) throw new Error('Speech recognition not supported');
+    
+    const rec = new SR();
+    rec.lang = 'en-US';
+    rec.continuous = false;
+    rec.interimResults = false;
+    
+    return new Promise((resolve, reject) => {
+      rec.onresult = (e: any) => {
+        const text = e.results[0]?.[0]?.transcript || '';
+        const confidence = e.results[0]?.[0]?.confidence || 0.8;
+        resolve({ text, confidence });
+      };
+      rec.onerror = () => reject(new Error('Recognition failed'));
+      rec.onend = () => resolve({ text: '', confidence: 0.5 });
+      rec.start();
+    });
+  }
+
+  // ---------- test turn ----------
+  async function speakTurn() {
+    if (busy || result) return;
+    setBusy(true);
+    narration?.cancel?.();
+
+    const id = newRunId();
+    runIdRef.current = id;
+    abortRef.current = new AbortController();
+
+    // Play prompt (non-blocking)
+    try { narration?.speak?.(questions[qIndex]); } catch {}
+
+    try {
+      const { text, confidence } = await recognizeOnce();
+      if (isStale(id)) return;
+
+      setAnswers(prev => [...prev, { text, conf: confidence }]);
+      if (qIndex < questions.length - 1) {
+        setQIndex(q => q + 1);
+      } else {
+        const scored = scorePlacement([...answers, { text, conf: confidence }]);
+        setResult(scored);
+        // persist and unlock
+        try {
+          localStorage.setItem('placement.result', JSON.stringify(scored));
+        } catch {}
+        unlockLevel(scored.level);
+        // fire confetti if your app exposes it
+        // @ts-ignore
+        window.triggerConfetti?.();
+        setTimeout(() => routeToLevel(scored.level), 1200);
+      }
+    } catch (e) {
+      // auto retry once after short backoff
+      await new Promise(r => setTimeout(r, 500));
+    } finally {
+      if (!isStale(id)) setBusy(false);
+    }
+  }
+
+  // ---------- UI ----------
+  return (
+    <div className="placement-screen">
+      <div className="card">
+        <div className="header">
+          <h2>Speaking Prompt</h2>
+          <span className="chip">A1</span>
+        </div>
+
+        {!result ? (
+          <>
+            <p className="prompt">{questions[qIndex]}</p>
+            <div className={`mic ${busy ? 'busy' : ''}`} onClick={busy ? undefined : speakTurn} role="button" aria-disabled={busy} />
+            <p className="hint">{busy ? 'Listening…' : 'Tap to speak'}</p>
+            <div className="progress">{qIndex+1} / {questions.length}</div>
+          </>
+        ) : (
+          <ResultCard res={result} />
+        )}
+      </div>
+    </div>
+  );
 }
 
-const speakingPrompts = [
-  {
-    id: 1,
-    level: 'A1',
-    question: 'Tell me your name and where you are from. Speak clearly for about 15 seconds.',
-    expectedTime: 15
-  },
-  {
-    id: 2,
-    level: 'A2',
-    question: 'Describe what you did yesterday. Use past tense verbs. Speak for about 30 seconds.',
-    expectedTime: 30
-  },
-  {
-    id: 3,
-    level: 'B1',
-    question: 'What are your hobbies and why do you enjoy them? Explain your thoughts for about 45 seconds.',
-    expectedTime: 45
-  },
-  {
-    id: 4,
-    level: 'B2',
-    question: 'Describe a challenge you faced and how you overcame it. Share your experience for about 60 seconds.',
-    expectedTime: 60
-  }
-];
-
-export const SpeakingPlacementTest: React.FC<SpeakingPlacementTestProps> = ({ onBack, onComplete }) => {
-  const [currentPromptIndex, setCurrentPromptIndex] = useState(0);
-  const [isRecording, setIsRecording] = useState(false);
-  const [showResults, setShowResults] = useState(false);
-  const [testStarted, setTestStarted] = useState(false);
-  const [recordingTime, setRecordingTime] = useState(0);
-  const [isEvaluating, setIsEvaluating] = useState(false);
-  const [showScoreAnimation, setShowScoreAnimation] = useState(false);
-  const [finalScores, setFinalScores] = useState<SpeakingScore[]>([]);
-  const [currentResponse, setCurrentResponse] = useState('');
-  const [isPlaying, setIsPlaying] = useState(false);
-  
-  const mediaRecorder = useRef<MediaRecorder | null>(null);
-  const audioChunks = useRef<Blob[]>([]);
-  const recordingTimer = useRef<NodeJS.Timeout | null>(null);
-  
-  const { speak, isSpeaking } = useTextToSpeech();
-  const { userProfile, getXPProgress } = useGamification();
-  const { updateProfile } = useUserData();
-  const xpProgress = getXPProgress();
-
-  const currentPrompt = speakingPrompts[currentPromptIndex];
-  const progress = ((currentPromptIndex + 1) / speakingPrompts.length) * 100;
-
-  useEffect(() => {
-    if (testStarted && currentPrompt && !isRecording && !isEvaluating) {
-      const timer = setTimeout(() => {
-        playPrompt();
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [currentPromptIndex, testStarted]);
-
-  const playPrompt = () => {
-    setIsPlaying(true);
-    speak(currentPrompt.question, () => {
-      setIsPlaying(false);
-    });
-  };
-
-  const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorder.current = new MediaRecorder(stream);
-      audioChunks.current = [];
-
-      mediaRecorder.current.ondataavailable = (event) => {
-        audioChunks.current.push(event.data);
-      };
-
-      mediaRecorder.current.onstop = async () => {
-        const audioBlob = new Blob(audioChunks.current, { type: 'audio/webm' });
-        await processAudio(audioBlob);
-        stream.getTracks().forEach(track => track.stop());
-      };
-
-      mediaRecorder.current.start();
-      setIsRecording(true);
-      setRecordingTime(0);
-
-      recordingTimer.current = setInterval(() => {
-        setRecordingTime(prev => {
-          if (prev >= currentPrompt.expectedTime) {
-            stopRecording();
-            return prev;
-          }
-          return prev + 1;
-        });
-      }, 1000);
-
-    } catch (error) {
-      console.error('Error accessing microphone:', error);
-    }
-  };
-
-  const stopRecording = () => {
-    if (mediaRecorder.current && isRecording) {
-      mediaRecorder.current.stop();
-      setIsRecording(false);
-      if (recordingTimer.current) {
-        clearInterval(recordingTimer.current);
-      }
-    }
-  };
-
-  const processAudio = async (audioBlob: Blob) => {
-    try {
-      setIsEvaluating(true);
-      
-      // Transcribe audio
-      const reader = new FileReader();
-      reader.readAsDataURL(audioBlob);
-      reader.onloadend = async () => {
-        const base64data = reader.result as string;
-        const audioData = base64data.split(',')[1];
-
-        const { data: transcriptionData, error: transcriptionError } = await supabase.functions.invoke('transcribe', {
-          body: { audio: audioData }
-        });
-
-        if (transcriptionError) throw transcriptionError;
-
-        const transcription = transcriptionData.transcript || '';
-        setCurrentResponse(transcription);
-
-        if (transcription.trim().length < 5) {
-          setIsEvaluating(false);
-          return;
-        }
-
-        // Evaluate with new scoring system
-        const { data: evaluationData, error: evaluationError } = await supabase.functions.invoke('evaluate-speaking', {
-          body: {
-            question: currentPrompt.question,
-            answer: transcription,
-            level: currentPrompt.level
-          }
-        });
-
-        if (evaluationError) throw evaluationError;
-
-        const scores: SpeakingScore = evaluationData;
-        setFinalScores(prev => [...prev, scores]);
-        
-        // Show scores with animation
-        setShowScoreAnimation(true);
-        
-        setTimeout(() => {
-          setShowScoreAnimation(false);
-          if (currentPromptIndex < speakingPrompts.length - 1) {
-            setCurrentPromptIndex(prev => prev + 1);
-            setCurrentResponse('');
-          } else {
-            calculateFinalResults();
-          }
-          setIsEvaluating(false);
-        }, 4000);
-      };
-    } catch (error) {
-      console.error('Error processing audio:', error);
-      setIsEvaluating(false);
-    }
-  };
-
-  const calculateFinalResults = async () => {
-    if (finalScores.length === 0) return;
-    
-    const avgGrammar = finalScores.reduce((sum, score) => sum + score.grammarScore, 0) / finalScores.length;
-    const avgFluency = finalScores.reduce((sum, score) => sum + score.fluencyScore, 0) / finalScores.length;
-    const avgVocabulary = finalScores.reduce((sum, score) => sum + score.vocabularyScore, 0) / finalScores.length;
-    const avgPronunciation = finalScores.reduce((sum, score) => sum + score.pronunciationScore, 0) / finalScores.length;
-    const totalAverage = (avgGrammar + avgFluency + avgVocabulary + avgPronunciation) / 4;
-    
-    // Determine level based on average score
-    let level = 'A1';
-    if (totalAverage >= 8.5) level = 'C1';
-    else if (totalAverage >= 7.0) level = 'B2';
-    else if (totalAverage >= 5.5) level = 'B1';
-    else if (totalAverage >= 4.0) level = 'A2';
-    
-    // Update user profile
-    if (userProfile) {
-      let userLevel: 'beginner' | 'intermediate' | 'advanced' = 'beginner';
-      if (level === 'C1' || level === 'B2') userLevel = 'advanced';
-      else if (level === 'B1') userLevel = 'intermediate';
-      
-      await updateProfile({ userLevel });
-    }
-    
-    setShowResults(true);
-    onComplete(level, Math.round((totalAverage / 10) * 100));
-  };
-
-  const resetTest = () => {
-    setCurrentPromptIndex(0);
-    setShowResults(false);
-    setTestStarted(false);
-    setFinalScores([]);
-    setCurrentResponse('');
-    setShowScoreAnimation(false);
-    setIsEvaluating(false);
-    setIsRecording(false);
-  };
-
-  const getScoreColor = (score: number) => {
-    if (score >= 8) return 'text-green-400';
-    if (score >= 6) return 'text-blue-400';
-    if (score >= 4) return 'text-yellow-400';
-    return 'text-red-400';
-  };
-
-  const getProgressColor = (score: number) => {
-    if (score >= 8) return 'from-green-500 to-green-600';
-    if (score >= 6) return 'from-blue-500 to-blue-600';
-    if (score >= 4) return 'from-yellow-500 to-yellow-600';
-    return 'from-red-500 to-red-600';
-  };
-
-  const calculateOverallLevel = () => {
-    if (finalScores.length === 0) return 'A1';
-    const totalAverage = finalScores.reduce((sum, score) => 
-      sum + (score.grammarScore + score.fluencyScore + score.vocabularyScore + score.pronunciationScore) / 4
-    , 0) / finalScores.length;
-    
-    if (totalAverage >= 8.5) return 'C1';
-    if (totalAverage >= 7.0) return 'B2';
-    if (totalAverage >= 5.5) return 'B1';
-    if (totalAverage >= 4.0) return 'A2';
-    return 'A1';
-  };
-
-  const calculateAverageScores = () => {
-    if (finalScores.length === 0) return { grammar: 0, fluency: 0, vocabulary: 0, pronunciation: 0 };
-    
-    return {
-      grammar: finalScores.reduce((sum, score) => sum + score.grammarScore, 0) / finalScores.length,
-      fluency: finalScores.reduce((sum, score) => sum + score.fluencyScore, 0) / finalScores.length,
-      vocabulary: finalScores.reduce((sum, score) => sum + score.vocabularyScore, 0) / finalScores.length,
-      pronunciation: finalScores.reduce((sum, score) => sum + score.pronunciationScore, 0) / finalScores.length,
-    };
-  };
-
-  // Score Animation Component
-  const ScoreDisplay = ({ scores }: { scores: SpeakingScore }) => (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <Card className="bg-gradient-to-b from-purple-900/90 to-indigo-900/90 backdrop-blur-xl border border-purple-500/30 max-w-md w-full">
-        <CardContent className="p-8">
-          <div className="text-center space-y-6">
-            <div className="flex items-center justify-center">
-              <CheckCircle className="h-16 w-16 text-green-400 animate-pulse" />
-            </div>
-            <h3 className="text-2xl font-bold text-white">✅ Scores Collected!</h3>
-            <p className="text-white/80">Here's how you did:</p>
-            
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-white/90 flex items-center gap-2">
-                  <Target className="h-5 w-5 text-blue-400" />
-                  Grammar
-                </span>
-                <span className={`text-xl font-bold ${getScoreColor(scores.grammarScore)}`}>
-                  {scores.grammarScore}/10
-                </span>
-              </div>
-              
-              <div className="flex justify-between items-center">
-                <span className="text-white/90 flex items-center gap-2">
-                  <Zap className="h-5 w-5 text-yellow-400" />
-                  Speaking Fluency
-                </span>
-                <span className={`text-xl font-bold ${getScoreColor(scores.fluencyScore)}`}>
-                  {scores.fluencyScore}/10
-                </span>
-              </div>
-              
-              <div className="flex justify-between items-center">
-                <span className="text-white/90 flex items-center gap-2">
-                  <MessageSquare className="h-5 w-5 text-green-400" />
-                  Vocabulary
-                </span>
-                <span className={`text-xl font-bold ${getScoreColor(scores.vocabularyScore)}`}>
-                  {scores.vocabularyScore}/10
-                </span>
-              </div>
-              
-              <div className="flex justify-between items-center">
-                <span className="text-white/90 flex items-center gap-2">
-                  <Volume className="h-5 w-5 text-purple-400" />
-                  Pronunciation
-                </span>
-                <span className={`text-xl font-bold ${getScoreColor(scores.pronunciationScore)}`}>
-                  {scores.pronunciationScore}/10
-                </span>
-              </div>
-            </div>
-            
-            <div className="bg-white/10 rounded-lg p-4 space-y-3">
-              <p className="text-green-300 text-sm">✨ {scores.feedback}</p>
-              {scores.hasErrors && scores.correctedVersion && (
-                <div className="text-left">
-                  <p className="text-orange-300 text-xs font-medium">Suggestion:</p>
-                  <p className="text-orange-200 text-sm italic">"{scores.correctedVersion}"</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-
-  if (showResults) {
-    const averageScores = calculateAverageScores();
-    const overallLevel = calculateOverallLevel();
-    const totalScore = Math.round((averageScores.grammar + averageScores.fluency + averageScores.vocabulary + averageScores.pronunciation) / 4 * 10);
-
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4">
-        <div className="absolute inset-0 w-full h-full background-stars pointer-events-none" 
-             style={{ backgroundImage: 'radial-gradient(2px 2px at 20px 30px, #fff, transparent), radial-gradient(2px 2px at 40px 70px, #fff, transparent), radial-gradient(1px 1px at 90px 40px, #fff, transparent)', backgroundSize: '100px 100px' }} 
-        />
-        
-        {userProfile && (
-          <div className="fixed top-4 left-4 z-20">
-            <AvatarDisplay
-              level={userProfile.level}
-              xp={Math.max(0, xpProgress.current)}
-              maxXP={xpProgress.max}
-              userName={userProfile.name}
-              showXPBar={true}
-              size="sm"
-            />
-          </div>
-        )}
-
-        <div className="relative max-w-2xl mx-auto pt-20">
-          <Card className="bg-gradient-to-b from-purple-900/80 to-indigo-900/80 backdrop-blur-xl border border-purple-500/30 text-white">
-            <CardContent className="p-8">
-              <div className="text-center space-y-8">
-                <div className="relative">
-                  <Award className="h-20 w-20 mx-auto mb-4 text-yellow-400" />
-                  <div className="absolute -top-2 -right-2">
-                    <Star className="h-8 w-8 text-yellow-300 animate-pulse" />
-                  </div>
-                </div>
-                
-                <div>
-                  <h2 className="text-3xl font-bold mb-2">🎉 Speaking Test Complete!</h2>
-                  <p className="text-white/80">Here's your detailed breakdown:</p>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4 mb-8">
-                  <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-4">
-                    <h3 className="text-lg font-bold">Your Level</h3>
-                    <div className="text-2xl font-bold">{overallLevel}</div>
-                  </div>
-                  <div className="bg-gradient-to-r from-green-600 to-blue-600 rounded-xl p-4">
-                    <h3 className="text-lg font-bold">Total Score</h3>
-                    <div className="text-2xl font-bold">{totalScore}%</div>
-                  </div>
-                </div>
-
-                <div className="space-y-6">
-                  <h3 className="text-xl font-bold">Score Breakdown</h3>
-                  
-                  {/* Grammar Score */}
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="flex items-center gap-2">
-                        <Target className="h-5 w-5 text-blue-400" />
-                        Grammar
-                      </span>
-                      <span className={`font-bold ${getScoreColor(averageScores.grammar)}`}>
-                        {averageScores.grammar.toFixed(1)}/10
-                      </span>
-                    </div>
-                    <div className="w-full bg-white/20 rounded-full h-3">
-                      <div 
-                        className={`h-3 rounded-full bg-gradient-to-r ${getProgressColor(averageScores.grammar)} transition-all duration-1000`}
-                        style={{ width: `${(averageScores.grammar / 10) * 100}%` }}
-                      ></div>
-                    </div>
-                  </div>
-
-                  {/* Fluency Score */}
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="flex items-center gap-2">
-                        <Zap className="h-5 w-5 text-yellow-400" />
-                        Speaking Fluency
-                      </span>
-                      <span className={`font-bold ${getScoreColor(averageScores.fluency)}`}>
-                        {averageScores.fluency.toFixed(1)}/10
-                      </span>
-                    </div>
-                    <div className="w-full bg-white/20 rounded-full h-3">
-                      <div 
-                        className={`h-3 rounded-full bg-gradient-to-r ${getProgressColor(averageScores.fluency)} transition-all duration-1000`}
-                        style={{ width: `${(averageScores.fluency / 10) * 100}%` }}
-                      ></div>
-                    </div>
-                  </div>
-
-                  {/* Vocabulary Score */}
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="flex items-center gap-2">
-                        <MessageSquare className="h-5 w-5 text-green-400" />
-                        Vocabulary
-                      </span>
-                      <span className={`font-bold ${getScoreColor(averageScores.vocabulary)}`}>
-                        {averageScores.vocabulary.toFixed(1)}/10
-                      </span>
-                    </div>
-                    <div className="w-full bg-white/20 rounded-full h-3">
-                      <div 
-                        className={`h-3 rounded-full bg-gradient-to-r ${getProgressColor(averageScores.vocabulary)} transition-all duration-1000`}
-                        style={{ width: `${(averageScores.vocabulary / 10) * 100}%` }}
-                      ></div>
-                    </div>
-                  </div>
-
-                  {/* Pronunciation Score */}
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="flex items-center gap-2">
-                        <Volume className="h-5 w-5 text-purple-400" />
-                        Pronunciation
-                      </span>
-                      <span className={`font-bold ${getScoreColor(averageScores.pronunciation)}`}>
-                        {averageScores.pronunciation.toFixed(1)}/10
-                      </span>
-                    </div>
-                    <div className="w-full bg-white/20 rounded-full h-3">
-                      <div 
-                        className={`h-3 rounded-full bg-gradient-to-r ${getProgressColor(averageScores.pronunciation)} transition-all duration-1000`}
-                        style={{ width: `${(averageScores.pronunciation / 10) * 100}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="space-y-3 pt-6">
-                  <Button
-                    onClick={() => onComplete(overallLevel, totalScore)}
-                    className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-medium py-3 rounded-xl"
-                  >
-                    Start Learning Journey
-                  </Button>
-                  
-                  <Button
-                    onClick={resetTest}
-                    variant="outline"
-                    className="w-full border-white/20 text-white/70 hover:text-white hover:bg-white/10"
-                  >
-                    <RotateCcw className="h-4 w-4 mr-2" />
-                    Retake Test
-                  </Button>
-                  
-                  <Button
-                    onClick={onBack}
-                    variant="ghost"
-                    className="w-full text-white/50 hover:text-white/70 hover:bg-white/5"
-                  >
-                    <ArrowLeft className="h-4 w-4 mr-2" />
-                    Back to Menu
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
-
+function ResultCard({ res }: { res: {grammar:number; vocab:number; pron:number; level:'A1'|'A2'|'B1'} }) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4">
-      <div className="absolute inset-0 w-full h-full background-stars pointer-events-none" 
-           style={{ backgroundImage: 'radial-gradient(2px 2px at 20px 30px, #fff, transparent), radial-gradient(2px 2px at 40px 70px, #fff, transparent), radial-gradient(1px 1px at 90px 40px, #fff, transparent)', backgroundSize: '100px 100px' }} 
-      />
-      
-      {userProfile && (
-        <div className="fixed top-4 left-4 z-20">
-          <AvatarDisplay
-            level={userProfile.level}
-            xp={Math.max(0, xpProgress.current)}
-            maxXP={xpProgress.max}
-            userName={userProfile.name}
-            showXPBar={true}
-            size="sm"
-          />
-        </div>
-      )}
-
-      <div className="relative max-w-md mx-auto pt-20">
-        <Button
-          onClick={onBack}
-          variant="ghost"
-          className="mb-4 text-white/70 hover:text-white hover:bg-white/10"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back
-        </Button>
-
-        {/* Welcome Screen */}
-        {!testStarted && (
-          <Card className="bg-gradient-to-b from-purple-900/80 to-indigo-900/80 backdrop-blur-xl border border-purple-500/30">
-            <CardContent className="p-8">
-              <div className="text-center space-y-6">
-                <div className="w-24 h-24 mx-auto bg-gradient-to-r from-purple-500 to-indigo-600 rounded-full flex items-center justify-center">
-                  <Mic className="w-12 h-12 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-white mb-2">🎤 Speaking Assessment</h2>
-                  <p className="text-white/80">
-                    Test your English speaking skills with our AI-powered assessment. We'll evaluate your grammar, fluency, vocabulary, and pronunciation.
-                  </p>
-                </div>
-                <Button 
-                  onClick={() => setTestStarted(true)}
-                  size="lg"
-                  className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white px-8 py-3"
-                >
-                  <Play className="w-5 h-5 mr-2" />
-                  Start Speaking Test
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Test Content */}
-        {testStarted && !showResults && (
-          <div className="space-y-6">
-            {/* Progress */}
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm text-white/80">
-                <span>Question {currentPromptIndex + 1} of {speakingPrompts.length}</span>
-                <span>{Math.round(progress)}% Complete</span>
-              </div>
-              <Progress value={progress} className="bg-white/20" />
-            </div>
-
-            {/* Question Card */}
-            <Card className="bg-gradient-to-b from-purple-900/80 to-indigo-900/80 backdrop-blur-xl border border-purple-500/30">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center justify-between">
-                  <span>Speaking Prompt</span>
-                  <div className="flex items-center space-x-2">
-                    <Button
-                      onClick={playPrompt}
-                      disabled={isPlaying || isSpeaking}
-                      variant="ghost"
-                      size="sm"
-                      className="text-white/80 hover:text-white hover:bg-white/10"
-                    >
-                      <Volume2 className="w-4 h-4" />
-                    </Button>
-                    <Badge variant="secondary" className="bg-purple-500/20 text-purple-300 border-purple-500/30">
-                      {currentPrompt.level}
-                    </Badge>
-                  </div>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="text-white/90 text-lg leading-relaxed bg-white/5 rounded-lg p-4">
-                  {currentPrompt.question}
-                </div>
-
-                {/* Recording Controls */}
-                <div className="flex flex-col items-center space-y-4">
-                  {isRecording && (
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-white">
-                        {Math.max(0, currentPrompt.expectedTime - recordingTime)}s
-                      </div>
-                      <div className="text-white/60 text-sm">Time remaining</div>
-                      <Progress 
-                        value={(recordingTime / currentPrompt.expectedTime) * 100} 
-                        className="w-40 mt-2 bg-white/20"
-                      />
-                    </div>
-                  )}
-
-                  <Button
-                    onClick={isRecording ? stopRecording : startRecording}
-                    disabled={isEvaluating || isPlaying || isSpeaking}
-                    size="lg"
-                    className={`w-24 h-24 rounded-full transition-all duration-300 ${
-                      isRecording 
-                        ? 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 animate-pulse shadow-lg shadow-red-500/30' 
-                        : 'bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 shadow-lg shadow-purple-500/30'
-                    }`}
-                  >
-                    {isRecording ? (
-                      <MicOff className="w-10 h-10" />
-                    ) : (
-                      <Mic className="w-10 h-10" />
-                    )}
-                  </Button>
-
-                  <div className="text-center text-white/80 text-sm max-w-xs">
-                    {isRecording ? 'Recording... Click to stop when finished' : 
-                     isEvaluating ? 'Processing your response...' :
-                     (isPlaying || isSpeaking) ? 'Listen to the prompt...' :
-                     'Click the microphone to start recording'}
-                  </div>
-                </div>
-
-                {/* Response Display */}
-                {currentResponse && !showScoreAnimation && (
-                  <div className="bg-white/5 rounded-lg p-4">
-                    <h4 className="text-white font-medium mb-2">Your Response:</h4>
-                    <p className="text-white/80 text-sm">{currentResponse}</p>
-                  </div>
-                )}
-
-                {/* Evaluation Status */}
-                {isEvaluating && !showScoreAnimation && (
-                  <div className="text-center text-white/60">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-400 mx-auto mb-2"></div>
-                    Analyzing your speaking...
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {/* Score Animation Overlay */}
-        {showScoreAnimation && finalScores.length > 0 && (
-          <ScoreDisplay scores={finalScores[finalScores.length - 1]} />
-        )}
-      </div>
+    <div className="result">
+      <h3>Your level: <span className="level">{res.level}</span></h3>
+      <Meter label="Grammar" value={res.grammar} />
+      <Meter label="Vocabulary" value={res.vocab} />
+      <Meter label="Pronunciation" value={res.pron} />
+      <p>We'll take you to the best starting module for {res.level}.</p>
     </div>
   );
-};
+}
+function Meter({label, value}:{label:string; value:number}) {
+  return (
+    <div className="meter">
+      <div className="row">
+        <span>{label}</span><span>{value}/10</span>
+      </div>
+      <div className="bar"><div className="fill" style={{width: `${value*10}%`}} /></div>
+    </div>
+  );
+}
