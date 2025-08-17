@@ -65,6 +65,10 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
   const timerRef = useRef<number|undefined>(undefined);
   const recognizerRef = useRef<any>(null);
   const startTimeRef = useRef<number>(0);
+  
+  // --- add near other refs/state ---
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
   // Constants
   const MAX_SECONDS = 15;
@@ -155,12 +159,47 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     }
   }, [qIndex, answers]);
 
+  // Always stop & release stream
+  function stopStream() {
+    const s = streamRef.current;
+    if (s) {
+      s.getTracks().forEach(t => t.stop());
+      streamRef.current = null;
+    }
+  }
+
+  // Guarantee an AudioContext that's running (Safari)
+  async function ensureAudioContext() {
+    if (!audioCtxRef.current) {
+      const Ctx = (window as any).AudioContext || (window as any).webkitAudioContext;
+      audioCtxRef.current = new Ctx();
+    }
+    if (audioCtxRef.current.state === 'suspended') {
+      await audioCtxRef.current.resume();
+    }
+  }
+
+  // Clean up when page is hidden (user switches app/tab)
+  useEffect(() => {
+    function handleHide() {
+      try { abortRef.current?.abort(); } catch {}
+      stopStream();
+    }
+    function onVis() { if (document.hidden) handleHide(); }
+    document.addEventListener('visibilitychange', onVis);
+    return () => {
+      document.removeEventListener('visibilitychange', onVis);
+      handleHide();
+    };
+  }, []);
+
   // Cleanup on unmount
   useEffect(() => () => {
     narration.cancel();
     abortRef.current?.abort();
     window.clearTimeout(timerRef.current);
     runIdRef.current = null;
+    stopStream();
   }, []);
 
   // Optional: minimal logging to verify
@@ -231,104 +270,82 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     return { grammar, vocab, pron, level };
   }
 
-  // ---------- TRUE Bulletproof Mic Handler ----------
+  // --------------- BULLETPROOF MIC HANDLER ---------------
   async function onMicPress() {
-    if (testState === 'ready') {
-      try {
-        // Stop any speech synthesis to prevent iOS audio lock
-        if (window.speechSynthesis) {
-          window.speechSynthesis.cancel();
-        }
-        try { narration?.cancel?.(); } catch {}
-
-        // iOS Safari requires an audio context to be resumed on user gesture
-        if (!window._audioCtx) {
-          window._audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        if (window._audioCtx.state === 'suspended') {
-          await window._audioCtx.resume();
-        }
-
-        // Request mic permissions explicitly before recording
-        const permission = await navigator.permissions
-          .query({ name: 'microphone' as PermissionName })
-          .catch(() => null);
-        if (permission && permission.state === 'denied') {
-          throw new Error('Microphone access denied');
-        }
-
-        // Must be called on direct tap for Safari
-        const stream = await navigator.mediaDevices.getUserMedia({
-          audio: {
-            echoCancellation: true,
-            noiseSuppression: true
-          }
-        });
-
-        if (!stream || !stream.getTracks().length) {
-          throw new Error('No audio stream available');
-        }
-
-        setTestState('recording');
-        setError('');
-        setSecondsLeft(MAX_SECONDS);
-        startTimeRef.current = Date.now();
-        abortRef.current = new AbortController();
-
-        // Timer countdown
-        let tick = MAX_SECONDS;
-        const timer = setInterval(() => {
-          tick -= 1;
-          setSecondsLeft(tick);
-          if (tick <= 0) {
-            clearInterval(timer);
-            stopStream(stream);
-            setTestState('ready');
-            setError('Time limit reached. Try again.');
-          }
-        }, 1000);
-
-        // Start ASR
-        const transcript = await startASR({
-          signal: abortRef.current.signal,
-          maxSeconds: MAX_SECONDS,
-          silenceTimeoutMs: SILENCE_MS,
-        });
-
-        clearInterval(timer);
-        stopStream(stream);
-
-        if (!transcript || transcript.trim().length < 2) {
-          setTestState('ready');
-          setError('I didn\'t hear you clearly. Please try again.');
-          return;
-        }
-
-        // Save and go to next
-        setTestState('processing');
-        saveAnswer(qIndex, transcript);
-
-        if (qIndex < PROMPTS.length - 1) {
-          setQIndex(qIndex + 1);
-          setTestState('prompting');
-        } else {
-          setTestState('done');
-          showResults();
-        }
-
-      } catch (err) {
-        console.error('Mic error:', err);
-        setTestState('ready');
-        setError('Microphone error. Please allow mic and try again.');
-      }
-    } else if (testState === 'recording') {
+    if (testState === 'recording') {
       try { abortRef.current?.abort(); } catch {}
+      stopStream();
+      setTestState('ready');
+      return;
     }
-  }
+    if (testState !== 'ready') return;
 
-  function stopStream(stream: MediaStream) {
-    if (stream) {
-      stream.getTracks().forEach(track => track.stop());
+    try {
+      try { window?.speechSynthesis?.cancel(); } catch {}
+      narration.cancel();
+      await ensureAudioContext();
+
+      abortRef.current = new AbortController();
+
+      const constraints: MediaStreamConstraints = {
+        audio: { echoCancellation: true, noiseSuppression: true }
+      };
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      if (!stream || !stream.getTracks().length) throw new Error('no-stream');
+      streamRef.current = stream;
+
+      setError('');
+      setTestState('recording');
+      setSecondsLeft(MAX_SECONDS);
+      startTimeRef.current = Date.now();
+
+      let tick = MAX_SECONDS;
+      const timer = setInterval(() => {
+        tick -= 1;
+        setSecondsLeft(tick);
+        if (tick <= 0) {
+          clearInterval(timer);
+          try { abortRef.current?.abort(); } catch {}
+          stopStream();
+          setTestState('ready');
+          setError('Time limit reached. Try again.');
+        }
+      }, 1000);
+
+      const transcript = await startASR({
+        signal: abortRef.current.signal,
+        maxSeconds: MAX_SECONDS,
+        silenceTimeoutMs: SILENCE_MS,
+        // stream // pass if your ASR needs it
+      }).finally(() => clearInterval(timer));
+
+      if (!transcript || transcript.trim().split(/\s+/).length < 3) {
+        stopStream();
+        setTestState('ready');
+        setError("I didn't hear you clearly. Please try again.");
+        return;
+      }
+
+      setTestState('processing');
+      saveAnswer(qIndex, transcript);
+
+      stopStream();
+
+      if (qIndex < PROMPTS.length - 1) {
+        setQIndex(qIndex + 1);
+        setTestState('prompting');
+      } else {
+        setTestState('done');
+        showResults();
+      }
+    } catch (err) {
+      console.error('Mic error:', err);
+      try { abortRef.current?.abort(); } catch {}
+      stopStream();
+      setTestState('ready');
+      setError('Microphone error. Please allow mic and try again.');
+    } finally {
+      abortRef.current = null;
     }
   }
 
@@ -367,7 +384,7 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
         clearTimeout(silenceTimer);
         clearTimeout(maxTimer);
         reject(new Error('Aborted'));
-      });
+      }, { once: true });
 
       rec.onresult = (e: any) => {
         hasResult = true;
