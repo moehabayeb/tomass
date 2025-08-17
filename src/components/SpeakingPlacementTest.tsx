@@ -15,11 +15,13 @@ import { narration } from '../utils/narration';
 import CanvasAvatar from './CanvasAvatar';
 import { useGamification } from '@/hooks/useGamification';
 
-// Extend Window interface for audio context
+// Extend Window interface for audio context and speech recognition
 declare global {
   interface Window {
     _audioCtx?: AudioContext;
     webkitAudioContext?: typeof AudioContext;
+    SpeechRecognition?: any;
+    webkitSpeechRecognition?: any;
   }
 }
 
@@ -273,7 +275,9 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
   // --------------- BULLETPROOF MIC HANDLER ---------------
   async function onMicPress() {
     if (testState === 'recording') {
-      try { abortRef.current?.abort(); } catch {}
+      try { 
+        abortRef.current?.abort(); 
+      } catch {}
       stopStream();
       setTestState('ready');
       return;
@@ -281,17 +285,30 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     if (testState !== 'ready') return;
 
     try {
-      try { window?.speechSynthesis?.cancel(); } catch {}
+      // Stop TTS first to prevent iOS audio conflicts
+      try { 
+        window?.speechSynthesis?.cancel(); 
+      } catch {}
       narration.cancel();
+      
+      // Ensure audio context is ready (required for iOS Safari)
       await ensureAudioContext();
 
       abortRef.current = new AbortController();
 
-      const constraints: MediaStreamConstraints = {
-        audio: { echoCancellation: true, noiseSuppression: true }
-      };
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      if (!stream || !stream.getTracks().length) throw new Error('no-stream');
+      // Request microphone with explicit constraints
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: { 
+          echoCancellation: true, 
+          noiseSuppression: true,
+          sampleRate: 44100
+        }
+      });
+      
+      if (!stream || !stream.getTracks().length) {
+        throw new Error('No audio stream available');
+      }
+      
       streamRef.current = stream;
 
       setError('');
@@ -305,7 +322,9 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
         setSecondsLeft(tick);
         if (tick <= 0) {
           clearInterval(timer);
-          try { abortRef.current?.abort(); } catch {}
+          try { 
+            abortRef.current?.abort(); 
+          } catch {}
           stopStream();
           setTestState('ready');
           setError('Time limit reached. Try again.');
@@ -316,7 +335,6 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
         signal: abortRef.current.signal,
         maxSeconds: MAX_SECONDS,
         silenceTimeoutMs: SILENCE_MS,
-        // stream // pass if your ASR needs it
       }).finally(() => clearInterval(timer));
 
       if (!transcript || transcript.trim().split(/\s+/).length < 3) {
@@ -338,12 +356,22 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
         setTestState('done');
         showResults();
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Mic error:', err);
-      try { abortRef.current?.abort(); } catch {}
+      try { 
+        abortRef.current?.abort(); 
+      } catch {}
       stopStream();
       setTestState('ready');
-      setError('Microphone error. Please allow mic and try again.');
+      
+      // Better error messages for different scenarios
+      if (err.name === 'NotAllowedError') {
+        setError('Please allow microphone access and try again.');
+      } else if (err.name === 'NotFoundError') {
+        setError('No microphone found. Please check your device.');
+      } else {
+        setError('Microphone error. Please try again.');
+      }
     } finally {
       abortRef.current = null;
     }
