@@ -135,6 +135,8 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
 
   // Replace your "play prompt" logic with this safe version
   async function speakPrompt(text: string) {
+    console.log('[Test] speakPrompt:start', text.substring(0, 50) + '...');
+    
     // Always cancel anything in progress
     try { window?.speechSynthesis?.cancel(); } catch {}
     try { narration.cancel(); } catch {}
@@ -143,6 +145,8 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     clearTtsTimer();
     const myId = newId();
     ttsRunRef.current = myId;
+    
+    console.log('[Test] tts:locked, id:', myId);
 
     // If we have Web Speech TTS, use it with onend
     const hasWebTTS = typeof window !== 'undefined' && 'speechSynthesis' in window;
@@ -150,27 +154,35 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
       try {
         const utter = new SpeechSynthesisUtterance(text);
         utter.onend = () => {
+          console.log('[Test] tts:onend, current:', ttsRunRef.current, 'my:', myId);
           if (ttsRunRef.current !== myId) return;
           clearTtsTimer();
           setTestState('ready');            // UNLOCK the mic
+          console.log('[Test] mic:unlocked');
         };
         utter.onerror = () => {
+          console.log('[Test] tts:error');
           if (ttsRunRef.current !== myId) return;
           clearTtsTimer();
           setTestState('ready');
         };
         window.speechSynthesis.speak(utter);
-      } catch {
+        console.log('[Test] tts:started');
+      } catch (err) {
+        console.log('[Test] tts:catch-error', err);
         // Fall through to time-based unlock
       }
     } else {
+      console.log('[Test] no-web-tts, using narration');
       // If you use a custom narration engine, call it here (non-blocking)
       try { narration.speak(text); } catch {}
     }
 
     // SAFETY FALLBACK: unlock even if onend never fires (iOS quirks)
     const ms = Math.min(Math.max(text.length * 45, 1200), 6000); // 1.2s–6s
+    console.log('[Test] tts:fallback-timer', ms + 'ms');
     ttsTimerRef.current = window.setTimeout(() => {
+      console.log('[Test] tts:timeout-unlock');
       if (ttsRunRef.current !== myId) return;
       setTestState('ready');                // UNLOCK the mic
       ttsTimerRef.current = null as any;
@@ -179,11 +191,13 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
 
   // Call speakPrompt(promptText) when you load each question
   useEffect(() => {
+    console.log('[Test] question-changed:', qIndex);
     const text = PROMPTS[qIndex];
     if (!text) return;
     speakPrompt(text);
     // cleanup if user leaves screen
     return () => {
+      console.log('[Test] cleanup-question');
       try { window?.speechSynthesis?.cancel(); } catch {}
       try { narration.cancel(); } catch {}
       clearTtsTimer();
@@ -343,22 +357,30 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
 
   // ---- REPLACE onMicPress with this version ----
   async function onMicPress() {
+    console.log('[Test] mic:press, state:', testState);
+    
     if (testState === 'prompting') {
+      console.log('[Test] mic:override-tts');
       // user wants to start now → cancel TTS and go
       try { window?.speechSynthesis?.cancel(); } catch {}
       try { narration.cancel(); } catch {}
       clearTtsTimer();
       ttsRunRef.current = null;
       setTestState('ready');
+      console.log('[Test] mic:forced-ready');
     }
     
     // tap-to-stop if already recording
     if (testState === 'recording') {
+      console.log('[Test] mic:stop-recording');
       try { abortRef.current?.abort(); } catch {}
       return;
     }
 
-    if (testState !== 'ready') return;
+    if (testState !== 'ready') {
+      console.log('[Test] mic:not-ready, ignoring');
+      return;
+    }
 
     // Cancel any TTS that might block mic on iOS
     try { window?.speechSynthesis?.cancel(); } catch {}
@@ -371,10 +393,13 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     runIdRef.current = runId;
 
     try {
+      console.log('[Test] mic:starting-process');
       // iOS requirement: resume/create audio context on user gesture
       await ensureAudioContext();
+      console.log('[Test] audio-context:ready');
 
       // Request mic (single stream per attempt)
+      console.log('[Test] mic:requesting-permission');
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
@@ -383,13 +408,16 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
         }
       });
       if (!stream || !stream.getTracks().length) throw new Error('NoAudioStream');
+      console.log('[Test] mic:permission-granted');
 
       // Keep stream "hot" on iOS
       attachStreamToContext(stream);
+      console.log('[Test] stream:attached-to-context');
 
       // UI state + countdown
       setTestState('recording');
       abortRef.current = new AbortController();
+      console.log('[Test] recording:started');
 
       let tick = MAX_SECONDS;
       const timer = setInterval(() => {
