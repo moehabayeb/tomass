@@ -73,9 +73,24 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
   const srcRef = useRef<MediaStreamAudioSourceNode | null>(null);
   const gainRef = useRef<GainNode | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  
+  // ---- TTS gating (prevents stuck disabled mic) ----
+  const ttsTimerRef = useRef<number | null>(null);
+  const ttsRunRef = useRef<string | null>(null);
 
   // Constants
   const MAX_SECONDS = 15;
+  
+  function clearTtsTimer() {
+    if (ttsTimerRef.current) {
+      clearTimeout(ttsTimerRef.current);
+      ttsTimerRef.current = null as any;
+    }
+  }
+
+  function newId() {
+    return `${Date.now()}-${Math.random().toString(36).slice(2,7)}`;
+  }
   const SILENCE_MS = 1500;
   
   const PROMPTS = useMemo(() => [
@@ -118,28 +133,62 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     setTimeout(() => routeToLevel(scored.level), 1200);
   }
 
-  // Speak the current prompt once per question
+  // Replace your "play prompt" logic with this safe version
+  async function speakPrompt(text: string) {
+    // Always cancel anything in progress
+    try { window?.speechSynthesis?.cancel(); } catch {}
+    try { narration.cancel(); } catch {}
+
+    setTestState('prompting');              // lock mic visually
+    clearTtsTimer();
+    const myId = newId();
+    ttsRunRef.current = myId;
+
+    // If we have Web Speech TTS, use it with onend
+    const hasWebTTS = typeof window !== 'undefined' && 'speechSynthesis' in window;
+    if (hasWebTTS) {
+      try {
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.onend = () => {
+          if (ttsRunRef.current !== myId) return;
+          clearTtsTimer();
+          setTestState('ready');            // UNLOCK the mic
+        };
+        utter.onerror = () => {
+          if (ttsRunRef.current !== myId) return;
+          clearTtsTimer();
+          setTestState('ready');
+        };
+        window.speechSynthesis.speak(utter);
+      } catch {
+        // Fall through to time-based unlock
+      }
+    } else {
+      // If you use a custom narration engine, call it here (non-blocking)
+      try { narration.speak(text); } catch {}
+    }
+
+    // SAFETY FALLBACK: unlock even if onend never fires (iOS quirks)
+    const ms = Math.min(Math.max(text.length * 45, 1200), 6000); // 1.2s–6s
+    ttsTimerRef.current = window.setTimeout(() => {
+      if (ttsRunRef.current !== myId) return;
+      setTestState('ready');                // UNLOCK the mic
+      ttsTimerRef.current = null as any;
+    }, ms);
+  }
+
+  // Call speakPrompt(promptText) when you load each question
   useEffect(() => {
-    // speak only when question index actually changes
-    if (qIndex === lastPromptRef.current) return;
-
-    // cancel any earlier run
-    abortRef.current?.abort();
-    window.clearTimeout(timerRef.current);
-
-    lastPromptRef.current = qIndex;
-    runIdRef.current = `${Date.now()}-${Math.random().toString(36).slice(2,7)}`;
-    setTestState('prompting');
-
-    narration.cancel();
     const text = PROMPTS[qIndex];
-    narration.speak(text);
-
-    // Wait a reasonable amount so TTS can finish before enabling mic
-    const wait = Math.max(1200, Math.min(3000, text.length * 45));
-    timerRef.current = window.setTimeout(() => {
-      if (runIdRef.current) setTestState('ready');
-    }, wait);
+    if (!text) return;
+    speakPrompt(text);
+    // cleanup if user leaves screen
+    return () => {
+      try { window?.speechSynthesis?.cancel(); } catch {}
+      try { narration.cancel(); } catch {}
+      clearTtsTimer();
+      ttsRunRef.current = null;
+    };
   }, [qIndex]);
 
   // Load saved progress on mount
@@ -294,6 +343,15 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
 
   // ---- REPLACE onMicPress with this version ----
   async function onMicPress() {
+    if (testState === 'prompting') {
+      // user wants to start now → cancel TTS and go
+      try { window?.speechSynthesis?.cancel(); } catch {}
+      try { narration.cancel(); } catch {}
+      clearTtsTimer();
+      ttsRunRef.current = null;
+      setTestState('ready');
+    }
+    
     // tap-to-stop if already recording
     if (testState === 'recording') {
       try { abortRef.current?.abort(); } catch {}
@@ -607,12 +665,13 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
                 
                 <Button
                   onClick={onMicPress}
-                  disabled={testState !== 'ready' && testState !== 'recording'}
+                  disabled={testState !== 'ready' && testState !== 'recording' && testState !== 'prompting'}
+                  aria-disabled={testState !== 'ready' && testState !== 'recording' && testState !== 'prompting'}
                   size="lg"
                   className={`mic-button rounded-full w-20 h-20 relative z-10 ${
                     testState === 'recording'
                       ? 'bg-red-500 hover:bg-red-600 animate-pulse' 
-                      : testState === 'ready'
+                      : testState === 'ready' || testState === 'prompting'
                       ? 'bg-white/20 hover:bg-white/30'
                       : 'bg-white/10 opacity-50 cursor-not-allowed'
                   }`}
@@ -641,11 +700,11 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
 
               <div className="text-center">
                 <p className="text-white/70 text-sm" style={{ pointerEvents: 'none' }}>
-                  {testState === 'recording' ? 'Listening... Tap to stop' : 
-                   testState === 'prompting' ? 'Listen to the prompt...' :
+                  {testState === 'prompting' ? 'Listen to the prompt…' :
+                   testState === 'recording' ? `Recording… ${secondsLeft}s` :
+                   testState === 'ready' ? 'Tap to speak' : 
                    testState === 'processing' ? 'Processing...' :
-                   error ? 'Tap to try again' :
-                   testState === 'ready' ? 'Tap to speak' : 'Preparing...'}
+                   error ? 'Tap to try again' : 'Preparing...'}
                 </p>
               </div>
             </CardContent>
