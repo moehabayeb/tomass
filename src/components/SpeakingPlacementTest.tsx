@@ -68,8 +68,10 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
   const recognizerRef = useRef<any>(null);
   const startTimeRef = useRef<number>(0);
   
-  // --- add near other refs/state ---
+  // ---- helpers (put near other hooks) ----
   const audioCtxRef = useRef<AudioContext | null>(null);
+  const srcRef = useRef<MediaStreamAudioSourceNode | null>(null);
+  const gainRef = useRef<GainNode | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
   // Constants
@@ -164,32 +166,41 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     }
   }, [qIndex, answers]);
 
-  // Always stop & release stream
-  function stopStream() {
-    const s = streamRef.current;
-    if (s) {
-      console.log('[Test] stream:off');
-      s.getTracks().forEach(t => t.stop());
-      streamRef.current = null;
-    }
+  function newRunId() {
+    return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   }
-
-  // Guarantee an AudioContext that's running (Safari)
+  function stopStream(stream?: MediaStream | null) {
+    if (!stream) return;
+    try { stream.getTracks().forEach(t => t.stop()); } catch {}
+  }
   async function ensureAudioContext() {
-    if (!audioCtxRef.current) {
-      const Ctx = (window as any).AudioContext || (window as any).webkitAudioContext;
-      audioCtxRef.current = new Ctx();
-    }
+    const Ctx: any = window.AudioContext || (window as any).webkitAudioContext;
+    if (!Ctx) return null;
+    if (!audioCtxRef.current) audioCtxRef.current = new Ctx();
     if (audioCtxRef.current.state === 'suspended') {
-      await audioCtxRef.current.resume();
+      try { await audioCtxRef.current.resume(); } catch {}
     }
+    return audioCtxRef.current;
+  }
+  function attachStreamToContext(stream: MediaStream) {
+    const ctx = audioCtxRef.current;
+    if (!ctx) return;
+    // Detach old
+    try { gainRef.current?.disconnect(); } catch {}
+    try { srcRef.current?.disconnect(); } catch {}
+    // Attach new (silent path keeps input "alive" on iOS)
+    srcRef.current = ctx.createMediaStreamSource(stream);
+    gainRef.current = ctx.createGain();
+    gainRef.current.gain.value = 0.0;
+    srcRef.current.connect(gainRef.current);
+    gainRef.current.connect(ctx.destination);
   }
 
   // Clean up when page is hidden (user switches app/tab)
   useEffect(() => {
     function handleHide() {
       try { abortRef.current?.abort(); } catch {}
-      stopStream();
+      // stopStream(); // Remove this old call
     }
     function onVis() { if (document.hidden) handleHide(); }
     document.addEventListener('visibilitychange', onVis);
@@ -199,13 +210,18 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     };
   }, []);
 
-  // Cleanup on unmount
-  useEffect(() => () => {
-    narration.cancel();
-    abortRef.current?.abort();
-    window.clearTimeout(timerRef.current);
-    runIdRef.current = null;
-    stopStream();
+  // ---- OPTIONAL (recommended): reset on unmount / route change ----
+  useEffect(() => {
+    return () => {
+      try { abortRef.current?.abort(); } catch {}
+      try { audioCtxRef.current?.close(); } catch {}
+      audioCtxRef.current = null;
+      srcRef.current = null;
+      gainRef.current = null;
+      narration.cancel();
+      window.clearTimeout(timerRef.current);
+      runIdRef.current = null;
+    };
   }, []);
 
   // Optional: minimal logging to verify
@@ -276,55 +292,46 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     return { grammar, vocab, pron, level };
   }
 
-  // --------------- BULLETPROOF MIC HANDLER ---------------
+  // ---- REPLACE onMicPress with this version ----
   async function onMicPress() {
-    console.log('[Test] mic:start');
-    
+    // tap-to-stop if already recording
     if (testState === 'recording') {
-      console.log('[Test] mic:stop-recording');
-      try { 
-        abortRef.current?.abort(); 
-      } catch {}
-      stopStream();
-      setTestState('ready');
+      try { abortRef.current?.abort(); } catch {}
       return;
     }
+
     if (testState !== 'ready') return;
 
+    // Cancel any TTS that might block mic on iOS
+    try { window?.speechSynthesis?.cancel(); } catch {}
+    try { narration.cancel(); } catch {}
+
+    setError('');
+    setSecondsLeft(MAX_SECONDS);
+
+    const runId = newRunId();
+    runIdRef.current = runId;
+
     try {
-      // Stop TTS first to prevent iOS audio conflicts
-      try { 
-        window?.speechSynthesis?.cancel(); 
-      } catch {}
-      narration.cancel();
-      
-      // Ensure audio context is ready (required for iOS Safari)
+      // iOS requirement: resume/create audio context on user gesture
       await ensureAudioContext();
 
-      abortRef.current = new AbortController();
-
-      // Request microphone with explicit constraints
-      console.log('[Test] permission:requesting');
+      // Request mic (single stream per attempt)
       const stream = await navigator.mediaDevices.getUserMedia({
-        audio: { 
-          echoCancellation: true, 
+        audio: {
+          echoCancellation: true,
           noiseSuppression: true,
-          sampleRate: 44100
+          autoGainControl: true,
         }
       });
-      
-      if (!stream || !stream.getTracks().length) {
-        throw new Error('No audio stream available');
-      }
-      
-      console.log('[Test] permission:ok');
-      console.log('[Test] stream:on');
-      streamRef.current = stream;
+      if (!stream || !stream.getTracks().length) throw new Error('NoAudioStream');
 
-      setError('');
+      // Keep stream "hot" on iOS
+      attachStreamToContext(stream);
+
+      // UI state + countdown
       setTestState('recording');
-      setSecondsLeft(MAX_SECONDS);
-      startTimeRef.current = Date.now();
+      abortRef.current = new AbortController();
 
       let tick = MAX_SECONDS;
       const timer = setInterval(() => {
@@ -332,34 +339,34 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
         setSecondsLeft(tick);
         if (tick <= 0) {
           clearInterval(timer);
-          try { 
-            abortRef.current?.abort(); 
-          } catch {}
-          stopStream();
-          setTestState('ready');
-          setError('Time limit reached. Try again.');
+          try { abortRef.current?.abort(); } catch {}
         }
       }, 1000);
 
+      // Start ASR (pass stream; extra arg is ignored if not used)
       const transcript = await startASR({
         signal: abortRef.current.signal,
         maxSeconds: MAX_SECONDS,
         silenceTimeoutMs: SILENCE_MS,
-      }).finally(() => clearInterval(timer));
+        stream
+      });
 
+      clearInterval(timer);
+      stopStream(stream);
+
+      // Aborted or stale tap — exit quietly
+      if (runIdRef.current !== runId) return;
+
+      // Require some speech
       if (!transcript || transcript.trim().split(/\s+/).length < 3) {
-        stopStream();
         setTestState('ready');
         setError("I didn't hear you clearly. Please try again.");
         return;
       }
 
-      // Show transcript briefly
-      console.log('[Test] transcript:', transcript);
+      // Save + advance
       setTestState('processing');
       saveAnswer(qIndex, transcript);
-
-      stopStream();
 
       if (qIndex < PROMPTS.length - 1) {
         setQIndex(qIndex + 1);
@@ -369,31 +376,21 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
         showResults();
       }
     } catch (err: any) {
-      console.error('Mic error:', err);
-      try { 
-        abortRef.current?.abort(); 
-      } catch {}
-      stopStream();
+      // Friendly message; keep user on same prompt
+      console.log('[Mic] error', err?.name || err, err?.message);
       setTestState('ready');
-      
-      // Better error messages for different scenarios
-      if (err.name === 'NotAllowedError') {
-        setError('Please allow microphone access and try again.');
-      } else if (err.name === 'NotFoundError') {
-        setError('No microphone found. Please check your device.');
-      } else {
-        setError('Microphone error. Please try again.');
-      }
+      setError('Microphone error. Please try again.');
     } finally {
       abortRef.current = null;
     }
   }
 
   // ROBUST ASR for Native Apps
-  async function startASR({ signal, maxSeconds, silenceTimeoutMs }: {
+  async function startASR({ signal, maxSeconds, silenceTimeoutMs, stream }: {
     signal: AbortSignal;
     maxSeconds: number;
     silenceTimeoutMs: number;
+    stream?: MediaStream;
   }): Promise<string> {
     console.log('[Test] asr:start');
     
