@@ -87,6 +87,8 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     const words = transcript.trim().split(/\s+/).filter(Boolean).length;
     const duration = (Date.now() - startTimeRef.current) / 1000;
     
+    console.log('[Test] answer:saved', { qIndex, transcript, words, duration });
+    
     setAnswers(prev => [...prev, { 
       transcript, 
       durationSec: duration, 
@@ -96,6 +98,7 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
 
   function showResults() {
     const scored = scorePlacement(answers);
+    console.log('[Test] results:', { g: scored.grammar, v: scored.vocab, p: scored.pron, level: scored.level });
     setResult(scored);
     
     // Save results and unlock
@@ -165,6 +168,7 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
   function stopStream() {
     const s = streamRef.current;
     if (s) {
+      console.log('[Test] stream:off');
       s.getTracks().forEach(t => t.stop());
       streamRef.current = null;
     }
@@ -274,7 +278,10 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
 
   // --------------- BULLETPROOF MIC HANDLER ---------------
   async function onMicPress() {
+    console.log('[Test] mic:start');
+    
     if (testState === 'recording') {
+      console.log('[Test] mic:stop-recording');
       try { 
         abortRef.current?.abort(); 
       } catch {}
@@ -297,6 +304,7 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
       abortRef.current = new AbortController();
 
       // Request microphone with explicit constraints
+      console.log('[Test] permission:requesting');
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: { 
           echoCancellation: true, 
@@ -309,6 +317,8 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
         throw new Error('No audio stream available');
       }
       
+      console.log('[Test] permission:ok');
+      console.log('[Test] stream:on');
       streamRef.current = stream;
 
       setError('');
@@ -344,6 +354,8 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
         return;
       }
 
+      // Show transcript briefly
+      console.log('[Test] transcript:', transcript);
       setTestState('processing');
       saveAnswer(qIndex, transcript);
 
@@ -377,15 +389,18 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     }
   }
 
-  // ASR implementation (replace with your existing ASR)
+  // ROBUST ASR for Native Apps
   async function startASR({ signal, maxSeconds, silenceTimeoutMs }: {
     signal: AbortSignal;
     maxSeconds: number;
     silenceTimeoutMs: number;
   }): Promise<string> {
+    console.log('[Test] asr:start');
+    
     return new Promise((resolve, reject) => {
       const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       if (!SR) {
+        console.log('[Test] asr:error - not supported');
         reject(new Error('Speech recognition not supported'));
         return;
       }
@@ -393,56 +408,122 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
       const rec = new SR();
       rec.lang = 'en-US';
       rec.continuous = true;
-      rec.interimResults = false;
+      rec.interimResults = true;
+      rec.maxAlternatives = 1;
       recognizerRef.current = rec;
 
       let silenceTimer: NodeJS.Timeout;
-      let hasResult = false;
       let maxTimer: NodeJS.Timeout;
+      let finalTranscript = '';
+      let isFinished = false;
+
+      function cleanup() {
+        clearTimeout(silenceTimer);
+        clearTimeout(maxTimer);
+        recognizerRef.current = null;
+      }
+
+      function finishRecognition(transcript: string) {
+        if (isFinished) return;
+        isFinished = true;
+        cleanup();
+        console.log('[Test] asr:result:', transcript);
+        resolve(transcript);
+      }
 
       // Max time limit
       maxTimer = setTimeout(() => {
+        console.log('[Test] asr:timeout');
         try { rec.stop(); } catch {}
-        if (!hasResult) reject(new Error('Max time reached'));
+        if (!isFinished) {
+          cleanup();
+          reject(new Error('Max time reached'));
+        }
       }, maxSeconds * 1000);
 
       // Signal abort
       signal.addEventListener('abort', () => {
+        console.log('[Test] asr:abort');
         try { rec.stop(); } catch {}
-        clearTimeout(silenceTimer);
-        clearTimeout(maxTimer);
-        reject(new Error('Aborted'));
+        if (!isFinished) {
+          cleanup();
+          reject(new Error('Aborted'));
+        }
       }, { once: true });
 
-      rec.onresult = (e: any) => {
-        hasResult = true;
-        clearTimeout(silenceTimer);
-        clearTimeout(maxTimer);
-        const transcript = e.results[e.results.length - 1]?.[0]?.transcript || '';
-        resolve(transcript);
+      rec.onresult = (event: any) => {
+        let interimTranscript = '';
+        
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript;
+          } else {
+            interimTranscript += transcript;
+          }
+        }
+
+        const fullTranscript = (finalTranscript + interimTranscript).trim();
+        
+        // If we have a good final result, finish immediately
+        if (finalTranscript.trim() && finalTranscript.trim().split(/\s+/).length >= 3) {
+          console.log('[Test] asr:final-result:', finalTranscript);
+          try { rec.stop(); } catch {}
+          finishRecognition(finalTranscript.trim());
+          return;
+        }
+
+        // Reset silence timer on any speech
+        if (fullTranscript) {
+          clearTimeout(silenceTimer);
+          silenceTimer = setTimeout(() => {
+            if (!isFinished && finalTranscript.trim()) {
+              console.log('[Test] asr:silence-finish:', finalTranscript);
+              try { rec.stop(); } catch {}
+              finishRecognition(finalTranscript.trim());
+            }
+          }, silenceTimeoutMs);
+        }
       };
 
-      rec.onerror = () => {
-        clearTimeout(silenceTimer);
-        clearTimeout(maxTimer);
-        reject(new Error('Recognition error'));
+      rec.onerror = (event: any) => {
+        console.log('[Test] asr:error:', event.error);
+        if (!isFinished) {
+          cleanup();
+          reject(new Error(`Recognition error: ${event.error}`));
+        }
       };
 
       rec.onstart = () => {
-        // Start silence detection
+        console.log('[Test] asr:started');
+        // Start initial silence detection
         silenceTimer = setTimeout(() => {
-          if (!hasResult) {
+          if (!isFinished && !finalTranscript.trim()) {
+            console.log('[Test] asr:initial-silence');
             try { rec.stop(); } catch {}
-            reject(new Error('Silence timeout'));
+            cleanup();
+            reject(new Error('No speech detected'));
           }
         }, silenceTimeoutMs);
+      };
+
+      rec.onend = () => {
+        console.log('[Test] asr:ended, final:', finalTranscript);
+        if (!isFinished) {
+          if (finalTranscript.trim()) {
+            finishRecognition(finalTranscript.trim());
+          } else {
+            cleanup();
+            reject(new Error('No speech recognized'));
+          }
+        }
       };
 
       try {
         rec.start();
       } catch (err) {
-        clearTimeout(silenceTimer);
-        clearTimeout(maxTimer);
+        console.log('[Test] asr:start-error:', err);
+        cleanup();
         reject(err);
       }
     });
