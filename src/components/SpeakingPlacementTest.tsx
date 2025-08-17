@@ -51,11 +51,12 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
   }
 
   // ---------- State + guards ----------
-  type TestState = 'idle'|'prompting'|'ready'|'recording'|'processing'|'done';
+  type TestState = 'idle'|'prompting'|'initializing'|'ready'|'recording'|'processing'|'done';
   const [testState, setTestState] = useState<TestState>('idle');
   const [qIndex, setQIndex] = useState(0);
   const [secondsLeft, setSecondsLeft] = useState<number>(15);
   const [error, setError] = useState<string>('');
+  const [retryCount, setRetryCount] = useState(0);
   const [answers, setAnswers] = useState<{ transcript: string; durationSec: number; wordsRecognized: number }[]>([]);
   const [result, setResult] = useState<null | {
     grammar: number; vocab: number; pron: number; level: 'A1'|'A2'|'B1'
@@ -78,8 +79,13 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
   const ttsTimerRef = useRef<number | null>(null);
   const ttsRunRef = useRef<string | null>(null);
 
-  // Constants
+  // Constants with exact guardrails
   const MAX_SECONDS = 15;
+  const INITIAL_SILENCE_MS = 4500;
+  const SILENCE_TIMEOUT_MS = 2000;
+  const INIT_DELAY_MS = 600;
+  const MAX_RETRIES = 2;
+  const RETRY_DELAYS = [400, 800];
   
   function clearTtsTimer() {
     if (ttsTimerRef.current) {
@@ -91,7 +97,6 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
   function newId() {
     return `${Date.now()}-${Math.random().toString(36).slice(2,7)}`;
   }
-  const SILENCE_MS = 1500;
   
   const PROMPTS = useMemo(() => [
     "Tell me your name and where you are from. Speak clearly for about 15 seconds.",
@@ -104,7 +109,7 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     const words = transcript.trim().split(/\s+/).filter(Boolean).length;
     const duration = (Date.now() - startTimeRef.current) / 1000;
     
-    console.log('[Test] answer:saved', { qIndex, transcript, words, duration });
+    console.log('[LevelTest] answer:saved', { qIndex, transcript: transcript.substring(0, 50), words, duration });
     
     setAnswers(prev => [...prev, { 
       transcript, 
@@ -115,7 +120,7 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
 
   function showResults() {
     const scored = scorePlacement(answers);
-    console.log('[Test] results:', { g: scored.grammar, v: scored.vocab, p: scored.pron, level: scored.level });
+    console.log('[LevelTest] results:', { g: scored.grammar, v: scored.vocab, p: scored.pron, level: scored.level });
     setResult(scored);
     
     // Save results and unlock
@@ -133,9 +138,9 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     setTimeout(() => routeToLevel(scored.level), 1200);
   }
 
-  // Replace your "play prompt" logic with this safe version
+  // Enhanced TTS with safety guardrails
   async function speakPrompt(text: string) {
-    console.log('[Test] speakPrompt:start', text.substring(0, 50) + '...');
+    console.log('[LevelTest] speakPrompt:start', text.substring(0, 50) + '...');
     
     // Always cancel anything in progress
     try { window?.speechSynthesis?.cancel(); } catch {}
@@ -146,7 +151,7 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     const myId = newId();
     ttsRunRef.current = myId;
     
-    console.log('[Test] tts:locked, id:', myId);
+    console.log('[LevelTest] tts:locked, id:', myId);
 
     // If we have Web Speech TTS, use it with onend
     const hasWebTTS = typeof window !== 'undefined' && 'speechSynthesis' in window;
@@ -154,35 +159,35 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
       try {
         const utter = new SpeechSynthesisUtterance(text);
         utter.onend = () => {
-          console.log('[Test] tts:onend, current:', ttsRunRef.current, 'my:', myId);
+          console.log('[LevelTest] tts:onend, current:', ttsRunRef.current, 'my:', myId);
           if (ttsRunRef.current !== myId) return;
           clearTtsTimer();
           setTestState('ready');            // UNLOCK the mic
-          console.log('[Test] mic:unlocked');
+          console.log('[LevelTest] mic:unlocked');
         };
         utter.onerror = () => {
-          console.log('[Test] tts:error');
+          console.log('[LevelTest] tts:error');
           if (ttsRunRef.current !== myId) return;
           clearTtsTimer();
           setTestState('ready');
         };
         window.speechSynthesis.speak(utter);
-        console.log('[Test] tts:started');
+        console.log('[LevelTest] tts:started');
       } catch (err) {
-        console.log('[Test] tts:catch-error', err);
+        console.log('[LevelTest] tts:catch-error', err);
         // Fall through to time-based unlock
       }
     } else {
-      console.log('[Test] no-web-tts, using narration');
+      console.log('[LevelTest] no-web-tts, using narration');
       // If you use a custom narration engine, call it here (non-blocking)
       try { narration.speak(text); } catch {}
     }
 
-    // SAFETY FALLBACK: unlock even if onend never fires (iOS quirks)
+    // SAFETY FALLBACK: unlock even if onend never fires (iOS quirks) - 6s maximum
     const ms = Math.min(Math.max(text.length * 45, 1200), 6000); // 1.2s–6s
-    console.log('[Test] tts:fallback-timer', ms + 'ms');
+    console.log('[LevelTest] tts:fallback-timer', ms + 'ms');
     ttsTimerRef.current = window.setTimeout(() => {
-      console.log('[Test] tts:timeout-unlock');
+      console.log('[LevelTest] tts:timeout-unlock');
       if (ttsRunRef.current !== myId) return;
       setTestState('ready');                // UNLOCK the mic
       ttsTimerRef.current = null as any;
@@ -191,13 +196,14 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
 
   // Call speakPrompt(promptText) when you load each question
   useEffect(() => {
-    console.log('[Test] question-changed:', qIndex);
+    console.log('[LevelTest] question-changed:', qIndex);
+    setRetryCount(0); // Reset retry count for new question
     const text = PROMPTS[qIndex];
     if (!text) return;
     speakPrompt(text);
     // cleanup if user leaves screen
     return () => {
-      console.log('[Test] cleanup-question');
+      console.log('[LevelTest] cleanup-question');
       try { window?.speechSynthesis?.cancel(); } catch {}
       try { narration.cancel(); } catch {}
       clearTtsTimer();
@@ -273,24 +279,40 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     };
   }, []);
 
-  // ---- OPTIONAL (recommended): reset on unmount / route change ----
+  // Complete cleanup on unmount
   useEffect(() => {
     return () => {
+      console.log('[LevelTest] component:unmounting');
       try { abortRef.current?.abort(); } catch {}
-      try { audioCtxRef.current?.close(); } catch {}
+      try { 
+        streamRef.current?.getTracks().forEach(track => track.stop());
+        streamRef.current = null;
+      } catch {}
+      try { 
+        gainRef.current?.disconnect();
+        srcRef.current?.disconnect();
+      } catch {}
+      try { 
+        if (audioCtxRef.current?.state !== 'closed') {
+          audioCtxRef.current?.close();
+        }
+      } catch {}
       audioCtxRef.current = null;
       srcRef.current = null;
       gainRef.current = null;
-      narration.cancel();
-      window.clearTimeout(timerRef.current);
+      try { window?.speechSynthesis?.cancel(); } catch {}
+      try { narration.cancel(); } catch {}
+      clearTtsTimer();
+      if (timerRef.current) clearTimeout(timerRef.current);
       runIdRef.current = null;
+      ttsRunRef.current = null;
     };
   }, []);
 
-  // Optional: minimal logging to verify
+  // Enhanced state logging
   useEffect(() => {
-    console.log('[TEST]', {state: testState, qIndex});
-  }, [testState, qIndex]);
+    console.log('[LevelTest] state-change:', {state: testState, qIndex, retryCount});
+  }, [testState, qIndex, retryCount]);
 
   // ---------- very light normalization helpers ----------
   function stripDiacritics(s: string) {
@@ -355,51 +377,66 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     return { grammar, vocab, pron, level };
   }
 
-  // ---- REPLACE onMicPress with this version ----
+  // Enhanced microphone handler with retry logic and specific error handling
   async function onMicPress() {
-    console.log('[Test] mic:press, state:', testState);
+    console.log('[LevelTest] mic:press, state:', testState);
     
     if (testState === 'prompting') {
-      console.log('[Test] mic:override-tts');
+      console.log('[LevelTest] mic:override-tts');
       // user wants to start now → cancel TTS and go
       try { window?.speechSynthesis?.cancel(); } catch {}
       try { narration.cancel(); } catch {}
       clearTtsTimer();
       ttsRunRef.current = null;
       setTestState('ready');
-      console.log('[Test] mic:forced-ready');
+      console.log('[LevelTest] mic:forced-ready');
     }
     
     // tap-to-stop if already recording
     if (testState === 'recording') {
-      console.log('[Test] mic:stop-recording');
+      console.log('[LevelTest] mic:stop-recording');
       try { abortRef.current?.abort(); } catch {}
       return;
     }
 
     if (testState !== 'ready') {
-      console.log('[Test] mic:not-ready, ignoring');
+      console.log('[LevelTest] mic:not-ready, ignoring, state:', testState);
       return;
     }
 
-    // Cancel any TTS that might block mic on iOS
-    try { window?.speechSynthesis?.cancel(); } catch {}
-    try { narration.cancel(); } catch {}
+    await attemptRecording();
+  }
 
-    setError('');
-    setSecondsLeft(MAX_SECONDS);
-
+  // Retry logic with exponential backoff
+  async function attemptRecording(isRetry = false) {
     const runId = newRunId();
     runIdRef.current = runId;
 
     try {
-      console.log('[Test] mic:starting-process');
+      console.log('[LevelTest] recording:attempt', isRetry ? `retry ${retryCount}` : 'initial');
+      
+      // Cancel any TTS that might block mic on iOS
+      try { window?.speechSynthesis?.cancel(); } catch {}
+      try { narration.cancel(); } catch {}
+
+      setError('');
+      setSecondsLeft(MAX_SECONDS);
+
+      console.log('[LevelTest] state:ready→initializing');
+      setTestState('initializing');
+
       // iOS requirement: resume/create audio context on user gesture
       await ensureAudioContext();
-      console.log('[Test] audio-context:ready');
+      console.log('[LevelTest] audio-context:ready');
 
-      // Request mic (single stream per attempt)
-      console.log('[Test] mic:requesting-permission');
+      // iOS Safari compatibility delay
+      if (isRetry || /iPad|iPhone|iPod/.test(navigator.userAgent)) {
+        console.log('[LevelTest] ios-delay:', INIT_DELAY_MS + 'ms');
+        await new Promise(resolve => setTimeout(resolve, INIT_DELAY_MS));
+      }
+
+      // Request mic permission
+      console.log('[LevelTest] mic:requesting-permission');
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
@@ -407,17 +444,21 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
           autoGainControl: true,
         }
       });
-      if (!stream || !stream.getTracks().length) throw new Error('NoAudioStream');
-      console.log('[Test] mic:permission-granted');
+      
+      if (!stream || !stream.getTracks().length) {
+        throw new Error('NoAudioStream');
+      }
+      console.log('[LevelTest] mic:permission-granted');
 
       // Keep stream "hot" on iOS
       attachStreamToContext(stream);
-      console.log('[Test] stream:attached-to-context');
+      console.log('[LevelTest] stream:attached-to-context');
 
       // UI state + countdown
+      console.log('[LevelTest] state:initializing→recording');
       setTestState('recording');
       abortRef.current = new AbortController();
-      console.log('[Test] recording:started');
+      console.log('[LevelTest] recording:started');
 
       let tick = MAX_SECONDS;
       const timer = setInterval(() => {
@@ -429,11 +470,10 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
         }
       }, 1000);
 
-      // Start ASR (pass stream; extra arg is ignored if not used)
+      // Start ASR with enhanced error handling
       const transcript = await startASR({
         signal: abortRef.current.signal,
         maxSeconds: MAX_SECONDS,
-        silenceTimeoutMs: SILENCE_MS,
         stream
       });
 
@@ -441,49 +481,126 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
       stopStream(stream);
 
       // Aborted or stale tap — exit quietly
-      if (runIdRef.current !== runId) return;
-
-      // Require some speech
-      if (!transcript || transcript.trim().split(/\s+/).length < 3) {
-        setTestState('ready');
-        setError("I didn't hear you clearly. Please try again.");
+      if (runIdRef.current !== runId) {
+        console.log('[LevelTest] recording:aborted, ignoring result');
         return;
       }
 
-      // Save + advance
+      // Check for minimal speech requirement
+      if (!transcript || transcript.trim().split(/\s+/).length < 3) {
+        console.log('[LevelTest] insufficient-speech:', transcript);
+        await handleRecordingError('No speech detected. Please speak more clearly.', 'no-speech');
+        return;
+      }
+
+      // Success - save and advance
+      console.log('[LevelTest] state:recording→processing');
       setTestState('processing');
       saveAnswer(qIndex, transcript);
+      setRetryCount(0); // Reset retry count on success
 
       if (qIndex < PROMPTS.length - 1) {
         setQIndex(qIndex + 1);
+        console.log('[LevelTest] state:processing→prompting');
         setTestState('prompting');
       } else {
+        console.log('[LevelTest] state:processing→done');
         setTestState('done');
         showResults();
       }
     } catch (err: any) {
-      // Friendly message; keep user on same prompt
-      console.log('[Mic] error', err?.name || err, err?.message);
-      setTestState('ready');
-      setError('Microphone error. Please try again.');
+      console.log('[LevelTest] recording:error', err?.name || err?.constructor?.name, err?.message);
+      await handleRecordingError(err, 'general');
     } finally {
       abortRef.current = null;
     }
   }
 
-  // ROBUST ASR for Native Apps
-  async function startASR({ signal, maxSeconds, silenceTimeoutMs, stream }: {
+  // Enhanced error handling with specific messages and retry logic
+  async function handleRecordingError(err: any, errorType: 'no-speech' | 'permission' | 'network' | 'asr-init' | 'general') {
+    const errorName = err?.name || err?.constructor?.name || '';
+    const errorMessage = err?.message || '';
+    let specificError = '';
+    let shouldRetry = false;
+
+    // Determine specific error message and retry eligibility
+    switch (errorType) {
+      case 'no-speech':
+        specificError = 'No speech detected. Please speak louder and more clearly.';
+        shouldRetry = true;
+        break;
+      case 'permission':
+        if (errorName === 'NotAllowedError' || errorMessage.includes('denied')) {
+          specificError = 'Microphone access denied. Please allow microphone access.';
+          shouldRetry = false;
+        } else {
+          specificError = 'Microphone permission error. Please check your browser settings.';
+          shouldRetry = false;
+        }
+        break;
+      case 'network':
+        specificError = 'Network connection error. Please check your internet connection.';
+        shouldRetry = true;
+        break;
+      case 'asr-init':
+        specificError = 'Speech recognition initialization failed. Please try again.';
+        shouldRetry = true;
+        break;
+      default:
+        // Categorize based on error details
+        if (errorName === 'NotAllowedError' || errorMessage.includes('denied')) {
+          specificError = 'Microphone access denied. Please allow microphone access.';
+          shouldRetry = false;
+        } else if (errorMessage.includes('network') || errorMessage.includes('connection')) {
+          specificError = 'Network connection error. Please check your internet connection.';
+          shouldRetry = true;
+        } else if (errorMessage.includes('recognition') || errorMessage.includes('speech')) {
+          specificError = 'Speech recognition initialization failed. Please try again.';
+          shouldRetry = true;
+        } else {
+          specificError = 'Recording failed. Please try again.';
+          shouldRetry = true;
+        }
+    }
+
+    console.log('[LevelTest] error:categorized', { errorType, specificError, shouldRetry, retryCount });
+
+    // Attempt retry if eligible
+    if (shouldRetry && retryCount < MAX_RETRIES) {
+      const delay = RETRY_DELAYS[retryCount] || RETRY_DELAYS[RETRY_DELAYS.length - 1];
+      console.log('[LevelTest] retry:scheduled', { retryCount: retryCount + 1, delay });
+      
+      setRetryCount(prev => prev + 1);
+      setError(`${specificError} Retrying in ${delay/1000}s...`);
+      
+      setTimeout(async () => {
+        if (runIdRef.current) { // Only retry if still on same attempt
+          console.log('[LevelTest] retry:executing');
+          setError('');
+          await attemptRecording(true);
+        }
+      }, delay);
+    } else {
+      // No more retries or not retryable
+      console.log('[LevelTest] error:final', specificError);
+      setTestState('ready');
+      setError(specificError);
+      setRetryCount(0);
+    }
+  }
+
+  // Enhanced ASR with robust error handling and silence detection
+  async function startASR({ signal, maxSeconds, stream }: {
     signal: AbortSignal;
     maxSeconds: number;
-    silenceTimeoutMs: number;
     stream?: MediaStream;
   }): Promise<string> {
-    console.log('[Test] asr:start');
+    console.log('[LevelTest] asr:start');
     
     return new Promise((resolve, reject) => {
       const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       if (!SR) {
-        console.log('[Test] asr:error - not supported');
+        console.log('[LevelTest] asr:error - not supported');
         reject(new Error('Speech recognition not supported'));
         return;
       }
@@ -565,7 +682,7 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
               try { rec.stop(); } catch {}
               finishRecognition(finalTranscript.trim());
             }
-          }, silenceTimeoutMs);
+           }, SILENCE_TIMEOUT_MS);
         }
       };
 
@@ -587,7 +704,7 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
             cleanup();
             reject(new Error('No speech detected'));
           }
-        }, silenceTimeoutMs);
+        }, INITIAL_SILENCE_MS);
       };
 
       rec.onend = () => {
@@ -693,8 +810,8 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
                 
                 <Button
                   onClick={onMicPress}
-                  disabled={testState !== 'ready' && testState !== 'recording' && testState !== 'prompting'}
-                  aria-disabled={testState !== 'ready' && testState !== 'recording' && testState !== 'prompting'}
+                  disabled={testState === 'processing' || testState === 'initializing'}
+                  aria-disabled={testState === 'processing' || testState === 'initializing'}
                   size="lg"
                   className={`mic-button rounded-full w-20 h-20 relative z-10 ${
                     testState === 'recording'
@@ -711,6 +828,8 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
                 >
                   {testState === 'recording' ? (
                     <MicOff className="h-8 w-8 text-white" />
+                  ) : testState === 'initializing' ? (
+                    <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   ) : (
                     <Mic className="h-8 w-8 text-white" />
                   )}
