@@ -63,9 +63,11 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
   }>(null);
 
   const runIdRef = useRef<string|null>(null);
+  const timerRef = useRef<number|undefined>(undefined);
+  const retryTimerRef = useRef<number|undefined>(undefined);
+  const ttsTimerRef = useRef<number|undefined>(undefined);
   const lastPromptRef = useRef<number>(-1);
   const abortRef = useRef<AbortController|null>(null);
-  const timerRef = useRef<number|undefined>(undefined);
   const recognizerRef = useRef<any>(null);
   const startTimeRef = useRef<number>(0);
   
@@ -76,7 +78,6 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
   const streamRef = useRef<MediaStream | null>(null);
   
   // ---- TTS gating (prevents stuck disabled mic) ----
-  const ttsTimerRef = useRef<number | null>(null);
   const ttsRunRef = useRef<string | null>(null);
 
   // Constants with exact guardrails
@@ -87,15 +88,21 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
   const MAX_RETRIES = 2;
   const RETRY_DELAYS = [400, 800];
   
-  function clearTtsTimer() {
-    if (ttsTimerRef.current) {
-      clearTimeout(ttsTimerRef.current);
-      ttsTimerRef.current = null as any;
-    }
-  }
-
-  function newId() {
+  function newRunId() {
     return `${Date.now()}-${Math.random().toString(36).slice(2,7)}`;
+  }
+  
+  function isStale(id: string) {
+    return runIdRef.current !== id;
+  }
+  
+  function clearAllTimers() {
+    if (timerRef.current) clearInterval(timerRef.current); 
+    timerRef.current = undefined;
+    if (retryTimerRef.current) clearTimeout(retryTimerRef.current); 
+    retryTimerRef.current = undefined;
+    if (ttsTimerRef.current) clearTimeout(ttsTimerRef.current); 
+    ttsTimerRef.current = undefined;
   }
   
   const PROMPTS = useMemo(() => [
@@ -142,16 +149,18 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
   async function speakPrompt(text: string) {
     console.log('[LevelTest] speakPrompt:start', text.substring(0, 50) + '...');
     
+    const id = newRunId();
+    runIdRef.current = id;
+    clearAllTimers();
+    
     // Always cancel anything in progress
     try { window?.speechSynthesis?.cancel(); } catch {}
     try { narration.cancel(); } catch {}
 
     setTestState('prompting');              // lock mic visually
-    clearTtsTimer();
-    const myId = newId();
-    ttsRunRef.current = myId;
+    ttsRunRef.current = id;
     
-    console.log('[LevelTest] tts:locked, id:', myId);
+    console.log('[LevelTest] tts:locked, id:', id);
 
     // If we have Web Speech TTS, use it with onend
     const hasWebTTS = typeof window !== 'undefined' && 'speechSynthesis' in window;
@@ -159,17 +168,19 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
       try {
         const utter = new SpeechSynthesisUtterance(text);
         utter.onend = () => {
-          console.log('[LevelTest] tts:onend, current:', ttsRunRef.current, 'my:', myId);
-          if (ttsRunRef.current !== myId) return;
-          clearTtsTimer();
-          setTestState('ready');            // UNLOCK the mic
-          console.log('[LevelTest] mic:unlocked');
+          console.log('[LevelTest] tts:onend, current:', ttsRunRef.current, 'my:', id);
+          if (!isStale(id)) {
+            clearAllTimers();
+            setTestState('ready');            // UNLOCK the mic
+            console.log('[LevelTest] mic:unlocked');
+          }
         };
         utter.onerror = () => {
           console.log('[LevelTest] tts:error');
-          if (ttsRunRef.current !== myId) return;
-          clearTtsTimer();
-          setTestState('ready');
+          if (!isStale(id)) {
+            clearAllTimers();
+            setTestState('ready');
+          }
         };
         window.speechSynthesis.speak(utter);
         console.log('[LevelTest] tts:started');
@@ -188,9 +199,9 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     console.log('[LevelTest] tts:fallback-timer', ms + 'ms');
     ttsTimerRef.current = window.setTimeout(() => {
       console.log('[LevelTest] tts:timeout-unlock');
-      if (ttsRunRef.current !== myId) return;
-      setTestState('ready');                // UNLOCK the mic
-      ttsTimerRef.current = null as any;
+      if (!isStale(id)) {
+        setTestState('ready');                // UNLOCK the mic
+      }
     }, ms);
   }
 
@@ -206,7 +217,8 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
       console.log('[LevelTest] cleanup-question');
       try { window?.speechSynthesis?.cancel(); } catch {}
       try { narration.cancel(); } catch {}
-      clearTtsTimer();
+      clearAllTimers();
+      runIdRef.current = null;
       ttsRunRef.current = null;
     };
   }, [qIndex]);
@@ -235,9 +247,6 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     }
   }, [qIndex, answers]);
 
-  function newRunId() {
-    return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-  }
   function stopStream(stream?: MediaStream | null) {
     if (!stream) return;
     try { stream.getTracks().forEach(t => t.stop()); } catch {}
@@ -302,8 +311,7 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
       gainRef.current = null;
       try { window?.speechSynthesis?.cancel(); } catch {}
       try { narration.cancel(); } catch {}
-      clearTtsTimer();
-      if (timerRef.current) clearTimeout(timerRef.current);
+      clearAllTimers();
       runIdRef.current = null;
       ttsRunRef.current = null;
     };
@@ -386,7 +394,7 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
       // user wants to start now → cancel TTS and go
       try { window?.speechSynthesis?.cancel(); } catch {}
       try { narration.cancel(); } catch {}
-      clearTtsTimer();
+      clearAllTimers();
       ttsRunRef.current = null;
       setTestState('ready');
       console.log('[LevelTest] mic:forced-ready');
@@ -409,8 +417,9 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
 
   // Retry logic with exponential backoff
   async function attemptRecording(isRetry = false) {
-    const runId = newRunId();
-    runIdRef.current = runId;
+    const id = newRunId();
+    runIdRef.current = id;
+    clearAllTimers();
 
     try {
       console.log('[LevelTest] recording:attempt', isRetry ? `retry ${retryCount}` : 'initial');
@@ -420,7 +429,6 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
       try { narration.cancel(); } catch {}
 
       setError('');
-      setSecondsLeft(MAX_SECONDS);
 
       console.log('[LevelTest] state:ready→initializing');
       setTestState('initializing');
@@ -452,74 +460,105 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
 
       // Keep stream "hot" on iOS
       attachStreamToContext(stream);
+      streamRef.current = stream;
       console.log('[LevelTest] stream:attached-to-context');
 
-      // UI state + countdown
+      // UI state + countdown with monotonic timer
       console.log('[LevelTest] state:initializing→recording');
       setTestState('recording');
       abortRef.current = new AbortController();
+      
+      startTimeRef.current = Date.now();
+      setSecondsLeft(MAX_SECONDS);
+      timerRef.current = window.setInterval(() => {
+        const left = Math.max(0, MAX_SECONDS - Math.floor((Date.now() - startTimeRef.current) / 1000));
+        setSecondsLeft(left);
+        if (left === 0) {
+          abortRef.current?.abort();
+        }
+      }, 250); // update 4x/sec for smoothness
+      
       console.log('[LevelTest] recording:started');
 
-      let tick = MAX_SECONDS;
-      const timer = setInterval(() => {
-        tick -= 1;
-        setSecondsLeft(tick);
-        if (tick <= 0) {
-          clearInterval(timer);
-          try { abortRef.current?.abort(); } catch {}
-        }
-      }, 1000);
+      let finished = false;
+      
+      function finishOk(transcript: string) {
+        if (finished || isStale(id)) return;
+        finished = true;
+        clearAllTimers();
+        stopStream(stream);
+        runIdRef.current = null;
+        setTestState('processing');
+        saveAnswer(qIndex, transcript);
+        
+        // Advance to next question or show results
+        setTimeout(() => {
+          if (qIndex < PROMPTS.length - 1) {
+            setQIndex(q => q + 1);
+            setTestState('idle');
+          } else {
+            showResults();
+            setTestState('done');
+          }
+        }, 1000);
+      }
+      
+      function failRecoverable(msg: string) {
+        if (finished || isStale(id)) return;
+        finished = true;
+        clearAllTimers();
+        stopStream(stream);
+        setTestState('ready');
+        setError(msg);
+      }
 
       // Start ASR with enhanced error handling
-      const transcript = await startASR({
-        signal: abortRef.current.signal,
-        maxSeconds: MAX_SECONDS,
-        stream
-      });
+      try {
+        const transcript = await startASR({
+          signal: abortRef.current.signal,
+          maxSeconds: MAX_SECONDS,
+          stream
+        });
 
-      clearInterval(timer);
-      stopStream(stream);
-
-      // Aborted or stale tap — exit quietly
-      if (runIdRef.current !== runId) {
-        console.log('[LevelTest] recording:aborted, ignoring result');
-        return;
-      }
-
-      // Check for minimal speech requirement
-      if (!transcript || transcript.trim().split(/\s+/).length < 3) {
-        console.log('[LevelTest] insufficient-speech:', transcript);
-        await handleRecordingError('No speech detected. Please speak more clearly.', 'no-speech');
-        return;
-      }
-
-      // Success - save and advance
-      console.log('[LevelTest] state:recording→processing');
-      setTestState('processing');
-      saveAnswer(qIndex, transcript);
-      setRetryCount(0); // Reset retry count on success
-
-      if (qIndex < PROMPTS.length - 1) {
-        setQIndex(qIndex + 1);
-        console.log('[LevelTest] state:processing→prompting');
-        setTestState('prompting');
-      } else {
-        console.log('[LevelTest] state:processing→done');
-        setTestState('done');
-        showResults();
+        // Success - guard against stale runs
+        if (!finished && !isStale(id)) {
+          finishOk(transcript || '');
+        }
+      } catch (err: any) {
+        console.log('[LevelTest] asr:error', err?.message);
+        
+        // Handle specific ASR errors
+        if (err?.message?.includes('No speech detected')) {
+          await handleRecordingError('no-speech', id);
+        } else if (err?.message?.includes('Recognition error')) {
+          await handleRecordingError('asr-init', id);
+        } else if (err?.message?.includes('Aborted')) {
+          // User cancelled, exit quietly
+          return;
+        } else {
+          await handleRecordingError('general', id);
+        }
       }
     } catch (err: any) {
       console.log('[LevelTest] recording:error', err?.name || err?.constructor?.name, err?.message);
-      await handleRecordingError(err, 'general');
+      
+      // Categorize error
+      if (err?.name === 'NotAllowedError' || err?.message?.includes('denied')) {
+        await handleRecordingError('permission', id);
+      } else if (err?.message?.includes('network') || err?.message?.includes('connection')) {
+        await handleRecordingError('network', id);
+      } else {
+        await handleRecordingError('general', id);
+      }
     } finally {
       abortRef.current = null;
     }
   }
 
   // Enhanced error handling with specific messages and retry logic
-  async function handleRecordingError(err: any, errorType: 'no-speech' | 'permission' | 'network' | 'asr-init' | 'general') {
-    const errorName = err?.name || err?.constructor?.name || '';
-    const errorMessage = err?.message || '';
+  async function handleRecordingError(errorType: 'no-speech' | 'permission' | 'network' | 'asr-init' | 'general', id: string) {
+    if (isStale(id)) return; // Don't retry old runs
+    
     let specificError = '';
     let shouldRetry = false;
 
@@ -530,13 +569,8 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
         shouldRetry = true;
         break;
       case 'permission':
-        if (errorName === 'NotAllowedError' || errorMessage.includes('denied')) {
-          specificError = 'Microphone access denied. Please allow microphone access.';
-          shouldRetry = false;
-        } else {
-          specificError = 'Microphone permission error. Please check your browser settings.';
-          shouldRetry = false;
-        }
+        specificError = 'Microphone access denied. Please allow microphone access.';
+        shouldRetry = false;
         break;
       case 'network':
         specificError = 'Network connection error. Please check your internet connection.';
@@ -547,20 +581,8 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
         shouldRetry = true;
         break;
       default:
-        // Categorize based on error details
-        if (errorName === 'NotAllowedError' || errorMessage.includes('denied')) {
-          specificError = 'Microphone access denied. Please allow microphone access.';
-          shouldRetry = false;
-        } else if (errorMessage.includes('network') || errorMessage.includes('connection')) {
-          specificError = 'Network connection error. Please check your internet connection.';
-          shouldRetry = true;
-        } else if (errorMessage.includes('recognition') || errorMessage.includes('speech')) {
-          specificError = 'Speech recognition initialization failed. Please try again.';
-          shouldRetry = true;
-        } else {
-          specificError = 'Recording failed. Please try again.';
-          shouldRetry = true;
-        }
+        specificError = 'Recording failed. Please try again.';
+        shouldRetry = true;
     }
 
     console.log('[LevelTest] error:categorized', { errorType, specificError, shouldRetry, retryCount });
@@ -573,11 +595,10 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
       setRetryCount(prev => prev + 1);
       setError(`${specificError} Retrying in ${delay/1000}s...`);
       
-      setTimeout(async () => {
-        if (runIdRef.current) { // Only retry if still on same attempt
+      retryTimerRef.current = window.setTimeout(() => {
+        if (!isStale(id)) {
           console.log('[LevelTest] retry:executing');
-          setError('');
-          await attemptRecording(true);
+          attemptRecording(true);
         }
       }, delay);
     } else {
