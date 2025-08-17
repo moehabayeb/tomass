@@ -474,6 +474,7 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
         const left = Math.max(0, MAX_SECONDS - Math.floor((Date.now() - startTimeRef.current) / 1000));
         setSecondsLeft(left);
         if (left === 0) {
+          console.log('[LevelTest] timer:expired, forcing stop');
           abortRef.current?.abort();
         }
       }, 250); // update 4x/sec for smoothness
@@ -652,13 +653,19 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
         resolve(transcript);
       }
 
-      // Max time limit
+      // Max time limit - stop ASR and use whatever transcript we have
       maxTimer = setTimeout(() => {
-        console.log('[Test] asr:timeout');
+        console.log('[Test] asr:timeout, final:', finalTranscript);
         try { rec.stop(); } catch {}
         if (!isFinished) {
-          cleanup();
-          reject(new Error('Max time reached'));
+          // Use whatever transcript we captured, even if partial
+          const transcript = finalTranscript.trim();
+          if (transcript) {
+            finishRecognition(transcript);
+          } else {
+            cleanup();
+            reject(new Error('No speech detected during recording'));
+          }
         }
       }, maxSeconds * 1000);
 
@@ -686,8 +693,8 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
 
         const fullTranscript = (finalTranscript + interimTranscript).trim();
         
-        // If we have a good final result, finish immediately
-        if (finalTranscript.trim() && finalTranscript.trim().split(/\s+/).length >= 3) {
+        // If we have a good final result, finish immediately (reduced from 3 to 1 word)
+        if (finalTranscript.trim() && finalTranscript.trim().split(/\s+/).length >= 1) {
           console.log('[Test] asr:final-result:', finalTranscript);
           try { rec.stop(); } catch {}
           finishRecognition(finalTranscript.trim());
@@ -731,8 +738,10 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
       rec.onend = () => {
         console.log('[Test] asr:ended, final:', finalTranscript);
         if (!isFinished) {
-          if (finalTranscript.trim()) {
-            finishRecognition(finalTranscript.trim());
+          // Always use whatever transcript we have, even if short
+          const transcript = finalTranscript.trim();
+          if (transcript) {
+            finishRecognition(transcript);
           } else {
             cleanup();
             reject(new Error('No speech recognized'));
