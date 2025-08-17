@@ -528,9 +528,18 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
       } catch (err: any) {
         console.log('[LevelTest] asr:error', err?.message);
         
-        // Handle specific ASR errors
-        if (err?.message?.includes('No speech detected')) {
-          await handleRecordingError('no-speech', id);
+        // Handle specific ASR errors - treat no-speech as completion with empty transcript
+        if (err?.message?.includes('no-speech')) {
+          console.log('[LevelTest] no-speech detected, completing with empty transcript');
+          if (!finished && !isStale(id)) {
+            finishOk(''); // Complete with empty transcript, no retry
+          }
+        } else if (err?.message?.includes('No speech detected')) {
+          // Also handle our custom no-speech detection
+          console.log('[LevelTest] no-speech timeout, completing with empty transcript');
+          if (!finished && !isStale(id)) {
+            finishOk(''); // Complete with empty transcript, no retry
+          }
         } else if (err?.message?.includes('Recognition error')) {
           await handleRecordingError('asr-init', id);
         } else if (err?.message?.includes('Aborted')) {
@@ -566,11 +575,12 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     // Determine specific error message and retry eligibility
     switch (errorType) {
       case 'no-speech':
-        specificError = 'No speech detected. Please speak louder and more clearly.';
-        shouldRetry = true;
+        // No retry for no-speech - stay on same question for user to try again
+        specificError = 'No speech detected. Please speak clearly and try again.';
+        shouldRetry = false;
         break;
       case 'permission':
-        specificError = 'Microphone access denied. Please allow microphone access.';
+        specificError = 'Microphone access denied. Please allow microphone access and try again.';
         shouldRetry = false;
         break;
       case 'network':
@@ -588,7 +598,7 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
 
     console.log('[LevelTest] error:categorized', { errorType, specificError, shouldRetry, retryCount });
 
-    // Attempt retry if eligible
+    // Attempt retry if eligible and under retry limit
     if (shouldRetry && retryCount < MAX_RETRIES) {
       const delay = RETRY_DELAYS[retryCount] || RETRY_DELAYS[RETRY_DELAYS.length - 1];
       console.log('[LevelTest] retry:scheduled', { retryCount: retryCount + 1, delay });
@@ -603,7 +613,7 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
         }
       }, delay);
     } else {
-      // No more retries or not retryable
+      // No more retries or not retryable - return to ready state
       console.log('[LevelTest] error:final', specificError);
       setTestState('ready');
       setError(specificError);
@@ -611,7 +621,7 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     }
   }
 
-  // Enhanced ASR with robust error handling and silence detection
+  // Enhanced ASR with comprehensive audio flow detection and logging
   async function startASR({ signal, maxSeconds, stream }: {
     signal: AbortSignal;
     maxSeconds: number;
@@ -620,9 +630,10 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     console.log('[LevelTest] asr:start');
     
     return new Promise((resolve, reject) => {
-      const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      // Use only webkitSpeechRecognition for reliability
+      const SR = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
       if (!SR) {
-        console.log('[LevelTest] asr:error - not supported');
+        console.log('[LevelTest] asr:error - webkitSpeechRecognition not supported');
         reject(new Error('Speech recognition not supported'));
         return;
       }
@@ -636,48 +647,80 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
 
       let silenceTimer: NodeJS.Timeout;
       let maxTimer: NodeJS.Timeout;
+      let speechStartTimer: NodeJS.Timeout;
       let finalTranscript = '';
       let isFinished = false;
+      let audioDetected = false;
+      let speechDetected = false;
 
       function cleanup() {
         clearTimeout(silenceTimer);
         clearTimeout(maxTimer);
+        clearTimeout(speechStartTimer);
         recognizerRef.current = null;
       }
 
-      function finishRecognition(transcript: string) {
+      function finishRecognition(transcript: string, reason: string) {
         if (isFinished) return;
         isFinished = true;
         cleanup();
-        console.log('[Test] asr:result:', transcript);
+        console.log('[LevelTest] asr:finish', { transcript, reason, audioDetected, speechDetected });
         resolve(transcript);
       }
 
       // Max time limit - stop ASR and use whatever transcript we have
       maxTimer = setTimeout(() => {
-        console.log('[Test] asr:timeout, final:', finalTranscript);
+        console.log('[LevelTest] asr:timeout, final:', finalTranscript, 'audio:', audioDetected, 'speech:', speechDetected);
         try { rec.stop(); } catch {}
         if (!isFinished) {
           // Use whatever transcript we captured, even if partial
           const transcript = finalTranscript.trim();
-          if (transcript) {
-            finishRecognition(transcript);
-          } else {
-            cleanup();
-            reject(new Error('No speech detected during recording'));
-          }
+          finishRecognition(transcript, 'timeout');
         }
       }, maxSeconds * 1000);
 
       // Signal abort
       signal.addEventListener('abort', () => {
-        console.log('[Test] asr:abort');
+        console.log('[LevelTest] asr:abort');
         try { rec.stop(); } catch {}
         if (!isFinished) {
           cleanup();
           reject(new Error('Aborted'));
         }
       }, { once: true });
+
+      // Comprehensive event logging to detect audio flow issues
+      rec.onstart = () => {
+        console.log('[LevelTest] asr:onstart - recognition started');
+        
+        // If no speech detected after 5s, treat as no-speech (not mic error)
+        speechStartTimer = setTimeout(() => {
+          if (!speechDetected && !isFinished) {
+            console.log('[LevelTest] asr:no-speech-detected - ASR running but no speech heard');
+            try { rec.stop(); } catch {}
+            finishRecognition('', 'no-speech');
+          }
+        }, 5000);
+      };
+
+      rec.onsoundstart = () => {
+        console.log('[LevelTest] asr:onsoundstart - audio detected');
+        audioDetected = true;
+      };
+
+      rec.onspeechstart = () => {
+        console.log('[LevelTest] asr:onspeechstart - speech detected');
+        speechDetected = true;
+        clearTimeout(speechStartTimer); // Cancel no-speech timeout
+      };
+
+      rec.onaudioend = () => {
+        console.log('[LevelTest] asr:onaudioend - audio ended');
+      };
+
+      rec.onspeechend = () => {
+        console.log('[LevelTest] asr:onspeechend - speech ended');
+      };
 
       rec.onresult = (event: any) => {
         let interimTranscript = '';
@@ -686,6 +729,7 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
           const transcript = event.results[i][0].transcript;
           if (event.results[i].isFinal) {
             finalTranscript += transcript;
+            console.log('[LevelTest] asr:final-result-chunk:', transcript);
           } else {
             interimTranscript += transcript;
           }
@@ -693,11 +737,11 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
 
         const fullTranscript = (finalTranscript + interimTranscript).trim();
         
-        // If we have a good final result, finish immediately (reduced from 3 to 1 word)
+        // If we have a good final result, finish immediately (1+ word minimum)
         if (finalTranscript.trim() && finalTranscript.trim().split(/\s+/).length >= 1) {
-          console.log('[Test] asr:final-result:', finalTranscript);
+          console.log('[LevelTest] asr:final-result-complete:', finalTranscript);
           try { rec.stop(); } catch {}
-          finishRecognition(finalTranscript.trim());
+          finishRecognition(finalTranscript.trim(), 'final-result');
           return;
         }
 
@@ -706,53 +750,46 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
           clearTimeout(silenceTimer);
           silenceTimer = setTimeout(() => {
             if (!isFinished && finalTranscript.trim()) {
-              console.log('[Test] asr:silence-finish:', finalTranscript);
+              console.log('[LevelTest] asr:silence-finish:', finalTranscript);
               try { rec.stop(); } catch {}
-              finishRecognition(finalTranscript.trim());
+              finishRecognition(finalTranscript.trim(), 'silence');
             }
            }, SILENCE_TIMEOUT_MS);
         }
       };
 
       rec.onerror = (event: any) => {
-        console.log('[Test] asr:error:', event.error);
+        console.log('[LevelTest] asr:onerror:', event.error, 'audio:', audioDetected, 'speech:', speechDetected);
         if (!isFinished) {
           cleanup();
           reject(new Error(`Recognition error: ${event.error}`));
         }
       };
 
-      rec.onstart = () => {
-        console.log('[Test] asr:started');
-        // Start initial silence detection
-        silenceTimer = setTimeout(() => {
-          if (!isFinished && !finalTranscript.trim()) {
-            console.log('[Test] asr:initial-silence');
-            try { rec.stop(); } catch {}
-            cleanup();
-            reject(new Error('No speech detected'));
-          }
-        }, INITIAL_SILENCE_MS);
-      };
-
       rec.onend = () => {
-        console.log('[Test] asr:ended, final:', finalTranscript);
+        console.log('[LevelTest] asr:onend, final:', finalTranscript, 'audio:', audioDetected, 'speech:', speechDetected);
         if (!isFinished) {
           // Always use whatever transcript we have, even if short
           const transcript = finalTranscript.trim();
-          if (transcript) {
-            finishRecognition(transcript);
-          } else {
-            cleanup();
-            reject(new Error('No speech recognized'));
-          }
+          finishRecognition(transcript, 'ended');
         }
       };
 
       try {
+        // Ensure audio context is active and cancel any TTS before starting
+        if (window.speechSynthesis) {
+          window.speechSynthesis.cancel();
+        }
+        
+        // Resume audio context if suspended (critical for iOS)
+        if (audioCtxRef.current?.state === 'suspended') {
+          audioCtxRef.current.resume().catch(e => console.log('[LevelTest] audio-context-resume-error:', e));
+        }
+
+        console.log('[LevelTest] asr:starting-recognition');
         rec.start();
       } catch (err) {
-        console.log('[Test] asr:start-error:', err);
+        console.log('[LevelTest] asr:start-error:', err);
         cleanup();
         reject(err);
       }
@@ -846,8 +883,10 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
                   className={`mic-button rounded-full w-20 h-20 relative z-10 ${
                     testState === 'recording'
                       ? 'bg-red-500 hover:bg-red-600 animate-pulse' 
-                      : testState === 'ready' || testState === 'prompting'
+                      : testState === 'ready'
                       ? 'bg-white/20 hover:bg-white/30'
+                      : testState === 'prompting'
+                      ? 'bg-white/10 hover:bg-white/20' // Allow tap during TTS to override
                       : 'bg-white/10 opacity-50 cursor-not-allowed'
                   }`}
                   style={{
@@ -877,7 +916,7 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
 
               <div className="text-center">
                 <p className="text-white/70 text-sm" style={{ pointerEvents: 'none' }}>
-                  {testState === 'prompting' ? 'Listen to the prompt…' :
+                  {testState === 'prompting' ? 'Listen to the prompt… (tap to skip)' :
                    testState === 'recording' ? `Recording… ${secondsLeft}s` :
                    testState === 'ready' ? 'Tap to speak' : 
                    testState === 'processing' ? 'Processing...' :
