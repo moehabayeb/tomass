@@ -385,7 +385,7 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     return { grammar, vocab, pron, level };
   }
 
-  // Enhanced microphone handler with retry logic and specific error handling
+  // Simple start/stop recording flow
   async function onMicPress() {
     console.log('[LevelTest] mic:press, state:', testState);
     
@@ -412,25 +412,23 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
       return;
     }
 
-    await attemptRecording();
+    await startRecording();
   }
 
-  // Retry logic with exponential backoff
-  async function attemptRecording(isRetry = false) {
+  // Start recording function with simple flow
+  async function startRecording() {
     const id = newRunId();
     runIdRef.current = id;
     clearAllTimers();
 
     try {
-      console.log('[LevelTest] recording:attempt', isRetry ? `retry ${retryCount}` : 'initial');
+      console.log('[LevelTest] recording:start');
       
       // Cancel any TTS that might block mic on iOS
       try { window?.speechSynthesis?.cancel(); } catch {}
       try { narration.cancel(); } catch {}
 
       setError('');
-
-      console.log('[LevelTest] state:ready→initializing');
       setTestState('initializing');
 
       // iOS requirement: resume/create audio context on user gesture
@@ -438,10 +436,7 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
       console.log('[LevelTest] audio-context:ready');
 
       // iOS Safari compatibility delay
-      if (isRetry || /iPad|iPhone|iPod/.test(navigator.userAgent)) {
-        console.log('[LevelTest] ios-delay:', INIT_DELAY_MS + 'ms');
-        await new Promise(resolve => setTimeout(resolve, INIT_DELAY_MS));
-      }
+      await new Promise(resolve => setTimeout(resolve, INIT_DELAY_MS));
 
       // Request mic permission
       console.log('[LevelTest] mic:requesting-permission');
@@ -461,165 +456,121 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
       // Keep stream "hot" on iOS
       attachStreamToContext(stream);
       streamRef.current = stream;
-      console.log('[LevelTest] stream:attached-to-context');
 
-      // UI state + countdown with monotonic timer
-      console.log('[LevelTest] state:initializing→recording');
+      // Start recording state with countdown timer
       setTestState('recording');
       abortRef.current = new AbortController();
       
       startTimeRef.current = Date.now();
       setSecondsLeft(MAX_SECONDS);
+      
+      // Smooth countdown timer
       timerRef.current = window.setInterval(() => {
-        const left = Math.max(0, MAX_SECONDS - Math.floor((Date.now() - startTimeRef.current) / 1000));
+        const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
+        const left = Math.max(0, MAX_SECONDS - elapsed);
         setSecondsLeft(left);
+        
         if (left === 0) {
-          console.log('[LevelTest] timer:expired, forcing stop');
+          console.log('[LevelTest] timer:expired, stopping recording');
           abortRef.current?.abort();
         }
-      }, 250); // update 4x/sec for smoothness
+      }, 100); // update 10x/sec for smooth countdown
       
       console.log('[LevelTest] recording:started');
 
-      let finished = false;
-      
-      function finishOk(transcript: string) {
-        if (finished || isStale(id)) return;
-        finished = true;
-        clearAllTimers();
-        stopStream(stream);
-        runIdRef.current = null;
-        setTestState('processing');
-        saveAnswer(qIndex, transcript);
-        
-        // Advance to next question or show results
-        setTimeout(() => {
-          if (qIndex < PROMPTS.length - 1) {
-            setQIndex(q => q + 1);
-            setTestState('idle');
-          } else {
-            showResults();
-            setTestState('done');
-          }
-        }, 1000);
-      }
-      
-      function failRecoverable(msg: string) {
-        if (finished || isStale(id)) return;
-        finished = true;
-        clearAllTimers();
-        stopStream(stream);
-        setTestState('ready');
-        setError(msg);
-      }
-
-      // Start ASR with enhanced error handling
+      // Start ASR
+      let transcript = '';
       try {
-        const transcript = await startASR({
+        transcript = await startASR({
           signal: abortRef.current.signal,
           maxSeconds: MAX_SECONDS,
           stream
         });
-
-        // Success - guard against stale runs
-        if (!finished && !isStale(id)) {
-          finishOk(transcript || '');
-        }
       } catch (err: any) {
-        console.log('[LevelTest] asr:error', err?.message);
-        
-        // Handle specific ASR errors - treat no-speech as completion with empty transcript
-        if (err?.message?.includes('no-speech')) {
-          console.log('[LevelTest] no-speech detected, completing with empty transcript');
-          if (!finished && !isStale(id)) {
-            finishOk(''); // Complete with empty transcript, no retry
-          }
-        } else if (err?.message?.includes('No speech detected')) {
-          // Also handle our custom no-speech detection
-          console.log('[LevelTest] no-speech timeout, completing with empty transcript');
-          if (!finished && !isStale(id)) {
-            finishOk(''); // Complete with empty transcript, no retry
-          }
-        } else if (err?.message?.includes('Recognition error')) {
-          await handleRecordingError('asr-init', id);
-        } else if (err?.message?.includes('Aborted')) {
-          // User cancelled, exit quietly
+        if (err?.message?.includes('Aborted')) {
+          // User stopped recording or timer expired
+          transcript = '';
+        } else if (err?.message?.includes('no-speech') || err?.message?.includes('No speech detected')) {
+          setError('No speech detected. Please try again.');
+          setTestState('ready');
+          setRetryCount(0);
+          clearAllTimers();
+          stopStream(stream);
           return;
         } else {
-          await handleRecordingError('general', id);
+          // Other errors - allow retry
+          if (retryCount < MAX_RETRIES) {
+            const delay = RETRY_DELAYS[retryCount] || 800;
+            setRetryCount(prev => prev + 1);
+            setError(`Recording failed. Retrying in ${delay/1000}s...`);
+            setTestState('ready');
+            clearAllTimers();
+            stopStream(stream);
+            
+            retryTimerRef.current = window.setTimeout(() => {
+              if (!isStale(id)) {
+                startRecording();
+              }
+            }, delay);
+            return;
+          } else {
+            setError('Recording failed. Please try again.');
+            setTestState('ready');
+            setRetryCount(0);
+            clearAllTimers();
+            stopStream(stream);
+            return;
+          }
         }
       }
-    } catch (err: any) {
-      console.log('[LevelTest] recording:error', err?.name || err?.constructor?.name, err?.message);
+
+      // Always finalize with whatever transcript we captured
+      clearAllTimers();
+      stopStream(stream);
+      setTestState('processing');
       
-      // Categorize error
-      if (err?.name === 'NotAllowedError' || err?.message?.includes('denied')) {
-        await handleRecordingError('permission', id);
-      } else if (err?.message?.includes('network') || err?.message?.includes('connection')) {
-        await handleRecordingError('network', id);
+      // Show what was recognized to the user
+      if (transcript.trim()) {
+        console.log('[LevelTest] transcript captured:', transcript);
       } else {
-        await handleRecordingError('general', id);
+        console.log('[LevelTest] no speech captured');
       }
+      
+      saveAnswer(qIndex, transcript);
+      
+      // Brief processing display, then advance
+      setTimeout(() => {
+        if (qIndex < PROMPTS.length - 1) {
+          setQIndex(q => q + 1);
+          setTestState('idle');
+          setRetryCount(0);
+        } else {
+          showResults();
+          setTestState('done');
+        }
+      }, 1000);
+
+    } catch (err: any) {
+      console.log('[LevelTest] recording:error', err?.name || err?.message);
+      
+      clearAllTimers();
+      if (streamRef.current) {
+        stopStream(streamRef.current);
+      }
+      
+      if (err?.name === 'NotAllowedError' || err?.message?.includes('denied')) {
+        setError('Microphone access denied. Please allow microphone access and try again.');
+      } else {
+        setError('Recording failed. Please try again.');
+      }
+      
+      setTestState('ready');
+      setRetryCount(0);
     } finally {
       abortRef.current = null;
     }
   }
 
-  // Enhanced error handling with specific messages and retry logic
-  async function handleRecordingError(errorType: 'no-speech' | 'permission' | 'network' | 'asr-init' | 'general', id: string) {
-    if (isStale(id)) return; // Don't retry old runs
-    
-    let specificError = '';
-    let shouldRetry = false;
-
-    // Determine specific error message and retry eligibility
-    switch (errorType) {
-      case 'no-speech':
-        // No retry for no-speech - stay on same question for user to try again
-        specificError = 'No speech detected. Please speak clearly and try again.';
-        shouldRetry = false;
-        break;
-      case 'permission':
-        specificError = 'Microphone access denied. Please allow microphone access and try again.';
-        shouldRetry = false;
-        break;
-      case 'network':
-        specificError = 'Network connection error. Please check your internet connection.';
-        shouldRetry = true;
-        break;
-      case 'asr-init':
-        specificError = 'Speech recognition initialization failed. Please try again.';
-        shouldRetry = true;
-        break;
-      default:
-        specificError = 'Recording failed. Please try again.';
-        shouldRetry = true;
-    }
-
-    console.log('[LevelTest] error:categorized', { errorType, specificError, shouldRetry, retryCount });
-
-    // Attempt retry if eligible and under retry limit
-    if (shouldRetry && retryCount < MAX_RETRIES) {
-      const delay = RETRY_DELAYS[retryCount] || RETRY_DELAYS[RETRY_DELAYS.length - 1];
-      console.log('[LevelTest] retry:scheduled', { retryCount: retryCount + 1, delay });
-      
-      setRetryCount(prev => prev + 1);
-      setError(`${specificError} Retrying in ${delay/1000}s...`);
-      
-      retryTimerRef.current = window.setTimeout(() => {
-        if (!isStale(id)) {
-          console.log('[LevelTest] retry:executing');
-          attemptRecording(true);
-        }
-      }, delay);
-    } else {
-      // No more retries or not retryable - return to ready state
-      console.log('[LevelTest] error:final', specificError);
-      setTestState('ready');
-      setError(specificError);
-      setRetryCount(0);
-    }
-  }
 
   // Enhanced ASR with comprehensive audio flow detection and logging
   async function startASR({ signal, maxSeconds, stream }: {
@@ -736,15 +687,8 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
         }
 
         const fullTranscript = (finalTranscript + interimTranscript).trim();
+        console.log('[LevelTest] asr:transcript-update:', fullTranscript);
         
-        // If we have a good final result, finish immediately (1+ word minimum)
-        if (finalTranscript.trim() && finalTranscript.trim().split(/\s+/).length >= 1) {
-          console.log('[LevelTest] asr:final-result-complete:', finalTranscript);
-          try { rec.stop(); } catch {}
-          finishRecognition(finalTranscript.trim(), 'final-result');
-          return;
-        }
-
         // Reset silence timer on any speech
         if (fullTranscript) {
           clearTimeout(silenceTimer);
@@ -917,12 +861,21 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
               <div className="text-center">
                 <p className="text-white/70 text-sm" style={{ pointerEvents: 'none' }}>
                   {testState === 'prompting' ? 'Listen to the prompt… (tap to skip)' :
-                   testState === 'recording' ? `Recording… ${secondsLeft}s` :
-                   testState === 'ready' ? 'Tap to speak' : 
+                   testState === 'recording' ? 'Recording… Tap to stop' :
+                   testState === 'ready' ? 'Tap to start recording' : 
                    testState === 'processing' ? 'Processing...' :
                    error ? 'Tap to try again' : 'Preparing...'}
                 </p>
               </div>
+
+              {/* Show recognized text after processing */}
+              {answers[qIndex] && (
+                <div className="bg-green-500/20 border border-green-500/30 rounded-lg p-3">
+                  <p className="text-green-200 text-sm text-center">
+                    <strong>Recognized:</strong> "{answers[qIndex].transcript || 'No speech detected'}"
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
         ) : (
