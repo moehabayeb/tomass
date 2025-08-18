@@ -257,6 +257,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_enrolled_meeting_details: {
+        Args: { meeting_uuid: string }
+        Returns: {
+          description: string
+          duration_minutes: number
+          focus_topic: string
+          id: string
+          scheduled_at: string
+          teacher_name: string
+          title: string
+          zoom_link: string
+        }[]
+      }
       get_public_meetings: {
         Args: Record<PropertyKey, never>
         Returns: {
