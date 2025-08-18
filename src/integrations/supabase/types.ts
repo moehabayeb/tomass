@@ -71,6 +71,35 @@ export type Database = {
         }
         Relationships: []
       }
+      meeting_enrollments: {
+        Row: {
+          enrolled_at: string
+          id: string
+          meeting_id: string
+          user_id: string
+        }
+        Insert: {
+          enrolled_at?: string
+          id?: string
+          meeting_id: string
+          user_id: string
+        }
+        Update: {
+          enrolled_at?: string
+          id?: string
+          meeting_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meeting_enrollments_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "meetings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       meetings: {
         Row: {
           created_at: string
@@ -228,7 +257,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_public_meetings: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          current_participants: number
+          description: string
+          duration_minutes: number
+          focus_topic: string
+          id: string
+          max_participants: number
+          scheduled_at: string
+          teacher_name: string
+          title: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
