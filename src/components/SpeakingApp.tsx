@@ -12,6 +12,7 @@ import { XPBoostAnimation } from './XPBoostAnimation';
 import { StreakCounter } from './StreakCounter';
 import { SampleAnswerButton } from './SampleAnswerButton';
 import BookmarkButton from './BookmarkButton';
+import { startRecording, stopRecording, getState, onState, cleanup, type MicState } from '@/lib/audio/micEngine';
 
 // Sparkle component for background decoration
 const Sparkle = ({ className, delayed = false }: { className?: string; delayed?: boolean }) => (
@@ -105,7 +106,9 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     { text: 'Great! You can also say: "I had a delicious pizza with friends." 🍕', isUser: false, isSystem: false },
     { text: "Next question: What do you usually eat for breakfast?", isUser: false, isSystem: false }
   ]);
-  const [isRecording, setIsRecording] = useState(false);
+  const [micState, setMicState] = useState<MicState>('idle');
+  const [countdown, setCountdown] = useState<number | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string>('');
   const [history, setHistory] = useState<Array<{input: string; corrected: string; time: string}>>([]);
   const [currentQuestion, setCurrentQuestion] = useState("What do you usually eat for breakfast?");
   const [conversationContext, setConversationContext] = useState("");
@@ -114,7 +117,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   
   // Avatar state management
   const [lastMessageTime, setLastMessageTime] = useState<number>();
-  const [isProcessing, setIsProcessing] = useState(false);
+  const isRecording = micState === 'recording';
+  const isProcessing = micState === 'processing';
   const { avatarState } = useAvatarState({
     isRecording,
     isSpeaking,
@@ -126,6 +130,20 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   useEffect(() => {
     const savedHistory = JSON.parse(localStorage.getItem("chatHistory") || "[]");
     setHistory(savedHistory);
+
+    // Subscribe to mic state changes
+    const unsubscribe = onState((newState) => {
+      setMicState(newState);
+      if (newState !== 'recording') {
+        setCountdown(null);
+      }
+    });
+
+    // Cleanup on unmount
+    return () => {
+      unsubscribe();
+      cleanup();
+    };
   }, []);
 
   // Handle initial message from bookmarks
@@ -161,121 +179,23 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     }
   };
 
-  // Helper function to record and transcribe audio
-  const sendToTranscribe = async (): Promise<string> => {
-    // Step 1: Record Audio from Mic with optimized settings for Whisper
-    const stream = await navigator.mediaDevices.getUserMedia({ 
-      audio: {
-        sampleRate: 16000, // Optimal for Whisper
-        channelCount: 1,
-        echoCancellation: true,
-        noiseSuppression: true,
-        autoGainControl: true
-      } 
-    });
-    
-    const mediaRecorder = new MediaRecorder(stream, {
-      mimeType: 'audio/webm;codecs=opus' // Better compression and quality
-    });
-    const audioChunks: Blob[] = [];
-
-    mediaRecorder.ondataavailable = event => {
-      audioChunks.push(event.data);
-    };
-
-    // Show recording message
-    addChatBubble("🎙️ Listening...", "system");
-
-    // Use voice activity detection with longer timeout for complete sentences
-    const audioBlob = await new Promise<Blob>(resolve => {
-      let silenceTimeout: NodeJS.Timeout;
-      let recordingTimeout: NodeJS.Timeout;
-      
-      // Create an audio context for voice activity detection
-      const audioContext = new AudioContext();
-      const analyser = audioContext.createAnalyser();
-      const source = audioContext.createMediaStreamSource(stream);
-      source.connect(analyser);
-      
-      analyser.fftSize = 256;
-      const bufferLength = analyser.frequencyBinCount;
-      const dataArray = new Uint8Array(bufferLength);
-      
-      let isCurrentlySpeakingLocal = false;
-      let speechStartTime = 0;
-      
-      const checkAudio = () => {
-        analyser.getByteFrequencyData(dataArray);
-        const average = dataArray.reduce((sum, value) => sum + value, 0) / bufferLength;
-        
-        // Voice activity threshold - lowered for better sensitivity
-        const isCurrentlySpeaking = average > 20;
-        
-        if (isCurrentlySpeaking && !isCurrentlySpeakingLocal) {
-          // Speech started
-          isCurrentlySpeakingLocal = true;
-          speechStartTime = Date.now();
-          clearTimeout(silenceTimeout);
-          console.log('Speech detected, recording...', { average });
-        } else if (!isCurrentlySpeaking && isCurrentlySpeakingLocal) {
-          // Potential silence detected
-          silenceTimeout = setTimeout(() => {
-            // Stop recording after 2.5 seconds of silence, minimum 1.5 seconds of speech
-            if (Date.now() - speechStartTime > 1500) {
-              console.log('Silence detected, stopping recording');
-              mediaRecorder.stop();
-            }
-          }, 2500);
-        }
-        
-        if (mediaRecorder.state === 'recording') {
-          requestAnimationFrame(checkAudio);
-        }
-      };
-      
-      // Set up recording stop handler
-      mediaRecorder.onstop = () => {
-        clearTimeout(silenceTimeout);
-        clearTimeout(recordingTimeout);
-        audioContext.close();
-        const blob = new Blob(audioChunks, { type: 'audio/webm' });
-        console.log('Recording stopped, audio blob size:', blob.size, 'bytes');
-        resolve(blob);
-      };
-      
-      // Start recording and voice activity detection
-      mediaRecorder.start();
-      checkAudio();
-      
-      // Maximum recording time (10 seconds for complete sentences)
-      recordingTimeout = setTimeout(() => {
-        if (mediaRecorder.state === 'recording') {
-          console.log('Maximum recording time reached, stopping');
-          mediaRecorder.stop();
-        }
-      }, 10000);
-    });
-
-    // Stop all tracks to release microphone
-    stream.getTracks().forEach(track => track.stop());
-
-    // Step 2: Convert audio to base64 for transcription function
-    const arrayBuffer = await audioBlob.arrayBuffer();
-    const base64Audio = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
-
-    console.log('Sending audio for transcription, size:', audioBlob.size, 'bytes');
-
-    const transcribeRes = await supabase.functions.invoke('transcribe', {
-      body: { audio: base64Audio }
-    });
-
-    if (transcribeRes.error) {
-      throw new Error(transcribeRes.error.message || 'Transcription failed');
+  // Countdown timer for recording state
+  useEffect(() => {
+    let timer: number;
+    if (micState === 'recording' && countdown === null) {
+      setCountdown(15);
     }
-
-    console.log('Transcription result:', transcribeRes.data.transcript);
-    return transcribeRes.data.transcript;
-  };
+    
+    if (micState === 'recording' && countdown !== null && countdown > 0) {
+      timer = window.setTimeout(() => {
+        setCountdown(countdown - 1);
+      }, 1000);
+    }
+    
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [micState, countdown]);
 
   // Helper function to send text for grammar feedback
   const sendToFeedback = async (text: string): Promise<{ message: string; corrected: string }> => {
@@ -330,86 +250,75 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     }
   };
 
-  const startSpeaking = async () => {
-    try {
-      setIsRecording(true);
+  const handleRecordingClick = async () => {
+    if (micState === 'idle') {
+      // Start recording
+      setErrorMessage('');
       setRecordingStartTime(Date.now());
       
-      // Step 1: Record and transcribe (verbatim)
-      const transcript = await sendToTranscribe();
-      
-      // Check if transcript is empty
-      if (!transcript || transcript.trim() === "") {
-        addChatBubble("We couldn't hear you clearly. Try speaking louder or check your microphone.", "system");
-        return;
-      }
-      
-      addChatBubble(`💭 What you said: "${transcript}"`, "user");
+      try {
+        const result = await startRecording({ maxSec: 15 });
+        
+        // Show what was captured
+        const transcript = result.transcript.trim();
+        if (!transcript) {
+          setErrorMessage("No speech detected. Please try again.");
+          return;
+        }
+        
+        addChatBubble(`💭 What you said: "${transcript}"`, "user");
 
-      // Set processing state while getting feedback
-      setIsProcessing(true);
+        // Calculate response time for XP bonus
+        const responseTime = recordingStartTime ? Date.now() - recordingStartTime : 0;
 
-      // Calculate response time for XP bonus
-      const responseTime = recordingStartTime ? Date.now() - recordingStartTime : 0;
+        // Step 2: Get grammar feedback with potential corrections
+        const feedback = await sendToFeedback(transcript);
 
-      // Step 2: Get grammar feedback with potential corrections
-      const feedback = await sendToFeedback(transcript);
-      
-      setIsProcessing(false);
-
-      // Step 3: Display feedback with text-to-speech, wait for completion
-      // Show if there are errors or improvements
-      let feedbackMessage = feedback.message;
-      
-      // If the response contains corrections, show both the feedback and the corrected version
-      if (feedback.corrected && feedback.corrected !== transcript) {
-        feedbackMessage = `${feedback.message} You could also say: "${feedback.corrected}"`;
-      }
-      
-      await new Promise<void>((resolve) => {
-        showBotMessage(feedbackMessage, () => {
-          console.log('Feedback TTS completed');
-          resolve();
+        // Step 3: Display feedback with text-to-speech, wait for completion
+        let feedbackMessage = feedback.message;
+        
+        // If the response contains corrections, show both the feedback and the corrected version
+        if (feedback.corrected && feedback.corrected !== transcript) {
+          feedbackMessage = `${feedback.message} You could also say: "${feedback.corrected}"`;
+        }
+        
+        await new Promise<void>((resolve) => {
+          showBotMessage(feedbackMessage, () => {
+            console.log('Feedback TTS completed');
+            resolve();
+          });
         });
-      });
 
-      // Set processing state while generating follow-up
-      setIsProcessing(true);
+        // Step 4: Generate natural follow-up question
+        const nextQuestion = await generateFollowUpQuestion(transcript);
+        
+        // Step 5: Add delay before asking follow-up question to prevent overlap
+        setTimeout(() => {
+          showBotMessage(nextQuestion, () => {
+            console.log('Follow-up question TTS completed');
+          });
+        }, 2000);
 
-      // Step 4: Generate natural follow-up question
-      const nextQuestion = await generateFollowUpQuestion(transcript);
-      
-      setIsProcessing(false);
-      
-      // Step 5: Add delay before asking follow-up question to prevent overlap
-      setTimeout(() => {
-        showBotMessage(nextQuestion, () => {
-          console.log('Follow-up question TTS completed');
-          // Add delay before re-enabling recording to prevent accidental triggering
-          setTimeout(() => {
-            console.log('Ready for next input');
-          }, 1500);
-        });
-      }, 2000);
+        // Step 6: Log the session to history
+        logSession(transcript, feedback.corrected);
 
-      // Step 6: Log the session to history
-      logSession(transcript, feedback.corrected);
+        // Step 7: Award XP with bonuses for speed and accuracy
+        const isCorrect = !feedback.message.toLowerCase().includes('mistake') && 
+                         !feedback.message.toLowerCase().includes('error');
+        addXP(20, responseTime, isCorrect);
 
-      // Step 7: Award XP with bonuses for speed and accuracy
-      const isCorrect = !feedback.message.toLowerCase().includes('mistake') && 
-                       !feedback.message.toLowerCase().includes('error');
-      addXP(20, responseTime, isCorrect);
+        // Step 8: Track speaking submission for badges
+        incrementSpeakingSubmissions();
 
-      // Step 8: Track speaking submission for badges
-      incrementSpeakingSubmissions();
-
-    } catch (error) {
-      console.error('Error in startSpeaking:', error);
-      addChatBubble("Sorry, there was an error. Please try again.", "system");
-      setIsProcessing(false);
-    } finally {
-      setIsRecording(false);
-      setRecordingStartTime(null);
+      } catch (error: any) {
+        console.error('Error in recording:', error);
+        setErrorMessage(error.message || "Sorry, there was an error. Please try again.");
+      } finally {
+        setRecordingStartTime(null);
+      }
+    } else if (micState === 'recording') {
+      // Stop recording
+      stopRecording();
     }
   };
 
@@ -507,27 +416,42 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         {/* Premium Speaking Button */}
         <div className="flex flex-col items-center space-y-4 sm:space-y-6 pb-6 sm:pb-8">
           <Button 
-            onClick={startSpeaking}
-            disabled={isRecording}
-            className={`pill-button w-full max-w-sm py-6 sm:py-8 text-lg sm:text-xl font-bold border-0 shadow-xl min-h-[64px] ${isRecording ? 'animate-pulse' : ''}`}
+            onClick={handleRecordingClick}
+            disabled={micState === 'prompting' || micState === 'processing'}
+            className={`pill-button w-full max-w-sm py-6 sm:py-8 text-lg sm:text-xl font-bold border-0 shadow-xl min-h-[64px] ${micState === 'recording' ? 'animate-pulse' : ''}`}
             size="lg"
             style={{
-              background: isRecording 
+              background: micState === 'recording' 
                 ? 'linear-gradient(135deg, #ff4f80, #ff6b9d, #c084fc)' 
                 : 'linear-gradient(135deg, #ff4f80, #ff6b9d)',
               color: 'white',
-              boxShadow: isRecording 
+              boxShadow: micState === 'recording' 
                 ? '0 0 60px rgba(255, 79, 128, 0.6), 0 8px 32px rgba(255, 107, 157, 0.4)' 
                 : '0 8px 32px rgba(255, 79, 128, 0.3), 0 4px 16px rgba(255, 107, 157, 0.2)',
             }}
           >
             <div className="flex items-center gap-3">
-              {isRecording ? "🎙️" : "🎤"}
+              {micState === 'recording' ? "🎙️" : micState === 'initializing' ? "🔄" : "🎤"}
               <span className="drop-shadow-sm">
-                {isRecording ? "Recording..." : "Start Speaking"}
+                {(() => {
+                  switch(micState) {
+                    case 'prompting': return "Listen to the prompt...";
+                    case 'initializing': return "Initializing microphone...";
+                    case 'recording': return `Recording... ${countdown}s (tap to stop)`;
+                    case 'processing': return "Processing...";
+                    default: return "Start Speaking";
+                  }
+                })()}
               </span>
             </div>
           </Button>
+          
+          {/* Error message display */}
+          {errorMessage && (
+            <div className="text-red-300 text-sm font-medium bg-red-500/20 backdrop-blur-sm rounded-lg px-4 py-2 border border-red-400/30">
+              {errorMessage}
+            </div>
+          )}
 
           {/* Premium Controls */}
           <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
