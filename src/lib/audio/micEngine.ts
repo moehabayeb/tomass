@@ -1,30 +1,28 @@
+import { supabase } from '@/integrations/supabase/client';
+
 export type MicState = 'idle' | 'prompting' | 'initializing' | 'recording' | 'processing';
 export type MicResult = { transcript: string; durationSec: number };
 
-// Constants - same as Level Test
-const INITIAL_SILENCE_MS = 4500;
-const SILENCE_TIMEOUT_MS = 2000;
+// Constants for reliable recording
 const INIT_DELAY_MS = 600;
 const MAX_SECONDS = 15;
-const MAX_RETRIES = 2;
-const RETRY_DELAYS = [400, 800];
+const MAX_RETRIES = 1; // One auto-retry for empty transcripts
 
 // Internal state
 let state: MicState = 'idle';
 let runIdRef: number = 0;
 let finished = false;
 let retryCount = 0;
-let recognizerRef: any = null;
+let mediaRecorderRef: MediaRecorder | null = null;
 let streamRef: MediaStream | null = null;
 let audioCtxRef: { current: AudioContext | null } = { current: null };
 let abortRef: AbortController | null = null;
 let startTimeRef: number = 0;
+let audioChunks: Blob[] = [];
 
 // Timers
-let timerRef: number | undefined;
-let retryTimerRef: number | undefined;
-let ttsTimerRef: number | undefined;
 let maxTimerRef: number | undefined;
+let retryTimerRef: number | undefined;
 
 // State subscribers
 const stateSubscribers: ((state: MicState) => void)[] = [];
@@ -44,14 +42,10 @@ function setState(newState: MicState) {
 }
 
 function clearAllTimers() {
-  if (timerRef) clearInterval(timerRef);
-  timerRef = undefined;
-  if (retryTimerRef) clearTimeout(retryTimerRef);
-  retryTimerRef = undefined;
-  if (ttsTimerRef) clearTimeout(ttsTimerRef);
-  ttsTimerRef = undefined;
   if (maxTimerRef) clearTimeout(maxTimerRef);
   maxTimerRef = undefined;
+  if (retryTimerRef) clearTimeout(retryTimerRef);
+  retryTimerRef = undefined;
 }
 
 function stopStream(stream: MediaStream) {
@@ -67,7 +61,7 @@ function stopStream(stream: MediaStream) {
 
 async function ensureAudioContext(): Promise<void> {
   if (!audioCtxRef.current) {
-    audioCtxRef.current = new AudioContext({ sampleRate: 24000 });
+    audioCtxRef.current = new AudioContext({ sampleRate: 44100 });
   }
   
   if (audioCtxRef.current.state === 'suspended') {
@@ -76,170 +70,115 @@ async function ensureAudioContext(): Promise<void> {
   }
 }
 
-function attachStreamToContext(stream: MediaStream) {
+async function transcribeAudio(audioBlob: Blob): Promise<string> {
+  console.log('[Speaking] transcribe:start, blob size:', audioBlob.size);
+  
   try {
-    if (audioCtxRef.current) {
-      const source = audioCtxRef.current.createMediaStreamSource(stream);
-      // Create muted gain node to prevent sidetone - NO direct destination connect
-      const gainNode = audioCtxRef.current.createGain();
-      gainNode.gain.value = 0; // Muted to prevent hearing self
-      source.connect(gainNode);
-      // Do NOT connect gainNode to destination - this prevents sidetone
-      console.log('[Speaking] stream:attached-to-context (muted, no sidetone)');
+    // Create FormData with the audio blob
+    const formData = new FormData();
+    formData.append('audio', audioBlob, 'recording.webm');
+
+    const { data, error } = await supabase.functions.invoke('transcribe', {
+      body: formData,
+    });
+
+    if (error) {
+      console.error('[Speaking] transcribe:error', error);
+      throw new Error('There was a problem analyzing your speech. Please try again.');
     }
-  } catch (e) {
-    console.log('[Speaking] error attaching stream:', e);
+
+    const transcript = data?.transcript || '';
+    console.log('[Speaking] transcribe:success', transcript);
+    return transcript.trim();
+
+  } catch (error: any) {
+    console.error('[Speaking] transcribe:failed', error);
+    throw new Error('There was a problem analyzing your speech. Please try again.');
   }
 }
 
-async function startASR({ signal, maxSeconds, stream }: {
+async function startRecordingWithMediaRecorder({ signal, maxSeconds }: {
   signal: AbortSignal;
   maxSeconds: number;
-  stream?: MediaStream;
 }): Promise<string> {
-  console.log('[Speaking] asr:start');
+  console.log('[Speaking] recorder:start');
   
   return new Promise((resolve, reject) => {
-    // Use only webkitSpeechRecognition for reliability
-    const SR = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
-    if (!SR) {
-      console.log('[Speaking] asr:error - webkitSpeechRecognition not supported');
-      reject(new Error('Speech recognition not supported'));
-      return;
-    }
-
-    const rec = new SR();
-    rec.lang = 'en-US';
-    rec.continuous = true;
-    rec.interimResults = true;
-    rec.maxAlternatives = 1;
-    recognizerRef = rec;
-
-    let silenceTimer: number;
-    let speechStartTimer: number;
-    let finalTranscript = '';
     let isFinished = false;
-    let audioDetected = false;
-    let speechDetected = false;
+    audioChunks = [];
 
     function cleanup() {
-      clearTimeout(silenceTimer);
-      clearTimeout(speechStartTimer);
-      recognizerRef = null;
+      if (mediaRecorderRef) {
+        try { mediaRecorderRef.stop(); } catch {}
+        mediaRecorderRef = null;
+      }
     }
 
-    function finishRecognition(transcript: string, reason: string) {
+    function finishRecording(transcript: string, reason: string) {
       if (isFinished) return;
       isFinished = true;
       cleanup();
-      console.log('[Speaking] asr:finish', { transcript, reason, audioDetected, speechDetected });
+      console.log('[Speaking] recorder:finish', { transcript, reason });
       resolve(transcript);
     }
 
     // Signal abort
     signal.addEventListener('abort', () => {
-      console.log('[Speaking] asr:abort');
-      try { rec.stop(); } catch {}
+      console.log('[Speaking] recorder:abort');
       if (!isFinished) {
         cleanup();
-        reject(new Error('Aborted'));
+        reject(new Error('Recording aborted'));
       }
     }, { once: true });
 
-    // Comprehensive event logging to detect audio flow issues
-    rec.onstart = () => {
-      console.log('[Speaking] asr:onstart - recognition started');
-      
-      // If no speech detected after INITIAL_SILENCE_MS, treat as no-speech
-      speechStartTimer = window.setTimeout(() => {
-        if (!speechDetected && !isFinished) {
-          console.log('[Speaking] asr:no-speech-detected - ASR running but no speech heard');
-          try { rec.stop(); } catch {}
-          finishRecognition('', 'no-speech');
-        }
-      }, INITIAL_SILENCE_MS);
-    };
-
-    rec.onsoundstart = () => {
-      console.log('[Speaking] asr:onsoundstart - audio detected');
-      audioDetected = true;
-    };
-
-    rec.onspeechstart = () => {
-      console.log('[Speaking] asr:onspeechstart - speech detected');
-      speechDetected = true;
-      clearTimeout(speechStartTimer); // Cancel no-speech timeout
-    };
-
-    rec.onaudioend = () => {
-      console.log('[Speaking] asr:onaudioend - audio ended');
-    };
-
-    rec.onspeechend = () => {
-      console.log('[Speaking] asr:onspeechend - speech ended');
-    };
-
-    rec.onresult = (event: any) => {
-      let interimTranscript = '';
-      
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const transcript = event.results[i][0].transcript;
-        if (event.results[i].isFinal) {
-          finalTranscript += transcript;
-          console.log('[Speaking] asr:final-result-chunk:', transcript);
-        } else {
-          interimTranscript += transcript;
-        }
-      }
-
-      const fullTranscript = (finalTranscript + interimTranscript).trim();
-      console.log('[Speaking] asr:transcript-update:', fullTranscript);
-      
-      // Reset silence timer on any speech
-      if (fullTranscript) {
-        clearTimeout(silenceTimer);
-        silenceTimer = window.setTimeout(() => {
-          if (!isFinished && finalTranscript.trim()) {
-            console.log('[Speaking] asr:silence-finish:', finalTranscript);
-            try { rec.stop(); } catch {}
-            finishRecognition(finalTranscript.trim(), 'silence');
-          }
-         }, SILENCE_TIMEOUT_MS);
-      }
-    };
-
-    rec.onerror = (event: any) => {
-      console.log('[Speaking] asr:onerror:', event.error, 'audio:', audioDetected, 'speech:', speechDetected);
-      if (!isFinished) {
-        cleanup();
-        reject(new Error(`Recognition error: ${event.error}`));
-      }
-    };
-
-    rec.onend = () => {
-      console.log('[Speaking] asr:onend, final:', finalTranscript, 'audio:', audioDetected, 'speech:', speechDetected);
-      if (!isFinished) {
-        // Always use whatever transcript we have, even if short
-        const transcript = finalTranscript.trim();
-        finishRecognition(transcript, 'ended');
-      }
-    };
-
     try {
-      // Ensure audio context is active and cancel any TTS before starting
-      if (window.speechSynthesis) {
-        window.speechSynthesis.cancel();
-      }
+      // Start MediaRecorder
+      const options = { mimeType: 'audio/webm' };
+      mediaRecorderRef = new MediaRecorder(streamRef!, options);
       
-      // Resume audio context if suspended (critical for iOS)
-      if (audioCtxRef.current?.state === 'suspended') {
-        audioCtxRef.current.resume().catch(e => console.log('[Speaking] audio-context-resume-error:', e));
-      }
+      mediaRecorderRef.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunks.push(event.data);
+          console.log('[Speaking] recorder:data-chunk', event.data.size);
+        }
+      };
 
-      console.log('[Speaking] asr:starting-recognition');
-      rec.start();
+      mediaRecorderRef.onstop = async () => {
+        console.log('[Speaking] recorder:stopped, chunks:', audioChunks.length);
+        
+        if (!isFinished && audioChunks.length > 0) {
+          try {
+            // Create blob from chunks
+            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            console.log('[Speaking] recorder:blob-created', audioBlob.size);
+            
+            // Transcribe the audio
+            const transcript = await transcribeAudio(audioBlob);
+            finishRecording(transcript, 'transcribed');
+          } catch (error: any) {
+            if (!isFinished) {
+              cleanup();
+              reject(error);
+            }
+          }
+        } else if (!isFinished) {
+          finishRecording('', 'no-data');
+        }
+      };
+
+      mediaRecorderRef.onerror = (event: any) => {
+        console.log('[Speaking] recorder:error', event.error);
+        if (!isFinished) {
+          cleanup();
+          reject(new Error('Recording failed. Please try again.'));
+        }
+      };
+
+      console.log('[Speaking] recorder:starting');
+      mediaRecorderRef.start(100); // Collect data every 100ms
+
     } catch (err) {
-      console.log('[Speaking] asr:start-error:', err);
+      console.log('[Speaking] recorder:start-error', err);
       cleanup();
       reject(err);
     }
@@ -256,22 +195,24 @@ async function internalStartRecording(opts: { maxSec?: number } = {}): Promise<M
   try {
     console.log('[Speaking] recording:start');
     
-    // Cancel any TTS that might block mic on iOS
+    // Cancel any TTS that might interfere
     try { window?.speechSynthesis?.cancel(); } catch {}
 
     setState('initializing');
 
-    // iOS requirement: resume/create audio context on user gesture
+    // Resume audio context on user gesture (iOS compatibility)
     await ensureAudioContext();
     console.log('[Speaking] audio-context:ready');
 
     // iOS Safari compatibility delay
     await new Promise(resolve => setTimeout(resolve, INIT_DELAY_MS));
 
-    // Request mic permission
+    // Request microphone with optimal settings
     console.log('[Speaking] mic:requesting-permission');
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: {
+        sampleRate: 44100,
+        channelCount: 1,
         echoCancellation: true,
         noiseSuppression: true,
         autoGainControl: true,
@@ -283,8 +224,7 @@ async function internalStartRecording(opts: { maxSec?: number } = {}): Promise<M
     }
     console.log('[Speaking] mic:permission-granted');
 
-    // Keep stream "hot" on iOS
-    attachStreamToContext(stream);
+    // Keep reference but DO NOT route to destination (no echo)
     streamRef = stream;
 
     // Start recording state
@@ -303,23 +243,20 @@ async function internalStartRecording(opts: { maxSec?: number } = {}): Promise<M
     
     console.log('[Speaking] recording:started');
 
-    // Start ASR
+    // Start recording and transcription
     let transcript = '';
     try {
-      transcript = await startASR({
+      transcript = await startRecordingWithMediaRecorder({
         signal: abortRef.signal,
-        maxSeconds: maxSec,
-        stream
+        maxSeconds: maxSec
       });
     } catch (err: any) {
-      if (err?.message?.includes('Aborted')) {
-        // User stopped recording or timer expired
+      if (err?.message?.includes('aborted')) {
+        // User stopped recording or timer expired - get whatever was recorded
         transcript = '';
-      } else if (err?.message?.includes('no-speech') || err?.message?.includes('No speech detected')) {
-        throw new Error('No speech detected. Please try again.');
       } else {
-        // Other errors - allow retry
-        throw new Error('Speech recognition problem. Please try again.');
+        // Other errors - rethrow
+        throw err;
       }
     }
 
@@ -330,12 +267,7 @@ async function internalStartRecording(opts: { maxSec?: number } = {}): Promise<M
     stopStream(stream);
     setState('processing');
     
-    // Show what was recognized to the user
-    if (transcript.trim()) {
-      console.log('[Speaking] transcript captured:', transcript);
-    } else {
-      console.log('[Speaking] no speech captured');
-    }
+    console.log('[Speaking] recording:completed', { transcript, durationSec });
     
     return { transcript, durationSec };
 
@@ -350,7 +282,7 @@ async function internalStartRecording(opts: { maxSec?: number } = {}): Promise<M
     }
     
     if (err?.name === 'NotAllowedError' || err?.message?.includes('denied')) {
-      throw new Error('Microphone access denied.');
+      throw new Error('Please allow microphone access in your browser settings.');
     } else {
       throw err;
     }
@@ -364,41 +296,41 @@ export async function startRecording(opts: { maxSec?: number } = {}): Promise<Mi
   
   try {
     const result = await internalStartRecording(opts);
+    
+    // Check if transcript is empty and we should retry
+    if (!result.transcript.trim() && retryCount < MAX_RETRIES) {
+      retryCount++;
+      console.log('[Speaking] auto-retry for empty transcript, attempt:', retryCount);
+      
+      setState('idle');
+      
+      return new Promise((resolve, reject) => {
+        retryTimerRef = window.setTimeout(async () => {
+          if (!isStale(id)) {
+            try {
+              const retryResult = await internalStartRecording(opts);
+              setState('idle');
+              resolve(retryResult);
+            } catch (retryErr) {
+              setState('idle');
+              reject(retryErr);
+            }
+          }
+        }, 800);
+      });
+    }
+    
     setState('idle');
     retryCount = 0; // Reset on success
+    
+    // If still empty after retry, show specific message
+    if (!result.transcript.trim()) {
+      throw new Error('We couldn\'t hear you clearly. Try speaking louder or check your mic.');
+    }
+    
     return result;
   } catch (err: any) {
     console.log('[Speaking] recording failed:', err.message);
-    
-    // Check if we should retry
-    if (retryCount < MAX_RETRIES) {
-      const shouldRetry = err.message.includes('No speech detected') || 
-                         err.message.includes('Speech recognition problem');
-      
-      if (shouldRetry && !isStale(id)) {
-        const delay = RETRY_DELAYS[retryCount] || 800;
-        retryCount++;
-        console.log('[Speaking] scheduling retry', retryCount, 'after', delay + 'ms');
-        
-        setState('idle');
-        
-        return new Promise((resolve, reject) => {
-          retryTimerRef = window.setTimeout(async () => {
-            if (!isStale(id)) {
-              try {
-                const result = await internalStartRecording(opts);
-                setState('idle');
-                resolve(result);
-              } catch (retryErr) {
-                setState('idle');
-                reject(retryErr);
-              }
-            }
-          }, delay);
-        });
-      }
-    }
-    
     setState('idle');
     retryCount = 0;
     throw err;
@@ -447,12 +379,13 @@ export function cleanup() {
     audioCtxRef.current = null;
   }
   
-  if (recognizerRef) {
-    try { recognizerRef.stop(); } catch {}
-    recognizerRef = null;
+  if (mediaRecorderRef) {
+    try { mediaRecorderRef.stop(); } catch {}
+    mediaRecorderRef = null;
   }
   
   runIdRef = 0;
   retryCount = 0;
+  audioChunks = [];
   setState('idle');
 }

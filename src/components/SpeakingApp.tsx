@@ -489,15 +489,15 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
             <div className="flex items-center gap-3">
               {micState === 'recording' ? "🎙️" : micState === 'initializing' ? "🔄" : "🎤"}
               <span className="drop-shadow-sm">
-                {(() => {
-                  switch(micState) {
-                    case 'prompting': return "Listen to the prompt...";
-                    case 'initializing': return "Initializing microphone...";
-                    case 'recording': return `Recording... ${countdown}s (tap to stop)`;
-                    case 'processing': return "Processing...";
-                    default: return "Start Speaking";
-                  }
-                })()}
+                 {(() => {
+                   switch(micState) {
+                     case 'prompting': return "Listen to the prompt...";
+                     case 'initializing': return "Initializing microphone...";
+                     case 'recording': return `Recording... ${countdown}s (tap to stop)`;
+                     case 'processing': return "Processing...";
+                     default: return "Start Speaking";
+                   }
+                 })()}
               </span>
             </div>
           </Button>
