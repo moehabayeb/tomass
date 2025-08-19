@@ -147,26 +147,28 @@ function startProcessingWatchdog() {
   }, 8000); // 8 seconds timeout
 }
 
-// Show watchdog recovery toast
+// Show watchdog recovery toast using sonner
 function showWatchdogToast() {
   if (typeof window !== 'undefined') {
-    // Create a simple toast notification
-    const toast = document.createElement('div');
-    toast.textContent = 'Processing took too long. Ready to try again.';
-    toast.style.cssText = `
-      position: fixed; top: 20px; right: 20px; z-index: 10000;
-      background: #ff4444; color: white; padding: 12px 16px;
-      border-radius: 8px; font-family: system-ui; font-size: 14px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    `;
-    
-    document.body.appendChild(toast);
-    
-    setTimeout(() => {
-      if (toast.parentNode) {
-        toast.parentNode.removeChild(toast);
-      }
-    }, 4000);
+    // Import and use sonner toast dynamically
+    import('sonner').then(({ toast }) => {
+      toast.error('Processing took too long. Ready to try again.', {
+        duration: 4000,
+        position: 'top-right'
+      });
+    }).catch(() => {
+      // Fallback to simple DOM toast if sonner fails
+      const toastEl = document.createElement('div');
+      toastEl.textContent = 'Processing took too long. Ready to try again.';
+      toastEl.style.cssText = `
+        position: fixed; top: 20px; right: 20px; z-index: 10000;
+        background: #ff4444; color: white; padding: 12px 16px;
+        border-radius: 8px; font-family: system-ui; font-size: 14px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      `;
+      document.body.appendChild(toastEl);
+      setTimeout(() => toastEl.remove(), 4000);
+    });
   }
 }
 

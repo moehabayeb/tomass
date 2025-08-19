@@ -12,7 +12,7 @@ import { XPBoostAnimation } from './XPBoostAnimation';
 import { StreakCounter } from './StreakCounter';
 import { SampleAnswerButton } from './SampleAnswerButton';
 import BookmarkButton from './BookmarkButton';
-import { startRecording, stopRecording, getState, type MicState } from '@/lib/audio/micEngine';
+import { startRecording, stopRecording, getState, onState, cleanup, type MicState } from '@/lib/audio/micEngine';
 
 // Sparkle component for background decoration
 const Sparkle = ({ className, delayed = false }: { className?: string; delayed?: boolean }) => (
@@ -109,11 +109,12 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   const [currentQuestion, setCurrentQuestion] = useState("What did you have for lunch today?");
   const [conversationContext, setConversationContext] = useState("");
   const [userLevel, setUserLevel] = useState<'beginner' | 'intermediate' | 'advanced'>('beginner');
+  const [isProcessingTranscript, setIsProcessingTranscript] = useState(false);
   
   // Avatar state management
   const [lastMessageTime, setLastMessageTime] = useState<number>();
   const isRecording = micState === 'recording';
-  const isProcessing = micState === 'processing';
+  const isProcessing = micState === 'processing' || isProcessingTranscript;
   const { avatarState } = useAvatarState({
     isRecording,
     isSpeaking,
@@ -121,6 +122,21 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     lastMessageTime
   });
   
+  // Subscribe to micEngine state changes
+  useEffect(() => {
+    const unsubscribe = onState((newState) => {
+      console.log('[Speaking] micEngine state change:', newState);
+      setMicState(newState);
+      
+      // Clear errors when transitioning out of idle
+      if (newState !== 'idle') {
+        setErrorMessage('');
+      }
+    });
+    
+    return unsubscribe;
+  }, []);
+
   // Initialize component
   useEffect(() => {
     const savedHistory = JSON.parse(localStorage.getItem("chatHistory") || "[]");
@@ -128,6 +144,11 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
     // Ask initial question
     speak(currentQuestion);
+    
+    // Cleanup on unmount
+    return () => {
+      cleanup();
+    };
   }, []);
 
   // Handle initial message from bookmarks
@@ -222,6 +243,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
   const executeTeacherLoop = async (transcript: string) => {
     console.log('[Speaking] teacher-loop:start with transcript:', transcript);
+    setIsProcessingTranscript(true);
     
     try {
       // Step 1: Analyze & Correct using existing functions
@@ -260,7 +282,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       console.error('[Speaking] teacher-loop:error', error);
       setErrorMessage(error.message || "Sorry, there was an error. Please try again.");
     } finally {
-      setMicState('idle');
+      setIsProcessingTranscript(false);
     }
   };
 
@@ -269,20 +291,16 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       // Start recording
       console.log('[Speaking] recording:start-button-click');
       setErrorMessage('');
-      setMicState('recording');
       
       try {
         const result = await startRecording();
         console.log('[Speaking] recording:completed, transcript:', result.transcript);
         
-        setMicState('processing');
-        
         // Display transcript
         addChatBubble(`💭 You said: "${result.transcript}"`, "user");
         
         if (!result.transcript) {
-          setErrorMessage("We couldn't hear you clearly. Try speaking louder or check your mic.");
-          setMicState('idle');
+          setErrorMessage("No speech detected, please try again.");
           return;
         }
         
@@ -292,7 +310,6 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       } catch (error: any) {
         console.error('[Speaking] recording:error', error);
         setErrorMessage(error.message);
-        setMicState('idle');
       }
     } else if (micState === 'recording') {
       // Stop recording
@@ -396,7 +413,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         <div className="flex flex-col items-center space-y-4 sm:space-y-6 pb-6 sm:pb-8">
           <Button 
             onClick={handleRecordingClick}
-            disabled={micState === 'processing'}
+            disabled={micState === 'processing' || isProcessingTranscript}
             className={`pill-button w-full max-w-sm py-6 sm:py-8 text-lg sm:text-xl font-bold border-0 shadow-xl min-h-[64px] ${micState === 'recording' ? 'animate-pulse' : ''}`}
             size="lg"
             style={{
@@ -410,10 +427,12 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
             }}
           >
             <div className="flex items-center gap-3">
-              {micState === 'recording' ? "🎙️" : micState === 'processing' ? "⏳" : "🎤"}
+              {micState === 'recording' ? "🎙️" : 
+               (micState === 'processing' || isProcessingTranscript) ? "⏳" : "🎤"}
               <span className="drop-shadow-sm">
                 {micState === 'recording' ? "Recording... (tap to stop)" : 
                  micState === 'processing' ? "Processing..." : 
+                 isProcessingTranscript ? "Thinking..." :
                  "Start Speaking"}
               </span>
             </div>
