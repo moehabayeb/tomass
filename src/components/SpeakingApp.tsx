@@ -272,22 +272,22 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       setMicState('recording');
       
       try {
-        const transcript = await startRecording();
-        console.log('[Speaking] recording:completed, transcript:', transcript);
+        const result = await startRecording();
+        console.log('[Speaking] recording:completed, transcript:', result.transcript);
         
         setMicState('processing');
         
         // Display transcript
-        addChatBubble(`💭 You said: "${transcript}"`, "user");
+        addChatBubble(`💭 You said: "${result.transcript}"`, "user");
         
-        if (!transcript) {
+        if (!result.transcript) {
           setErrorMessage("We couldn't hear you clearly. Try speaking louder or check your mic.");
           setMicState('idle');
           return;
         }
         
         // Execute teacher loop
-        await executeTeacherLoop(transcript);
+        await executeTeacherLoop(result.transcript);
 
       } catch (error: any) {
         console.error('[Speaking] recording:error', error);
