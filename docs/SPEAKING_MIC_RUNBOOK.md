@@ -156,3 +156,62 @@ For persistent issues:
 2. Note browser/device details
 3. Check speaking_metrics table for patterns
 4. Test fallback mode success rate
+
+## Metrics & Watchdogs
+
+### Metrics Collection
+The engine automatically batches and sends metrics to Supabase:
+- **Phases tracked**: `engine_start`, `state_change`, `recording_complete`, `recording_error`, `invariant_violation`
+- **No PII stored**: Only transcript lengths, durations, and error categories
+- **Rate limited**: 120 events per session per minute
+
+### Query Recent Metrics
+```sql
+-- Check recent activity
+SELECT phase, COUNT(*), AVG(duration_ms)
+FROM speaking_metrics 
+WHERE ts > NOW() - INTERVAL '1 hour'
+GROUP BY phase;
+
+-- Error analysis
+SELECT error_kind, COUNT(*), engine
+FROM speaking_metrics 
+WHERE phase = 'recording_error' 
+  AND ts > NOW() - INTERVAL '24 hours'
+GROUP BY error_kind, engine;
+
+-- Success rate by engine
+SELECT 
+  engine,
+  COUNT(*) FILTER (WHERE phase = 'recording_complete') as success,
+  COUNT(*) FILTER (WHERE phase = 'recording_error') as errors
+FROM speaking_metrics 
+WHERE ts > NOW() - INTERVAL '6 hours'
+GROUP BY engine;
+```
+
+### Watchdog Systems
+1. **Processing Watchdog**: Resets stuck "Processing..." after 8 seconds
+2. **Visibility Watchdog**: Cleans up when app returns from background
+3. **Button Debounce**: Prevents rapid taps (300ms)
+
+### Feature Flags for Crisis Response
+If error rates spike:
+```javascript
+// Force all users to fallback mode
+localStorage.setItem('speaking_use_fallback', '1');
+
+// Enable debug mode for investigation  
+localStorage.setItem('speaking_debug', '1');
+
+// Disable speaking entirely (emergency)
+localStorage.setItem('speaking_rollback', '1');
+```
+
+### Clear All Flags
+```javascript
+['use_fallback', 'debug', 'rollback'].forEach(flag => {
+  localStorage.removeItem(`speaking_${flag}`);
+});
+location.reload();
+```

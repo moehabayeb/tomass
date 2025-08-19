@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { enqueueMetric } from '@/lib/metrics';
 
 // ============= CONSTANTS =============
 export const INITIAL_SILENCE_MS = 4500;
@@ -50,6 +51,7 @@ let countdownTimerRef: number | undefined;
 let retryTimerRef: number | undefined;
 let maxTimerRef: number | undefined;
 let ttsTimeoutRef: number | undefined;
+let processingWatchdogRef: number | undefined;
 
 // State subscribers
 const stateSubscribers: ((state: MicState) => void)[] = [];
@@ -71,9 +73,13 @@ function assertInvariant(condition: boolean, message: string) {
 }
 
 function emitMetrics(phase: string, data: any = {}) {
-  if (typeof window !== 'undefined') {
-    window.dispatchEvent(new CustomEvent('speaking:metrics', {
-      detail: { phase, timestamp: Date.now(), runId, state, ...data }
+  try { 
+    enqueueMetric({ runId, phase, ...data }); 
+  } catch {}
+  
+  if (DEBUG_MODE) {
+    window.dispatchEvent(new CustomEvent('speaking:metrics', { 
+      detail: { phase, runId, state, ...data, t: Date.now() }
     }));
   }
 }
@@ -108,7 +114,60 @@ function setState(newState: MicState) {
   
   state = newState;
   stateSubscribers.forEach(cb => cb(state));
-  emitMetrics('state_change', { from: oldState, to: newState });
+  emitMetrics('state_change', { state_from: oldState, state_to: newState });
+  
+  // Start processing watchdog when entering processing state
+  if (newState === 'processing') {
+    startProcessingWatchdog();
+  } else if (processingWatchdogRef) {
+    clearTimeout(processingWatchdogRef);
+    processingWatchdogRef = undefined;
+  }
+}
+
+// Processing watchdog - prevents stuck "Processing..." state
+function startProcessingWatchdog() {
+  if (processingWatchdogRef) {
+    clearTimeout(processingWatchdogRef);
+  }
+  
+  processingWatchdogRef = window.setTimeout(() => {
+    if (state === 'processing') {
+      console.error('[Speaking] Processing watchdog triggered - stuck in processing state');
+      emitMetrics('invariant_violation', { 
+        error_kind: 'processing_timeout',
+        duration_ms: 8000 
+      });
+      
+      // Show user-visible toast and reset to idle
+      showWatchdogToast();
+      cleanup();
+      setState('idle');
+    }
+  }, 8000); // 8 seconds timeout
+}
+
+// Show watchdog recovery toast
+function showWatchdogToast() {
+  if (typeof window !== 'undefined') {
+    // Create a simple toast notification
+    const toast = document.createElement('div');
+    toast.textContent = 'Processing took too long. Ready to try again.';
+    toast.style.cssText = `
+      position: fixed; top: 20px; right: 20px; z-index: 10000;
+      background: #ff4444; color: white; padding: 12px 16px;
+      border-radius: 8px; font-family: system-ui; font-size: 14px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    `;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+      if (toast.parentNode) {
+        toast.parentNode.removeChild(toast);
+      }
+    }, 4000);
+  }
 }
 
 export function getState(): MicState {
@@ -125,7 +184,7 @@ export function onState(cb: (state: MicState) => void): () => void {
 
 // ============= TIMER MANAGEMENT =============
 function clearAllTimers() {
-  const timers = [countdownTimerRef, retryTimerRef, maxTimerRef, ttsTimeoutRef];
+  const timers = [countdownTimerRef, retryTimerRef, maxTimerRef, ttsTimeoutRef, processingWatchdogRef];
   const activeCount = timers.filter(t => t !== undefined).length;
   
   if (activeCount > 1) {
@@ -136,6 +195,7 @@ function clearAllTimers() {
   if (retryTimerRef) { clearTimeout(retryTimerRef); retryTimerRef = undefined; }
   if (maxTimerRef) { clearTimeout(maxTimerRef); maxTimerRef = undefined; }
   if (ttsTimeoutRef) { clearTimeout(ttsTimeoutRef); ttsTimeoutRef = undefined; }
+  if (processingWatchdogRef) { clearTimeout(processingWatchdogRef); processingWatchdogRef = undefined; }
 }
 
 // ============= AUDIO CONTEXT MANAGEMENT =============
@@ -548,6 +608,7 @@ export function getDiagnostics() {
       retry: retryTimerRef !== undefined,
       max: maxTimerRef !== undefined,
       tts: ttsTimeoutRef !== undefined,
+      processing_watchdog: processingWatchdogRef !== undefined,
     },
     features: {
       USE_FALLBACK,
@@ -564,9 +625,16 @@ export function getDiagnostics() {
 if (typeof window !== 'undefined') {
   // Cleanup on page unload
   window.addEventListener('beforeunload', cleanup);
+  
+  // Visibility watchdog - cleanup when returning from background
   window.addEventListener('visibilitychange', () => {
     if (document.hidden && state !== 'idle') {
       console.log('[Speaking] visibility:hidden, cleaning up');
+      emitMetrics('visibility_cleanup', { state });
+      cleanup();
+    } else if (!document.hidden && state !== 'idle') {
+      console.log('[Speaking] visibility:visible, engine not idle, forcing cleanup');
+      emitMetrics('visibility_recovery', { state });
       cleanup();
     }
   });

@@ -172,6 +172,57 @@ export type Database = {
         }
         Relationships: []
       }
+      speaking_metrics: {
+        Row: {
+          device: string | null
+          duration_ms: number | null
+          engine: string | null
+          error_kind: string | null
+          id: string
+          meta: Json | null
+          phase: string
+          run_id: number
+          session_id: string | null
+          state_from: string | null
+          state_to: string | null
+          transcript_len: number | null
+          ts: string
+          user_id: string | null
+        }
+        Insert: {
+          device?: string | null
+          duration_ms?: number | null
+          engine?: string | null
+          error_kind?: string | null
+          id?: string
+          meta?: Json | null
+          phase: string
+          run_id: number
+          session_id?: string | null
+          state_from?: string | null
+          state_to?: string | null
+          transcript_len?: number | null
+          ts?: string
+          user_id?: string | null
+        }
+        Update: {
+          device?: string | null
+          duration_ms?: number | null
+          engine?: string | null
+          error_kind?: string | null
+          id?: string
+          meta?: Json | null
+          phase?: string
+          run_id?: number
+          session_id?: string | null
+          state_from?: string | null
+          state_to?: string | null
+          transcript_len?: number | null
+          ts?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_profiles: {
         Row: {
           best_streak: number
@@ -283,6 +334,23 @@ export type Database = {
           teacher_name: string
           title: string
         }[]
+      }
+      log_speaking_metric: {
+        Args: {
+          p_device: string
+          p_duration_ms: number
+          p_engine: string
+          p_error_kind: string
+          p_meta: Json
+          p_phase: string
+          p_run_id: number
+          p_session_id: string
+          p_state_from: string
+          p_state_to: string
+          p_transcript_len: number
+          p_user_id: string
+        }
+        Returns: undefined
       }
     }
     Enums: {
