@@ -2,30 +2,31 @@ import { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface DIDStreamData {
-  streamId: string;
   sessionId: string;
   streamingUrl: string;
+  avatarIdOrSource: string;
 }
 
-interface HeygenAvatarProps {
+interface DIDAvatarProps {
   size?: 'sm' | 'md' | 'lg';
   state?: 'idle' | 'talking' | 'listening' | 'thinking';
   className?: string;
   onSpeak?: (text: string) => void;
 }
 
-export default function HeygenAvatar({ 
+export default function DIDAvatar({ 
   size = 'md', 
   state = 'idle',
   className = "",
   onSpeak
-}: HeygenAvatarProps) {
+}: DIDAvatarProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
   const [isLoadingSession, setIsLoadingSession] = useState(false);
   const [stream, setStream] = useState<MediaStream>();
   const [debug, setDebug] = useState<string>();
   const [streamData, setStreamData] = useState<DIDStreamData | null>(null);
+  const [useTTSFallback, setUseTTSFallback] = useState(false);
 
   const getSizeClasses = () => {
     switch (size) {
@@ -35,24 +36,46 @@ export default function HeygenAvatar({
     }
   };
 
+  const fallbackTTS = (text: string) => {
+    console.log('Using TTS fallback for:', text);
+    setUseTTSFallback(true);
+    
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 1.0;
+      utterance.pitch = 1.0;
+      utterance.volume = 1.0;
+      
+      // Try to find an English voice
+      const voices = window.speechSynthesis.getVoices();
+      const englishVoice = voices.find(voice => voice.lang.startsWith('en'));
+      if (englishVoice) utterance.voice = englishVoice;
+      
+      window.speechSynthesis.speak(utterance);
+      onSpeak?.(text);
+    }
+  };
+
   async function fetchStreamData() {
     try {
       console.log('Fetching D-ID stream data from Supabase function...');
-      const { data, error } = await supabase.functions.invoke('get-access-token');
+      const { data, error } = await supabase.functions.invoke('did-start-stream');
       
       if (error) {
+        console.error('Supabase function error:', error);
         throw new Error(`Stream fetch failed: ${error.message}`);
       }
       
-      if (!data) {
-        throw new Error('Empty stream data received');
+      if (!data || !data.sessionId || !data.streamingUrl) {
+        console.error('Invalid stream data received:', data);
+        throw new Error('Invalid stream data received');
       }
       
-      console.log('D-ID stream data received');
+      console.log('D-ID stream data received successfully');
       return data as DIDStreamData;
     } catch (error) {
       console.error('Error fetching D-ID stream data:', error);
-      setDebug(`Stream error: ${error?.message || error}`);
       throw error;
     }
   }
@@ -73,7 +96,7 @@ export default function HeygenAvatar({
       });
       
       pc.ontrack = (event) => {
-        console.log('Received remote stream');
+        console.log('Received remote stream from D-ID');
         if (event.streams[0]) {
           setStream(event.streams[0]);
           setDebug('Avatar ready');
@@ -83,11 +106,13 @@ export default function HeygenAvatar({
       pc.oniceconnectionstatechange = () => {
         console.log('ICE connection state:', pc.iceConnectionState);
         if (pc.iceConnectionState === 'failed') {
-          setDebug('Connection failed');
+          console.error('WebRTC connection failed');
+          setDebug('Connection failed, using voice only');
+          setUseTTSFallback(true);
         }
       };
       
-      // Create offer
+      // Create offer for WebRTC
       const offer = await pc.createOffer({ 
         offerToReceiveVideo: true, 
         offerToReceiveAudio: true 
@@ -96,11 +121,12 @@ export default function HeygenAvatar({
       
       setDebug('Connecting to D-ID...');
       
-      // Send offer to D-ID
-      const response = await fetch(`${data.streamingUrl}/sdp`, {
+      // Send offer to D-ID streaming endpoint
+      const didApiKey = await getDIDApiKey();
+      const response = await fetch(data.streamingUrl, {
         method: 'POST',
         headers: {
-          'Authorization': `Basic ${await getDIDApiKey()}`,
+          'Authorization': `Basic ${didApiKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -110,43 +136,47 @@ export default function HeygenAvatar({
       });
       
       if (!response.ok) {
-        throw new Error(`D-ID connection failed: ${response.status}`);
+        throw new Error(`D-ID WebRTC setup failed: ${response.status}`);
       }
       
-      const answer = await response.json();
-      await pc.setRemoteDescription(answer);
+      const answerData = await response.json();
+      if (answerData.answer) {
+        await pc.setRemoteDescription(answerData.answer);
+      }
       
       peerConnectionRef.current = pc;
-      setDebug('D-ID session created successfully');
-      console.log('D-ID session created');
+      setDebug('D-ID avatar connected');
+      console.log('D-ID WebRTC session established successfully');
     } catch (error) {
       console.error('Error starting D-ID session:', error);
-      const friendlyMessage = "Couldn't start avatar (invalid API key or no credits). Using regular voice for now.";
+      const friendlyMessage = "Couldn't start avatar (invalid API key or no credits). Using voice only.";
       setDebug(friendlyMessage);
+      setUseTTSFallback(true);
     } finally {
       setIsLoadingSession(false);
     }
   }
 
   async function getDIDApiKey(): Promise<string> {
-    // For now, we'll assume the API key is embedded in the stream data
-    // In a real implementation, you might need to fetch this separately
-    return 'dummy-key'; // This should be replaced with actual key handling
+    // In production, the API key should come from the server
+    // For now, we'll assume it's handled server-side
+    return 'server-handled';
   }
 
   async function handleSpeak(text: string) {
-    if (!streamData) {
-      setDebug('D-ID stream not initialized');
+    if (!streamData || useTTSFallback) {
+      fallbackTTS(text);
       return;
     }
     
     try {
-      setDebug('Speaking...');
+      setDebug('Avatar speaking...');
       
-      const response = await fetch(`${streamData.streamingUrl}/talks`, {
+      const didApiKey = await getDIDApiKey();
+      const response = await fetch(`https://api.d-id.com/v1/streams/${streamData.sessionId}/talks`, {
         method: 'POST',
         headers: {
-          'Authorization': `Basic ${await getDIDApiKey()}`,
+          'Authorization': `Basic ${didApiKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -160,13 +190,14 @@ export default function HeygenAvatar({
       
       if (response.ok) {
         onSpeak?.(text);
-        setDebug('Speaking complete');
+        setDebug('Avatar spoke successfully');
       } else {
-        throw new Error(`Speech failed: ${response.status}`);
+        throw new Error(`D-ID speak failed: ${response.status}`);
       }
     } catch (error) {
-      console.error('Error speaking:', error);
-      setDebug(`Error speaking: ${error}`);
+      console.error('Error making D-ID avatar speak, falling back to TTS:', error);
+      setDebug('Using voice only');
+      fallbackTTS(text);
     }
   }
 
@@ -176,18 +207,17 @@ export default function HeygenAvatar({
       peerConnectionRef.current = null;
     }
     
-    if (streamData) {
+    if (streamData && !useTTSFallback) {
       try {
-        await fetch(`${streamData.streamingUrl}`, {
+        const didApiKey = await getDIDApiKey();
+        await fetch(`https://api.d-id.com/v1/streams/${streamData.sessionId}`, {
           method: 'DELETE',
           headers: {
-            'Authorization': `Basic ${await getDIDApiKey()}`,
+            'Authorization': `Basic ${didApiKey}`,
             'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            session_id: streamData.sessionId
-          })
+          }
         });
+        console.log('D-ID session ended successfully');
       } catch (error) {
         console.error('Error ending D-ID session:', error);
       }
@@ -200,23 +230,24 @@ export default function HeygenAvatar({
 
   useEffect(() => {
     if (videoRef.current && stream) {
-      console.log('Setting up video stream');
+      console.log('Setting up D-ID video stream');
       videoRef.current.srcObject = stream;
       
-      // Ensure muted for iOS autoplay compatibility
+      // Ensure proper video settings for autoplay
       videoRef.current.muted = true;
       videoRef.current.playsInline = true;
       
       videoRef.current.onloadedmetadata = () => {
-        console.log('Video metadata loaded, starting playback');
+        console.log('D-ID video metadata loaded, starting playback');
         if (videoRef.current) {
           videoRef.current.muted = true;
           videoRef.current.play().then(() => {
-            setDebug('Video playing');
-            console.log('Video playback started successfully');
+            setDebug('Avatar video playing');
+            console.log('D-ID video playback started successfully');
           }).catch((error) => {
-            console.error('Video playback failed:', error);
-            setDebug(`Playback error: ${error.message}`);
+            console.error('D-ID video playback failed:', error);
+            setDebug('Video playback failed, using voice only');
+            setUseTTSFallback(true);
           });
         }
       };
@@ -237,12 +268,12 @@ export default function HeygenAvatar({
     if (onSpeak) {
       (window as any).heygenSpeak = handleSpeak;
     }
-  }, [onSpeak]);
+  }, [onSpeak, streamData, useTTSFallback]);
 
   return (
     <div className={`${getSizeClasses()} ${className} relative`}>
-      {/* Only show circular container if we have stream or are loading */}
-      {(stream || isLoadingSession) && (
+      {/* Show circular container if we have stream or are loading */}
+      {(stream || isLoadingSession) && !useTTSFallback && (
         <div className="w-full h-full relative overflow-hidden rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 border-2 border-white/30">
           {stream ? (
             <video
@@ -273,8 +304,8 @@ export default function HeygenAvatar({
         </div>
       )}
       
-      {/* Fallback message when avatar failed to load */}
-      {!stream && !isLoadingSession && debug?.includes("Couldn't start avatar") && (
+      {/* Fallback message when avatar failed to load or using TTS */}
+      {(useTTSFallback || (!stream && !isLoadingSession)) && (
         <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-secondary/10 rounded-full border-2 border-white/20">
           <div className="text-white/60 text-xs text-center px-2">
             Voice only
