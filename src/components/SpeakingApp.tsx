@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Mic, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import CanvasAvatar from './CanvasAvatar';
+import HeygenAvatar from './HeygenAvatar';
 import { useAvatarState } from '@/hooks/useAvatarState';
 import { supabase } from '@/integrations/supabase/client';
 import { useTextToSpeech } from '@/hooks/useTextToSpeech';
@@ -96,6 +96,7 @@ interface SpeakingAppProps {
 
 export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   const { speak, stopSpeaking, toggleSound, isSpeaking, soundEnabled } = useTextToSpeech();
+  const [heygenAvatarRef, setHeygenAvatarRef] = useState<any>(null);
   const { streakData, getStreakMessage } = useStreakTracker();
   const { xp, level, xpBoosts, showLevelUpPopup, addXP } = useXPSystem();
   const { incrementSpeakingSubmissions } = useBadgeSystem();
@@ -207,7 +208,13 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   const showBotMessage = (message: string) => {
     console.log('[Speaking] tts:start -', message.substring(0, 50) + '...');
     addChatBubble(message, "bot");
-    speak(message);
+    
+    // Use Heygen avatar for speech if available, otherwise fallback to browser TTS
+    if (window.heygenSpeak && soundEnabled) {
+      window.heygenSpeak(message);
+    } else {
+      speak(message);
+    }
   };
 
   // Helper function to generate contextual follow-up questions
@@ -365,10 +372,11 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           <div className="glass-card glass-card-hover rounded-3xl p-4 sm:p-6 mb-6 sm:mb-8">
             <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
               <div className="relative">
-                <CanvasAvatar 
+                <HeygenAvatar 
                   size="lg"
                   state={avatarState}
                   className="border-3 sm:border-4 border-white/30 shadow-lg transition-all duration-500 hover:scale-105 hover:rotate-1"
+                  onSpeak={(text) => console.log('Heygen speaking:', text)}
                 />
                 <div className="absolute -bottom-1 -right-1 w-6 h-6 sm:w-8 sm:h-8 bg-green-500 rounded-full border-3 border-white/30 animate-pulse"></div>
               </div>

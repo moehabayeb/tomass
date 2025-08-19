@@ -11,6 +11,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@heygen/streaming-avatar": "^2.0.16",
     "@hookform/resolvers": "^3.9.0",
     "@lottiefiles/react-lottie-player": "^3.6.0",
     "@playwright/test": "^1.54.2",
