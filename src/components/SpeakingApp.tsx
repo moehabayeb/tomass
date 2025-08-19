@@ -205,15 +205,24 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   };
 
   // Helper function to display bot messages with text-to-speech
-  const showBotMessage = (message: string) => {
+  const showBotMessage = async (message: string) => {
     console.log('[Speaking] tts:start -', message.substring(0, 50) + '...');
     addChatBubble(message, "bot");
     
-    // Use Heygen avatar for speech if available, otherwise fallback to browser TTS
-    if (window.heygenSpeak && soundEnabled) {
-      window.heygenSpeak(message);
-    } else {
-      speak(message);
+    if (soundEnabled) {
+      // Try to use Heygen avatar first, fallback to browser TTS
+      if (window.heygenSpeak && typeof window.heygenSpeak === 'function') {
+        try {
+          console.log('Using Heygen avatar for speech:', message.substring(0, 50) + '...');
+          await window.heygenSpeak(message);
+        } catch (error) {
+          console.error('Heygen speak failed, falling back to browser TTS:', error);
+          speak(message);
+        }
+      } else {
+        console.log('Heygen not available, using browser TTS');
+        speak(message);
+      }
     }
   };
 
