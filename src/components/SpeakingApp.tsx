@@ -101,19 +101,17 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   const { incrementSpeakingSubmissions } = useBadgeSystem();
   
   const [messages, setMessages] = useState([
-    { text: "Hello! Ready to practice today? 🎤", isUser: false, isSystem: false },
-    { text: "Yes, I had pizza today!", isUser: true, isSystem: false },
-    { text: 'Great! You can also say: "I had a delicious pizza with friends." 🍕', isUser: false, isSystem: false },
-    { text: "Next question: What do you usually eat for breakfast?", isUser: false, isSystem: false }
+    { text: "Hello! Ready to practice today? Let's start with a simple question.", isUser: false, isSystem: false }
   ]);
-  const [micState, setMicState] = useState<MicState>('idle');
+  const [micState, setMicState] = useState<MicState>('prompting'); // Start in prompting state
   const [countdown, setCountdown] = useState<number | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [history, setHistory] = useState<Array<{input: string; corrected: string; time: string}>>([]);
-  const [currentQuestion, setCurrentQuestion] = useState("What do you usually eat for breakfast?");
+  const [currentQuestion, setCurrentQuestion] = useState("What did you have for lunch today?");
   const [conversationContext, setConversationContext] = useState("");
   const [userLevel, setUserLevel] = useState<'beginner' | 'intermediate' | 'advanced'>('beginner');
   const [recordingStartTime, setRecordingStartTime] = useState<number | null>(null);
+  const [ttsTimeoutRef, setTtsTimeoutRef] = useState<number | null>(null);
   
   // Avatar state management
   const [lastMessageTime, setLastMessageTime] = useState<number>();
@@ -126,23 +124,44 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     lastMessageTime
   });
   
-  // Load chat history from localStorage on component mount
+  // Initialize Teacher Loop on component mount
   useEffect(() => {
     const savedHistory = JSON.parse(localStorage.getItem("chatHistory") || "[]");
     setHistory(savedHistory);
 
     // Subscribe to mic state changes
     const unsubscribe = onState((newState) => {
+      console.log('[Speaking] tts:state-change', micState, '->', newState);
       setMicState(newState);
       if (newState !== 'recording') {
         setCountdown(null);
       }
     });
 
+    // Start Teacher Loop: Ask first question
+    const startTeacherLoop = () => {
+      console.log('[Speaking] tts:start - asking first question');
+      speak(currentQuestion, () => {
+        console.log('[Speaking] tts:onend - question TTS completed, unlocking mic');
+        setMicState('idle'); // Unlock mic after TTS
+      });
+      
+      // Safety timeout to unlock mic if TTS hangs
+      const timeout = setTimeout(() => {
+        console.log('[Speaking] tts:timeout-unlock - safety unlock after 6s');
+        setMicState('idle');
+      }, 6000);
+      setTtsTimeoutRef(timeout as any);
+    };
+
+    // Start after brief delay to ensure everything is initialized
+    setTimeout(startTeacherLoop, 1000);
+
     // Cleanup on unmount
     return () => {
       unsubscribe();
       cleanup();
+      if (ttsTimeoutRef) clearTimeout(ttsTimeoutRef);
     };
   }, []);
 
@@ -150,7 +169,9 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   useEffect(() => {
     if (initialMessage) {
       addChatBubble(`💬 Continuing from: "${initialMessage}"`, "system");
-      addChatBubble("Let's continue our conversation from here! What would you like to say about this?", "bot");
+      const question = "Let's continue our conversation from here! What would you like to say about this?";
+      setCurrentQuestion(question);
+      addChatBubble(question, "bot");
     }
   }, [initialMessage]);
 
@@ -179,23 +200,35 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     }
   };
 
-  // Countdown timer for recording state
+  // Monotonic countdown timer for recording state (based on Date.now())
   useEffect(() => {
-    let timer: number;
-    if (micState === 'recording' && countdown === null) {
-      setCountdown(15);
-    }
+    let animFrame: number;
     
-    if (micState === 'recording' && countdown !== null && countdown > 0) {
-      timer = window.setTimeout(() => {
-        setCountdown(countdown - 1);
-      }, 1000);
+    if (micState === 'recording') {
+      if (countdown === null) {
+        setCountdown(15);
+        setRecordingStartTime(Date.now());
+      }
+      
+      const updateCountdown = () => {
+        if (recordingStartTime) {
+          const elapsed = (Date.now() - recordingStartTime) / 1000;
+          const remaining = Math.max(0, Math.ceil(15 - elapsed));
+          setCountdown(remaining);
+          
+          if (remaining > 0) {
+            animFrame = requestAnimationFrame(updateCountdown);
+          }
+        }
+      };
+      
+      animFrame = requestAnimationFrame(updateCountdown);
     }
     
     return () => {
-      if (timer) clearTimeout(timer);
+      if (animFrame) cancelAnimationFrame(animFrame);
     };
-  }, [micState, countdown]);
+  }, [micState, recordingStartTime]);
 
   // Helper function to send text for grammar feedback
   const sendToFeedback = async (text: string): Promise<{ message: string; corrected: string }> => {
@@ -215,8 +248,12 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
   // Helper function to display bot messages with text-to-speech
   const showBotMessage = (message: string, onComplete?: () => void) => {
+    console.log('[Speaking] tts:start -', message.substring(0, 50) + '...');
     addChatBubble(message, "bot");
-    speak(message, onComplete);
+    speak(message, () => {
+      console.log('[Speaking] tts:onend - message completed');
+      onComplete?.();
+    });
   };
 
   // Helper function to generate contextual follow-up questions
@@ -250,74 +287,93 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     }
   };
 
+  const executeTeacherLoop = async (transcript: string) => {
+    console.log('[Speaking] teacher-loop:start with transcript:', transcript);
+    
+    try {
+      // Calculate response time for XP bonus
+      const responseTime = recordingStartTime ? Date.now() - recordingStartTime : 0;
+
+      // Step 1: Analyze & Correct using existing functions
+      const feedback = await sendToFeedback(transcript);
+      console.log('[Speaking] teacher-loop:feedback received');
+
+      // Step 2: Build feedback message with correction if needed
+      let feedbackMessage = feedback.message;
+      if (feedback.corrected && feedback.corrected !== transcript) {
+        feedbackMessage = `${feedback.message} You could also say: "${feedback.corrected}"`;
+      }
+      
+      // Step 3: Speak feedback and wait for completion
+      setMicState('prompting'); // Block mic during feedback
+      await new Promise<void>((resolve) => {
+        showBotMessage(feedbackMessage, resolve);
+      });
+
+      // Step 4: Generate and speak follow-up question  
+      const nextQuestion = await generateFollowUpQuestion(transcript);
+      console.log('[Speaking] teacher-loop:next-question generated');
+      
+      await new Promise<void>((resolve) => {
+        showBotMessage(nextQuestion, () => {
+          console.log('[Speaking] teacher-loop:question TTS completed, unlocking mic');
+          setMicState('idle'); // Ready for next recording
+          resolve();
+        });
+      });
+
+      // Step 5: Track session (non-blocking)
+      logSession(transcript, feedback.corrected);
+      
+      // Step 6: Award XP
+      const isCorrect = !feedback.message.toLowerCase().includes('mistake') && 
+                       !feedback.message.toLowerCase().includes('error');
+      addXP(20, responseTime, isCorrect);
+      
+      // Step 7: Track speaking submission for badges
+      incrementSpeakingSubmissions();
+      
+      console.log('[Speaking] teacher-loop:completed successfully');
+      
+    } catch (error: any) {
+      console.error('[Speaking] teacher-loop:error', error);
+      setErrorMessage(error.message || "Sorry, there was an error. Please try again.");
+      setMicState('idle'); // Always return to idle on error
+    }
+  };
+
   const handleRecordingClick = async () => {
     if (micState === 'idle') {
       // Start recording
+      console.log('[Speaking] recording:start-button-click');
       setErrorMessage('');
-      setRecordingStartTime(Date.now());
       
       try {
         const result = await startRecording({ maxSec: 15 });
+        console.log('[Speaking] recording:completed, transcript:', result.transcript);
         
-        // Show what was captured
+        // Always finalize: display transcript bubble, then run teacher loop
         const transcript = result.transcript.trim();
+        addChatBubble(`💭 You said: "${transcript}"`, "user");
+        
         if (!transcript) {
+          // Empty transcript - show error but don't auto-retry after finalize
           setErrorMessage("No speech detected. Please try again.");
+          setMicState('idle');
           return;
         }
         
-        addChatBubble(`💭 What you said: "${transcript}"`, "user");
-
-        // Calculate response time for XP bonus
-        const responseTime = recordingStartTime ? Date.now() - recordingStartTime : 0;
-
-        // Step 2: Get grammar feedback with potential corrections
-        const feedback = await sendToFeedback(transcript);
-
-        // Step 3: Display feedback with text-to-speech, wait for completion
-        let feedbackMessage = feedback.message;
-        
-        // If the response contains corrections, show both the feedback and the corrected version
-        if (feedback.corrected && feedback.corrected !== transcript) {
-          feedbackMessage = `${feedback.message} You could also say: "${feedback.corrected}"`;
-        }
-        
-        await new Promise<void>((resolve) => {
-          showBotMessage(feedbackMessage, () => {
-            console.log('Feedback TTS completed');
-            resolve();
-          });
-        });
-
-        // Step 4: Generate natural follow-up question
-        const nextQuestion = await generateFollowUpQuestion(transcript);
-        
-        // Step 5: Add delay before asking follow-up question to prevent overlap
-        setTimeout(() => {
-          showBotMessage(nextQuestion, () => {
-            console.log('Follow-up question TTS completed');
-          });
-        }, 2000);
-
-        // Step 6: Log the session to history
-        logSession(transcript, feedback.corrected);
-
-        // Step 7: Award XP with bonuses for speed and accuracy
-        const isCorrect = !feedback.message.toLowerCase().includes('mistake') && 
-                         !feedback.message.toLowerCase().includes('error');
-        addXP(20, responseTime, isCorrect);
-
-        // Step 8: Track speaking submission for badges
-        incrementSpeakingSubmissions();
+        // Execute full Teacher Loop pipeline
+        await executeTeacherLoop(transcript);
 
       } catch (error: any) {
-        console.error('Error in recording:', error);
-        setErrorMessage(error.message || "Sorry, there was an error. Please try again.");
-      } finally {
-        setRecordingStartTime(null);
+        console.error('[Speaking] recording:error', error);
+        setErrorMessage(error.message);
+        setMicState('idle');
       }
     } else if (micState === 'recording') {
-      // Stop recording
+      // Stop recording immediately
+      console.log('[Speaking] recording:stop-button-click');
       stopRecording();
     }
   };

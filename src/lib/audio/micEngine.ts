@@ -80,8 +80,12 @@ function attachStreamToContext(stream: MediaStream) {
   try {
     if (audioCtxRef.current) {
       const source = audioCtxRef.current.createMediaStreamSource(stream);
-      source.connect(audioCtxRef.current.destination);
-      console.log('[Speaking] stream:attached-to-context');
+      // Create muted gain node to prevent sidetone - NO direct destination connect
+      const gainNode = audioCtxRef.current.createGain();
+      gainNode.gain.value = 0; // Muted to prevent hearing self
+      source.connect(gainNode);
+      // Do NOT connect gainNode to destination - this prevents sidetone
+      console.log('[Speaking] stream:attached-to-context (muted, no sidetone)');
     }
   } catch (e) {
     console.log('[Speaking] error attaching stream:', e);
