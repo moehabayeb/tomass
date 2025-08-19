@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import StreamingAvatar, { 
-  AvatarQuality, 
-  VoiceEmotion,
-  TaskType,
-  TaskMode
-} from '@heygen/streaming-avatar';
+
+interface DIDStreamData {
+  streamId: string;
+  sessionId: string;
+  streamingUrl: string;
+}
 
 interface HeygenAvatarProps {
   size?: 'sm' | 'md' | 'lg';
@@ -20,13 +20,12 @@ export default function HeygenAvatar({
   className = "",
   onSpeak
 }: HeygenAvatarProps) {
-  const mediaStream = useRef<HTMLVideoElement>(null);
-  const avatar = useRef<StreamingAvatar | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
   const [isLoadingSession, setIsLoadingSession] = useState(false);
-  const [isLoadingRepeat, setIsLoadingRepeat] = useState(false);
   const [stream, setStream] = useState<MediaStream>();
   const [debug, setDebug] = useState<string>();
-  const [sessionId, setSessionId] = useState('');
+  const [streamData, setStreamData] = useState<DIDStreamData | null>(null);
 
   const getSizeClasses = () => {
     switch (size) {
@@ -36,162 +35,183 @@ export default function HeygenAvatar({
     }
   };
 
-  async function fetchAccessToken() {
+  async function fetchStreamData() {
     try {
-      console.log('Fetching access token from Supabase function...');
+      console.log('Fetching D-ID stream data from Supabase function...');
       const { data, error } = await supabase.functions.invoke('get-access-token');
       
       if (error) {
-        throw new Error(`Token fetch failed: ${error.message}`);
+        throw new Error(`Stream fetch failed: ${error.message}`);
       }
       
       if (!data) {
-        throw new Error('Empty token received');
+        throw new Error('Empty stream data received');
       }
       
-      // Handle both string response and object response
-      const token = typeof data === 'string' ? data : data.token;
-      console.log('Access Token received:', token ? 'Success' : 'Empty');
-      
-      if (!token) {
-        throw new Error('Empty token received');
-      }
-      
-      return token;
+      console.log('D-ID stream data received');
+      return data as DIDStreamData;
     } catch (error) {
-      console.error('Error fetching access token:', error);
-      setDebug(`Token error: ${error?.message || error}`);
+      console.error('Error fetching D-ID stream data:', error);
+      setDebug(`Stream error: ${error?.message || error}`);
       throw error;
     }
   }
 
   async function startSession() {
     setIsLoadingSession(true);
-    setDebug('Fetching access token...');
+    setDebug('Fetching D-ID stream...');
     
     try {
-      const newToken = await fetchAccessToken();
+      const data = await fetchStreamData();
+      setStreamData(data);
       
-      if (!newToken) {
-        throw new Error('Failed to fetch access token');
+      setDebug('Setting up WebRTC...');
+      
+      // Create WebRTC peer connection
+      const pc = new RTCPeerConnection({
+        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+      });
+      
+      pc.ontrack = (event) => {
+        console.log('Received remote stream');
+        if (event.streams[0]) {
+          setStream(event.streams[0]);
+          setDebug('Avatar ready');
+        }
+      };
+      
+      pc.oniceconnectionstatechange = () => {
+        console.log('ICE connection state:', pc.iceConnectionState);
+        if (pc.iceConnectionState === 'failed') {
+          setDebug('Connection failed');
+        }
+      };
+      
+      // Create offer
+      const offer = await pc.createOffer({ 
+        offerToReceiveVideo: true, 
+        offerToReceiveAudio: true 
+      });
+      await pc.setLocalDescription(offer);
+      
+      setDebug('Connecting to D-ID...');
+      
+      // Send offer to D-ID
+      const response = await fetch(`${data.streamingUrl}/sdp`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${await getDIDApiKey()}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          answer: offer,
+          session_id: data.sessionId
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`D-ID connection failed: ${response.status}`);
       }
       
-      setDebug('Initializing avatar...');
-      avatar.current = new StreamingAvatar({
-        token: newToken,
-      });
+      const answer = await response.json();
+      await pc.setRemoteDescription(answer);
       
-      // Set up event listeners
-      avatar.current.on('avatar_start_talking', (e) => {
-        console.log('Avatar started talking', e);
-        setDebug('Avatar talking');
-      });
-      
-      avatar.current.on('avatar_stop_talking', (e) => {
-        console.log('Avatar stopped talking', e);
-        setDebug('Avatar stopped');
-      });
-
-      avatar.current.on('stream_ready', (event) => {
-        console.log('Stream ready:', event.detail);
-        setStream(event.detail);
-        setDebug('Stream ready');
-      });
-      
-      avatar.current.on('stream_disconnected', () => {
-        console.log('Stream disconnected');
-        setStream(undefined);
-        setDebug('Stream disconnected');
-      });
-
-      avatar.current.on('user_start_talking', (e) => {
-        console.log('User started talking', e);
-      });
-
-      avatar.current.on('user_stop_talking', (e) => {
-        console.log('User stopped talking', e);
-      });
-
-      // Create and start avatar directly (no separate connect method needed)
-      
-      setDebug('Creating avatar session...');
-      const res = await avatar.current.createStartAvatar({
-        quality: AvatarQuality.Low,
-        avatarName: 'Graham_Black_Shirt_public',
-        knowledgeId: '', // Optional
-        voice: {
-          voiceId: 'bf991597-6c13-4ebf-9d86-8a8c27a9b73e', // English voice
-          emotion: VoiceEmotion.EXCITED,
-        },
-        language: 'en',
-        disableIdleTimeout: false,
-      });
-
-      setSessionId(res.session_id);
-      setDebug('Avatar session created successfully');
-      console.log('Avatar session created:', res);
+      peerConnectionRef.current = pc;
+      setDebug('D-ID session created successfully');
+      console.log('D-ID session created');
     } catch (error) {
-      console.error('Error starting avatar:', error);
+      console.error('Error starting D-ID session:', error);
       const friendlyMessage = "Couldn't start avatar (invalid API key or no credits). Using regular voice for now.";
       setDebug(friendlyMessage);
-      // Hide the video circle by not setting stream
     } finally {
       setIsLoadingSession(false);
     }
   }
 
+  async function getDIDApiKey(): Promise<string> {
+    // For now, we'll assume the API key is embedded in the stream data
+    // In a real implementation, you might need to fetch this separately
+    return 'dummy-key'; // This should be replaced with actual key handling
+  }
+
   async function handleSpeak(text: string) {
-    if (!avatar.current) {
-      setDebug('Avatar API not initialized');
+    if (!streamData) {
+      setDebug('D-ID stream not initialized');
       return;
     }
     
-    setIsLoadingRepeat(true);
     try {
-      await avatar.current.speak({
-        text: text,
-        taskType: TaskType.TALK,
-        taskMode: TaskMode.ASYNC
+      setDebug('Speaking...');
+      
+      const response = await fetch(`${streamData.streamingUrl}/talks`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${await getDIDApiKey()}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          script: {
+            type: 'text',
+            input: text
+          },
+          session_id: streamData.sessionId
+        })
       });
+      
+      if (response.ok) {
+        onSpeak?.(text);
+        setDebug('Speaking complete');
+      } else {
+        throw new Error(`Speech failed: ${response.status}`);
+      }
     } catch (error) {
       console.error('Error speaking:', error);
       setDebug(`Error speaking: ${error}`);
-    } finally {
-      setIsLoadingRepeat(false);
     }
   }
 
   async function endSession() {
-    if (!avatar.current) {
-      setDebug('Avatar API not initialized');
-      return;
+    if (peerConnectionRef.current) {
+      peerConnectionRef.current.close();
+      peerConnectionRef.current = null;
     }
     
-    try {
-      await avatar.current.stopAvatar();
-      setStream(undefined);
-      setSessionId('');
-    } catch (error) {
-      console.error('Error ending avatar:', error);
-      setDebug(`Error ending avatar: ${error}`);
+    if (streamData) {
+      try {
+        await fetch(`${streamData.streamingUrl}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Basic ${await getDIDApiKey()}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            session_id: streamData.sessionId
+          })
+        });
+      } catch (error) {
+        console.error('Error ending D-ID session:', error);
+      }
+      setStreamData(null);
     }
+    
+    setStream(undefined);
+    setDebug('Session ended');
   }
 
   useEffect(() => {
-    if (mediaStream.current && stream) {
+    if (videoRef.current && stream) {
       console.log('Setting up video stream');
-      mediaStream.current.srcObject = stream;
+      videoRef.current.srcObject = stream;
       
       // Ensure muted for iOS autoplay compatibility
-      mediaStream.current.muted = true;
-      mediaStream.current.playsInline = true;
+      videoRef.current.muted = true;
+      videoRef.current.playsInline = true;
       
-      mediaStream.current.onloadedmetadata = () => {
+      videoRef.current.onloadedmetadata = () => {
         console.log('Video metadata loaded, starting playback');
-        // Double-check muted state before playing
-        if (mediaStream.current) {
-          mediaStream.current.muted = true;
-          mediaStream.current.play().then(() => {
+        if (videoRef.current) {
+          videoRef.current.muted = true;
+          videoRef.current.play().then(() => {
             setDebug('Video playing');
             console.log('Video playback started successfully');
           }).catch((error) => {
@@ -201,13 +221,11 @@ export default function HeygenAvatar({
         }
       };
     }
-  }, [mediaStream, stream]);
+  }, [stream]);
 
   // Initialize session on component mount
   useEffect(() => {
-    if (!avatar.current) {
-      startSession();
-    }
+    startSession();
     
     return () => {
       endSession();
@@ -216,10 +234,10 @@ export default function HeygenAvatar({
 
   // Expose speak function to parent component
   useEffect(() => {
-    if (onSpeak && avatar.current) {
+    if (onSpeak) {
       (window as any).heygenSpeak = handleSpeak;
     }
-  }, [onSpeak, avatar.current]);
+  }, [onSpeak]);
 
   return (
     <div className={`${getSizeClasses()} ${className} relative`}>
@@ -228,7 +246,7 @@ export default function HeygenAvatar({
         <div className="w-full h-full relative overflow-hidden rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 border-2 border-white/30">
           {stream ? (
             <video
-              ref={mediaStream}
+              ref={videoRef}
               autoPlay
               muted
               playsInline
