@@ -31,6 +31,8 @@ serve(async (req: Request) => {
       }
     })
 
+    console.log('HeyGen API response status:', response.status)
+    
     if (!response.ok) {
       const errorText = await response.text()
       console.error('HeyGen API error:', response.status, errorText)
@@ -38,15 +40,21 @@ serve(async (req: Request) => {
     }
 
     const data = await response.json()
-    console.log('HeyGen API response:', { code: data.code, hasToken: !!data.data?.token })
+    console.log('HeyGen API response:', { 
+      code: data.code, 
+      hasData: !!data.data, 
+      hasToken: !!data.data?.token,
+      message: data.message 
+    })
     
-    if (data.code !== 100) {
-      console.error('HeyGen API error code:', data.code, data.message)
-      throw new Error(`HeyGen API error: ${data.message}`)
+    if (!data || data.code !== 100) {
+      const errorMsg = data?.message || 'Unknown HeyGen API error'
+      console.error('HeyGen API error code:', data?.code, errorMsg)
+      throw new Error(`HeyGen API error: ${errorMsg}`)
     }
 
     if (!data.data?.token) {
-      console.error('No token in HeyGen response')
+      console.error('No token in HeyGen response:', data)
       throw new Error('No token received from HeyGen')
     }
 
