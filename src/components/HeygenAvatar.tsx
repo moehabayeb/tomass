@@ -30,7 +30,7 @@ export default function HeygenAvatar({
   const getSizeClasses = () => {
     switch (size) {
       case 'sm': return 'w-16 h-16';
-      case 'lg': return 'w-32 h-32';
+      case 'lg': return 'w-32 h-32 sm:w-40 sm:h-40';
       default: return 'w-24 h-24';
     }
   };
@@ -179,15 +179,24 @@ export default function HeygenAvatar({
     if (mediaStream.current && stream) {
       console.log('Setting up video stream');
       mediaStream.current.srcObject = stream;
+      
+      // Ensure muted for iOS autoplay compatibility
+      mediaStream.current.muted = true;
+      mediaStream.current.playsInline = true;
+      
       mediaStream.current.onloadedmetadata = () => {
         console.log('Video metadata loaded, starting playback');
-        mediaStream.current!.play().then(() => {
-          setDebug('Video playing');
-          console.log('Video playback started successfully');
-        }).catch((error) => {
-          console.error('Video playback failed:', error);
-          setDebug(`Playback error: ${error.message}`);
-        });
+        // Double-check muted state before playing
+        if (mediaStream.current) {
+          mediaStream.current.muted = true;
+          mediaStream.current.play().then(() => {
+            setDebug('Video playing');
+            console.log('Video playback started successfully');
+          }).catch((error) => {
+            console.error('Video playback failed:', error);
+            setDebug(`Playback error: ${error.message}`);
+          });
+        }
       };
     }
   }, [mediaStream, stream]);
@@ -211,35 +220,38 @@ export default function HeygenAvatar({
   }, [onSpeak, avatar.current]);
 
   return (
-    <div className={`${getSizeClasses()} ${className} relative overflow-hidden rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 border-2 border-white/30`}>
-      {stream ? (
-        <video
-          ref={mediaStream}
-          autoPlay
-          muted
-          playsInline
-          className="w-full h-full object-cover"
-        />
-      ) : (
-        <div className="w-full h-full flex items-center justify-center">
-          {isLoadingSession ? (
-            <div className="text-white/60 text-xs">Loading...</div>
-          ) : (
-            <div className="text-white/60 text-xs">No video</div>
-          )}
-        </div>
-      )}
-      
-      {/* State indicator overlay */}
-      {state === 'listening' && (
-        <div className="absolute inset-0 bg-blue-500/20 rounded-full animate-pulse" />
-      )}
-      {state === 'thinking' && (
-        <div className="absolute inset-0 bg-yellow-500/20 rounded-full animate-pulse" />
-      )}
-      {state === 'talking' && (
-        <div className="absolute inset-0 bg-green-500/20 rounded-full animate-pulse" />
-      )}
+    <div className={`${getSizeClasses()} ${className} relative`}>
+      {/* Circular container for avatar video */}
+      <div className="w-full h-full relative overflow-hidden rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 border-2 border-white/30">
+        {stream ? (
+          <video
+            ref={mediaStream}
+            autoPlay
+            muted
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center">
+            {isLoadingSession ? (
+              <div className="text-white/60 text-xs">Loading...</div>
+            ) : (
+              <div className="text-white/60 text-xs">No video</div>
+            )}
+          </div>
+        )}
+        
+        {/* State indicator overlay */}
+        {state === 'listening' && (
+          <div className="absolute inset-0 bg-blue-500/20 rounded-full animate-pulse" />
+        )}
+        {state === 'thinking' && (
+          <div className="absolute inset-0 bg-yellow-500/20 rounded-full animate-pulse" />
+        )}
+        {state === 'talking' && (
+          <div className="absolute inset-0 bg-green-500/20 rounded-full animate-pulse" />
+        )}
+      </div>
       
       {debug && (
         <div className="absolute -bottom-6 left-0 text-xs text-white/60 truncate w-full">
