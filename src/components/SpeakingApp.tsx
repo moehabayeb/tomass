@@ -12,7 +12,7 @@ import { XPBoostAnimation } from './XPBoostAnimation';
 import { StreakCounter } from './StreakCounter';
 import { SampleAnswerButton } from './SampleAnswerButton';
 import BookmarkButton from './BookmarkButton';
-import { startRecording, stopRecording, getState, onState, cleanup, type MicState } from '@/lib/audio/micEngine';
+import { startRecording, stopRecording, getState, type MicState } from '@/lib/audio/micEngine';
 
 // Sparkle component for background decoration
 const Sparkle = ({ className, delayed = false }: { className?: string; delayed?: boolean }) => (
@@ -103,15 +103,12 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   const [messages, setMessages] = useState([
     { text: "Hello! Ready to practice today? Let's start with a simple question.", isUser: false, isSystem: false }
   ]);
-  const [micState, setMicState] = useState<MicState>('prompting'); // Start in prompting state
-  const [countdown, setCountdown] = useState<number | null>(null);
+  const [micState, setMicState] = useState<MicState>('idle');
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [history, setHistory] = useState<Array<{input: string; corrected: string; time: string}>>([]);
   const [currentQuestion, setCurrentQuestion] = useState("What did you have for lunch today?");
   const [conversationContext, setConversationContext] = useState("");
   const [userLevel, setUserLevel] = useState<'beginner' | 'intermediate' | 'advanced'>('beginner');
-  const [recordingStartTime, setRecordingStartTime] = useState<number | null>(null);
-  const [ttsTimeoutRef, setTtsTimeoutRef] = useState<number | null>(null);
   
   // Avatar state management
   const [lastMessageTime, setLastMessageTime] = useState<number>();
@@ -124,45 +121,13 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     lastMessageTime
   });
   
-  // Initialize Teacher Loop on component mount
+  // Initialize component
   useEffect(() => {
     const savedHistory = JSON.parse(localStorage.getItem("chatHistory") || "[]");
     setHistory(savedHistory);
 
-    // Subscribe to mic state changes
-    const unsubscribe = onState((newState) => {
-      console.log('[Speaking] tts:state-change', micState, '->', newState);
-      setMicState(newState);
-      if (newState !== 'recording') {
-        setCountdown(null);
-      }
-    });
-
-    // Start Teacher Loop: Ask first question
-    const startTeacherLoop = () => {
-      console.log('[Speaking] tts:start - asking first question');
-      speak(currentQuestion, () => {
-        console.log('[Speaking] tts:onend - question TTS completed, unlocking mic');
-        setMicState('idle'); // Unlock mic after TTS
-      });
-      
-      // Safety timeout to unlock mic if TTS hangs
-      const timeout = setTimeout(() => {
-        console.log('[Speaking] tts:timeout-unlock - safety unlock after 6s');
-        setMicState('idle');
-      }, 6000);
-      setTtsTimeoutRef(timeout as any);
-    };
-
-    // Start after brief delay to ensure everything is initialized
-    setTimeout(startTeacherLoop, 1000);
-
-    // Cleanup on unmount
-    return () => {
-      unsubscribe();
-      cleanup();
-      if (ttsTimeoutRef) clearTimeout(ttsTimeoutRef);
-    };
+    // Ask initial question
+    speak(currentQuestion);
   }, []);
 
   // Handle initial message from bookmarks
@@ -200,35 +165,6 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     }
   };
 
-  // Monotonic countdown timer for recording state (based on Date.now())
-  useEffect(() => {
-    let animFrame: number;
-    
-    if (micState === 'recording') {
-      if (countdown === null) {
-        setCountdown(15);
-        setRecordingStartTime(Date.now());
-      }
-      
-      const updateCountdown = () => {
-        if (recordingStartTime) {
-          const elapsed = (Date.now() - recordingStartTime) / 1000;
-          const remaining = Math.max(0, Math.ceil(15 - elapsed));
-          setCountdown(remaining);
-          
-          if (remaining > 0) {
-            animFrame = requestAnimationFrame(updateCountdown);
-          }
-        }
-      };
-      
-      animFrame = requestAnimationFrame(updateCountdown);
-    }
-    
-    return () => {
-      if (animFrame) cancelAnimationFrame(animFrame);
-    };
-  }, [micState, recordingStartTime]);
 
   // Helper function to send text for grammar feedback
   const sendToFeedback = async (text: string): Promise<{ message: string; corrected: string }> => {
@@ -247,13 +183,10 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   };
 
   // Helper function to display bot messages with text-to-speech
-  const showBotMessage = (message: string, onComplete?: () => void) => {
+  const showBotMessage = (message: string) => {
     console.log('[Speaking] tts:start -', message.substring(0, 50) + '...');
     addChatBubble(message, "bot");
-    speak(message, () => {
-      console.log('[Speaking] tts:onend - message completed');
-      onComplete?.();
-    });
+    speak(message);
   };
 
   // Helper function to generate contextual follow-up questions
@@ -291,9 +224,6 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     console.log('[Speaking] teacher-loop:start with transcript:', transcript);
     
     try {
-      // Calculate response time for XP bonus
-      const responseTime = recordingStartTime ? Date.now() - recordingStartTime : 0;
-
       // Step 1: Analyze & Correct using existing functions
       const feedback = await sendToFeedback(transcript);
       console.log('[Speaking] teacher-loop:feedback received');
@@ -304,23 +234,14 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         feedbackMessage = `${feedback.message} You could also say: "${feedback.corrected}"`;
       }
       
-      // Step 3: Speak feedback and wait for completion
-      setMicState('prompting'); // Block mic during feedback
-      await new Promise<void>((resolve) => {
-        showBotMessage(feedbackMessage, resolve);
-      });
+      // Step 3: Speak feedback
+      showBotMessage(feedbackMessage);
 
       // Step 4: Generate and speak follow-up question  
       const nextQuestion = await generateFollowUpQuestion(transcript);
       console.log('[Speaking] teacher-loop:next-question generated');
       
-      await new Promise<void>((resolve) => {
-        showBotMessage(nextQuestion, () => {
-          console.log('[Speaking] teacher-loop:question TTS completed, unlocking mic');
-          setMicState('idle'); // Ready for next recording
-          resolve();
-        });
-      });
+      showBotMessage(nextQuestion);
 
       // Step 5: Track session (non-blocking)
       logSession(transcript, feedback.corrected);
@@ -328,7 +249,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       // Step 6: Award XP
       const isCorrect = !feedback.message.toLowerCase().includes('mistake') && 
                        !feedback.message.toLowerCase().includes('error');
-      addXP(20, responseTime, isCorrect);
+      addXP(20, 0, isCorrect);
       
       // Step 7: Track speaking submission for badges
       incrementSpeakingSubmissions();
@@ -338,7 +259,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     } catch (error: any) {
       console.error('[Speaking] teacher-loop:error', error);
       setErrorMessage(error.message || "Sorry, there was an error. Please try again.");
-      setMicState('idle'); // Always return to idle on error
+    } finally {
+      setMicState('idle');
     }
   };
 
@@ -347,23 +269,24 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       // Start recording
       console.log('[Speaking] recording:start-button-click');
       setErrorMessage('');
+      setMicState('recording');
       
       try {
-        const result = await startRecording({ maxSec: 15 });
-        console.log('[Speaking] recording:completed, transcript:', result.transcript);
+        const transcript = await startRecording();
+        console.log('[Speaking] recording:completed, transcript:', transcript);
         
-        // Always finalize: display transcript bubble, then run teacher loop
-        const transcript = result.transcript.trim();
+        setMicState('processing');
+        
+        // Display transcript
         addChatBubble(`💭 You said: "${transcript}"`, "user");
         
         if (!transcript) {
-          // Empty transcript - show error but don't auto-retry after finalize
-          setErrorMessage("No speech detected. Please try again.");
+          setErrorMessage("We couldn't hear you clearly. Try speaking louder or check your mic.");
           setMicState('idle');
           return;
         }
         
-        // Execute full Teacher Loop pipeline
+        // Execute teacher loop
         await executeTeacherLoop(transcript);
 
       } catch (error: any) {
@@ -372,7 +295,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         setMicState('idle');
       }
     } else if (micState === 'recording') {
-      // Stop recording immediately
+      // Stop recording
       console.log('[Speaking] recording:stop-button-click');
       stopRecording();
     }
@@ -473,7 +396,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         <div className="flex flex-col items-center space-y-4 sm:space-y-6 pb-6 sm:pb-8">
           <Button 
             onClick={handleRecordingClick}
-            disabled={micState === 'prompting' || micState === 'processing'}
+            disabled={micState === 'processing'}
             className={`pill-button w-full max-w-sm py-6 sm:py-8 text-lg sm:text-xl font-bold border-0 shadow-xl min-h-[64px] ${micState === 'recording' ? 'animate-pulse' : ''}`}
             size="lg"
             style={{
@@ -487,17 +410,11 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
             }}
           >
             <div className="flex items-center gap-3">
-              {micState === 'recording' ? "🎙️" : micState === 'initializing' ? "🔄" : "🎤"}
+              {micState === 'recording' ? "🎙️" : micState === 'processing' ? "⏳" : "🎤"}
               <span className="drop-shadow-sm">
-                 {(() => {
-                   switch(micState) {
-                     case 'prompting': return "Listen to the prompt...";
-                     case 'initializing': return "Initializing microphone...";
-                     case 'recording': return `Recording... ${countdown}s (tap to stop)`;
-                     case 'processing': return "Processing...";
-                     default: return "Start Speaking";
-                   }
-                 })()}
+                {micState === 'recording' ? "Recording... (tap to stop)" : 
+                 micState === 'processing' ? "Processing..." : 
+                 "Start Speaking"}
               </span>
             </div>
           </Button>
