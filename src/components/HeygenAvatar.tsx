@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import StreamingAvatar, { 
   AvatarQuality, 
   VoiceEmotion,
@@ -38,19 +39,18 @@ export default function HeygenAvatar({
   async function fetchAccessToken() {
     try {
       console.log('Fetching access token from Supabase function...');
-      const response = await fetch('https://sgzhbiknaiqsuknwgvjr.supabase.co/functions/v1/get-access-token', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const { data, error } = await supabase.functions.invoke('get-access-token');
       
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Token fetch failed: ${response.status} ${errorText}`);
+      if (error) {
+        throw new Error(`Token fetch failed: ${error.message}`);
       }
       
-      const token = await response.text();
+      if (!data) {
+        throw new Error('Empty token received');
+      }
+      
+      // Handle both string response and object response
+      const token = typeof data === 'string' ? data : data.token;
       console.log('Access Token received:', token ? 'Success' : 'Empty');
       
       if (!token) {
@@ -132,7 +132,9 @@ export default function HeygenAvatar({
       console.log('Avatar session created:', res);
     } catch (error) {
       console.error('Error starting avatar:', error);
-      setDebug(`Error: ${error?.message || error}`);
+      const friendlyMessage = "Couldn't start avatar (invalid API key or no credits). Using regular voice for now.";
+      setDebug(friendlyMessage);
+      // Hide the video circle by not setting stream
     } finally {
       setIsLoadingSession(false);
     }
@@ -221,37 +223,46 @@ export default function HeygenAvatar({
 
   return (
     <div className={`${getSizeClasses()} ${className} relative`}>
-      {/* Circular container for avatar video */}
-      <div className="w-full h-full relative overflow-hidden rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 border-2 border-white/30">
-        {stream ? (
-          <video
-            ref={mediaStream}
-            autoPlay
-            muted
-            playsInline
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center">
-            {isLoadingSession ? (
-              <div className="text-white/60 text-xs">Loading...</div>
-            ) : (
-              <div className="text-white/60 text-xs">No video</div>
-            )}
+      {/* Only show circular container if we have stream or are loading */}
+      {(stream || isLoadingSession) && (
+        <div className="w-full h-full relative overflow-hidden rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 border-2 border-white/30">
+          {stream ? (
+            <video
+              ref={mediaStream}
+              autoPlay
+              muted
+              playsInline
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center">
+              {isLoadingSession && (
+                <div className="text-white/60 text-xs">Loading...</div>
+              )}
+            </div>
+          )}
+          
+          {/* State indicator overlay */}
+          {state === 'listening' && (
+            <div className="absolute inset-0 bg-blue-500/20 rounded-full animate-pulse" />
+          )}
+          {state === 'thinking' && (
+            <div className="absolute inset-0 bg-yellow-500/20 rounded-full animate-pulse" />
+          )}
+          {state === 'talking' && (
+            <div className="absolute inset-0 bg-green-500/20 rounded-full animate-pulse" />
+          )}
+        </div>
+      )}
+      
+      {/* Fallback message when avatar failed to load */}
+      {!stream && !isLoadingSession && debug?.includes("Couldn't start avatar") && (
+        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-secondary/10 rounded-full border-2 border-white/20">
+          <div className="text-white/60 text-xs text-center px-2">
+            Voice only
           </div>
-        )}
-        
-        {/* State indicator overlay */}
-        {state === 'listening' && (
-          <div className="absolute inset-0 bg-blue-500/20 rounded-full animate-pulse" />
-        )}
-        {state === 'thinking' && (
-          <div className="absolute inset-0 bg-yellow-500/20 rounded-full animate-pulse" />
-        )}
-        {state === 'talking' && (
-          <div className="absolute inset-0 bg-green-500/20 rounded-full animate-pulse" />
-        )}
-      </div>
+        </div>
+      )}
       
       {debug && (
         <div className="absolute -bottom-6 left-0 text-xs text-white/60 truncate w-full">
