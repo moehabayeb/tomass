@@ -8,8 +8,9 @@ import { useTextToSpeech } from '@/hooks/useTextToSpeech';
 import { useStreakTracker } from '@/hooks/useStreakTracker';
 import { useBadgeSystem } from '@/hooks/useBadgeSystem';
 import { useProgressStore } from '@/hooks/useProgressStore';
-import { useAuthReady } from '@/hooks/useAuthReady';
+import { useXPBoostStore } from '@/hooks/useXPBoostStore';
 import { XPBoostAnimation } from './XPBoostAnimation';
+import { useAuthReady } from '@/hooks/useAuthReady';
 import { StreakCounter } from './StreakCounter';
 import { SampleAnswerButton } from './SampleAnswerButton';
 import BookmarkButton from './BookmarkButton';
@@ -104,17 +105,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   const { user } = useAuthReady();
   const { toast } = useToast();
   
-  // Progress store for unified XP management
-  const { 
-    level, 
-    xp_current, 
-    next_threshold, 
-    lastLevelUpTime,
-    fetchProgress, 
-    awardXp, 
-    resetLevelUpNotification,
-    subscribeToProgress 
-  } = useProgressStore();
+  const { level, xp_current, next_threshold, awardXp, lastLevelUpTime, fetchProgress, resetLevelUpNotification, subscribeToProgress } = useProgressStore();
+  const { addBoost } = useXPBoostStore();
   
   const [messages, setMessages] = useState([
     { text: "Hello! Ready to practice today? Let's start with a simple question.", isUser: false, isSystem: false }
@@ -359,9 +351,17 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         }
         
         // Award small XP for engagement
-        const success = await awardXp(10);
+        const xpPoints = 10;
+        const success = await awardXp(xpPoints);
         if (success) {
-          console.log('[Speaking] Awarded 10 XP for engagement');
+          console.log(`[Speaking] Awarded ${xpPoints} XP for engagement`);
+          // Trigger XP boost animation
+          addBoost(xpPoints);
+          
+          // Light haptic feedback if available
+          if ('vibrate' in navigator) {
+            navigator.vibrate(50);
+          }
         }
         
         incrementSpeakingSubmissions();
@@ -397,6 +397,13 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         
         if (success) {
           console.log(`[Speaking] Awarded ${xpPoints} XP successfully`);
+          // Trigger XP boost animation
+          addBoost(xpPoints);
+          
+          // Light haptic feedback if available
+          if ('vibrate' in navigator) {
+            navigator.vibrate(50);
+          }
         } else {
           console.error(`[Speaking] Failed to award ${xpPoints} XP`);
         }
@@ -467,6 +474,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       <div className="relative z-10 p-3 sm:p-4 max-w-sm mx-auto min-h-screen">
         {/* Simplified Header for Speaking Focus */}
         <div className="text-center mb-6 sm:mb-8 mt-4 sm:mt-6 relative z-30">
+          {/* XP Boost Animation positioned in top-right */}
+          <XPBoostAnimation />
           <div className="relative inline-block mb-4">
             <DIDAvatar 
               size="lg"

@@ -100,7 +100,7 @@ export default function AppNavigation() {
       />
       
       {/* XP Boost Animations */}
-      <XPBoostAnimation boosts={xpBoosts} />
+      <XPBoostAnimation />
       
       {/* Level Up Popup */}
       <LevelUpPopup 
