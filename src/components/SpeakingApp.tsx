@@ -272,32 +272,84 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         console.log('[Speaking] normalizedText:', originalTranscript.toLowerCase().replace(/[.,!?;:'"()-]/g, '').replace(/\s+/g, ' ').trim());
       }
 
-      // Step 2: Analyze & Correct using improved feedback system
-      const feedback = await sendToFeedback(originalTranscript);
-      console.log('[Speaking] teacher-loop:feedback received:', {
-        isCorrect: feedback.isCorrect,
-        message: feedback.message
+      // Step 2: Classify intent and check for safety concerns
+      const intentResponse = await supabase.functions.invoke('classify-intent', {
+        body: { 
+          text: originalTranscript,
+          context: conversationContext
+        }
       });
 
-      // Step 3: Show correction only if there's an actual mistake (similarity < 0.88)
-      if (!feedback.isCorrect && feedback.message !== 'CORRECT') {
-        showBotMessage(feedback.message);
+      if (intentResponse.error) {
+        console.error('Intent classification error:', intentResponse.error);
+        throw new Error(intentResponse.error.message || 'Intent classification failed');
       }
 
-      // Step 4: Generate and speak follow-up question naturally
-      const nextQuestion = await generateFollowUpQuestion(originalTranscript);
-      console.log('[Speaking] teacher-loop:next-question generated');
-      
-      showBotMessage(nextQuestion);
+      const { intent, response: crisisResponse, skipCorrection, skipXP } = intentResponse.data;
+      console.log('[Speaking] classified intent:', intent);
 
-      // Step 5: Track session (non-blocking)
-      logSession(originalTranscript, feedback.corrected);
-      
-      // Step 6: Award XP (more XP for correct answers)
-      addXP(feedback.isCorrect ? 25 : 15, 0, feedback.isCorrect);
-      
-      // Step 7: Track speaking submission for badges
-      incrementSpeakingSubmissions();
+      // Step 3: Handle distress signals immediately
+      if (intent === 'distress_signal') {
+        console.log('[Speaking] distress signal detected - providing crisis support');
+        showBotMessage(crisisResponse);
+        // Skip all other processing for safety
+        return;
+      }
+
+      // Step 4: Handle questions and small talk
+      if (intent === 'question' || intent === 'small_talk') {
+        console.log('[Speaking] handling question/small talk');
+        const smallTalkResponse = await supabase.functions.invoke('handle-small-talk', {
+          body: { 
+            text: originalTranscript,
+            intent: intent,
+            context: conversationContext
+          }
+        });
+
+        if (smallTalkResponse.data?.response) {
+          showBotMessage(smallTalkResponse.data.response);
+          // Update conversation context and continue
+          setConversationContext(prev => 
+            prev + ` User said: "${originalTranscript}". AI responded to ${intent}.`
+          );
+        }
+        
+        // Award small XP for engagement
+        addXP(10, 0, false);
+        incrementSpeakingSubmissions();
+        return;
+      }
+
+      // Step 5: Handle lesson answers (existing flow)
+      if (intent === 'lesson_answer') {
+        // Analyze & Correct using improved feedback system
+        const feedback = await sendToFeedback(originalTranscript);
+        console.log('[Speaking] teacher-loop:feedback received:', {
+          isCorrect: feedback.isCorrect,
+          message: feedback.message
+        });
+
+        // Show correction only if there's an actual mistake
+        if (!feedback.isCorrect && feedback.message !== 'CORRECT') {
+          showBotMessage(feedback.message);
+        }
+
+        // Generate and speak follow-up question naturally
+        const nextQuestion = await generateFollowUpQuestion(originalTranscript);
+        console.log('[Speaking] teacher-loop:next-question generated');
+        
+        showBotMessage(nextQuestion);
+
+        // Track session (non-blocking)
+        logSession(originalTranscript, feedback.corrected);
+        
+        // Award XP (more XP for correct answers)
+        addXP(feedback.isCorrect ? 25 : 15, 0, feedback.isCorrect);
+        
+        // Track speaking submission for badges
+        incrementSpeakingSubmissions();
+      }
       
       console.log('[Speaking] teacher-loop:completed successfully');
       
