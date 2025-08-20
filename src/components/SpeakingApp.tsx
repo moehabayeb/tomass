@@ -112,12 +112,17 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   ]);
 
   // Auto-speech for assistant messages
+  const autoSpeechMessages = messages.map(m => ({ 
+    id: m.id || `msg-${Date.now()}`, 
+    role: m.isUser ? 'user' : 'assistant', 
+    content: m.text 
+  }));
+  
+  console.log('🎙️ SpeakingApp autoSpeechMessages:', autoSpeechMessages);
+  console.log('🎙️ SpeakingApp soundEnabled:', soundEnabled);
+  
   const { speakMessage, clearHistory: clearSpeechHistory } = useAutoSpeech(
-    messages.map(m => ({ 
-      id: m.id || `msg-${Date.now()}`, 
-      role: m.isUser ? 'user' : 'assistant', 
-      content: m.text 
-    })), 
+    autoSpeechMessages, 
     soundEnabled
   );
   const [micState, setMicState] = useState<MicState>('idle');

@@ -18,12 +18,15 @@ export const useAutoSpeech = (messages: Message[], enabled: boolean = true) => {
 
   useEffect(() => {
     if (!enabled) {
-      console.log('🎙️ Auto-speech disabled');
+      console.log('🎙️ TTS Auto-speech disabled');
       return;
     }
 
+    console.log('🎙️ TTS Processing messages:', messages.length, 'messages');
+    console.log('🎙️ TTS Messages:', messages.map(m => ({ id: m.id, role: m.role, content: m.content?.substring(0, 50) })));
+
     if (processingRef.current) {
-      console.log('🎙️ Auto-speech already processing');
+      console.log('🎙️ TTS Auto-speech already processing, skipping');
       return;
     }
 
@@ -31,13 +34,25 @@ export const useAutoSpeech = (messages: Message[], enabled: boolean = true) => {
       processingRef.current = true;
 
       // Find new assistant messages that haven't been spoken
-      const newAssistantMessages = messages.filter(message => 
-        message.role === 'assistant' && 
-        message.content.trim() &&
-        !lastProcessedRef.current.has(message.id)
-      );
+      const newAssistantMessages = messages.filter(message => {
+        const isAssistant = message.role === 'assistant';
+        const hasContent = message.content && message.content.trim();
+        const notProcessed = !lastProcessedRef.current.has(message.id);
+        
+        console.log('🎙️ TTS Message check:', {
+          id: message.id,
+          role: message.role,
+          isAssistant,
+          hasContent: !!hasContent,
+          notProcessed,
+          contentPreview: message.content?.substring(0, 30)
+        });
+        
+        return isAssistant && hasContent && notProcessed;
+      });
 
-      console.log('🎙️ Auto-speech found', newAssistantMessages.length, 'new messages to process');
+      console.log('🎙️ TTS Found', newAssistantMessages.length, 'new messages to speak');
+      console.log('🎙️ TTS Already processed:', Array.from(lastProcessedRef.current));
 
       // Process each new message sequentially to avoid race conditions
       for (const message of newAssistantMessages) {
