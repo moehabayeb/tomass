@@ -142,7 +142,38 @@ export default function DIDAvatar({
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-white/60 text-xs">Voice only</div>
+            {/* Animated fallback avatar */}
+            <div className="relative w-16 h-16 flex items-center justify-center">
+              {/* Face circle */}
+              <div 
+                className={`w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center transition-transform duration-300 ${
+                  currentState === 'talking' ? 'scale-105' : 'scale-100'
+                }`}
+              >
+                {/* Eyes */}
+                <div className="flex items-center gap-1.5 mb-1">
+                  <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
+                  <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
+                </div>
+              </div>
+              
+              {/* Mouth animation */}
+              <div 
+                className={`absolute bottom-3 w-3 h-1.5 rounded-full transition-all duration-200 ${
+                  currentState === 'talking' 
+                    ? 'bg-white animate-pulse scale-110' 
+                    : 'bg-white/70 scale-100'
+                }`}
+              ></div>
+              
+              {/* Speaking indicator rings */}
+              {currentState === 'talking' && (
+                <>
+                  <div className="absolute inset-0 rounded-full border-2 border-white/30 animate-ping"></div>
+                  <div className="absolute inset-1 rounded-full border border-white/20 animate-pulse"></div>
+                </>
+              )}
+            </div>
           </div>
         )}
         
