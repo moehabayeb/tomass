@@ -252,55 +252,89 @@
   }
 
   /* Enhanced XP boost animation */
-  .xp-boost-slide-up {
-    animation: xpBoostSlideUp 1.6s ease-out forwards;
-  }
-
-  .xp-boost-fade {
-    animation: xpBoostFade 1.6s ease-out forwards;
-  }
-
-  @keyframes xpBoostSlideUp {
+  @keyframes xp-boost-enter {
     0% {
       opacity: 0;
-      transform: translateY(0px) scale(0.9);
-    }
-    15% {
-      opacity: 1;
-      transform: translateY(-10px) scale(1);
-    }
-    70% {
-      opacity: 1;
-      transform: translateY(-10px) scale(1);
+      transform: scale(0.8);
     }
     100% {
-      opacity: 0;
-      transform: translateY(-10px) scale(1);
-    }
-  }
-
-  @keyframes xpBoostFade {
-    0% {
-      opacity: 0;
-      transform: scale(0.9);
-    }
-    15% {
       opacity: 1;
       transform: scale(1);
     }
-    70% {
+  }
+
+  @keyframes xp-boost-exit {
+    0% {
       opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-8px) scale(0.95);
+    }
+  }
+
+  @keyframes xp-particle-burst {
+    0% {
+      opacity: 0.8;
+      transform: scale(0.3);
+    }
+    50% {
+      opacity: 0.6;
       transform: scale(1);
     }
     100% {
       opacity: 0;
+      transform: scale(1.2);
+    }
+  }
+
+  @keyframes xp-count-up {
+    0% {
+      transform: scale(1.2);
+    }
+    100% {
       transform: scale(1);
     }
   }
 
+  .xp-boost-enter {
+    animation: xp-boost-enter 300ms ease-out forwards;
+  }
+
+  .xp-boost-exit {
+    animation: xp-boost-exit 600ms ease-out forwards;
+  }
+
+  .xp-particle {
+    animation: xp-particle-burst 800ms ease-out forwards;
+  }
+
+  .xp-count-up {
+    animation: xp-count-up 200ms ease-out;
+  }
+
+  /* Reduced motion */
   @media (prefers-reduced-motion: reduce) {
-    .xp-boost-slide-up {
-      animation: xpBoostFade 1.6s ease-out forwards;
+    .xp-boost-enter {
+      animation: none;
+      opacity: 1;
+      transform: scale(1);
+    }
+    
+    .xp-boost-exit {
+      animation: none;
+      opacity: 0;
+      transform: scale(1);
+      transition: opacity 300ms ease-out;
+    }
+
+    .xp-particle {
+      display: none;
+    }
+
+    .xp-count-up {
+      animation: none;
     }
   }
 
