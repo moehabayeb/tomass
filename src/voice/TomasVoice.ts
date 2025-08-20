@@ -18,9 +18,8 @@ class TomasVoiceService {
   private spokenMessageIds = new Set<string>();
 
   constructor() {
-    // Initialize on first user interaction
-    document.addEventListener('click', this.initIfNeeded.bind(this), { once: true });
-    document.addEventListener('touchstart', this.initIfNeeded.bind(this), { once: true });
+    // Initialize voices immediately
+    this.ensureVoicesLoaded();
   }
 
   initIfNeeded(): void {
@@ -29,11 +28,11 @@ class TomasVoiceService {
     try {
       // Initialize audio context for iOS Safari compatibility
       this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      if (this.audioContext.state === 'suspended') {
+        this.audioContext.resume();
+      }
       this.isInitialized = true;
-      console.log('🎙️ TomasVoice initialized');
-      
-      // Ensure voices are loaded
-      this.ensureVoicesLoaded();
+      console.log('🎙️ TomasVoice initialized with audio context');
     } catch (error) {
       console.warn('🎙️ AudioContext initialization failed:', error);
       this.isInitialized = true; // Continue without AudioContext
@@ -50,10 +49,25 @@ class TomasVoiceService {
   }
 
   setSoundEnabled(enabled: boolean): void {
+    console.log('🎙️ Sound enabled changed to:', enabled);
     this.soundEnabled = enabled;
     if (!enabled) {
       this.stop();
+    } else {
+      // Initialize TTS when sound is first enabled
+      this.initIfNeeded();
+      // Test TTS immediately
+      this.testVoice();
     }
+  }
+
+  private testVoice(): void {
+    // Quick test to ensure TTS is working
+    const testText = "Sound is now on";
+    console.log('🎙️ Testing voice with:', testText);
+    this.speak(testText, { interrupt: true }).catch(error => {
+      console.error('🎙️ Voice test failed:', error);
+    });
   }
 
   getSoundEnabled(): boolean {

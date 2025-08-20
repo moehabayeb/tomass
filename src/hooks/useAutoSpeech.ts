@@ -17,7 +17,15 @@ export const useAutoSpeech = (messages: Message[], enabled: boolean = true) => {
   const processingRef = useRef<boolean>(false);
 
   useEffect(() => {
-    if (!enabled || processingRef.current) return;
+    if (!enabled) {
+      console.log('🎙️ Auto-speech disabled');
+      return;
+    }
+
+    if (processingRef.current) {
+      console.log('🎙️ Auto-speech already processing');
+      return;
+    }
 
     const processNewMessages = async () => {
       processingRef.current = true;
@@ -29,6 +37,8 @@ export const useAutoSpeech = (messages: Message[], enabled: boolean = true) => {
         !lastProcessedRef.current.has(message.id)
       );
 
+      console.log('🎙️ Auto-speech found', newAssistantMessages.length, 'new messages to process');
+
       // Process each new message sequentially to avoid race conditions
       for (const message of newAssistantMessages) {
         try {
@@ -37,8 +47,13 @@ export const useAutoSpeech = (messages: Message[], enabled: boolean = true) => {
           
           console.log('🎙️ Auto-speech processing message:', message.id, message.content.substring(0, 50) + '...');
           
+          // Small delay to prevent race conditions with initialization
+          await new Promise(resolve => setTimeout(resolve, 100));
+          
           // Speak the message
           await speakAssistantMessage(message.content, message.id);
+          
+          console.log('🎙️ Auto-speech completed for message:', message.id);
         } catch (error) {
           console.warn('🎙️ Auto-speech failed for message:', message.id, error);
         }
@@ -47,7 +62,9 @@ export const useAutoSpeech = (messages: Message[], enabled: boolean = true) => {
       processingRef.current = false;
     };
 
-    processNewMessages();
+    // Small delay to ensure components are ready
+    const timeoutId = setTimeout(processNewMessages, 50);
+    return () => clearTimeout(timeoutId);
   }, [messages, enabled]);
 
   // Method to speak a single message manually

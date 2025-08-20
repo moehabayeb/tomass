@@ -50,6 +50,7 @@ export const useAvatarTTS = () => {
   // Toggle sound affects both TTS and avatar
   const toggleSoundAndAvatar = () => {
     const newEnabled = !soundEnabled;
+    console.log('🎙️ useAvatarTTS toggling sound to:', newEnabled);
     setSoundEnabled(newEnabled);
     TomasVoice.setSoundEnabled(newEnabled);
     
