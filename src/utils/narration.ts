@@ -1,3 +1,5 @@
+import { configureUtterance } from '@/config/voice';
+
 export class NarrationController {
   private synth: SpeechSynthesis;
   private utterance: SpeechSynthesisUtterance | null = null;
@@ -14,7 +16,8 @@ export class NarrationController {
     this.cancel();
     try {
       this.utterance = new SpeechSynthesisUtterance(text);
-      // Let the browser pick the best available voice; rate/pitch can be tuned if needed
+      // Configure with consistent Thomas voice settings
+      configureUtterance(this.utterance, text);
       this.synth.speak(this.utterance);
     } catch (e) {
       // noop - fallback to hook TTS flows

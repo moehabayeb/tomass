@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { configureUtterance } from '@/config/voice';
 
 interface DIDAvatarProps {
   size?: 'sm' | 'md' | 'lg';
@@ -102,11 +103,12 @@ export default function DIDAvatar({
 
   const avatarSpeak = async (text: string) => {
     if (!agentRef.current || agentFailed) {
-      // Fallback to browser TTS
-      console.log('D-ID agent not available, using browser TTS');
+      // Fallback to browser TTS with consistent Thomas voice
+      console.log('D-ID agent not available, using browser TTS with Thomas voice');
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
+        configureUtterance(utterance, text);
         window.speechSynthesis.speak(utterance);
       }
       return;
@@ -130,10 +132,11 @@ export default function DIDAvatar({
       
     } catch (error) {
       console.error('D-ID agent speak failed, falling back to TTS:', error);
-      // Fallback to browser TTS
+      // Fallback to browser TTS with consistent Thomas voice
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
+        configureUtterance(utterance, text);
         window.speechSynthesis.speak(utterance);
       }
     }

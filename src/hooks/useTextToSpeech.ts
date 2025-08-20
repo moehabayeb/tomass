@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { configureUtterance } from '@/config/voice';
 
 export const useTextToSpeech = () => {
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -17,30 +18,21 @@ export const useTextToSpeech = () => {
     setTimeout(() => {
       const utterance = new SpeechSynthesisUtterance(text);
       
-      // Improved Turkish language detection
-      let detectedLang = language;
-      if (!detectedLang) {
-        // Check for Turkish characters, common Turkish words, or Turkish-specific patterns
-        const hasTurkishChars = text.match(/[çğıöşüÇĞIİÖŞÜ]/);
-        const hasTurkishWords = text.match(/\b(bu|modülde|cümle|fiil|kullan|öğren|İngilizce|tabloya|bakın|lütfen|şimdi|aşağıdaki)\b/i);
-        const hasTurkishPatterns = text.includes('Bu modülde') || text.includes('modülde') || text.includes('öğreneceğiz');
+      // Check if this is Turkish content
+      const hasTurkishChars = text.match(/[çğıöşüÇĞIİÖŞÜ]/);
+      const hasTurkishWords = text.match(/\b(bu|modülde|cümle|fiil|kullan|öğren|İngilizce|tabloya|bakın|lütfen|şimdi|aşağıdaki)\b/i);
+      const hasTurkishPatterns = text.includes('Bu modülde') || text.includes('modülde') || text.includes('öğreneceğiz');
+      const isTurkish = language === 'tr-TR' || hasTurkishChars || hasTurkishWords || hasTurkishPatterns;
+      
+      if (isTurkish) {
+        // For Turkish content, use Turkish voices and settings
+        utterance.lang = 'tr-TR';
+        utterance.rate = 0.85;
+        utterance.pitch = 1.0;
+        utterance.volume = 1.0;
         
-        detectedLang = (hasTurkishChars || hasTurkishWords || hasTurkishPatterns) ? 'tr-TR' : 'en-US';
-      }
-      
-      utterance.lang = detectedLang;
-      console.log(`TTS Language set to: ${detectedLang} for text: "${text.substring(0, 50)}..."`)
-      utterance.rate = 0.85; // Slightly slower for better clarity
-      utterance.pitch = 1;
-      utterance.volume = 1.0; // Maximum volume
-      
-      // Explicitly select voice based on language with fallback logic
-      const voices = speechSynthesis.getVoices();
-      let selectedVoice = null;
-      
-      if (detectedLang === 'tr-TR') {
-        // Priority order for Turkish voices
-        selectedVoice = voices.find(voice => 
+        const voices = speechSynthesis.getVoices();
+        const turkishVoice = voices.find(voice => 
           voice.lang === 'tr-TR' && (
             voice.name.includes('Google') || 
             voice.name.includes('TTS') || 
@@ -51,28 +43,17 @@ export const useTextToSpeech = () => {
         ) || voices.find(voice => voice.lang === 'tr-TR') || 
            voices.find(voice => voice.lang?.includes('tr'));
         
-        if (!selectedVoice) {
+        if (turkishVoice) {
+          utterance.voice = turkishVoice;
+          console.log(`Selected Turkish voice: ${turkishVoice.name} (${turkishVoice.lang})`);
+        } else {
           console.warn('No Turkish voice found - using system default');
-          // Could add toast notification here if needed
         }
+        
+        console.log(`TTS Language set to: tr-TR for text: "${text.substring(0, 50)}..."`);
       } else {
-        // Priority order for English voices
-        selectedVoice = voices.find(voice => 
-          voice.lang === 'en-US' && (
-            voice.name.includes('Google') || 
-            voice.name.includes('Female') || 
-            voice.name.includes('Samantha') ||
-            voice.name.includes('Karen')
-          )
-        ) || voices.find(voice => voice.lang === 'en-US') ||
-           voices.find(voice => voice.lang?.includes('en'));
-      }
-      
-      if (selectedVoice) {
-        utterance.voice = selectedVoice;
-        console.log(`Selected voice: ${selectedVoice.name} (${selectedVoice.lang})`);
-      } else {
-        console.warn(`No suitable voice found for ${detectedLang}`);
+        // For English content, use consistent Thomas voice configuration
+        configureUtterance(utterance, text);
       }
 
       utterance.onstart = () => {

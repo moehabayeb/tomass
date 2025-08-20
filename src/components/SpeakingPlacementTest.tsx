@@ -14,6 +14,7 @@ import {
 import { narration } from '../utils/narration';
 import CanvasAvatar from './CanvasAvatar';
 import { useGamification } from '@/hooks/useGamification';
+import { configureUtterance } from '@/config/voice';
 
 // Extend Window interface for audio context and speech recognition
 declare global {
@@ -167,6 +168,8 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     if (hasWebTTS) {
       try {
         const utter = new SpeechSynthesisUtterance(text);
+        // Configure with consistent Thomas voice settings
+        configureUtterance(utter, text);
         utter.onend = () => {
           console.log('[LevelTest] tts:onend, current:', ttsRunRef.current, 'my:', id);
           if (!isStale(id)) {
