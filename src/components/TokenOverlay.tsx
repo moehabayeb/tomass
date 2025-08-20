@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 interface FloatingToken {
@@ -14,32 +14,6 @@ interface TokenOverlayProps {
 
 const TokenOverlay = ({ soundEnabled }: TokenOverlayProps) => {
   const [tokens, setTokens] = useState<FloatingToken[]>([]);
-  const overlayRef = useRef<HTMLDivElement | null>(null);
-
-  // Create overlay element if it doesn't exist
-  useEffect(() => {
-    if (!overlayRef.current) {
-      overlayRef.current = document.createElement('div');
-      overlayRef.current.id = 'xp-token-overlay';
-      overlayRef.current.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
-        z-index: 9999;
-      `;
-      document.body.appendChild(overlayRef.current);
-    }
-
-    return () => {
-      if (overlayRef.current) {
-        document.body.removeChild(overlayRef.current);
-        overlayRef.current = null;
-      }
-    };
-  }, []);
 
   // Listen for XP awarded events
   useEffect(() => {
@@ -217,12 +191,15 @@ const TokenOverlay = ({ soundEnabled }: TokenOverlayProps) => {
     return {};
   };
 
-  if (!overlayRef.current || tokens.length === 0) {
+  if (tokens.length === 0) {
     return null;
   }
 
   return createPortal(
-    <div style={{ position: 'absolute', width: '100%', height: '100%' }}>
+    <div 
+      className="fixed inset-0 pointer-events-none z-[9999]"
+      style={{ willChange: 'contents' }}
+    >
       {tokens.map((token) => (
         <div
           key={token.id}
@@ -230,7 +207,6 @@ const TokenOverlay = ({ soundEnabled }: TokenOverlayProps) => {
           style={{
             ...getTokenPosition(token),
             willChange: 'transform, opacity',
-            zIndex: 10000,
           }}
         >
           <div 
@@ -244,7 +220,7 @@ const TokenOverlay = ({ soundEnabled }: TokenOverlayProps) => {
         </div>
       ))}
     </div>,
-    overlayRef.current
+    document.body
   );
 };
 
