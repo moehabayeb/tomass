@@ -2,9 +2,8 @@ import { useState, useEffect } from 'react';
 import { Mic, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import DIDAvatar from './DIDAvatar';
-import { useAvatarState } from '@/hooks/useAvatarState';
+import { useAvatarTTS } from '@/hooks/useAvatarTTS';
 import { supabase } from '@/integrations/supabase/client';
-import { useTextToSpeech } from '@/hooks/useTextToSpeech';
 import { useStreakTracker } from '@/hooks/useStreakTracker';
 import { useBadgeSystem } from '@/hooks/useBadgeSystem';
 import { useProgressStore } from '@/hooks/useProgressStore';
@@ -97,7 +96,7 @@ interface SpeakingAppProps {
 }
 
 export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
-  const { speak, stopSpeaking, toggleSound, isSpeaking, soundEnabled } = useTextToSpeech();
+  const { speakWithAvatar, stopSpeaking, toggleSound, isSpeaking, soundEnabled, avatarState } = useAvatarTTS();
   const [didAvatarRef, setDIDAvatarRef] = useState<any>(null);
   const { streakData, getStreakMessage } = useStreakTracker();
   const { incrementSpeakingSubmissions } = useBadgeSystem();
@@ -117,17 +116,9 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   const [userLevel, setUserLevel] = useState<'beginner' | 'intermediate' | 'advanced'>('beginner');
   const [isProcessingTranscript, setIsProcessingTranscript] = useState(false);
   const [lastTranscript, setLastTranscript] = useState<string>('');
-  
-  // Avatar state management
   const [lastMessageTime, setLastMessageTime] = useState<number>();
-  const isRecording = micState === 'recording';
-  const isProcessing = micState === 'processing' || isProcessingTranscript;
-  const { avatarState } = useAvatarState({
-    isRecording,
-    isSpeaking,
-    isProcessing,
-    lastMessageTime
-  });
+  
+  // Avatar state is now managed by useAvatarTTS hook
   
   // Subscribe to micEngine state changes
   useEffect(() => {
@@ -151,7 +142,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       console.log('🎙️ Thomas speaking initial message:', initialMessage.substring(0, 50) + '...');
       // Delay to ensure voice is ready
       setTimeout(() => {
-        speak(initialMessage);
+        speakWithAvatar(initialMessage);
       }, 1000);
     }
   }, []); // Only run once on mount
@@ -160,11 +151,11 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   useEffect(() => {
     if (initialMessage && soundEnabled) {
       console.log('🎙️ Thomas speaking continued message:', initialMessage.substring(0, 50) + '...');
-      speak(initialMessage);
+      speakWithAvatar(initialMessage);
       // Add the continued message to chat
       addChatBubble(initialMessage, "bot");
     }
-  }, [initialMessage, soundEnabled, speak]);
+  }, [initialMessage, soundEnabled, speakWithAvatar]);
 
   // Helper function to display bot messages with text-to-speech
   const showBotMessage = async (message: string) => {
@@ -179,11 +170,11 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           await (window as any).avatarSpeak(message);
         } catch (error) {
           console.error('D-ID avatar speak failed, falling back to browser TTS:', error);
-          speak(message);
+          speakWithAvatar(message);
         }
       } else {
         console.log('D-ID avatar not available, using browser TTS');
-        speak(message);
+        speakWithAvatar(message);
       }
     }
   };
@@ -196,7 +187,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     // Ask initial question - only speak if not continued from bookmark
     if (!initialMessage && soundEnabled) {
       setTimeout(() => {
-        speak(currentQuestion);
+        speakWithAvatar(currentQuestion);
       }, 1500);
     }
     
@@ -536,9 +527,9 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           <div className="relative inline-block mb-4">
             <DIDAvatar 
               size="lg"
-              state={avatarState}
+              state={micState === 'recording' ? 'listening' : micState === 'processing' || isProcessingTranscript ? 'thinking' : 'idle'}
+              isSpeaking={isSpeaking}
               className="border-3 sm:border-4 border-white/30 shadow-lg transition-all duration-500 relative z-10"
-              onSpeak={(text) => console.log('DID Avatar speaking:', text)}
             />
             <div className="absolute -bottom-1 -right-1 w-6 h-6 sm:w-8 sm:h-8 bg-green-500 rounded-full border-3 border-white/30 animate-pulse z-20"></div>
           </div>

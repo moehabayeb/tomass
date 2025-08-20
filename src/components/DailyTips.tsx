@@ -7,7 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import BookmarkButton from './BookmarkButton';
 import { useGamification } from '@/hooks/useGamification';
 import { useBadgeSystem } from '@/hooks/useBadgeSystem';
-import { useTextToSpeech } from '@/hooks/useTextToSpeech';
+import { useAvatarTTS } from '@/hooks/useAvatarTTS';
 
 // Collection of daily tips for A1-A2 learners
 const dailyTips = [
@@ -140,7 +140,7 @@ export default function DailyTips({ onClose }: DailyTipsProps) {
   const [showHistory, setShowHistory] = useState(false);
   const { earnXPForDailyTip } = useGamification();
   const { incrementDailyTips } = useBadgeSystem();
-  const { speak, soundEnabled, toggleSound } = useTextToSpeech();
+  const { speakWithAvatar, soundEnabled } = useAvatarTTS();
 
   const todaysTipIndex = getTodaysTipIndex();
   const todaysTip = dailyTips[todaysTipIndex];
@@ -161,16 +161,16 @@ export default function DailyTips({ onClose }: DailyTipsProps) {
       setTimeout(() => {
         const tipText = `Daily tip: ${todaysTip.content}`;
         console.log('🎙️ Thomas speaking daily tip:', tipText.substring(0, 50) + '...');
-        speak(tipText);
+        speakWithAvatar(tipText);
       }, 1000);
     }
-  }, [todaysTip, soundEnabled, showHistory, speak]);
+  }, [todaysTip, soundEnabled, showHistory, speakWithAvatar]);
 
   // Function to speak any tip content
   const speakTip = (tip: typeof todaysTip) => {
     if (soundEnabled) {
       const tipText = `Daily tip: ${tip.content}`;
-      speak(tipText);
+      speakWithAvatar(tipText);
     }
   };
 

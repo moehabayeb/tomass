@@ -1,18 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
-import { configureUtterance } from '@/config/voice';
 
 interface DIDAvatarProps {
   size?: 'sm' | 'md' | 'lg';
   state?: 'idle' | 'talking' | 'listening' | 'thinking';
   className?: string;
-  onSpeak?: (text: string) => void;
+  isSpeaking?: boolean; // Controls animation state
 }
 
 export default function DIDAvatar({ 
   size = 'md', 
   state = 'idle',
   className = "",
-  onSpeak
+  isSpeaking = false
 }: DIDAvatarProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [agentLoaded, setAgentLoaded] = useState(false);
@@ -101,52 +100,10 @@ export default function DIDAvatar({
     }
   };
 
-  const avatarSpeak = async (text: string) => {
-    if (!agentRef.current || agentFailed) {
-      // Fallback to browser TTS with consistent Thomas voice
-      console.log('D-ID agent not available, using browser TTS with Thomas voice');
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
-        configureUtterance(utterance, text);
-        window.speechSynthesis.speak(utterance);
-      }
-      return;
-    }
-
-    try {
-      console.log('D-ID agent speaking:', text);
-      
-      // Try different methods to make the agent speak
-      if (agentRef.current.chat) {
-        await agentRef.current.chat(text);
-      } else if (agentRef.current.speak) {
-        await agentRef.current.speak(text);
-      } else if (agentRef.current.sendMessage) {
-        await agentRef.current.sendMessage(text);
-      } else {
-        throw new Error('No speak method found on D-ID agent');
-      }
-      
-      console.log('D-ID agent speak request sent successfully');
-      
-    } catch (error) {
-      console.error('D-ID agent speak failed, falling back to TTS:', error);
-      // Fallback to browser TTS with consistent Thomas voice
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
-        configureUtterance(utterance, text);
-        window.speechSynthesis.speak(utterance);
-      }
-    }
-  };
+  // D-ID is now purely visual - no speaking functionality
 
   useEffect(() => {
-    // Expose global speak function
-    (window as any).avatarSpeak = avatarSpeak;
-    
-    // Initialize D-ID agent
+    // Initialize D-ID agent for visual animation only
     initializeDIDAgent();
     
     return () => {
@@ -157,6 +114,9 @@ export default function DIDAvatar({
       }
     };
   }, []);
+
+  // Update visual state based on speaking status + manual state
+  const currentState = isSpeaking ? 'talking' : state;
 
   return (
     <div className={`${getSizeClasses()} ${className} relative`}>
@@ -179,13 +139,13 @@ export default function DIDAvatar({
         )}
         
         {/* State indicator overlay */}
-        {state === 'listening' && (
+        {currentState === 'listening' && (
           <div className="absolute inset-0 bg-blue-500/20 rounded-full animate-pulse" />
         )}
-        {state === 'thinking' && (
+        {currentState === 'thinking' && (
           <div className="absolute inset-0 bg-yellow-500/20 rounded-full animate-pulse" />
         )}
-        {state === 'talking' && (
+        {currentState === 'talking' && (
           <div className="absolute inset-0 bg-green-500/20 rounded-full animate-pulse" />
         )}
       </div>
