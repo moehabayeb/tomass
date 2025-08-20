@@ -8,6 +8,7 @@ import { useTextToSpeech } from '@/hooks/useTextToSpeech';
 import { useStreakTracker } from '@/hooks/useStreakTracker';
 import { useXPSystem } from '@/hooks/useXPSystem';
 import { useBadgeSystem } from '@/hooks/useBadgeSystem';
+import { useGamification } from '@/hooks/useGamification';
 import { XPBoostAnimation } from './XPBoostAnimation';
 import { StreakCounter } from './StreakCounter';
 import { SampleAnswerButton } from './SampleAnswerButton';
@@ -100,6 +101,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   const { streakData, getStreakMessage } = useStreakTracker();
   const { xp, level, xpBoosts, showLevelUpPopup, addXP } = useXPSystem();
   const { incrementSpeakingSubmissions } = useBadgeSystem();
+  const { userProfile, getXPProgress } = useGamification();
   
   const [messages, setMessages] = useState([
     { text: "Hello! Ready to practice today? Let's start with a simple question.", isUser: false, isSystem: false }
@@ -432,30 +434,28 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
       <div className="relative z-10 p-3 sm:p-4 max-w-sm mx-auto min-h-screen">
         {/* Simplified Header for Speaking Focus */}
-        <div className="text-center mb-6 sm:mb-8 mt-safe-area-inset-top">
-          <div className="relative inline-block">
+        <div className="text-center mb-6 sm:mb-8 mt-4 sm:mt-6 relative z-30">
+          <div className="relative inline-block mb-4">
             <DIDAvatar 
               size="lg"
               state={avatarState}
-              className="border-3 sm:border-4 border-white/30 shadow-lg transition-all duration-500"
+              className="border-3 sm:border-4 border-white/30 shadow-lg transition-all duration-500 relative z-10"
               onSpeak={(text) => console.log('DID Avatar speaking:', text)}
             />
-            <div className="absolute -bottom-1 -right-1 w-6 h-6 sm:w-8 sm:h-8 bg-green-500 rounded-full border-3 border-white/30 animate-pulse"></div>
+            <div className="absolute -bottom-1 -right-1 w-6 h-6 sm:w-8 sm:h-8 bg-green-500 rounded-full border-3 border-white/30 animate-pulse z-20"></div>
           </div>
-          <h1 className="text-white font-bold text-xl sm:text-2xl mt-4 tracking-wide drop-shadow-lg">Tomas Hoca</h1>
+          <h1 className="text-white font-bold text-xl sm:text-2xl tracking-wide drop-shadow-lg">Tomas Hoca</h1>
           <div className="text-white/80 text-sm sm:text-base mt-1">Your English Teacher</div>
+          {/* Compact status line */}
+          {userProfile && (
+            <div className="text-white/60 text-xs sm:text-sm mt-2 truncate px-4">
+              Level {userProfile.level} • {Math.max(0, getXPProgress().current)}/{getXPProgress().max} XP
+            </div>
+          )}
         </div>
 
-        {/* Enhanced spacing for cleaner layout */}
-
-        {/* Sample Answer Button */}
-        <SampleAnswerButton 
-          question={currentQuestion}
-          onSpeak={speak}
-        />
-
         {/* Premium Chat Area */}
-        <div className="glass-card rounded-2xl sm:rounded-3xl p-4 sm:p-6 mb-6 sm:mb-8 overflow-y-auto min-h-[280px] max-h-[320px] space-y-2">
+        <div className="glass-card rounded-2xl sm:rounded-3xl p-4 sm:p-6 mb-6 sm:mb-8 overflow-y-auto min-h-[280px] max-h-[320px] space-y-2 relative z-10">
           <div className="text-center mb-4">
             <span className="text-white/80 text-sm font-medium bg-white/10 backdrop-blur-sm rounded-full px-3 py-1">💬 Conversation</span>
           </div>
@@ -470,7 +470,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         </div>
 
         {/* Premium Speaking Button */}
-        <div className="flex flex-col items-center space-y-4 sm:space-y-6 pb-6 sm:pb-8">
+        <div className="flex flex-col items-center space-y-4 sm:space-y-6 pb-6 sm:pb-8 relative z-10">
           <Button 
             onClick={handleRecordingClick}
             disabled={micState === 'processing' || isProcessingTranscript}

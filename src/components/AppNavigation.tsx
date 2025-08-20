@@ -160,20 +160,7 @@ export default function AppNavigation() {
         onModeChange={setCurrentMode} 
       />
 
-      {/* User Avatar with Streak Badge - Only show in speaking mode when authenticated */}
-      {currentMode === 'speaking' && userProfile && user && isAuthenticated && (
-        <div className="fixed top-16 left-4 z-20">
-          <EnhancedAvatarDisplay
-            level={userProfile.level}
-            xp={Math.max(0, xpProgress.current)}
-            maxXP={xpProgress.max}
-            userName={userProfile.name}
-            showXPBar={true}
-            size="md"
-            streakCount={streakData.currentStreak}
-          />
-        </div>
-      )}
+      {/* User Avatar with Streak Badge - Hidden on speaking page for cleaner mobile experience */}
 
 
       {/* Content based on current mode */}
