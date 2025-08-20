@@ -29,44 +29,44 @@ export const useHangmanSpeechRecognition = () => {
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Letter mapping table - exact matches only
+  // Comprehensive letter mapping table - exact matches only
   const letterMap: Record<string, string> = {
-    // Direct letters
+    // Direct single letters
     'a': 'a', 'b': 'b', 'c': 'c', 'd': 'd', 'e': 'e', 'f': 'f', 
     'g': 'g', 'h': 'h', 'i': 'i', 'j': 'j', 'k': 'k', 'l': 'l', 
     'm': 'm', 'n': 'n', 'o': 'o', 'p': 'p', 'q': 'q', 'r': 'r', 
     's': 's', 't': 't', 'u': 'u', 'v': 'v', 'w': 'w', 'x': 'x', 
     'y': 'y', 'z': 'z',
     
-    // Letter names and common pronunciations
-    'ay': 'a', 'eh': 'a',
-    'bee': 'b', 'be': 'b',
-    'see': 'c', 'sea': 'c', 'cee': 'c',
-    'dee': 'd',
-    'ee': 'e',
-    'ef': 'f', 'eff': 'f',
-    'gee': 'g',
-    'aitch': 'h', 'ach': 'h',
-    'eye': 'i', 'ai': 'i',
-    'jay': 'j',
-    'kay': 'k', 'key': 'k',
-    'el': 'l', 'ell': 'l',
-    'em': 'm',
-    'en': 'n',
-    'oh': 'o', 'owe': 'o',
-    'pee': 'p',
-    'cue': 'q', 'queue': 'q',
-    'ar': 'r', 'are': 'r',
-    'ess': 's',
-    'tee': 't', 'tea': 't',
-    'you': 'u', 'yu': 'u',
-    'vee': 'v',
-    'double': 'w', 'double-u': 'w', 'double-you': 'w',
-    'ex': 'x',
-    'why': 'y',
-    'zee': 'z', 'zed': 'z',
+    // Letter names and pronunciations (comprehensive coverage)
+    'ay': 'a', 'eh': 'a', 'aye': 'a',
+    'bee': 'b', 'be': 'b', 'bea': 'b',
+    'see': 'c', 'sea': 'c', 'cee': 'c', 'si': 'c',
+    'dee': 'd', 'de': 'd',
+    'ee': 'e', 'ea': 'e',
+    'ef': 'f', 'eff': 'f', 'eph': 'f',
+    'gee': 'g', 'ghee': 'g', 'ji': 'g',
+    'aitch': 'h', 'ach': 'h', 'aych': 'h',
+    'eye': 'i', 'ai': 'i', 'iy': 'i',
+    'jay': 'j', 'jae': 'j', 'jey': 'j',
+    'kay': 'k', 'key': 'k', 'kaye': 'k', 'ca': 'k',
+    'el': 'l', 'ell': 'l', 'elle': 'l',
+    'em': 'm', 'emm': 'm',
+    'en': 'n', 'enn': 'n',
+    'oh': 'o', 'owe': 'o', 'eau': 'o',
+    'pee': 'p', 'pe': 'p', 'pea': 'p',
+    'cue': 'q', 'queue': 'q', 'que': 'q', 'kyu': 'q',
+    'ar': 'r', 'are': 'r', 'arr': 'r',
+    'ess': 's', 'es': 's',
+    'tee': 't', 'tea': 't', 'te': 't',
+    'you': 'u', 'yu': 'u', 'yuu': 'u',
+    'vee': 'v', 've': 'v', 'vea': 'v',
+    'double': 'w', 'double-u': 'w', 'double-you': 'w', 'double you': 'w', 'doubleyou': 'w',
+    'ex': 'x', 'eks': 'x',
+    'why': 'y', 'wye': 'y', 'wi': 'y',
+    'zee': 'z', 'zed': 'z', 'ze': 'z',
     
-    // NATO alphabet
+    // NATO phonetic alphabet
     'alpha': 'a', 'bravo': 'b', 'charlie': 'c', 'delta': 'd', 'echo': 'e',
     'foxtrot': 'f', 'golf': 'g', 'hotel': 'h', 'india': 'i', 'juliet': 'j',
     'kilo': 'k', 'lima': 'l', 'mike': 'm', 'november': 'n', 'oscar': 'o',
@@ -75,8 +75,19 @@ export const useHangmanSpeechRecognition = () => {
     'yankee': 'y', 'zulu': 'z'
   };
 
+  // Problematic letter pairs that need disambiguation
+  const ambiguousPairs: Record<string, string[]> = {
+    'b': ['p', 'v'], 'p': ['b'],
+    'm': ['n'], 'n': ['m'],
+    'f': ['s'], 's': ['f'],
+    'c': ['k'], 'k': ['c'],
+    'g': ['j'], 'j': ['g'],
+    'd': ['t'], 't': ['d'],
+    'v': ['b']
+  };
+
   // Extract letter from transcript using exact token matching
-  const extractLetter = useCallback((transcript: string, confidence?: number): SpeechResult => {
+  const extractLetter = useCallback((transcript: string, confidence?: number, alternatives?: string[]): SpeechResult => {
     const normalized = transcript.toLowerCase().trim().replace(/[^\w\s-]/g, '');
     const tokens = normalized.split(/\s+/);
     
@@ -84,31 +95,71 @@ export const useHangmanSpeechRecognition = () => {
     const debugEnabled = window.location.search.includes('debug=1');
     if (debugEnabled) {
       console.log('Speech Debug:', { 
-        rawTranscript: transcript, 
+        raw: transcript, 
+        alternatives: alternatives || [],
         normalized,
         tokens,
         confidence 
       });
     }
 
-    // Check each token for exact matches
-    for (const token of tokens) {
-      if (letterMap[token]) {
-        const letter = letterMap[token];
+    // Handle "as in" patterns (e.g., "B as in boy")
+    const asInMatch = normalized.match(/([a-z])\s+as\s+in/);
+    if (asInMatch) {
+      const letter = asInMatch[1];
+      if (debugEnabled) {
+        console.log('Speech Debug - As in pattern:', { letter });
+      }
+      return { letter, confidence, transcript };
+    }
+
+    // Check multi-word phrases first (e.g., "double you")
+    const multiWordPhrases = ['double you', 'double-you', 'double-u', 'x-ray'];
+    for (const phrase of multiWordPhrases) {
+      if (normalized.includes(phrase) && letterMap[phrase.replace(/\s+/g, ' ')]) {
+        const letter = letterMap[phrase.replace(/\s+/g, ' ')];
         if (debugEnabled) {
-          console.log('Speech Debug - Resolved:', { token, resolvedLetter: letter });
+          console.log('Speech Debug - Multi-word:', { phrase, letter });
         }
         return { letter, confidence, transcript };
       }
     }
 
-    // Check for single alphabetic characters
+    // Check each token for exact matches
+    const foundLetters: string[] = [];
     for (const token of tokens) {
-      if (/^[a-z]$/.test(token)) {
+      if (letterMap[token]) {
+        foundLetters.push(letterMap[token]);
+      } else if (/^[a-z]$/.test(token)) {
+        foundLetters.push(token);
+      }
+    }
+
+    // If we found exactly one letter, use it
+    if (foundLetters.length === 1) {
+      const letter = foundLetters[0];
+      if (debugEnabled) {
+        console.log('Speech Debug - Resolved:', { letter, chosen: letter });
+      }
+      return { letter, confidence, transcript };
+    }
+
+    // If multiple letters found, this is ambiguous
+    if (foundLetters.length > 1) {
+      const uniqueLetters = [...new Set(foundLetters)];
+      if (uniqueLetters.length === 1) {
+        // All tokens mapped to same letter
+        const letter = uniqueLetters[0];
         if (debugEnabled) {
-          console.log('Speech Debug - Single char:', { token });
+          console.log('Speech Debug - Multiple same:', { letter });
         }
-        return { letter: token, confidence, transcript };
+        return { letter, confidence, transcript };
+      } else {
+        // Different letters found - ambiguous
+        if (debugEnabled) {
+          console.log('Speech Debug - Ambiguous:', { foundLetters: uniqueLetters });
+        }
+        return { letter: null, confidence, transcript, needsConfirmation: true };
       }
     }
 
@@ -196,7 +247,7 @@ public <letter> =
           recognition.lang = 'en-US';
           recognition.continuous = false;
           recognition.interimResults = false;
-          recognition.maxAlternatives = 8;
+          recognition.maxAlternatives = 10;
           
           setupSpeechGrammar(recognition);
           
@@ -216,10 +267,11 @@ public <letter> =
             hasResult = true;
 
             const results = Array.from(event.results[0]) as SpeechRecognitionResult[];
+            const alternatives = results.map(r => r.transcript);
             
             // Try each alternative in confidence order
             for (const result of results) {
-              const extractResult = extractLetter(result.transcript, result.confidence);
+              const extractResult = extractLetter(result.transcript, result.confidence, alternatives);
               
               if (extractResult.letter) {
                 const letter = extractResult.letter.toLowerCase();
@@ -239,8 +291,11 @@ public <letter> =
                   return;
                 }
                 
-                // Check confidence
-                if (result.confidence < 0.6) {
+                // Check confidence or if it's an ambiguous pair
+                const needsConfirmation = result.confidence < 0.6 || 
+                  (ambiguousPairs[letter] && result.confidence < 0.8);
+                
+                if (needsConfirmation) {
                   setState({
                     isListening: false,
                     isProcessing: false,
@@ -253,7 +308,7 @@ public <letter> =
                   return;
                 }
                 
-                // Success
+                // Success - show brief "Heard: X" message
                 setState({
                   isListening: false,
                   isProcessing: false,
@@ -262,7 +317,7 @@ public <letter> =
                   needsConfirmation: false,
                   suggestedLetter: null
                 });
-                setTimeout(() => setState(prev => ({ ...prev, message: '' })), 1000);
+                setTimeout(() => setState(prev => ({ ...prev, message: '' })), 800);
                 resolve(letter);
                 return;
               }
@@ -349,7 +404,7 @@ public <letter> =
       suggestedLetter: null
     });
     
-    setTimeout(() => setState(prev => ({ ...prev, message: '' })), 1000);
+    setTimeout(() => setState(prev => ({ ...prev, message: '' })), 800);
     return letter;
   }, [state.suggestedLetter]);
 
