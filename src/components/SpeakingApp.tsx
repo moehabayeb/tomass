@@ -258,36 +258,45 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     }
   };
 
-  const executeTeacherLoop = async (transcript: string) => {
-    console.log('[Speaking] teacher-loop:start with transcript:', transcript);
+  const executeTeacherLoop = async (originalTranscript: string) => {
+    console.log('[Speaking] teacher-loop:start with transcript:', originalTranscript);
     setIsProcessingTranscript(true);
     
+    // Optional developer toggle for QA
+    const echoVerbatim = true; // Set to false to disable verbatim echo
+    
     try {
-      // Step 1: Analyze & Correct using improved feedback system
-      const feedback = await sendToFeedback(transcript);
+      // Step 1: Echo verbatim - show exact ASR transcript
+      if (echoVerbatim) {
+        console.log('[Speaking] originalText:', originalTranscript);
+        console.log('[Speaking] normalizedText:', originalTranscript.toLowerCase().replace(/[.,!?;:'"()-]/g, '').replace(/\s+/g, ' ').trim());
+      }
+
+      // Step 2: Analyze & Correct using improved feedback system
+      const feedback = await sendToFeedback(originalTranscript);
       console.log('[Speaking] teacher-loop:feedback received:', {
         isCorrect: feedback.isCorrect,
         message: feedback.message
       });
 
-      // Step 2: Only show correction if there's an actual mistake
+      // Step 3: Show correction only if there's an actual mistake (similarity < 0.88)
       if (!feedback.isCorrect && feedback.message !== 'CORRECT') {
         showBotMessage(feedback.message);
       }
 
-      // Step 3: Generate and speak follow-up question naturally
-      const nextQuestion = await generateFollowUpQuestion(transcript);
+      // Step 4: Generate and speak follow-up question naturally
+      const nextQuestion = await generateFollowUpQuestion(originalTranscript);
       console.log('[Speaking] teacher-loop:next-question generated');
       
       showBotMessage(nextQuestion);
 
-      // Step 4: Track session (non-blocking)
-      logSession(transcript, feedback.corrected);
+      // Step 5: Track session (non-blocking)
+      logSession(originalTranscript, feedback.corrected);
       
-      // Step 5: Award XP (more XP for correct answers)
+      // Step 6: Award XP (more XP for correct answers)
       addXP(feedback.isCorrect ? 25 : 15, 0, feedback.isCorrect);
       
-      // Step 6: Track speaking submission for badges
+      // Step 7: Track speaking submission for badges
       incrementSpeakingSubmissions();
       
       console.log('[Speaking] teacher-loop:completed successfully');
@@ -310,7 +319,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         const result = await startRecording();
         console.log('[Speaking] recording:completed, transcript:', result.transcript);
         
-        // Display transcript
+        // Display verbatim transcript (exact ASR output)
         addChatBubble(`💭 You said: "${result.transcript}"`, "user");
         
         if (!result.transcript) {

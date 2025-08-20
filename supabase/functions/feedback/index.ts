@@ -37,7 +37,7 @@ function calculateSimilarity(str1: string, str2: string): number {
 // Check if the user's answer is acceptable based on similarity
 function isAcceptableAnswer(userText: string, expectedText: string): boolean {
   const similarity = calculateSimilarity(userText, expectedText);
-  const SIMILARITY_THRESHOLD = 0.85; // 85% similarity threshold
+  const SIMILARITY_THRESHOLD = 0.88; // 88% similarity threshold for more natural conversation
   
   console.log(`Similarity between "${userText}" and "${expectedText}": ${similarity}`);
   return similarity >= SIMILARITY_THRESHOLD;
@@ -70,20 +70,25 @@ serve(async (req) => {
             role: 'system',
             content: `You are an English conversation partner. Analyze the user's text and provide ONLY a corrected version if there are significant grammar or vocabulary errors that affect meaning.
 
-IGNORE these minor issues:
-- Missing or incorrect punctuation
-- Contractions vs full forms (I'm vs I am, don't vs do not)
+COMPLETELY IGNORE these minor issues:
+- Missing or incorrect punctuation (commas, periods, question marks, exclamation marks)
+- Capitalization differences
+- Contractions vs full forms (I'm vs I am, don't vs do not)  
 - Minor word order variations if meaning is clear
 - Casual speech patterns
+- Minor typos or spacing
+
+Focus ONLY on significant grammar/vocabulary mistakes that change meaning.
 
 If the text is grammatically acceptable for conversation, respond with: "CORRECT"
 If there are significant errors, respond with ONLY the corrected version, nothing else.
 
 Examples:
-- "I go there yesterday" → "I went there yesterday"
-- "I'm going to store" → "I'm going to the store"
-- "Hello how are you" → "CORRECT" (punctuation doesn't matter)
-- "I am fine thanks" → "CORRECT" (natural response)`
+- "i go there yesterday" → "I went there yesterday" (tense error)
+- "im going to store" → "I'm going to the store" (missing article)
+- "hello how are you" → "CORRECT" (punctuation/capitalization ignored)
+- "ok lets go" → "CORRECT" (casual speech is fine)
+- "i dont know im feeling sad" → "CORRECT" (meaning is clear)`
           },
           {
             role: 'user',
