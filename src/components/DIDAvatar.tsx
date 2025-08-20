@@ -18,7 +18,7 @@ export default function DIDAvatar({
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
   const [streamConnected, setStreamConnected] = useState(false);
   const [streamFailed, setStreamFailed] = useState(false);
-  const [sessionData, setSessionData] = useState<{sessionId: string, sdpUrl: string, talkUrl: string} | null>(null);
+  const [sessionData, setSessionData] = useState<{sessionId: string, sdpUrl: string, talkUrl: string, authHeader: string} | null>(null);
 
   const getSizeClasses = () => {
     switch (size) {
@@ -50,8 +50,9 @@ export default function DIDAvatar({
     }
   };
 
-  const setupWebRTC = async (data: {sessionId: string, sdpUrl: string, talkUrl: string}) => {
+  const setupWebRTC = async (data: {sessionId: string, sdpUrl: string, talkUrl: string, authHeader: string}) => {
     try {
+      console.log('Setting up WebRTC connection...');
       const peerConnection = new RTCPeerConnection({
         iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
       });
@@ -64,14 +65,16 @@ export default function DIDAvatar({
       });
       await peerConnection.setLocalDescription(offer);
 
-      // Send offer to D-ID
+      console.log('Sending offer to D-ID...');
+      // Send offer to D-ID (use 'offer' key, not 'answer')
       const response = await fetch(data.sdpUrl, {
         method: 'POST',
         headers: {
+          'Authorization': data.authHeader,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          answer: offer,
+          offer: offer,
           session_id: data.sessionId
         })
       });
@@ -81,22 +84,34 @@ export default function DIDAvatar({
       }
 
       const sdpData = await response.json();
+      console.log('Received answer from D-ID');
       
-      // Set remote description
-      await peerConnection.setRemoteDescription(new RTCSessionDescription(sdpData));
+      // Set remote description with the answer
+      await peerConnection.setRemoteDescription(new RTCSessionDescription(sdpData.answer));
 
       // Handle incoming stream
       peerConnection.ontrack = (event) => {
         console.log('Received remote stream');
-        if (videoRef.current) {
+        if (videoRef.current && event.streams[0]) {
           videoRef.current.srcObject = event.streams[0];
+          videoRef.current.muted = true;
+          videoRef.current.playsInline = true;
           setStreamConnected(true);
+        }
+      };
+
+      peerConnection.oniceconnectionstatechange = () => {
+        console.log('ICE connection state:', peerConnection.iceConnectionState);
+        if (peerConnection.iceConnectionState === 'failed') {
+          console.error('ICE connection failed');
+          setStreamFailed(true);
         }
       };
 
       peerConnection.onconnectionstatechange = () => {
         console.log('Connection state:', peerConnection.connectionState);
         if (peerConnection.connectionState === 'failed') {
+          console.error('Peer connection failed');
           setStreamFailed(true);
         }
       };
@@ -124,14 +139,14 @@ export default function DIDAvatar({
       const response = await fetch(sessionData.talkUrl, {
         method: 'POST',
         headers: {
+          'Authorization': sessionData.authHeader,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           script: {
             type: 'text',
             input: text
-          },
-          session_id: sessionData.sessionId
+          }
         })
       });
 
@@ -176,9 +191,10 @@ export default function DIDAvatar({
             autoPlay
             muted
             playsInline
-            className="absolute inset-0 w-full h-full object-cover"
+            className="absolute inset-0 w-full h-full object-cover rounded-full"
             onLoadedMetadata={() => {
               if (videoRef.current) {
+                console.log('Video metadata loaded, starting playback');
                 videoRef.current.play().catch(console.error);
               }
             }}

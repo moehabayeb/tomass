@@ -22,11 +22,14 @@ serve(async (req: Request) => {
 
     console.log('Creating D-ID stream session...')
     
+    // Build proper Basic auth from the raw API key
+    const auth = 'Basic ' + btoa(`${DID_API_KEY}:`)
+    
     // Create D-ID streaming session
     const response = await fetch('https://api.d-id.com/v1/streams', {
       method: 'POST',
       headers: {
-        'Authorization': `Basic ${DID_API_KEY}`,
+        'Authorization': auth,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -58,10 +61,13 @@ serve(async (req: Request) => {
 
     console.log('Successfully created D-ID stream session')
     
+    // Return exact URLs for WebRTC connection
+    const id = data.id
     return new Response(JSON.stringify({
-      sessionId: data.session_id,
-      sdpUrl: data.offer?.sdp_url || `https://api.d-id.com/v1/streams/${data.id}/sdp`,
-      talkUrl: `https://api.d-id.com/v1/streams/${data.id}/talks`
+      sessionId: data.session_id || id,
+      sdpUrl: `https://api.d-id.com/v1/streams/${id}/sdp`,
+      talkUrl: `https://api.d-id.com/v1/streams/${id}/talks`,
+      authHeader: auth
     }), {
       headers: { 
         ...corsHeaders,
