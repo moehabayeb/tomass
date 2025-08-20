@@ -264,16 +264,15 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     try {
       // Step 1: Analyze & Correct using existing functions
       const feedback = await sendToFeedback(transcript);
-      console.log('[Speaking] teacher-loop:feedback received');
+      console.log('[Speaking] teacher-loop:feedback received:', feedback.message);
 
-      // Step 2: Build feedback message with correction if needed
-      let feedbackMessage = feedback.message;
-      if (feedback.corrected && feedback.corrected !== transcript) {
-        feedbackMessage = `${feedback.message} You could also say: "${feedback.corrected}"`;
-      }
+      // Step 2: Check if it's correct or needs correction
+      const isCorrect = feedback.message.trim() === "CORRECT";
       
-      // Step 3: Speak feedback
-      showBotMessage(feedbackMessage);
+      // Step 3: Only show correction if there's an actual mistake
+      if (!isCorrect) {
+        showBotMessage(feedback.message);
+      }
 
       // Step 4: Generate and speak follow-up question  
       const nextQuestion = await generateFollowUpQuestion(transcript);
@@ -282,11 +281,9 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       showBotMessage(nextQuestion);
 
       // Step 5: Track session (non-blocking)
-      logSession(transcript, feedback.corrected);
+      logSession(transcript, feedback.corrected || transcript);
       
       // Step 6: Award XP
-      const isCorrect = !feedback.message.toLowerCase().includes('mistake') && 
-                       !feedback.message.toLowerCase().includes('error');
       addXP(20, 0, isCorrect);
       
       // Step 7: Track speaking submission for badges

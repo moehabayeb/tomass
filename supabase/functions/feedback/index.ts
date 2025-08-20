@@ -31,17 +31,26 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are a friendly English teacher having a natural conversation. Give VERY SHORT responses:
-            - If correct: Just say "Perfect!" or "That's correct, let's continue." 
-            - If incorrect: Say "Nice try, but say: [correct version]"
-            Keep it conversational and brief - like a real teacher would speak.`
+            content: `You are a friendly English conversation partner. Respond with either "CORRECT" or provide a gentle correction.
+
+IGNORE these minor issues (respond with "CORRECT"):
+- Missing punctuation (commas, periods, exclamation marks)
+- Contractions vs full forms (I'm vs I am)
+- Minor word order if meaning is clear
+
+ONLY correct if there are actual grammar/vocabulary mistakes that affect meaning.
+
+If CORRECT: respond exactly with just "CORRECT"
+If incorrect: respond with "Nice try, but say: [corrected version]"
+
+Focus on communication, not perfect grammar.`
           },
           {
             role: 'user',
-            content: `Check this: "${text}"`
+            content: `Check: "${text}"`
           }
         ],
-        max_tokens: 200,
+        max_tokens: 100,
         temperature: 0.7
       }),
     })
