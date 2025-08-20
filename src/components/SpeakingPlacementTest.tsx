@@ -16,7 +16,6 @@ import { narration } from '../utils/narration';
 import CanvasAvatar from './CanvasAvatar';
 import { useGamification } from '@/hooks/useGamification';
 import { configureUtterance } from '@/config/voice';
-import { getMicTestService, destroyMicTestService, type MicStateData, type MicResult } from '@/services/MicTestService';
 
 interface SpeakingPlacementTestProps {
   onBack: () => void;
@@ -45,24 +44,28 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
 
   // ---------- State + guards ----------
   type TestState = 'idle'|'prompting'|'ready'|'done';
+  type MicState = 'idle'|'listening'|'processing'|'done';
+  
   const [testState, setTestState] = useState<TestState>('idle');
+  const [micState, setMicState] = useState<MicState>('idle');
   const [qIndex, setQIndex] = useState(0);
   const [answers, setAnswers] = useState<{ transcript: string; durationSec: number; wordsRecognized: number }[]>([]);
   const [result, setResult] = useState<null | {
     grammar: number; vocab: number; pron: number; level: 'A1'|'A2'|'B1'
   }>(null);
   
-  // Mic service state
-  const [micState, setMicState] = useState<MicStateData>({
-    state: 'idle',
-    message: '',
-    canRetry: true
-  });
+  // Status messages and transcript
+  const [statusMessage, setStatusMessage] = useState('');
+  const [transcript, setTranscript] = useState('');
+  const [permissionError, setPermissionError] = useState(false);
 
   const runIdRef = useRef<string|null>(null);
   const ttsTimerRef = useRef<number|undefined>(undefined);
   const startTimeRef = useRef<number>(0);
-  const micServiceRef = useRef(getMicTestService());
+  const recognitionRef = useRef<any>(null);
+  const timeoutRef = useRef<number | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const debug = window.location.search.includes('sttdebug=1');
 
   
   function newRunId() {
@@ -88,13 +91,50 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
   function saveAnswer(qIndex: number, transcript: string, durationSec: number) {
     const words = transcript.trim().split(/\s+/).filter(Boolean).length;
     
-    console.log('[LevelTest] answer:saved', { qIndex, transcript: transcript.substring(0, 50), words, duration: durationSec });
+    if (debug) {
+      console.log('[LevelTest] answer:saved', { qIndex, transcript: transcript.substring(0, 50), words, duration: durationSec });
+    }
     
     setAnswers(prev => [...prev, { 
       transcript, 
       durationSec, 
       wordsRecognized: words 
     }]);
+  }
+  
+  // Clean up recognition instance
+  function cleanupRecognition() {
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+      } catch (e) {
+        if (debug) console.log('[LevelTest] cleanup error:', e);
+      }
+      recognitionRef.current = null;
+    }
+    
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+  }
+  
+  // Handle audio context for TTS conflicts
+  async function handleAudioContext(suspend: boolean) {
+    try {
+      const existingContext = (window as any)._audioCtx;
+      if (existingContext) {
+        if (suspend && existingContext.state === 'running') {
+          await existingContext.suspend();
+          if (debug) console.log('[LevelTest] suspended TTS audio context');
+        } else if (!suspend && existingContext.state === 'suspended') {
+          await existingContext.resume();
+          if (debug) console.log('[LevelTest] resumed TTS audio context');
+        }
+      }
+    } catch (error) {
+      if (debug) console.warn('[LevelTest] audio context error:', error);
+    }
   }
 
   function showResults() {
@@ -218,28 +258,25 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     }
   }, [qIndex, answers]);
 
-  // Subscribe to mic service state changes
-  useEffect(() => {
-    const unsubscribe = micServiceRef.current.onStateChange(setMicState);
-    return unsubscribe;
-  }, []);
-
   // Complete cleanup on unmount
   useEffect(() => {
     return () => {
-      console.log('[LevelTest] component:unmounting');
+      if (debug) console.log('[LevelTest] component:unmounting');
       try { window?.speechSynthesis?.cancel(); } catch {}
       try { narration.cancel(); } catch {}
       clearAllTimers();
+      cleanupRecognition();
       runIdRef.current = null;
-      destroyMicTestService();
+      handleAudioContext(false); // Resume any suspended context
     };
   }, []);
 
   // Enhanced state logging
   useEffect(() => {
-    console.log('[LevelTest] state-change:', {testState, qIndex, micState: micState.state});
-  }, [testState, qIndex, micState.state]);
+    if (debug) {
+      console.log('[LevelTest] state-change:', {testState, qIndex, micState});
+    }
+  }, [testState, qIndex, micState]);
 
   // ---------- very light normalization helpers ----------
   function stripDiacritics(s: string) {
@@ -306,62 +343,258 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
 
   // Handle mic button press
   async function onMicPress() {
-    console.log('[LevelTest] mic:press, testState:', testState, 'micState:', micState.state);
+    if (debug) {
+      console.log('[LevelTest] mic:press, testState:', testState, 'micState:', micState);
+    }
     
     if (testState === 'prompting') {
-      console.log('[LevelTest] mic:override-tts');
+      if (debug) console.log('[LevelTest] mic:override-tts');
       // user wants to start now → cancel TTS and go
       try { window?.speechSynthesis?.cancel(); } catch {}
       try { narration.cancel(); } catch {}
       clearAllTimers();
       setTestState('ready');
-      console.log('[LevelTest] mic:forced-ready');
+      if (debug) console.log('[LevelTest] mic:forced-ready');
     }
     
     // Stop listening if currently listening
-    if (micState.state === 'listening') {
-      console.log('[LevelTest] mic:stop-listening');
-      micServiceRef.current.stopListening();
+    if (micState === 'listening') {
+      if (debug) console.log('[LevelTest] mic:stop-listening');
+      cleanupRecognition();
+      setMicState('idle');
+      setStatusMessage('');
       return;
     }
 
-    if (testState !== 'ready' || !micServiceRef.current.canStartListening()) {
-      console.log('[LevelTest] mic:not-ready, ignoring');
+    if (testState !== 'ready' || micState !== 'idle') {
+      if (debug) console.log('[LevelTest] mic:not-ready, ignoring');
       return;
+    }
+
+    if (permissionError) {
+      setPermissionError(false);
+      setStatusMessage('');
     }
 
     await startRecording();
   }
 
-  // Start recording using MicTestService
+  // Bulletproof speech recognition
   async function startRecording() {
-    console.log('[LevelTest] recording:start');
+    if (debug) console.log('[LevelTest] recording:start');
     
-    startTimeRef.current = Date.now();
-    
+    // Check for speech recognition support
+    const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
+    if (!SpeechRecognition) {
+      setStatusMessage("Speech recognition not supported");
+      return;
+    }
+
     try {
-      const result: MicResult | null = await micServiceRef.current.startListening();
-      
-      if (result && result.transcript.trim()) {
-        const duration = (Date.now() - startTimeRef.current) / 1000;
-        console.log('[LevelTest] recording:success', result.transcript);
-        
-        // Save answer and advance
-        saveAnswer(qIndex, result.transcript, duration);
-        
-        // Move to next question or show results  
-        if (qIndex < PROMPTS.length - 1) {
-          setQIndex(qIndex + 1);
-        } else {
-          showResults();
+      // Initialize audio context on user gesture (iOS requirement)
+      if (!audioContextRef.current) {
+        const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+        if (AudioContext) {
+          audioContextRef.current = new AudioContext();
+          if (audioContextRef.current.state === 'suspended') {
+            await audioContextRef.current.resume();
+          }
         }
+      }
+
+      // Suspend TTS audio context if running
+      await handleAudioContext(true);
+
+      // Clean up any existing recognition
+      cleanupRecognition();
+      
+      startTimeRef.current = Date.now();
+      setMicState('listening');
+      setStatusMessage('Listening...');
+      setTranscript('');
+      setPermissionError(false);
+
+      // Create new recognition instance
+      const recognition = new SpeechRecognition();
+      recognitionRef.current = recognition;
+      
+      recognition.lang = 'en-US';
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 5;
+
+      let hasAudioStarted = false;
+      let hasSoundStarted = false;
+      let hasSpeechStarted = false;
+      let hasResult = false;
+
+      // 15 second timeout
+      timeoutRef.current = window.setTimeout(() => {
+        if (!hasResult && recognitionRef.current) {
+          if (debug) console.log('[LevelTest] timeout reached');
+          recognition.stop();
+        }
+      }, 15000);
+
+      recognition.onstart = () => {
+        if (debug) console.log('[LevelTest] onstart');
+      };
+
+      recognition.onaudiostart = () => {
+        hasAudioStarted = true;
+        if (debug) console.log('[LevelTest] onaudiostart');
+      };
+
+      recognition.onsoundstart = () => {
+        hasSoundStarted = true;
+        if (debug) console.log('[LevelTest] onsoundstart');
+      };
+
+      recognition.onspeechstart = () => {
+        hasSpeechStarted = true;
+        if (debug) console.log('[LevelTest] onspeechstart');
+      };
+
+      recognition.onspeechend = () => {
+        if (debug) console.log('[LevelTest] onspeechend');
+        recognition.stop();
+      };
+
+      recognition.onresult = (event: any) => {
+        if (hasResult) return;
+        hasResult = true;
+
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+          timeoutRef.current = null;
+        }
+
+        if (debug) console.log('[LevelTest] onresult:', event.results);
+
+        try {
+          const results = event.results[0];
+          let bestTranscript = '';
+          let bestConfidence = 0;
+
+          // Find highest confidence alternative
+          for (let i = 0; i < results.length; i++) {
+            const alternative = results[i];
+            if (alternative.confidence > bestConfidence) {
+              bestTranscript = alternative.transcript;
+              bestConfidence = alternative.confidence;
+            }
+          }
+
+          // Use first result if no confidence scores
+          if (!bestTranscript && results.length > 0) {
+            bestTranscript = results[0].transcript;
+          }
+
+          bestTranscript = bestTranscript.trim();
+          
+          if (debug) {
+            console.log('[LevelTest] best result:', { transcript: bestTranscript, confidence: bestConfidence });
+          }
+
+          if (bestTranscript) {
+            setMicState('done');
+            setTranscript(bestTranscript);
+            setStatusMessage(`Recognized: "${bestTranscript}"`);
+          } else {
+            setMicState('idle');
+            setStatusMessage("Didn't catch that—try again");
+          }
+
+        } catch (error) {
+          if (debug) console.error('[LevelTest] result processing error:', error);
+          setMicState('idle');
+          setStatusMessage("Didn't catch that—try again");
+        }
+
+        handleAudioContext(false); // Resume TTS context
+      };
+
+      recognition.onerror = (event: any) => {
+        if (hasResult) return;
+
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+          timeoutRef.current = null;
+        }
+
+        if (debug) console.log('[LevelTest] onerror:', event.error);
+
+        if (event.error === 'not-allowed' || event.error === 'permission-denied') {
+          setPermissionError(true);
+          setStatusMessage('Microphone blocked. Tap the address bar → Allow mic.');
+        } else if (event.error === 'no-speech') {
+          setStatusMessage("Didn't catch that—try again");
+        } else {
+          setStatusMessage("Didn't catch that—try again");
+        }
+
+        setMicState('idle');
+        handleAudioContext(false); // Resume TTS context
+      };
+
+      recognition.onend = () => {
+        if (debug) console.log('[LevelTest] onend, hasResult:', hasResult);
+
+        if (!hasResult) {
+          if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+            timeoutRef.current = null;
+          }
+
+          // Only show "no speech detected" if truly silent
+          if (!hasAudioStarted && !hasSoundStarted) {
+            setStatusMessage("Didn't catch that—try again");
+          } else {
+            setStatusMessage("Didn't catch that—try again");
+          }
+
+          setMicState('idle');
+        }
+
+        recognitionRef.current = null;
+        handleAudioContext(false); // Resume TTS context
+      };
+
+      // Start recognition
+      recognition.start();
+
+    } catch (error: any) {
+      if (debug) console.error('[LevelTest] setup error:', error);
+      
+      if (error.name === 'NotAllowedError') {
+        setPermissionError(true);
+        setStatusMessage('Microphone blocked. Tap the address bar → Allow mic.');
       } else {
-        console.log('[LevelTest] recording:no-result');
-        // Error handling is done by the mic service
+        setStatusMessage("Didn't catch that—try again");
       }
       
-    } catch (error: any) {
-      console.log('[LevelTest] recording:error', error);
+      setMicState('idle');
+      handleAudioContext(false); // Resume TTS context
+    }
+  }
+
+  // Continue to next question
+  function handleContinue() {
+    if (!transcript) return;
+    
+    const duration = (Date.now() - startTimeRef.current) / 1000;
+    saveAnswer(qIndex, transcript, duration);
+    
+    // Reset mic state
+    setMicState('idle');
+    setStatusMessage('');
+    setTranscript('');
+    
+    // Move to next question or show results  
+    if (qIndex < PROMPTS.length - 1) {
+      setQIndex(qIndex + 1);
+    } else {
+      showResults();
     }
   }
 
@@ -409,105 +642,66 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
                 </p>
               </div>
               
-              <div className="space-y-4">
-                <div className="text-center">
-                  <div className="text-lg font-medium text-gray-700 mb-4">
-                    Question {qIndex + 1} of {PROMPTS.length}
-                  </div>
-                  
-                  <div className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-400 mb-6">
-                    <p className="text-lg font-medium text-gray-800 leading-relaxed">
-                      {PROMPTS[qIndex]}
-                    </p>
-                  </div>
-                  
-                  {/* Mic service messages */}
-                  {micState.message && (
-                    <div className={`p-3 rounded border-l-4 mb-4 ${
-                      micState.error === 'permission' 
-                        ? 'bg-red-50 border-red-400 text-red-700' 
-                        : micState.error 
-                          ? 'bg-yellow-50 border-yellow-400 text-yellow-700'
-                          : micState.transcript
-                            ? 'bg-green-50 border-green-400 text-green-700'
-                            : 'bg-blue-50 border-blue-400 text-blue-700'
-                    }`}>
-                      <div className="flex items-center gap-2">
-                        {micState.error === 'permission' && <AlertCircle className="h-4 w-4" />}
-                        <p className="text-sm">{micState.message}</p>
-                      </div>
-                      {micState.error === 'permission' && (
-                        <Button 
-                          onClick={onMicPress} 
-                          size="sm" 
-                          variant="outline" 
-                          className="mt-2"
-                        >
-                          Retry
-                        </Button>
-                      )}
-                    </div>
+              <div className="flex flex-col items-center space-y-4">
+                <Button
+                  onClick={onMicPress}
+                  disabled={testState === 'prompting' || micState === 'processing'}
+                  size="lg"
+                  className={`
+                    relative h-24 w-24 rounded-full transition-all duration-300
+                    ${micState === 'listening' 
+                      ? 'bg-red-500 hover:bg-red-600 ring-4 ring-red-200 animate-pulse' 
+                      : testState === 'prompting' 
+                        ? 'bg-gray-400 cursor-not-allowed' 
+                        : micState === 'processing'
+                          ? 'bg-yellow-500 cursor-not-allowed'
+                          : 'bg-blue-500 hover:bg-blue-600'
+                    }
+                  `}
+                >
+                  {micState === 'listening' ? (
+                    <MicOff className="h-8 w-8 text-white" />
+                  ) : testState === 'prompting' ? (
+                    <Volume2 className="h-8 w-8 text-white animate-pulse" />
+                  ) : micState === 'processing' ? (
+                    <div className="h-8 w-8 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <Mic className="h-8 w-8 text-white" />
                   )}
-                  
-                  <div className="flex flex-col items-center space-y-4">
-                    <Button
-                      onClick={onMicPress}
-                      disabled={testState === 'prompting' || (micState.state === 'processing')}
-                      size="lg"
-                      className={`
-                        relative h-24 w-24 rounded-full transition-all duration-300
-                        ${micState.state === 'listening' 
-                          ? 'bg-red-500 hover:bg-red-600' 
-                          : testState === 'prompting' 
-                            ? 'bg-gray-400 cursor-not-allowed' 
-                            : micState.state === 'processing'
-                              ? 'bg-yellow-500 cursor-not-allowed'
-                              : 'bg-blue-500 hover:bg-blue-600'
-                        }
-                        ${micState.state === 'listening' ? 'ring-4 ring-red-200 animate-pulse' : ''}
-                      `}
-                    >
-                      {micState.state === 'listening' ? (
-                        <MicOff className="h-8 w-8 text-white" />
-                      ) : testState === 'prompting' ? (
-                        <Volume2 className="h-8 w-8 text-white animate-pulse" />
-                      ) : micState.state === 'processing' ? (
-                        <div className="h-8 w-8 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      ) : (
-                        <Mic className="h-8 w-8 text-white" />
-                      )}
-                    </Button>
-                    
+                </Button>
+                
+                {/* Single status chip */}
+                <div className="text-center min-h-[1.5rem]">
+                  {permissionError ? (
                     <div className="text-center">
-                      <div className="text-sm text-gray-600 mb-2">
-                        {micState.state === 'listening' && 'Listening... (tap to stop)'}
-                        {micState.state === 'processing' && 'Processing...'}
-                        {testState === 'prompting' && 'Reading question...'}
-                        {testState === 'ready' && micState.state === 'idle' && 'Tap to start recording'}
-                      </div>
-                    </div>
-                    
-                    {/* Continue button when we have a transcript */}
-                    {micState.state === 'done' && micState.transcript && (
-                      <Button
-                        onClick={() => {
-                          const duration = (Date.now() - startTimeRef.current) / 1000;
-                          saveAnswer(qIndex, micState.transcript!, duration);
-                          
-                          // Move to next question or show results  
-                          if (qIndex < PROMPTS.length - 1) {
-                            setQIndex(qIndex + 1);
-                          } else {
-                            showResults();
-                          }
-                        }}
-                        className="bg-green-500 hover:bg-green-600 text-white px-6 py-2"
+                      <div className="text-red-300 text-sm mb-2">{statusMessage}</div>
+                      <Button 
+                        onClick={onMicPress} 
+                        size="sm" 
+                        variant="outline" 
+                        className="text-white border-white/30 hover:bg-white/10"
                       >
-                        Continue
+                        Retry
                       </Button>
-                    )}
-                  </div>
+                    </div>
+                  ) : statusMessage ? (
+                    <div className="text-white/80 text-sm">{statusMessage}</div>
+                  ) : testState === 'prompting' ? (
+                    <div className="text-white/80 text-sm">Reading question...</div>
+                  ) : testState === 'ready' && micState === 'idle' ? (
+                    <div className="text-white/80 text-sm">Tap to start</div>
+                  ) : null}
                 </div>
+                
+                {/* Continue button when we have a transcript */}
+                {micState === 'done' && transcript && (
+                  <Button
+                    onClick={handleContinue}
+                    className="bg-green-500 hover:bg-green-600 text-white px-6 py-2"
+                  >
+                    Continue
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>
