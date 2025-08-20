@@ -60,8 +60,8 @@ serve(async (req: Request) => {
     
     return new Response(JSON.stringify({
       sessionId: data.session_id,
-      streamingUrl: data.offer?.sdp_url || `https://api.d-id.com/v1/streams/${data.id}`,
-      avatarIdOrSource: data.source_url || "https://create-images-results.d-id.com/api_docs/assets/noelle.jpeg"
+      sdpUrl: data.offer?.sdp_url || `https://api.d-id.com/v1/streams/${data.id}/sdp`,
+      talkUrl: `https://api.d-id.com/v1/streams/${data.id}/talks`
     }), {
       headers: { 
         ...corsHeaders,

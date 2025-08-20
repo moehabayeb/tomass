@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface DIDAvatarProps {
   size?: 'sm' | 'md' | 'lg';
@@ -13,12 +14,11 @@ export default function DIDAvatar({
   className = "",
   onSpeak
 }: DIDAvatarProps) {
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-  const [embedLoaded, setEmbedLoaded] = useState(false);
-  const [embedFailed, setEmbedFailed] = useState(false);
-  
-  // HeyGen Guest Streaming embed URL
-  const heygenEmbedUrl = "https://app.heygen.com/guest/streaming-embed?share=eyJhdmF0YXJJZCI6IkpYd3NQZWE5N25JMEZ0RFVKUzE1dCIsImtub3dsZWRnZUJhc2VJZCI6IjQ4ZjllYzI2LWQ0ZGUtNGVjZS1hZjM2LWRjOGZlODlhNzI1OCJ9";
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
+  const [streamConnected, setStreamConnected] = useState(false);
+  const [streamFailed, setStreamFailed] = useState(false);
+  const [sessionData, setSessionData] = useState<{sessionId: string, sdpUrl: string, talkUrl: string} | null>(null);
 
   const getSizeClasses = () => {
     switch (size) {
@@ -28,42 +28,160 @@ export default function DIDAvatar({
     }
   };
 
-  useEffect(() => {
-    if (iframeRef.current) {
-      const iframe = iframeRef.current;
+  const createStream = async () => {
+    try {
+      console.log('Creating D-ID stream...');
+      const response = await supabase.functions.invoke('did-start-stream');
       
-      iframe.onload = () => {
-        console.log('HeyGen embed loaded successfully');
-        setEmbedLoaded(true);
-      };
+      if (response.error) {
+        throw new Error(response.error.message);
+      }
       
-      iframe.onerror = () => {
-        console.error('HeyGen embed failed to load');
-        setEmbedFailed(true);
-      };
+      const data = response.data;
+      console.log('D-ID stream created:', data);
+      setSessionData(data);
       
-      // Set a timeout to detect failed loading
-      const timeout = setTimeout(() => {
-        if (!embedLoaded) {
-          console.warn('HeyGen embed loading timeout');
-          setEmbedFailed(true);
-        }
-      }, 10000); // 10 second timeout
+      // Setup WebRTC
+      await setupWebRTC(data);
       
-      return () => clearTimeout(timeout);
+    } catch (error) {
+      console.error('Failed to create D-ID stream:', error);
+      setStreamFailed(true);
     }
-  }, [embedLoaded]);
+  };
+
+  const setupWebRTC = async (data: {sessionId: string, sdpUrl: string, talkUrl: string}) => {
+    try {
+      const peerConnection = new RTCPeerConnection({
+        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+      });
+      peerConnectionRef.current = peerConnection;
+
+      // Create offer
+      const offer = await peerConnection.createOffer({
+        offerToReceiveAudio: true,
+        offerToReceiveVideo: true
+      });
+      await peerConnection.setLocalDescription(offer);
+
+      // Send offer to D-ID
+      const response = await fetch(data.sdpUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          answer: offer,
+          session_id: data.sessionId
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`SDP request failed: ${response.status}`);
+      }
+
+      const sdpData = await response.json();
+      
+      // Set remote description
+      await peerConnection.setRemoteDescription(new RTCSessionDescription(sdpData));
+
+      // Handle incoming stream
+      peerConnection.ontrack = (event) => {
+        console.log('Received remote stream');
+        if (videoRef.current) {
+          videoRef.current.srcObject = event.streams[0];
+          setStreamConnected(true);
+        }
+      };
+
+      peerConnection.onconnectionstatechange = () => {
+        console.log('Connection state:', peerConnection.connectionState);
+        if (peerConnection.connectionState === 'failed') {
+          setStreamFailed(true);
+        }
+      };
+
+    } catch (error) {
+      console.error('WebRTC setup failed:', error);
+      setStreamFailed(true);
+    }
+  };
+
+  const avatarSpeak = async (text: string) => {
+    if (!sessionData || streamFailed) {
+      // Fallback to browser TTS
+      console.log('D-ID not available, using browser TTS');
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        window.speechSynthesis.speak(utterance);
+      }
+      return;
+    }
+
+    try {
+      console.log('D-ID avatar speaking:', text);
+      const response = await fetch(sessionData.talkUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          script: {
+            type: 'text',
+            input: text
+          },
+          session_id: sessionData.sessionId
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Talk request failed: ${response.status}`);
+      }
+
+      console.log('D-ID talk request sent successfully');
+      
+    } catch (error) {
+      console.error('D-ID speak failed, falling back to TTS:', error);
+      // Fallback to browser TTS
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+  };
+
+  useEffect(() => {
+    // Expose global speak function
+    (window as any).avatarSpeak = avatarSpeak;
+    
+    // Initialize stream
+    createStream();
+    
+    return () => {
+      // Cleanup WebRTC connection
+      if (peerConnectionRef.current) {
+        peerConnectionRef.current.close();
+      }
+    };
+  }, []);
 
   return (
     <div className={`${getSizeClasses()} ${className} relative`}>
       <div className="w-full h-full relative overflow-hidden rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 border-2 border-white/30">
-        {!embedFailed ? (
-          <iframe
-            ref={iframeRef}
-            src={heygenEmbedUrl}
+        {!streamFailed ? (
+          <video
+            ref={videoRef}
+            autoPlay
+            muted
+            playsInline
             className="absolute inset-0 w-full h-full object-cover"
-            allow="camera; microphone; autoplay"
-            frameBorder="0"
+            onLoadedMetadata={() => {
+              if (videoRef.current) {
+                videoRef.current.play().catch(console.error);
+              }
+            }}
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
@@ -71,7 +189,7 @@ export default function DIDAvatar({
           </div>
         )}
         
-        {!embedLoaded && !embedFailed && (
+        {!streamConnected && !streamFailed && (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-white/60 text-xs">Loading...</div>
           </div>

@@ -210,17 +210,17 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     addChatBubble(message, "bot");
     
     if (soundEnabled) {
-      // Try to use Heygen avatar first, fallback to browser TTS
-      if (window.heygenSpeak && typeof window.heygenSpeak === 'function') {
+      // Try to use D-ID avatar first, fallback to browser TTS
+      if ((window as any).avatarSpeak && typeof (window as any).avatarSpeak === 'function') {
         try {
-          console.log('Using Heygen avatar for speech:', message.substring(0, 50) + '...');
-          await window.heygenSpeak(message);
+          console.log('Using D-ID avatar for speech:', message.substring(0, 50) + '...');
+          await (window as any).avatarSpeak(message);
         } catch (error) {
-          console.error('Heygen speak failed, falling back to browser TTS:', error);
+          console.error('D-ID avatar speak failed, falling back to browser TTS:', error);
           speak(message);
         }
       } else {
-        console.log('Heygen not available, using browser TTS');
+        console.log('D-ID avatar not available, using browser TTS');
         speak(message);
       }
     }
