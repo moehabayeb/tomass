@@ -118,6 +118,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   const [conversationContext, setConversationContext] = useState("");
   const [userLevel, setUserLevel] = useState<'beginner' | 'intermediate' | 'advanced'>('beginner');
   const [isProcessingTranscript, setIsProcessingTranscript] = useState(false);
+  const [lastTranscript, setLastTranscript] = useState<string>('');
   
   // Avatar state management
   const [lastMessageTime, setLastMessageTime] = useState<number>();
@@ -350,18 +351,10 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           );
         }
         
-        // Award small XP for engagement
-        const xpPoints = 10;
-        const success = await awardXp(xpPoints);
-        if (success) {
-          console.log(`[Speaking] Awarded ${xpPoints} XP for engagement`);
-          // Trigger XP boost animation
-          addBoost(xpPoints);
-          
-          // Light haptic feedback if available
-          if ('vibrate' in navigator) {
-            navigator.vibrate(50);
-          }
+        // Award XP based on sophisticated rules
+        const success = await calculateAndAwardXP(originalTranscript);
+        if (success && success.xp > 0) {
+          console.log(`[Speaking] Awarded ${success.xp} XP for small talk: ${success.reason}`);
         }
         
         incrementSpeakingSubmissions();
@@ -391,22 +384,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         // Track session (non-blocking)
         logSession(originalTranscript, feedback.corrected);
         
-        // Award XP through the unified system
-        const xpPoints = feedback.isCorrect ? 25 : 15;
-        const success = await awardXp(xpPoints);
-        
-        if (success) {
-          console.log(`[Speaking] Awarded ${xpPoints} XP successfully`);
-          // Trigger XP boost animation
-          addBoost(xpPoints);
-          
-          // Light haptic feedback if available
-          if ('vibrate' in navigator) {
-            navigator.vibrate(50);
-          }
-        } else {
-          console.error(`[Speaking] Failed to award ${xpPoints} XP`);
-        }
+        // Award XP based on sophisticated rules
+        await calculateAndAwardXP(originalTranscript);
         
         // Track speaking submission for badges
         incrementSpeakingSubmissions();
@@ -419,6 +398,56 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       setErrorMessage(error.message || "Sorry, there was an error. Please try again.");
     } finally {
       setIsProcessingTranscript(false);
+    }
+  };
+
+  // Calculate and award XP based on sophisticated rules
+  const calculateAndAwardXP = async (transcript: string) => {
+    try {
+      const xpResponse = await supabase.functions.invoke('calculate-xp', {
+        body: { 
+          transcript,
+          previousTranscript: lastTranscript,
+          level: userLevel
+        }
+      });
+
+      if (xpResponse.error) {
+        console.error('Error calculating XP:', xpResponse.error);
+        return null;
+      }
+
+      const { xp, reason, complexity } = xpResponse.data;
+      
+      if (xp > 0) {
+        // Award XP through the unified system
+        const success = await awardXp(xp);
+        
+        if (success) {
+          console.log(`[Speaking] Awarded ${xp} XP - ${reason} (${complexity})`);
+          
+          // Trigger XP boost animation
+          addBoost(xp, complexity === 'complex' ? '🏆 Great!' : complexity === 'medium' ? '👏 Nice!' : '✨ Good!');
+          
+          // Light haptic feedback if available
+          if ('vibrate' in navigator) {
+            navigator.vibrate(xp > 10 ? 100 : 50);
+          }
+
+          // Update last transcript for duplicate detection
+          setLastTranscript(transcript);
+          
+          return { xp, reason, complexity };
+        }
+      } else {
+        console.log(`[Speaking] No XP awarded - ${reason}`);
+        setLastTranscript(transcript); // Still update to prevent re-attempts
+      }
+
+      return null;
+    } catch (error) {
+      console.error('Error in calculateAndAwardXP:', error);
+      return null;
     }
   };
 
