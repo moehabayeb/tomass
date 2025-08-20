@@ -56,13 +56,13 @@ class DataService {
         return {
           userId: data.user_id,
           name: data.name,
-          level: data.level,
-          xp: data.xp,
-          currentStreak: data.current_streak,
-          bestStreak: data.best_streak,
-          lastVisitDate: data.last_visit_date,
-          userLevel: data.user_level as 'beginner' | 'intermediate' | 'advanced',
-          soundEnabled: data.sound_enabled
+          level: data.level || 1,
+          xp: data.xp_current || 0,
+          currentStreak: data.current_streak || 0,
+          bestStreak: data.best_streak || 0,
+          lastVisitDate: data.last_visit_date || '',
+          userLevel: data.user_level as 'beginner' | 'intermediate' | 'advanced' || 'beginner',
+          soundEnabled: data.sound_enabled !== false
         };
       }
 
@@ -87,7 +87,7 @@ class DataService {
           user_id: profile.userId,
           name: profile.name,
           level: profile.level,
-          xp: profile.xp,
+          xp_current: profile.xp,
           current_streak: profile.currentStreak,
           best_streak: profile.bestStreak,
           last_visit_date: profile.lastVisitDate,
@@ -171,7 +171,7 @@ class DataService {
   // XP and Level Management
   async updateXPAndLevel(xp: number, level: number, userId?: string): Promise<void> {
     // TODO: Replace with Supabase update when auth is implemented
-    // const { error } = await supabase.from('profiles').update({ xp, level }).eq('user_id', userId);
+    // const { error } = await supabase.from('user_profiles').update({ xp_current: xp, level }).eq('user_id', userId);
     
     const profile = await this.getUserProfile() || {} as UserProfileData;
     profile.xp = xp;

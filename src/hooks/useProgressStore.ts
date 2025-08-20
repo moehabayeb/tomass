@@ -1,0 +1,162 @@
+import { create } from 'zustand';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+
+export interface ProgressState {
+  level: number;
+  xp_current: number;
+  xp_total: number;
+  next_threshold: number;
+  isLoading: boolean;
+  lastLevelUpTime?: number;
+}
+
+interface ProgressStore extends ProgressState {
+  // Actions
+  setProgress: (progress: Partial<ProgressState>) => void;
+  fetchProgress: () => Promise<void>;
+  awardXp: (points: number) => Promise<boolean>;
+  resetLevelUpNotification: () => void;
+  
+  // Realtime subscription
+  subscribeToProgress: (userId: string) => () => void;
+}
+
+// Utility function to calculate XP threshold (matches database function)
+export const getXpThreshold = (level: number): number => {
+  return (level * 100) + ((level - 1) * 50);
+};
+
+export const useProgressStore = create<ProgressStore>((set, get) => ({
+  // Initial state
+  level: 1,
+  xp_current: 0,
+  xp_total: 0,
+  next_threshold: 150, // Level 2 threshold
+  isLoading: false,
+  lastLevelUpTime: undefined,
+
+  // Set progress data
+  setProgress: (progress) => {
+    set((state) => ({ ...state, ...progress }));
+  },
+
+  // Fetch user progress from database
+  fetchProgress: async () => {
+    set({ isLoading: true });
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.warn('No authenticated user found');
+        set({ isLoading: false });
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('level, xp_current, xp_total')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error) {
+        console.error('Error fetching progress:', error);
+        set({ isLoading: false });
+        return;
+      }
+
+      if (data) {
+        const next_threshold = getXpThreshold(data.level + 1);
+        
+        set({
+          level: data.level,
+          xp_current: data.xp_current,
+          xp_total: data.xp_total,
+          next_threshold,
+          isLoading: false,
+        });
+      }
+    } catch (error) {
+      console.error('Error in fetchProgress:', error);
+      set({ isLoading: false });
+    }
+  },
+
+  // Award XP with atomic database update
+  awardXp: async (points: number): Promise<boolean> => {
+    try {
+      console.log(`[ProgressStore] Awarding ${points} XP`);
+      
+      const { data, error } = await supabase.functions.invoke('award-xp', {
+        body: { points }
+      });
+
+      if (error) {
+        console.error('Error awarding XP:', error);
+        return false;
+      }
+
+      console.log('[ProgressStore] XP awarded successfully:', data);
+
+      // Update store state with the returned data
+      const wasLevelUp = data.level_up_occurred;
+      
+      set({
+        level: data.level,
+        xp_current: data.xp_current,
+        xp_total: data.xp_total,
+        next_threshold: data.next_threshold,
+        lastLevelUpTime: wasLevelUp ? Date.now() : get().lastLevelUpTime,
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Error in awardXp:', error);
+      return false;
+    }
+  },
+
+  // Reset level up notification
+  resetLevelUpNotification: () => {
+    set({ lastLevelUpTime: undefined });
+  },
+
+  // Subscribe to realtime progress updates
+  subscribeToProgress: (userId: string) => {
+    console.log('[ProgressStore] Setting up realtime subscription for user:', userId);
+    
+    const channel = supabase
+      .channel('user-progress-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'user_profiles',
+          filter: `user_id=eq.${userId}`,
+        },
+        (payload) => {
+          console.log('[ProgressStore] Realtime progress update:', payload);
+          
+          if (payload.new) {
+            const { level, xp_current, xp_total } = payload.new as any;
+            const next_threshold = getXpThreshold(level + 1);
+            
+            set({
+              level,
+              xp_current,
+              xp_total,
+              next_threshold,
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    // Return unsubscribe function
+    return () => {
+      console.log('[ProgressStore] Unsubscribing from realtime updates');
+      supabase.removeChannel(channel);
+    };
+  },
+}));

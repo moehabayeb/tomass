@@ -236,7 +236,8 @@ export type Database = {
           updated_at: string
           user_id: string
           user_level: string
-          xp: number
+          xp_current: number
+          xp_total: number
         }
         Insert: {
           best_streak?: number
@@ -250,7 +251,8 @@ export type Database = {
           updated_at?: string
           user_id: string
           user_level?: string
-          xp?: number
+          xp_current?: number
+          xp_total?: number
         }
         Update: {
           best_streak?: number
@@ -264,7 +266,8 @@ export type Database = {
           updated_at?: string
           user_id?: string
           user_level?: string
-          xp?: number
+          xp_current?: number
+          xp_total?: number
         }
         Relationships: []
       }
@@ -308,6 +311,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      award_xp: {
+        Args: { p_points: number; p_user_id: string }
+        Returns: Json
+      }
       get_enrolled_meeting_details: {
         Args: { meeting_uuid: string }
         Returns: {
@@ -334,6 +341,10 @@ export type Database = {
           teacher_name: string
           title: string
         }[]
+      }
+      get_xp_threshold: {
+        Args: { target_level: number }
+        Returns: number
       }
       log_speaking_metric: {
         Args: {

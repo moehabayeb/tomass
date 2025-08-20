@@ -6,14 +6,15 @@ import { useAvatarState } from '@/hooks/useAvatarState';
 import { supabase } from '@/integrations/supabase/client';
 import { useTextToSpeech } from '@/hooks/useTextToSpeech';
 import { useStreakTracker } from '@/hooks/useStreakTracker';
-import { useXPSystem } from '@/hooks/useXPSystem';
 import { useBadgeSystem } from '@/hooks/useBadgeSystem';
-import { useGamification } from '@/hooks/useGamification';
+import { useProgressStore } from '@/hooks/useProgressStore';
+import { useAuthReady } from '@/hooks/useAuthReady';
 import { XPBoostAnimation } from './XPBoostAnimation';
 import { StreakCounter } from './StreakCounter';
 import { SampleAnswerButton } from './SampleAnswerButton';
 import BookmarkButton from './BookmarkButton';
 import { startRecording, stopRecording, getState, onState, cleanup, type MicState } from '@/lib/audio/micEngine';
+import { useToast } from '@/hooks/use-toast';
 
 // Sparkle component for background decoration
 const Sparkle = ({ className, delayed = false }: { className?: string; delayed?: boolean }) => (
@@ -99,9 +100,21 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   const { speak, stopSpeaking, toggleSound, isSpeaking, soundEnabled } = useTextToSpeech();
   const [didAvatarRef, setDIDAvatarRef] = useState<any>(null);
   const { streakData, getStreakMessage } = useStreakTracker();
-  const { xp, level, xpBoosts, showLevelUpPopup, addXP } = useXPSystem();
   const { incrementSpeakingSubmissions } = useBadgeSystem();
-  const { userProfile, getXPProgress } = useGamification();
+  const { user } = useAuthReady();
+  const { toast } = useToast();
+  
+  // Progress store for unified XP management
+  const { 
+    level, 
+    xp_current, 
+    next_threshold, 
+    lastLevelUpTime,
+    fetchProgress, 
+    awardXp, 
+    resetLevelUpNotification,
+    subscribeToProgress 
+  } = useProgressStore();
   
   const [messages, setMessages] = useState([
     { text: "Hello! Ready to practice today? Let's start with a simple question.", isUser: false, isSystem: false }
@@ -140,7 +153,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     return unsubscribe;
   }, []);
 
-  // Initialize component
+  // Initialize component and progress store
   useEffect(() => {
     const savedHistory = JSON.parse(localStorage.getItem("chatHistory") || "[]");
     setHistory(savedHistory);
@@ -148,11 +161,39 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     // Ask initial question
     speak(currentQuestion);
     
+    // Fetch initial progress
+    if (user) {
+      fetchProgress();
+    }
+    
     // Cleanup on unmount
     return () => {
       cleanup();
     };
-  }, []);
+  }, [user]);
+
+  // Set up realtime subscription for progress updates
+  useEffect(() => {
+    if (!user) return;
+    
+    const unsubscribe = subscribeToProgress(user.id);
+    return unsubscribe;
+  }, [user]);
+
+  // Handle level up notifications
+  useEffect(() => {
+    if (lastLevelUpTime && Date.now() - lastLevelUpTime < 5000) {
+      toast({
+        title: "🌟 Level Up!",
+        description: `You reached Level ${level}! Keep up the great work!`,
+        duration: 4000,
+      });
+      
+      // Clear the notification after showing
+      const timer = setTimeout(resetLevelUpNotification, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [lastLevelUpTime, level]);
 
   // Handle initial message from bookmarks
   useEffect(() => {
@@ -318,7 +359,11 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         }
         
         // Award small XP for engagement
-        addXP(10, 0, false);
+        const success = await awardXp(10);
+        if (success) {
+          console.log('[Speaking] Awarded 10 XP for engagement');
+        }
+        
         incrementSpeakingSubmissions();
         return;
       }
@@ -346,8 +391,15 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         // Track session (non-blocking)
         logSession(originalTranscript, feedback.corrected);
         
-        // Award XP (more XP for correct answers)
-        addXP(feedback.isCorrect ? 25 : 15, 0, feedback.isCorrect);
+        // Award XP through the unified system
+        const xpPoints = feedback.isCorrect ? 25 : 15;
+        const success = await awardXp(xpPoints);
+        
+        if (success) {
+          console.log(`[Speaking] Awarded ${xpPoints} XP successfully`);
+        } else {
+          console.error(`[Speaking] Failed to award ${xpPoints} XP`);
+        }
         
         // Track speaking submission for badges
         incrementSpeakingSubmissions();
@@ -397,26 +449,6 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
   return (
     <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: 'hsl(var(--app-bg))' }}>
-      {/* XP Boost Animations */}
-      <XPBoostAnimation boosts={xpBoosts} />
-      
-      {/* Premium Level Up Popup */}
-      <div 
-        data-level-popup
-        className={`fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 transition-all duration-500 ${showLevelUpPopup ? 'opacity-100 scale-100' : 'opacity-0 scale-75 pointer-events-none'}`}
-        style={{
-          background: 'linear-gradient(135deg, #ffd700, #ff6b9d)',
-          borderRadius: '24px',
-          padding: '32px 40px',
-          boxShadow: '0 20px 60px rgba(255, 215, 0, 0.4)',
-          border: '3px solid rgba(255, 255, 255, 0.3)'
-        }}
-      >
-        <div className="text-center">
-          <div className="text-4xl font-black text-white mb-2">🌟 LEVEL UP! 🌟</div>
-          <div className="text-lg font-semibold text-white/90">You reached Level {level}!</div>
-        </div>
-      </div>
       
       {/* Sparkly stars background */}
       <Sparkle className="top-16 left-8" />
@@ -446,10 +478,13 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           </div>
           <h1 className="text-white font-bold text-xl sm:text-2xl tracking-wide drop-shadow-lg">Tomas Hoca</h1>
           <div className="text-white/80 text-sm sm:text-base mt-1">Your English Teacher</div>
-          {/* Compact status line */}
-          {userProfile && (
+          {/* Compact status line with real-time XP */}
+          {user && (
             <div className="text-white/60 text-xs sm:text-sm mt-2 truncate px-4">
-              Level {userProfile.level} • {Math.max(0, getXPProgress().current)}/{getXPProgress().max} XP
+              Level {level} • {xp_current}/{next_threshold} XP
+              {lastLevelUpTime && Date.now() - lastLevelUpTime < 3000 && (
+                <span className="ml-2 text-yellow-300 animate-pulse">🌟 Level up!</span>
+              )}
             </div>
           )}
         </div>
