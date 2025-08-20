@@ -2,9 +2,8 @@ import { useState, useEffect } from 'react';
 import { Mic, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import DIDAvatar from './DIDAvatar';
-import { useAvatarTTS } from '@/hooks/useAvatarTTS';
-import { useAutoSpeech } from '@/hooks/useAutoSpeech';
-import { TomasVoice } from '@/voice/TomasVoice';
+import { useAvatarState } from '@/hooks/useAvatarState';
+import { useSpeakingTTS } from '@/hooks/useSpeakingTTS';
 import { supabase } from '@/integrations/supabase/client';
 import { useStreakTracker } from '@/hooks/useStreakTracker';
 import { useBadgeSystem } from '@/hooks/useBadgeSystem';
@@ -98,7 +97,7 @@ interface SpeakingAppProps {
 }
 
 export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
-  const { speakWithAvatar, stopSpeaking, toggleSound, isSpeaking, soundEnabled, avatarState } = useAvatarTTS();
+  const { avatarState, setAvatarState } = useAvatarState({ isSpeaking: false });
   const [didAvatarRef, setDIDAvatarRef] = useState<any>(null);
   const { streakData, getStreakMessage } = useStreakTracker();
   const { incrementSpeakingSubmissions } = useBadgeSystem();
@@ -111,20 +110,20 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     { text: "Hello! Ready to practice today? Let's start with a simple question.", isUser: false, isSystem: false, id: 'initial-1', role: 'assistant', content: "Hello! Ready to practice today? Let's start with a simple question." }
   ]);
 
-  // Auto-speech for assistant messages
-  const autoSpeechMessages = messages.map(m => ({ 
+  // Convert messages for TTS
+  const ttsMessages = messages.map(m => ({ 
     id: m.id || `msg-${Date.now()}`, 
     role: m.isUser ? 'user' : 'assistant', 
     content: m.text 
-  }));
+  })) as Array<{ id: string; role: 'user' | 'assistant'; content: string }>;
   
-  console.log('🎙️ SpeakingApp autoSpeechMessages:', autoSpeechMessages);
-  console.log('🎙️ SpeakingApp soundEnabled:', soundEnabled);
+  const [soundEnabled, setSoundEnabled] = useState(false);
+  const { isSpeaking, toggleSound: handleToggleSound, stopSpeaking, clearHistory: clearSpeechHistory } = useSpeakingTTS(ttsMessages, soundEnabled);
   
-  const { speakMessage, clearHistory: clearSpeechHistory } = useAutoSpeech(
-    autoSpeechMessages, 
-    soundEnabled
-  );
+  const toggleSound = () => {
+    const newEnabled = handleToggleSound();
+    setSoundEnabled(newEnabled);
+  };
   const [micState, setMicState] = useState<MicState>('idle');
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [history, setHistory] = useState<Array<{input: string; corrected: string; time: string}>>([]);
@@ -152,21 +151,14 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     return unsubscribe;
   }, []);
 
-  // Initialize TomasVoice and handle sound toggle
+  // Handle avatar state based on TTS speaking
   useEffect(() => {
-    console.log('🎙️ SpeakingApp sound enabled changed to:', soundEnabled);
-    TomasVoice.setSoundEnabled(soundEnabled);
-    
-    // Speak initial message if sound is enabled and we're still on the initial message
-    if (soundEnabled && messages.length === 1 && messages[0].id === 'initial-1') {
-      console.log('🎙️ Sound enabled - will speak initial message');
-      // Delay to ensure TTS initialization is complete
-      setTimeout(() => {
-        console.log('🎙️ Speaking initial message now');
-        speakWithAvatar(messages[0].text, messages[0].id);
-      }, 1000);
+    if (isSpeaking) {
+      setAvatarState('talking'); // Use correct avatar state for speaking
+    } else {
+      setAvatarState('idle');
     }
-  }, [soundEnabled]);
+  }, [isSpeaking, setAvatarState]);
 
   // Clean up speech history when starting new conversation
   useEffect(() => {
