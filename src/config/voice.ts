@@ -1,27 +1,34 @@
 // Central voice configuration for consistent "Thomas" voice across all TTS
 export const VOICE_CONFIG = {
   // Voice provider preference
-  PROVIDER: 'did' as const,
+  PROVIDER: 'browser' as const,
   
-  // D-ID voice settings
-  DID_VOICE_ID: import.meta.env.VITE_DID_VOICE_ID || 'en-US-AriaNeural', // fallback to mature male voice
+  // D-ID voice settings (for avatar)
+  DID_VOICE_ID: import.meta.env.VITE_DID_VOICE_ID || 'en-US-DavisNeural', // Deep male voice
   
-  // Browser TTS settings for fallback
-  RATE: 1.0,
-  PITCH: 0.9, // Lower pitch for mature ~50 year old male voice
+  // Browser TTS settings - optimized for 50-year-old male voice
+  RATE: 0.95, // Slightly slower for mature speech
+  PITCH: 0.8, // Lower pitch for mature ~50 year old male voice
   VOLUME: 1.0,
   
-  // Preferred male voices for browser fallback (in order of preference)
+  // Preferred male voices for browser fallback (prioritized for mature sound)
   PREFERRED_MALE_VOICES: [
-    'Daniel',
-    'Alex', 
-    'Fred',
+    'Microsoft David Desktop', // Windows mature male
+    'Microsoft Mark Desktop',  // Windows mature male
+    'Google UK English Male',  // Natural British male
+    'Daniel',                  // macOS mature male
+    'Alex',                    // macOS default male
+    'Fred',                    // macOS character male
+    'Microsoft Guy Desktop',
+    'Google US English Male',
     'Microsoft David',
-    'Google UK English Male',
-    'Google US English',
-    'Microsoft Mark',
-    'Microsoft Guy',
-    'Google US English Male'
+    'Microsoft Mark'
+  ] as const,
+  
+  // Voice selection keywords for mature male voices
+  MATURE_MALE_KEYWORDS: [
+    'david', 'mark', 'daniel', 'guy', 'male', 'man',
+    'deep', 'low', 'bass', 'mature'
   ] as const
 } as const;
 
@@ -29,13 +36,19 @@ export const VOICE_CONFIG = {
 let _cachedBrowserVoice: SpeechSynthesisVoice | null = null;
 
 /**
- * Get the best available male voice for browser TTS fallback
+ * Get the best available mature male voice for consistent Thomas TTS
  * Caches the selection to ensure consistency across the session
  */
 export const getBestMaleVoice = (): SpeechSynthesisVoice | null => {
-  // Return cached voice if available
+  // Return cached voice if available and still valid
   if (_cachedBrowserVoice) {
-    return _cachedBrowserVoice;
+    const currentVoices = speechSynthesis.getVoices();
+    if (currentVoices.some(v => v.name === _cachedBrowserVoice!.name)) {
+      return _cachedBrowserVoice;
+    } else {
+      // Voice no longer available, clear cache
+      _cachedBrowserVoice = null;
+    }
   }
 
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
@@ -44,39 +57,54 @@ export const getBestMaleVoice = (): SpeechSynthesisVoice | null => {
 
   const voices = speechSynthesis.getVoices();
   
-  // First, try to find voices by preferred names
+  // Priority 1: Find voices by exact preferred names (case insensitive)
   for (const preferredName of VOICE_CONFIG.PREFERRED_MALE_VOICES) {
     const voice = voices.find(v => 
-      v.name.includes(preferredName) && 
+      v.name.toLowerCase().includes(preferredName.toLowerCase()) && 
       v.lang.startsWith('en')
     );
     if (voice) {
       _cachedBrowserVoice = voice;
-      console.log(`Selected consistent male voice: ${voice.name} (${voice.lang})`);
+      console.log(`🎙️ Thomas voice selected: ${voice.name} (${voice.lang})`);
       return voice;
     }
   }
   
-  // Fallback: find any English male voice (look for "Male" in name)
-  const maleVoice = voices.find(v => 
+  // Priority 2: Look for mature male voice indicators
+  const matureVoice = voices.find(v => 
+    v.lang.startsWith('en') && 
+    VOICE_CONFIG.MATURE_MALE_KEYWORDS.some(keyword => 
+      v.name.toLowerCase().includes(keyword)
+    )
+  );
+  
+  if (matureVoice) {
+    _cachedBrowserVoice = matureVoice;
+    console.log(`🎙️ Thomas voice selected (mature): ${matureVoice.name} (${matureVoice.lang})`);
+    return matureVoice;
+  }
+  
+  // Priority 3: Any English male voice
+  const anyMaleVoice = voices.find(v => 
     v.lang.startsWith('en') && 
     (v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('man'))
   );
   
-  if (maleVoice) {
-    _cachedBrowserVoice = maleVoice;
-    console.log(`Selected fallback male voice: ${maleVoice.name} (${maleVoice.lang})`);
-    return maleVoice;
+  if (anyMaleVoice) {
+    _cachedBrowserVoice = anyMaleVoice;
+    console.log(`🎙️ Thomas voice selected (generic male): ${anyMaleVoice.name} (${anyMaleVoice.lang})`);
+    return anyMaleVoice;
   }
   
-  // Last resort: use first English voice available
+  // Last resort: First English voice with adjusted pitch
   const englishVoice = voices.find(v => v.lang.startsWith('en'));
   if (englishVoice) {
     _cachedBrowserVoice = englishVoice;
-    console.log(`Selected English voice as last resort: ${englishVoice.name} (${englishVoice.lang})`);
+    console.log(`🎙️ Thomas voice selected (fallback): ${englishVoice.name} (${englishVoice.lang}) - will adjust pitch`);
     return englishVoice;
   }
   
+  console.warn('🎙️ No suitable voice found for Thomas');
   return null;
 };
 

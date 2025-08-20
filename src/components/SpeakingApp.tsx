@@ -144,13 +144,61 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     return unsubscribe;
   }, []);
 
+  // Automatically speak the initial AI message when component mounts
+  useEffect(() => {
+    if (soundEnabled && messages.length > 0 && !messages[0].isUser) {
+      const initialMessage = messages[0].text;
+      console.log('🎙️ Thomas speaking initial message:', initialMessage.substring(0, 50) + '...');
+      // Delay to ensure voice is ready
+      setTimeout(() => {
+        speak(initialMessage);
+      }, 1000);
+    }
+  }, []); // Only run once on mount
+
+  // Auto-speak initial message from props if provided
+  useEffect(() => {
+    if (initialMessage && soundEnabled) {
+      console.log('🎙️ Thomas speaking continued message:', initialMessage.substring(0, 50) + '...');
+      speak(initialMessage);
+      // Add the continued message to chat
+      addChatBubble(initialMessage, "bot");
+    }
+  }, [initialMessage, soundEnabled, speak]);
+
+  // Helper function to display bot messages with text-to-speech
+  const showBotMessage = async (message: string) => {
+    console.log('[Speaking] tts:start -', message.substring(0, 50) + '...');
+    addChatBubble(message, "bot");
+    
+    if (soundEnabled) {
+      // Try to use D-ID avatar first, fallback to browser TTS
+      if ((window as any).avatarSpeak && typeof (window as any).avatarSpeak === 'function') {
+        try {
+          console.log('Using D-ID avatar for speech:', message.substring(0, 50) + '...');
+          await (window as any).avatarSpeak(message);
+        } catch (error) {
+          console.error('D-ID avatar speak failed, falling back to browser TTS:', error);
+          speak(message);
+        }
+      } else {
+        console.log('D-ID avatar not available, using browser TTS');
+        speak(message);
+      }
+    }
+  };
+
   // Initialize component and progress store
   useEffect(() => {
     const savedHistory = JSON.parse(localStorage.getItem("chatHistory") || "[]");
     setHistory(savedHistory);
-
-    // Ask initial question
-    speak(currentQuestion);
+    
+    // Ask initial question - only speak if not continued from bookmark
+    if (!initialMessage && soundEnabled) {
+      setTimeout(() => {
+        speak(currentQuestion);
+      }, 1500);
+    }
     
     // Fetch initial progress
     if (user) {
@@ -192,7 +240,10 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       addChatBubble(`💬 Continuing from: "${initialMessage}"`, "system");
       const question = "Let's continue our conversation from here! What would you like to say about this?";
       setCurrentQuestion(question);
-      addChatBubble(question, "bot");
+      // Use showBotMessage to ensure TTS is triggered
+      setTimeout(() => {
+        showBotMessage(question);
+      }, 500);
     }
   }, [initialMessage]);
 
@@ -237,28 +288,6 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       corrected: feedbackRes.data.corrected || text,
       isCorrect: feedbackRes.data.isCorrect || false
     };
-  };
-
-  // Helper function to display bot messages with text-to-speech
-  const showBotMessage = async (message: string) => {
-    console.log('[Speaking] tts:start -', message.substring(0, 50) + '...');
-    addChatBubble(message, "bot");
-    
-    if (soundEnabled) {
-      // Try to use D-ID avatar first, fallback to browser TTS
-      if ((window as any).avatarSpeak && typeof (window as any).avatarSpeak === 'function') {
-        try {
-          console.log('Using D-ID avatar for speech:', message.substring(0, 50) + '...');
-          await (window as any).avatarSpeak(message);
-        } catch (error) {
-          console.error('D-ID avatar speak failed, falling back to browser TTS:', error);
-          speak(message);
-        }
-      } else {
-        console.log('D-ID avatar not available, using browser TTS');
-        speak(message);
-      }
-    }
   };
 
   // Helper function to generate contextual follow-up questions

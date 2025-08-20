@@ -1,22 +1,60 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { configureUtterance } from '@/config/voice';
+
+interface QueuedMessage {
+  text: string;
+  onComplete?: () => void;
+  language?: 'en-US' | 'tr-TR';
+  id: string;
+}
 
 export const useTextToSpeech = () => {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const speechQueue = useRef<QueuedMessage[]>([]);
+  const currentUtterance = useRef<SpeechSynthesisUtterance | null>(null);
+  const isProcessingQueue = useRef(false);
 
-  const speak = useCallback((text: string, onComplete?: () => void, language?: 'en-US' | 'tr-TR') => {
-    if (!soundEnabled || !text.trim()) {
-      onComplete?.();
+  const processQueue = useCallback(async () => {
+    if (isProcessingQueue.current || speechQueue.current.length === 0 || !soundEnabled) {
       return;
     }
 
-    // Cancel any ongoing speech to prevent overlapping
-    speechSynthesis.cancel();
+    isProcessingQueue.current = true;
+    const message = speechQueue.current.shift();
+    
+    if (!message) {
+      isProcessingQueue.current = false;
+      return;
+    }
 
-    // Wait a moment for cancellation to complete
-    setTimeout(() => {
+    try {
+      await speakMessage(message);
+    } catch (error) {
+      console.error('🎙️ Thomas TTS error:', error);
+    } finally {
+      isProcessingQueue.current = false;
+      // Process next message in queue
+      if (speechQueue.current.length > 0) {
+        setTimeout(() => processQueue(), 100);
+      }
+    }
+  }, [soundEnabled]);
+
+  const speakMessage = useCallback((message: QueuedMessage): Promise<void> => {
+    return new Promise((resolve) => {
+      const { text, onComplete, language } = message;
+      
+      if (!text.trim()) {
+        onComplete?.();
+        resolve();
+        return;
+      }
+
+      console.log(`🎙️ Thomas speaking: "${text.substring(0, 50)}${text.length > 50 ? '...' : ''}"`);
+
       const utterance = new SpeechSynthesisUtterance(text);
+      currentUtterance.current = utterance;
       
       // Check if this is Turkish content
       const hasTurkishChars = text.match(/[çğıöşüÇĞIİÖŞÜ]/);
@@ -45,51 +83,90 @@ export const useTextToSpeech = () => {
         
         if (turkishVoice) {
           utterance.voice = turkishVoice;
-          console.log(`Selected Turkish voice: ${turkishVoice.name} (${turkishVoice.lang})`);
-        } else {
-          console.warn('No Turkish voice found - using system default');
+          console.log(`🎙️ Turkish voice: ${turkishVoice.name}`);
         }
-        
-        console.log(`TTS Language set to: tr-TR for text: "${text.substring(0, 50)}..."`);
       } else {
         // For English content, use consistent Thomas voice configuration
         configureUtterance(utterance, text);
       }
 
+      let hasEnded = false;
+      
       utterance.onstart = () => {
-        console.log('TTS started for:', text.substring(0, 50) + '...');
         setIsSpeaking(true);
       };
       
       utterance.onend = () => {
-        console.log('TTS completed for:', text.substring(0, 50) + '...');
+        if (hasEnded) return;
+        hasEnded = true;
+        
         setIsSpeaking(false);
-        // Add small delay before calling completion callback
-        setTimeout(() => {
-          onComplete?.();
-        }, 500);
+        currentUtterance.current = null;
+        onComplete?.();
+        resolve();
       };
       
       utterance.onerror = (event) => {
-        console.error('TTS error:', event.error, 'for text:', text.substring(0, 50) + '...');
+        if (hasEnded) return;
+        hasEnded = true;
+        
+        console.error('🎙️ Thomas TTS error:', event.error);
         setIsSpeaking(false);
-        onComplete?.();
+        currentUtterance.current = null;
+        
+        // Retry once on error
+        if (event.error !== 'interrupted') {
+          setTimeout(() => {
+            console.log('🎙️ Retrying Thomas TTS...');
+            speechSynthesis.speak(utterance);
+          }, 500);
+        } else {
+          onComplete?.();
+          resolve();
+        }
       };
 
-      console.log('Starting TTS for text:', text);
       speechSynthesis.speak(utterance);
-    }, 100);
-  }, [soundEnabled]);
+    });
+  }, []);
+
+  const speak = useCallback((text: string, onComplete?: () => void, language?: 'en-US' | 'tr-TR') => {
+    if (!soundEnabled || !text.trim()) {
+      onComplete?.();
+      return;
+    }
+
+    // Add to queue with unique ID
+    const messageId = `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    speechQueue.current.push({
+      text,
+      onComplete,
+      language,
+      id: messageId
+    });
+
+    // Start processing if not already running
+    processQueue();
+  }, [soundEnabled, processQueue]);
 
   const stopSpeaking = useCallback(() => {
+    console.log('🎙️ Thomas stopping speech');
     speechSynthesis.cancel();
+    speechQueue.current = []; // Clear queue
+    currentUtterance.current = null;
+    isProcessingQueue.current = false;
     setIsSpeaking(false);
   }, []);
 
   const toggleSound = useCallback(() => {
-    setSoundEnabled(prev => !prev);
-    if (!soundEnabled) {
+    const newSoundEnabled = !soundEnabled;
+    setSoundEnabled(newSoundEnabled);
+    
+    if (!newSoundEnabled) {
+      console.log('🎙️ Thomas sound disabled - stopping speech');
       stopSpeaking();
+    } else {
+      console.log('🎙️ Thomas sound enabled');
     }
   }, [soundEnabled, stopSpeaking]);
 
