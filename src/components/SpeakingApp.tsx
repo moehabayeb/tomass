@@ -147,10 +147,19 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     return unsubscribe;
   }, []);
 
-  // Initialize TomasVoice on user interaction
+  // Initialize TomasVoice on user interaction and handle initial message
   useEffect(() => {
     TomasVoice.initIfNeeded();
     TomasVoice.setSoundEnabled(soundEnabled);
+    
+    // Speak initial message if sound is enabled and no other messages have been added
+    if (soundEnabled && messages.length === 1 && messages[0].id === 'initial-1') {
+      console.log('🎙️ Speaking initial message because sound was enabled');
+      // Small delay to ensure TTS is ready
+      setTimeout(() => {
+        speakWithAvatar(messages[0].text, messages[0].id);
+      }, 500);
+    }
   }, [soundEnabled]);
 
   // Clean up speech history when starting new conversation
