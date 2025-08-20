@@ -182,10 +182,21 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     return messageId;
   };
 
-  // Simplified bot message function - let auto-speech handle TTS
-  const showBotMessage = (message: string) => {
+  // Enhanced bot message function - immediate TTS trigger
+  const showBotMessage = async (message: string) => {
     console.log('[Speaking] Adding bot message:', message.substring(0, 50) + '...');
-    addChatBubble(message, "bot");
+    const messageId = addChatBubble(message, "bot");
+    
+    // Trigger TTS immediately if sound is enabled
+    if (soundEnabled) {
+      console.log('[Speaking] Triggering immediate TTS for message:', messageId);
+      try {
+        const { SimpleTTS } = await import('@/voice/SimpleTTS');
+        await SimpleTTS.speak(message, messageId);
+      } catch (error) {
+        console.warn('[Speaking] Failed to speak message immediately:', error);
+      }
+    }
   };
 
   // Initialize component and progress store
@@ -432,11 +443,12 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         if (success) {
           console.log(`[Speaking] Awarded ${xp} XP - ${reason} (${complexity})`);
           
-          // Dispatch XP awarded event for animation
+          // Dispatch XP awarded event for animation with guaranteed valid amount
           const xpEvent = new CustomEvent('xp:awarded', { 
-            detail: { amount: xp } 
+            detail: { amount: Math.max(1, xp || 1) } 
           });
           window.dispatchEvent(xpEvent);
+          console.log('[Speaking] Dispatched XP event with amount:', Math.max(1, xp || 1));
           
           // Light haptic feedback if available
           if ('vibrate' in navigator) {

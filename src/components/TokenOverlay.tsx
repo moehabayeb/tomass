@@ -19,7 +19,9 @@ const TokenOverlay = ({ soundEnabled }: TokenOverlayProps) => {
   useEffect(() => {
     const handleXPAwarded = (event: CustomEvent) => {
       const { amount } = event.detail;
-      if (amount <= 0) return;
+      // Ensure valid amount, default to 1 if invalid
+      const validAmount = (typeof amount === 'number' && amount > 0) ? amount : 1;
+      console.log('[TokenOverlay] XP awarded event:', { original: amount, valid: validAmount });
 
       const now = Date.now();
       
@@ -35,15 +37,15 @@ const TokenOverlay = ({ soundEnabled }: TokenOverlayProps) => {
           const latestToken = recentTokens[recentTokens.length - 1];
           return current.map(token => 
             token.id === latestToken.id 
-              ? { ...token, amount: token.amount + amount, timestamp: now }
+              ? { ...token, amount: token.amount + validAmount, timestamp: now }
               : token
           );
         }
 
-        // Create new token
+        // Create new token with valid amount
         const newToken: FloatingToken = {
           id: `token-${now}-${Math.random()}`,
-          amount,
+          amount: validAmount,
           timestamp: now,
           status: 'spawning',
         };
