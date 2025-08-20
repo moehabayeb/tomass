@@ -1,11 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, Mic, Volume2, RotateCcw, Trophy, Target, Settings, Heart } from 'lucide-react';
 import { useTextToSpeech } from '@/hooks/useTextToSpeech';
-import { supabase } from '@/integrations/supabase/client';
 import { useGamification } from '@/hooks/useGamification';
 import { useGameVocabulary, type GameWord } from '@/hooks/useGameVocabulary';
+import { useHangmanSpeech } from '@/hooks/useHangmanSpeech';
 
 interface HangmanGameProps {
   onBack: () => void;
@@ -16,19 +16,15 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
   const [guessedLetters, setGuessedLetters] = useState<string[]>([]);
   const [wrongGuesses, setWrongGuesses] = useState(0);
   const [gameStatus, setGameStatus] = useState<'playing' | 'won' | 'lost'>('playing');
-  const [isRecording, setIsRecording] = useState(false);
-  const [heardLetter, setHeardLetter] = useState('');
-  const [isProcessing, setIsProcessing] = useState(false);
   const [score, setScore] = useState(0);
   const [showDebug, setShowDebug] = useState(false);
   
-  const mediaRecorder = useRef<MediaRecorder | null>(null);
-  const audioChunks = useRef<Blob[]>([]);
   const maxWrongGuesses = 6;
   
   const { speak } = useTextToSpeech();
   const { addXP } = useGamification();
   const { getWordsForHangman, isLoading: vocabLoading } = useGameVocabulary();
+  const { state: speechState, startListening, stopListening } = useHangmanSpeech();
 
   useEffect(() => {
     if (!vocabLoading) {
@@ -45,7 +41,6 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
     setGuessedLetters([]);
     setWrongGuesses(0);
     setGameStatus('playing');
-    setHeardLetter('');
   };
 
   const displayWord = () => {
@@ -76,177 +71,6 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
       }
     }
   }, [guessedLetters, wrongGuesses, gameStatus, currentWord]);
-
-  const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        audio: {
-          sampleRate: 16000,
-          channelCount: 1,
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true
-        } 
-      });
-      
-      mediaRecorder.current = new MediaRecorder(stream, {
-        mimeType: 'audio/webm;codecs=opus',
-        audioBitsPerSecond: 128000
-      });
-      audioChunks.current = [];
-
-      mediaRecorder.current.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunks.current.push(event.data);
-        }
-      };
-
-      mediaRecorder.current.onstop = async () => {
-        const audioBlob = new Blob(audioChunks.current, { type: 'audio/webm' });
-        await processAudio(audioBlob);
-        stream.getTracks().forEach(track => track.stop());
-      };
-
-      mediaRecorder.current.start(250);
-      setIsRecording(true);
-      setHeardLetter('🎤 Listening...');
-
-      setTimeout(() => {
-        if (mediaRecorder.current && mediaRecorder.current.state === 'recording') {
-          stopRecording();
-        }
-      }, 3000);
-
-    } catch (error) {
-      setHeardLetter('❌ Microphone access denied');
-    }
-  };
-
-  const stopRecording = () => {
-    if (mediaRecorder.current && isRecording) {
-      mediaRecorder.current.stop();
-      setIsRecording(false);
-    }
-  };
-
-  const processAudio = async (audioBlob: Blob) => {
-    try {
-      setIsProcessing(true);
-      setHeardLetter('🔄 Processing...');
-      
-      if (audioBlob.size === 0 || audioBlob.size < 1000) {
-        setHeardLetter('❌ Speech not understood');
-        setIsProcessing(false);
-        setTimeout(() => setHeardLetter(''), 3000);
-        return;
-      }
-      
-      const reader = new FileReader();
-      reader.readAsDataURL(audioBlob);
-      reader.onloadend = async () => {
-        try {
-          const base64data = reader.result as string;
-          const audioData = base64data.split(',')[1];
-
-          const { data, error } = await supabase.functions.invoke('transcribe', {
-            body: { audio: audioData }
-          });
-
-          if (error) {
-            setHeardLetter('❌ Speech not understood');
-            setIsProcessing(false);
-            setTimeout(() => setHeardLetter(''), 3000);
-            return;
-          }
-
-          const transcription = data?.transcript || '';
-          const extractedLetter = extractLetterFromSpeech(transcription);
-          
-          if (extractedLetter) {
-            setHeardLetter(extractedLetter.toUpperCase());
-            processGuess(extractedLetter);
-            setTimeout(() => setHeardLetter(''), 3000);
-          } else {
-            setHeardLetter('❌ Speech not understood');
-            setTimeout(() => setHeardLetter(''), 3000);
-          }
-          
-        } catch (innerError) {
-          setHeardLetter('❌ Speech not understood');
-          setTimeout(() => setHeardLetter(''), 3000);
-        } finally {
-          setIsProcessing(false);
-        }
-      };
-      
-      reader.onerror = () => {
-        setHeardLetter('❌ Speech not understood');
-        setIsProcessing(false);
-        setTimeout(() => setHeardLetter(''), 3000);
-      };
-      
-    } catch (error) {
-      setHeardLetter('❌ Speech not understood');
-      setIsProcessing(false);
-      setTimeout(() => setHeardLetter(''), 3000);
-    }
-  };
-
-  const extractLetterFromSpeech = (text: string): string => {
-    const letterMappings: Record<string, string> = {
-      'a': 'a', 'ay': 'a', 'eh': 'a', 'letter a': 'a', 'the letter a': 'a',
-      'b': 'b', 'bee': 'b', 'be': 'b', 'letter b': 'b', 'the letter b': 'b',
-      'c': 'c', 'see': 'c', 'sea': 'c', 'letter c': 'c', 'the letter c': 'c',
-      'd': 'd', 'dee': 'd', 'de': 'd', 'letter d': 'd', 'the letter d': 'd',
-      'e': 'e', 'ee': 'e', 'letter e': 'e', 'the letter e': 'e',
-      'f': 'f', 'ef': 'f', 'eff': 'f', 'letter f': 'f', 'the letter f': 'f',
-      'g': 'g', 'gee': 'g', 'ji': 'g', 'letter g': 'g', 'the letter g': 'g',
-      'h': 'h', 'aitch': 'h', 'ach': 'h', 'letter h': 'h', 'the letter h': 'h',
-      'i': 'i', 'eye': 'i', 'ai': 'i', 'letter i': 'i', 'the letter i': 'i',
-      'j': 'j', 'jay': 'j', 'jey': 'j', 'letter j': 'j', 'the letter j': 'j',
-      'k': 'k', 'kay': 'k', 'key': 'k', 'letter k': 'k', 'the letter k': 'k',
-      'l': 'l', 'el': 'l', 'ell': 'l', 'letter l': 'l', 'the letter l': 'l',
-      'm': 'm', 'em': 'm', 'letter m': 'm', 'the letter m': 'm',
-      'n': 'n', 'en': 'n', 'letter n': 'n', 'the letter n': 'n',
-      'o': 'o', 'oh': 'o', 'letter o': 'o', 'the letter o': 'o',
-      'p': 'p', 'pee': 'p', 'pe': 'p', 'letter p': 'p', 'the letter p': 'p',
-      'q': 'q', 'que': 'q', 'queue': 'q', 'letter q': 'q', 'the letter q': 'q',
-      'r': 'r', 'are': 'r', 'ar': 'r', 'letter r': 'r', 'the letter r': 'r',
-      's': 's', 'es': 's', 'ess': 's', 'letter s': 's', 'the letter s': 's',
-      't': 't', 'tee': 't', 'te': 't', 'letter t': 't', 'the letter t': 't',
-      'u': 'u', 'you': 'u', 'yu': 'u', 'letter u': 'u', 'the letter u': 'u',
-      'v': 'v', 'vee': 'v', 've': 'v', 'letter v': 'v', 'the letter v': 'v',
-      'w': 'w', 'double u': 'w', 'double you': 'w', 'letter w': 'w', 'the letter w': 'w',
-      'x': 'x', 'ex': 'x', 'letter x': 'x', 'the letter x': 'x',
-      'y': 'y', 'why': 'y', 'wai': 'y', 'letter y': 'y', 'the letter y': 'y',
-      'z': 'z', 'zee': 'z', 'zed': 'z', 'letter z': 'z', 'the letter z': 'z'
-    };
-
-    // First try exact mapping
-    if (letterMappings[text]) {
-      return letterMappings[text];
-    }
-
-    // Try to find letter phrases in the text
-    for (const [key, value] of Object.entries(letterMappings)) {
-      if (text.includes(key)) {
-        return value;
-      }
-    }
-
-    // Extract single alphabetic characters
-    const singleLetters = text.match(/[a-z]/g);
-    if (singleLetters && singleLetters.length === 1) {
-      return singleLetters[0];
-    }
-
-    // If multiple letters, use first one
-    if (singleLetters && singleLetters.length > 1) {
-      return singleLetters[0];
-    }
-
-    return '';
-  };
 
   const processGuess = (letter: string) => {
     if (!currentWord) return;
@@ -284,9 +108,55 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
     }
   };
 
+  const handleSpeechRecognition = async () => {
+    const letter = await startListening(guessedLetters);
+    if (letter) {
+      processGuess(letter);
+    }
+  };
+
   const playWordPronunciation = () => {
     if (!currentWord) return;
     speak(`${currentWord.english}. In Turkish: ${currentWord.turkish}`);
+  };
+
+  const getSpeechMessage = () => {
+    if (speechState.message === 'Already guessed') {
+      return 'Already guessed';
+    }
+    if (speechState.message && !speechState.message.includes('❌')) {
+      return speechState.message;
+    }
+    return speechState.message;
+  };
+
+  const getButtonContent = () => {
+    if (speechState.isProcessing) {
+      return (
+        <>
+          <div className="animate-spin h-6 w-6 border-3 border-white border-t-transparent rounded-full mr-3" />
+          Processing...
+        </>
+      );
+    }
+    
+    if (speechState.isListening) {
+      return (
+        <>
+          <div className="animate-pulse bg-white/20 rounded-full p-2 mr-3">
+            <Mic className="h-6 w-6" />
+          </div>
+          Listening...
+        </>
+      );
+    }
+    
+    return (
+      <>
+        <Mic className="h-8 w-8 mr-3" />
+        🎤 Tap to Speak a Letter
+      </>
+    );
   };
 
   return (
@@ -358,33 +228,46 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
               <div className="text-center space-y-6">
                 
                 {/* Speech Result Display */}
-                {heardLetter && (
-                  <div className="bg-gradient-to-r from-blue-500/30 to-cyan-500/30 border border-blue-300/50 rounded-xl p-4">
-                    <p className="text-cyan-100 text-lg">
-                      {heardLetter.includes('❌') ? heardLetter : `We heard: ${heardLetter}`}
+                {speechState.message && (
+                  <div className={`border rounded-xl p-4 ${
+                    speechState.error 
+                      ? 'bg-gradient-to-r from-red-500/30 to-orange-500/30 border-red-300/50' 
+                      : speechState.message === 'Already guessed'
+                      ? 'bg-gradient-to-r from-yellow-500/30 to-orange-500/30 border-yellow-300/50'
+                      : 'bg-gradient-to-r from-green-500/30 to-emerald-500/30 border-green-300/50'
+                  }`}>
+                    <p className={`text-lg ${
+                      speechState.error 
+                        ? 'text-red-100' 
+                        : speechState.message === 'Already guessed'
+                        ? 'text-yellow-100'
+                        : speechState.message.includes('❌')
+                        ? 'text-red-100'
+                        : speechState.message.includes('Alpha') || speechState.message.includes('just the letter')
+                        ? 'text-blue-100'
+                        : 'text-white'
+                    }`}>
+                      {speechState.message.includes('❌') || speechState.message === 'Already guessed'
+                        ? speechState.message
+                        : speechState.message.includes('Alpha') || speechState.message.includes('just the letter')
+                        ? speechState.message
+                        : `We heard: ${getSpeechMessage()}`
+                      }
                     </p>
                   </div>
                 )}
 
                 {/* Main Speech Button */}
                 <Button 
-                  onClick={isRecording ? stopRecording : startRecording}
-                  disabled={isProcessing}
+                  onClick={speechState.isListening ? stopListening : handleSpeechRecognition}
+                  disabled={speechState.isProcessing || (speechState.isListening && speechState.isProcessing)}
                   className={`w-full max-w-md py-8 text-2xl font-bold rounded-full transition-all duration-300 hover:scale-105 disabled:opacity-50 shadow-2xl ${
-                    isRecording ? 'animate-pulse bg-red-500 hover:bg-red-600' : 'bg-blue-500 hover:bg-blue-600'
+                    speechState.isListening 
+                      ? 'animate-pulse bg-red-500 hover:bg-red-600' 
+                      : 'bg-blue-500 hover:bg-blue-600'
                   }`}
                 >
-                  {isProcessing ? (
-                    <>
-                      <div className="animate-spin h-6 w-6 border-3 border-white border-t-transparent rounded-full mr-3" />
-                      Processing...
-                    </>
-                  ) : (
-                    <>
-                      <Mic className="h-8 w-8 mr-3" />
-                      🎤 Tap to Speak a Letter
-                    </>
-                  )}
+                  {getButtonContent()}
                 </Button>
 
                 {/* Debug Toggle and Input */}
