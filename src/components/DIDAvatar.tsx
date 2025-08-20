@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 
 interface DIDAvatarProps {
   size?: 'sm' | 'md' | 'lg';
@@ -14,11 +13,10 @@ export default function DIDAvatar({
   className = "",
   onSpeak
 }: DIDAvatarProps) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
-  const [streamConnected, setStreamConnected] = useState(false);
-  const [streamFailed, setStreamFailed] = useState(false);
-  const [sessionData, setSessionData] = useState<{sessionId: string, sdpUrl: string, talkUrl: string, authHeader: string} | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [agentLoaded, setAgentLoaded] = useState(false);
+  const [agentFailed, setAgentFailed] = useState(false);
+  const agentRef = useRef<any>(null);
 
   const getSizeClasses = () => {
     switch (size) {
@@ -28,104 +26,84 @@ export default function DIDAvatar({
     }
   };
 
-  const createStream = async () => {
+  const initializeDIDAgent = async () => {
     try {
-      console.log('Creating D-ID stream...');
-      const response = await supabase.functions.invoke('did-start-stream');
+      console.log('Initializing D-ID agent...');
       
-      if (response.error) {
-        throw new Error(response.error.message);
-      }
-      
-      const data = response.data;
-      console.log('D-ID stream created:', data);
-      setSessionData(data);
-      
-      // Setup WebRTC
-      await setupWebRTC(data);
-      
-    } catch (error) {
-      console.error('Failed to create D-ID stream:', error);
-      setStreamFailed(true);
-    }
-  };
-
-  const setupWebRTC = async (data: {sessionId: string, sdpUrl: string, talkUrl: string, authHeader: string}) => {
-    try {
-      console.log('Setting up WebRTC connection...');
-      const peerConnection = new RTCPeerConnection({
-        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
-      });
-      peerConnectionRef.current = peerConnection;
-
-      // Create offer
-      const offer = await peerConnection.createOffer({
-        offerToReceiveAudio: true,
-        offerToReceiveVideo: true
-      });
-      await peerConnection.setLocalDescription(offer);
-
-      console.log('Sending offer to D-ID...');
-      // Send offer to D-ID (use 'offer' key, not 'answer')
-      const response = await fetch(data.sdpUrl, {
-        method: 'POST',
-        headers: {
-          'Authorization': data.authHeader,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          offer: offer,
-          session_id: data.sessionId
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`SDP request failed: ${response.status}`);
+      // Remove any existing script
+      const existingScript = document.querySelector('script[src*="agent.d-id.com"]');
+      if (existingScript) {
+        existingScript.remove();
       }
 
-      const sdpData = await response.json();
-      console.log('Received answer from D-ID');
+      // Create and load the D-ID agent script
+      const script = document.createElement('script');
+      script.type = 'module';
+      script.src = 'https://agent.d-id.com/v2/index.js';
+      script.setAttribute('data-mode', 'fabio');
+      script.setAttribute('data-client-key', 'Z29vZ2xILW9hdXRoMnwxMTM5MTg0NTQ0NzE3Mz');
+      script.setAttribute('data-agent-id', 'v2_agt_ZthBshyK');
+      script.setAttribute('data-name', 'did-agent');
+      script.setAttribute('data-monitor', 'true');
+      script.setAttribute('data-orientation', 'horizontal');
+      script.setAttribute('data-position', 'right');
+
+      // Hide the default D-ID interface and embed in our container
+      script.onload = () => {
+        console.log('D-ID script loaded');
+        
+        // Wait for agent to initialize
+        setTimeout(() => {
+          try {
+            const agent = (window as any)['did-agent'];
+            if (agent) {
+              agentRef.current = agent;
+              
+              // Try to find and move the D-ID element into our container
+              const didElement = document.querySelector('[data-name="did-agent"]');
+              if (didElement && containerRef.current) {
+                // Style the D-ID element to fit our circular container
+                (didElement as HTMLElement).style.width = '100%';
+                (didElement as HTMLElement).style.height = '100%';
+                (didElement as HTMLElement).style.borderRadius = '50%';
+                (didElement as HTMLElement).style.overflow = 'hidden';
+                
+                // Move it into our container
+                containerRef.current.appendChild(didElement);
+                setAgentLoaded(true);
+                console.log('D-ID agent initialized and embedded');
+              } else {
+                console.warn('D-ID element not found, agent may still work');
+                setAgentLoaded(true);
+              }
+            } else {
+              console.error('D-ID agent not found on window');
+              setAgentFailed(true);
+            }
+          } catch (error) {
+            console.error('Error accessing D-ID agent:', error);
+            setAgentFailed(true);
+          }
+        }, 2000);
+      };
+
+      script.onerror = () => {
+        console.error('Failed to load D-ID script');
+        setAgentFailed(true);
+      };
+
+      document.head.appendChild(script);
       
-      // Set remote description with the answer
-      await peerConnection.setRemoteDescription(new RTCSessionDescription(sdpData.answer));
-
-      // Handle incoming stream
-      peerConnection.ontrack = (event) => {
-        console.log('Received remote stream');
-        if (videoRef.current && event.streams[0]) {
-          videoRef.current.srcObject = event.streams[0];
-          videoRef.current.muted = true;
-          videoRef.current.playsInline = true;
-          setStreamConnected(true);
-        }
-      };
-
-      peerConnection.oniceconnectionstatechange = () => {
-        console.log('ICE connection state:', peerConnection.iceConnectionState);
-        if (peerConnection.iceConnectionState === 'failed') {
-          console.error('ICE connection failed');
-          setStreamFailed(true);
-        }
-      };
-
-      peerConnection.onconnectionstatechange = () => {
-        console.log('Connection state:', peerConnection.connectionState);
-        if (peerConnection.connectionState === 'failed') {
-          console.error('Peer connection failed');
-          setStreamFailed(true);
-        }
-      };
-
     } catch (error) {
-      console.error('WebRTC setup failed:', error);
-      setStreamFailed(true);
+      console.error('Error initializing D-ID agent:', error);
+      setAgentFailed(true);
     }
   };
 
   const avatarSpeak = async (text: string) => {
-    if (!sessionData || streamFailed) {
+    if (!agentRef.current || agentFailed) {
       // Fallback to browser TTS
-      console.log('D-ID not available, using browser TTS');
+      console.log('D-ID agent not available, using browser TTS');
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
@@ -135,29 +113,23 @@ export default function DIDAvatar({
     }
 
     try {
-      console.log('D-ID avatar speaking:', text);
-      const response = await fetch(sessionData.talkUrl, {
-        method: 'POST',
-        headers: {
-          'Authorization': sessionData.authHeader,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          script: {
-            type: 'text',
-            input: text
-          }
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Talk request failed: ${response.status}`);
+      console.log('D-ID agent speaking:', text);
+      
+      // Try different methods to make the agent speak
+      if (agentRef.current.chat) {
+        await agentRef.current.chat(text);
+      } else if (agentRef.current.speak) {
+        await agentRef.current.speak(text);
+      } else if (agentRef.current.sendMessage) {
+        await agentRef.current.sendMessage(text);
+      } else {
+        throw new Error('No speak method found on D-ID agent');
       }
-
-      console.log('D-ID talk request sent successfully');
+      
+      console.log('D-ID agent speak request sent successfully');
       
     } catch (error) {
-      console.error('D-ID speak failed, falling back to TTS:', error);
+      console.error('D-ID agent speak failed, falling back to TTS:', error);
       // Fallback to browser TTS
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
@@ -171,13 +143,14 @@ export default function DIDAvatar({
     // Expose global speak function
     (window as any).avatarSpeak = avatarSpeak;
     
-    // Initialize stream
-    createStream();
+    // Initialize D-ID agent
+    initializeDIDAgent();
     
     return () => {
-      // Cleanup WebRTC connection
-      if (peerConnectionRef.current) {
-        peerConnectionRef.current.close();
+      // Cleanup - remove the script and agent
+      const script = document.querySelector('script[src*="agent.d-id.com"]');
+      if (script) {
+        script.remove();
       }
     };
   }, []);
@@ -185,19 +158,10 @@ export default function DIDAvatar({
   return (
     <div className={`${getSizeClasses()} ${className} relative`}>
       <div className="w-full h-full relative overflow-hidden rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 border-2 border-white/30">
-        {!streamFailed ? (
-          <video
-            ref={videoRef}
-            autoPlay
-            muted
-            playsInline
-            className="absolute inset-0 w-full h-full object-cover rounded-full"
-            onLoadedMetadata={() => {
-              if (videoRef.current) {
-                console.log('Video metadata loaded, starting playback');
-                videoRef.current.play().catch(console.error);
-              }
-            }}
+        {!agentFailed ? (
+          <div 
+            ref={containerRef}
+            className="absolute inset-0 w-full h-full rounded-full overflow-hidden"
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
@@ -205,7 +169,7 @@ export default function DIDAvatar({
           </div>
         )}
         
-        {!streamConnected && !streamFailed && (
+        {!agentLoaded && !agentFailed && (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-white/60 text-xs">Loading...</div>
           </div>
