@@ -13,12 +13,12 @@ export default function DIDAvatar({
   className = "",
   onSpeak
 }: DIDAvatarProps) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [debug, setDebug] = useState<string>('Loading test video...');
-  const [videoLoaded, setVideoLoaded] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [embedLoaded, setEmbedLoaded] = useState(false);
+  const [embedFailed, setEmbedFailed] = useState(false);
   
-  // Test video URL from D-ID share link
-  const testVideoUrl = "https://studio.d-id.com/share?id=21027f5f886646b364bb92c73008435d";
+  // HeyGen Guest Streaming embed URL
+  const heygenEmbedUrl = "https://app.heygen.com/guest/streaming-embed?share=eyJhdmF0YXJJZCI6IkpYd3NQZWE5N25JMEZ0RFVKUzE1dCIsImtub3dsZWRnZUJhc2VJZCI6IjQ4ZjllYzI2LWQ0ZGUtNGVjZS1hZjM2LWRjOGZlODlhNzI1OCJ9";
 
   const getSizeClasses = () => {
     switch (size) {
@@ -28,79 +28,50 @@ export default function DIDAvatar({
     }
   };
 
-  const fallbackTTS = (text: string) => {
-    console.log('Using TTS fallback for:', text);
-    
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 1.0;
-      utterance.pitch = 1.0;
-      utterance.volume = 1.0;
-      
-      // Try to find an English voice
-      const voices = window.speechSynthesis.getVoices();
-      const englishVoice = voices.find(voice => voice.lang.startsWith('en'));
-      if (englishVoice) utterance.voice = englishVoice;
-      
-      window.speechSynthesis.speak(utterance);
-      onSpeak?.(text);
-    }
-  };
-
-  const handleSpeak = (text: string) => {
-    setDebug('Avatar speaking...');
-    // For testing, we'll just use TTS
-    fallbackTTS(text);
-    setTimeout(() => setDebug('Test video ready'), 2000);
-  };
-
   useEffect(() => {
-    if (videoRef.current) {
-      const video = videoRef.current;
+    if (iframeRef.current) {
+      const iframe = iframeRef.current;
       
-      video.onloadedmetadata = () => {
-        console.log('D-ID test video metadata loaded');
-        setVideoLoaded(true);
-        setDebug('Test video ready');
-        
-        video.muted = true;
-        video.play().catch((error) => {
-          console.error('Video playback failed:', error);
-          setDebug('Video playback failed');
-        });
+      iframe.onload = () => {
+        console.log('HeyGen embed loaded successfully');
+        setEmbedLoaded(true);
       };
       
-      video.onerror = () => {
-        console.error('Video loading failed');
-        setDebug('Video loading failed');
+      iframe.onerror = () => {
+        console.error('HeyGen embed failed to load');
+        setEmbedFailed(true);
       };
       
-      // Set the video source
-      video.src = testVideoUrl;
+      // Set a timeout to detect failed loading
+      const timeout = setTimeout(() => {
+        if (!embedLoaded) {
+          console.warn('HeyGen embed loading timeout');
+          setEmbedFailed(true);
+        }
+      }, 10000); // 10 second timeout
+      
+      return () => clearTimeout(timeout);
     }
-  }, []);
-
-  // Expose speak function to parent component
-  useEffect(() => {
-    if (onSpeak) {
-      (window as any).heygenSpeak = handleSpeak;
-    }
-  }, [onSpeak]);
+  }, [embedLoaded]);
 
   return (
     <div className={`${getSizeClasses()} ${className} relative`}>
       <div className="w-full h-full relative overflow-hidden rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 border-2 border-white/30">
-        <video
-          ref={videoRef}
-          autoPlay
-          muted
-          loop
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover"
-        />
+        {!embedFailed ? (
+          <iframe
+            ref={iframeRef}
+            src={heygenEmbedUrl}
+            className="absolute inset-0 w-full h-full object-cover"
+            allow="camera; microphone; autoplay"
+            frameBorder="0"
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-white/60 text-xs">Voice only</div>
+          </div>
+        )}
         
-        {!videoLoaded && (
+        {!embedLoaded && !embedFailed && (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-white/60 text-xs">Loading...</div>
           </div>
@@ -117,12 +88,6 @@ export default function DIDAvatar({
           <div className="absolute inset-0 bg-green-500/20 rounded-full animate-pulse" />
         )}
       </div>
-      
-      {debug && (
-        <div className="absolute -bottom-6 left-0 text-xs text-white/60 truncate w-full">
-          {debug}
-        </div>
-      )}
     </div>
   );
 }
