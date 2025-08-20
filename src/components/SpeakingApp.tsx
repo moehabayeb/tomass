@@ -372,35 +372,19 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       <Sparkle className="bottom-80 right-24" delayed />
 
       <div className="relative z-10 p-3 sm:p-4 max-w-sm mx-auto min-h-screen">
-        {/* Premium Header & Profile Section */}
-        <div 
-          className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-2xl sm:rounded-3xl p-4 sm:p-6 mb-4 sm:mb-6 mt-safe-area-inset-top"
-          style={{ boxShadow: 'var(--shadow-medium), inset 0 1px 0 rgba(255,255,255,0.1)' }}
-        >
-          {/* Teacher Card */}
-          <div className="glass-card glass-card-hover rounded-3xl p-4 sm:p-6 mb-6 sm:mb-8">
-            <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
-              <div className="relative">
-                <DIDAvatar 
-                  size="lg"
-                  state={avatarState}
-                  className="border-3 sm:border-4 border-white/30 shadow-lg transition-all duration-500 hover:scale-105 hover:rotate-1"
-                  onSpeak={(text) => console.log('DID Avatar speaking:', text)}
-                />
-                <div className="absolute -bottom-1 -right-1 w-6 h-6 sm:w-8 sm:h-8 bg-green-500 rounded-full border-3 border-white/30 animate-pulse"></div>
-              </div>
-              
-              <div className="text-center sm:text-left flex-1">
-                <h1 className="text-white font-bold text-xl sm:text-2xl mb-2 tracking-wide drop-shadow-lg">Tomas Hoca</h1>
-                <div className="pill-button bg-gradient-to-r from-orange-500/20 to-orange-400/15 backdrop-blur-sm px-4 sm:px-6 py-2 sm:py-3 mb-4 border border-white/20 inline-block">
-                  <span className="text-white font-semibold text-sm sm:text-base drop-shadow-sm">📚 Level {level} Teacher</span>
-                </div>
-                <div className="max-w-sm">
-                  <XPProgressBar current={xp} max={500} />
-                </div>
-              </div>
-            </div>
+        {/* Simplified Header for Speaking Focus */}
+        <div className="text-center mb-6 sm:mb-8 mt-safe-area-inset-top">
+          <div className="relative inline-block">
+            <DIDAvatar 
+              size="lg"
+              state={avatarState}
+              className="border-3 sm:border-4 border-white/30 shadow-lg transition-all duration-500"
+              onSpeak={(text) => console.log('DID Avatar speaking:', text)}
+            />
+            <div className="absolute -bottom-1 -right-1 w-6 h-6 sm:w-8 sm:h-8 bg-green-500 rounded-full border-3 border-white/30 animate-pulse"></div>
           </div>
+          <h1 className="text-white font-bold text-xl sm:text-2xl mt-4 tracking-wide drop-shadow-lg">Tomas Hoca</h1>
+          <div className="text-white/80 text-sm sm:text-base mt-1">Your English Teacher</div>
         </div>
 
         {/* Enhanced spacing for cleaner layout */}

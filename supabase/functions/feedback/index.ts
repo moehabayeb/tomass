@@ -31,11 +31,14 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'You are an English grammar tutor. When given text, provide a corrected version with better grammar, pronunciation guidance, and helpful feedback. Keep your response concise and encouraging. If the text is already correct, praise the user and suggest minor improvements if any.'
+            content: `You are a friendly English teacher having a natural conversation. Give VERY SHORT responses:
+            - If correct: Just say "Perfect!" or "That's correct, let's continue." 
+            - If incorrect: Say "Nice try, but say: [correct version]"
+            Keep it conversational and brief - like a real teacher would speak.`
           },
           {
             role: 'user',
-            content: `Please check this text for grammar and provide feedback: "${text}"`
+            content: `Check this: "${text}"`
           }
         ],
         max_tokens: 200,

@@ -8,8 +8,6 @@ import LessonsApp from './LessonsApp';
 import { SpeakingPlacementTest } from './SpeakingPlacementTest';
 import { GamesApp } from './GamesApp';
 import MeetingsApp from './MeetingsApp';
-import DailyTips from './DailyTips';
-import DailyTipsBadge from './DailyTipsBadge';
 import BookmarksView from './BookmarksView';
 import BadgesView from './BadgesView';
 import { EnhancedAvatarDisplay } from './EnhancedAvatarDisplay';
@@ -30,7 +28,6 @@ type AppMode = 'speaking' | 'lessons' | 'bookmarks' | 'badges' | 'placement-test
 export default function AppNavigation() {
   const [currentMode, setCurrentMode] = useState<AppMode>('speaking');
   const [continuedMessage, setContinuedMessage] = useState<string | undefined>();
-  const [showDailyTips, setShowDailyTips] = useState(false);
   const [showStreakWelcome, setShowStreakWelcome] = useState(false);
   const [hasCompletedPlacement, setHasCompletedPlacement] = useState(false);
   const [profile, setProfile] = useState<any>(null);
@@ -132,10 +129,6 @@ export default function AppNavigation() {
         onClose={closeBadgeNotification}
       />
 
-      {/* Daily Tips Modal */}
-      {showDailyTips && (
-        <DailyTips onClose={() => setShowDailyTips(false)} />
-      )}
 
       {/* User Authentication Section */}
       <div className="fixed top-4 left-4 z-20">
@@ -182,12 +175,6 @@ export default function AppNavigation() {
         </div>
       )}
 
-      {/* Daily Tips Badge - Only show in speaking mode */}
-      {currentMode === 'speaking' && (
-        <div className="fixed top-20 right-4 z-20">
-          <DailyTipsBadge onClick={() => setShowDailyTips(true)} />
-        </div>
-      )}
 
       {/* Content based on current mode */}
       {currentMode === 'lessons' && (
