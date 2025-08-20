@@ -28,7 +28,7 @@ serve(async (req) => {
     openAIFormData.append('model', 'whisper-1')
     openAIFormData.append('language', 'en') // Specify English for better accuracy
     openAIFormData.append('temperature', '0') // More deterministic results
-    openAIFormData.append('prompt', 'Transcribe exactly what the user said, including any letters. Do not correct or improve the speech.') // Force verbatim transcription
+    openAIFormData.append('prompt', 'The user is speaking single letters for a word game. Transcribe clearly spoken letters or words.') // Better for letter recognition
 
     console.log('Sending to OpenAI Whisper...')
 

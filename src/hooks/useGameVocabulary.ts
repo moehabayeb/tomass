@@ -7,66 +7,38 @@ export interface GameWord {
   source?: string; // which lesson/module this word came from
 }
 
-// Extract vocabulary from lesson data
-const extractVocabularyFromLessons = (): GameWord[] => {
-  const vocabulary: GameWord[] = [];
-  
-  // Get user's lesson progress from localStorage
-  const progress = JSON.parse(localStorage.getItem('lessonProgress') || '{}');
-  
-  // Extract words from completed lessons
-  // This is a simplified approach - in a real app, this would come from a proper vocabulary database
-  
-  // Module 1 vocabulary (To Be verbs)
-  if (progress.module1?.completed || progress.currentModule >= 1) {
-    vocabulary.push(
-      { english: 'student', turkish: 'öğrenci', difficulty: 1, source: 'Module 1' },
-      { english: 'teacher', turkish: 'öğretmen', difficulty: 1, source: 'Module 1' },
-      { english: 'doctor', turkish: 'doktor', difficulty: 1, source: 'Module 1' },
-      { english: 'happy', turkish: 'mutlu', difficulty: 1, source: 'Module 1' },
-      { english: 'tired', turkish: 'yorgun', difficulty: 1, source: 'Module 1' },
-      { english: 'friend', turkish: 'arkadaş', difficulty: 1, source: 'Module 1' },
-      { english: 'cold', turkish: 'soğuk', difficulty: 1, source: 'Module 1' },
-      { english: 'engineer', turkish: 'mühendis', difficulty: 2, source: 'Module 1' }
-    );
-  }
-  
-  // Module 2 vocabulary (Negative sentences)
-  if (progress.module2?.completed || progress.currentModule >= 2) {
-    vocabulary.push(
-      { english: 'nurse', turkish: 'hemşire', difficulty: 1, source: 'Module 2' },
-      { english: 'busy', turkish: 'meşgul', difficulty: 1, source: 'Module 2' },
-      { english: 'ready', turkish: 'hazır', difficulty: 1, source: 'Module 2' },
-      { english: 'strong', turkish: 'güçlü', difficulty: 1, source: 'Module 2' },
-      { english: 'careful', turkish: 'dikkatli', difficulty: 2, source: 'Module 2' }
-    );
-  }
-  
-  // Module 3 vocabulary (Questions)
-  if (progress.module3?.completed || progress.currentModule >= 3) {
-    vocabulary.push(
-      { english: 'beautiful', turkish: 'güzel', difficulty: 1, source: 'Module 3' },
-      { english: 'expensive', turkish: 'pahalı', difficulty: 2, source: 'Module 3' },
-      { english: 'married', turkish: 'evli', difficulty: 1, source: 'Module 3' },
-      { english: 'available', turkish: 'müsait', difficulty: 2, source: 'Module 3' },
-      { english: 'welcome', turkish: 'hoş geldin', difficulty: 2, source: 'Module 3' }
-    );
-  }
-  
-  // Always include some basic vocabulary for new users
-  if (vocabulary.length === 0) {
-    vocabulary.push(
-      { english: 'book', turkish: 'kitap', difficulty: 1, source: 'Basic' },
-      { english: 'house', turkish: 'ev', difficulty: 1, source: 'Basic' },
-      { english: 'water', turkish: 'su', difficulty: 1, source: 'Basic' },
-      { english: 'school', turkish: 'okul', difficulty: 1, source: 'Basic' },
-      { english: 'family', turkish: 'aile', difficulty: 1, source: 'Basic' },
-      { english: 'morning', turkish: 'sabah', difficulty: 1, source: 'Basic' },
-      { english: 'evening', turkish: 'akşam', difficulty: 2, source: 'Basic' }
-    );
-  }
-  
-  return vocabulary;
+// CEFR A1-B1 English word list for Hangman
+const getEnglishWordList = (): GameWord[] => {
+  // English-only words suitable for Hangman (4-8 letters, common vocabulary)
+  const englishWords = [
+    // A1 Level (Basic)
+    'book', 'home', 'work', 'time', 'hand', 'year', 'word', 'place', 
+    'world', 'school', 'water', 'family', 'money', 'story', 'month',
+    'right', 'study', 'group', 'music', 'night', 'point', 'house',
+    'state', 'room', 'fact', 'money', 'light', 'sound', 'order',
+    'power', 'heart', 'party', 'level', 'price', 'paper', 'space',
+    
+    // A2 Level
+    'nature', 'peace', 'health', 'sister', 'brother', 'mother', 'father',
+    'friend', 'happy', 'tired', 'strong', 'quick', 'clean', 'dark',
+    'heavy', 'light', 'short', 'tall', 'wide', 'young', 'old',
+    'smart', 'kind', 'nice', 'good', 'great', 'small', 'large',
+    'first', 'last', 'early', 'late', 'today', 'green', 'blue',
+    
+    // B1 Level
+    'energy', 'office', 'doctor', 'teacher', 'worker', 'garden', 
+    'market', 'center', 'travel', 'future', 'change', 'choice',
+    'chance', 'reason', 'season', 'person', 'animal', 'plant',
+    'growth', 'create', 'build', 'start', 'finish', 'learn',
+    'teach', 'watch', 'listen', 'speak', 'write', 'read'
+  ];
+
+  return englishWords.map((word, index) => ({
+    english: word,
+    turkish: '', // No Turkish translations needed for English-only game
+    difficulty: word.length <= 4 ? 1 : word.length <= 6 ? 2 : 3,
+    source: 'English Vocabulary'
+  }));
 };
 
 export const useGameVocabulary = () => {
@@ -77,15 +49,15 @@ export const useGameVocabulary = () => {
     const loadVocabulary = () => {
       try {
         setIsLoading(true);
-        const words = extractVocabularyFromLessons();
+        const words = getEnglishWordList();
         setVocabulary(words);
       } catch (error) {
         console.error('Error loading vocabulary:', error);
-        // Fallback to basic vocabulary
+        // Fallback to basic English vocabulary
         setVocabulary([
-          { english: 'book', turkish: 'kitap', difficulty: 1, source: 'Basic' },
-          { english: 'house', turkish: 'ev', difficulty: 1, source: 'Basic' },
-          { english: 'water', turkish: 'su', difficulty: 1, source: 'Basic' }
+          { english: 'book', turkish: '', difficulty: 1, source: 'Basic' },
+          { english: 'house', turkish: '', difficulty: 1, source: 'Basic' },
+          { english: 'water', turkish: '', difficulty: 1, source: 'Basic' }
         ]);
       } finally {
         setIsLoading(false);

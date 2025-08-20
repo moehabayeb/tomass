@@ -54,7 +54,7 @@ export const useHangmanSpeech = () => {
       // Letter names
       'ay': 'a', 'eh': 'a', 'dee': 'd', 'ef': 'f', 'eff': 'f', 'gee': 'g',
       'aitch': 'h', 'ach': 'h', 'eye': 'i', 'ai': 'i', 'oh': 'o', 'ar': 'r',
-      'double u': 'w', 'double you': 'w',
+      'double u': 'w', 'double you': 'w', 'vee': 'v', 'el': 'l',
       
       // NATO alphabet
       'alpha': 'a', 'bravo': 'b', 'charlie': 'c', 'delta': 'd', 'echo': 'e',

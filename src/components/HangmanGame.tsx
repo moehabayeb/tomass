@@ -128,7 +128,7 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
 
   const playWordPronunciation = () => {
     if (!currentWord) return;
-    speak(`${currentWord.english}. In Turkish: ${currentWord.turkish}`);
+    speak(currentWord.english);
   };
 
   // Remove getSpeechMessage - we'll use speechState.message directly
@@ -221,9 +221,6 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
               <div className="text-4xl font-bold tracking-wider text-white">
                 {displayWord()}
               </div>
-              <p className="text-white/70 text-lg">
-                Turkish: {gameStatus !== 'playing' && currentWord ? currentWord.turkish : '???'}
-              </p>
             </div>
 
             {/* Main Game Interface */}
@@ -343,8 +340,7 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
                     <div className="text-6xl mb-4">😔</div>
                     <h3 className="text-3xl font-bold text-red-200 mb-3">❌ Out of Guesses!</h3>
                     <p className="text-white/90 text-lg mb-2">The word was:</p>
-                    <p className="text-3xl font-bold text-white bg-black/20 rounded-lg p-3 mb-3">{currentWord?.english?.toUpperCase()}</p>
-                    <p className="text-lg text-blue-300">Turkish: {currentWord?.turkish}</p>
+                    <p className="text-3xl font-bold text-white bg-black/20 rounded-lg p-3">{currentWord?.english?.toUpperCase()}</p>
                   </div>
                 )}
                 
