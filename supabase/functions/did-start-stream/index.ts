@@ -33,7 +33,7 @@ serve(async (req: Request) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        source_url: "https://create-images-results.d-id.com/api_docs/assets/noelle.jpeg"
+        source_url: "https://create-images-results.d-id.com/DefaultPresenters/Noelle_f/image.jpeg"
       })
     })
 
