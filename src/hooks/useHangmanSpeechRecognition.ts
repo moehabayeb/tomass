@@ -86,19 +86,16 @@ export const useHangmanSpeechRecognition = () => {
     'v': ['b']
   };
 
-  // Extract letter from transcript using exact token matching
-  const extractLetter = useCallback((transcript: string, confidence?: number, alternatives?: string[]): SpeechResult => {
+  // Simplified letter extraction - direct and reliable
+  const extractLetter = useCallback((transcript: string, confidence?: number): SpeechResult => {
     const normalized = transcript.toLowerCase().trim().replace(/[^\w\s-]/g, '');
-    const tokens = normalized.split(/\s+/);
     
     // Debug logging
     const debugEnabled = window.location.search.includes('debug=1');
     if (debugEnabled) {
       console.log('Speech Debug:', { 
         raw: transcript, 
-        alternatives: alternatives || [],
         normalized,
-        tokens,
         confidence 
       });
     }
@@ -113,106 +110,69 @@ export const useHangmanSpeechRecognition = () => {
       return { letter, confidence, transcript };
     }
 
-    // Check multi-word phrases first (e.g., "double you")
-    const multiWordPhrases = ['double you', 'double-you', 'double-u', 'x-ray'];
-    for (const phrase of multiWordPhrases) {
-      if (normalized.includes(phrase) && letterMap[phrase.replace(/\s+/g, ' ')]) {
-        const letter = letterMap[phrase.replace(/\s+/g, ' ')];
-        if (debugEnabled) {
-          console.log('Speech Debug - Multi-word:', { phrase, letter });
-        }
-        return { letter, confidence, transcript };
-      }
+    // Handle multi-word phrases like "double you"
+    if (normalized.includes('double you') || normalized.includes('double-you') || normalized.includes('double u')) {
+      return { letter: 'w', confidence, transcript };
+    }
+    if (normalized.includes('x-ray') || normalized.includes('xray')) {
+      return { letter: 'x', confidence, transcript };
     }
 
-    // Check each token for exact matches
-    const foundLetters: string[] = [];
+    // Split into tokens and check each one
+    const tokens = normalized.split(/\s+/);
+    
     for (const token of tokens) {
+      // Direct letter mapping
       if (letterMap[token]) {
-        foundLetters.push(letterMap[token]);
-      } else if (/^[a-z]$/.test(token)) {
-        foundLetters.push(token);
-      }
-    }
-
-    // If we found exactly one letter, use it
-    if (foundLetters.length === 1) {
-      const letter = foundLetters[0];
-      if (debugEnabled) {
-        console.log('Speech Debug - Resolved:', { letter, chosen: letter });
-      }
-      return { letter, confidence, transcript };
-    }
-
-    // If multiple letters found, this is ambiguous
-    if (foundLetters.length > 1) {
-      const uniqueLetters = [...new Set(foundLetters)];
-      if (uniqueLetters.length === 1) {
-        // All tokens mapped to same letter
-        const letter = uniqueLetters[0];
+        const letter = letterMap[token];
         if (debugEnabled) {
-          console.log('Speech Debug - Multiple same:', { letter });
+          console.log('Speech Debug - Found mapping:', { token, letter });
         }
         return { letter, confidence, transcript };
-      } else {
-        // Different letters found - ambiguous
+      }
+      
+      // Single alphabetic character
+      if (/^[a-z]$/.test(token)) {
         if (debugEnabled) {
-          console.log('Speech Debug - Ambiguous:', { foundLetters: uniqueLetters });
+          console.log('Speech Debug - Direct letter:', { letter: token });
         }
-        return { letter: null, confidence, transcript, needsConfirmation: true };
+        return { letter: token, confidence, transcript };
       }
     }
 
-    // No clear letter found
+    // Check if the whole transcript is just a single letter
+    if (/^[a-z]$/.test(normalized)) {
+      return { letter: normalized, confidence, transcript };
+    }
+
+    // No letter found
     if (debugEnabled) {
-      console.log('Speech Debug - No letter resolved');
+      console.log('Speech Debug - No letter found in:', { tokens });
     }
     return { letter: null, confidence, transcript };
   }, []);
 
-  // Setup speech grammar for better recognition
+  // Simple speech grammar setup
   const setupSpeechGrammar = useCallback((recognition: SpeechRecognition) => {
-    if ('webkitSpeechGrammarList' in window || 'SpeechGrammarList' in window) {
-      try {
-        const SpeechGrammarList = (window as any).webkitSpeechGrammarList || (window as any).SpeechGrammarList;
+    try {
+      // Try to set up grammar but don't fail if unsupported
+      const SpeechGrammarList = (window as any).webkitSpeechGrammarList || (window as any).SpeechGrammarList;
+      if (SpeechGrammarList) {
         const grammarList = new SpeechGrammarList();
         
-        // JSGF grammar for letters and their variants
+        // Simple JSGF grammar focusing on common letter pronunciations
         const grammar = `#JSGF V1.0;
 grammar letters;
-public <letter> = 
-  a | ay | eh | alpha |
-  b | bee | be | bravo |
-  c | see | sea | cee | charlie |
-  d | dee | delta |
-  e | ee | echo |
-  f | ef | eff | foxtrot |
-  g | gee | golf |
-  h | aitch | ach | hotel |
-  i | eye | ai | india |
-  j | jay | juliet |
-  k | kay | key | kilo |
-  l | el | ell | lima |
-  m | em | mike |
-  n | en | november |
-  o | oh | owe | oscar |
-  p | pee | papa |
-  q | cue | queue | quebec |
-  r | ar | are | romeo |
-  s | ess | sierra |
-  t | tee | tea | tango |
-  u | you | yu | uniform |
-  v | vee | victor |
-  w | double u | double-u | double-you | whiskey |
-  x | ex | xray | x-ray |
-  y | why | yankee |
-  z | zee | zed | zulu ;`;
+public <letter> = a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p | q | r | s | t | u | v | w | x | y | z |
+                  ay | bee | see | dee | ee | ef | gee | aitch | eye | jay | kay | el | em | en | oh | pee | cue | ar | ess | tee | you | vee | double you | ex | why | zee |  
+                  alpha | bravo | charlie | delta | echo | foxtrot | golf | hotel | india | juliet | kilo | lima | mike | november | oscar | papa | quebec | romeo | sierra | tango | uniform | victor | whiskey | xray | yankee | zulu ;`;
         
         grammarList.addFromString(grammar, 1);
         (recognition as any).grammars = grammarList;
-      } catch (error) {
-        console.warn('Speech grammar not supported:', error);
       }
+    } catch (error) {
+      // Grammar setup failed, continue without it
+      console.warn('Speech grammar setup failed, continuing without grammar:', error);
     }
   }, []);
 
@@ -266,12 +226,29 @@ public <letter> =
             if (hasResult) return;
             hasResult = true;
 
-            const results = Array.from(event.results[0]) as SpeechRecognitionResult[];
-            const alternatives = results.map(r => r.transcript);
+            // Get all alternatives from the speech recognition result
+            const results = event.results[0];
+            const alternatives: Array<{transcript: string, confidence: number}> = [];
             
-            // Try each alternative in confidence order
-            for (const result of results) {
-              const extractResult = extractLetter(result.transcript, result.confidence, alternatives);
+            // Collect all alternatives
+            for (let i = 0; i < results.length; i++) {
+              alternatives.push({
+                transcript: results[i].transcript,
+                confidence: results[i].confidence
+              });
+            }
+            
+            // Sort by confidence (highest first)
+            alternatives.sort((a, b) => b.confidence - a.confidence);
+            
+            const debugEnabled = window.location.search.includes('debug=1');
+            if (debugEnabled) {
+              console.log('Speech alternatives:', alternatives);
+            }
+            
+            // Try each alternative
+            for (const alt of alternatives) {
+              const extractResult = extractLetter(alt.transcript, alt.confidence);
               
               if (extractResult.letter) {
                 const letter = extractResult.letter.toLowerCase();
@@ -291,9 +268,8 @@ public <letter> =
                   return;
                 }
                 
-                // Check confidence or if it's an ambiguous pair
-                const needsConfirmation = result.confidence < 0.6 || 
-                  (ambiguousPairs[letter] && result.confidence < 0.8);
+                // Lower confidence threshold and simplified confirmation logic
+                const needsConfirmation = alt.confidence < 0.4;
                 
                 if (needsConfirmation) {
                   setState({
@@ -323,7 +299,7 @@ public <letter> =
               }
             }
             
-            // No letter found
+            // No letter found in any alternative
             setState({
               isListening: false,
               isProcessing: false,
