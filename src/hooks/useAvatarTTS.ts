@@ -1,46 +1,59 @@
-import { useTextToSpeech } from './useTextToSpeech';
+import { useEffect, useState } from 'react';
+import { TomasVoice, speakAssistantMessage } from '@/voice/TomasVoice';
 import { useAvatarState } from './useAvatarState';
 
 /**
  * Unified hook that coordinates TTS with avatar animation
- * Ensures Thomas always speaks with consistent voice while avatar animates
+ * Uses the central TomasVoice service for consistent speech
  */
 export const useAvatarTTS = () => {
-  const { speak, stopSpeaking, toggleSound, isSpeaking, soundEnabled } = useTextToSpeech();
+  const [soundEnabled, setSoundEnabled] = useState(() => TomasVoice.getSoundEnabled());
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  
   const { avatarState, setAvatarState, triggerState } = useAvatarState({ 
     isSpeaking 
   });
 
+  // Listen for speech events from TomasVoice
+  useEffect(() => {
+    const handleSpeechStart = () => setIsSpeaking(true);
+    const handleSpeechEnd = () => setIsSpeaking(false);
+    
+    window.addEventListener('speech:start', handleSpeechStart);
+    window.addEventListener('speech:end', handleSpeechEnd);
+    
+    return () => {
+      window.removeEventListener('speech:start', handleSpeechStart);
+      window.removeEventListener('speech:end', handleSpeechEnd);
+    };
+  }, []);
+
   // Enhanced speak function that coordinates with avatar
-  const speakWithAvatar = (text: string, onComplete?: () => void) => {
+  const speakWithAvatar = async (text: string, messageId?: string): Promise<void> => {
     if (!soundEnabled || !text.trim()) {
-      onComplete?.();
       return;
     }
 
-    console.log('🎙️ Thomas speaking with avatar animation:', text.substring(0, 50) + '...');
-    
-    // Start avatar talking animation
-    setAvatarState('talking');
-    
-    // Speak with TTS
-    speak(text, () => {
-      // When speech completes, return avatar to idle
-      setAvatarState('idle');
-      onComplete?.();
-    });
+    try {
+      await speakAssistantMessage(text, messageId);
+    } catch (error) {
+      console.warn('🎙️ Speech failed:', error);
+    }
   };
 
   // Stop both TTS and avatar animation
   const stopAll = () => {
-    stopSpeaking();
+    TomasVoice.stop();
     setAvatarState('idle');
   };
 
   // Toggle sound affects both TTS and avatar
   const toggleSoundAndAvatar = () => {
-    toggleSound();
-    if (isSpeaking) {
+    const newEnabled = !soundEnabled;
+    setSoundEnabled(newEnabled);
+    TomasVoice.setSoundEnabled(newEnabled);
+    
+    if (!newEnabled && isSpeaking) {
       stopAll();
     }
   };
@@ -50,7 +63,7 @@ export const useAvatarTTS = () => {
     speakWithAvatar,
     
     // Individual controls
-    speak,
+    speak: speakAssistantMessage,
     stopSpeaking: stopAll,
     toggleSound: toggleSoundAndAvatar,
     

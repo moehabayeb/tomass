@@ -17,6 +17,7 @@ export default function DIDAvatar({
   const [agentLoaded, setAgentLoaded] = useState(false);
   const [agentFailed, setAgentFailed] = useState(false);
   const agentRef = useRef<any>(null);
+  const [avatarState, setAvatarState] = useState<'idle' | 'talking' | 'listening' | 'thinking'>('idle');
 
   const getSizeClasses = () => {
     switch (size) {
@@ -25,6 +26,20 @@ export default function DIDAvatar({
       default: return 'w-24 h-24';
     }
   };
+
+  // Listen for avatar events from TomasVoice
+  useEffect(() => {
+    const handleTalkingStart = () => setAvatarState('talking');
+    const handleTalkingEnd = () => setAvatarState('idle');
+    
+    window.addEventListener('avatar:talking:start', handleTalkingStart);
+    window.addEventListener('avatar:talking:end', handleTalkingEnd);
+    
+    return () => {
+      window.removeEventListener('avatar:talking:start', handleTalkingStart);
+      window.removeEventListener('avatar:talking:end', handleTalkingEnd);
+    };
+  }, []);
 
   const initializeDIDAgent = async () => {
     try {
@@ -101,7 +116,6 @@ export default function DIDAvatar({
   };
 
   // D-ID is now purely visual - no speaking functionality
-
   useEffect(() => {
     // Initialize D-ID agent for visual animation only
     initializeDIDAgent();
@@ -115,8 +129,8 @@ export default function DIDAvatar({
     };
   }, []);
 
-  // Update visual state based on speaking status + manual state
-  const currentState = isSpeaking ? 'talking' : state;
+  // Update visual state - prioritize avatar events over props
+  const currentState = avatarState !== 'idle' ? avatarState : (isSpeaking ? 'talking' : state);
 
   return (
     <div className={`${getSizeClasses()} ${className} relative`}>

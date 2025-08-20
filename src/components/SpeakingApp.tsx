@@ -3,6 +3,8 @@ import { Mic, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import DIDAvatar from './DIDAvatar';
 import { useAvatarTTS } from '@/hooks/useAvatarTTS';
+import { useAutoSpeech } from '@/hooks/useAutoSpeech';
+import { TomasVoice } from '@/voice/TomasVoice';
 import { supabase } from '@/integrations/supabase/client';
 import { useStreakTracker } from '@/hooks/useStreakTracker';
 import { useBadgeSystem } from '@/hooks/useBadgeSystem';
@@ -106,8 +108,18 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   const { level, xp_current, next_threshold, awardXp, lastLevelUpTime, fetchProgress, resetLevelUpNotification, subscribeToProgress } = useProgressStore();
   
   const [messages, setMessages] = useState([
-    { text: "Hello! Ready to practice today? Let's start with a simple question.", isUser: false, isSystem: false }
+    { text: "Hello! Ready to practice today? Let's start with a simple question.", isUser: false, isSystem: false, id: 'initial-1', role: 'assistant', content: "Hello! Ready to practice today? Let's start with a simple question." }
   ]);
+
+  // Auto-speech for assistant messages
+  const { speakMessage, clearHistory: clearSpeechHistory } = useAutoSpeech(
+    messages.map(m => ({ 
+      id: m.id || `msg-${Date.now()}`, 
+      role: m.isUser ? 'user' : 'assistant', 
+      content: m.text 
+    })), 
+    soundEnabled
+  );
   const [micState, setMicState] = useState<MicState>('idle');
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [history, setHistory] = useState<Array<{input: string; corrected: string; time: string}>>([]);
@@ -135,61 +147,44 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     return unsubscribe;
   }, []);
 
-  // Automatically speak the initial AI message when component mounts
+  // Initialize TomasVoice on user interaction
   useEffect(() => {
-    if (soundEnabled && messages.length > 0 && !messages[0].isUser) {
-      const initialMessage = messages[0].text;
-      console.log('🎙️ Thomas speaking initial message:', initialMessage.substring(0, 50) + '...');
-      // Delay to ensure voice is ready
-      setTimeout(() => {
-        speakWithAvatar(initialMessage);
-      }, 1000);
-    }
-  }, []); // Only run once on mount
+    TomasVoice.initIfNeeded();
+    TomasVoice.setSoundEnabled(soundEnabled);
+  }, [soundEnabled]);
 
-  // Auto-speak initial message from props if provided
+  // Clean up speech history when starting new conversation
   useEffect(() => {
-    if (initialMessage && soundEnabled) {
-      console.log('🎙️ Thomas speaking continued message:', initialMessage.substring(0, 50) + '...');
-      speakWithAvatar(initialMessage);
-      // Add the continued message to chat
-      addChatBubble(initialMessage, "bot");
-    }
-  }, [initialMessage, soundEnabled, speakWithAvatar]);
+    clearSpeechHistory();
+  }, []);
 
-  // Helper function to display bot messages with text-to-speech
-  const showBotMessage = async (message: string) => {
-    console.log('[Speaking] tts:start -', message.substring(0, 50) + '...');
-    addChatBubble(message, "bot");
+  // Helper function to add chat bubbles with proper message structure
+  const addChatBubble = (text: string, type: "user" | "bot" | "system") => {
+    const messageId = `msg-${Date.now()}-${Math.random()}`;
+    const newMessage = {
+      text,
+      isUser: type === "user",
+      isSystem: type === "system",
+      id: messageId,
+      role: type === "user" ? "user" : "assistant",
+      content: text
+    };
     
-    if (soundEnabled) {
-      // Try to use D-ID avatar first, fallback to browser TTS
-      if ((window as any).avatarSpeak && typeof (window as any).avatarSpeak === 'function') {
-        try {
-          console.log('Using D-ID avatar for speech:', message.substring(0, 50) + '...');
-          await (window as any).avatarSpeak(message);
-        } catch (error) {
-          console.error('D-ID avatar speak failed, falling back to browser TTS:', error);
-          speakWithAvatar(message);
-        }
-      } else {
-        console.log('D-ID avatar not available, using browser TTS');
-        speakWithAvatar(message);
-      }
-    }
+    setMessages(prev => [...prev, newMessage]);
+    setLastMessageTime(Date.now());
+    return messageId;
+  };
+
+  // Simplified bot message function - let auto-speech handle TTS
+  const showBotMessage = (message: string) => {
+    console.log('[Speaking] Adding bot message:', message.substring(0, 50) + '...');
+    addChatBubble(message, "bot");
   };
 
   // Initialize component and progress store
   useEffect(() => {
     const savedHistory = JSON.parse(localStorage.getItem("chatHistory") || "[]");
     setHistory(savedHistory);
-    
-    // Ask initial question - only speak if not continued from bookmark
-    if (!initialMessage && soundEnabled) {
-      setTimeout(() => {
-        speakWithAvatar(currentQuestion);
-      }, 1500);
-    }
     
     // Fetch initial progress
     if (user) {
@@ -201,6 +196,19 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       cleanup();
     };
   }, [user]);
+
+  // Handle initial message from props (bookmarks) - avoid duplicate
+  useEffect(() => {
+    if (initialMessage) {
+      console.log('Adding continued message from bookmark:', initialMessage.substring(0, 50) + '...');
+      const question = "Let's continue our conversation from here! What would you like to say about this?";
+      setCurrentQuestion(question);
+      // Use showBotMessage to ensure TTS is triggered
+      setTimeout(() => {
+        showBotMessage(question);
+      }, 500);
+    }
+  }, [initialMessage]);
 
   // Set up realtime subscription for progress updates
   useEffect(() => {
@@ -225,19 +233,6 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     }
   }, [lastLevelUpTime, level]);
 
-  // Handle initial message from bookmarks
-  useEffect(() => {
-    if (initialMessage) {
-      addChatBubble(`💬 Continuing from: "${initialMessage}"`, "system");
-      const question = "Let's continue our conversation from here! What would you like to say about this?";
-      setCurrentQuestion(question);
-      // Use showBotMessage to ensure TTS is triggered
-      setTimeout(() => {
-        showBotMessage(question);
-      }, 500);
-    }
-  }, [initialMessage]);
-
   const logSession = (input: string, corrected: string) => {
     const newSession = {
       input,
@@ -247,20 +242,6 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     const updatedHistory = [...history, newSession];
     setHistory(updatedHistory);
     localStorage.setItem("chatHistory", JSON.stringify(updatedHistory));
-  };
-
-  const addChatBubble = (text: string, type: "user" | "bot" | "system") => {
-    const newMessage = { 
-      text, 
-      isUser: type === "user",
-      isSystem: type === "system"
-    };
-    setMessages(prev => [...prev, newMessage]);
-    
-    // Update avatar state based on message type
-    if (type === "bot") {
-      setLastMessageTime(Date.now());
-    }
   };
 
 
@@ -556,7 +537,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           </div>
           {messages.map((message, index) => (
             <ChatBubble 
-              key={index}
+              key={message.id || index}
               message={message.text} 
               isUser={message.isUser}
               className={message.isSystem ? "opacity-75 italic" : ""}
