@@ -5,6 +5,8 @@ interface SpeechResult {
   letter: string | null;
   confidence?: number;
   transcript?: string;
+  needsConfirmation?: boolean;
+  possibleLetters?: string[];
 }
 
 interface SpeechState {
@@ -12,6 +14,8 @@ interface SpeechState {
   isProcessing: boolean;
   message: string;
   error: boolean;
+  needsConfirmation: boolean;
+  possibleLetters: string[];
 }
 
 export const useHangmanSpeech = () => {
@@ -19,7 +23,9 @@ export const useHangmanSpeech = () => {
     isListening: false,
     isProcessing: false,
     message: '',
-    error: false
+    error: false,
+    needsConfirmation: false,
+    possibleLetters: []
   });
 
   const recognitionRef = useRef<SpeechRecognition | null>(null);
@@ -27,12 +33,8 @@ export const useHangmanSpeech = () => {
   const audioChunksRef = useRef<Blob[]>([]);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Comprehensive letter extraction with phonetics and NATO alphabet
+  // Enhanced letter extraction with ambiguity detection
   const extractLetter = useCallback((transcript: string, confidence?: number): SpeechResult => {
-    if (confidence && confidence < 0.6) {
-      return { letter: null };
-    }
-
     const normalized = transcript.toLowerCase().trim().replace(/[^\w\s]/g, '');
     
     // Direct letter mappings including phonetics
@@ -75,13 +77,54 @@ export const useHangmanSpeech = () => {
       }
     }
 
-    // Extract first alphabetic character from tokens
+    // Handle "as in" phrases (e.g., "B as in boy")
+    const asInMatch = normalized.match(/([a-z])\s+as\s+in/);
+    if (asInMatch) {
+      return { letter: asInMatch[1], confidence, transcript };
+    }
+
+    // Extract from longer words (e.g., "equality" -> "e")
     const tokens = normalized.split(/\s+/);
+    const possibleLetters: string[] = [];
+    
     for (const token of tokens) {
-      const match = token.match(/[a-z]/);
-      if (match) {
-        return { letter: match[0], confidence, transcript };
+      if (token.length > 3) {
+        // For longer words, extract first letter and check confidence
+        const firstLetter = token[0];
+        if (firstLetter.match(/[a-z]/)) {
+          possibleLetters.push(firstLetter);
+        }
+      } else {
+        // For shorter tokens, try to extract any letter
+        const match = token.match(/[a-z]/);
+        if (match) {
+          possibleLetters.push(match[0]);
+        }
       }
+    }
+
+    if (possibleLetters.length === 1) {
+      const letter = possibleLetters[0];
+      // Check if we need confirmation for low confidence or ambiguous cases
+      if (confidence && confidence < 0.6) {
+        return { 
+          letter: null, 
+          needsConfirmation: true, 
+          possibleLetters: [letter], 
+          confidence, 
+          transcript 
+        };
+      }
+      return { letter, confidence, transcript };
+    } else if (possibleLetters.length > 1) {
+      // Multiple possible letters - need confirmation
+      return { 
+        letter: null, 
+        needsConfirmation: true, 
+        possibleLetters: possibleLetters.slice(0, 3), // Max 3 options
+        confidence, 
+        transcript 
+      };
     }
 
     return { letter: null, confidence, transcript };
@@ -137,13 +180,13 @@ export const useHangmanSpeech = () => {
       recognitionRef.current = recognition;
       recognition.start();
 
-      // Auto-timeout after 3 seconds
+      // Auto-timeout after 4 seconds
       setTimeout(() => {
         if (recognition && !hasResult) {
           recognition.stop();
           resolve({ letter: null });
         }
-      }, 3000);
+      }, 4000);
     });
   }, [extractLetter]);
 
@@ -211,12 +254,12 @@ export const useHangmanSpeech = () => {
         mediaRecorderRef.current = mediaRecorder;
         mediaRecorder.start(250);
 
-        // Auto-stop after 3 seconds
+        // Auto-stop after 4 seconds
         setTimeout(() => {
           if (mediaRecorder.state === 'recording' && !hasResult) {
             mediaRecorder.stop();
           }
-        }, 3000);
+        }, 4000);
 
       } catch (error) {
         resolve({ letter: null });
@@ -225,7 +268,7 @@ export const useHangmanSpeech = () => {
   }, [extractLetter]);
 
   // Main speech recognition function
-  const startListening = useCallback(async (alreadyGuessed: string[] = []): Promise<string | null> => {
+  const startListening = useCallback(async (alreadyGuessed: Set<string>): Promise<string | null> => {
     if (state.isListening || state.isProcessing) {
       return null;
     }
@@ -238,7 +281,9 @@ export const useHangmanSpeech = () => {
         isListening: false,
         isProcessing: false,
         message: 'Enable microphone to play. Settings → Microphone.',
-        error: true
+        error: true,
+        needsConfirmation: false,
+        possibleLetters: []
       });
       return null;
     }
@@ -247,7 +292,9 @@ export const useHangmanSpeech = () => {
       isListening: true,
       isProcessing: false,
       message: 'Listening...',
-      error: false
+      error: false,
+      needsConfirmation: false,
+      possibleLetters: []
     });
 
     try {
@@ -255,20 +302,35 @@ export const useHangmanSpeech = () => {
       let result = await startWebSpeech();
       
       // If Web Speech API failed or not available, try server STT
-      if (!result.letter) {
+      if (!result.letter && !result.needsConfirmation) {
         setState(prev => ({ ...prev, isProcessing: true, message: 'Processing...' }));
         result = await startServerSTT();
+      }
+
+      // Handle confirmation needed
+      if (result.needsConfirmation && result.possibleLetters && result.possibleLetters.length > 0) {
+        setState({
+          isListening: false,
+          isProcessing: false,
+          message: `Did you say ${result.possibleLetters[0].toUpperCase()}?`,
+          error: false,
+          needsConfirmation: true,
+          possibleLetters: result.possibleLetters
+        });
+        return null;
       }
 
       // Handle results
       if (result.letter) {
         // Check if already guessed
-        if (alreadyGuessed.includes(result.letter)) {
+        if (alreadyGuessed.has(result.letter)) {
           setState({
             isListening: false,
             isProcessing: false,
-            message: 'Already guessed',
-            error: false
+            message: `You already tried ${result.letter.toUpperCase()}.`,
+            error: false,
+            needsConfirmation: false,
+            possibleLetters: []
           });
           
           setTimeout(() => setState(prev => ({ ...prev, message: '' })), 2000);
@@ -279,8 +341,10 @@ export const useHangmanSpeech = () => {
         setState({
           isListening: false,
           isProcessing: false,
-          message: result.letter.toUpperCase(),
-          error: false
+          message: `We heard: ${result.letter.toUpperCase()}`,
+          error: false,
+          needsConfirmation: false,
+          possibleLetters: []
         });
 
         setTimeout(() => setState(prev => ({ ...prev, message: '' })), 3000);
@@ -290,8 +354,10 @@ export const useHangmanSpeech = () => {
         setState({
           isListening: false,
           isProcessing: false,
-          message: '❌ Speech not understood',
-          error: true
+          message: "Didn't catch that—try again",
+          error: true,
+          needsConfirmation: false,
+          possibleLetters: []
         });
 
         setTimeout(() => {
@@ -299,7 +365,9 @@ export const useHangmanSpeech = () => {
             isListening: false,
             isProcessing: false,
             message: 'Say just the letter. You can also say "Alpha, Bravo..."',
-            error: false
+            error: false,
+            needsConfirmation: false,
+            possibleLetters: []
           });
           
           setTimeout(() => setState(prev => ({ ...prev, message: '' })), 3000);
@@ -311,14 +379,43 @@ export const useHangmanSpeech = () => {
       setState({
         isListening: false,
         isProcessing: false,
-        message: '❌ Speech not understood',
-        error: true
+        message: "Didn't catch that—try again",
+        error: true,
+        needsConfirmation: false,
+        possibleLetters: []
       });
 
       setTimeout(() => setState(prev => ({ ...prev, message: '' })), 3000);
       return null;
     }
   }, [state.isListening, state.isProcessing, startWebSpeech, startServerSTT]);
+
+  // Confirm letter selection
+  const confirmLetter = useCallback((letter: string): string | null => {
+    setState({
+      isListening: false,
+      isProcessing: false,
+      message: `We heard: ${letter.toUpperCase()}`,
+      error: false,
+      needsConfirmation: false,
+      possibleLetters: []
+    });
+
+    setTimeout(() => setState(prev => ({ ...prev, message: '' })), 3000);
+    return letter;
+  }, []);
+
+  // Reject confirmation and try again
+  const rejectConfirmation = useCallback(() => {
+    setState({
+      isListening: false,
+      isProcessing: false,
+      message: '',
+      error: false,
+      needsConfirmation: false,
+      possibleLetters: []
+    });
+  }, []);
 
   // Stop listening
   const stopListening = useCallback(() => {
@@ -340,13 +437,17 @@ export const useHangmanSpeech = () => {
       isListening: false,
       isProcessing: false,
       message: '',
-      error: false
+      error: false,
+      needsConfirmation: false,
+      possibleLetters: []
     });
   }, []);
 
   return {
     state,
     startListening,
-    stopListening
+    stopListening,
+    confirmLetter,
+    rejectConfirmation
   };
 };

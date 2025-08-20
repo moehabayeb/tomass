@@ -13,7 +13,7 @@ interface HangmanGameProps {
 
 export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
   const [currentWord, setCurrentWord] = useState<GameWord | null>(null);
-  const [guessedLetters, setGuessedLetters] = useState<string[]>([]);
+  const [guessedLetters, setGuessedLetters] = useState<Set<string>>(new Set());
   const [wrongGuesses, setWrongGuesses] = useState(0);
   const [gameStatus, setGameStatus] = useState<'playing' | 'won' | 'lost'>('playing');
   const [score, setScore] = useState(0);
@@ -24,7 +24,7 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
   const { speak } = useTextToSpeech();
   const { addXP } = useGamification();
   const { getWordsForHangman, isLoading: vocabLoading } = useGameVocabulary();
-  const { state: speechState, startListening, stopListening } = useHangmanSpeech();
+  const { state: speechState, startListening, stopListening, confirmLetter, rejectConfirmation } = useHangmanSpeech();
 
   useEffect(() => {
     if (!vocabLoading) {
@@ -38,7 +38,7 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
     
     const randomWord = availableWords[Math.floor(Math.random() * availableWords.length)];
     setCurrentWord(randomWord);
-    setGuessedLetters([]);
+    setGuessedLetters(new Set());
     setWrongGuesses(0);
     setGameStatus('playing');
   };
@@ -47,7 +47,7 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
     if (!currentWord) return '';
     return currentWord.english
       .split('')
-      .map(letter => (guessedLetters.includes(letter.toLowerCase()) ? letter : '_'))
+      .map(letter => (guessedLetters.has(letter.toLowerCase()) ? letter : '_'))
       .join(' ');
   };
 
@@ -56,7 +56,7 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
     return currentWord.english
       .toLowerCase()
       .split('')
-      .every(letter => guessedLetters.includes(letter));
+      .every(letter => guessedLetters.has(letter));
   };
 
   useEffect(() => {
@@ -73,38 +73,36 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
   }, [guessedLetters, wrongGuesses, gameStatus, currentWord]);
 
   const processGuess = (letter: string) => {
-    if (!currentWord) return;
+    if (!currentWord || gameStatus !== 'playing') return;
     
     const lowerLetter = letter.toLowerCase();
     
-    if (guessedLetters.includes(lowerLetter)) {
-      return; // Already guessed
+    if (guessedLetters.has(lowerLetter)) {
+      return; // Already guessed - this should not happen due to check in hook
     }
 
-    setGuessedLetters(prev => [...prev, lowerLetter]);
+    // Add to guessed letters immediately
+    setGuessedLetters(prev => new Set([...prev, lowerLetter]));
 
     const isLetterInWord = currentWord.english.toLowerCase().includes(lowerLetter);
     
     if (!isLetterInWord) {
       setWrongGuesses(prev => {
         const newWrongGuesses = prev + 1;
-        if (newWrongGuesses >= 6) {
+        if (newWrongGuesses >= maxWrongGuesses) {
           setGameStatus('lost');
         }
         return newWrongGuesses;
       });
     } else {
       // Check if word is complete after this guess
-      setTimeout(() => {
-        const wordLetters = currentWord.english.toLowerCase().split('');
-        const allLettersGuessed = wordLetters.every(l => 
-          l === ' ' || [...guessedLetters, lowerLetter].includes(l)
-        );
-        
-        if (allLettersGuessed) {
-          setGameStatus('won');
-        }
-      }, 100);
+      const wordLetters = currentWord.english.toLowerCase().split('');
+      const newGuessedSet = new Set([...guessedLetters, lowerLetter]);
+      const allLettersGuessed = wordLetters.every(l => newGuessedSet.has(l));
+      
+      if (allLettersGuessed) {
+        setGameStatus('won');
+      }
     }
   };
 
@@ -115,20 +113,25 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
     }
   };
 
+  const handleConfirmYes = () => {
+    if (speechState.possibleLetters.length > 0) {
+      const letter = confirmLetter(speechState.possibleLetters[0]);
+      if (letter) {
+        processGuess(letter);
+      }
+    }
+  };
+
+  const handleConfirmNo = () => {
+    rejectConfirmation();
+  };
+
   const playWordPronunciation = () => {
     if (!currentWord) return;
     speak(`${currentWord.english}. In Turkish: ${currentWord.turkish}`);
   };
 
-  const getSpeechMessage = () => {
-    if (speechState.message === 'Already guessed') {
-      return 'Already guessed';
-    }
-    if (speechState.message && !speechState.message.includes('❌')) {
-      return speechState.message;
-    }
-    return speechState.message;
-  };
+  // Remove getSpeechMessage - we'll use speechState.message directly
 
   const getButtonContent = () => {
     if (speechState.isProcessing) {
@@ -227,32 +230,45 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
             {gameStatus === 'playing' && (
               <div className="text-center space-y-6">
                 
+                {/* Confirmation Dialog */}
+                {speechState.needsConfirmation && (
+                  <div className="bg-gradient-to-r from-blue-500/30 to-purple-500/30 border border-blue-300/50 rounded-xl p-6">
+                    <p className="text-white text-lg mb-4">{speechState.message}</p>
+                    <div className="flex gap-4 justify-center">
+                      <Button
+                        onClick={handleConfirmYes}
+                        className="bg-green-500 hover:bg-green-600 px-6 py-2"
+                      >
+                        Yes
+                      </Button>
+                      <Button
+                        onClick={handleConfirmNo}
+                        variant="outline"
+                        className="border-white/30 text-white hover:bg-white/20 px-6 py-2"
+                      >
+                        No, try again
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
                 {/* Speech Result Display */}
-                {speechState.message && (
+                {speechState.message && !speechState.needsConfirmation && (
                   <div className={`border rounded-xl p-4 ${
                     speechState.error 
                       ? 'bg-gradient-to-r from-red-500/30 to-orange-500/30 border-red-300/50' 
-                      : speechState.message === 'Already guessed'
+                      : speechState.message.includes('already tried')
                       ? 'bg-gradient-to-r from-yellow-500/30 to-orange-500/30 border-yellow-300/50'
                       : 'bg-gradient-to-r from-green-500/30 to-emerald-500/30 border-green-300/50'
                   }`}>
                     <p className={`text-lg ${
                       speechState.error 
                         ? 'text-red-100' 
-                        : speechState.message === 'Already guessed'
+                        : speechState.message.includes('already tried')
                         ? 'text-yellow-100'
-                        : speechState.message.includes('❌')
-                        ? 'text-red-100'
-                        : speechState.message.includes('Alpha') || speechState.message.includes('just the letter')
-                        ? 'text-blue-100'
                         : 'text-white'
                     }`}>
-                      {speechState.message.includes('❌') || speechState.message === 'Already guessed'
-                        ? speechState.message
-                        : speechState.message.includes('Alpha') || speechState.message.includes('just the letter')
-                        ? speechState.message
-                        : `We heard: ${getSpeechMessage()}`
-                      }
+                      {speechState.message}
                     </p>
                   </div>
                 )}
@@ -260,7 +276,7 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
                 {/* Main Speech Button */}
                 <Button 
                   onClick={speechState.isListening ? stopListening : handleSpeechRecognition}
-                  disabled={speechState.isProcessing || (speechState.isListening && speechState.isProcessing)}
+                  disabled={speechState.isProcessing || speechState.needsConfirmation}
                   className={`w-full max-w-md py-8 text-2xl font-bold rounded-full transition-all duration-300 hover:scale-105 disabled:opacity-50 shadow-2xl ${
                     speechState.isListening 
                       ? 'animate-pulse bg-red-500 hover:bg-red-600' 
@@ -270,36 +286,40 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
                   {getButtonContent()}
                 </Button>
 
-                {/* Debug Toggle and Input */}
-                <div className="flex justify-center">
-                  <Button
-                    onClick={() => setShowDebug(!showDebug)}
-                    variant="ghost"
-                    size="sm"
-                    className="text-white/50 hover:text-white/80"
-                  >
-                    <Settings className="h-4 w-4 mr-2" />
-                    Debug
-                  </Button>
-                </div>
+                {/* Debug Toggle and Input - Hidden by default */}
+                {process.env.NODE_ENV === 'development' && (
+                  <>
+                    <div className="flex justify-center">
+                      <Button
+                        onClick={() => setShowDebug(!showDebug)}
+                        variant="ghost"
+                        size="sm"
+                        className="text-white/50 hover:text-white/80"
+                      >
+                        <Settings className="h-4 w-4 mr-2" />
+                        Debug
+                      </Button>
+                    </div>
 
-                {showDebug && (
-                  <div className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-300/50 rounded-xl p-4">
-                    <p className="text-yellow-200 text-sm font-medium mb-2">🔧 Debug: Type a letter to test</p>
-                    <input
-                      type="text"
-                      maxLength={1}
-                      placeholder="A"
-                      className="w-16 h-12 text-center text-2xl font-bold bg-white/10 border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                      onChange={(e) => {
-                        const letter = e.target.value.toLowerCase();
-                        if (letter && /^[a-z]$/.test(letter)) {
-                          processGuess(letter);
-                          e.target.value = '';
-                        }
-                      }}
-                    />
-                  </div>
+                    {showDebug && (
+                      <div className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-300/50 rounded-xl p-4">
+                        <p className="text-yellow-200 text-sm font-medium mb-2">🔧 Debug: Type a letter to test</p>
+                        <input
+                          type="text"
+                          maxLength={1}
+                          placeholder="A"
+                          className="w-16 h-12 text-center text-2xl font-bold bg-white/10 border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                          onChange={(e) => {
+                            const letter = e.target.value.toLowerCase();
+                            if (letter && /^[a-z]$/.test(letter)) {
+                              processGuess(letter);
+                              e.target.value = '';
+                            }
+                          }}
+                        />
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             )}
