@@ -33,28 +33,45 @@ export const useHangmanSpeech = () => {
   const audioChunksRef = useRef<Blob[]>([]);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Enhanced letter extraction with ambiguity detection
-  const extractLetter = useCallback((transcript: string, confidence?: number): SpeechResult => {
-    const normalized = transcript.toLowerCase().trim().replace(/[^\w\s]/g, '');
+  // Enhanced letter extraction - comprehensive mapping, no A fallback
+  const extractLetter = useCallback((transcript: string, confidence?: number, alternatives?: string[]): SpeechResult => {
+    const normalized = transcript.toLowerCase().trim().replace(/[^\w\s-]/g, '');
     
-    // Direct letter mappings including phonetics
+    // Comprehensive letter mappings - covers all phonetic variants
     const letterMappings: Record<string, string> = {
-      // Single letters
+      // Direct letters
       'a': 'a', 'b': 'b', 'c': 'c', 'd': 'd', 'e': 'e', 'f': 'f', 'g': 'g', 'h': 'h',
       'i': 'i', 'j': 'j', 'k': 'k', 'l': 'l', 'm': 'm', 'n': 'n', 'o': 'o', 'p': 'p',
       'q': 'q', 'r': 'r', 's': 's', 't': 't', 'u': 'u', 'v': 'v', 'w': 'w', 'x': 'x',
       'y': 'y', 'z': 'z',
       
-      // Common phonetic mishears
-      'why': 'y', 'are': 'r', 'see': 'c', 'sea': 'c', 'bee': 'b', 'be': 'b',
-      'tea': 't', 'tee': 't', 'cue': 'q', 'queue': 'q', 'you': 'u', 'jay': 'j',
-      'kay': 'k', 'key': 'k', 'ell': 'l', 'em': 'm', 'en': 'n', 'pee': 'p',
-      'ess': 's', 'ex': 'x', 'zed': 'z', 'zee': 'z',
-      
-      // Letter names
-      'ay': 'a', 'eh': 'a', 'dee': 'd', 'ef': 'f', 'eff': 'f', 'gee': 'g',
-      'aitch': 'h', 'ach': 'h', 'eye': 'i', 'ai': 'i', 'oh': 'o', 'ar': 'r',
-      'double u': 'w', 'double you': 'w', 'vee': 'v', 'el': 'l',
+      // Letter name variants (comprehensive)
+      'ay': 'a', 'eh': 'a',
+      'bee': 'b', 'be': 'b',
+      'see': 'c', 'sea': 'c', 'cee': 'c',
+      'dee': 'd',
+      'ee': 'e',
+      'ef': 'f', 'eff': 'f',
+      'gee': 'g',
+      'aitch': 'h', 'ach': 'h',
+      'eye': 'i', 'ai': 'i',
+      'jay': 'j',
+      'kay': 'k', 'key': 'k',
+      'el': 'l', 'ell': 'l',
+      'em': 'm',
+      'en': 'n',
+      'oh': 'o', 'owe': 'o',
+      'pee': 'p',
+      'cue': 'q', 'queue': 'q',
+      'ar': 'r', 'are': 'r',
+      'ess': 's',
+      'tee': 't', 'tea': 't',
+      'you': 'u', 'yu': 'u',
+      'vee': 'v',
+      'double u': 'w', 'double-u': 'w', 'double you': 'w',
+      'ex': 'x',
+      'why': 'y',
+      'zee': 'z', 'zed': 'z',
       
       // NATO alphabet
       'alpha': 'a', 'bravo': 'b', 'charlie': 'c', 'delta': 'd', 'echo': 'e',
@@ -64,69 +81,65 @@ export const useHangmanSpeech = () => {
       'tango': 't', 'uniform': 'u', 'victor': 'v', 'whiskey': 'w', 'xray': 'x',
       'x-ray': 'x', 'yankee': 'y', 'zulu': 'z'
     };
+    
+    // Debug logging
+    const debugEnabled = window.location.search.includes('debug=1');
+    if (debugEnabled) {
+      console.log('Speech Debug:', { 
+        rawTranscript: transcript, 
+        alternatives: alternatives || [],
+        confidence 
+      });
+    }
 
     // Try exact match first
     if (letterMappings[normalized]) {
-      return { letter: letterMappings[normalized], confidence, transcript };
+      const letter = letterMappings[normalized];
+      if (debugEnabled) {
+        console.log('Speech Debug - Resolved:', { resolvedLetter: letter });
+      }
+      return { letter, confidence, transcript };
     }
 
-    // Try partial matches in the transcript
-    for (const [key, value] of Object.entries(letterMappings)) {
-      if (normalized.includes(key)) {
-        return { letter: value, confidence, transcript };
+    // Tokenize and check each token
+    const tokens = normalized.split(/\s+/);
+    const matchedLetters: string[] = [];
+    
+    for (const token of tokens) {
+      // Check direct mapping
+      if (letterMappings[token]) {
+        matchedLetters.push(letterMappings[token]);
+        continue;
+      }
+      
+      // Check if token contains a mapped phrase
+      for (const [key, value] of Object.entries(letterMappings)) {
+        if (token.includes(key) && key.length > 1) { // Prefer longer matches
+          matchedLetters.push(value);
+          break;
+        }
       }
     }
 
     // Handle "as in" phrases (e.g., "B as in boy")
     const asInMatch = normalized.match(/([a-z])\s+as\s+in/);
-    if (asInMatch) {
-      return { letter: asInMatch[1], confidence, transcript };
+    if (asInMatch && !matchedLetters.length) {
+      matchedLetters.push(asInMatch[1]);
     }
 
-    // Extract from longer words (e.g., "equality" -> "e")
-    const tokens = normalized.split(/\s+/);
-    const possibleLetters: string[] = [];
-    
-    for (const token of tokens) {
-      if (token.length > 3) {
-        // For longer words, extract first letter and check confidence
-        const firstLetter = token[0];
-        if (firstLetter.match(/[a-z]/)) {
-          possibleLetters.push(firstLetter);
-        }
-      } else {
-        // For shorter tokens, try to extract any letter
-        const match = token.match(/[a-z]/);
-        if (match) {
-          possibleLetters.push(match[0]);
-        }
-      }
-    }
-
-    if (possibleLetters.length === 1) {
-      const letter = possibleLetters[0];
-      // Check if we need confirmation for low confidence or ambiguous cases
-      if (confidence && confidence < 0.6) {
-        return { 
-          letter: null, 
-          needsConfirmation: true, 
-          possibleLetters: [letter], 
-          confidence, 
-          transcript 
-        };
+    // Take first matched letter if any
+    if (matchedLetters.length > 0) {
+      const letter = matchedLetters[0]; // Take first match, ignore rest
+      if (debugEnabled) {
+        console.log('Speech Debug - Resolved:', { resolvedLetter: letter });
       }
       return { letter, confidence, transcript };
-    } else if (possibleLetters.length > 1) {
-      // Multiple possible letters - need confirmation
-      return { 
-        letter: null, 
-        needsConfirmation: true, 
-        possibleLetters: possibleLetters.slice(0, 3), // Max 3 options
-        confidence, 
-        transcript 
-      };
     }
 
+    // No clear letter found
+    if (debugEnabled) {
+      console.log('Speech Debug - No letter resolved');
+    }
     return { letter: null, confidence, transcript };
   }, []);
 
@@ -143,7 +156,7 @@ export const useHangmanSpeech = () => {
       
       recognition.lang = 'en-US';
       recognition.interimResults = false;
-      recognition.maxAlternatives = 3;
+      recognition.maxAlternatives = 5; // More alternatives for better letter detection
       recognition.continuous = false;
 
       let hasResult = false;
@@ -151,17 +164,18 @@ export const useHangmanSpeech = () => {
       recognition.onresult = (event) => {
         hasResult = true;
         const results = Array.from(event.results[0]) as SpeechRecognitionResult[];
+        const alternatives = results.map(r => r.transcript);
         
         // Try each alternative in order of confidence
         for (const result of results) {
-          const extractResult = extractLetter(result.transcript, result.confidence);
+          const extractResult = extractLetter(result.transcript, result.confidence, alternatives);
           if (extractResult.letter) {
             resolve(extractResult);
             return;
           }
         }
         
-        // If no letter found in any alternative
+        // If no letter found in any alternative, return the best transcript for debugging
         resolve({ letter: null, transcript: results[0]?.transcript });
       };
 
@@ -337,41 +351,30 @@ export const useHangmanSpeech = () => {
           return null;
         }
 
-        // Success
+        // Success - show brief "Heard: X" message
         setState({
           isListening: false,
           isProcessing: false,
-          message: `We heard: ${result.letter.toUpperCase()}`,
+          message: `Heard: ${result.letter.toUpperCase()}`,
           error: false,
           needsConfirmation: false,
           possibleLetters: []
         });
 
-        setTimeout(() => setState(prev => ({ ...prev, message: '' })), 3000);
+        setTimeout(() => setState(prev => ({ ...prev, message: '' })), 1000); // Shorter display
         return result.letter;
       } else {
-        // Not understood
+        // Not understood - show brief retry message
         setState({
           isListening: false,
           isProcessing: false,
-          message: "Didn't catch that—try again",
+          message: "Didn't catch a letter—try again",
           error: true,
           needsConfirmation: false,
           possibleLetters: []
         });
 
-        setTimeout(() => {
-          setState({
-            isListening: false,
-            isProcessing: false,
-            message: 'Say just the letter. You can also say "Alpha, Bravo..."',
-            error: false,
-            needsConfirmation: false,
-            possibleLetters: []
-          });
-          
-          setTimeout(() => setState(prev => ({ ...prev, message: '' })), 3000);
-        }, 1500);
+        setTimeout(() => setState(prev => ({ ...prev, message: '' })), 2000);
         
         return null;
       }
@@ -395,13 +398,13 @@ export const useHangmanSpeech = () => {
     setState({
       isListening: false,
       isProcessing: false,
-      message: `We heard: ${letter.toUpperCase()}`,
+      message: `Heard: ${letter.toUpperCase()}`,
       error: false,
       needsConfirmation: false,
       possibleLetters: []
     });
 
-    setTimeout(() => setState(prev => ({ ...prev, message: '' })), 3000);
+    setTimeout(() => setState(prev => ({ ...prev, message: '' })), 1000);
     return letter;
   }, []);
 

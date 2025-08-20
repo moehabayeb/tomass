@@ -251,14 +251,16 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
 
                 {/* Speech Result Display */}
                 {speechState.message && !speechState.needsConfirmation && (
-                  <div className={`border rounded-xl p-4 ${
+                  <div className={`border rounded-xl p-3 transition-all duration-300 ${
                     speechState.error 
                       ? 'bg-gradient-to-r from-red-500/30 to-orange-500/30 border-red-300/50' 
                       : speechState.message.includes('already tried')
                       ? 'bg-gradient-to-r from-yellow-500/30 to-orange-500/30 border-yellow-300/50'
+                      : speechState.message.startsWith('Heard:')
+                      ? 'bg-gradient-to-r from-blue-500/30 to-purple-500/30 border-blue-300/50'
                       : 'bg-gradient-to-r from-green-500/30 to-emerald-500/30 border-green-300/50'
                   }`}>
-                    <p className={`text-lg ${
+                    <p className={`text-base font-medium ${
                       speechState.error 
                         ? 'text-red-100' 
                         : speechState.message.includes('already tried')
@@ -267,6 +269,13 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
                     }`}>
                       {speechState.message}
                     </p>
+                  </div>
+                )}
+                
+                {/* Debug Info */}
+                {process.env.NODE_ENV === 'development' && window.location.search.includes('debug=1') && (
+                  <div className="bg-gray-800/50 border border-gray-600 rounded-lg p-3 text-xs">
+                    <p className="text-gray-300">Debug mode active - check console for speech details</p>
                   </div>
                 )}
 
