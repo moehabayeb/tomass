@@ -8,8 +8,8 @@ import { useTextToSpeech } from '@/hooks/useTextToSpeech';
 import { useStreakTracker } from '@/hooks/useStreakTracker';
 import { useBadgeSystem } from '@/hooks/useBadgeSystem';
 import { useProgressStore } from '@/hooks/useProgressStore';
-import { useXPBoostStore } from '@/hooks/useXPBoostStore';
-import { XPBoostAnimation } from './XPBoostAnimation';
+import { FloatingTokenAnimation } from './FloatingTokenAnimation';
+import { useFloatingTokenStore } from '@/hooks/useFloatingTokenStore';
 import { useAuthReady } from '@/hooks/useAuthReady';
 import { StreakCounter } from './StreakCounter';
 import { SampleAnswerButton } from './SampleAnswerButton';
@@ -106,7 +106,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   const { toast } = useToast();
   
   const { level, xp_current, next_threshold, awardXp, lastLevelUpTime, fetchProgress, resetLevelUpNotification, subscribeToProgress } = useProgressStore();
-  const { addBoost } = useXPBoostStore();
+  const { addToken } = useFloatingTokenStore();
+  const [meterGlowing, setMeterGlowing] = useState(false);
   
   const [messages, setMessages] = useState([
     { text: "Hello! Ready to practice today? Let's start with a simple question.", isUser: false, isSystem: false }
@@ -426,8 +427,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         if (success) {
           console.log(`[Speaking] Awarded ${xp} XP - ${reason} (${complexity})`);
           
-          // Trigger XP boost animation
-          addBoost(xp, complexity === 'complex' ? '🏆 Great!' : complexity === 'medium' ? '👏 Nice!' : '✨ Good!');
+          // Trigger floating token animation
+          addToken(xp, complexity === 'complex' ? '🏆 Great!' : complexity === 'medium' ? '👏 Nice!' : '✨ Good!');
           
           // Light haptic feedback if available
           if ('vibrate' in navigator) {
@@ -504,7 +505,14 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         {/* Simplified Header for Speaking Focus */}
         <div className="text-center mb-6 sm:mb-8 mt-4 sm:mt-6 relative z-30">
           {/* XP Boost Animation positioned in top-right */}
-          <XPBoostAnimation />
+        <FloatingTokenAnimation 
+          onTokenLand={() => {
+            // Trigger meter glow effect
+            setMeterGlowing(true);
+            setTimeout(() => setMeterGlowing(false), 250);
+          }}
+          soundEnabled={soundEnabled}
+        />
           <div className="relative inline-block mb-4">
             <DIDAvatar 
               size="lg"
@@ -518,7 +526,11 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           <div className="text-white/80 text-sm sm:text-base mt-1">Your English Teacher</div>
           {/* Compact status line with real-time XP */}
           {user && (
-            <div className="text-white/60 text-xs sm:text-sm mt-2 truncate px-4">
+            <div 
+              className={`text-white/60 text-xs sm:text-sm mt-2 truncate px-4 transition-all duration-250 ${
+                meterGlowing ? 'meter-glow meter-pop' : ''
+              }`}
+            >
               Level {level} • {xp_current}/{next_threshold} XP
               {lastLevelUpTime && Date.now() - lastLevelUpTime < 3000 && (
                 <span className="ml-2 text-yellow-300 animate-pulse">🌟 Level up!</span>

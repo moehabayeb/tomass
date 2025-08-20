@@ -12,7 +12,6 @@ import BookmarksView from './BookmarksView';
 import BadgesView from './BadgesView';
 import { EnhancedAvatarDisplay } from './EnhancedAvatarDisplay';
 import { LevelUpPopup } from './LevelUpPopup';
-import { XPBoostAnimation } from './XPBoostAnimation';
 import { StreakCounter } from './StreakCounter';
 import { StreakRewardPopup } from './StreakRewardPopup';
 import { StreakWelcomePopup } from './StreakWelcomePopup';
@@ -98,9 +97,6 @@ export default function AppNavigation() {
       <div className="absolute inset-0 w-full h-full background-stars pointer-events-none" 
            style={{ backgroundImage: 'radial-gradient(2px 2px at 20px 30px, #fff, transparent), radial-gradient(2px 2px at 40px 70px, #fff, transparent), radial-gradient(1px 1px at 90px 40px, #fff, transparent)', backgroundSize: '100px 100px' }} 
       />
-      
-      {/* XP Boost Animations */}
-      <XPBoostAnimation />
       
       {/* Level Up Popup */}
       <LevelUpPopup 

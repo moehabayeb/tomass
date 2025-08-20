@@ -199,8 +199,139 @@
   animation-delay: 1s;
 }
 
-.animation-delay-2000 {
-  animation-delay: 2s;
+/* Floating Token Animation Classes */
+.token-spawn {
+  animation: tokenSpawn 250ms ease-out forwards;
+}
+
+.token-travel {
+  animation: tokenTravel 600ms cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.token-land {
+  animation: tokenLand 120ms ease-out forwards;
+}
+
+.token-reduced-spawn {
+  animation: tokenReducedSpawn 200ms ease-out forwards;
+}
+
+.token-reduced-land {
+  animation: tokenReducedLand 300ms ease-out forwards;
+}
+
+.token-sparkle {
+  animation: tokenSparkle 300ms ease-out forwards;
+}
+
+/* Meter feedback animations */
+.meter-glow {
+  animation: meterGlow 250ms ease-out forwards;
+}
+
+.meter-pop {
+  animation: meterPop 120ms ease-out forwards;
+}
+
+@keyframes tokenSpawn {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes tokenTravel {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    opacity: 1;
+    /* Quadratic Bezier path to center header */
+    transform: translate(calc(-50vw + 50%), calc(4rem - 50%)) scale(0.9);
+  }
+}
+
+@keyframes tokenLand {
+  0% {
+    opacity: 1;
+    transform: translate(calc(-50vw + 50%), calc(4rem - 50%)) scale(0.9);
+  }
+  50% {
+    transform: translate(calc(-50vw + 50%), calc(4rem - 50%)) scale(1.06);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50vw + 50%), calc(4rem - 50%)) scale(1);
+  }
+}
+
+@keyframes tokenReducedSpawn {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@keyframes tokenReducedLand {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, 0);
+  }
+}
+
+@keyframes tokenSparkle {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+  50% {
+    opacity: 0.8;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+}
+
+@keyframes meterGlow {
+  0% {
+    filter: brightness(1);
+    box-shadow: none;
+  }
+  50% {
+    filter: brightness(1.2);
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.4);
+  }
+  100% {
+    filter: brightness(1);
+    box-shadow: none;
+  }
+}
+
+@keyframes meterPop {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
   @keyframes glow {
     0% { box-shadow: 0 0 5px #ff4f80; }
