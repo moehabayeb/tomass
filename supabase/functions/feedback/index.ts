@@ -6,6 +6,43 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// Helper function to normalize text for comparison
+function normalizeText(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[.,!?;:'"()-]/g, '') // Remove punctuation
+    .replace(/\s+/g, ' ') // Normalize whitespace
+    .trim();
+}
+
+// Calculate similarity between two strings using Jaccard similarity
+function calculateSimilarity(str1: string, str2: string): number {
+  const normalized1 = normalizeText(str1);
+  const normalized2 = normalizeText(str2);
+  
+  // If either string is empty, return 0
+  if (!normalized1 || !normalized2) return 0;
+  
+  // Split into words
+  const words1 = new Set(normalized1.split(' '));
+  const words2 = new Set(normalized2.split(' '));
+  
+  // Calculate Jaccard similarity (intersection / union)
+  const intersection = new Set([...words1].filter(x => words2.has(x)));
+  const union = new Set([...words1, ...words2]);
+  
+  return intersection.size / union.size;
+}
+
+// Check if the user's answer is acceptable based on similarity
+function isAcceptableAnswer(userText: string, expectedText: string): boolean {
+  const similarity = calculateSimilarity(userText, expectedText);
+  const SIMILARITY_THRESHOLD = 0.85; // 85% similarity threshold
+  
+  console.log(`Similarity between "${userText}" and "${expectedText}": ${similarity}`);
+  return similarity >= SIMILARITY_THRESHOLD;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -31,27 +68,30 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are a friendly English conversation partner. Respond with either "CORRECT" or provide a gentle correction.
+            content: `You are an English conversation partner. Analyze the user's text and provide ONLY a corrected version if there are significant grammar or vocabulary errors that affect meaning.
 
-IGNORE these minor issues (respond with "CORRECT"):
-- Missing punctuation (commas, periods, exclamation marks)
-- Contractions vs full forms (I'm vs I am)
-- Minor word order if meaning is clear
+IGNORE these minor issues:
+- Missing or incorrect punctuation
+- Contractions vs full forms (I'm vs I am, don't vs do not)
+- Minor word order variations if meaning is clear
+- Casual speech patterns
 
-ONLY correct if there are actual grammar/vocabulary mistakes that affect meaning.
+If the text is grammatically acceptable for conversation, respond with: "CORRECT"
+If there are significant errors, respond with ONLY the corrected version, nothing else.
 
-If CORRECT: respond exactly with just "CORRECT"
-If incorrect: respond with "Nice try, but say: [corrected version]"
-
-Focus on communication, not perfect grammar.`
+Examples:
+- "I go there yesterday" → "I went there yesterday"
+- "I'm going to store" → "I'm going to the store"
+- "Hello how are you" → "CORRECT" (punctuation doesn't matter)
+- "I am fine thanks" → "CORRECT" (natural response)`
           },
           {
             role: 'user',
-            content: `Check: "${text}"`
+            content: `Analyze: "${text}"`
           }
         ],
         max_tokens: 100,
-        temperature: 0.7
+        temperature: 0.3
       }),
     })
 
@@ -62,12 +102,44 @@ Focus on communication, not perfect grammar.`
     }
 
     const result = await response.json()
-    const corrected = result.choices[0].message.content
+    const aiResponse = result.choices[0].message.content.trim()
     
-    console.log('Grammar feedback:', corrected)
+    console.log('AI response:', aiResponse)
 
+    // Check if AI says it's correct
+    if (aiResponse === 'CORRECT') {
+      return new Response(
+        JSON.stringify({ 
+          corrected: text, 
+          isCorrect: true,
+          message: 'CORRECT'
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Check similarity between original and corrected version
+    const isAcceptable = isAcceptableAnswer(text, aiResponse);
+    
+    if (isAcceptable) {
+      // Similar enough - treat as correct
+      return new Response(
+        JSON.stringify({ 
+          corrected: text, 
+          isCorrect: true,
+          message: 'CORRECT'
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Significant error - provide gentle correction
     return new Response(
-      JSON.stringify({ corrected }),
+      JSON.stringify({ 
+        corrected: aiResponse,
+        isCorrect: false,
+        message: `Nice try, but say: "${aiResponse}"`
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
 

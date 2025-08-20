@@ -189,7 +189,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
 
   // Helper function to send text for grammar feedback
-  const sendToFeedback = async (text: string): Promise<{ message: string; corrected: string }> => {
+  const sendToFeedback = async (text: string): Promise<{ message: string; corrected: string; isCorrect: boolean }> => {
     const feedbackRes = await supabase.functions.invoke('feedback', {
       body: { text }
     });
@@ -199,8 +199,9 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     }
 
     return {
-      message: feedbackRes.data.corrected,
-      corrected: feedbackRes.data.corrected
+      message: feedbackRes.data.message || feedbackRes.data.corrected,
+      corrected: feedbackRes.data.corrected || text,
+      isCorrect: feedbackRes.data.isCorrect || false
     };
   };
 
@@ -262,31 +263,31 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     setIsProcessingTranscript(true);
     
     try {
-      // Step 1: Analyze & Correct using existing functions
+      // Step 1: Analyze & Correct using improved feedback system
       const feedback = await sendToFeedback(transcript);
-      console.log('[Speaking] teacher-loop:feedback received:', feedback.message);
+      console.log('[Speaking] teacher-loop:feedback received:', {
+        isCorrect: feedback.isCorrect,
+        message: feedback.message
+      });
 
-      // Step 2: Check if it's correct or needs correction
-      const isCorrect = feedback.message.trim() === "CORRECT";
-      
-      // Step 3: Only show correction if there's an actual mistake
-      if (!isCorrect) {
+      // Step 2: Only show correction if there's an actual mistake
+      if (!feedback.isCorrect && feedback.message !== 'CORRECT') {
         showBotMessage(feedback.message);
       }
 
-      // Step 4: Generate and speak follow-up question  
+      // Step 3: Generate and speak follow-up question naturally
       const nextQuestion = await generateFollowUpQuestion(transcript);
       console.log('[Speaking] teacher-loop:next-question generated');
       
       showBotMessage(nextQuestion);
 
-      // Step 5: Track session (non-blocking)
-      logSession(transcript, feedback.corrected || transcript);
+      // Step 4: Track session (non-blocking)
+      logSession(transcript, feedback.corrected);
       
-      // Step 6: Award XP
-      addXP(20, 0, isCorrect);
+      // Step 5: Award XP (more XP for correct answers)
+      addXP(feedback.isCorrect ? 25 : 15, 0, feedback.isCorrect);
       
-      // Step 7: Track speaking submission for badges
+      // Step 6: Track speaking submission for badges
       incrementSpeakingSubmissions();
       
       console.log('[Speaking] teacher-loop:completed successfully');
