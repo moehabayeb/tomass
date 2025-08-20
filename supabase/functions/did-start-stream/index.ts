@@ -13,28 +13,20 @@ serve(async (req: Request) => {
   }
 
   try {
-    const DID_API_KEY = Deno.env.get('DID_API_KEY')
+    console.log('Creating D-ID agent stream session...')
     
-    if (!DID_API_KEY) {
-      console.error('DID_API_KEY is missing')
-      throw new Error('DID_API_KEY is required')
-    }
-
-    console.log('Creating D-ID stream session...')
-    
-    // Build proper Basic auth from the raw API key
-    const auth = 'Basic ' + btoa(`${DID_API_KEY}:`)
+    // For D-ID agents, use the client-key for authentication
+    const clientKey = "Z29vZ2xILW9hdXRoMnwxMTM5MTg0NTQ0NzE3Mz"
     
     // Create D-ID agent streaming session
     const response = await fetch('https://api.d-id.com/v1/agents/streams', {
       method: 'POST',
       headers: {
-        'Authorization': auth,
+        'Authorization': `Basic ${clientKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        agent_id: "v2_agt_ZthBshyK",
-        client_key: "Z29vZ2xILW9hdXRoMnwxMTM5MTg0NTQ0NzE3Mz"
+        agent_id: "v2_agt_ZthBshyK"
       })
     })
 
@@ -60,15 +52,15 @@ serve(async (req: Request) => {
       throw new Error(`D-ID API error: ${errorMsg}`)
     }
 
-    console.log('Successfully created D-ID stream session')
+    console.log('Successfully created D-ID agent stream session')
     
     // Return exact URLs for WebRTC connection
     const id = data.id
     return new Response(JSON.stringify({
       sessionId: data.session_id || id,
-      sdpUrl: `https://api.d-id.com/v1/streams/${id}/sdp`,
-      talkUrl: `https://api.d-id.com/v1/streams/${id}/talks`,
-      authHeader: auth
+      sdpUrl: `https://api.d-id.com/v1/agents/streams/${id}/sdp`,
+      talkUrl: `https://api.d-id.com/v1/agents/streams/${id}/talks`,
+      authHeader: `Basic ${clientKey}`
     }), {
       headers: { 
         ...corsHeaders,
