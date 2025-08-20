@@ -3,6 +3,8 @@ declare global {
     heygenSpeak?: (text: string) => void;
     SpeechRecognition?: new () => SpeechRecognition;
     webkitSpeechRecognition?: new () => SpeechRecognition;
+    SpeechGrammarList?: any;
+    webkitSpeechGrammarList?: any;
   }
 
   interface SpeechRecognitionResult {
@@ -26,6 +28,7 @@ declare global {
     interimResults: boolean;
     maxAlternatives: number;
     continuous: boolean;
+    grammars?: any;
     start(): void;
     stop(): void;
     onresult: (event: SpeechRecognitionEvent) => void;

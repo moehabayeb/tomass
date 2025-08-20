@@ -1,138 +1,118 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft, Mic, Volume2, RotateCcw, Trophy, Target, Settings, Heart } from 'lucide-react';
+import { ArrowLeft, Mic, Volume2, RotateCcw, Trophy, Target, Heart } from 'lucide-react';
 import { useTextToSpeech } from '@/hooks/useTextToSpeech';
 import { useGamification } from '@/hooks/useGamification';
 import { useGameVocabulary, type GameWord } from '@/hooks/useGameVocabulary';
-import { useHangmanSpeech } from '@/hooks/useHangmanSpeech';
+import { useHangmanSpeechRecognition } from '@/hooks/useHangmanSpeechRecognition';
 
 interface HangmanGameProps {
   onBack: () => void;
 }
 
 export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
-  const [currentWord, setCurrentWord] = useState<GameWord | null>(null);
-  const [guessedLetters, setGuessedLetters] = useState<Set<string>>(new Set());
-  const [wrongGuesses, setWrongGuesses] = useState(0);
-  const [gameStatus, setGameStatus] = useState<'playing' | 'won' | 'lost'>('playing');
+  const [word, setWord] = useState<string>('');
+  const [revealed, setRevealed] = useState<string[]>([]);
+  const [guessed, setGuessed] = useState<Set<string>>(new Set());
+  const [wrong, setWrong] = useState(0);
+  const [status, setStatus] = useState<'playing' | 'won' | 'lost'>('playing');
   const [score, setScore] = useState(0);
-  const [showDebug, setShowDebug] = useState(false);
   
-  const maxWrongGuesses = 6;
+  const maxWrong = 6;
   
   const { speak } = useTextToSpeech();
   const { addXP } = useGamification();
   const { getWordsForHangman, isLoading: vocabLoading } = useGameVocabulary();
-  const { state: speechState, startListening, stopListening, confirmLetter, rejectConfirmation } = useHangmanSpeech();
+  const { state: speechState, startListening, stopListening, confirmLetter, rejectConfirmation } = useHangmanSpeechRecognition();
 
+  // Start new game
+  const startNewGame = () => {
+    const availableWords = getWordsForHangman();
+    if (availableWords.length === 0) return;
+    
+    const randomWord = availableWords[Math.floor(Math.random() * availableWords.length)];
+    const gameWord = randomWord.english.toUpperCase();
+    
+    setWord(gameWord);
+    setRevealed(gameWord.split('').map(() => '_'));
+    setGuessed(new Set());
+    setWrong(0);
+    setStatus('playing');
+  };
+
+  // Initialize game
   useEffect(() => {
     if (!vocabLoading) {
       startNewGame();
     }
   }, [vocabLoading]);
 
-  const startNewGame = () => {
-    const availableWords = getWordsForHangman();
-    if (availableWords.length === 0) return;
-    
-    const randomWord = availableWords[Math.floor(Math.random() * availableWords.length)];
-    setCurrentWord(randomWord);
-    setGuessedLetters(new Set());
-    setWrongGuesses(0);
-    setGameStatus('playing');
-  };
-
-  const displayWord = () => {
-    if (!currentWord) return '';
-    return currentWord.english
-      .split('')
-      .map(letter => (guessedLetters.has(letter.toLowerCase()) ? letter : '_'))
-      .join(' ');
-  };
-
-  const isWordComplete = () => {
-    if (!currentWord) return false;
-    return currentWord.english
-      .toLowerCase()
-      .split('')
-      .every(letter => guessedLetters.has(letter));
-  };
-
+  // Check win/loss conditions
   useEffect(() => {
-    if (gameStatus === 'playing' && currentWord) {
-      if (isWordComplete()) {
+    if (status === 'playing' && word) {
+      if (revealed.join('') === word) {
+        setStatus('won');
         const xpEarned = 50;
-        setGameStatus('won');
         setScore(prev => prev + 10);
         addXP(xpEarned, 'Hangman victory!');
-      } else if (wrongGuesses >= maxWrongGuesses) {
-        setGameStatus('lost');
+      } else if (wrong >= maxWrong) {
+        setStatus('lost');
       }
     }
-  }, [guessedLetters, wrongGuesses, gameStatus, currentWord]);
+  }, [revealed, wrong, status, word]);
 
+  // Process a letter guess
   const processGuess = (letter: string) => {
-    if (!currentWord || gameStatus !== 'playing') return;
+    if (!word || status !== 'playing') return;
     
-    const lowerLetter = letter.toLowerCase();
+    const upperLetter = letter.toUpperCase();
     
-    if (guessedLetters.has(lowerLetter)) {
-      return; // Already guessed - this should not happen due to check in hook
-    }
+    // Add to guessed letters
+    setGuessed(prev => new Set([...prev, letter.toLowerCase()]));
 
-    // Add to guessed letters immediately
-    setGuessedLetters(prev => new Set([...prev, lowerLetter]));
-
-    const isLetterInWord = currentWord.english.toLowerCase().includes(lowerLetter);
-    
-    if (!isLetterInWord) {
-      setWrongGuesses(prev => {
-        const newWrongGuesses = prev + 1;
-        if (newWrongGuesses >= maxWrongGuesses) {
-          setGameStatus('lost');
-        }
-        return newWrongGuesses;
-      });
+    // Check if letter is in word
+    if (word.includes(upperLetter)) {
+      // Reveal all instances of the letter
+      setRevealed(prev => 
+        word.split('').map((char, index) => 
+          char === upperLetter ? char : prev[index]
+        )
+      );
     } else {
-      // Check if word is complete after this guess
-      const wordLetters = currentWord.english.toLowerCase().split('');
-      const newGuessedSet = new Set([...guessedLetters, lowerLetter]);
-      const allLettersGuessed = wordLetters.every(l => newGuessedSet.has(l));
+      // Increment wrong guesses
+      setWrong(prev => prev + 1);
       
-      if (allLettersGuessed) {
-        setGameStatus('won');
+      // Add vibration feedback on wrong guess
+      if ('vibrate' in navigator) {
+        navigator.vibrate(100);
       }
     }
   };
 
+  // Handle speech recognition
   const handleSpeechRecognition = async () => {
-    const letter = await startListening(guessedLetters);
+    const letter = await startListening(guessed);
     if (letter) {
       processGuess(letter);
     }
   };
 
+  // Handle confirmation
   const handleConfirmYes = () => {
-    if (speechState.possibleLetters.length > 0) {
-      const letter = confirmLetter(speechState.possibleLetters[0]);
-      if (letter) {
-        processGuess(letter);
-      }
+    const letter = confirmLetter();
+    if (letter) {
+      processGuess(letter);
     }
   };
 
-  const handleConfirmNo = () => {
-    rejectConfirmation();
-  };
-
+  // Handle word pronunciation
   const playWordPronunciation = () => {
-    if (!currentWord) return;
-    speak(currentWord.english);
+    if (!word) return;
+    speak(word);
   };
 
-  // Remove getSpeechMessage - we'll use speechState.message directly
-
+  // Get button content based on state
   const getButtonContent = () => {
     if (speechState.isProcessing) {
       return (
@@ -202,29 +182,29 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
             {/* Hearts Display for Wrong Guesses */}
             <div className="text-center">
               <div className="flex justify-center gap-2 mb-2">
-                {Array.from({ length: maxWrongGuesses }, (_, i) => (
+                {Array.from({ length: maxWrong }, (_, i) => (
                   <Heart
                     key={i}
                     className={`h-8 w-8 transition-all duration-300 ${
-                      i < wrongGuesses 
+                      i < wrong 
                         ? 'text-red-500 fill-red-500' 
                         : 'text-gray-400 fill-transparent'
                     }`}
                   />
                 ))}
               </div>
-              <p className="text-white/60 text-sm">{wrongGuesses}/{maxWrongGuesses} wrong guesses</p>
+              <p className="text-white/60 text-sm">{wrong}/{maxWrong} wrong guesses</p>
             </div>
 
             {/* Word Display */}
             <div className="text-center space-y-4">
               <div className="text-4xl font-bold tracking-wider text-white">
-                {displayWord()}
+                {revealed.join(' ')}
               </div>
             </div>
 
             {/* Main Game Interface */}
-            {gameStatus === 'playing' && (
+            {status === 'playing' && (
               <div className="text-center space-y-6">
                 
                 {/* Confirmation Dialog */}
@@ -239,7 +219,7 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
                         Yes
                       </Button>
                       <Button
-                        onClick={handleConfirmNo}
+                        onClick={rejectConfirmation}
                         variant="outline"
                         className="border-white/30 text-white hover:bg-white/20 px-6 py-2"
                       >
@@ -254,16 +234,16 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
                   <div className={`border rounded-xl p-3 transition-all duration-300 ${
                     speechState.error 
                       ? 'bg-gradient-to-r from-red-500/30 to-orange-500/30 border-red-300/50' 
-                      : speechState.message.includes('already tried')
+                      : speechState.message.includes('Already tried')
                       ? 'bg-gradient-to-r from-yellow-500/30 to-orange-500/30 border-yellow-300/50'
                       : speechState.message.startsWith('Heard:')
-                      ? 'bg-gradient-to-r from-blue-500/30 to-purple-500/30 border-blue-300/50'
-                      : 'bg-gradient-to-r from-green-500/30 to-emerald-500/30 border-green-300/50'
+                      ? 'bg-gradient-to-r from-green-500/30 to-emerald-500/30 border-green-300/50'
+                      : 'bg-gradient-to-r from-blue-500/30 to-purple-500/30 border-blue-300/50'
                   }`}>
                     <p className={`text-base font-medium ${
                       speechState.error 
                         ? 'text-red-100' 
-                        : speechState.message.includes('already tried')
+                        : speechState.message.includes('Already tried')
                         ? 'text-yellow-100'
                         : 'text-white'
                     }`}>
@@ -291,54 +271,18 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
                 >
                   {getButtonContent()}
                 </Button>
-
-                {/* Debug Toggle and Input - Hidden by default */}
-                {process.env.NODE_ENV === 'development' && (
-                  <>
-                    <div className="flex justify-center">
-                      <Button
-                        onClick={() => setShowDebug(!showDebug)}
-                        variant="ghost"
-                        size="sm"
-                        className="text-white/50 hover:text-white/80"
-                      >
-                        <Settings className="h-4 w-4 mr-2" />
-                        Debug
-                      </Button>
-                    </div>
-
-                    {showDebug && (
-                      <div className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-300/50 rounded-xl p-4">
-                        <p className="text-yellow-200 text-sm font-medium mb-2">🔧 Debug: Type a letter to test</p>
-                        <input
-                          type="text"
-                          maxLength={1}
-                          placeholder="A"
-                          className="w-16 h-12 text-center text-2xl font-bold bg-white/10 border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                          onChange={(e) => {
-                            const letter = e.target.value.toLowerCase();
-                            if (letter && /^[a-z]$/.test(letter)) {
-                              processGuess(letter);
-                              e.target.value = '';
-                            }
-                          }}
-                        />
-                      </div>
-                    )}
-                  </>
-                )}
               </div>
             )}
 
             {/* Game Over States */}
-            {gameStatus !== 'playing' && (
+            {status !== 'playing' && (
               <div className="text-center space-y-6">
-                {gameStatus === 'won' ? (
+                {status === 'won' ? (
                   <div className="bg-gradient-to-r from-green-500/30 to-emerald-500/30 border border-green-300/50 rounded-xl p-6">
                     <div className="text-6xl mb-4 animate-bounce">🎉</div>
                     <h3 className="text-3xl font-bold text-green-200 mb-3">✅ You Got It!</h3>
                     <p className="text-white/90 text-xl mb-4">
-                      Perfect! The word was: <span className="font-bold text-yellow-300">{currentWord?.english?.toUpperCase()}</span>
+                      Perfect! The word was: <span className="font-bold text-yellow-300">{word}</span>
                     </p>
                     <div className="bg-gradient-to-r from-yellow-400/30 to-green-400/30 rounded-lg p-4">
                       <div className="text-2xl font-bold text-yellow-200">🌟 +50 XP Earned! 🌟</div>
@@ -349,7 +293,7 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
                     <div className="text-6xl mb-4">😔</div>
                     <h3 className="text-3xl font-bold text-red-200 mb-3">❌ Out of Guesses!</h3>
                     <p className="text-white/90 text-lg mb-2">The word was:</p>
-                    <p className="text-3xl font-bold text-white bg-black/20 rounded-lg p-3">{currentWord?.english?.toUpperCase()}</p>
+                    <p className="text-3xl font-bold text-white bg-black/20 rounded-lg p-3">{word}</p>
                   </div>
                 )}
                 
@@ -368,7 +312,7 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
                     className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 py-4 text-lg font-bold rounded-xl"
                   >
                     <RotateCcw className="h-5 w-5 mr-3" />
-                    🎮 Play Next Word
+                    🎮 New Word
                   </Button>
                 </div>
               </div>
