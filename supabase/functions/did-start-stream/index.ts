@@ -25,15 +25,16 @@ serve(async (req: Request) => {
     // Build proper Basic auth from the raw API key
     const auth = 'Basic ' + btoa(`${DID_API_KEY}:`)
     
-    // Create D-ID streaming session
-    const response = await fetch('https://api.d-id.com/v1/streams', {
+    // Create D-ID agent streaming session
+    const response = await fetch('https://api.d-id.com/v1/agents/streams', {
       method: 'POST',
       headers: {
         'Authorization': auth,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        source_url: "https://create-images-results.d-id.com/DefaultPresenters/Noelle_f/image.jpeg"
+        agent_id: "v2_agt_ZthBshyK",
+        client_key: "Z29vZ2xILW9hdXRoMnwxMTM5MTg0NTQ0NzE3Mz"
       })
     })
 
