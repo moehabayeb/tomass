@@ -302,8 +302,8 @@ const MODULES_BY_LEVEL = {
     completed: false,
     locked: false, // TEMPORARILY UNLOCKED FOR DEVELOPMENT
   })),
-  // B1 Level modules (101-129)
-  B1: Array.from({ length: 29 }, (_, i) => ({
+  // B1 Level modules (101-140)
+  B1: Array.from({ length: 40 }, (_, i) => ({
     id: i + 101, // Starting from 101 for B1 level
     title: i === 0 ? 'Present Perfect Continuous (I\'ve been working)' :
            i === 1 ? 'Present Perfect Continuous vs Present Perfect' :
@@ -334,6 +334,17 @@ const MODULES_BY_LEVEL = {
            i === 26 ? 'Expressions with Take (take part, take place, etc.)' :
            i === 27 ? 'Phrasal Verbs – Separable and Inseparable' :
            i === 28 ? 'Phrasal Verbs – Common Everyday Verbs' :
+           i === 29 ? 'Collocations with Make and Do' :
+           i === 30 ? 'Indirect Questions (Could you tell me ...?)' :
+           i === 31 ? 'Giving Opinions and Agreeing/Disagreeing' :
+           i === 32 ? 'Speculating and Expressing Possibility' :
+           i === 33 ? 'Talking about Hypothetical Situations' :
+           i === 34 ? 'Expressing Preferences (I\'d rather, I prefer)' :
+           i === 35 ? 'Narratives – Sequencing Words (first, then)' :
+           i === 36 ? 'Linking Words (however, although, despite)' :
+           i === 37 ? 'Describing Experiences (Narratives)' :
+           i === 38 ? 'Talking about Cause and Effect (so, because)' :
+           i === 39 ? 'Talking about Purpose (to, in order to, so that)' :
            `B1 Module ${i + 101}`,
     description: i === 0 ? 'Learn the structure and use of the Present Perfect Continuous tense' :
                  i === 1 ? 'Understand the difference between Present Perfect and Present Perfect Continuous tenses' :
@@ -364,6 +375,17 @@ const MODULES_BY_LEVEL = {
                  i === 26 ? 'Learn and practice common expressions with the verb take' :
                  i === 27 ? 'Learn to distinguish between separable and inseparable phrasal verbs' :
                  i === 28 ? 'Learn and practice common phrasal verbs used in everyday English' :
+                 i === 29 ? 'Learn common collocations with make and do and use them correctly in various contexts' :
+                 i === 30 ? 'Learn how to form and use indirect questions to sound more polite and formal' :
+                 i === 31 ? 'Learn how to express opinions and agree or disagree politely in conversation' :
+                 i === 32 ? 'Learn how to express possibility and make logical guesses using modal verbs' :
+                 i === 33 ? 'Learn how to talk about unreal or imaginary situations using the Second Conditional' :
+                 i === 34 ? 'Learn how to express preferences using "I prefer" and "I\'d rather"' :
+                 i === 35 ? 'Learn how to organize and describe a series of events using sequencing words' :
+                 i === 36 ? 'Learn how to use linking words of contrast to show differences between ideas' :
+                 i === 37 ? 'Learn how to describe personal experiences, memories, and past events' :
+                 i === 38 ? 'Learn how to express reasons (causes) and results (effects) using connectors' :
+                 i === 39 ? 'Learn how to express purpose or intent behind actions' :
                  'Coming soon',
     completed: false,
     locked: false, // TEMPORARILY UNLOCKED FOR DEVELOPMENT
