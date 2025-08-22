@@ -266,7 +266,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   // Helper function to send text for grammar feedback
   const sendToFeedback = async (text: string): Promise<{ message: string; corrected: string; isCorrect: boolean }> => {
     const feedbackRes = await supabase.functions.invoke('feedback', {
-      body: { text }
+      body: { text, level: userLevel }
     });
 
     if (feedbackRes.error) {
@@ -356,7 +356,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           body: { 
             text: originalTranscript,
             intent: intent,
-            context: conversationContext
+            context: conversationContext,
+            level: userLevel
           }
         });
 

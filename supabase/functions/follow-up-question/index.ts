@@ -16,6 +16,20 @@ serve(async (req) => {
   try {
     const { text, previousContext = '', userLevel = 'beginner' } = await req.json();
 
+    // Get level-specific instructions
+    const getLevelInstructions = (level: string) => {
+      switch (level) {
+        case 'beginner':
+          return "Use short, simple sentences. CEFR A1–A2 vocabulary. One question at a time. Avoid idioms. Max 12 words per sentence.";
+        case 'intermediate':
+          return "Use everyday, varied sentences. CEFR B1–B2 vocabulary. Allow follow-ups. Natural pace. 1–2 sentences per turn.";
+        case 'advanced':
+          return "Use fluent, nuanced language. CEFR C1–C2 vocabulary. Encourage opinions, reasoning, and idioms. 2–3 sentences max.";
+        default:
+          return "Use short, simple sentences. CEFR A1–A2 vocabulary. One question at a time. Avoid idioms. Max 12 words per sentence.";
+      }
+    };
+
     // Enhanced contextual prompt for smooth, natural follow-ups
     const prompt = `
 Context: The student said: "${text}". 
@@ -29,12 +43,14 @@ Generate a natural, contextual follow-up question that:
 4. Shows genuine interest in their response
 5. Keeps the conversation flowing naturally
 
+Level-specific requirements: ${getLevelInstructions(userLevel)}
+
 Examples of smooth transitions:
 - If they mentioned food: "That sounds delicious! Do you cook it yourself?"
 - If they talked about hobbies: "How long have you been doing that?"
 - If they shared an opinion: "That's interesting! What made you think that way?"
 
-Generate ONE short, warm follow-up question (max 15 words):`;
+Generate ONE short, warm follow-up question following the level requirements:`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',

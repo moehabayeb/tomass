@@ -6,6 +6,20 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// Get level-specific correction instructions
+const getCorrectionInstructions = (level: string) => {
+  switch (level) {
+    case 'beginner':
+      return "Give one fix with a simple example. No grammar terms. <=1 line.";
+    case 'intermediate':
+      return "Give one fix with a brief why (≤10 words). 1 line.";
+    case 'advanced':
+      return "Give a concise fix + option for a more natural phrasing. 1 line.";
+    default:
+      return "Give one fix with a simple example. No grammar terms. <=1 line.";
+  }
+}
+
 // Helper function to normalize text for comparison
 function normalizeText(text: string): string {
   return text
@@ -49,7 +63,7 @@ serve(async (req) => {
   }
 
   try {
-    const { text } = await req.json()
+    const { text, level = 'beginner' } = await req.json()
     
     if (!text) {
       throw new Error('No text provided')
@@ -81,7 +95,7 @@ COMPLETELY IGNORE these minor issues:
 Focus ONLY on significant grammar/vocabulary mistakes that change meaning.
 
 If the text is grammatically acceptable for conversation, respond with: "CORRECT"
-If there are significant errors, respond with ONLY the corrected version, nothing else.
+If there are significant errors, provide correction following these guidelines: ${getCorrectionInstructions(level)}
 
 Examples:
 - "i go there yesterday" → "I went there yesterday" (tense error)
@@ -138,12 +152,25 @@ Examples:
       )
     }
 
-    // Significant error - provide gentle correction
+    // Significant error - provide gentle correction based on level
+    const getCorrectionMessage = (level: string, correction: string) => {
+      switch (level) {
+        case 'beginner':
+          return `Try: "${correction}"`;
+        case 'intermediate':
+          return `Better: "${correction}"`;
+        case 'advanced':
+          return `Consider: "${correction}"`;
+        default:
+          return `Try: "${correction}"`;
+      }
+    };
+
     return new Response(
       JSON.stringify({ 
         corrected: aiResponse,
         isCorrect: false,
-        message: `Nice try, but say: "${aiResponse}"`
+        message: getCorrectionMessage(level, aiResponse)
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )

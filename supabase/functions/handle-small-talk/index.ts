@@ -6,13 +6,27 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// Get level-specific instructions
+const getLevelInstructions = (level: string) => {
+  switch (level) {
+    case 'beginner':
+      return "Use short, simple sentences. CEFR A1–A2 vocabulary. One question at a time. Avoid idioms. Max 12 words per sentence.";
+    case 'intermediate':
+      return "Use everyday, varied sentences. CEFR B1–B2 vocabulary. Allow follow-ups. Natural pace. 1–2 sentences per turn.";
+    case 'advanced':
+      return "Use fluent, nuanced language. CEFR C1–C2 vocabulary. Encourage opinions, reasoning, and idioms. 2–3 sentences max.";
+    default:
+      return "Use short, simple sentences. CEFR A1–A2 vocabulary. One question at a time. Avoid idioms. Max 12 words per sentence.";
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    const { text, intent, context } = await req.json()
+    const { text, intent, context, level = 'beginner' } = await req.json()
     
     if (!text) {
       throw new Error('No text provided')
@@ -38,6 +52,8 @@ Rules:
 2. Then smoothly steer back to English practice with ONE short follow-up question
 3. Keep it conversational, not formal
 4. Don't lecture or give long explanations
+
+Level-specific requirements for your response: ${getLevelInstructions(level)}
 
 Example responses:
 - User: "How are you?" → "I'm doing great, thanks for asking! How about you - how has your day been so far?"
