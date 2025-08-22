@@ -302,8 +302,8 @@ const MODULES_BY_LEVEL = {
     completed: false,
     locked: false, // TEMPORARILY UNLOCKED FOR DEVELOPMENT
   })),
-  // B1 Level modules (101-140)
-  B1: Array.from({ length: 40 }, (_, i) => ({
+  // B1 Level modules (101-148)
+  B1: Array.from({ length: 48 }, (_, i) => ({
     id: i + 101, // Starting from 101 for B1 level
     title: i === 0 ? 'Present Perfect Continuous (I\'ve been working)' :
            i === 1 ? 'Present Perfect Continuous vs Present Perfect' :
@@ -345,6 +345,14 @@ const MODULES_BY_LEVEL = {
            i === 37 ? 'Describing Experiences (Narratives)' :
            i === 38 ? 'Talking about Cause and Effect (so, because)' :
            i === 39 ? 'Talking about Purpose (to, in order to, so that)' :
+           i === 40 ? 'Work Vocabulary – Roles, Tasks, and Workplaces' :
+           i === 41 ? 'Education Vocabulary – Schools and Universities' :
+           i === 42 ? 'Technology Vocabulary – Gadgets and Internet' :
+           i === 43 ? 'Environment Vocabulary – Problems and Solutions' :
+           i === 44 ? 'News and Media Vocabulary' :
+           i === 45 ? 'Personality and Character Vocabulary' :
+           i === 46 ? 'Crime and Law Vocabulary' :
+           i === 47 ? 'Health and Fitness Vocabulary' :
            `B1 Module ${i + 101}`,
     description: i === 0 ? 'Learn the structure and use of the Present Perfect Continuous tense' :
                  i === 1 ? 'Understand the difference between Present Perfect and Present Perfect Continuous tenses' :
@@ -386,6 +394,14 @@ const MODULES_BY_LEVEL = {
                  i === 37 ? 'Learn how to describe personal experiences, memories, and past events' :
                  i === 38 ? 'Learn how to express reasons (causes) and results (effects) using connectors' :
                  i === 39 ? 'Learn how to express purpose or intent behind actions' :
+                 i === 40 ? 'Learn vocabulary related to common job roles, tasks, and workplaces' :
+                 i === 41 ? 'Expand academic vocabulary related to school and university settings' :
+                 i === 42 ? 'Learn key vocabulary related to gadgets, the internet, and digital life' :
+                 i === 43 ? 'Learn essential vocabulary about environmental problems and solutions' :
+                 i === 44 ? 'Learn essential vocabulary related to the world of news and media' :
+                 i === 45 ? 'Learn and practice advanced vocabulary related to personality and character' :
+                 i === 46 ? 'Learn and apply vocabulary related to crime, court, and law enforcement' :
+                 i === 47 ? 'Students will learn and practice vocabulary related to health, nutrition, and fitness' :
                  'Coming soon',
     completed: false,
     locked: false, // TEMPORARILY UNLOCKED FOR DEVELOPMENT
