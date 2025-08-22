@@ -662,12 +662,302 @@ const grammarTopics = [
         explanation: "'Coffee' sayılamayan isim, 'a lot of' kullanırız."
       }
     ]
+  },
+  // B1 Level Modules (130-140)
+  {
+    id: 130,
+    title: "Collocations with Make and Do",
+    description: "Learn common collocations with make and do and use them correctly in various contexts",
+    lesson: "'Make' ve 'Do' İngilizce'de sık kullanılan iki fiildir, ancak farklı kelimelerle birlikte kullanılırlar. Bu yüzden bazı ifadeler ezberlenmelidir çünkü anlamı değişebilir.\n\n✅ 'Make' ile kullanılan yaygın ifadeler:\n• make a decision → karar vermek\n• make a mistake → hata yapmak\n• make money → para kazanmak\n• make a phone call → telefon etmek\n• make an effort → çaba göstermek\n\n✅ 'Do' ile kullanılan yaygın ifadeler:\n• do homework → ödev yapmak\n• do the dishes → bulaşıkları yıkamak\n• do your best → elinden gelini yapmak\n• do business → iş yapmak\n• do the shopping → alışveriş yapmak\n\n✅ Make is often used when we talk about producing, creating, or constructing something.\n✅ Do is usually used for actions, obligations, and repetitive tasks.",
+    exercises: [
+      {
+        question: "Complete: I ___ my homework.",
+        options: ["made", "did", "do"],
+        correct: 1,
+        explanation: "We use 'did' for past tense with homework - a routine task."
+      },
+      {
+        question: "Complete: She ___ a lot of money last year.",
+        options: ["made", "did", "does"],
+        correct: 0,
+        explanation: "We use 'made' with money - it's about producing/earning."
+      },
+      {
+        question: "Complete: They ___ a plan.",
+        options: ["made", "did", "do"],
+        correct: 0,
+        explanation: "We use 'made' with plan - it's about creating something."
+      }
+    ]
+  },
+  {
+    id: 131,
+    title: "Indirect Questions (Could you tell me ...?)",
+    description: "Learn how to form and use indirect questions to sound more polite and formal",
+    lesson: "Indirect questions (dolaylı sorular), direkt sorulara göre daha kibar ve resmidir. Genellikle şu ifadelerle başlar:\n• Could you tell me...\n• Do you know...\n• Would you mind telling me...\n• I was wondering...\n\nBu tür sorularda, cümle yapısı soru yapısı değil, düz cümle yapısı kullanılır (özne + fiil). Ayrıca do/does/did gibi yardımcı fiiller kullanılmaz.\n\n✅ Direct questions follow the standard question order: (question word + auxiliary + subject + verb)\n✅ Indirect questions follow statement order: (question word + subject + verb)\n\nExamples:\n• Direct: Where is the bank? → Indirect: Could you tell me where the bank is?\n• Direct: What time does the movie start? → Indirect: Do you know what time the movie starts?",
+    exercises: [
+      {
+        question: "Make indirect: 'Where is the nearest bus stop?'",
+        options: ["Could you tell me where is the nearest bus stop?", "Could you tell me where the nearest bus stop is?", "Could you tell me where does the nearest bus stop?"],
+        correct: 1,
+        explanation: "In indirect questions, we use statement word order: subject + verb."
+      },
+      {
+        question: "Make indirect: 'What time does the class start?'",
+        options: ["Do you know what time does the class start?", "Do you know what time the class starts?", "Do you know what time start the class?"],
+        correct: 1,
+        explanation: "No auxiliary verbs in indirect questions - use statement order."
+      },
+      {
+        question: "Make indirect: 'Why is he upset?'",
+        options: ["I was wondering why is he upset.", "I was wondering why he is upset.", "I was wondering why upset he is."],
+        correct: 1,
+        explanation: "Use statement word order in indirect questions: subject + verb."
+      }
+    ]
+  },
+  {
+    id: 132,
+    title: "Giving Opinions and Agreeing/Disagreeing",
+    description: "Learn how to express opinions and agree or disagree politely in conversation",
+    lesson: "Bu modülde fikir belirtme ve başkalarının fikirlerine katılma veya karşı çıkma yollarını öğreneceğiz.\n\n🗣️ Fikir Belirtme (Giving Opinions)\n• I think... → I think it's a good idea.\n• In my opinion... → In my opinion, school should start later.\n• I believe... → I believe he is right.\n• As far as I'm concerned... → As far as I'm concerned, this is the best solution.\n• From my point of view... → From my point of view, it's too risky.\n\n👍 Katılma (Agreeing)\n• I agree with you.\n• That's right.\n• Exactly.\n• I think so too.\n• Absolutely!\n• You're right.\n\n👎 Katılmama (Disagreeing)\n• I don't agree with you.\n• I'm not sure about that.\n• I see your point, but...\n• That's not always true.\n• I disagree.\n• I'm afraid I don't agree.",
+    exercises: [
+      {
+        question: "Express opinion: 'What do you think about this movie?'",
+        options: ["I think it's amazing!", "It's amazing think I!", "Amazing I think it's!"],
+        correct: 0,
+        explanation: "Use 'I think' + subject + verb to express opinions clearly."
+      },
+      {
+        question: "Agree politely: Someone says 'English is important.'",
+        options: ["No, I don't think so.", "Absolutely! I agree with you.", "Maybe you're wrong."],
+        correct: 1,
+        explanation: "'Absolutely! I agree with you.' is a strong, polite way to agree."
+      },
+      {
+        question: "Disagree politely: Someone says 'All movies are boring.'",
+        options: ["You're completely wrong!", "I see your point, but I disagree.", "That's stupid!"],
+        correct: 1,
+        explanation: "'I see your point, but...' is a polite way to disagree while acknowledging their view."
+      }
+    ]
+  },
+  {
+    id: 133,
+    title: "Speculating and Expressing Possibility",
+    description: "Learn how to express possibility and make logical guesses using modal verbs",
+    lesson: "Bu modülde bir şeyin olma ihtimalini ifade etmeyi ve tahmin yürütmeyi öğreneceğiz.\n\n🧠 İhtimal ve Tahmin İçin Kullanılan Kalıplar\n• might → It might rain tomorrow.\n• may → She may come later.\n• could → He could be at home.\n• must → She must be tired. (strong assumption)\n• can't → He can't be the thief. (strong negative)\n• maybe → Maybe they are on vacation.\n• perhaps → Perhaps it's true.\n• I think / I don't think → I think he is at work.\n• It's possible that... → It's possible that she forgot.\n• It's likely / unlikely that... → It's likely that they'll win.\n\nUse modal verbs (might, may, could, must, can't) and adverbs (maybe, perhaps) to speculate. The verb that follows modals stays in base form (V1), and sentence order is standard (not a question).",
+    exercises: [
+      {
+        question: "Express possibility: 'Where is John?'",
+        options: ["He might be in the kitchen.", "He might is in the kitchen.", "He might being in the kitchen."],
+        correct: 0,
+        explanation: "Use 'might + base verb' to express possibility."
+      },
+      {
+        question: "Express strong assumption: 'She looks exhausted.'",
+        options: ["She may be tired.", "She must be tired.", "She can't be tired."],
+        correct: 1,
+        explanation: "'Must' expresses a strong logical assumption based on evidence."
+      },
+      {
+        question: "Express impossibility: 'He's only 15 years old.'",
+        options: ["He might drive.", "He may drive.", "He can't drive."],
+        correct: 2,
+        explanation: "'Can't' expresses strong negative assumption - impossibility."
+      }
+    ]
+  },
+  {
+    id: 134,
+    title: "Talking about Hypothetical Situations",
+    description: "Learn how to talk about unreal or imaginary situations using the Second Conditional",
+    lesson: "Bu modülde varsayımsal (gerçek olmayan, hayali) durumları ifade etmeyi öğreneceğiz. Genellikle 'if' cümleleriyle kurulur ve ikinci koşul (Second Conditional) yapısı kullanılır.\n\n🔧 Yapı: Second Conditional\nIf + past simple, would + verb\n→ If I won the lottery, I would buy a big house.\n\n📌 Örnekler\n• If I were rich, I would travel the world.\n• If he studied more, he would pass the exam.\n• If we had a car, we would go to the beach.\n• If I were you, I would talk to her.\n• If they invited us, we would come.\n\nThis structure is used for imaginary, unlikely, or impossible situations in the present or future.",
+    exercises: [
+      {
+        question: "Complete: If I ___ the lottery, I would buy a house.",
+        options: ["win", "won", "will win"],
+        correct: 1,
+        explanation: "Use past simple in the 'if' clause of second conditional."
+      },
+      {
+        question: "Complete: If she ___ here, we would see her.",
+        options: ["lived", "lives", "will live"],
+        correct: 0,
+        explanation: "Past simple is used in the 'if' clause for hypothetical situations."
+      },
+      {
+        question: "Complete: If I were you, I ___ talk to her.",
+        options: ["will", "would", "can"],
+        correct: 1,
+        explanation: "Use 'would + base verb' in the main clause of second conditional."
+      }
+    ]
+  },
+  {
+    id: 135,
+    title: "Expressing Preferences (I'd rather, I prefer)",
+    description: "Learn how to express preferences using 'I prefer' and 'I'd rather'",
+    lesson: "Bu modülde tercihlerimizi ifade etmeyi öğreneceğiz.\n\n📌 Yapılar ve Örnekler\n• I prefer + noun/verb-ing + to + noun/verb-ing\n→ I prefer coffee to tea.\n→ I prefer reading to watching TV.\n\n• I'd rather + verb (bare infinitive) + than + verb\n→ I'd rather stay home than go out.\n→ I'd rather walk than drive.\n\nBoth structures are used to compare two things and show which one you like more. 'I prefer' is more formal, while 'I'd rather' is more common in everyday speech.",
+    exercises: [
+      {
+        question: "Express preference: 'Do you prefer coffee or tea?'",
+        options: ["I prefer coffee to tea.", "I prefer coffee than tea.", "I prefer coffee from tea."],
+        correct: 0,
+        explanation: "Use 'prefer...to...' to compare two things."
+      },
+      {
+        question: "Complete: I'd rather ___ home than go out.",
+        options: ["staying", "stay", "to stay"],
+        correct: 1,
+        explanation: "Use bare infinitive (base form) after 'I'd rather'."
+      },
+      {
+        question: "Express preference: 'Walking or cycling?'",
+        options: ["I prefer walking to cycling.", "I prefer walking than cycling.", "I prefer walking of cycling."],
+        correct: 0,
+        explanation: "Use 'prefer + -ing...to + -ing' for activities."
+      }
+    ]
+  },
+  {
+    id: 136,
+    title: "Narratives – Sequencing Words (first, then)",
+    description: "Learn how to organize and describe a series of events using sequencing words",
+    lesson: "Bu modülde bir hikaye veya olay anlatırken olayların sırasını belirten kelimeleri (sequencing words) kullanmayı öğreneceğiz.\n\n📌 Sık Kullanılan Sıralama Kelimeleri\n• First → İlk olarak\n• Then → Sonra\n• After that → Ondan sonra\n• Next → Sıradaki adım\n• Later → Daha sonra\n• Finally → Son olarak\n• In the end → En sonunda\n• At the beginning → Başlangıçta\n• At first → İlk başta\n• Eventually → Nihayetinde\n\n📖 Örnek Paragraf\nFirst, I woke up early. Then, I brushed my teeth and got dressed. After that, I had breakfast with my family. Next, I took the bus to school. Later, we had an English class and a science class. Finally, I returned home and did my homework.",
+    exercises: [
+      {
+        question: "Order the sequence: What comes after 'First'?",
+        options: ["Finally", "Then", "In the end"],
+        correct: 1,
+        explanation: "'Then' is the natural next step after 'first' in a sequence."
+      },
+      {
+        question: "Complete: '_____, I woke up. Then, I had breakfast.'",
+        options: ["Finally", "First", "In the end"],
+        correct: 1,
+        explanation: "'First' is used to start a sequence of events."
+      },
+      {
+        question: "What word concludes a story?",
+        options: ["Then", "Next", "Finally"],
+        correct: 2,
+        explanation: "'Finally' is used to show the last step or conclusion."
+      }
+    ]
+  },
+  {
+    id: 137,
+    title: "Linking Words (however, although, despite)",
+    description: "Learn how to use linking words of contrast to show differences between ideas",
+    lesson: "Bu modülde fikirler arasında bağ kuran linking words'leri (bağlaçları) öğreneceğiz. Özellikle zıtlık (contrast) belirten kelimelere odaklanacağız.\n\n📌 Önemli Linking Words ve Örnekler\n• However → Ancak / Bununla birlikte\n→ I was tired. However, I finished the project.\n• Although → -e rağmen (cümle alır)\n→ Although it was raining, we went out.\n• Though → -e rağmen (although gibi)\n→ Though he is rich, he lives simply.\n• Even though → -mesine rağmen (daha güçlü vurgu)\n→ Even though she was sick, she went to work.\n• Despite → -e rağmen (isim/gerund alır)\n→ Despite the rain, we played outside.\n• In spite of → -e rağmen (isim/gerund alır)\n→ In spite of being tired, he kept running.",
+    exercises: [
+      {
+        question: "Complete: ___ it was raining, we went hiking.",
+        options: ["However", "Although", "Despite"],
+        correct: 1,
+        explanation: "'Although' is followed by a complete clause (subject + verb)."
+      },
+      {
+        question: "Complete: I was tired. ___, I finished the work.",
+        options: ["Although", "However", "Despite"],
+        correct: 1,
+        explanation: "'However' is used to connect two separate sentences."
+      },
+      {
+        question: "Complete: ___ being tired, she kept working.",
+        options: ["Although", "However", "Despite"],
+        correct: 2,
+        explanation: "'Despite' is followed by a noun or gerund (-ing form)."
+      }
+    ]
+  },
+  {
+    id: 138,
+    title: "Describing Experiences (Narratives)",
+    description: "Learn how to describe personal experiences, memories, and past events",
+    lesson: "Bu modülde geçmişte yaşanmış olayları, anıları veya deneyimleri anlatmayı öğreneceğiz. Genellikle past simple ve sequencing words (first, then, after that, finally) kullanılır.\n\n📌 Yapılar ve Örnekler\n• Last year, I visited Paris.\n• When I was a child, I broke my arm.\n• First, we arrived at the airport. Then, we checked in.\n• It was the best day of my life.\n• I'll never forget that moment.\n\nWhen describing experiences, use:\n- Past Simple for completed actions\n- Sequencing words to organize events\n- Descriptive adjectives to make it interesting\n- Time expressions (last week, when I was young, etc.)",
+    exercises: [
+      {
+        question: "Start a personal story: '_____ summer, I went to Italy.'",
+        options: ["Next", "Last", "Finally"],
+        correct: 1,
+        explanation: "'Last summer' is the correct way to refer to the previous summer."
+      },
+      {
+        question: "Describe a memory: 'When I was a child, I _____ my first bicycle.'",
+        options: ["get", "got", "getting"],
+        correct: 1,
+        explanation: "Use past simple 'got' to describe completed actions in childhood memories."
+      },
+      {
+        question: "Express a strong memory: 'I'll never _____ that day.'",
+        options: ["forget", "forgot", "forgetting"],
+        correct: 0,
+        explanation: "Use base form 'forget' after 'will never' for strong emotional statements."
+      }
+    ]
+  },
+  {
+    id: 139,
+    title: "Talking about Cause and Effect (so, because)",
+    description: "Learn how to express reasons (causes) and results (effects) using connectors",
+    lesson: "Bu modülde neden-sonuç ilişkisi kurmayı öğreneceğiz. 'So' sonucu, 'because' ise nedeni açıklar.\n\n📌 Yapılar ve Örnekler\n• I was tired, so I went to bed early. → Sonuç\n• I went to bed early because I was tired. → Neden\n• She is happy because she passed the exam.\n• It was raining, so we stayed inside.\n• He didn't come because he was sick.\n\n'Because' introduces the reason/cause.\n'So' introduces the result/effect.\nBoth help connect ideas and make your speech flow better.",
+    exercises: [
+      {
+        question: "Complete: I was hungry, ___ I made a sandwich.",
+        options: ["because", "so", "but"],
+        correct: 1,
+        explanation: "'So' introduces the result - I made a sandwich as a result of being hungry."
+      },
+      {
+        question: "Complete: She stayed home ___ she was sick.",
+        options: ["so", "because", "and"],
+        correct: 1,
+        explanation: "'Because' introduces the reason why she stayed home."
+      },
+      {
+        question: "Complete: It was raining, ___ we took umbrellas.",
+        options: ["because", "but", "so"],
+        correct: 2,
+        explanation: "'So' shows the result of the rain - we took umbrellas."
+      }
+    ]
+  },
+  {
+    id: 140,
+    title: "Talking about Purpose (to, in order to, so that)",
+    description: "Learn how to express purpose or intent behind actions",
+    lesson: "Bu modülde bir eylemin amacını ifade etmeyi öğreneceğiz. 'to', 'in order to' ve 'so that' gibi kalıplar, neden bir şey yaptığımızı açıklamak için kullanılır.\n\n📌 Yapılar ve Örnekler\n• I study hard to pass the exam. → Amaç belirtme\n• She exercises in order to stay fit.\n• He left early so that he could catch the train.\n• They moved to the city to find jobs.\n• I speak slowly so that everyone can understand.\n\n- 'To' + base verb (simple and common)\n- 'In order to' + base verb (more formal)\n- 'So that' + subject + modal verb (explains the intended result)",
+    exercises: [
+      {
+        question: "Express purpose: 'Why do you study English?'",
+        options: ["To travel easily.", "For travel easily.", "Traveling easily."],
+        correct: 0,
+        explanation: "Use 'to + base verb' to express purpose simply and clearly."
+      },
+      {
+        question: "Complete: She works hard ___ support her family.",
+        options: ["for", "in order to", "so that"],
+        correct: 1,
+        explanation: "'In order to' + base verb is a formal way to express purpose."
+      },
+      {
+        question: "Complete: I speak slowly ___ everyone can understand.",
+        options: ["to", "in order to", "so that"],
+        correct: 2,
+        explanation: "'So that' is followed by a subject + modal verb to show intended result."
+      }
+    ]
   }
 ];
 
 // Combined topics based on current level
 const getTopicsForLevel = (level: string) => {
-  return grammarTopics; // Currently only A1 is available
+  if (level === 'B1') {
+    return grammarTopics.filter(topic => topic.id >= 130 && topic.id <= 140);
+  }
+  return grammarTopics.filter(topic => topic.id <= 24); // A1 topics
 };
 
 interface GrammarModulesProps {
