@@ -969,8 +969,8 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
   const [selectedModule, setSelectedModule] = useState<number | null>(null);
   const [completedModules, setCompletedModules] = useState<number[]>([]);
   const [showCongrats, setShowCongrats] = useState(false);
-  const [availableLevels, setAvailableLevels] = useState<string[]>(["A1"]);
-  const [currentLevel, setCurrentLevel] = useState("A1");
+  const [availableLevels, setAvailableLevels] = useState<string[]>(["A1", "A2", "B1"]); // Include B1 for testing
+  const [currentLevel, setCurrentLevel] = useState("B1"); // Default to B1 to show the new modules
   const [autoProgressEnabled, setAutoProgressEnabled] = useState(false); // Option for auto-progression
   const { earnXPForGrammarLesson } = useGamification();
   const { incrementGrammarLessons, incrementTotalExercises, incrementCompletedModules } = useBadgeSystem();
@@ -1124,9 +1124,10 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
           
           {/* Visual Level Progress Indicator */}
           <div className="flex items-center justify-center space-x-3 mb-4">
-            {["A1", "A2", "A3"].map((level, index) => {
-              const isCompleted = level === "A1" && completedModules.filter(id => id <= 6).length === 6 ||
-                                level === "A2" && completedModules.filter(id => id > 6).length === 4;
+            {["A1", "A2", "B1"].map((level, index) => {
+              const isCompleted = level === "A1" && completedModules.filter(id => id <= 24).length === 24 ||
+                                level === "A2" && completedModules.filter(id => id >= 25 && id <= 100).length > 0 ||
+                                level === "B1" && completedModules.filter(id => id >= 130 && id <= 140).length === 11;
               const isAvailable = availableLevels.includes(level);
               const isCurrent = currentLevel === level;
               
