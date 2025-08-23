@@ -5600,11 +5600,145 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
       .toLowerCase();
   }
 
-  // Strict compare after normalization
+  // Enhanced similarity matching for accepting variations (Module 51 standard)
+  function calculateSimilarity(str1: string, str2: string): number {
+    if (!str1 || !str2) return 0;
+    
+    const normalized1 = normalizeAnswer(str1);
+    const normalized2 = normalizeAnswer(str2);
+    
+    // Exact match gets 100%
+    if (normalized1 === normalized2) return 1;
+    
+    // Calculate Levenshtein distance-based similarity
+    const maxLength = Math.max(normalized1.length, normalized2.length);
+    if (maxLength === 0) return 1;
+    
+    const distance = levenshteinDistance(normalized1, normalized2);
+    return (maxLength - distance) / maxLength;
+  }
+
+  function levenshteinDistance(a: string, b: string): number {
+    const matrix = [];
+    
+    // Initialize first row and column
+    for (let i = 0; i <= b.length; i++) {
+      matrix[i] = [i];
+    }
+    for (let j = 0; j <= a.length; j++) {
+      matrix[0][j] = j;
+    }
+    
+    // Fill in the rest of the matrix
+    for (let i = 1; i <= b.length; i++) {
+      for (let j = 1; j <= a.length; j++) {
+        if (b.charAt(i - 1) === a.charAt(j - 1)) {
+          matrix[i][j] = matrix[i - 1][j - 1];
+        } else {
+          matrix[i][j] = Math.min(
+            matrix[i - 1][j - 1] + 1, // substitution
+            matrix[i][j - 1] + 1,     // insertion
+            matrix[i - 1][j] + 1      // deletion
+          );
+        }
+      }
+    }
+    
+    return matrix[b.length][a.length];
+  }
+
+  // Enhanced answer checking with 80% similarity threshold (Module 51 standard)
+  function isAnswerCorrect(spokenRaw: string, targetRaw: string): boolean {
+    const SIMILARITY_THRESHOLD = 0.80; // 80% similarity threshold
+    
+    // Handle common contractions and variations
+    const expandedSpoken = expandContractions(spokenRaw);
+    const expandedTarget = expandContractions(targetRaw);
+    
+    // Check multiple variations of the answer
+    const spokenVariations = [
+      spokenRaw,
+      expandedSpoken,
+      removeArticles(spokenRaw),
+      removeArticles(expandedSpoken)
+    ];
+    
+    const targetVariations = [
+      targetRaw,
+      expandedTarget,
+      removeArticles(targetRaw),
+      removeArticles(expandedTarget)
+    ];
+    
+    // Check all combinations for similarity
+    for (const spoken of spokenVariations) {
+      for (const target of targetVariations) {
+        const similarity = calculateSimilarity(spoken, target);
+        if (similarity >= SIMILARITY_THRESHOLD) {
+          return true;
+        }
+      }
+    }
+    
+    return false;
+  }
+
+  function expandContractions(text: string): string {
+    const contractions: { [key: string]: string } = {
+      "i'm": "i am",
+      "you're": "you are", 
+      "he's": "he is",
+      "she's": "she is",
+      "it's": "it is",
+      "we're": "we are",
+      "they're": "they are",
+      "isn't": "is not",
+      "aren't": "are not",
+      "won't": "will not",
+      "don't": "do not",
+      "doesn't": "does not",
+      "didn't": "did not",
+      "haven't": "have not",
+      "hasn't": "has not",
+      "hadn't": "had not",
+      "can't": "cannot",
+      "couldn't": "could not",
+      "shouldn't": "should not",
+      "wouldn't": "would not",
+      "i'd": "i would",
+      "you'd": "you would",
+      "he'd": "he would",
+      "she'd": "she would",
+      "we'd": "we would",
+      "they'd": "they would",
+      "i'll": "i will",
+      "you'll": "you will",
+      "he'll": "he will",
+      "she'll": "she will",
+      "we'll": "we will",
+      "they'll": "they will",
+      "i've": "i have",
+      "you've": "you have",
+      "we've": "we have",
+      "they've": "they have"
+    };
+    
+    let result = text.toLowerCase();
+    for (const [contraction, expansion] of Object.entries(contractions)) {
+      result = result.replace(new RegExp(`\\b${contraction}\\b`, 'g'), expansion);
+    }
+    return result;
+  }
+
+  function removeArticles(text: string): string {
+    return text.replace(/\b(a|an|the|my|your|his|her|its|our|their)\b/gi, ' ')
+               .replace(/\s+/g, ' ')
+               .trim();
+  }
+
+  // Legacy function maintained for compatibility - now uses enhanced logic
   function isExactlyCorrect(spokenRaw: string, targetRaw: string): boolean {
-    const spoken = normalizeAnswer(spokenRaw);
-    const target = normalizeAnswer(targetRaw);
-    return spoken === target;
+    return isAnswerCorrect(spokenRaw, targetRaw);
   }
 
   function stripOuterQuotes(s: string) {
@@ -7355,13 +7489,13 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
 
         if (ok) {
           setCorrectAnswers(prev => prev + 1);
-          setFeedback('Great job! Your sentence is correct.');
+          setFeedback('Excellent! Your answer is correct.');
           setFeedbackType('success');
           earnXPForGrammarLesson(true);
           incrementTotalExercises();
           advanceSpeakingOnce();     // Use the centralized, guarded advance
         } else {
-          setFeedback(`Not quite. Correct: "${target}".`);
+          setFeedback(`Please try again. The correct answer is: "${target}"`);
           setFeedbackType('error');
           setTimeout(() => {
             setFeedback('');
@@ -7414,14 +7548,15 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
       const ok = isExactlyCorrect(transcript, target);
 
       if (ok) {
-        setFeedback('Great job! Your sentence is correct.');
+        setCorrectAnswers(prev => prev + 1);
+        setFeedback('Perfect! Your answer is correct.');
         setFeedbackType('success');
         earnXPForGrammarLesson(true);
         incrementTotalExercises();
         setSpeakStatus('advancing');
         advanceSpeakingOnce();              // centralized progression
       } else {
-        setFeedback(`Not quite. Correct: "${target}".`);
+        setFeedback(`Try again. The correct answer is: "${target}"`);
         setFeedbackType('error');
         setSpeakStatus('idle');
       }
