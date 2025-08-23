@@ -120,56 +120,66 @@ const LEVELS = [
 
 // Modules data for each level - TEMPORARILY UNLOCKED FOR DEVELOPMENT
 const MODULES_BY_LEVEL = {
-  A1: Array.from({ length: 50 }, (_, i) => ({
-    id: i + 1,
-    title: i === 0 ? 'Verb To Be - Positive Sentences' : 
-           i === 1 ? 'Negative Sentences' : 
-           i === 2 ? 'Question Sentences' :
-           i === 3 ? 'Subject Pronouns' :
-           i === 4 ? '' :
-           i === 5 ? 'Possessive Adjectives' :
-           i === 6 ? '' :
-           i === 7 ? 'This / That / These / Those' :
-           i === 8 ? '' :
-            i === 9 ? '' :
-             i === 10 ? 'There is / There are – Positive Sentences' :
-            i === 11 ? '' :
-            i === 12 ? 'Have got / Has got – Negative Sentences' :
-             i === 13 ? 'Have got / Has got – Question Sentences' :
-             i === 14 ? 'Simple Present – Positive Sentences (I / You / We / They)' :
-             i === 15 ? 'Simple Present – Positive Sentences (He / She / It)' :
-              i === 16 ? 'Simple Present – Negative Sentences (don\'t / doesn\'t)' :
-              i === 17 ? 'Simple Present – Yes/No Questions' :
-               i === 18 ? 'Simple Present – Wh- Questions (What, Where, Who, etc.)' :
-               i === 19 ? 'Adverbs of Frequency (Sıklık Zarfları)' :
-               i === 20 ? 'Can / Can\'t for Abilities' :
-               i === 21 ? 'Can / Can\'t for Permission' :
-               i === 22 ? 'Like/Love/Hate + -ing' :
-               `A1 Module ${i + 1}`,
-    description: i === 0 ? 'Learn to use am, is, and are' : 
-                 i === 1 ? 'Learn to use "am", "is", and "are" with "not"' :
-                 i === 2 ? 'Learn to form questions with "am", "is", and "are"' :
-                 i === 3 ? 'Learn to use subject pronouns I, You, He, She, It, We, They' :
-                 i === 4 ? '' :
-                 i === 5 ? 'Learn to use possessive adjectives my, your, his, her, its, our, their' :
-                 i === 6 ? '' :
-                 i === 7 ? 'Learn to use demonstrative words This, That, These, Those' :
-                 i === 8 ? '' :
-                  i === 9 ? '' :
-                  i === 10 ? 'Learn to use There is and There are in positive sentences' :
-                  i === 11 ? '' :
-                  i === 12 ? 'Learn to use Haven\'t got and Hasn\'t got in negative sentences' :
-                  i === 13 ? 'Learn to ask questions with Have got and Has got' :
-                  i === 14 ? 'Learn to form positive sentences using Simple Present tense with I, You, We, They' :
-                  i === 15 ? 'Learn to form positive sentences using Simple Present tense with He, She, It (+s/es)' :
-                   i === 16 ? 'Learn to form negative sentences using Simple Present tense with don\'t and doesn\'t' :
-                   i === 17 ? 'Learn to form Yes/No questions using Simple Present tense with Do and Does' :
-                    i === 18 ? 'Learn to form Wh- questions using Simple Present tense with What, Where, Who, When, Why, How' :
-                    i === 19 ? 'Learn to use adverbs of frequency (always, usually, sometimes, never) in English sentences' :
-                    i === 20 ? 'Learn to express abilities and inabilities using can and can\'t' :
-                    i === 21 ? 'Learn to ask for and give permission using can and can\'t' :
-                    i === 22 ? 'Learn to express likes, loves, and hates with -ing verbs' :
-                    'Coming soon',
+   A1: Array.from({ length: 50 }, (_, i) => ({
+     id: i + 1,
+     title: i === 0 ? 'Verb To Be - Positive Sentences' : 
+            i === 1 ? 'Negative Sentences' : 
+            i === 2 ? 'Question Sentences' :
+            i === 3 ? 'Subject Pronouns' :
+            i === 4 ? 'Object Pronouns' :
+            i === 5 ? 'Possessive Adjectives' :
+            i === 6 ? 'Possessive Pronouns' :
+            i === 7 ? 'This / That / These / Those' :
+            i === 8 ? 'Articles (a / an / the)' :
+             i === 9 ? 'Plural Nouns – Regular & Irregular' :
+              i === 10 ? 'There is / There are – Positive Sentences' :
+             i === 11 ? 'Prepositions of Place' :
+             i === 12 ? 'Have got / Has got – Negative Sentences' :
+              i === 13 ? 'Have got / Has got – Question Sentences' :
+              i === 14 ? 'Simple Present – Positive Sentences (I / You / We / They)' :
+              i === 15 ? 'Simple Present – Positive Sentences (He / She / It)' :
+               i === 16 ? 'Simple Present – Negative Sentences (don\'t / doesn\'t)' :
+               i === 17 ? 'Simple Present – Yes/No Questions' :
+                i === 18 ? 'Simple Present – Wh- Questions (What, Where, Who, etc.)' :
+                i === 19 ? 'Adverbs of Frequency (Sıklık Zarfları)' :
+                i === 20 ? 'Can / Can\'t for Abilities' :
+                i === 21 ? 'Can / Can\'t for Permission' :
+                i === 22 ? 'Like/Love/Hate + -ing' :
+                i === 23 ? 'A lot of / Lots of' :
+                i === 24 ? 'How much / How many' :
+                i === 25 ? 'Imperatives (Commands, Instructions)' :
+                i === 26 ? 'Present Continuous – Affirmative' :
+                i === 27 ? 'Present Continuous – Negative' :
+                `A1 Module ${i + 1}`,
+     description: i === 0 ? 'Learn to use am, is, and are' : 
+                  i === 1 ? 'Learn to use "am", "is", and "are" with "not"' :
+                  i === 2 ? 'Learn to form questions with "am", "is", and "are"' :
+                  i === 3 ? 'Learn to use subject pronouns I, You, He, She, It, We, They' :
+                  i === 4 ? 'Understand what object pronouns are and replace nouns with the correct object pronouns' :
+                  i === 5 ? 'Learn to use possessive adjectives my, your, his, her, its, our, their' :
+                  i === 6 ? 'Understand what possessive pronouns are and distinguish them from possessive adjectives' :
+                  i === 7 ? 'Learn to use demonstrative words This, That, These, Those' :
+                  i === 8 ? 'Understand the use of indefinite articles a/an and the definite article the' :
+                   i === 9 ? 'Learn how to form regular plural nouns and become familiar with common irregular plurals' :
+                   i === 10 ? 'Learn to use There is and There are in positive sentences' :
+                   i === 11 ? 'Understand and use common prepositions of place to describe location of objects and people' :
+                   i === 12 ? 'Learn to use Haven\'t got and Hasn\'t got in negative sentences' :
+                   i === 13 ? 'Learn to ask questions with Have got and Has got' :
+                   i === 14 ? 'Learn to form positive sentences using Simple Present tense with I, You, We, They' :
+                   i === 15 ? 'Learn to form positive sentences using Simple Present tense with He, She, It (+s/es)' :
+                    i === 16 ? 'Learn to form negative sentences using Simple Present tense with don\'t and doesn\'t' :
+                    i === 17 ? 'Learn to form Yes/No questions using Simple Present tense with Do and Does' :
+                     i === 18 ? 'Learn to form Wh- questions using Simple Present tense with What, Where, Who, When, Why, How' :
+                     i === 19 ? 'Learn to use adverbs of frequency (always, usually, sometimes, never) in English sentences' :
+                     i === 20 ? 'Learn to express abilities and inabilities using can and can\'t' :
+                     i === 21 ? 'Learn to ask for and give permission using can and can\'t' :
+                     i === 22 ? 'Learn to express likes, loves, and hates with -ing verbs' :
+                     i === 23 ? 'Learn the difference between "a lot of" and "lots of" with both countable and uncountable nouns' :
+                     i === 24 ? 'Learn the difference between "How much" (uncountable) and "How many" (countable)' :
+                     i === 25 ? 'Understand the use of imperatives to give commands, instructions, advice, or suggestions' :
+                     i === 26 ? 'Learn how to form the Present Continuous tense in affirmative sentences' :
+                     i === 27 ? 'Learn how to form Present Continuous in the negative form' :
+                     'Coming soon',
     completed: false,
     locked: false, // TEMPORARILY UNLOCKED FOR DEVELOPMENT
   })),
