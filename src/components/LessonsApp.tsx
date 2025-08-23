@@ -40,44 +40,14 @@ function getNextModuleId(level: 'A1'|'A2'|'B1', current: number): number | null 
 // Enhanced Progress Tracking with ProgressStore Integration
 type LessonPhaseType = 'intro' | 'listening' | 'speaking' | 'complete';
 
-// Enhanced similarity function for Module 51 proven logic
-function calculateAnswerSimilarity(userAnswer: string, correctAnswer: string): number {
-  // Normalize both texts for comparison
-  const normalize = (text: string) => {
-    return text
-      .toLowerCase()
-      .replace(/["""''.!?,:;]/g, '') // Remove punctuation
-      .replace(/\b(a|an|the)\b/g, '') // Remove articles
-      .replace(/\b(is|are|am|was|were|have|has|had|do|does|did)\b/g, '') // Remove common helping verbs
-      .replace(/n't/g, ' not') // Expand contractions
-      .replace(/\s+/g, ' ') // Normalize whitespace
-      .trim();
-  };
+// Import robust evaluator and progress system
+import { evaluateAnswer, EvalOptions } from '../utils/evaluator';
+import { save as saveProgress, resumeLastPointer, getModuleState, clearProgress as clearModuleProgress } from '../utils/progress';
 
-  const normalizedUser = normalize(userAnswer);
-  const normalizedCorrect = normalize(correctAnswer);
-
-  // Handle exact matches after normalization
-  if (normalizedUser === normalizedCorrect) {
-    return 100;
-  }
-
-  // Calculate Jaccard similarity (proven to work well for Module 51)
-  const userWords = new Set(normalizedUser.split(' ').filter(word => word.length > 0));
-  const correctWords = new Set(normalizedCorrect.split(' ').filter(word => word.length > 0));
-  
-  if (userWords.size === 0 && correctWords.size === 0) return 100;
-  if (userWords.size === 0 || correctWords.size === 0) return 0;
-
-  const intersection = new Set([...userWords].filter(word => correctWords.has(word)));
-  const union = new Set([...userWords, ...correctWords]);
-  
-  return (intersection.size / union.size) * 100;
-}
-
-// Save progress using ProgressStore for consistency
+// Enhanced progress saving with new progress system
 function saveModuleProgress(level: string, moduleId: number, phase: LessonPhaseType, questionIndex: number = 0) {
   try {
+    // Save to both old and new systems for compatibility
     const progressData: StoreModuleProgress = {
       level: level,
       module: moduleId,
@@ -91,8 +61,17 @@ function saveModuleProgress(level: string, moduleId: number, phase: LessonPhaseT
       v: 1
     };
     
-    console.log(`💾 Saving progress: ${level} Module ${moduleId}, Question ${questionIndex + 1}/40`);
     setProgress(progressData);
+
+    // Save to new progress system for exact resume
+    const userId = 'guest'; // TODO: get from auth when available
+    const total = 40; // All modules have 40 questions
+    const correct = Math.min(questionIndex + 1, total); // questions answered correctly so far
+    const completed = phase === 'complete';
+    
+    saveProgress(userId, level, String(moduleId), questionIndex, total, correct, completed);
+    
+    console.log(`💾 Progress saved: ${level} Module ${moduleId}, Question ${questionIndex + 1}/40, Phase: ${phase}`);
   } catch (error) {
     console.error('Error saving progress:', error);
   }
@@ -5672,19 +5651,25 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     return matrix[b.length][a.length];
   }
 
-  // Enhanced answer checking with 80% similarity threshold (Module 51 standard)
-  function isAnswerCorrect(spokenRaw: string, targetRaw: string): boolean {
-    const SIMILARITY_THRESHOLD = 80; // 80% similarity threshold (0-100 scale)
+  // Robust answer checking using Module 51 proven logic
+  function isAnswerCorrect(spokenRaw: string, targetRaw: string, questionItem?: any): boolean {
+    // Create evaluation options
+    const evalOptions: EvalOptions = {
+      expected: targetRaw,
+      accepted: questionItem?.acceptedAlternatives || [],
+      requireAffirmationPolarity: questionItem?.requiresYesNo ?? true,
+      keyLemmas: questionItem?.keyLemmas || []
+    };
     
-    const similarity = calculateAnswerSimilarity(spokenRaw, targetRaw);
-    console.log(`🔍 Answer Check: "${spokenRaw}" vs "${targetRaw}" = ${similarity.toFixed(1)}% (threshold: ${SIMILARITY_THRESHOLD}%)`);
+    const result = evaluateAnswer(spokenRaw, evalOptions);
+    console.log(`🔍 Answer Check: "${spokenRaw}" vs "${targetRaw}" = ${result ? 'CORRECT' : 'INCORRECT'}`);
     
-    return similarity >= SIMILARITY_THRESHOLD;
+    return result;
   }
 
-  // Use the enhanced similarity function for all answer checking
-  function isExactlyCorrect(spokenRaw: string, targetRaw: string): boolean {
-    return isAnswerCorrect(spokenRaw, targetRaw);
+  // Use the enhanced evaluator for all answer checking
+  function isExactlyCorrect(spokenRaw: string, targetRaw: string, questionItem?: any): boolean {
+    return isAnswerCorrect(spokenRaw, targetRaw, questionItem);
   }
 
   function expandContractions(text: string): string {
@@ -5781,7 +5766,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     lastMessageTime: lastResponseTime
   });
 
-  // Get completed modules from localStorage
+  // Completed modules state with localStorage sync
   const getCompletedModules = () => {
     try {
       const stored = localStorage.getItem('completedModules');
@@ -5792,7 +5777,8 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
       return [];
     }
   };
-  const completedModules = getCompletedModules();
+  
+  const [completedModules, setCompletedModules] = useState<string[]>(getCompletedModules);
 
   // Check if module is unlocked
   const isModuleUnlocked = (moduleId: number) => {
@@ -6995,6 +6981,35 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     };
   }, []);
 
+  // Auto-resume from last position on app start or lessons view
+  useEffect(() => {
+    // Only check for resume when first entering lessons view
+    if (viewState === 'levels') {
+      const userId = 'guest'; // TODO: get from auth when available
+      const lastPointer = resumeLastPointer(userId);
+      
+      if (lastPointer) {
+        console.log('🔄 Auto-resuming from last position:', lastPointer);
+        
+        // Set the level and module
+        setSelectedLevel(lastPointer.levelId);
+        setSelectedModule(parseInt(lastPointer.moduleId));
+        setViewState('lesson');
+        
+        // Set the phase and question index
+        if (lastPointer.questionIndex > 0) {
+          setCurrentPhase('speaking');
+          setSpeakingIndex(lastPointer.questionIndex);
+        } else {
+          setCurrentPhase('intro');
+          setSpeakingIndex(0);
+        }
+        
+        console.log(`🎯 Resumed: ${lastPointer.levelId} Module ${lastPointer.moduleId}, Question ${lastPointer.questionIndex + 1}`);
+      }
+    }
+  }, [viewState]);
+
   // Keep evaluator target fresh when index or module changes
   useEffect(() => {
     const item = currentModuleData?.speakingPractice?.[speakingIndex];
@@ -7055,6 +7070,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     const moduleKey = `module-${selectedModule}`;
     if (!newCompletedModules.includes(moduleKey)) {
       newCompletedModules.push(moduleKey);
+      setCompletedModules(newCompletedModules);
       localStorage.setItem('completedModules', JSON.stringify(newCompletedModules));
     }
 
@@ -7083,14 +7099,14 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     }, 1600);
   }
 
-  // Centralized advance logic using live index ref with enhanced progress tracking
+  // Enhanced progress update every correct answer (Module 51 standard)
   function advanceSpeakingOnce() {
     const total = currentModuleData?.speakingPractice?.length ?? 0;
     const curr = speakingIndexRef.current;
 
     console.log(`📝 Progress: Question ${curr + 1}/${total} completed`);
     
-    // Save progress after each question
+    // Save progress after each question (exact resume point)
     saveModuleProgress(String(selectedLevel), selectedModule!, 'speaking', curr + 1);
 
     // still inside the range → move to next question
@@ -7098,6 +7114,10 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
       setSpeakingIndex(curr + 1);
       setSpeakStatus('idle');
       setIsProcessing(false);
+      
+      // Clear feedback for next question
+      setFeedback('');
+      setFeedbackType('info');
       return;
     }
 
@@ -7805,29 +7825,53 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
                     }
                   }}
                 >
-                  <CardContent className="p-4">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0">
-                        {!isUnlocked ? (
-                          <Lock className="h-6 w-6 text-white/50" />
-                        ) : isCompleted ? (
-                          <CheckCircle className="h-6 w-6 text-green-400" />
-                        ) : (
-                          <span className="text-white font-bold">{module.id}</span>
-                        )}
-                      </div>
-                      
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-white">{module.title}</h3>
-                        <p className="text-white/70 text-sm">{module.description}</p>
-                        {isCompleted && (
-                          <Badge variant="outline" className="text-green-400 border-green-400 mt-1">
-                            Completed
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
+                   <CardContent className="p-4">
+                     <div className="flex items-center space-x-4">
+                       <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                         {!isUnlocked ? (
+                           <Lock className="h-6 w-6 text-white/50" />
+                         ) : isCompleted ? (
+                           <CheckCircle className="h-6 w-6 text-green-400" />
+                         ) : (
+                           <span className="text-white font-bold">{module.id}</span>
+                         )}
+                       </div>
+                       
+                       <div className="flex-1">
+                         <h3 className="font-semibold text-white">{module.title}</h3>
+                         <p className="text-white/70 text-sm">{module.description}</p>
+                         <div className="flex items-center justify-between mt-2">
+                           <div>
+                             {isCompleted && (
+                               <Badge variant="outline" className="text-green-400 border-green-400">
+                                 Completed
+                               </Badge>
+                             )}
+                           </div>
+                           {isCompleted && (
+                             <Button
+                               variant="ghost"
+                               size="sm"
+                               className="text-red-400 hover:text-red-300 hover:bg-red-500/10 p-1 h-auto"
+                               onClick={(e) => {
+                                 e.stopPropagation();
+                                 const userId = 'guest';
+                                 clearModuleProgress(userId, selectedLevel, String(module.id));
+                                 // Remove from completed modules
+                                 const newCompleted = completedModules.filter(m => m !== `module-${module.id}`);
+                                 setCompletedModules(newCompleted);
+                                 localStorage.setItem('completedModules', JSON.stringify(newCompleted));
+                                 console.log(`🗑️ Reset progress for Module ${module.id}`);
+                               }}
+                               title="Reset progress"
+                             >
+                               🔄
+                             </Button>
+                           )}
+                         </div>
+                       </div>
+                     </div>
+                   </CardContent>
                 </Card>
                 );
               })
