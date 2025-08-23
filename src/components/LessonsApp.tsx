@@ -158,6 +158,18 @@ const MODULES_BY_LEVEL = {
              i === 35 ? 'Ordinal Numbers and Dates' :
              i === 36 ? 'Talking about Time (o\'clock, half past, quarter to)' :
              i === 37 ? 'Comparatives (-er / more)' :
+             i === 38 ? 'Be Going To (Future Plans)' :
+             i === 39 ? 'Would Like / Want' :
+             i === 40 ? 'Must / Mustn\'t (Necessity, Prohibition)' :
+             i === 41 ? 'Have to / Don\'t Have to (Obligation)' :
+             i === 42 ? 'Daily Routines Vocabulary' :
+             i === 43 ? 'Jobs and Occupations Vocabulary' :
+             i === 44 ? 'Food and Drinks Vocabulary' :
+             i === 45 ? 'Family Members Vocabulary' :
+             i === 46 ? 'Directions and Places Vocabulary' :
+             i === 47 ? 'Weather Vocabulary' :
+             i === 48 ? 'Clothes Vocabulary' :
+             i === 49 ? 'Hobbies and Free Time Vocabulary' :
              `A1 Module ${i + 1}`,
      description: i === 0 ? 'Learn to use am, is, and are' : 
                   i === 1 ? 'Learn to use "am", "is", and "are" with "not"' :
@@ -196,6 +208,18 @@ const MODULES_BY_LEVEL = {
                      i === 34 ? 'Learn ordinal numbers and how to use them for dates' :
                      i === 35 ? 'Learn to tell time using o\'clock, half past, quarter past/to' :
                      i === 36 ? 'Learn how to form and use comparative adjectives (-er/more)' :
+                     i === 38 ? 'Learn how to use "be going to" for future plans and intentions' :
+                     i === 39 ? 'Learn the difference between "would like" (polite) and "want" (direct)' :
+                     i === 40 ? 'Learn how to use must to express necessity and mustn\'t for prohibition' :
+                     i === 41 ? 'Learn how to express obligation with "have to" and lack of necessity with "don\'t have to"' :
+                     i === 42 ? 'Learn common daily routine verbs and use Present Simple to describe routines' :
+                     i === 43 ? 'Learn common job and occupation vocabulary and ask questions about professions' :
+                     i === 44 ? 'Learn common food and drink vocabulary and talk about eating habits' :
+                     i === 45 ? 'Learn vocabulary for family members and practice talking about relationships' :
+                     i === 46 ? 'Learn common direction words and vocabulary for places in a town or city' :
+                     i === 47 ? 'Learn common weather vocabulary and practice describing weather conditions' :
+                     i === 48 ? 'Learn common vocabulary for clothes and accessories and talk about what people wear' :
+                     i === 49 ? 'Learn vocabulary related to hobbies and free time activities' :
                      'Coming soon',
     completed: false,
     locked: false, // TEMPORARILY UNLOCKED FOR DEVELOPMENT
@@ -6711,7 +6735,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
                   key={module.id} 
                   className={`bg-white/10 border-white/20 cursor-pointer transition-all hover:bg-white/15 ${!isUnlocked ? 'opacity-50' : ''}`}
                   onClick={() => {
-                    if (isUnlocked && ((module.id >= 1 && module.id <= 37) || module.id === 51)) { // Modules 1-37 and 51 are implemented
+                    if (isUnlocked && ((module.id >= 1 && module.id <= 50) || module.id === 51)) { // Modules 1-50 and 51 are implemented
                       narration.cancel();
                       setSelectedModule(module.id);
                       setViewState('lesson');
