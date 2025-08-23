@@ -3187,6 +3187,845 @@ const MODULE_37_DATA = {
   ]
 };
 
+// Module 39: Be Going To (Future Plans)
+const MODULE_39_DATA = {
+  title: "Module 39: Be Going To (Future Plans)",
+  description: "Learn how to use \"be going to\" for future plans and intentions.",
+  intro: `"Be going to" yapısı gelecekte yapılacak planları ve niyetleri anlatmak için kullanılır.
+🔹 Yapı: Özne + am/is/are + going to + fiil
+Örn:
+• I am going to visit my grandmother. (Büyükannemi ziyaret edeceğim.)
+• She is going to study medicine. (O tıp okuyacak.)
+• They are going to play football tomorrow. (Onlar yarın futbol oynayacaklar.)
+"Be going to" genellikle önceden karar verilen planlar için kullanılır.`,
+  tip: "Use 'be going to' for future plans and intentions that were decided before speaking",
+  
+  table: [
+    { form: "Positive", structure: "Subject + am/is/are + going to + verb", example: "I am going to eat. / She is going to study." },
+    { form: "Negative", structure: "Subject + am/is/are + not + going to + verb", example: "I'm not going to eat. / He isn't going to study." },
+    { form: "Question", structure: "Am/Is/Are + subject + going to + verb?", example: "Are you going to eat? / What are they going to do?" }
+  ],
+  
+  listeningExamples: [
+    "I am going to visit my cousin.",
+    "She is going to watch a movie.",
+    "They are going to travel to Italy."
+  ],
+  
+  speakingPractice: [
+    { question: "What are you going to do tomorrow?", answer: "I'm going to visit my cousin." },
+    { question: "Are you going to watch a movie tonight?", answer: "Yes, I'm going to watch a comedy." },
+    { question: "Is she going to travel next summer?", answer: "Yes, she is going to travel to Italy." },
+    { question: "Are they going to play football on Saturday?", answer: "Yes, they are going to play in the park." },
+    { question: "What is he going to eat for dinner?", answer: "He's going to eat pizza." },
+    { question: "Where are you going to go this weekend?", answer: "I'm going to go to the beach." },
+    { question: "Are you going to study tonight?", answer: "Yes, I'm going to study for my exam." },
+    { question: "What are you going to buy at the market?", answer: "I'm going to buy vegetables and fruit." },
+    { question: "Is your dad going to work tomorrow?", answer: "Yes, he's going to work in the morning." },
+    { question: "Are your friends going to come to the party?", answer: "Yes, they're going to arrive at 8." },
+    { question: "What are you going to wear to the wedding?", answer: "I'm going to wear a blue dress." },
+    { question: "Is your mom going to cook tonight?", answer: "Yes, she's going to make pasta." },
+    { question: "Where are they going to stay in Antalya?", answer: "They're going to stay at a hotel." },
+    { question: "Are you going to visit your grandparents?", answer: "Yes, I'm going to visit them on Sunday." },
+    { question: "What is your brother going to do this evening?", answer: "He's going to play video games." },
+    { question: "Are you going to clean your room today?", answer: "Yes, I'm going to clean it after lunch." },
+    { question: "What are you going to do this summer?", answer: "I'm going to take an English course." },
+    { question: "Is she going to watch TV later?", answer: "Yes, she's going to watch a drama." },
+    { question: "Where is your family going to travel?", answer: "We're going to travel to Cappadocia." },
+    { question: "Are you going to learn Spanish?", answer: "Yes, I'm going to start next month." },
+    { question: "What are you going to do after school?", answer: "I'm going to meet my friends." },
+    { question: "Is your sister going to start university?", answer: "Yes, she's going to start in September." },
+    { question: "What are you going to eat for lunch?", answer: "I'm going to eat a sandwich." },
+    { question: "Are they going to play basketball later?", answer: "Yes, they are." },
+    { question: "Are you going to take a holiday this year?", answer: "Yes, I'm going to visit the coast." },
+    { question: "Is your teacher going to give homework?", answer: "Yes, she's going to give us a worksheet." },
+    { question: "What are your parents going to do on the weekend?", answer: "They're going to visit friends." },
+    { question: "Is your friend going to call you tonight?", answer: "Yes, he's going to call me at 9." },
+    { question: "Are you going to do your homework?", answer: "Yes, I'm going to do it now." },
+    { question: "What is your cousin going to study?", answer: "She's going to study architecture." },
+    { question: "Are you going to cook dinner tonight?", answer: "No, I'm going to order food." },
+    { question: "Where are you going to go in the holiday?", answer: "I'm going to go to Bursa." },
+    { question: "Is he going to come with us?", answer: "Yes, he's going to join us." },
+    { question: "What are you going to do this Friday night?", answer: "I'm going to go out with my friends." },
+    { question: "Are you going to send an email to your teacher?", answer: "Yes, I'm going to send it tonight." },
+    { question: "Is your sister going to join the competition?", answer: "Yes, she is." },
+    { question: "What are you going to bring to the picnic?", answer: "I'm going to bring some snacks." },
+    { question: "Are they going to move to a new house?", answer: "Yes, they're going to move next month." },
+    { question: "Is your friend going to take the exam?", answer: "Yes, he's going to take it next week." },
+    { question: "What are you going to do next weekend?", answer: "I'm going to relax at home." }
+  ]
+};
+
+// Module 40: Would Like / Want
+const MODULE_40_DATA = {
+  title: "Module 40: Would Like / Want",
+  description: "Learn the difference between \"would like\" (polite/formal) and \"want\" (direct/casual).",
+  intro: `"Would like" ve "want" istek veya arzuları ifade etmek için kullanılır.
+🔹 Would like → daha kibar ve resmî (I would like a coffee.)
+🔹 Want → daha doğrudan ve günlük (I want a coffee.)
+Yapı:
+• I would like + isim/fiil → I would like a coffee. / I would like to go.
+• I want + isim/fiil → I want a new phone. / I want to travel.`,
+  tip: "Use 'would like' for polite requests and 'want' for direct statements of desire",
+  
+  table: [
+    { form: "Positive", structure: "I would like some tea. / She wants to watch a movie.", example: "I would like some water, please." },
+    { form: "Negative", structure: "I wouldn't like fish. / I don't want pizza.", example: "I wouldn't like fish for dinner." },
+    { form: "Question", structure: "Would you like a coffee? / What do you want to eat?", example: "Would you like to come with us?" }
+  ],
+  
+  listeningExamples: [
+    "I would like some water, please.",
+    "She wants to watch a movie.",
+    "Would you like to come with us?"
+  ],
+  
+  speakingPractice: [
+    { question: "What would you like to eat?", answer: "I would like to eat pasta." },
+    { question: "What do you want to drink?", answer: "I want to drink orange juice." },
+    { question: "Would you like a cup of tea?", answer: "Yes, I would like a cup of tea." },
+    { question: "Do you want some coffee?", answer: "Yes, I want some coffee." },
+    { question: "What would she like for dinner?", answer: "She would like some chicken." },
+    { question: "What does he want to buy?", answer: "He wants to buy a new phone." },
+    { question: "Would you like to come with us?", answer: "Yes, I'd love to." },
+    { question: "Do you want to go out tonight?", answer: "Yes, I want to go to the cinema." },
+    { question: "Would they like some dessert?", answer: "Yes, they would like some ice cream." },
+    { question: "Do you want to play a game?", answer: "Yes, I want to play chess." },
+    { question: "Would you like to visit London?", answer: "Yes, I would love to visit London." },
+    { question: "Do you want to take a break?", answer: "Yes, I need a break." },
+    { question: "What would your friend like to do?", answer: "He would like to go shopping." },
+    { question: "Would you like some water?", answer: "Yes, please." },
+    { question: "Do you want to watch a movie?", answer: "Yes, I want to watch an action movie." },
+    { question: "Would your sister like some cake?", answer: "Yes, she would." },
+    { question: "What do you want to do tomorrow?", answer: "I want to relax at home." },
+    { question: "What would you like for breakfast?", answer: "I would like eggs and toast." },
+    { question: "Would your brother like to join us?", answer: "Yes, he would." },
+    { question: "Do you want to listen to music?", answer: "Yes, I do." },
+    { question: "Would you like to learn Spanish?", answer: "Yes, I would." },
+    { question: "What would they like to order?", answer: "They would like two pizzas." },
+    { question: "Do you want to play football later?", answer: "Yes, I want to play." },
+    { question: "Would you like to go to the museum?", answer: "Yes, that sounds great." },
+    { question: "What does your mother want to eat?", answer: "She wants to eat salad." },
+    { question: "Would you like another drink?", answer: "No, thank you." },
+    { question: "Do you want to call him now?", answer: "Yes, I want to call him." },
+    { question: "What would you like to do this weekend?", answer: "I would like to visit my grandparents." },
+    { question: "Would you like to go for a walk?", answer: "Yes, I'd love to." },
+    { question: "Do you want to cook dinner together?", answer: "Yes, that's a good idea." },
+    { question: "Would your friends like some tea?", answer: "Yes, they would." },
+    { question: "What would you like to learn?", answer: "I'd like to learn how to play the guitar." },
+    { question: "Would she like to see the movie?", answer: "Yes, she would." },
+    { question: "Do you want to try this game?", answer: "Yes, I want to try." },
+    { question: "Would you like to sit here?", answer: "Yes, thank you." },
+    { question: "What do you want to wear?", answer: "I want to wear something comfortable." },
+    { question: "Would you like to stay longer?", answer: "Yes, if possible." },
+    { question: "Do you want to eat outside?", answer: "Yes, let's go to the garden." },
+    { question: "Would you like to join the club?", answer: "Yes, I would." },
+    { question: "What would you like to do after school?", answer: "I'd like to rest and read a book." }
+  ]
+};
+
+// Module 41: Must / Mustn't (Necessity, Prohibition)
+const MODULE_41_DATA = {
+  title: "Module 41: Must / Mustn't (Necessity, Prohibition)",
+  description: "Learn how to use must to express necessity or strong advice and mustn't to express prohibition.",
+  intro: `Must → bir şeyin gerekli olduğunu, yapılması gerektiğini gösterir.
+Mustn't → yasak veya yapılmaması gereken bir şeyi gösterir.
+🔹 Yapı:
+• Subject + must + fiil → You must study.
+• Subject + mustn't + fiil → You mustn't smoke.
+Örn:
+• You must wear a seatbelt. (Emniyet kemeri takmalısın.)
+• You mustn't talk during the exam. (Sınavda konuşmamalısın.)`,
+  tip: "Use 'must' for strong necessity and 'mustn't' for prohibition (not allowed)",
+  
+  table: [
+    { form: "Positive", structure: "Subject + must + base verb", example: "I must finish my homework." },
+    { form: "Negative", structure: "Subject + mustn't + base verb", example: "You mustn't run here." },
+    { form: "Question", structure: "Must + subject + base verb?", example: "Must we leave now?" }
+  ],
+  
+  listeningExamples: [
+    "You must do your homework.",
+    "Students must listen to the teacher.",
+    "You mustn't use your phone in class."
+  ],
+  
+  speakingPractice: [
+    { question: "What must you do every day?", answer: "I must brush my teeth." },
+    { question: "What mustn't you do in the library?", answer: "I mustn't speak loudly." },
+    { question: "Must students do their homework?", answer: "Yes, students must do their homework." },
+    { question: "Mustn't children play with fire?", answer: "No, they mustn't play with fire." },
+    { question: "What must you take to school?", answer: "I must take my books." },
+    { question: "What mustn't you forget before an exam?", answer: "I mustn't forget my ID." },
+    { question: "Must we wear uniforms?", answer: "Yes, we must wear uniforms." },
+    { question: "Mustn't you use your phone in class?", answer: "Yes, I mustn't use my phone." },
+    { question: "What must drivers do?", answer: "Drivers must follow the rules." },
+    { question: "What mustn't you do in a museum?", answer: "I mustn't touch anything." },
+    { question: "Must people pay taxes?", answer: "Yes, people must pay taxes." },
+    { question: "What mustn't we do in exams?", answer: "We mustn't cheat." },
+    { question: "What must you do if you're sick?", answer: "I must see a doctor." },
+    { question: "Must you wear a mask in hospitals?", answer: "Yes, I must wear a mask." },
+    { question: "Mustn't you run in the hall?", answer: "Yes, I mustn't run in the hall." },
+    { question: "What must we do before bed?", answer: "We must brush our teeth." },
+    { question: "Must we bring our homework to class?", answer: "Yes, we must bring it." },
+    { question: "What must you do when the teacher speaks?", answer: "I must listen carefully." },
+    { question: "Must visitors buy a ticket?", answer: "Yes, they must." },
+    { question: "What mustn't children drink?", answer: "They mustn't drink coffee." },
+    { question: "Must you speak English in class?", answer: "Yes, I must." },
+    { question: "Mustn't people park here?", answer: "Yes, they mustn't park here." },
+    { question: "What must you do when you cross the street?", answer: "I must look both ways." },
+    { question: "Must you take medicine when you're sick?", answer: "Yes, I must." },
+    { question: "What mustn't we do in a cinema?", answer: "We mustn't use our phones." },
+    { question: "Must employees come on time?", answer: "Yes, they must." },
+    { question: "What must you do when your phone rings in class?", answer: "I must turn it off." },
+    { question: "Mustn't you eat in the computer lab?", answer: "Yes, I mustn't eat there." },
+    { question: "What must tourists do when they visit a mosque?", answer: "They must dress respectfully." },
+    { question: "Must we arrive early to meetings?", answer: "Yes, we must." },
+    { question: "What must you do before a trip?", answer: "I must pack my bag." },
+    { question: "Must you be quiet in the library?", answer: "Yes, I must." },
+    { question: "Mustn't you smoke in public places?", answer: "Yes, I mustn't." },
+    { question: "What must you wear in winter?", answer: "I must wear a coat." },
+    { question: "Mustn't people feed animals in the zoo?", answer: "Yes, they mustn't." },
+    { question: "What must you do before sleeping?", answer: "I must set my alarm." },
+    { question: "Must you study for tests?", answer: "Yes, I must." },
+    { question: "Mustn't we litter in the park?", answer: "Yes, we mustn't litter." },
+    { question: "What must people do in emergencies?", answer: "They must call for help." },
+    { question: "Must you do your best in school?", answer: "Yes, I must do my best." }
+  ]
+};
+
+// Module 42: Have to / Don't Have to (Obligation)
+const MODULE_42_DATA = {
+  title: "Module 42: Have to / Don't Have to (Obligation)",
+  description: "Learn how to express obligation with \"have to\" and lack of necessity with \"don't/doesn't have to\".",
+  intro: `"Have to" → bir şeyin gerekli/ zorunlu olduğunu gösterir.
+"Don't/Doesn't have to" → bir şeyin gerekli olmadığını, yapılmasına gerek olmadığını gösterir.
+🔹 Yapı:
+• Subject + have to + fiil → I have to study.
+• Subject + don't/doesn't have to + fiil → She doesn't have to work.
+Örn:
+• I have to go to school every day. (Her gün okula gitmeliyim.)
+• She doesn't have to work on Sundays. (Pazar günleri çalışmak zorunda değil.)`,
+  tip: "Use 'have to' for obligation and 'don't have to' for lack of necessity (not required)",
+  
+  table: [
+    { form: "Positive", structure: "Subject + have/has to + verb", example: "I have to finish my homework." },
+    { form: "Negative", structure: "Subject + don't/doesn't have to + verb", example: "You don't have to come." },
+    { form: "Question", structure: "Do/Does + subject + have to + verb?", example: "Do you have to wake up early?" }
+  ],
+  
+  listeningExamples: [
+    "I have to study for my exam.",
+    "You don't have to wear a tie.",
+    "She has to help her mom."
+  ],
+  
+  speakingPractice: [
+    { question: "Do you have to go to school today?", answer: "Yes, I have to go to school." },
+    { question: "Do you have to do homework every night?", answer: "Yes, I have to do it." },
+    { question: "Does she have to wear a uniform?", answer: "Yes, she has to wear a uniform." },
+    { question: "Do we have to bring our books?", answer: "Yes, we have to bring them." },
+    { question: "Do you have to wake up early?", answer: "Yes, I have to wake up at 6." },
+    { question: "Do they have to take the test?", answer: "Yes, they have to take it." },
+    { question: "Does he have to cook dinner?", answer: "No, he doesn't have to cook." },
+    { question: "Do you have to clean your room?", answer: "Yes, I have to clean it." },
+    { question: "Does she have to wash the dishes?", answer: "Yes, she has to wash them." },
+    { question: "Do we have to go now?", answer: "No, we don't have to go yet." },
+    { question: "Do I have to bring my ID?", answer: "Yes, you have to bring it." },
+    { question: "Does your brother have to study?", answer: "Yes, he has to study a lot." },
+    { question: "Do you have to work on weekends?", answer: "No, I don't have to work." },
+    { question: "Do they have to pay for the tickets?", answer: "Yes, they have to pay." },
+    { question: "Do you have to do everything alone?", answer: "No, I don't have to." },
+    { question: "Does she have to wake up early tomorrow?", answer: "Yes, she has to wake up at 7." },
+    { question: "Do we have to wear masks?", answer: "No, we don't have to anymore." },
+    { question: "Do students have to pass the exam?", answer: "Yes, they have to pass it." },
+    { question: "Do you have to answer all the questions?", answer: "Yes, I have to answer them." },
+    { question: "Does your teacher have to check the homework?", answer: "Yes, she has to check it." },
+    { question: "Do you have to buy a new phone?", answer: "No, I don't have to." },
+    { question: "Do you have to finish today?", answer: "Yes, I have to finish it today." },
+    { question: "Do children have to go to bed early?", answer: "Yes, they have to." },
+    { question: "Does he have to work tonight?", answer: "Yes, he has to work late." },
+    { question: "Do you have to take a bus?", answer: "Yes, I have to take a bus every day." },
+    { question: "Do I have to do this exercise?", answer: "No, you don't have to." },
+    { question: "Do we have to pay for the meal?", answer: "Yes, we have to." },
+    { question: "Do you have to speak English in class?", answer: "Yes, I have to speak English." },
+    { question: "Does your friend have to leave now?", answer: "No, he doesn't have to." },
+    { question: "Do you have to call your manager?", answer: "Yes, I have to call her." },
+    { question: "Does your sister have to work on Saturday?", answer: "No, she doesn't have to." },
+    { question: "Do you have to listen carefully?", answer: "Yes, I have to." },
+    { question: "Do students have to follow the rules?", answer: "Yes, they have to follow them." },
+    { question: "Do you have to take your medicine?", answer: "Yes, I have to take it every morning." },
+    { question: "Does he have to wear a suit?", answer: "Yes, he has to wear it at work." },
+    { question: "Do we have to hurry?", answer: "Yes, we have to catch the train." },
+    { question: "Do you have to stay late today?", answer: "No, I don't have to." },
+    { question: "Does your friend have to clean the kitchen?", answer: "Yes, she has to." },
+    { question: "Do they have to come to the meeting?", answer: "Yes, they do." },
+    { question: "Do I have to finish this form?", answer: "Yes, you have to." }
+  ]
+};
+
+// Module 43: Daily Routines Vocabulary
+const MODULE_43_DATA = {
+  title: "Module 43: Daily Routines Vocabulary",
+  description: "Learn common daily routine verbs and activities using Present Simple tense.",
+  intro: `Daily routines (günlük rutinler) günlük yaptığımız eylemleri anlatır.
+🔹 Örnek fiiller: wake up (uyanmak), brush teeth (diş fırçalamak), have breakfast (kahvaltı yapmak), go to school (okula gitmek), do homework (ödev yapmak), go to bed (yatağa gitmek).
+Rutinleri anlatırken Present Simple Tense kullanılır:
+• I wake up at 7 o'clock. (Saat 7'de uyanırım.)
+• She goes to school at 8. (O saat 8'de okula gider.)
+Sıklık zarfları (frequency adverbs):
+• always (her zaman), usually (genellikle), often (sık sık), sometimes (bazen), never (asla).
+Örn: I usually have breakfast at 8. (Genellikle saat 8'de kahvaltı yaparım.)`,
+  tip: "Use Present Simple for daily routines and frequency adverbs to show how often",
+  
+  table: [
+    { structure: "Subject + base verb (Present Simple)", example: "I wake up at 7.", note: "For daily routines" },
+    { structure: "Subject + frequency adverb + verb", example: "I usually eat breakfast at 8.", note: "With frequency adverbs" },
+    { structure: "For he/she/it: verb + -s", example: "She gets up at 7.", note: "Third person singular" }
+  ],
+  
+  listeningExamples: [
+    "I wake up at 7 o'clock.",
+    "She brushes her teeth every morning.",
+    "They go to school at 8."
+  ],
+  
+  speakingPractice: [
+    { question: "What time do you wake up?", answer: "I wake up at 7 o'clock." },
+    { question: "Do you brush your teeth every morning?", answer: "Yes, I brush my teeth every morning." },
+    { question: "What do you do after you get up?", answer: "I take a shower." },
+    { question: "Do you have breakfast every day?", answer: "Yes, I usually have breakfast." },
+    { question: "What time do you go to school?", answer: "I go to school at 8." },
+    { question: "Do you walk to school or take the bus?", answer: "I take the bus." },
+    { question: "When do you get dressed?", answer: "I get dressed after I take a shower." },
+    { question: "Do you make your bed in the morning?", answer: "Yes, I make my bed every day." },
+    { question: "What do you usually eat for breakfast?", answer: "I usually eat eggs and toast." },
+    { question: "Do you go to work every day?", answer: "Yes, I go to work from Monday to Friday." },
+    { question: "When do you have lunch?", answer: "I have lunch at 12:30." },
+    { question: "Where do you have lunch?", answer: "I usually have lunch at home." },
+    { question: "What time do you finish school?", answer: "I finish school at 3:30." },
+    { question: "What do you do after school?", answer: "I go home and relax." },
+    { question: "Do you take a nap in the afternoon?", answer: "Sometimes I take a nap." },
+    { question: "What time do you get home?", answer: "I get home at 4." },
+    { question: "Do you help your parents at home?", answer: "Yes, I help with the dishes." },
+    { question: "Do you do your homework in the evening?", answer: "Yes, I do my homework after dinner." },
+    { question: "When do you have dinner?", answer: "I have dinner at 7 o'clock." },
+    { question: "Do you watch TV at night?", answer: "Yes, I watch TV for one hour." },
+    { question: "What time do you go to bed?", answer: "I go to bed at 10." },
+    { question: "Do you read a book before sleeping?", answer: "Yes, I sometimes read a book." },
+    { question: "Do you take a shower in the morning or evening?", answer: "I take a shower in the evening." },
+    { question: "Do you check your phone in the morning?", answer: "Yes, I always check my phone." },
+    { question: "What time do you usually sleep?", answer: "I usually sleep at 10:30." },
+    { question: "Do you eat breakfast on weekends?", answer: "Yes, I love breakfast on weekends." },
+    { question: "What do you do before going to bed?", answer: "I brush my teeth." },
+    { question: "Do you drink coffee in the morning?", answer: "No, I drink tea." },
+    { question: "Do you go to the gym in the morning?", answer: "No, I go in the evening." },
+    { question: "Do you listen to music while studying?", answer: "Yes, I sometimes do." },
+    { question: "How often do you go shopping?", answer: "I go shopping once a week." },
+    { question: "Do you prepare your clothes the night before?", answer: "Yes, I usually do." },
+    { question: "Do you iron your clothes?", answer: "No, my mom irons them." },
+    { question: "Do you clean your room every day?", answer: "No, I clean it once a week." },
+    { question: "Do you talk to your friends after school?", answer: "Yes, I talk to them online." },
+    { question: "Do you walk your dog in the morning?", answer: "Yes, I walk my dog at 7." },
+    { question: "Do you feed your pet in the evening?", answer: "Yes, I feed my cat at 6." },
+    { question: "Do you set an alarm?", answer: "Yes, I set my alarm every night." },
+    { question: "Do you stretch or exercise in the morning?", answer: "No, but I want to start." },
+    { question: "Do you eat dinner with your family?", answer: "Yes, we always eat together." }
+  ]
+};
+
+// Module 44: Jobs and Occupations Vocabulary
+const MODULE_44_DATA = {
+  title: "Module 44: Jobs and Occupations Vocabulary",
+  description: "Learn common job and occupation vocabulary and ask questions about professions.",
+  intro: `Bu konu yaygın mesleklerle ilgili kelimeleri tanıtır.
+Örn: doctor (doktor), nurse (hemşire), teacher (öğretmen), firefighter (itfaiyeci).
+Mesleklerle ilgili sorular:
+• What do you do? → I'm a teacher. (Sen ne iş yapıyorsun?)
+• What does he do? → He's a firefighter. (O ne iş yapıyor?)
+• Where does she work? → She works in a hospital. (O nerede çalışıyor?)`,
+  tip: "Use 'What do you do?' to ask about someone's job and 'Where do you work?' for workplace",
+  
+  table: [
+    { question: "What do you do?", answer: "I'm a (job).", example: "I'm a teacher." },
+    { question: "What does he/she do?", answer: "He/She is a (job).", example: "She's a nurse." },
+    { question: "Where does he/she work?", answer: "He/She works in/at (place).", example: "He works in a hospital." }
+  ],
+  
+  listeningExamples: [
+    "I'm a doctor.",
+    "She's a nurse.",
+    "He's a firefighter."
+  ],
+  
+  speakingPractice: [
+    { question: "What do you do?", answer: "I'm a teacher." },
+    { question: "What does your father do?", answer: "He's a doctor." },
+    { question: "What does your mother do?", answer: "She's a nurse." },
+    { question: "What does a firefighter do?", answer: "A firefighter puts out fires." },
+    { question: "Where does a teacher work?", answer: "A teacher works at a school." },
+    { question: "Where does a doctor work?", answer: "A doctor works in a hospital." },
+    { question: "What does a pilot do?", answer: "A pilot flies airplanes." },
+    { question: "What do chefs do?", answer: "Chefs cook food." },
+    { question: "Where does a waiter work?", answer: "A waiter works in a restaurant." },
+    { question: "What does an engineer do?", answer: "An engineer designs buildings or machines." },
+    { question: "What do you want to be?", answer: "I want to be a police officer." },
+    { question: "Is a nurse a hospital worker?", answer: "Yes, a nurse works in a hospital." },
+    { question: "What does a driver do?", answer: "A driver drives vehicles." },
+    { question: "Where does a dentist work?", answer: "A dentist works in a clinic." },
+    { question: "What do artists do?", answer: "Artists paint or draw." },
+    { question: "Is a lawyer a job?", answer: "Yes, a lawyer works in law." },
+    { question: "What job do you want in the future?", answer: "I want to be an architect." },
+    { question: "Where does a farmer work?", answer: "A farmer works on a farm." },
+    { question: "What does a mechanic do?", answer: "A mechanic fixes cars." },
+    { question: "What does a cleaner do?", answer: "A cleaner cleans buildings." },
+    { question: "What does a police officer do?", answer: "A police officer protects people." },
+    { question: "Do teachers work in hospitals?", answer: "No, they work in schools." },
+    { question: "Does your friend want to be a pilot?", answer: "Yes, he wants to fly planes." },
+    { question: "What does a musician do?", answer: "A musician plays music." },
+    { question: "Where does an actor work?", answer: "An actor works in films or theatres." },
+    { question: "Do you know any engineers?", answer: "Yes, my cousin is an engineer." },
+    { question: "What does a scientist do?", answer: "A scientist does experiments and research." },
+    { question: "Is a vet a doctor for animals?", answer: "Yes, a vet takes care of animals." },
+    { question: "What does a builder do?", answer: "A builder builds houses." },
+    { question: "Where does a hairdresser work?", answer: "A hairdresser works in a salon." },
+    { question: "What job does your uncle do?", answer: "He is a chef." },
+    { question: "What does a taxi driver do?", answer: "A taxi driver takes people to places." },
+    { question: "Do police officers wear uniforms?", answer: "Yes, they do." },
+    { question: "What does a baker do?", answer: "A baker makes bread and cakes." },
+    { question: "Is a programmer a modern job?", answer: "Yes, a programmer writes code." },
+    { question: "Where does a receptionist work?", answer: "A receptionist works at the front desk." },
+    { question: "Do you want to be a scientist?", answer: "Yes, I want to work in a lab." },
+    { question: "What job helps people at the airport?", answer: "An airport worker or a customs officer." },
+    { question: "What does a tour guide do?", answer: "A tour guide shows places to visitors." },
+    { question: "What does a photographer do?", answer: "A photographer takes pictures." }
+  ]
+};
+
+// Module 45: Food and Drinks Vocabulary
+const MODULE_45_DATA = {
+  title: "Module 45: Food and Drinks Vocabulary",
+  description: "Learn common food and drink vocabulary and talk about eating and drinking habits.",
+  intro: `Bu konu yemek ve içeceklerle ilgili temel kelimeleri tanıtır.
+🍴 Food (Yiyecekler): bread, cheese, meat, rice, chicken, eggs, soup, salad, pizza, pasta, fruits, vegetables
+🥤 Drinks (İçecekler): water, tea, coffee, juice, milk, soda
+Kullanışlı sorular:
+• What do you like to eat? (Ne yemeyi seversin?)
+• What's your favorite food? (En sevdiğin yemek ne?)
+• What do you usually drink with dinner? (Akşam yemeğinde genelde ne içersin?)`,
+  tip: "Use 'like' with food and drinks to express preferences and 'usually' for habits",
+  
+  table: [
+    { question: "What's your favorite food?", answer: "My favorite food is pizza.", usage: "For preferences" },
+    { question: "Do you like + food/drink?", answer: "Yes, I do. / No, I don't.", usage: "Yes/No questions" },
+    { question: "What do you usually eat/drink?", answer: "I usually eat eggs. / I usually drink water.", usage: "For habits" }
+  ],
+  
+  listeningExamples: [
+    "My favorite food is pizza.",
+    "I usually eat eggs and bread for breakfast.",
+    "I like vegetables."
+  ],
+  
+  speakingPractice: [
+    { question: "What's your favorite food?", answer: "My favorite food is pizza." },
+    { question: "What do you usually eat for breakfast?", answer: "I usually eat eggs and bread." },
+    { question: "Do you like vegetables?", answer: "Yes, I like vegetables." },
+    { question: "Do you eat meat?", answer: "Yes, I eat chicken and beef." },
+    { question: "What kind of fruit do you like?", answer: "I like apples and bananas." },
+    { question: "What do you drink in the morning?", answer: "I drink tea in the morning." },
+    { question: "Do you like coffee?", answer: "No, I don't like coffee." },
+    { question: "What do you usually drink with lunch?", answer: "I usually drink water." },
+    { question: "Do you like spicy food?", answer: "Yes, I love spicy food." },
+    { question: "What do you eat for dinner?", answer: "I eat rice and chicken." },
+    { question: "Do you eat fish?", answer: "Yes, I sometimes eat fish." },
+    { question: "What's your favorite drink?", answer: "My favorite drink is orange juice." },
+    { question: "Do you drink milk?", answer: "Yes, I drink milk every day." },
+    { question: "Do you like soup?", answer: "Yes, I like vegetable soup." },
+    { question: "Do you eat pasta?", answer: "Yes, I eat pasta twice a week." },
+    { question: "What's your favorite dessert?", answer: "My favorite dessert is chocolate cake." },
+    { question: "Do you eat fast food?", answer: "Yes, but not every day." },
+    { question: "What do you eat with rice?", answer: "I eat rice with vegetables or meat." },
+    { question: "Do you like cheese?", answer: "Yes, I like cheese very much." },
+    { question: "Do you drink soda?", answer: "No, I don't drink soda." },
+    { question: "Do you eat fruit every day?", answer: "Yes, I eat fruit every day." },
+    { question: "What do you put in your sandwich?", answer: "I put cheese, lettuce, and tomato." },
+    { question: "Do you like sweet food?", answer: "Yes, I love sweet food." },
+    { question: "What is your favorite snack?", answer: "My favorite snack is popcorn." },
+    { question: "Do you like salad?", answer: "Yes, I eat salad with dinner." },
+    { question: "Do you drink tea or coffee?", answer: "I drink tea." },
+    { question: "Do you like chocolate?", answer: "Yes, I love chocolate." },
+    { question: "What do you eat at school?", answer: "I eat a sandwich and fruit." },
+    { question: "Do you drink water during the day?", answer: "Yes, I drink a lot of water." },
+    { question: "Do you like hamburgers?", answer: "Yes, I like hamburgers with cheese." },
+    { question: "What do you eat with eggs?", answer: "I eat bread and cheese with eggs." },
+    { question: "Do you like orange juice?", answer: "Yes, it's my favorite." },
+    { question: "Do you eat soup in winter?", answer: "Yes, I eat hot soup in winter." },
+    { question: "What do you have for lunch on Sundays?", answer: "I have chicken and rice." },
+    { question: "Do you eat chocolate every day?", answer: "No, just sometimes." },
+    { question: "What food don't you like?", answer: "I don't like onions." },
+    { question: "What's a typical Turkish breakfast?", answer: "It includes bread, cheese, olives, and tea." },
+    { question: "What do you eat when you're hungry at night?", answer: "I eat a small snack like yogurt." },
+    { question: "Do you eat ice cream in winter?", answer: "Yes, I eat it all year." },
+    { question: "What do you usually cook?", answer: "I usually cook pasta or soup." }
+  ]
+};
+
+// Module 46: Family Members Vocabulary
+const MODULE_46_DATA = {
+  title: "Module 46: Family Members Vocabulary",
+  description: "Learn vocabulary for family members and practice talking about relationships.",
+  intro: `Aile üyeleriyle ilgili temel kelimeler:
+👨 father (baba), 👩 mother (anne), 👦 brother (erkek kardeş), 👧 sister (kız kardeş)
+👴 grandfather (dede), 👵 grandmother (anneanne/babaanne)
+👨‍👩‍👧‍👦 uncle (amca/dayı), aunt (hala/teyze), cousin (kuzen)
+nephew (erkek yeğen), niece (kız yeğen), son (oğul), daughter (kız evlat)
+husband (koca), wife (eş)
+Kullanışlı Sorular:
+• Who is your mother's father? → He is my grandfather.
+• Do you have any brothers or sisters? (Kardeşin var mı?)
+• How many people are there in your family? (Ailende kaç kişi var?)`,
+  tip: "Use possessive forms to show relationships: 'my father', 'her sister', 'his brother'",
+  
+  table: [
+    { question: "Who is your mother's mother?", answer: "She is my grandmother.", usage: "Family relationships" },
+    { question: "Do you have any cousins?", answer: "Yes, I do.", usage: "Yes/No questions" },
+    { question: "How many people are there in your family?", answer: "There are five people.", usage: "Counting family" }
+  ],
+  
+  listeningExamples: [
+    "My father is a doctor.",
+    "She is my grandmother.",
+    "I have three cousins."
+  ],
+  
+  speakingPractice: [
+    { question: "Do you have any brothers or sisters?", answer: "Yes, I have one sister." },
+    { question: "How many people are there in your family?", answer: "There are five people in my family." },
+    { question: "What does your father do?", answer: "He is a doctor." },
+    { question: "Who is your mother's mother?", answer: "She is my grandmother." },
+    { question: "Do you have any cousins?", answer: "Yes, I have three cousins." },
+    { question: "What's your brother's name?", answer: "His name is Emre." },
+    { question: "How old is your sister?", answer: "She is 15 years old." },
+    { question: "Do you live with your parents?", answer: "Yes, I live with them." },
+    { question: "Do you see your grandparents often?", answer: "Yes, every weekend." },
+    { question: "Who is your uncle?", answer: "He is my dad's brother." },
+    { question: "What does your aunt do?", answer: "She is a teacher." },
+    { question: "Do you have any nephews or nieces?", answer: "Yes, I have one niece." },
+    { question: "Is your cousin older than you?", answer: "Yes, he is older." },
+    { question: "Do you get along with your siblings?", answer: "Yes, we get along well." },
+    { question: "What's your mother's name?", answer: "Her name is Ayşe." },
+    { question: "Who is the youngest in your family?", answer: "My little brother is the youngest." },
+    { question: "Do you have a big family?", answer: "Yes, I have a big family." },
+    { question: "Who do you look like in your family?", answer: "I look like my father." },
+    { question: "Do your grandparents live near you?", answer: "Yes, they live close to us." },
+    { question: "What do you call your father's sister?", answer: "I call her my aunt." },
+    { question: "Who is your favorite family member?", answer: "My grandma is my favorite." },
+    { question: "Do you visit your relatives often?", answer: "Yes, especially on holidays." },
+    { question: "Is your sister married?", answer: "Yes, she has two children." },
+    { question: "How many uncles do you have?", answer: "I have four uncles." },
+    { question: "Do you help your parents at home?", answer: "Yes, I help them every day." },
+    { question: "Is your cousin your age?", answer: "Yes, we're the same age." },
+    { question: "Who is older, your mom or your dad?", answer: "My dad is older." },
+    { question: "What does your grandfather do?", answer: "He is retired." },
+    { question: "Do you play with your siblings?", answer: "Yes, we play games together." },
+    { question: "What do you call your mother's brother?", answer: "He is my uncle." },
+    { question: "Do you have a stepbrother or stepsister?", answer: "No, I don't." },
+    { question: "Is your family close?", answer: "Yes, we are very close." },
+    { question: "Do you know your great-grandparents?", answer: "No, I don't." },
+    { question: "Who cooks in your family?", answer: "My mother usually cooks." },
+    { question: "Do you live in the same house as your grandparents?", answer: "No, but we live nearby." },
+    { question: "Is your dad funny?", answer: "Yes, he tells funny jokes." },
+    { question: "Do your parents work?", answer: "Yes, they both work." },
+    { question: "What's your daughter's name?", answer: "Her name is Elif." },
+    { question: "Do you have children?", answer: "Yes, I have two children." },
+    { question: "Who takes care of you when you're sick?", answer: "My mom does." }
+  ]
+};
+
+// Module 47: Directions and Places Vocabulary
+const MODULE_47_DATA = {
+  title: "Module 47: Directions and Places Vocabulary",
+  description: "Learn common direction words and vocabulary for places in a town or city.",
+  intro: `Yön tarif ederken kullanılan ifadeler:
+🔹 turn left (sola dön)
+🔹 turn right (sağa dön)
+🔹 go straight (düz git)
+🔹 go past (geç)
+🔹 cross (karşıya geç)
+🔹 at the corner (köşede)
+🔹 next to (yanında)
+🔹 between (arasında)
+🔹 opposite (karşısında)
+Şehirdeki yaygın yerler:
+bank (banka), supermarket (market), hospital (hastane), school (okul), post office (postane), police station (karakol), bus stop (otobüs durağı), park (park), restaurant (restoran), hotel (otel)`,
+  tip: "Use prepositions like 'next to', 'opposite', 'between' to describe locations",
+  
+  table: [
+    { question: "Where is the …?", example: "Where is the bank?", usage: "Asking for location" },
+    { question: "How can I get to …?", example: "How can I get to the post office?", usage: "Asking for directions" },
+    { answer: "It's next to … / It's opposite … / It's between …", example: "It's next to the supermarket.", usage: "Giving location" }
+  ],
+  
+  listeningExamples: [
+    "Where is the nearest bank? → It's next to the supermarket.",
+    "How can I get to the police station? → Turn right at the traffic lights.",
+    "The restaurant is opposite the bank."
+  ],
+  
+  speakingPractice: [
+    { question: "Where is the nearest bank?", answer: "It's next to the supermarket." },
+    { question: "How do I get to the post office?", answer: "Go straight and turn left." },
+    { question: "Is there a hospital near here?", answer: "Yes, it's behind the school." },
+    { question: "Where is the school?", answer: "It's across from the park." },
+    { question: "Can you tell me the way to the bus stop?", answer: "Yes, go straight and it's on the right." },
+    { question: "How can I get to the police station?", answer: "Turn right at the traffic lights." },
+    { question: "Is there a supermarket nearby?", answer: "Yes, it's next to the pharmacy." },
+    { question: "Where's the nearest park?", answer: "It's behind the hotel." },
+    { question: "Where is the restaurant?", answer: "It's opposite the bank." },
+    { question: "Where's the cinema?", answer: "It's between the café and the bookstore." },
+    { question: "How do I get to the hotel?", answer: "Go straight and turn right." },
+    { question: "Is the bakery far from here?", answer: "No, it's very close." },
+    { question: "Where is the coffee shop?", answer: "It's next to the library." },
+    { question: "Can I walk to the museum?", answer: "Yes, it's just five minutes away." },
+    { question: "Where's the bookshop?", answer: "It's opposite the school." },
+    { question: "Is the gas station near here?", answer: "Yes, it's on the corner." },
+    { question: "How do I go to the airport?", answer: "Take a taxi or go by bus." },
+    { question: "Is the train station far?", answer: "No, it's just past the bridge." },
+    { question: "Where can I find a pharmacy?", answer: "There's one near the hospital." },
+    { question: "Where is the library?", answer: "It's next to the school." },
+    { question: "Where's the zoo?", answer: "It's at the end of this street." },
+    { question: "Is the bank on this street?", answer: "Yes, it's on the left." },
+    { question: "Where can I find a taxi?", answer: "There's a taxi stand by the hotel." },
+    { question: "How do I get to the stadium?", answer: "Go along this road and turn left." },
+    { question: "Is there a church around here?", answer: "Yes, just go straight ahead." },
+    { question: "Where's the shopping mall?", answer: "It's near the train station." },
+    { question: "Where can I get a bus?", answer: "Go to the bus stop in front of the school." },
+    { question: "How do I get to the market?", answer: "Walk down this street and turn right." },
+    { question: "Is the hotel close to the beach?", answer: "Yes, just a 3-minute walk." },
+    { question: "Where's the nearest ATM?", answer: "It's beside the grocery store." },
+    { question: "Where is the fire station?", answer: "It's across from the police station." },
+    { question: "Where can I buy stamps?", answer: "You can buy them at the post office." },
+    { question: "Is the parking lot nearby?", answer: "Yes, it's behind the building." },
+    { question: "Where's the entrance?", answer: "It's on the right side." },
+    { question: "Where's the tourist office?", answer: "Next to the museum." },
+    { question: "Is the bookstore far?", answer: "No, it's just around the corner." },
+    { question: "Can I walk to the train station?", answer: "Yes, it's a short walk." },
+    { question: "Where is the bridge?", answer: "It's over the river." },
+    { question: "Where can I eat lunch?", answer: "There's a nice café across the street." },
+    { question: "Where's the closest gym?", answer: "It's near the park." },
+    { question: "Where is the swimming pool?", answer: "It's next to the sports center." }
+  ]
+};
+
+// Module 48: Weather Vocabulary
+const MODULE_48_DATA = {
+  title: "Module 48: Weather Vocabulary",
+  description: "Learn common weather vocabulary and practice describing weather conditions.",
+  intro: `Hava durumunu anlatmak için kullanılan kelimeler:
+🔹 sunny (güneşli), cloudy (bulutlu), rainy (yağmurlu), snowy (karlı), windy (rüzgarlı), foggy (sisli), hot (sıcak), cold (soğuk), warm (ılık), cool (serin), stormy (fırtınalı).
+Kullanışlı ifadeler:
+• What's the weather like? (Hava nasıl?)
+• It's sunny today. (Bugün hava güneşli.)
+• It's going to rain. (Yağmur yağacak.)
+• It was very cold yesterday. (Dün hava çok soğuktu.)`,
+  tip: "Use 'What's the weather like?' to ask about weather and 'It's...' to describe it",
+  
+  table: [
+    { question: "What's the weather like?", answer: "It's sunny today.", usage: "Asking about weather" },
+    { question: "Is it raining?", answer: "Yes, it is. / No, it isn't.", usage: "Yes/No questions" },
+    { structure: "It's going to + weather word", example: "It's going to snow tomorrow.", usage: "Future weather" }
+  ],
+  
+  listeningExamples: [
+    "What's the weather like today? → It's sunny and warm.",
+    "It's cold in winter.",
+    "It's going to rain tomorrow."
+  ],
+  
+  speakingPractice: [
+    { question: "What's the weather like today?", answer: "It's sunny and warm." },
+    { question: "Do you like rainy weather?", answer: "No, I don't like the rain." },
+    { question: "Is it cold in winter?", answer: "Yes, it's very cold." },
+    { question: "What do you do on snowy days?", answer: "I stay home and drink hot tea." },
+    { question: "Is it hot in summer?", answer: "Yes, it's very hot." },
+    { question: "What's your favorite weather?", answer: "I like cool and cloudy days." },
+    { question: "Do you like sunny days?", answer: "Yes, I love the sunshine." },
+    { question: "Is it windy today?", answer: "Yes, it's very windy." },
+    { question: "What do you wear in cold weather?", answer: "I wear a coat and a scarf." },
+    { question: "Is it foggy in the morning?", answer: "Yes, it's foggy near the river." },
+    { question: "Do you like the snow?", answer: "Yes, I like playing in the snow." },
+    { question: "What's the weather like in spring?", answer: "It's usually warm and rainy." },
+    { question: "Is it stormy outside?", answer: "Yes, there is thunder and lightning." },
+    { question: "What do you wear when it rains?", answer: "I wear a raincoat and use an umbrella." },
+    { question: "Do you check the weather forecast?", answer: "Yes, every morning." },
+    { question: "What's the weather like in your city?", answer: "It's mostly sunny." },
+    { question: "Is it going to rain tomorrow?", answer: "Yes, it will rain in the afternoon." },
+    { question: "Do you like hot weather?", answer: "No, I prefer cool weather." },
+    { question: "What season is the coldest?", answer: "Winter is the coldest season." },
+    { question: "What season do you like most?", answer: "I like spring." },
+    { question: "Is it usually hot in July?", answer: "Yes, it's very hot in July." },
+    { question: "What's the weather like in autumn?", answer: "It's cool and windy." },
+    { question: "Do you wear boots in winter?", answer: "Yes, I wear boots when it snows." },
+    { question: "What do you do when it's hot?", answer: "I go to the beach or drink cold water." },
+    { question: "Is it snowing now?", answer: "No, it's not snowing." },
+    { question: "What's your favorite season?", answer: "My favorite season is summer." },
+    { question: "Do you like cloudy days?", answer: "Yes, they are calm and quiet." },
+    { question: "What's the temperature today?", answer: "It's about 25 degrees." },
+    { question: "Do you like the wind?", answer: "No, it makes me cold." },
+    { question: "Is it raining now?", answer: "Yes, it's raining a lot." },
+    { question: "Do you wear sunglasses?", answer: "Yes, when it's sunny." },
+    { question: "Is it warm today?", answer: "Yes, it's warm and nice." },
+    { question: "Do you stay inside during storms?", answer: "Yes, I stay safe inside." },
+    { question: "What's the hottest month in your country?", answer: "August is the hottest." },
+    { question: "What's the coldest month?", answer: "January is the coldest." },
+    { question: "Do you like walking in the rain?", answer: "Sometimes, with an umbrella." },
+    { question: "Is the weather important to you?", answer: "Yes, it affects my plans." },
+    { question: "What weather do you hate?", answer: "I hate stormy weather." },
+    { question: "What do you do on hot summer days?", answer: "I stay in the shade." },
+    { question: "Do you check the weather before traveling?", answer: "Yes, always." }
+  ]
+};
+
+// Module 49: Clothes Vocabulary
+const MODULE_49_DATA = {
+  title: "Module 49: Clothes Vocabulary",
+  description: "Learn common vocabulary for clothes and accessories and talk about what people wear.",
+  intro: `Clothes (giysiler) insanların giydiği şeylerdir.
+Örnek kelimeler: shirt (gömlek), T-shirt (tişört), sweater (kazak), jacket (ceket), coat (mont), jeans (kot pantolon), dress (elbise), skirt (etek), shoes (ayakkabı), boots (bot), sandals (sandalet), socks (çorap), hat (şapka), scarf (atkı), gloves (eldiven).
+Kullanışlı sorular:
+• What are you wearing? (Ne giyiyorsun?)
+• I'm wearing a blue shirt. (Mavi bir gömlek giyiyorum.)
+• What do you wear in winter? (Kışın ne giyersin?)`,
+  tip: "Use 'What are you wearing?' for current clothes and 'What do you wear?' for general habits",
+  
+  table: [
+    { question: "What are you wearing?", answer: "I'm wearing jeans.", usage: "Current clothing" },
+    { structure: "He/She is wearing + clothing item", example: "She is wearing a red dress.", usage: "Describing others" },
+    { question: "Do you wear + clothing item?", answer: "Do you wear a jacket in winter?", usage: "General habits" }
+  ],
+  
+  listeningExamples: [
+    "I'm wearing a white T-shirt.",
+    "She is wearing a red dress.",
+    "I wear a coat in winter."
+  ],
+  
+  speakingPractice: [
+    { question: "What are you wearing today?", answer: "I'm wearing jeans and a white T-shirt." },
+    { question: "Do you wear a jacket in winter?", answer: "Yes, I always wear a jacket." },
+    { question: "What do you wear when it's hot?", answer: "I wear shorts and a T-shirt." },
+    { question: "Do you like wearing hats?", answer: "Yes, I wear hats in summer." },
+    { question: "What color are your shoes?", answer: "My shoes are black." },
+    { question: "Do you wear glasses?", answer: "No, I don't." },
+    { question: "What do you wear to school?", answer: "I wear a school uniform." },
+    { question: "Do you wear socks at home?", answer: "Yes, I always wear socks." },
+    { question: "What do you wear to a wedding?", answer: "I wear a suit and tie." },
+    { question: "What do you wear in winter?", answer: "I wear a coat, gloves, and a scarf." },
+    { question: "Do you wear sandals in summer?", answer: "Yes, they are comfortable." },
+    { question: "What is your favorite piece of clothing?", answer: "I love my leather jacket." },
+    { question: "Do you like wearing dresses?", answer: "Yes, especially in spring." },
+    { question: "What do you wear to bed?", answer: "I wear pajamas." },
+    { question: "Do you wear boots when it rains?", answer: "Yes, I wear rain boots." },
+    { question: "What do you wear when you go running?", answer: "I wear sports clothes." },
+    { question: "Do you wear a tie at work?", answer: "No, I don't have to." },
+    { question: "Do you like colorful clothes?", answer: "Yes, I love bright colors." },
+    { question: "What do you wear at the beach?", answer: "I wear a swimsuit and flip-flops." },
+    { question: "Do you wear gloves in cold weather?", answer: "Yes, to keep my hands warm." },
+    { question: "What color is your jacket?", answer: "It's dark blue." },
+    { question: "Do you wear a watch?", answer: "Yes, I wear it every day." },
+    { question: "Do you wear a uniform?", answer: "Yes, at my job." },
+    { question: "What do you wear at home?", answer: "I wear comfortable clothes." },
+    { question: "Do you wear long sleeves in winter?", answer: "Yes, always." },
+    { question: "What kind of shoes do you like?", answer: "I like sneakers." },
+    { question: "Do you wear skirts?", answer: "Sometimes, when the weather is warm." },
+    { question: "What do you wear when it's cold?", answer: "I wear warm clothes." },
+    { question: "Do you wear the same clothes every day?", answer: "No, I change my clothes daily." },
+    { question: "What do you wear to a party?", answer: "I wear a nice shirt and trousers." },
+    { question: "Do you wear earrings or jewelry?", answer: "Yes, I wear earrings." },
+    { question: "What do you wear when it rains?", answer: "I wear a raincoat." },
+    { question: "What color are your socks?", answer: "They are gray." },
+    { question: "Do you wear new clothes often?", answer: "Only on special days." },
+    { question: "Do you like wearing sweaters?", answer: "Yes, especially in autumn." },
+    { question: "Do you wear a belt?", answer: "Yes, with my jeans." },
+    { question: "What do you wear in the morning?", answer: "I wear my school clothes." },
+    { question: "Do you wear warm clothes in spring?", answer: "No, spring is warmer." },
+    { question: "Do you wear your favorite T-shirt often?", answer: "Yes, all the time." },
+    { question: "What do you wear when you sleep?", answer: "I wear pajamas or a nightgown." }
+  ]
+};
+
+// Module 50: Hobbies and Free Time Vocabulary
+const MODULE_50_DATA = {
+  title: "Module 50: Hobbies and Free Time Vocabulary",
+  description: "Learn vocabulary related to hobbies and free time activities.",
+  intro: `Hobbies (hobiler) ve free time activities (boş zaman aktiviteleri), insanların boş vakitlerinde yaptığı eğlenceli şeylerdir.
+Örnek kelimeler:
+🔹 Hobbies → reading (okuma), drawing (çizim), painting (resim yapma), cooking (yemek yapma), dancing (dans etme), singing (şarkı söyleme), gardening (bahçecilik), traveling (seyahat), fishing (balık tutma)
+🔹 Free Time Activities → watching TV (TV izleme), listening to music (müzik dinleme), playing games (oyun oynama), using the computer (bilgisayar kullanma), going for a walk (yürüyüşe çıkma), meeting friends (arkadaşlarla buluşma)
+Kullanışlı Sorular:
+• What do you do in your free time? (Boş zamanında ne yaparsın?)
+• Do you have any hobbies? (Hobin var mı?)
+• I like reading books and playing the guitar. (Kitap okumayı ve gitar çalmayı severim.)`,
+  tip: "Use 'like + verb-ing' or 'enjoy + verb-ing' to talk about hobbies and interests",
+  
+  table: [
+    { structure: "I like + verb-ing", example: "I like reading.", usage: "Expressing likes" },
+    { structure: "I enjoy + verb-ing", example: "I enjoy cooking.", usage: "Expressing enjoyment" },
+    { question: "Do you + verb …?", answer: "Do you play video games?", usage: "Yes/No questions" },
+    { question: "What's your favorite hobby?", answer: "My favorite hobby is painting.", usage: "Asking about preferences" }
+  ],
+  
+  listeningExamples: [
+    "I like reading books.",
+    "She enjoys cooking in her free time.",
+    "We play football every weekend."
+  ],
+  
+  speakingPractice: [
+    { question: "What do you do in your free time?", answer: "I read books or listen to music." },
+    { question: "Do you have any hobbies?", answer: "Yes, I enjoy painting." },
+    { question: "What's your favorite hobby?", answer: "My favorite hobby is gardening." },
+    { question: "Do you like playing sports?", answer: "Yes, I love football." },
+    { question: "Do you listen to music every day?", answer: "Yes, I listen to music every day." },
+    { question: "What kind of music do you like?", answer: "I like pop music." },
+    { question: "Do you play any instruments?", answer: "Yes, I play the guitar." },
+    { question: "Do you like watching movies?", answer: "Yes, especially comedies." },
+    { question: "What's your favorite movie?", answer: "My favorite movie is a science fiction one." },
+    { question: "Do you go for walks?", answer: "Yes, I walk every evening." },
+    { question: "Do you like dancing?", answer: "Yes, I love dancing." },
+    { question: "Do you enjoy cooking?", answer: "Yes, I like trying new recipes." },
+    { question: "What do you do on the weekend?", answer: "I meet my friends and relax." },
+    { question: "Do you go shopping in your free time?", answer: "Sometimes, I go shopping." },
+    { question: "Do you play video games?", answer: "Yes, I play on my computer." },
+    { question: "Do you like taking photos?", answer: "Yes, especially when I travel." },
+    { question: "Do you do any sports?", answer: "Yes, I play basketball." },
+    { question: "Do you draw or paint?", answer: "Yes, I draw in my notebook." },
+    { question: "What's a relaxing hobby for you?", answer: "Listening to music is relaxing." },
+    { question: "Do you collect anything?", answer: "Yes, I collect stamps." },
+    { question: "Do you read books?", answer: "Yes, I read every night." },
+    { question: "Do you write a diary?", answer: "No, but I used to." },
+    { question: "Do you enjoy traveling?", answer: "Yes, I love visiting new places." },
+    { question: "Do you like fishing?", answer: "Yes, it's peaceful." },
+    { question: "Do you often go to the cinema?", answer: "Not often, but I like it." },
+    { question: "Do you watch series on Netflix?", answer: "Yes, I love binge-watching." },
+    { question: "What do you do when you're bored?", answer: "I watch YouTube videos." },
+    { question: "Do you do puzzles or crosswords?", answer: "Yes, to keep my mind active." },
+    { question: "Do you do yoga?", answer: "Yes, twice a week." },
+    { question: "Do you swim in your free time?", answer: "Yes, I go swimming on Sundays." },
+    { question: "Do you go to the gym?", answer: "Yes, I go three times a week." },
+    { question: "Do you knit or sew?", answer: "No, I don't." },
+    { question: "Do you go cycling?", answer: "Yes, I ride my bike in the park." },
+    { question: "What do you do at home for fun?", answer: "I play board games with my family." },
+    { question: "Do you use social media?", answer: "Yes, I check it every day." },
+    { question: "Do you watch TV every night?", answer: "Yes, after dinner." },
+    { question: "Do you play chess?", answer: "Yes, I play with my brother." },
+    { question: "What hobby would you like to try?", answer: "I'd like to learn photography." },
+    { question: "Do you play cards?", answer: "Yes, with my friends." },
+    { question: "What do you enjoy doing alone?", answer: "I enjoy reading and drawing." }
+  ]
+};
+
 // A2 Level Module Data
 
 // Module 51 Data: Past Simple Affirmative
