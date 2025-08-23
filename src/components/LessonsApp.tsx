@@ -37,59 +37,84 @@ function getNextModuleId(level: 'A1'|'A2'|'B1', current: number): number | null 
   return idx < order.length - 1 ? order[idx + 1] : null;
 }
 
-// Using ProgressStore for persistence - no local types needed
+// Enhanced Progress Tracking with ProgressStore Integration
+type LessonPhaseType = 'intro' | 'listening' | 'speaking' | 'complete';
 
-type LessonProgress = {
-  v: 1;
-  userId: string;           // pick your user identifier (or 'anon')
-  level: number | string;
-  module: number | string;
-  phase: 'intro' | 'listening' | 'speaking';
-  listeningIndex: number;
-  speakingIndex: number;
-  completed: boolean;
-  ts: number;               // last updated timestamp
-};
+// Enhanced similarity function for Module 51 proven logic
+function calculateAnswerSimilarity(userAnswer: string, correctAnswer: string): number {
+  // Normalize both texts for comparison
+  const normalize = (text: string) => {
+    return text
+      .toLowerCase()
+      .replace(/["""''.!?,:;]/g, '') // Remove punctuation
+      .replace(/\b(a|an|the)\b/g, '') // Remove articles
+      .replace(/\b(is|are|am|was|were|have|has|had|do|does|did)\b/g, '') // Remove common helping verbs
+      .replace(/n't/g, ' not') // Expand contractions
+      .replace(/\s+/g, ' ') // Normalize whitespace
+      .trim();
+  };
 
-const PROGRESS_VERSION = 1;
+  const normalizedUser = normalize(userAnswer);
+  const normalizedCorrect = normalize(correctAnswer);
 
-function progressKey(userId: string, level: number | string, module: number | string) {
-  return `lessonProgress:${userId}:${level}:${module}`;
+  // Handle exact matches after normalization
+  if (normalizedUser === normalizedCorrect) {
+    return 100;
+  }
+
+  // Calculate Jaccard similarity (proven to work well for Module 51)
+  const userWords = new Set(normalizedUser.split(' ').filter(word => word.length > 0));
+  const correctWords = new Set(normalizedCorrect.split(' ').filter(word => word.length > 0));
+  
+  if (userWords.size === 0 && correctWords.size === 0) return 100;
+  if (userWords.size === 0 || correctWords.size === 0) return 0;
+
+  const intersection = new Set([...userWords].filter(word => correctWords.has(word)));
+  const union = new Set([...userWords, ...correctWords]);
+  
+  return (intersection.size / union.size) * 100;
 }
 
-function clamp(n: number, min: number, max: number) {
-  return Math.max(min, Math.min(max, n));
-}
-
-function loadProgress(userId: string, level: number | string, module: number | string, totals: {listening: number; speaking: number;}): LessonProgress | null {
+// Save progress using ProgressStore for consistency
+function saveModuleProgress(level: string, moduleId: number, phase: LessonPhaseType, questionIndex: number = 0) {
   try {
-    const raw = localStorage.getItem(progressKey(userId, level, module));
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as LessonProgress;
-    if (!parsed || parsed.v !== PROGRESS_VERSION) return null;
-
-    // validate bounds in case content changed
-    const li = clamp(parsed.listeningIndex ?? 0, 0, Math.max(0, totals.listening - 1));
-    const si = clamp(parsed.speakingIndex ?? 0, 0, Math.max(0, totals.speaking - 1));
-    const phase: LessonProgress['phase'] =
-      parsed.phase === 'listening' || parsed.phase === 'speaking' ? parsed.phase : 'intro';
-
-    return { ...parsed, listeningIndex: li, speakingIndex: si, phase };
-  } catch {
-    return null;
+    const progressData: StoreModuleProgress = {
+      level: level,
+      module: moduleId,
+      phase: phase as any,
+      listeningIndex: 0,
+      speakingIndex: questionIndex,
+      completed: phase === 'complete',
+      totalListening: 0,
+      totalSpeaking: 40, // All modules have 40 questions
+      updatedAt: Date.now(),
+      v: 1
+    };
+    
+    console.log(`💾 Saving progress: ${level} Module ${moduleId}, Question ${questionIndex + 1}/40`);
+    setProgress(progressData);
+  } catch (error) {
+    console.error('Error saving progress:', error);
   }
 }
 
-function saveProgress(p: Omit<LessonProgress,'ts'|'v'>) {
-  const record: LessonProgress = { ...p, v: PROGRESS_VERSION, ts: Date.now() };
-  try { localStorage.setItem(progressKey(p.userId, p.level, p.module), JSON.stringify(record)); } catch {}
+// Load progress using ProgressStore
+function loadModuleProgress(level: string, moduleId: number): { phase: LessonPhaseType; questionIndex: number } {
+  try {
+    const progress = getProgress(level, moduleId);
+    if (progress) {
+      console.log(`📚 Restored progress: ${level} Module ${moduleId}, Question ${progress.speakingIndex + 1}/40`);
+      return {
+        phase: progress.completed ? 'complete' : (progress.phase as LessonPhaseType) || 'intro',
+        questionIndex: progress.speakingIndex || 0
+      };
+    }
+  } catch (error) {
+    console.error('Error loading progress:', error);
+  }
+  
+  return { phase: 'intro', questionIndex: 0 };
 }
-
-function clearLessonProgress(userId: string, level: number | string, module: number | string) {
-  try { localStorage.removeItem(progressKey(userId, level, module)); } catch {}
-}
-
-// Using ProgressStore for all module progress
 
 function normalize(s: string) {
   return s
@@ -5649,38 +5674,17 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
 
   // Enhanced answer checking with 80% similarity threshold (Module 51 standard)
   function isAnswerCorrect(spokenRaw: string, targetRaw: string): boolean {
-    const SIMILARITY_THRESHOLD = 0.80; // 80% similarity threshold
+    const SIMILARITY_THRESHOLD = 80; // 80% similarity threshold (0-100 scale)
     
-    // Handle common contractions and variations
-    const expandedSpoken = expandContractions(spokenRaw);
-    const expandedTarget = expandContractions(targetRaw);
+    const similarity = calculateAnswerSimilarity(spokenRaw, targetRaw);
+    console.log(`🔍 Answer Check: "${spokenRaw}" vs "${targetRaw}" = ${similarity.toFixed(1)}% (threshold: ${SIMILARITY_THRESHOLD}%)`);
     
-    // Check multiple variations of the answer
-    const spokenVariations = [
-      spokenRaw,
-      expandedSpoken,
-      removeArticles(spokenRaw),
-      removeArticles(expandedSpoken)
-    ];
-    
-    const targetVariations = [
-      targetRaw,
-      expandedTarget,
-      removeArticles(targetRaw),
-      removeArticles(expandedTarget)
-    ];
-    
-    // Check all combinations for similarity
-    for (const spoken of spokenVariations) {
-      for (const target of targetVariations) {
-        const similarity = calculateSimilarity(spoken, target);
-        if (similarity >= SIMILARITY_THRESHOLD) {
-          return true;
-        }
-      }
-    }
-    
-    return false;
+    return similarity >= SIMILARITY_THRESHOLD;
+  }
+
+  // Use the enhanced similarity function for all answer checking
+  function isExactlyCorrect(spokenRaw: string, targetRaw: string): boolean {
+    return isAnswerCorrect(spokenRaw, targetRaw);
   }
 
   function expandContractions(text: string): string {
@@ -5734,11 +5738,6 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     return text.replace(/\b(a|an|the|my|your|his|her|its|our|their)\b/gi, ' ')
                .replace(/\s+/g, ' ')
                .trim();
-  }
-
-  // Legacy function maintained for compatibility - now uses enhanced logic
-  function isExactlyCorrect(spokenRaw: string, targetRaw: string): boolean {
-    return isAnswerCorrect(spokenRaw, targetRaw);
   }
 
   function stripOuterQuotes(s: string) {
@@ -6919,12 +6918,12 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     // Run when module changes; restore once.
     if (!selectedModule || !currentModuleData || restoredOnceRef.current) return;
 
-    const saved = loadProgress(userId, selectedLevel, selectedModule, totals);
-    if (saved && saved.completed !== true) {
+    const saved = loadModuleProgress(String(selectedLevel), selectedModule);
+    if (saved && saved.phase !== 'complete') {
       // restore
       setCurrentPhase(saved.phase);
-      setListeningIndex(saved.listeningIndex);
-      setSpeakingIndex(saved.speakingIndex);
+      setListeningIndex(0);
+      setSpeakingIndex(saved.questionIndex);
     } else {
       // fresh start for this module
       setCurrentPhase('intro');
@@ -6943,15 +6942,15 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     if (currentPhase !== 'speaking') return;
     // Do not reset if we already restored or if we have progress saved.
     // Only set to 0 when starting a truly fresh module.
-    const saved = loadProgress(userId, selectedLevel, selectedModule, totals);
-    if (!saved || saved.completed) {
+    const saved = loadModuleProgress(String(selectedLevel), selectedModule);
+    if (!saved || saved.phase === 'complete') {
       setSpeakingIndex(0);
     }
     // else: keep restored index
     lessonCompletedRef.current = false;
     if (timeoutRef.current) { clearTimeout(timeoutRef.current); timeoutRef.current = null; }
     setIsProcessing(false);
-  }, [currentPhase, userId, selectedLevel, selectedModule]);
+  }, [currentPhase, selectedLevel, selectedModule]);
 
   // Save on any meaningful change (using old progress store)
   useEffect(() => {
@@ -6965,15 +6964,12 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     // debounce a bit to avoid hammering storage
     if (autosaveTimeoutRef.current) window.clearTimeout(autosaveTimeoutRef.current);
     autosaveTimeoutRef.current = window.setTimeout(() => {
-      saveProgress({
-        userId,
-        level: selectedLevel,
-        module: selectedModule,
-        phase: (currentPhase === 'listening' || currentPhase === 'speaking') ? currentPhase : 'intro',
-        listeningIndex,
-        speakingIndex,
-        completed: false,
-      });
+      saveModuleProgress(
+        String(selectedLevel),
+        selectedModule,
+        (currentPhase === 'listening' || currentPhase === 'speaking') ? currentPhase as LessonPhaseType : 'intro',
+        speakingIndex
+      );
       autosaveTimeoutRef.current = null;
     }, 250);
   }, [userId, selectedLevel, selectedModule, currentPhase, listeningIndex, speakingIndex, currentModuleData]);
@@ -7047,15 +7043,12 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     } catch {}
 
     // persist completion in new progress store
-    saveProgress({
-      userId,
-      level: selectedLevel,
-      module: selectedModule,
-      phase: 'speaking',
-      listeningIndex,
-      speakingIndex: speakingIndexRef.current, // last answered
-      completed: true,
-    });
+    saveModuleProgress(
+      String(selectedLevel),
+      selectedModule,
+      'complete',
+      speakingIndexRef.current
+    );
 
     // Save progress to completed modules
     const newCompletedModules = [...completedModules];
@@ -7090,10 +7083,15 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     }, 1600);
   }
 
-  // Centralized advance logic using live index ref
+  // Centralized advance logic using live index ref with enhanced progress tracking
   function advanceSpeakingOnce() {
     const total = currentModuleData?.speakingPractice?.length ?? 0;
     const curr = speakingIndexRef.current;
+
+    console.log(`📝 Progress: Question ${curr + 1}/${total} completed`);
+    
+    // Save progress after each question
+    saveModuleProgress(String(selectedLevel), selectedModule!, 'speaking', curr + 1);
 
     // still inside the range → move to next question
     if (curr + 1 < total) {
@@ -7104,6 +7102,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     }
 
     // curr is the last index → celebrate and move on
+    console.log(`🎉 Module ${selectedModule} completed! All ${total} questions finished.`);
     setSpeakStatus('idle');
     setIsProcessing(false);
     celebrateAndAdvance();
@@ -7489,13 +7488,13 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
 
         if (ok) {
           setCorrectAnswers(prev => prev + 1);
-          setFeedback('Excellent! Your answer is correct.');
+          setFeedback('🎉 Perfect! Moving to the next question...');
           setFeedbackType('success');
           earnXPForGrammarLesson(true);
           incrementTotalExercises();
           advanceSpeakingOnce();     // Use the centralized, guarded advance
         } else {
-          setFeedback(`Please try again. The correct answer is: "${target}"`);
+          setFeedback(`❌ Not quite right. The correct answer is: "${target}"`);
           setFeedbackType('error');
           setTimeout(() => {
             setFeedback('');
@@ -7549,14 +7548,14 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
 
       if (ok) {
         setCorrectAnswers(prev => prev + 1);
-        setFeedback('Perfect! Your answer is correct.');
+        setFeedback('🎉 Excellent! Moving to the next question...');
         setFeedbackType('success');
         earnXPForGrammarLesson(true);
         incrementTotalExercises();
         setSpeakStatus('advancing');
         advanceSpeakingOnce();              // centralized progression
       } else {
-        setFeedback(`Try again. The correct answer is: "${target}"`);
+        setFeedback(`❌ Not quite right. The correct answer is: "${target}"`);
         setFeedbackType('error');
         setSpeakStatus('idle');
       }
