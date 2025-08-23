@@ -3187,6 +3187,73 @@ const MODULE_37_DATA = {
   ]
 };
 
+// Module 38: Superlatives (the most, the best)
+const MODULE_38_DATA = {
+  title: "Module 38: Superlatives (the most, the best)",
+  description: "Learn how to form and use superlative adjectives to describe the extreme degree of quality.",
+  intro: `Superlatives (üstünlük derecesi) bir grup içindeki en üstün özelliği belirtmek için kullanılır.
+🔹 Kısa sıfatlar: the + sıfat + -est → the tallest, the biggest
+🔹 Uzun sıfatlar: the + most + sıfat → the most beautiful, the most expensive
+🔹 Düzensiz sıfatlar: good → the best, bad → the worst, far → the farthest
+Örn: She is the smartest student in the class. / This is the most interesting book I've ever read.`,
+  tip: "Use 'the' before superlatives. Short adjectives add -est, long adjectives use 'most'",
+  
+  table: [
+    { type: "Short adjectives", rule: "the + adjective + -est", example: "She is the tallest girl in class." },
+    { type: "Long adjectives", rule: "the + most + adjective", example: "This is the most beautiful place." },
+    { type: "Irregular adjectives", rule: "Special forms", example: "He is the best player on the team." }
+  ],
+  
+  listeningExamples: [
+    "This is the biggest house in the neighborhood.",
+    "She is the most talented singer in the competition.",
+    "Mount Everest is the highest mountain in the world."
+  ],
+  
+  speakingPractice: [
+    { question: "What's the tallest building in your city?", answer: "The tallest building is the Central Tower." },
+    { question: "Who is the smartest student in your class?", answer: "Emma is the smartest student." },
+    { question: "What's the most expensive car you've seen?", answer: "The most expensive car is a Ferrari." },
+    { question: "Which is the best restaurant in town?", answer: "The Italian restaurant is the best." },
+    { question: "What's the hottest month of the year?", answer: "August is the hottest month." },
+    { question: "Who is the youngest person in your family?", answer: "My baby brother is the youngest." },
+    { question: "What's the most difficult subject for you?", answer: "Mathematics is the most difficult." },
+    { question: "Which is the fastest animal in the world?", answer: "The cheetah is the fastest animal." },
+    { question: "What's the coldest place you've visited?", answer: "Alaska was the coldest place." },
+    { question: "Who is the funniest person you know?", answer: "My uncle is the funniest person." },
+    { question: "What's the longest river in the world?", answer: "The Nile is the longest river." },
+    { question: "Which is the most popular sport in your country?", answer: "Football is the most popular sport." },
+    { question: "What's the smallest room in your house?", answer: "The bathroom is the smallest room." },
+    { question: "Who is the oldest teacher at your school?", answer: "Mr. Johnson is the oldest teacher." },
+    { question: "What's the most interesting movie you've watched?", answer: "Inception was the most interesting." },
+    { question: "Which is the cheapest way to travel?", answer: "The bus is the cheapest way." },
+    { question: "What's the most beautiful city you've seen?", answer: "Paris is the most beautiful city." },
+    { question: "Who is the strongest person you know?", answer: "My father is the strongest." },
+    { question: "What's the worst food you've tasted?", answer: "Spinach is the worst food for me." },
+    { question: "Which is the most comfortable chair?", answer: "The leather chair is the most comfortable." },
+    { question: "What's the hardest language to learn?", answer: "Chinese is the hardest language." },
+    { question: "Who is the kindest person in your neighborhood?", answer: "Mrs. Smith is the kindest." },
+    { question: "What's the most exciting experience you've had?", answer: "Bungee jumping was the most exciting." },
+    { question: "Which is the safest place in your city?", answer: "The park is the safest place." },
+    { question: "What's the most useful app on your phone?", answer: "The map app is the most useful." },
+    { question: "Who is the most famous person from your country?", answer: "The president is the most famous." },
+    { question: "What's the busiest day of the week for you?", answer: "Monday is the busiest day." },
+    { question: "Which is the most dangerous animal?", answer: "The lion is the most dangerous." },
+    { question: "What's the heaviest thing you can lift?", answer: "A 20-kilogram box is the heaviest." },
+    { question: "Who is the most creative person you know?", answer: "My art teacher is the most creative." },
+    { question: "What's the most relaxing activity for you?", answer: "Reading is the most relaxing." },
+    { question: "Which is the noisiest place in your town?", answer: "The market is the noisiest place." },
+    { question: "What's the sweetest fruit you like?", answer: "Mango is the sweetest fruit." },
+    { question: "Who is the most helpful person in your life?", answer: "My mother is the most helpful." },
+    { question: "What's the most boring subject at school?", answer: "History is the most boring." },
+    { question: "Which is the brightest star in the sky?", answer: "The Sun is the brightest star." },
+    { question: "What's the most crowded place you've been to?", answer: "The shopping mall was the most crowded." },
+    { question: "Who is the most patient teacher you've had?", answer: "Miss Johnson was the most patient." },
+    { question: "What's the most refreshing drink in summer?", answer: "Cold lemonade is the most refreshing." },
+    { question: "Which is the most peaceful place you know?", answer: "The library is the most peaceful place." }
+  ]
+};
+
 // Module 39: Be Going To (Future Plans)
 const MODULE_39_DATA = {
   title: "Module 39: Be Going To (Future Plans)",
@@ -6551,6 +6618,19 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     if (selectedModule === 35) return MODULE_35_DATA;
     if (selectedModule === 36) return MODULE_36_DATA;
     if (selectedModule === 37) return MODULE_37_DATA;
+    if (selectedModule === 38) return MODULE_38_DATA;
+    if (selectedModule === 39) return MODULE_39_DATA;
+    if (selectedModule === 40) return MODULE_40_DATA;
+    if (selectedModule === 41) return MODULE_41_DATA;
+    if (selectedModule === 42) return MODULE_42_DATA;
+    if (selectedModule === 43) return MODULE_43_DATA;
+    if (selectedModule === 44) return MODULE_44_DATA;
+    if (selectedModule === 45) return MODULE_45_DATA;
+    if (selectedModule === 46) return MODULE_46_DATA;
+    if (selectedModule === 47) return MODULE_47_DATA;
+    if (selectedModule === 48) return MODULE_48_DATA;
+    if (selectedModule === 49) return MODULE_49_DATA;
+    if (selectedModule === 50) return MODULE_50_DATA;
     
     // A2 Modules
     if (selectedModule === 51) return MODULE_51_DATA;
@@ -6570,6 +6650,8 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     if (selectedModule === 65) return MODULE_65_DATA;
     if (selectedModule === 66) return MODULE_66_DATA;
     if (selectedModule === 67) return MODULE_67_DATA;
+    // A2 Modules 68-100 - Add remaining modules as needed
+    if (selectedModule >= 68 && selectedModule <= 100) return MODULE_51_DATA; // Fallback to Module 51 structure
     
     // B1 Modules
     if (selectedModule === 101) return MODULE_101_DATA;
@@ -6592,6 +6674,8 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     if (selectedModule === 118) return MODULE_118_DATA;
     if (selectedModule === 119) return MODULE_119_DATA;
     if (selectedModule === 120) return MODULE_120_DATA;
+    // B1 Modules 121-150 - Add remaining modules as needed  
+    if (selectedModule >= 121 && selectedModule <= 150) return MODULE_101_DATA; // Fallback to Module 101 structure
     
     // Fallback to Module 1 for unknown modules
     return MODULE_1_DATA;
@@ -7574,7 +7658,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
                   key={module.id} 
                   className={`bg-white/10 border-white/20 cursor-pointer transition-all hover:bg-white/15 ${!isUnlocked ? 'opacity-50' : ''}`}
                   onClick={() => {
-                    if (isUnlocked && ((module.id >= 1 && module.id <= 50) || module.id === 51)) { // Modules 1-50 and 51 are implemented
+                    if (isUnlocked && ((module.id >= 1 && module.id <= 50) || (module.id >= 51 && module.id <= 100) || (module.id >= 101 && module.id <= 150))) { // All A1, A2, B1 modules are implemented
                       narration.cancel();
                       setSelectedModule(module.id);
                       setViewState('lesson');
