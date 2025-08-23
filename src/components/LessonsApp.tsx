@@ -2183,83 +2183,887 @@ He hates running. (O koşmaktan nefret eder.)`,
   ]
 };
 
-// Module 22 Data: Can / Can't for Abilities
-const MODULE_22_DATA = {
-  title: "Tomas Hoca - Module 22: Can / Can't for Abilities",
-  description: '"Can" ve "Can\'t", bir kişinin yapabildiği ya da yapamadığı şeyleri anlatmak için kullanılır.',
-  intro: `"Can" ve "Can't", bir kişinin yapabildiği ya da yapamadığı şeyleri anlatmak için kullanılır.
-
-Can: Yapabilmek
-
-Can't (Cannot): Yapamamak
-
-Kullanımı:
-Olumlu (Affirmative): Subject + can + verb (base form)
-Örnek: I can swim. (Ben yüzebilirim.)
-
-Olumsuz (Negative): Subject + can't + verb (base form)  
-Örnek: She can't drive. (O araba süremez.)
-
-Soru (Question): Can + subject + verb (base form)?
-Örnek: Can you play the piano? (Sen piyano çalabilir misin?)
-
-Cevap: Yes, I can. / No, I can't.`,
-  tip: "Can kullanırken fiil kök halinde kullanılır (infinitive without 'to')",
+// Module 25: How much / How many
+const MODULE_25_DATA = {
+  title: "Module 25: How much / How many",
+  description: "Learn the difference between How much (uncountable) and How many (countable).",
+  intro: `How much → Sayılamayan isimlerle kullanılır (su, para, süt, tuz).
+How many → Sayılabilen isimlerle kullanılır (elma, kitap, öğrenci).
+Örn: How much water do you drink? → "Ne kadar su içersin?"
+How many apples do you want? → "Kaç tane elma istersin?"`,
+  tip: "How much + uncountable nouns, How many + countable nouns",
   
   table: [
-    { type: "Olumlu", form: "Subject + can + verb", example: "I can swim." },
-    { type: "Olumsuz", form: "Subject + can't + verb", example: "She can't drive." },
-    { type: "Soru", form: "Can + subject + verb?", example: "Can you play the piano?" },
-    { type: "Cevap", form: "Yes, I can. / No, I can't.", example: "Yes, I can play the piano." }
+    { type: "How much", use: "Uncountable nouns", example: "How much money do you have?" },
+    { type: "How many", use: "Countable nouns", example: "How many books are on the table?" }
   ],
   
   listeningExamples: [
-    "I can swim very well.",
-    "She can't drive a car.",
-    "Can you speak English?"
+    "How much water do you drink?",
+    "How many brothers do you have?",
+    "How much sugar do you take in your tea?"
   ],
   
   speakingPractice: [
-    { question: "Can you swim?", answer: "Yes, I can swim." },
-    { question: "Can your brother play the guitar?", answer: "No, he can't play the guitar." },
-    { question: "Can your parents speak English?", answer: "Yes, they can speak English." },
-    { question: "Can your best friend cook Italian food?", answer: "No, she can't cook Italian food." },
-    { question: "Can they run five kilometers?", answer: "Yes, they can run five kilometers." },
-    { question: "Can you ride a bike?", answer: "Yes, I can ride a bike." },
-    { question: "Can she sing well?", answer: "Yes, she can sing well." },
-    { question: "Can he play chess?", answer: "No, he can't play chess." },
-    { question: "Can your teacher speak Spanish?", answer: "No, he can't speak Spanish." },
-    { question: "Can we visit the museum today?", answer: "Yes, we can visit the museum." },
-    { question: "Can they play tennis?", answer: "No, they can't play tennis." },
-    { question: "Can you dance?", answer: "Yes, I can dance." },
-    { question: "Can your father drive a truck?", answer: "Yes, he can drive a truck." },
-    { question: "Can your sister play the piano?", answer: "No, she can't play the piano." },
-    { question: "Can he swim fast?", answer: "Yes, he can swim fast." },
-    { question: "Can we stay here?", answer: "Yes, we can stay here." },
-    { question: "Can they climb the mountain?", answer: "No, they can't climb the mountain." },
-    { question: "Can you run fast?", answer: "Yes, I can run fast." },
-    { question: "Can your friend cook well?", answer: "No, he can't cook well." },
-    { question: "Can she speak French?", answer: "Yes, she can speak French." },
-    { question: "Can we park here?", answer: "No, we can't park here." },
-    { question: "Can they help us?", answer: "Yes, they can help us." },
-    { question: "Can you read this book?", answer: "Yes, I can read this book." },
-    { question: "Can your brother drive a car?", answer: "No, he can't drive a car." },
-    { question: "Can your friends play basketball?", answer: "Yes, they can play basketball." },
-    { question: "Can she use a computer?", answer: "Yes, she can use a computer." },
-    { question: "Can he run a marathon?", answer: "No, he can't run a marathon." },
-    { question: "Can we eat in this restaurant?", answer: "Yes, we can eat here." },
-    { question: "Can they speak German?", answer: "No, they can't speak German." },
-    { question: "Can you paint pictures?", answer: "Yes, I can paint pictures." },
-    { question: "Can your dog swim?", answer: "No, it can't swim." },
-    { question: "Can your teacher play the guitar?", answer: "Yes, he can play the guitar." },
-    { question: "Can she ride a horse?", answer: "Yes, she can ride a horse." },
-    { question: "Can they fix the car?", answer: "No, they can't fix the car." },
-    { question: "Can you play the drums?", answer: "Yes, I can play the drums." },
-    { question: "Can your friend speak Chinese?", answer: "No, he can't speak Chinese." },
-    { question: "Can he play football?", answer: "Yes, he can play football." },
-    { question: "Can we go there?", answer: "Yes, we can go there." },
-    { question: "Can they help us now?", answer: "No, they can't help us now." },
-    { question: "Can she draw well?", answer: "Yes, she can draw well." }
+    { question: "How much water do you drink every day?", answer: "I drink about two liters of water every day." },
+    { question: "How many brothers do you have?", answer: "I have two brothers." },
+    { question: "How much sugar do you take in your tea?", answer: "I take one spoon of sugar." },
+    { question: "How many languages do you speak?", answer: "I speak three languages." },
+    { question: "How much milk do you need?", answer: "I need one glass of milk." },
+    { question: "How many students are in your class?", answer: "There are twenty students in my class." },
+    { question: "How much coffee do you drink in the morning?", answer: "I drink one cup of coffee." },
+    { question: "How many countries have you visited?", answer: "I have visited five countries." },
+    { question: "How much salt do you use?", answer: "I use a little salt." },
+    { question: "How many friends do you have?", answer: "I have a lot of friends." },
+    { question: "How much bread do you eat?", answer: "I eat two slices of bread." },
+    { question: "How many pens do you have?", answer: "I have five pens." },
+    { question: "How much juice is in the bottle?", answer: "There is half a bottle of juice." },
+    { question: "How many books do you read in a year?", answer: "I read about ten books." },
+    { question: "How much money do you have?", answer: "I have a little money." },
+    { question: "How many cousins do you have?", answer: "I have seven cousins." },
+    { question: "How much time do we have?", answer: "We have ten minutes." },
+    { question: "How many emails do you write every day?", answer: "I write about ten emails." },
+    { question: "How much rice do you eat for lunch?", answer: "I eat one plate of rice." },
+    { question: "How many sandwiches do you want?", answer: "I want two sandwiches." },
+    { question: "How much butter do you use?", answer: "I use a small amount of butter." },
+    { question: "How many cars do you see?", answer: "I see ten cars." },
+    { question: "How much tea do you drink daily?", answer: "I drink three cups of tea." },
+    { question: "How many shirts do you own?", answer: "I own twelve shirts." },
+    { question: "How much oil do you use for cooking?", answer: "I use very little oil." },
+    { question: "How many apples are in the basket?", answer: "There are six apples in the basket." },
+    { question: "How much cheese do you eat per week?", answer: "I eat 200 grams of cheese." },
+    { question: "How many people live in your house?", answer: "Four people live in my house." },
+    { question: "How much soap do you need?", answer: "I need one bar of soap." },
+    { question: "How many glasses do you need?", answer: "I need four glasses." },
+    { question: "How much flour is in the bag?", answer: "There is one kilogram of flour." },
+    { question: "How many eggs are in the fridge?", answer: "There are eight eggs in the fridge." },
+    { question: "How much ketchup do you want?", answer: "Just a little ketchup, please." },
+    { question: "How many chairs are in the room?", answer: "There are ten chairs in the room." },
+    { question: "How much lemonade did you drink?", answer: "I drank one glass of lemonade." },
+    { question: "How many pencils are on the table?", answer: "There are five pencils." },
+    { question: "How much shampoo is left?", answer: "There is a little shampoo left." },
+    { question: "How many bananas do you want?", answer: "I want three bananas." },
+    { question: "How much pasta do you need?", answer: "I need 250 grams of pasta." },
+    { question: "How many socks do you have?", answer: "I have ten pairs of socks." }
+  ]
+};
+
+// Module 26: Imperatives (Commands, Instructions)
+const MODULE_26_DATA = {
+  title: "Module 26: Imperatives (Commands, Instructions)",
+  description: "Learn to use imperatives to give commands, instructions, advice, or suggestions.",
+  intro: `Imperatives (emir cümleleri) birine komut, talimat, tavsiye veya öneri vermek için kullanılır.
+🔹 Yapı: Fiilin yalın hâli → Open the door.
+🔹 Olumsuz: Don't + fiil → Don't run.
+🔹 Daha kibar yapmak için please kullanılabilir → Please sit down. (Lütfen oturun.)`,
+  tip: "Imperatives use base form of verb. Add please to be polite.",
+  
+  table: [
+    { type: "Positive", form: "Base verb", example: "Open the window." },
+    { type: "Negative", form: "Don't + base verb", example: "Don't be late." },
+    { type: "Polite", form: "Please + base verb", example: "Please sit down." }
+  ],
+  
+  listeningExamples: [
+    "Turn off the lights.",
+    "Don't run in the hallway.",
+    "Please sit down."
+  ],
+  
+  speakingPractice: [
+    { question: "What's an imperative for opening a door?", answer: "Open the door." },
+    { question: "How do you tell someone to close their book?", answer: "Close your book." },
+    { question: "How do you politely ask someone to sit down?", answer: "Please sit down." },
+    { question: "How do you tell someone to stand up?", answer: "Stand up." },
+    { question: "What's an imperative for turning on the light?", answer: "Turn on the light." },
+    { question: "How do you tell someone to turn off the TV?", answer: "Turn off the TV." },
+    { question: "How do you tell someone not to shout?", answer: "Don't shout." },
+    { question: "How do you tell someone to be quiet?", answer: "Be quiet." },
+    { question: "How do you politely ask someone to write their name?", answer: "Please write your name." },
+    { question: "How do you tell someone not to touch something?", answer: "Don't touch that!" },
+    { question: "How do you tell someone to come here?", answer: "Come here." },
+    { question: "How do you tell someone to go to the board?", answer: "Go to the board." },
+    { question: "How do you tell someone to listen carefully?", answer: "Listen carefully." },
+    { question: "How do you tell someone not to run?", answer: "Don't run!" },
+    { question: "How do you tell someone to take out their notebook?", answer: "Take out your notebook." },
+    { question: "How do you politely ask for help?", answer: "Please help me." },
+    { question: "How do you tell someone not to be late?", answer: "Don't be late." },
+    { question: "How do you tell someone to wash their hands?", answer: "Wash your hands." },
+    { question: "How do you tell someone to wait here?", answer: "Wait here." },
+    { question: "How do you tell someone to follow you?", answer: "Follow me." },
+    { question: "How do you tell someone to read a page?", answer: "Read this page." },
+    { question: "How do you tell someone not to speak Turkish?", answer: "Don't speak Turkish." },
+    { question: "How do you ask someone to give you their pen?", answer: "Give me your pen." },
+    { question: "How do you politely ask someone to repeat?", answer: "Please repeat after me." },
+    { question: "How do you tell someone not to forget their homework?", answer: "Don't forget your homework." },
+    { question: "How do you tell someone to look at the screen?", answer: "Look at the screen." },
+    { question: "How do you tell someone not to eat in class?", answer: "Don't eat in class." },
+    { question: "How do you tell someone to answer the question?", answer: "Answer the question." },
+    { question: "How do you tell someone not to open the window?", answer: "Don't open the window." },
+    { question: "How do you politely ask someone to clean the board?", answer: "Please clean the board." },
+    { question: "How do you tell someone to put their phone away?", answer: "Put your phone away." },
+    { question: "How do you tell someone to take a deep breath?", answer: "Take a deep breath." },
+    { question: "How do you tell someone not to worry?", answer: "Don't worry." },
+    { question: "How do you tell someone to try again?", answer: "Try again." },
+    { question: "How do you tell someone to be polite?", answer: "Be polite." },
+    { question: "How do you tell someone not to make noise?", answer: "Don't make noise." },
+    { question: "How do you politely ask someone to be careful?", answer: "Please be careful." },
+    { question: "How do you tell someone to turn the page?", answer: "Turn the page." },
+    { question: "How do you tell someone to smile?", answer: "Smile!" },
+    { question: "How do you politely ask someone to do their best?", answer: "Please do your best." }
+  ]
+};
+
+// Module 27: Present Continuous – Affirmative
+const MODULE_27_DATA = {
+  title: "Module 27: Present Continuous – Affirmative",
+  description: "Learn how to form the Present Continuous tense in affirmative sentences.",
+  intro: `Present Continuous (şimdiki zaman) şu anda gerçekleşen ya da geçici durumları anlatmak için kullanılır.
+🔹 Yapı: Özne + am/is/are + fiil-ing
+Örn: I am reading. (Ben okuyorum.) / They are playing. (Onlar oynuyorlar.)`,
+  tip: "Use Present Continuous for actions happening now or temporary situations",
+  
+  table: [
+    { subject: "I", form: "am + verb-ing", example: "I am studying." },
+    { subject: "He/She/It", form: "is + verb-ing", example: "She is watching TV." },
+    { subject: "We/You/They", form: "are + verb-ing", example: "They are playing football." }
+  ],
+  
+  listeningExamples: [
+    "I am reading a book.",
+    "She is cooking dinner.",
+    "They are playing football."
+  ],
+  
+  speakingPractice: [
+    { question: "What are you doing?", answer: "I am studying English." },
+    { question: "What is she doing?", answer: "She is watching TV." },
+    { question: "What are they doing?", answer: "They are playing football." },
+    { question: "What is he doing?", answer: "He is eating lunch." },
+    { question: "What are you doing right now?", answer: "I am talking to you." },
+    { question: "What is your mother doing?", answer: "She is cooking dinner." },
+    { question: "What is your friend doing?", answer: "He is reading a book." },
+    { question: "What are the children doing?", answer: "They are drawing pictures." },
+    { question: "What are you wearing?", answer: "I am wearing a blue shirt." },
+    { question: "What are your classmates doing?", answer: "They are writing their homework." },
+    { question: "What is the cat doing?", answer: "The cat is sleeping." },
+    { question: "What is your father doing?", answer: "He is working in the garden." },
+    { question: "What are you eating?", answer: "I am eating a sandwich." },
+    { question: "What is your teacher doing?", answer: "She is teaching English." },
+    { question: "What are your friends doing?", answer: "They are listening to music." },
+    { question: "What is your brother doing?", answer: "He is playing video games." },
+    { question: "What are you drinking?", answer: "I am drinking water." },
+    { question: "What is your sister doing?", answer: "She is doing her homework." },
+    { question: "What is your dog doing?", answer: "It is running in the yard." },
+    { question: "What are you reading?", answer: "I am reading a novel." },
+    { question: "What is he wearing?", answer: "He is wearing jeans and a T-shirt." },
+    { question: "What are you doing at the moment?", answer: "I am using my phone." },
+    { question: "What are they watching?", answer: "They are watching a movie." },
+    { question: "What is she eating?", answer: "She is eating an apple." },
+    { question: "What are you learning?", answer: "I am learning English grammar." },
+    { question: "What are your parents doing?", answer: "They are cleaning the house." },
+    { question: "What are the students doing?", answer: "They are taking an exam." },
+    { question: "What is your friend drinking?", answer: "She is drinking orange juice." },
+    { question: "What is the baby doing?", answer: "The baby is crying." },
+    { question: "What are your neighbors doing?", answer: "They are having a party." },
+    { question: "What are you thinking about?", answer: "I am thinking about my weekend plans." },
+    { question: "What is your friend wearing?", answer: "He is wearing a black jacket." },
+    { question: "What is the bird doing?", answer: "It is flying in the sky." },
+    { question: "What are the workers doing?", answer: "They are fixing the road." },
+    { question: "What are you looking at?", answer: "I am looking at a painting." },
+    { question: "What is the man doing?", answer: "He is talking on the phone." },
+    { question: "What are the kids playing?", answer: "They are playing hide and seek." },
+    { question: "What is she writing?", answer: "She is writing a letter." },
+    { question: "What are you doing this evening?", answer: "I am meeting my friends." },
+    { question: "What are your classmates reading?", answer: "They are reading a short story." }
+  ]
+};
+
+// Module 28: Present Continuous – Negative
+const MODULE_28_DATA = {
+  title: "Module 28: Present Continuous – Negative",
+  description: "Learn how to form Present Continuous in the negative form.",
+  intro: `Present Continuous (şimdiki zaman) olumsuz formu, şu anda gerçekleşmeyen eylemleri anlatmak için kullanılır.
+🔹 Yapı: Özne + am/is/are + not + fiil-ing
+Örn: I am not watching TV. (Ben TV izlemiyorum.)
+She isn't working now. (O şu anda çalışmıyor.)
+They aren't playing football. (Onlar futbol oynamıyor.)
+🔹 Kısaltmalar:
+• is not → isn't
+• are not → aren't`,
+  tip: "Use contractions isn't and aren't in informal speech",
+  
+  table: [
+    { subject: "I", form: "am not + verb-ing", example: "I'm not reading." },
+    { subject: "He/She/It", form: "is not/isn't + verb-ing", example: "She isn't studying." },
+    { subject: "We/You/They", form: "are not/aren't + verb-ing", example: "They aren't sleeping." }
+  ],
+  
+  listeningExamples: [
+    "I'm not playing football.",
+    "She isn't cooking dinner.",
+    "They aren't studying now."
+  ],
+  
+  speakingPractice: [
+    { question: "Are you watching TV?", answer: "No, I'm not watching TV." },
+    { question: "Is she eating lunch?", answer: "No, she isn't eating lunch." },
+    { question: "Are they playing football?", answer: "No, they aren't playing football." },
+    { question: "Is he reading a book?", answer: "No, he isn't reading a book." },
+    { question: "Are you using your phone?", answer: "No, I'm not using my phone." },
+    { question: "Is your brother doing his homework?", answer: "No, he isn't doing his homework." },
+    { question: "Are the children running?", answer: "No, they aren't running." },
+    { question: "Is your teacher speaking?", answer: "No, she isn't speaking." },
+    { question: "Are you wearing a jacket?", answer: "No, I'm not wearing a jacket." },
+    { question: "Is the cat sleeping?", answer: "No, the cat isn't sleeping." },
+    { question: "Are your parents cooking?", answer: "No, they aren't cooking." },
+    { question: "Is she listening to music?", answer: "No, she isn't listening to music." },
+    { question: "Are you reading now?", answer: "No, I'm not reading now." },
+    { question: "Is he writing a letter?", answer: "No, he isn't writing a letter." },
+    { question: "Are they studying English?", answer: "No, they aren't studying English." },
+    { question: "Is your sister brushing her hair?", answer: "No, she isn't brushing her hair." },
+    { question: "Are you eating dinner?", answer: "No, I'm not eating dinner." },
+    { question: "Is your dog barking?", answer: "No, it isn't barking." },
+    { question: "Are you drinking coffee?", answer: "No, I'm not drinking coffee." },
+    { question: "Is she washing the dishes?", answer: "No, she isn't washing the dishes." },
+    { question: "Are they watching a movie?", answer: "No, they aren't watching a movie." },
+    { question: "Is your friend calling you?", answer: "No, he isn't calling me." },
+    { question: "Are you sitting down?", answer: "No, I'm not sitting down." },
+    { question: "Is the baby crying?", answer: "No, the baby isn't crying." },
+    { question: "Are your classmates laughing?", answer: "No, they aren't laughing." },
+    { question: "Is he fixing the car?", answer: "No, he isn't fixing the car." },
+    { question: "Are you talking to your teacher?", answer: "No, I'm not talking to my teacher." },
+    { question: "Is she wearing a dress?", answer: "No, she isn't wearing a dress." },
+    { question: "Are they cleaning the house?", answer: "No, they aren't cleaning the house." },
+    { question: "Is your friend waiting for you?", answer: "No, he isn't waiting for me." },
+    { question: "Are you learning Spanish?", answer: "No, I'm not learning Spanish." },
+    { question: "Is the bird flying?", answer: "No, it isn't flying." },
+    { question: "Are you opening the window?", answer: "No, I'm not opening the window." },
+    { question: "Is your mom making dinner?", answer: "No, she isn't making dinner." },
+    { question: "Are your brothers playing outside?", answer: "No, they aren't playing outside." },
+    { question: "Is she going to school now?", answer: "No, she isn't going to school now." },
+    { question: "Are you brushing your teeth?", answer: "No, I'm not brushing my teeth." },
+    { question: "Is your dad watching TV?", answer: "No, he isn't watching TV." },
+    { question: "Are you doing your homework?", answer: "No, I'm not doing my homework." },
+    { question: "Is your friend eating a sandwich?", answer: "No, he isn't eating a sandwich." }
+  ]
+};
+
+// Module 29: Present Continuous – Questions
+const MODULE_29_DATA = {
+  title: "Module 29: Present Continuous – Questions",
+  description: "Learn how to form Present Continuous tense in question form.",
+  intro: `Present Continuous (şimdiki zaman) soru cümlelerinde, şu anda gerçekleşen eylemleri sormak için kullanılır.
+🔹 Yapı: Am/Is/Are + özne + fiil-ing
+Örn: Are you watching TV? / Is she working? / What are they doing?
+🔹 Kısa cevaplar:
+Yes, I am. / No, I'm not.
+Yes, she is. / No, she isn't.
+Yes, they are. / No, they aren't.`,
+  tip: "Use short answers with Yes/No questions in Present Continuous",
+  
+  table: [
+    { question: "Are you + verb-ing?", example: "Are you studying?" },
+    { question: "Is he/she/it + verb-ing?", example: "Is she cooking?" },
+    { question: "What + be + subject + verb-ing?", example: "What are they doing?" }
+  ],
+  
+  listeningExamples: [
+    "Are you watching TV?",
+    "Is she working?",
+    "What are they doing?"
+  ],
+  
+  speakingPractice: [
+    { question: "Are you studying now?", answer: "Yes, I am." },
+    { question: "Is she cooking dinner?", answer: "Yes, she is." },
+    { question: "Are they playing football?", answer: "No, they aren't." },
+    { question: "Is he sleeping?", answer: "Yes, he is." },
+    { question: "Are you watching TV?", answer: "No, I'm not." },
+    { question: "Is your mother cleaning the house?", answer: "Yes, she is." },
+    { question: "Are your friends listening to music?", answer: "Yes, they are." },
+    { question: "Is your brother reading a book?", answer: "No, he isn't." },
+    { question: "Are the children drawing?", answer: "Yes, they are." },
+    { question: "Is the dog barking?", answer: "Yes, it is." },
+    { question: "Are you eating lunch?", answer: "Yes, I am." },
+    { question: "Is your teacher talking?", answer: "Yes, she is." },
+    { question: "Are the students writing?", answer: "Yes, they are." },
+    { question: "Is your sister doing her homework?", answer: "Yes, she is." },
+    { question: "Are you using your phone?", answer: "Yes, I am." },
+    { question: "Is he wearing a hat?", answer: "No, he isn't." },
+    { question: "Are you drinking coffee?", answer: "No, I'm not." },
+    { question: "Is she watching a movie?", answer: "Yes, she is." },
+    { question: "Are your parents working?", answer: "Yes, they are." },
+    { question: "Is the baby crying?", answer: "No, the baby is sleeping." },
+    { question: "What are you doing?", answer: "I'm doing my homework." },
+    { question: "What is she doing?", answer: "She is brushing her hair." },
+    { question: "What are they doing?", answer: "They are playing a game." },
+    { question: "What is your dad doing?", answer: "He is fixing the car." },
+    { question: "What is your friend doing?", answer: "He is walking to school." },
+    { question: "What are you wearing?", answer: "I'm wearing a white shirt." },
+    { question: "What is the teacher doing?", answer: "She is writing on the board." },
+    { question: "What are the boys doing?", answer: "They are playing basketball." },
+    { question: "What is your sister doing?", answer: "She is reading a magazine." },
+    { question: "What are you eating?", answer: "I'm eating a banana." },
+    { question: "What is the cat doing?", answer: "It is sleeping on the sofa." },
+    { question: "What are you drinking?", answer: "I'm drinking orange juice." },
+    { question: "What is the man doing?", answer: "He is talking on the phone." },
+    { question: "What are you thinking about?", answer: "I'm thinking about my weekend." },
+    { question: "What is the dog doing?", answer: "It is running in the garden." },
+    { question: "What are the children watching?", answer: "They are watching cartoons." },
+    { question: "What is your friend wearing?", answer: "She is wearing a red dress." },
+    { question: "What are you doing this evening?", answer: "I'm going out with my friends." },
+    { question: "What are your classmates doing?", answer: "They are studying for the test." },
+    { question: "What is your mom making?", answer: "She is making a cake." }
+  ]
+};
+
+// Module 30: Present Simple vs Present Continuous
+const MODULE_30_DATA = {
+  title: "Module 30: Present Simple vs Present Continuous",
+  description: "Learn when to use Present Simple (habits, facts) and Present Continuous (actions happening now, temporary situations).",
+  intro: `Present Simple → alışkanlıklar, tekrar eden eylemler, genel doğrular için kullanılır.
+Örn: I go to school every day. / The sun rises in the east.
+Present Continuous → şu anda olan veya geçici durumlar için kullanılır.
+Örn: I am studying now. / She is staying with her friend this week.
+🔹 Yapı:
+Present Simple → Özne + fiil (he/she/it → -s)
+Present Continuous → Özne + am/is/are + fiil-ing`,
+  tip: "Present Simple = routine/habit/fact | Present Continuous = now/temporary",
+  
+  table: [
+    { tense: "Present Simple", use: "Habits/Facts", example: "I go to school every day." },
+    { tense: "Present Continuous", use: "Now/Temporary", example: "I am studying now." }
+  ],
+  
+  listeningExamples: [
+    "I go to school every day.",
+    "She plays the piano.",
+    "I am studying now."
+  ],
+  
+  speakingPractice: [
+    { question: "Do you go to school every day?", answer: "Yes, I go to school every day." },
+    { question: "Are you going to school right now?", answer: "No, I'm at home now." },
+    { question: "Does she play the piano?", answer: "Yes, she plays the piano." },
+    { question: "Is she playing the piano now?", answer: "Yes, she is playing the piano." },
+    { question: "Do they eat lunch at 12?", answer: "Yes, they eat lunch at 12." },
+    { question: "Are they eating lunch now?", answer: "No, they are working." },
+    { question: "Does he work on weekends?", answer: "No, he doesn't work on weekends." },
+    { question: "Is he working now?", answer: "Yes, he is working in his office." },
+    { question: "Do you watch TV in the evenings?", answer: "Yes, I usually watch TV after dinner." },
+    { question: "Are you watching TV now?", answer: "No, I'm studying." },
+    { question: "Does your mom cook dinner every day?", answer: "Yes, she cooks every evening." },
+    { question: "Is your mom cooking dinner now?", answer: "Yes, she is in the kitchen." },
+    { question: "Do you study English?", answer: "Yes, I study English three times a week." },
+    { question: "Are you studying English now?", answer: "Yes, I am studying it right now." },
+    { question: "Does it rain a lot in winter?", answer: "Yes, it rains a lot in winter." },
+    { question: "Is it raining now?", answer: "No, it's sunny." },
+    { question: "Do you wear glasses?", answer: "Yes, I wear glasses." },
+    { question: "Are you wearing your glasses now?", answer: "Yes, I am." },
+    { question: "Do they play football on weekends?", answer: "Yes, they always play on Sundays." },
+    { question: "Are they playing football now?", answer: "Yes, they are at the park." },
+    { question: "Do you take the bus to work?", answer: "Yes, I take the bus every morning." },
+    { question: "Are you taking the bus now?", answer: "No, I'm walking." },
+    { question: "Does your sister clean her room every week?", answer: "Yes, she cleans it every Saturday." },
+    { question: "Is your sister cleaning her room now?", answer: "Yes, she is cleaning it now." },
+    { question: "Do you read books?", answer: "Yes, I read books every night." },
+    { question: "Are you reading a book now?", answer: "Yes, I'm reading a novel." },
+    { question: "Do you drink tea in the morning?", answer: "Yes, I usually drink tea." },
+    { question: "Are you drinking tea now?", answer: "No, I'm drinking coffee." },
+    { question: "Do your parents work in a hospital?", answer: "Yes, they work as doctors." },
+    { question: "Are your parents working now?", answer: "Yes, they are at the hospital." },
+    { question: "Do you listen to music often?", answer: "Yes, I listen every day." },
+    { question: "Are you listening to music now?", answer: "No, I'm not." },
+    { question: "Does she go to the gym?", answer: "Yes, she goes three times a week." },
+    { question: "Is she going to the gym now?", answer: "Yes, she is on her way." },
+    { question: "Do you do your homework in the evening?", answer: "Yes, I usually do it after dinner." },
+    { question: "Are you doing your homework now?", answer: "Yes, I'm doing it." },
+    { question: "Does your dad drive to work?", answer: "Yes, he drives every day." },
+    { question: "Is your dad driving now?", answer: "Yes, he is on the road." },
+    { question: "Do they clean the house on Saturdays?", answer: "Yes, they always do." },
+    { question: "Are they cleaning the house now?", answer: "Yes, they are cleaning now." }
+  ]
+};
+
+// Module 31: Like / Love / Hate + -ing
+const MODULE_31_DATA = {
+  title: "Module 31: Like / Love / Hate + -ing",
+  description: "Learn how to use like / love / hate + verb-ing to express likes and dislikes.",
+  intro: `Like, love, hate + verb-ing → sevmek, hoşlanmak, nefret etmek anlamında kullanılır.
+Örn:
+• I like reading books. (Kitap okumayı severim.)
+• She loves cooking. (O yemek yapmayı sever.)
+• They hate waking up early. (Onlar erken uyanmaktan nefret eder.)
+Olumsuz:
+• I don't like doing homework. (Ödev yapmayı sevmem.)
+• He doesn't love running. (O koşmayı sevmez.)`,
+  tip: "Use verb + -ing after like, love, and hate",
+  
+  table: [
+    { verb: "like", structure: "Subject + like + verb-ing", example: "I like reading books." },
+    { verb: "love", structure: "Subject + love + verb-ing", example: "She loves cooking." },
+    { verb: "hate", structure: "Subject + hate + verb-ing", example: "They hate waking up early." }
+  ],
+  
+  listeningExamples: [
+    "I like reading books.",
+    "She loves cooking.",
+    "They hate waking up early."
+  ],
+  
+  speakingPractice: [
+    { question: "Do you like reading books?", answer: "Yes, I like reading books." },
+    { question: "Do you love watching movies?", answer: "Yes, I love watching movies." },
+    { question: "Do you hate cleaning your room?", answer: "Yes, I hate cleaning my room." },
+    { question: "Does she like playing the piano?", answer: "Yes, she likes playing the piano." },
+    { question: "Does he love swimming?", answer: "Yes, he loves swimming." },
+    { question: "Do they hate studying?", answer: "Yes, they hate studying." },
+    { question: "Do you like cooking?", answer: "Yes, I like cooking." },
+    { question: "Do you love dancing?", answer: "No, I don't love dancing." },
+    { question: "Do you hate doing homework?", answer: "Yes, I hate doing homework." },
+    { question: "Does he like driving?", answer: "Yes, he likes driving." },
+    { question: "Does she love singing?", answer: "Yes, she loves singing." },
+    { question: "Do you like traveling?", answer: "Yes, I like traveling." },
+    { question: "Do they love playing football?", answer: "Yes, they love playing football." },
+    { question: "Do you hate waiting in line?", answer: "Yes, I hate waiting in line." },
+    { question: "Does your sister like painting?", answer: "Yes, she likes painting." },
+    { question: "Does your brother love watching TV?", answer: "Yes, he loves watching TV." },
+    { question: "Do you like learning English?", answer: "Yes, I like learning English." },
+    { question: "Do your friends like going to the cinema?", answer: "Yes, they like going to the cinema." },
+    { question: "Does your mom love gardening?", answer: "Yes, she loves gardening." },
+    { question: "Do you hate waking up early?", answer: "Yes, I hate waking up early." },
+    { question: "Do you like listening to music?", answer: "Yes, I like listening to music." },
+    { question: "Do you love playing games?", answer: "Yes, I love playing games." },
+    { question: "Does your teacher like teaching English?", answer: "Yes, she likes teaching English." },
+    { question: "Do you hate doing the dishes?", answer: "Yes, I hate doing the dishes." },
+    { question: "Do you like taking photos?", answer: "Yes, I like taking photos." },
+    { question: "Does he love playing basketball?", answer: "Yes, he loves playing basketball." },
+    { question: "Do you like writing stories?", answer: "Yes, I like writing stories." },
+    { question: "Do your parents love walking in the park?", answer: "Yes, they love walking in the park." },
+    { question: "Do you hate studying grammar?", answer: "No, I don't hate studying grammar." },
+    { question: "Does she like talking on the phone?", answer: "Yes, she likes talking on the phone." },
+    { question: "Do you love eating pizza?", answer: "Yes, I love eating pizza." },
+    { question: "Do they hate running?", answer: "Yes, they hate running." },
+    { question: "Does your brother like playing computer games?", answer: "Yes, he likes playing computer games." },
+    { question: "Do you like riding a bike?", answer: "Yes, I like riding a bike." },
+    { question: "Do you hate cleaning the bathroom?", answer: "Yes, I hate cleaning the bathroom." },
+    { question: "Does your dad love fixing things?", answer: "Yes, he loves fixing things." },
+    { question: "Do you like watching cartoons?", answer: "Yes, I like watching cartoons." },
+    { question: "Does she hate doing housework?", answer: "Yes, she hates doing housework." },
+    { question: "Do your friends like eating out?", answer: "Yes, they like eating out." },
+    { question: "Do you love going to the beach?", answer: "Yes, I love going to the beach." }
+  ]
+};
+
+// Module 32: Demonstratives in Sentences
+const MODULE_32_DATA = {
+  title: "Module 32: Demonstratives in Sentences",
+  description: "Learn to use demonstratives (this, that, these, those) correctly.",
+  intro: `Demonstratives (işaret zamirleri) belirli kişi/nesneleri işaret etmek için kullanılır.
+🔹 This → tekil, yakın: This is my pen.
+🔹 That → tekil, uzak: That is your book.
+🔹 These → çoğul, yakın: These are my friends.
+🔹 Those → çoğul, uzak: Those are their shoes.
+Yakın için → this / these
+Uzak için → that / those`,
+  tip: "This/these for near, that/those for far",
+  
+  table: [
+    { demonstrative: "This", use: "Singular, near", example: "This is my phone." },
+    { demonstrative: "That", use: "Singular, far", example: "That is my car." },
+    { demonstrative: "These", use: "Plural, near", example: "These are my pencils." },
+    { demonstrative: "Those", use: "Plural, far", example: "Those are my books." }
+  ],
+  
+  listeningExamples: [
+    "This is my bag.",
+    "That is your house.",
+    "These are my classmates."
+  ],
+  
+  speakingPractice: [
+    { question: "What is this?", answer: "This is my phone." },
+    { question: "What is that?", answer: "That is a mountain." },
+    { question: "Who are these?", answer: "These are my classmates." },
+    { question: "Who are those?", answer: "Those are my neighbors." },
+    { question: "Is this your bag?", answer: "Yes, this is my bag." },
+    { question: "Is that your car?", answer: "No, that is my father's car." },
+    { question: "Are these your shoes?", answer: "Yes, these are my shoes." },
+    { question: "Are those your books?", answer: "No, those are Sarah's books." },
+    { question: "What are these?", answer: "These are my pencils." },
+    { question: "What are those?", answer: "Those are clouds." },
+    { question: "Is this your teacher?", answer: "Yes, this is my English teacher." },
+    { question: "Is that your house?", answer: "Yes, that is my house." },
+    { question: "Are these your brothers?", answer: "Yes, these are my brothers." },
+    { question: "Are those your dogs?", answer: "Yes, those are my dogs." },
+    { question: "What is this sound?", answer: "This is the alarm." },
+    { question: "What is that noise?", answer: "That is a train." },
+    { question: "Who is this?", answer: "This is my friend Anna." },
+    { question: "Who is that?", answer: "That is our neighbor." },
+    { question: "Whose is this?", answer: "This is mine." },
+    { question: "Whose is that?", answer: "That is his." },
+    { question: "Whose are these?", answer: "These are ours." },
+    { question: "Whose are those?", answer: "Those are theirs." },
+    { question: "Do you like this shirt?", answer: "Yes, I like this shirt." },
+    { question: "Do you want that hat?", answer: "No, I don't want that hat." },
+    { question: "Are these your pens?", answer: "Yes, these are my pens." },
+    { question: "Are those your jackets?", answer: "No, those are not mine." },
+    { question: "What color is this car?", answer: "This car is red." },
+    { question: "What color is that bike?", answer: "That bike is blue." },
+    { question: "Are these apples fresh?", answer: "Yes, these apples are fresh." },
+    { question: "Are those bananas ripe?", answer: "No, those bananas are not ripe." },
+    { question: "Is this your seat?", answer: "Yes, this is my seat." },
+    { question: "Is that your desk?", answer: "No, that is Tom's desk." },
+    { question: "Are these your glasses?", answer: "Yes, these are my glasses." },
+    { question: "Are those your children?", answer: "Yes, those are my children." },
+    { question: "What's this?", answer: "This is a gift for you." },
+    { question: "What's that?", answer: "That is a plane in the sky." },
+    { question: "What are these?", answer: "These are my keys." },
+    { question: "What are those?", answer: "Those are old coins." },
+    { question: "Can I take this?", answer: "Yes, you can take this." },
+    { question: "Can you give me that?", answer: "Sure, I'll give you that." }
+  ]
+};
+
+// Module 33: Whose / Possessive 's
+const MODULE_33_DATA = {
+  title: "Module 33: Whose / Possessive 's",
+  description: "Learn to use whose to ask about ownership and possessive 's to show possession.",
+  intro: `Whose (kimin) sahipliği sormak için kullanılır.
+İngilizce'de 's eklenerek bir şeye kimin ait olduğu gösterilir.
+Örn: Whose book is this? → It's Anna's book.
+That is the teacher's pen. → Bu öğretmenin kalemi.`,
+  tip: "Use whose to ask about possession, use 's to show ownership",
+  
+  table: [
+    { form: "Whose + noun", use: "Ask about possession", example: "Whose car is this?" },
+    { form: "Noun + 's", use: "Show possession", example: "This is my friend's house." }
+  ],
+  
+  listeningExamples: [
+    "Whose shoes are these?",
+    "This is my sister's bag.",
+    "That's Jenny's hat."
+  ],
+  
+  speakingPractice: [
+    { question: "Whose bag is this?", answer: "It's my sister's bag." },
+    { question: "Whose phone is ringing?", answer: "It's John's phone." },
+    { question: "Whose car is in the driveway?", answer: "That's my neighbor's car." },
+    { question: "Whose house is this?", answer: "It's my uncle's house." },
+    { question: "Whose jacket is on the chair?", answer: "It's Sarah's jacket." },
+    { question: "Whose books are these?", answer: "They're the teacher's books." },
+    { question: "Whose dog is barking?", answer: "It's our friend's dog." },
+    { question: "Whose pen is this?", answer: "It's Mark's pen." },
+    { question: "Whose children are playing outside?", answer: "They're the Smiths' children." },
+    { question: "Whose bike is that?", answer: "It's my brother's bike." },
+    { question: "Is this your friend's notebook?", answer: "Yes, it's my friend's." },
+    { question: "Whose hat is on the table?", answer: "That's Jenny's hat." },
+    { question: "Whose laptop is this?", answer: "It's my father's laptop." },
+    { question: "Whose shoes are those?", answer: "They're my sister's shoes." },
+    { question: "Whose keys are on the desk?", answer: "They're my teacher's keys." },
+    { question: "Whose idea was this?", answer: "It was Tom's idea." },
+    { question: "Whose photos are in the album?", answer: "They're my grandma's photos." },
+    { question: "Whose cup is this?", answer: "It's my friend's cup." },
+    { question: "Whose parents are those?", answer: "They're Ali's parents." },
+    { question: "Whose phone is on the bed?", answer: "It's Sarah's phone." },
+    { question: "Is this your teacher's book?", answer: "Yes, it's hers." },
+    { question: "Is that your father's car?", answer: "Yes, that's his car." },
+    { question: "Is this the cat's toy?", answer: "Yes, it's the cat's." },
+    { question: "Is that your sister's dress?", answer: "Yes, that's her dress." },
+    { question: "Are these your parents' bags?", answer: "Yes, they are." },
+    { question: "Are those the children's toys?", answer: "Yes, they are." },
+    { question: "Whose wallet is this?", answer: "It's my friend's wallet." },
+    { question: "Whose gloves are these?", answer: "They're my dad's gloves." },
+    { question: "Whose birthday is it today?", answer: "It's Emma's birthday." },
+    { question: "Whose homework is on the desk?", answer: "It's David's homework." },
+    { question: "Whose car keys are these?", answer: "They're my mom's car keys." },
+    { question: "Whose umbrella is that?", answer: "That's my aunt's umbrella." },
+    { question: "Whose voice is that?", answer: "That's my cousin's voice." },
+    { question: "Whose computer are you using?", answer: "I'm using my brother's." },
+    { question: "Whose sandwich is this?", answer: "It's Sam's sandwich." },
+    { question: "Whose game is he playing?", answer: "He's playing Paul's game." },
+    { question: "Whose desk is near the window?", answer: "That's the manager's desk." },
+    { question: "Whose water bottle is this?", answer: "It's my coach's bottle." },
+    { question: "Whose job is it to clean the board?", answer: "It's the student's job." },
+    { question: "Whose car is parked outside?", answer: "It's my neighbor's car." }
+  ]
+};
+
+// Module 34: Question Words (Who, What, Where, When, Why, How)
+const MODULE_34_DATA = {
+  title: "Module 34: Question Words (Who, What, Where, When, Why, How)",
+  description: "Learn common question words and how to form basic questions using them.",
+  intro: `İngilizce'de soru kelimeleri bilgi almak için kullanılır:
+• Who → kişi (Who is your teacher?)
+• What → şey/bilgi (What is your name?)
+• Where → yer (Where do you live?)
+• When → zaman (When is your birthday?)
+• Why → sebep (Why are you late?)
+• How → nasıl/şekil (How are you?)`,
+  tip: "Question word + auxiliary verb + subject + main verb",
+  
+  table: [
+    { word: "Who", asks: "Person", example: "Who is your best friend?" },
+    { word: "What", asks: "Thing/Information", example: "What is your favorite color?" },
+    { word: "Where", asks: "Place", example: "Where do you live?" },
+    { word: "When", asks: "Time", example: "When is your birthday?" },
+    { word: "Why", asks: "Reason", example: "Why are you sad?" },
+    { word: "How", asks: "Manner/Way", example: "How are you?" }
+  ],
+  
+  listeningExamples: [
+    "Who is your best friend?",
+    "What is your favorite color?",
+    "Where do you live?"
+  ],
+  
+  speakingPractice: [
+    { question: "Who is your best friend?", answer: "My best friend is Ayşe." },
+    { question: "What is your favorite color?", answer: "My favorite color is blue." },
+    { question: "Where do you live?", answer: "I live in Istanbul." },
+    { question: "When is your birthday?", answer: "My birthday is in July." },
+    { question: "Why are you sad?", answer: "Because I lost my keys." },
+    { question: "How are you?", answer: "I'm fine, thank you." },
+    { question: "Who is your English teacher?", answer: "Mr. Can is my English teacher." },
+    { question: "What do you like to eat?", answer: "I like to eat pasta." },
+    { question: "Where is your school?", answer: "My school is near the park." },
+    { question: "When do you get up?", answer: "I get up at 7 o'clock." },
+    { question: "Why do you study English?", answer: "Because I want to travel." },
+    { question: "How do you go to school?", answer: "I go to school by bus." },
+    { question: "Who lives in this house?", answer: "My grandparents live in this house." },
+    { question: "What is your favorite sport?", answer: "My favorite sport is football." },
+    { question: "Where do you go on weekends?", answer: "I go to the shopping mall." },
+    { question: "When do you do your homework?", answer: "I do my homework in the evening." },
+    { question: "Why is he angry?", answer: "Because he missed the bus." },
+    { question: "How is the weather today?", answer: "It's sunny." },
+    { question: "Who is that woman?", answer: "She is my aunt." },
+    { question: "What is your hobby?", answer: "My hobby is painting." },
+    { question: "Where is your phone?", answer: "It's on the table." },
+    { question: "When is the meeting?", answer: "The meeting is at 2 p.m." },
+    { question: "Why are they late?", answer: "Because there was traffic." },
+    { question: "How old are you?", answer: "I'm 10 years old." },
+    { question: "Who are they?", answer: "They are my cousins." },
+    { question: "What time is it?", answer: "It's 5 o'clock." },
+    { question: "Where are you from?", answer: "I'm from Turkey." },
+    { question: "When do you go to bed?", answer: "I go to bed at 10." },
+    { question: "Why is she crying?", answer: "Because she is tired." },
+    { question: "How do you feel?", answer: "I feel great." },
+    { question: "Who do you live with?", answer: "I live with my family." },
+    { question: "What are you doing?", answer: "I'm reading a book." },
+    { question: "Where is your backpack?", answer: "It's in my room." },
+    { question: "When is the exam?", answer: "The exam is next Monday." },
+    { question: "Why do you like summer?", answer: "Because I love swimming." },
+    { question: "How do you spell your name?", answer: "C-A-G-A-T-A-Y." },
+    { question: "Who is calling you?", answer: "My friend is calling me." },
+    { question: "What do you want to do?", answer: "I want to play a game." },
+    { question: "Where are your keys?", answer: "They are on the chair." },
+    { question: "How do you make tea?", answer: "I boil water and add a tea bag." }
+  ]
+};
+
+// Module 35: Ordinal Numbers and Dates
+const MODULE_35_DATA = {
+  title: "Module 35: Ordinal Numbers and Dates",
+  description: "Learn ordinal numbers and how to use them to describe order, position, and dates.",
+  intro: `Ordinal numbers (sıra sayıları) bir şeyin sırasını belirtmek için kullanılır: first (birinci), second (ikinci), third (üçüncü) …
+Tarihlerde de ordinal numbers kullanılır: January 1st, February 14th.
+Soru yapıları:
+• What's the date today? → It's May 5th.
+• When is your birthday? → It's on the 12th of June.`,
+  tip: "Use ordinal numbers for dates and positions",
+  
+  table: [
+    { number: "1st", ordinal: "first", example: "Today is the first of September." },
+    { number: "2nd", ordinal: "second", example: "Monday is the second day." },
+    { number: "3rd", ordinal: "third", example: "March is the third month." },
+    { number: "4th", ordinal: "fourth", example: "Thursday is the fourth day." }
+  ],
+  
+  listeningExamples: [
+    "Today is the first of September.",
+    "My birthday is on the twenty-second of July.",
+    "October is the tenth month of the year."
+  ],
+  
+  speakingPractice: [
+    { question: "What's the date today?", answer: "It's the first of September." },
+    { question: "When is your birthday?", answer: "My birthday is on the twenty-second of July." },
+    { question: "What's the first month of the year?", answer: "January is the first month." },
+    { question: "What's the second day of the week?", answer: "Monday is the second day." },
+    { question: "When is New Year's Day?", answer: "It's on the first of January." },
+    { question: "What comes after the third?", answer: "The fourth comes after the third." },
+    { question: "When is Christmas?", answer: "It's on the twenty-fifth of December." },
+    { question: "What is the tenth month of the year?", answer: "October is the tenth month." },
+    { question: "What day is the national holiday?", answer: "It's on the twenty-ninth of October." },
+    { question: "What is the fifth day of the week?", answer: "Thursday is the fifth day." },
+    { question: "What is your favorite date?", answer: "My favorite date is the fourteenth of February." },
+    { question: "When is Valentine's Day?", answer: "It's on the fourteenth of February." },
+    { question: "What is the last month of the year?", answer: "December is the last month." },
+    { question: "When is Republic Day in Turkey?", answer: "It's on the twenty-ninth of October." },
+    { question: "What's the date of the school trip?", answer: "It's on the fifteenth of May." },
+    { question: "What's the third month of the year?", answer: "March is the third month." },
+    { question: "When is your exam?", answer: "It's on the sixth of November." },
+    { question: "What is the seventh day of the week?", answer: "Sunday is the seventh day." },
+    { question: "What's today's date?", answer: "Today is the eighth of August." },
+    { question: "What's the date tomorrow?", answer: "It will be the ninth of August." },
+    { question: "What is the second month of the year?", answer: "February is the second month." },
+    { question: "When is Independence Day in the USA?", answer: "It's on the fourth of July." },
+    { question: "What comes before the tenth?", answer: "The ninth comes before the tenth." },
+    { question: "When is your mother's birthday?", answer: "It's on the thirtieth of March." },
+    { question: "When is the test?", answer: "It's on the seventeenth of April." },
+    { question: "What's the sixth month of the year?", answer: "June is the sixth month." },
+    { question: "When is your teacher's birthday?", answer: "It's on the third of January." },
+    { question: "What's the date of the party?", answer: "It's on the twenty-first of June." },
+    { question: "What is the eleventh month of the year?", answer: "November is the eleventh month." },
+    { question: "When is the concert?", answer: "It's on the twenty-fourth of September." },
+    { question: "What is the fourth month of the year?", answer: "April is the fourth month." },
+    { question: "What day is it today?", answer: "It's the twelfth of October." },
+    { question: "What is the ninth month of the year?", answer: "September is the ninth month." },
+    { question: "When is the dentist appointment?", answer: "It's on the twenty-sixth of August." },
+    { question: "What comes after the first?", answer: "The second comes after the first." },
+    { question: "What is the thirteenth day of the month?", answer: "It's the thirteenth." },
+    { question: "When is the next holiday?", answer: "It's on the twenty-eighth of April." },
+    { question: "What's the date of the wedding?", answer: "It's on the sixteenth of July." },
+    { question: "What's the date next Monday?", answer: "It's the nineteenth of August." },
+    { question: "What's the eighth month of the year?", answer: "August is the eighth month." }
+  ]
+};
+
+// Module 36: Talking about Time (o'clock, half past, quarter to)
+const MODULE_36_DATA = {
+  title: "Module 36: Talking about Time (o'clock, half past, quarter to)",
+  description: "Learn to tell the time using o'clock, half past, quarter past, and quarter to.",
+  intro: `İngilizcede zamanı söylemek için şu ifadeler kullanılır:
+• o'clock → tam saat (It's 3 o'clock = Saat 3)
+• half past → yarım geçe (It's half past 4 = Saat 4:30)
+• quarter past → çeyrek geçe (It's quarter past 7 = Saat 7:15)
+• quarter to → çeyrek kala (It's quarter to 9 = Saat 8:45)
+Soru örnekleri:
+• What time is it? → Saat kaç?
+• When does the class start? → Ders ne zaman başlıyor?`,
+  tip: "Use o'clock for exact hours, half past for 30 minutes, quarter past/to for 15 minutes",
+  
+  table: [
+    { time: "3:00", expression: "three o'clock", example: "It's 3 o'clock." },
+    { time: "4:30", expression: "half past four", example: "It's half past 4." },
+    { time: "7:15", expression: "quarter past seven", example: "It's quarter past 7." },
+    { time: "8:45", expression: "quarter to nine", example: "It's quarter to 9." }
+  ],
+  
+  listeningExamples: [
+    "It's 3 o'clock.",
+    "It's half past 4.",
+    "It's quarter past 7."
+  ],
+  
+  speakingPractice: [
+    { question: "What time is it?", answer: "It's 3 o'clock." },
+    { question: "What time is it now?", answer: "It's half past 4." },
+    { question: "What time do you get up?", answer: "I get up at 7 o'clock." },
+    { question: "What time do you go to bed?", answer: "I go to bed at 10 o'clock." },
+    { question: "What time is your English class?", answer: "It's at quarter past 9." },
+    { question: "When do you have breakfast?", answer: "I have breakfast at 8 o'clock." },
+    { question: "What time is lunch?", answer: "Lunch is at half past 12." },
+    { question: "What time is dinner?", answer: "Dinner is at quarter to 8." },
+    { question: "Is it 5 o'clock?", answer: "No, it's quarter past 5." },
+    { question: "What time do you leave home?", answer: "I leave home at 8 o'clock." },
+    { question: "What time does the film start?", answer: "It starts at 6 o'clock." },
+    { question: "When does school finish?", answer: "School finishes at half past 3." },
+    { question: "What time do you start work?", answer: "I start work at 9 o'clock." },
+    { question: "When is your appointment?", answer: "It's at quarter to 2." },
+    { question: "What time is the meeting?", answer: "It's at quarter past 11." },
+    { question: "Is it half past 2?", answer: "No, it's quarter to 3." },
+    { question: "What time is your favorite TV show?", answer: "It's at 7 o'clock." },
+    { question: "Do you wake up at 6 o'clock?", answer: "No, I wake up at half past 6." },
+    { question: "Is the class at quarter to 10?", answer: "Yes, it is." },
+    { question: "What time do you go shopping?", answer: "I go shopping at 5 o'clock." },
+    { question: "What time is your piano lesson?", answer: "It's at quarter past 4." },
+    { question: "When do you go running?", answer: "I go running at 6 o'clock." },
+    { question: "Is it 9 o'clock now?", answer: "No, it's half past 9." },
+    { question: "What time is your break?", answer: "It's at 10 o'clock." },
+    { question: "What time does the bus arrive?", answer: "It arrives at quarter to 1." },
+    { question: "When is your birthday party?", answer: "It's at 3 o'clock." },
+    { question: "What time do you get home?", answer: "I get home at 4 o'clock." },
+    { question: "Do you go to school at 7?", answer: "No, I go at half past 7." },
+    { question: "What time is your doctor's appointment?", answer: "It's at quarter past 2." },
+    { question: "Is lunch at quarter past 1?", answer: "Yes, it is." },
+    { question: "When do you watch TV?", answer: "I watch TV at 8 o'clock." },
+    { question: "What time does the game start?", answer: "It starts at half past 6." },
+    { question: "What time do you study English?", answer: "I study at quarter to 5." },
+    { question: "Is your train at 10 o'clock?", answer: "No, it's at quarter past 10." },
+    { question: "When do you do your homework?", answer: "I do it at 6 o'clock." },
+    { question: "What time do you eat breakfast?", answer: "I eat at 7 o'clock." },
+    { question: "What time do you call your friend?", answer: "I call her at half past 8." },
+    { question: "Is it quarter to 7 now?", answer: "Yes, it is." },
+    { question: "What time do you go to the gym?", answer: "I go at quarter past 6." },
+    { question: "When is the class over?", answer: "It's over at 12 o'clock." }
+  ]
+};
+
+// Module 37: Comparatives (-er / more)
+const MODULE_37_DATA = {
+  title: "Module 37: Comparatives (-er / more)",
+  description: "Learn how to form and use comparative adjectives to compare people, animals, and things.",
+  intro: `Comparatives (karşılaştırma sıfatları) iki kişi, hayvan ya da nesneyi karşılaştırmak için kullanılır.
+🔹 Kısa sıfatlar (1 hece veya -y ile biten 2 heceliler): sıfat + -er → tall → taller, easy → easier.
+🔹 Uzun sıfatlar (2+ hece, -y ile bitmeyen): more + sıfat → more beautiful, more expensive.
+Örn: My house is bigger than yours. / This book is more interesting than that one.`,
+  tip: "Short adjectives add -er, long adjectives use more",
+  
+  table: [
+    { type: "Short adjectives", rule: "adjective + -er + than", example: "She is taller than me." },
+    { type: "Long adjectives", rule: "more + adjective + than", example: "This book is more interesting." }
+  ],
+  
+  listeningExamples: [
+    "My house is bigger than yours.",
+    "English is easier than Chinese.",
+    "A car is more expensive than a bicycle."
+  ],
+  
+  speakingPractice: [
+    { question: "Who is taller, you or your friend?", answer: "My friend is taller than me." },
+    { question: "Is your house bigger than your school?", answer: "No, my school is bigger than my house." },
+    { question: "Is English easier than Chinese?", answer: "Yes, English is easier than Chinese." },
+    { question: "Which is more expensive, a car or a bicycle?", answer: "A car is more expensive than a bicycle." },
+    { question: "Who is funnier, your dad or your mom?", answer: "My dad is funnier than my mom." },
+    { question: "Is summer hotter than winter?", answer: "Yes, summer is hotter than winter." },
+    { question: "Which is more comfortable, a sofa or a chair?", answer: "A sofa is more comfortable than a chair." },
+    { question: "Are cats quieter than dogs?", answer: "Yes, cats are quieter than dogs." },
+    { question: "Is a plane faster than a train?", answer: "Yes, a plane is faster than a train." },
+    { question: "Who is older, you or your brother?", answer: "My brother is older than me." },
+    { question: "Is your bag heavier than mine?", answer: "Yes, my bag is heavier." },
+    { question: "Is football more popular than volleyball?", answer: "Yes, football is more popular." },
+    { question: "Is chocolate sweeter than lemon?", answer: "Yes, chocolate is sweeter." },
+    { question: "Is a lion more dangerous than a cat?", answer: "Yes, a lion is more dangerous." },
+    { question: "Is your phone newer than mine?", answer: "No, my phone is older." },
+    { question: "Is your town bigger than Istanbul?", answer: "No, Istanbul is bigger." },
+    { question: "Which is more interesting, history or math?", answer: "History is more interesting." },
+    { question: "Is your room cleaner than your brother's?", answer: "Yes, my room is cleaner." },
+    { question: "Is running more tiring than walking?", answer: "Yes, running is more tiring." },
+    { question: "Is this movie longer than the last one?", answer: "Yes, it's longer." },
+    { question: "Is English more useful than Latin?", answer: "Yes, it's more useful." },
+    { question: "Is your laptop lighter than your friend's?", answer: "Yes, it's lighter." },
+    { question: "Who is younger, you or your cousin?", answer: "I'm younger than my cousin." },
+    { question: "Which is more exciting, traveling or staying home?", answer: "Traveling is more exciting." },
+    { question: "Is this chair more comfortable than that one?", answer: "Yes, it's more comfortable." },
+    { question: "Is your dog noisier than your neighbor's dog?", answer: "Yes, he's noisier." },
+    { question: "Which is healthier, fruit or candy?", answer: "Fruit is healthier." },
+    { question: "Is this math problem harder than the last one?", answer: "Yes, it's harder." },
+    { question: "Is gold more valuable than silver?", answer: "Yes, gold is more valuable." },
+    { question: "Are you busier this week than last week?", answer: "Yes, I'm busier." },
+    { question: "Is this shirt cheaper than that one?", answer: "Yes, it's cheaper." },
+    { question: "Is your car faster than your friend's?", answer: "No, his car is faster." },
+    { question: "Is your street quieter than the main road?", answer: "Yes, it is." },
+    { question: "Is it colder today than yesterday?", answer: "Yes, it's colder." },
+    { question: "Is reading more relaxing than working?", answer: "Yes, it is." },
+    { question: "Is she more intelligent than her classmates?", answer: "Yes, she is." },
+    { question: "Is this exam easier than the last one?", answer: "Yes, it is." },
+    { question: "Is your job more stressful than mine?", answer: "Yes, it is." },
+    { question: "Is this building taller than the one next to it?", answer: "Yes, it is." },
+    { question: "Is it more difficult to learn German than English?", answer: "Yes, it is." }
   ]
 };
 
@@ -4772,9 +5576,21 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     if (selectedModule === 19) return MODULE_19_DATA;
     if (selectedModule === 20) return MODULE_20_DATA;
     if (selectedModule === 21) return MODULE_21_DATA;
-    if (selectedModule === 22) return MODULE_22_DATA;
     if (selectedModule === 23) return MODULE_23_DATA;
     if (selectedModule === 24) return MODULE_24_DATA;
+    if (selectedModule === 25) return MODULE_25_DATA;
+    if (selectedModule === 26) return MODULE_26_DATA;
+    if (selectedModule === 27) return MODULE_27_DATA;
+    if (selectedModule === 28) return MODULE_28_DATA;
+    if (selectedModule === 29) return MODULE_29_DATA;
+    if (selectedModule === 30) return MODULE_30_DATA;
+    if (selectedModule === 31) return MODULE_31_DATA;
+    if (selectedModule === 32) return MODULE_32_DATA;
+    if (selectedModule === 33) return MODULE_33_DATA;
+    if (selectedModule === 34) return MODULE_34_DATA;
+    if (selectedModule === 35) return MODULE_35_DATA;
+    if (selectedModule === 36) return MODULE_36_DATA;
+    if (selectedModule === 37) return MODULE_37_DATA;
     
     // A2 Modules
     if (selectedModule === 51) return MODULE_51_DATA;
