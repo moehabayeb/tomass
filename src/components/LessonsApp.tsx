@@ -142,15 +142,23 @@ const MODULES_BY_LEVEL = {
                i === 17 ? 'Simple Present – Yes/No Questions' :
                 i === 18 ? 'Simple Present – Wh- Questions (What, Where, Who, etc.)' :
                 i === 19 ? 'Adverbs of Frequency (Sıklık Zarfları)' :
-                i === 20 ? 'Can / Can\'t for Abilities' :
-                i === 21 ? 'Can / Can\'t for Permission' :
-                i === 22 ? 'Like/Love/Hate + -ing' :
-                i === 23 ? 'A lot of / Lots of' :
-                i === 24 ? 'How much / How many' :
-                i === 25 ? 'Imperatives (Commands, Instructions)' :
-                i === 26 ? 'Present Continuous – Affirmative' :
-                i === 27 ? 'Present Continuous – Negative' :
-                `A1 Module ${i + 1}`,
+             i === 22 ? 'Can / Can\'t for Abilities' :
+             i === 23 ? 'Can / Can\'t for Permission' :
+             i === 24 ? 'A lot of / Lots of' :
+             i === 25 ? 'How much / How many' :
+             i === 26 ? 'Imperatives (Commands, Instructions)' :
+             i === 27 ? 'Present Continuous – Affirmative' :
+             i === 28 ? 'Present Continuous – Negative' :
+             i === 29 ? 'Present Continuous – Questions' :
+             i === 30 ? 'Present Simple vs Present Continuous' :
+             i === 31 ? 'Like / Love / Hate + -ing' :
+             i === 32 ? 'Demonstratives in Sentences' :
+             i === 33 ? 'Whose / Possessive \'s' :
+             i === 34 ? 'Question Words (Who, What, Where, When, Why, How)' :
+             i === 35 ? 'Ordinal Numbers and Dates' :
+             i === 36 ? 'Talking about Time (o\'clock, half past, quarter to)' :
+             i === 37 ? 'Comparatives (-er / more)' :
+             `A1 Module ${i + 1}`,
      description: i === 0 ? 'Learn to use am, is, and are' : 
                   i === 1 ? 'Learn to use "am", "is", and "are" with "not"' :
                   i === 2 ? 'Learn to form questions with "am", "is", and "are"' :
@@ -179,6 +187,15 @@ const MODULES_BY_LEVEL = {
                      i === 25 ? 'Understand the use of imperatives to give commands, instructions, advice, or suggestions' :
                      i === 26 ? 'Learn how to form the Present Continuous tense in affirmative sentences' :
                      i === 27 ? 'Learn how to form Present Continuous in the negative form' :
+                     i === 28 ? 'Learn how to form Present Continuous tense in question form' :
+                     i === 29 ? 'Learn when to use Present Simple vs Present Continuous' :
+                     i === 30 ? 'Learn how to use like/love/hate + verb-ing to express preferences' :
+                     i === 31 ? 'Learn to use demonstratives (this, that, these, those) correctly' :
+                     i === 32 ? 'Learn to use whose to ask about ownership and possessive \'s' :
+                     i === 33 ? 'Learn common question words: who, what, where, when, why, how' :
+                     i === 34 ? 'Learn ordinal numbers and how to use them for dates' :
+                     i === 35 ? 'Learn to tell time using o\'clock, half past, quarter past/to' :
+                     i === 36 ? 'Learn how to form and use comparative adjectives (-er/more)' :
                      'Coming soon',
     completed: false,
     locked: false, // TEMPORARILY UNLOCKED FOR DEVELOPMENT
@@ -6694,7 +6711,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
                   key={module.id} 
                   className={`bg-white/10 border-white/20 cursor-pointer transition-all hover:bg-white/15 ${!isUnlocked ? 'opacity-50' : ''}`}
                   onClick={() => {
-                    if (isUnlocked && ((module.id >= 1 && module.id <= 19) || module.id === 51)) { // Modules 1-19 and 51 are implemented
+                    if (isUnlocked && ((module.id >= 1 && module.id <= 37) || module.id === 51)) { // Modules 1-37 and 51 are implemented
                       narration.cancel();
                       setSelectedModule(module.id);
                       setViewState('lesson');
