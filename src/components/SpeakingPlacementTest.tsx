@@ -16,6 +16,7 @@ import { narration } from '../utils/narration';
 import CanvasAvatar from './CanvasAvatar';
 import { useGamification } from '@/hooks/useGamification';
 import { configureUtterance } from '@/config/voice';
+import { processPlacementResults } from './levelPlacementLogic';
 
 interface SpeakingPlacementTestProps {
   onBack: () => void;
@@ -143,9 +144,9 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     setResult(scored);
     
     // Enhanced placement with new logic
-    import('./levelPlacementLogic').then(({ processPlacementResults }) => {
+    try {
       processPlacementResults(scored, answers, onComplete);
-    }).catch(error => {
+    } catch (error) {
       console.error('Placement processing failed, using fallback:', error);
       // Fallback to current behavior
       const placement = { level: scored.level, g: scored.grammar, v: scored.vocab, p: scored.pron, date: Date.now() };
@@ -160,7 +161,7 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
       // @ts-ignore
       window.triggerConfetti?.();
       setTimeout(() => routeToLevel(scored.level), 1200);
-    });
+    }
   }
 
   // Enhanced TTS with safety guardrails
