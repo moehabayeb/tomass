@@ -85,7 +85,7 @@ export function evaluateAnswer(userInput: string, opt: EvalOptions): boolean {
   console.log('[Evaluator] Relaxed:', uRelax);
   console.log('[Evaluator] Expected:', opt.expected);
 
-  // 1) Check polarity if requested (strict for Yes/No questions)
+  // 1) Check polarity if requested
   if (opt.requireAffirmationPolarity) {
     const pUser = polarity(userInput);
     const pExp  = polarity(opt.expected);
@@ -130,13 +130,13 @@ export function evaluateAnswer(userInput: string, opt: EvalOptions): boolean {
     }
   }
 
-  // 4) Token-level fuzzy match against expected (relaxed) - Enhanced tolerance
+  // 4) Token-level fuzzy match against expected (relaxed)
   const a = tokens(relax(opt.expected));
   const b = tokens(uRelax);
   console.log('[Evaluator] Expected tokens:', a);
   console.log('[Evaluator] User tokens:', b);
   
-  // require high overlap with typo tolerance (80% match as per requirements)
+  // require high overlap with typo tolerance
   let matched = 0;
   for (const at of a) {
     if (b.some(bt => lev1(at, bt))) matched++;
@@ -144,8 +144,7 @@ export function evaluateAnswer(userInput: string, opt: EvalOptions): boolean {
   const ratio = matched / Math.max(1,a.length);
   console.log(`[Evaluator] Token match ratio: ${matched}/${a.length} = ${ratio.toFixed(2)}`);
   
-  // 80% similarity threshold as requested, more forgiving for natural variations
-  const result = ratio >= 0.8;
+  const result = ratio >= 0.9; // forgiving but still targeted
   console.log(`[Evaluator] ${result ? '✅' : '❌'} Final result:`, result);
   return result;
 }
