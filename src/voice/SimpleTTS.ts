@@ -1,7 +1,10 @@
 /**
  * Simple, reliable TTS for Speaking App
  * Single voice source, hard-coded male voice, message deduplication
+ * Now with bilingual Turkish/English support
  */
+
+import { BilingualTTS } from './BilingualTTS';
 
 class SimpleTTSService {
   private isInitialized = false;
@@ -83,6 +86,7 @@ class SimpleTTSService {
   setSoundEnabled(enabled: boolean): void {
     console.log('🎙️ SimpleTTS sound enabled:', enabled);
     this.soundEnabled = enabled;
+    BilingualTTS.setSoundEnabled(enabled); // Sync with bilingual TTS
     
     if (!enabled && this.currentUtterance) {
       this.stop();
@@ -94,6 +98,7 @@ class SimpleTTSService {
   }
 
   stop(): void {
+    BilingualTTS.stop(); // Stop bilingual TTS too
     if (this.currentUtterance) {
       speechSynthesis.cancel();
       this.currentUtterance = null;
@@ -127,11 +132,23 @@ class SimpleTTSService {
 
     // Truncate long messages
     const truncatedText = this.truncateToSentences(text);
-    console.log('🎙️ Speaking:', truncatedText);
+    console.log('🎙️ SimpleTTS Speaking:', truncatedText);
 
     // Stop any current speech
     this.stop();
 
+    try {
+      // Try bilingual TTS first
+      const result = await BilingualTTS.speak(truncatedText, { interrupt: true });
+      if (result.segmentsSpoken > 0) {
+        console.log('🎙️ SimpleTTS: Bilingual TTS successful');
+        return;
+      }
+    } catch (error) {
+      console.warn('🎙️ SimpleTTS: Bilingual TTS failed, falling back:', error);
+    }
+
+    // Fallback to legacy TTS
     return new Promise((resolve, reject) => {
       try {
         const utterance = new SpeechSynthesisUtterance(truncatedText);

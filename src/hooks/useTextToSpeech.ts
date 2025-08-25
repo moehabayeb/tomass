@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
 import { configureUtterance } from '@/config/voice';
+import { BilingualTTS } from '@/voice/BilingualTTS';
 
 interface QueuedMessage {
   text: string;
@@ -41,22 +42,33 @@ export const useTextToSpeech = () => {
     }
   }, [soundEnabled]);
 
-  const speakMessage = useCallback((message: QueuedMessage): Promise<void> => {
-    return new Promise((resolve) => {
-      const { text, onComplete, language } = message;
-      
-      if (!text.trim()) {
+  const speakMessage = useCallback(async (message: QueuedMessage): Promise<void> => {
+    const { text, onComplete, language } = message;
+    
+    if (!text.trim()) {
+      onComplete?.();
+      return;
+    }
+
+    console.log(`🎙️ Thomas speaking: "${text.substring(0, 50)}${text.length > 50 ? '...' : ''}"`);
+
+    try {
+      // Try bilingual TTS first
+      const result = await BilingualTTS.speak(text, { interrupt: false });
+      if (result.segmentsSpoken > 0) {
         onComplete?.();
-        resolve();
         return;
       }
+    } catch (error) {
+      console.warn('🎙️ Bilingual TTS failed, falling back to legacy TTS:', error);
+    }
 
-      console.log(`🎙️ Thomas speaking: "${text.substring(0, 50)}${text.length > 50 ? '...' : ''}"`);
-
+    // Fallback to legacy TTS logic
+    return new Promise((resolve) => {
       const utterance = new SpeechSynthesisUtterance(text);
       currentUtterance.current = utterance;
       
-      // Check if this is Turkish content
+      // Check if this is Turkish content (legacy detection)
       const hasTurkishChars = text.match(/[çğıöşüÇĞIİÖŞÜ]/);
       const hasTurkishWords = text.match(/\b(bu|modülde|cümle|fiil|kullan|öğren|İngilizce|tabloya|bakın|lütfen|şimdi|aşağıdaki)\b/i);
       const hasTurkishPatterns = text.includes('Bu modülde') || text.includes('modülde') || text.includes('öğreneceğiz');
@@ -151,6 +163,7 @@ export const useTextToSpeech = () => {
 
   const stopSpeaking = useCallback(() => {
     console.log('🎙️ Thomas stopping speech');
+    BilingualTTS.stop(); // Stop bilingual TTS too
     speechSynthesis.cancel();
     speechQueue.current = []; // Clear queue
     currentUtterance.current = null;
@@ -161,6 +174,7 @@ export const useTextToSpeech = () => {
   const toggleSound = useCallback(() => {
     const newSoundEnabled = !soundEnabled;
     setSoundEnabled(newSoundEnabled);
+    BilingualTTS.setSoundEnabled(newSoundEnabled); // Sync with bilingual TTS
     
     if (!newSoundEnabled) {
       console.log('🎙️ Thomas sound disabled - stopping speech');

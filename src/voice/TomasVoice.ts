@@ -1,4 +1,5 @@
 import { getBestMaleVoice, configureUtterance } from '@/config/voice';
+import { BilingualTTS } from './BilingualTTS';
 
 interface SpeechOptions {
   interrupt?: boolean;
@@ -51,6 +52,7 @@ class TomasVoiceService {
   setSoundEnabled(enabled: boolean): void {
     console.log('🎙️ Sound enabled changed to:', enabled);
     this.soundEnabled = enabled;
+    BilingualTTS.setSoundEnabled(enabled); // Sync with bilingual TTS
     if (!enabled) {
       this.stop();
     } else {
@@ -75,7 +77,7 @@ class TomasVoiceService {
   }
 
   speak(text: string, options: SpeechOptions = {}): Promise<SpeechResult> {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       if (!this.soundEnabled) {
         resolve({ durationMs: 0 });
         return;
@@ -88,6 +90,16 @@ class TomasVoiceService {
 
       this.initIfNeeded();
 
+      // Try bilingual TTS first
+      try {
+        const result = await BilingualTTS.speak(text, { interrupt: options.interrupt });
+        resolve({ durationMs: result.durationMs });
+        return;
+      } catch (error) {
+        console.warn('🎙️ Bilingual TTS failed, falling back to standard TTS:', error);
+      }
+
+      // Fallback to original TTS logic
       // If interrupt requested, clear queue and stop current
       if (options.interrupt) {
         this.stop();
@@ -190,6 +202,7 @@ class TomasVoiceService {
 
   stop(): void {
     try {
+      BilingualTTS.stop(); // Stop bilingual TTS too
       if (speechSynthesis.speaking || speechSynthesis.pending) {
         speechSynthesis.cancel();
       }
