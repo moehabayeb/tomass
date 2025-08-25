@@ -5653,18 +5653,68 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
 
   // Robust answer checking using Module 51 proven logic
   function isAnswerCorrect(spokenRaw: string, targetRaw: string, questionItem?: any): boolean {
-    // Create evaluation options
+    // Enhanced evaluation with automatic metadata generation
+    const enhancedQuestion = enhanceQuestionMetadata(questionItem, targetRaw);
+    
+    // Create evaluation options with enhanced metadata
     const evalOptions: EvalOptions = {
       expected: targetRaw,
-      accepted: questionItem?.acceptedAlternatives || [],
-      requireAffirmationPolarity: questionItem?.requiresYesNo ?? true,
-      keyLemmas: questionItem?.keyLemmas || []
+      accepted: enhancedQuestion?.acceptedAlternatives || [],
+      requireAffirmationPolarity: enhancedQuestion?.requiresYesNo ?? true,
+      keyLemmas: enhancedQuestion?.keyLemmas || []
     };
     
     const result = evaluateAnswer(spokenRaw, evalOptions);
-    console.log(`🔍 Answer Check: "${spokenRaw}" vs "${targetRaw}" = ${result ? 'CORRECT' : 'INCORRECT'}`);
+    console.log(`🔍 Answer Check: "${spokenRaw}" vs "${targetRaw}" = ${result ? 'CORRECT ✅' : 'INCORRECT ❌'}`);
     
     return result;
+  }
+
+  // Enhanced metadata generation for questions
+  function enhanceQuestionMetadata(questionItem: any, targetAnswer: string): any {
+    const enhanced = { ...questionItem };
+    
+    if (!targetAnswer) return enhanced;
+    
+    const answer = targetAnswer.toLowerCase().trim();
+    
+    // Auto-generate accepted alternatives based on patterns
+    if (answer.includes('yes, they are students')) {
+      enhanced.acceptedAlternatives = [
+        'Yes, they are students.',
+        'Yes, they\'re students.',
+        'Yes, they are my students.',
+        'Yeah, they are students.',
+        'Yes they are students'
+      ];
+      enhanced.keyLemmas = ['student'];
+      enhanced.requiresYesNo = true;
+    }
+    
+    // Handle other Yes/No patterns
+    if (answer.startsWith('yes') || answer.startsWith('no')) {
+      enhanced.requiresYesNo = true;
+      
+      // Add common yes variations
+      if (answer.startsWith('yes')) {
+        const baseAnswer = answer.replace(/^yes,?\s*/i, '');
+        enhanced.acceptedAlternatives = [
+          ...(enhanced.acceptedAlternatives || []),
+          answer,
+          `Yeah, ${baseAnswer}`,
+          `Sure, ${baseAnswer}`,
+          `Of course, ${baseAnswer}`
+        ];
+      }
+    }
+    
+    // Extract key nouns for lemma validation
+    const keyWords = answer.match(/\b(student|teacher|book|house|car|friend|family|work|school|time|day|year|money|food|water|people|children|man|woman|boy|girl|doctor|nurse|lawyer|engineer|manager|office|hospital|restaurant|hotel|airport|station|library|bank|shop|store|market|park|beach|mountain|river|lake|city|country|street|road|bridge|building|church|mosque|temple|university|college|school|classroom|kitchen|bedroom|bathroom|living|room|garden|garage|phone|computer|television|radio|music|movie|game|sport|football|basketball|tennis|swimming|running|walking|reading|writing|cooking|eating|drinking|sleeping|working|studying|playing|watching|listening)\w*\b/gi);
+    if (keyWords && keyWords.length > 0) {
+      enhanced.keyLemmas = [...new Set(keyWords.map(w => w.toLowerCase().replace(/s$/, '')))];
+    }
+    
+    return enhanced;
   }
 
   // Use the enhanced evaluator for all answer checking
@@ -7107,9 +7157,62 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     console.log(`📝 Progress: Question ${curr + 1}/${total} completed`);
     
     // Save progress after each question (exact resume point)
-    saveModuleProgress(String(selectedLevel), selectedModule!, 'speaking', curr + 1);
+    const userId = 'guest'; // Use actual user ID when available
+    saveProgress(userId, selectedLevel || 'A1', String(selectedModule || 1), curr + 1, total, correctAnswers, false);
 
     // still inside the range → move to next question
+    if (curr + 1 < total) {
+      const nextIdx = curr + 1;
+      speakingIndexRef.current = nextIdx;
+      setSpeakingIndex(nextIdx);
+      
+      // Clear feedback after success message
+      setTimeout(() => {
+        setFeedback('');
+        setFeedbackType('info');
+        setIsProcessing(false);
+        setSpeakStatus('idle');
+      }, 1500);
+      
+      console.log(`➡️ Advanced to question ${nextIdx + 1}/${total}`);
+    } else {
+      // Module completed - advance to next module
+      console.log('🎉 Module completed! All questions answered correctly.');
+      
+      // Mark current module as complete
+      saveProgress(userId, selectedLevel || 'A1', String(selectedModule || 1), total, total, total, true);
+      
+      // Get next module
+      const nextModuleId = getNextModuleId(selectedLevel as 'A1' | 'A2' | 'B1', selectedModule!);
+      
+      if (nextModuleId) {
+        console.log(`🚀 Auto-advancing to next module: ${nextModuleId}`);
+        
+        // Show completion message
+        setFeedback('🎉 Module completed! Advancing to the next module...');
+        setFeedbackType('success');
+        
+        // Advance after a delay
+        setTimeout(() => {
+          setSelectedModule(nextModuleId);
+          setCurrentPhase('intro');
+          setListeningIndex(0);
+          setSpeakingIndex(0);
+          speakingIndexRef.current = 0;
+          setCorrectAnswers(0);
+          setFeedback('');
+          setFeedbackType('info');
+          setSpeakStatus('idle');
+          setIsProcessing(false);
+        }, 2000);
+      } else {
+        console.log('🏆 Level complete!');
+        setCurrentPhase('complete');
+        setFeedback('🏆 Congratulations! You have completed this level!');
+        setFeedbackType('success');
+      }
+    }
+  }
     if (curr + 1 < total) {
       setSpeakingIndex(curr + 1);
       setSpeakStatus('idle');
@@ -7506,21 +7609,31 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
 
         const ok = isExactlyCorrect(userRaw, target); // uses the normalization that ignores diacritics and punctuation
 
-        if (ok) {
-          setCorrectAnswers(prev => prev + 1);
-          setFeedback('🎉 Perfect! Moving to the next question...');
-          setFeedbackType('success');
-          earnXPForGrammarLesson(true);
-          incrementTotalExercises();
-          advanceSpeakingOnce();     // Use the centralized, guarded advance
-        } else {
-          setFeedback(`❌ Not quite right. The correct answer is: "${target}"`);
-          setFeedbackType('error');
-          setTimeout(() => {
-            setFeedback('');
-            setIsProcessing(false);
-          }, 3000);
-        }
+      if (ok) {
+        // Correct answer - auto-advance immediately as per requirements
+        setCorrectAnswers(prev => prev + 1);
+        setFeedback('🎉 Perfect! Moving to the next question...');
+        setFeedbackType('success');
+        earnXPForGrammarLesson(true);
+        incrementTotalExercises();
+        
+        // Save progress after each correct answer (exact resume requirement)
+        const userId = 'guest'; // Use actual user ID when available
+        saveProgress(userId, selectedLevel || 'A1', String(selectedModule || 1), speakingIndex + 1, 40, correctAnswers + 1, false);
+        
+        advanceSpeakingOnce();     // Use the centralized, guarded advance
+      } else {
+        // Wrong answer - show feedback and require retry (no auto-advance)
+        setFeedback(`❌ Not quite right. The correct answer is: "${target}"`);
+        setFeedbackType('error');
+        
+        // Clear feedback after showing correct answer
+        setTimeout(() => {
+          setFeedback('');
+          setFeedbackType('info');
+          setIsProcessing(false);
+        }, 3000);
+      }
       }
 
       console.log('VALIDATION PHASE');
@@ -7539,13 +7652,70 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
   }, [speakingIndex, earnXPForGrammarLesson, incrementTotalExercises]);
 
 
-  // Optional: Reset progress for current module
-  function resetThisModuleProgress() {
-    if (selectedLevel && selectedModule != null) {
-      clearProgress(selectedLevel, selectedModule);
+  // Initialize resume functionality on app start 
+  useEffect(() => {
+    if (viewState === 'lesson') {
+      const userId = 'guest'; // Use actual user ID when available
+      const resumePointer = resumeLastPointer(userId);
+      
+      if (resumePointer) {
+        console.log(`🔄 Auto-resuming from saved progress: ${resumePointer.levelId} Module ${resumePointer.moduleId}, Question ${resumePointer.questionIndex + 1}`);
+        
+        // Set the level and module from saved progress
+        const levelKey = resumePointer.levelId;
+        const moduleNum = parseInt(resumePointer.moduleId);
+        
+        setSelectedLevel(levelKey);
+        setSelectedModule(moduleNum);
+        
+        // Set the exact question index for resume
+        setSpeakingIndex(resumePointer.questionIndex);
+        setCurrentPhase('speaking'); // Resume in speaking phase
+        
+        // Clear any existing progress indicators that might interfere
+        setListeningIndex(0);
+        
+        console.log(`✅ Successfully resumed at ${levelKey} Module ${moduleNum}, Question ${resumePointer.questionIndex + 1}`);
+      }
+    }
+  }, [viewState]);
+
+  // Enhanced module completion with seamless next-module navigation
+  function completeModuleAndAdvance() {
+    if (!selectedLevel || selectedModule == null) return;
+    
+    const userId = 'guest'; // Use actual user ID when available
+    
+    // Mark current module as complete
+    saveProgress(userId, selectedLevel, String(selectedModule), 40, 40, 40, true);
+    
+    // Get next module in sequence
+    const nextModuleId = getNextModuleId(selectedLevel as 'A1' | 'A2' | 'B1', selectedModule);
+    
+    if (nextModuleId) {
+      console.log(`🎯 Auto-advancing to next module: ${selectedLevel} Module ${nextModuleId}`);
+      
+      // Seamlessly navigate to next module
+      setSelectedModule(nextModuleId);
       setCurrentPhase('intro');
       setListeningIndex(0);
       setSpeakingIndex(0);
+      setCorrectAnswers(0);
+      setFeedback('');
+      
+      // Clear any UI state
+      setFeedbackType('info');
+      setSpeakStatus('idle');
+      setIsProcessing(false);
+      
+      // Save progress for the new module start
+      saveProgress(userId, selectedLevel, String(nextModuleId), 0, 40, 0, false);
+      
+      console.log(`✅ Successfully advanced to ${selectedLevel} Module ${nextModuleId}`);
+    } else {
+      console.log('🏆 Level complete! No more modules in this level.');
+      // Could show level completion celebration here
+      setCurrentPhase('complete');
     }
   }
 
@@ -7567,14 +7737,21 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
       const ok = isExactlyCorrect(transcript, target);
 
       if (ok) {
+        // Correct answer - auto-advance immediately
         setCorrectAnswers(prev => prev + 1);
         setFeedback('🎉 Excellent! Moving to the next question...');
         setFeedbackType('success');
         earnXPForGrammarLesson(true);
         incrementTotalExercises();
         setSpeakStatus('advancing');
+        
+        // Save progress after each correct answer for exact resume
+        const userId = 'guest'; // Use actual user ID when available
+        saveProgress(userId, selectedLevel || 'A1', String(selectedModule || 1), speakingIndex + 1, 40, correctAnswers + 1, false);
+        
         advanceSpeakingOnce();              // centralized progression
       } else {
+        // Wrong answer - show feedback and require retry
         setFeedback(`❌ Not quite right. The correct answer is: "${target}"`);
         setFeedbackType('error');
         setSpeakStatus('idle');
@@ -8361,3 +8538,5 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     </div>
   );
 }
+
+export default LessonsApp;

@@ -25,21 +25,31 @@ interface SpeakingPlacementTestProps {
 // --------- Speaking Test (isolated) ----------
 export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementTestProps) {
   
-  // ROUTING/UNLOCK HELPERS (use your existing app context if available)
+  // Enhanced post-test routing with progress awareness
+  const [userId] = useState(() => 'guest'); // Use actual user ID when available
+  
   function unlockLevel(level: 'A1'|'A2'|'B1') {
     const key = 'unlocks';
     const data = JSON.parse(localStorage.getItem(key) || '{}');
     data[level] = true;
     localStorage.setItem(key, JSON.stringify(data));
   }
+  
   function routeToLevel(level: 'A1'|'A2'|'B1') {
-    const map = { A1: {lvl:'A1', mod:1}, A2: {lvl:'A2', mod:51}, B1: {lvl:'B1', mod:101} };
-    const t = map[level];
-    localStorage.setItem('currentLevel', t.lvl);
-    localStorage.setItem('currentModule', String(t.mod));
-    localStorage.setItem('userPlacement', JSON.stringify({ level: t.lvl, scores: {}, at: Date.now() }));
-    localStorage.setItem('unlockedLevel', t.lvl);
-    onComplete(t.lvl, 75);
+    // Use enhanced routing logic that considers existing progress
+    import('../utils/speakingTestIntegration').then(({ routeAfterSpeakingTest }) => {
+      routeAfterSpeakingTest(userId, { level, score: 75 }, onComplete);
+    }).catch((error) => {
+      console.error('Failed to load routing logic, falling back:', error);
+      // Fallback to simple routing
+      const map = { A1: {lvl:'A1', mod:1}, A2: {lvl:'A2', mod:51}, B1: {lvl:'B1', mod:101} };
+      const t = map[level];
+      localStorage.setItem('currentLevel', t.lvl);
+      localStorage.setItem('currentModule', String(t.mod));
+      localStorage.setItem('userPlacement', JSON.stringify({ level: t.lvl, scores: {}, at: Date.now() }));
+      localStorage.setItem('unlockedLevel', t.lvl);
+      onComplete(t.lvl, 75);
+    });
   }
 
   // ---------- State + guards ----------
