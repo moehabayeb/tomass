@@ -142,19 +142,25 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     console.log('[LevelTest] results:', { g: scored.grammar, v: scored.vocab, p: scored.pron, level: scored.level });
     setResult(scored);
     
-    // Save results and unlock
-    const placement = { level: scored.level, g: scored.grammar, v: scored.vocab, p: scored.pron, date: Date.now() };
-    localStorage.setItem('placement', JSON.stringify(placement));
-    localStorage.setItem('userPlacement', JSON.stringify({ level: scored.level, scores: scored, at: Date.now() }));
-    localStorage.setItem('unlockedLevel', scored.level);
-    unlockLevel(scored.level);
-    
-    // Clear progress
-    localStorage.removeItem('speakingTestProgress');
-    
-    // @ts-ignore
-    window.triggerConfetti?.();
-    setTimeout(() => routeToLevel(scored.level), 1200);
+    // Enhanced placement with new logic
+    import('./levelPlacementLogic').then(({ processPlacementResults }) => {
+      processPlacementResults(scored, answers, onComplete);
+    }).catch(error => {
+      console.error('Placement processing failed, using fallback:', error);
+      // Fallback to current behavior
+      const placement = { level: scored.level, g: scored.grammar, v: scored.vocab, p: scored.pron, date: Date.now() };
+      localStorage.setItem('placement', JSON.stringify(placement));
+      localStorage.setItem('userPlacement', JSON.stringify({ level: scored.level, scores: scored, at: Date.now() }));
+      localStorage.setItem('unlockedLevel', scored.level);
+      unlockLevel(scored.level);
+      
+      // Clear progress
+      localStorage.removeItem('speakingTestProgress');
+      
+      // @ts-ignore
+      window.triggerConfetti?.();
+      setTimeout(() => routeToLevel(scored.level), 1200);
+    });
   }
 
   // Enhanced TTS with safety guardrails
