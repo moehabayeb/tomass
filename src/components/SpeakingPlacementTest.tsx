@@ -45,7 +45,7 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
 
   // ---------- State + guards ----------
   type TestState = 'idle'|'prompting'|'ready'|'done';
-  type MicState = 'idle'|'listening'|'processing'|'done';
+  type MicState = 'idle'|'listening'|'processing'|'graded'|'error'|'done';
   
   const [testState, setTestState] = useState<TestState>('idle');
   const [micState, setMicState] = useState<MicState>('idle');
@@ -62,10 +62,14 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
   const [engineTranscript, setEngineTranscript] = useState('');
   const [permissionError, setPermissionError] = useState(false);
 
-  // Feature flag for raw capture
+  // Feature flags
   const SPEAKING_TEST_RAW_CAPTURE = typeof window !== 'undefined' && 
     (localStorage.getItem('SPEAKING_TEST_RAW_CAPTURE') === 'true' || 
      new URLSearchParams(window.location.search).get('SPEAKING_TEST_RAW_CAPTURE') === 'true');
+  
+  const SPEAKING_TEST_STRICT_SESSION = typeof window !== 'undefined' && 
+    (localStorage.getItem('SPEAKING_TEST_STRICT_SESSION') === 'true' || 
+     new URLSearchParams(window.location.search).get('SPEAKING_TEST_STRICT_SESSION') === 'true');
 
   const runIdRef = useRef<string|null>(null);
   const ttsTimerRef = useRef<number|undefined>(undefined);
@@ -73,6 +77,8 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
   const recognitionRef = useRef<any>(null);
   const timeoutRef = useRef<number | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
+  const retryCountRef = useRef<number>(0);
+  const sessionStateRef = useRef<MicState>('idle');
   const debug = window.location.search.includes('sttdebug=1');
 
   
@@ -110,21 +116,44 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     }]);
   }
   
-  // Clean up recognition instance
-  function cleanupRecognition() {
+  // Hard reset before starting a question - STRICT SESSION MANAGEMENT
+  function hardResetSession() {
+    if (debug) console.log('[SpeakingTest] hardResetSession');
+    
+    // Stop and dispose of any previous recognition/audio session
     if (recognitionRef.current) {
       try {
+        recognitionRef.current.abort();
         recognitionRef.current.stop();
       } catch (e) {
-        if (debug) console.log('[LevelTest] cleanup error:', e);
+        // Ignore cleanup errors
       }
       recognitionRef.current = null;
     }
     
+    // Clear all timers and event listeners
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
     }
+    
+    // Reset attempt state
+    setRawTranscript('');
+    setEngineTranscript('');
+    setStatusMessage('');
+    setPermissionError(false);
+    
+    // Reset session state
+    sessionStateRef.current = 'idle';
+    setMicState('idle');
+    retryCountRef.current = 0;
+    
+    if (debug) console.log('[SpeakingTest] session reset complete');
+  }
+
+  // Clean up recognition instance (legacy)
+  function cleanupRecognition() {
+    hardResetSession();
   }
   
   // Handle audio context for TTS conflicts
@@ -232,21 +261,31 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     }, ms);
   }
 
-  // Call speakPrompt(promptText) when you load each question
+  // Question change hygiene - hard reset on every question change
   useEffect(() => {
     console.log('[LevelTest] question-changed:', qIndex);
+    
+    // Hard reset before starting new question
+    if (SPEAKING_TEST_STRICT_SESSION) {
+      hardResetSession();
+    }
+    
     const text = PROMPTS[qIndex];
     if (!text) return;
     speakPrompt(text);
+    
     // cleanup if user leaves screen
     return () => {
       console.log('[LevelTest] cleanup-question');
       try { window?.speechSynthesis?.cancel(); } catch {}
       try { narration.cancel(); } catch {}
       clearAllTimers();
+      if (SPEAKING_TEST_STRICT_SESSION) {
+        hardResetSession();
+      }
       runIdRef.current = null;
     };
-  }, [qIndex, PROMPTS]);
+  }, [qIndex, PROMPTS, SPEAKING_TEST_STRICT_SESSION]);
 
   // Load saved progress on mount
   useEffect(() => {
@@ -272,6 +311,31 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     }
   }, [qIndex, answers]);
 
+  // Mobile/iOS resilience - handle visibility changes
+  useEffect(() => {
+    if (!SPEAKING_TEST_STRICT_SESSION) return;
+    
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        if (debug) console.log('[SpeakingTest] app backgrounded, stopping recognition');
+        hardResetSession();
+      }
+    };
+    
+    const handlePageHide = () => {
+      if (debug) console.log('[SpeakingTest] page hiding, stopping recognition');
+      hardResetSession();
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('pagehide', handlePageHide);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('pagehide', handlePageHide);
+    };
+  }, [SPEAKING_TEST_STRICT_SESSION]);
+
   // Complete cleanup on unmount
   useEffect(() => {
     return () => {
@@ -279,11 +343,15 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
       try { window?.speechSynthesis?.cancel(); } catch {}
       try { narration.cancel(); } catch {}
       clearAllTimers();
-      cleanupRecognition();
+      if (SPEAKING_TEST_STRICT_SESSION) {
+        hardResetSession();
+      } else {
+        cleanupRecognition();
+      }
       runIdRef.current = null;
       handleAudioContext(false); // Resume any suspended context
     };
-  }, []);
+  }, [SPEAKING_TEST_STRICT_SESSION]);
 
   // Enhanced state logging
   useEffect(() => {
@@ -355,34 +423,63 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     return { grammar, vocab, pron, level };
   }
 
-  // Handle mic button press
+  // Telemetry logging (silent in production)
+  function logTelemetry(finalState: 'graded' | 'error', rawText: string, durationMs: number, retryCount: number, errorType: string) {
+    if (SPEAKING_TEST_STRICT_SESSION) {
+      const sanitizedRaw = rawText.substring(0, 60);
+      console.log(`[SpeakingTest] q=${qIndex + 1} state=${finalState} raw="${sanitizedRaw}" durMs=${durationMs} retry=${retryCount} err=${errorType || 'none'}`);
+    }
+  }
+
+  // Handle mic button press - strict session management
   async function onMicPress() {
     if (debug) {
-      console.log('[LevelTest] mic:press, testState:', testState, 'micState:', micState);
+      console.log('[SpeakingTest] mic:press, testState:', testState, 'micState:', micState, 'sessionState:', sessionStateRef.current);
     }
     
     if (testState === 'prompting') {
-      if (debug) console.log('[LevelTest] mic:override-tts');
+      if (debug) console.log('[SpeakingTest] mic:override-tts');
       // user wants to start now → cancel TTS and go
       try { window?.speechSynthesis?.cancel(); } catch {}
       try { narration.cancel(); } catch {}
       clearAllTimers();
       setTestState('ready');
-      if (debug) console.log('[LevelTest] mic:forced-ready');
+      if (debug) console.log('[SpeakingTest] mic:forced-ready');
     }
     
-    // Stop listening if currently listening
-    if (micState === 'listening') {
-      if (debug) console.log('[LevelTest] mic:stop-listening');
-      cleanupRecognition();
-      setMicState('idle');
-      setStatusMessage('');
-      return;
-    }
+    // Strict session: only allow state transitions in proper order
+    if (SPEAKING_TEST_STRICT_SESSION) {
+      // Stop listening if currently listening
+      if (sessionStateRef.current === 'listening') {
+        if (debug) console.log('[SpeakingTest] mic:stop-listening');
+        hardResetSession();
+        return;
+      }
 
-    if (testState !== 'ready' || micState !== 'idle') {
-      if (debug) console.log('[LevelTest] mic:not-ready, ignoring');
-      return;
+      // Only start if we're in idle state
+      if (sessionStateRef.current !== 'idle') {
+        if (debug) console.log('[SpeakingTest] mic:not-idle, ignoring. State:', sessionStateRef.current);
+        return;
+      }
+
+      if (testState !== 'ready') {
+        if (debug) console.log('[SpeakingTest] mic:not-ready, ignoring');
+        return;
+      }
+    } else {
+      // Legacy behavior
+      if (micState === 'listening') {
+        if (debug) console.log('[SpeakingTest] mic:stop-listening');
+        cleanupRecognition();
+        setMicState('idle');
+        setStatusMessage('');
+        return;
+      }
+
+      if (testState !== 'ready' || micState !== 'idle') {
+        if (debug) console.log('[SpeakingTest] mic:not-ready, ignoring');
+        return;
+      }
     }
 
     if (permissionError) {
@@ -393,18 +490,33 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     await startRecording();
   }
 
-  // Bulletproof speech recognition
+  // Start clean recognition with strict session management
   async function startRecording() {
-    if (debug) console.log('[LevelTest] recording:start');
+    if (debug) console.log('[SpeakingTest] recording:start, strict:', SPEAKING_TEST_STRICT_SESSION);
     
     // Check for speech recognition support
     const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
     if (!SpeechRecognition) {
-      setStatusMessage("Speech recognition not supported");
+      const errorMsg = "Speech recognition not supported";
+      setStatusMessage(errorMsg);
+      if (SPEAKING_TEST_STRICT_SESSION) {
+        sessionStateRef.current = 'error';
+        setMicState('error');
+        logTelemetry('error', '', 0, 0, 'no_recognition_support');
+      }
       return;
     }
 
     try {
+      // State transition: idle → listening
+      if (SPEAKING_TEST_STRICT_SESSION) {
+        if (sessionStateRef.current !== 'idle') {
+          if (debug) console.log('[SpeakingTest] invalid state transition from:', sessionStateRef.current);
+          return;
+        }
+        sessionStateRef.current = 'listening';
+      }
+
       // Initialize audio context on user gesture (iOS requirement)
       if (!audioContextRef.current) {
         const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
@@ -419,23 +531,40 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
       // Suspend TTS audio context if running
       await handleAudioContext(true);
 
-      // Clean up any existing recognition
-      cleanupRecognition();
+      // Start clean - ensure no existing recognition
+      if (SPEAKING_TEST_STRICT_SESSION) {
+        if (recognitionRef.current) {
+          try {
+            recognitionRef.current.abort();
+          } catch (e) {}
+          recognitionRef.current = null;
+        }
+      } else {
+        cleanupRecognition();
+      }
       
       startTimeRef.current = Date.now();
       setMicState('listening');
       setStatusMessage('Listening...');
       setTranscript('');
+      setRawTranscript('');
+      setEngineTranscript('');
       setPermissionError(false);
 
-      // Create new recognition instance
+      // Create new recognition instance with fresh listeners
       const recognition = new SpeechRecognition();
       recognitionRef.current = recognition;
       
+      // Configure recognition with raw capture options
       recognition.lang = 'en-US';
       recognition.continuous = false;
       recognition.interimResults = false;
       recognition.maxAlternatives = 5;
+
+      // Clear grammars for clean recognition
+      try {
+        recognition.grammars = (window as any).webkitSpeechGrammarList?.() || null;
+      } catch (e) {}
 
       // SPEAKING_TEST_RAW_CAPTURE: Disable normalization features
       if (SPEAKING_TEST_RAW_CAPTURE) {
@@ -447,7 +576,7 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
           // Note: Chrome/Safari don't expose all normalization controls
           // We'll get the most raw transcript available from alternatives
         } catch (e) {
-          console.log('[SpeakingTest] Raw capture config warnings (expected):', e);
+          if (debug) console.log('[SpeakingTest] Raw capture config warnings (expected):', e);
         }
       }
 
@@ -455,32 +584,36 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
       let hasSoundStarted = false;
       let hasSpeechStarted = false;
       let hasResult = false;
+      let hasFinal = false;
 
-      // 15 second timeout
+      // 15 second maximum timeout
       timeoutRef.current = window.setTimeout(() => {
-        if (!hasResult && recognitionRef.current) {
-          if (debug) console.log('[LevelTest] timeout reached');
-          recognition.stop();
+        if (!hasResult && recognitionRef.current && !hasFinal) {
+          if (debug) console.log('[SpeakingTest] max timeout reached');
+          try {
+            recognition.stop();
+          } catch (e) {}
         }
       }, 15000);
 
+      // Attach fresh listeners only for this attempt
       recognition.onstart = () => {
-        if (debug) console.log('[LevelTest] onstart');
+        if (debug) console.log('[SpeakingTest] onstart');
       };
 
       recognition.onaudiostart = () => {
         hasAudioStarted = true;
-        if (debug) console.log('[LevelTest] onaudiostart');
+        if (debug) console.log('[SpeakingTest] onaudiostart');
       };
 
       recognition.onsoundstart = () => {
         hasSoundStarted = true;
-        if (debug) console.log('[LevelTest] onsoundstart');
+        if (debug) console.log('[SpeakingTest] onsoundstart');
       };
 
       recognition.onspeechstart = () => {
         hasSpeechStarted = true;
-        if (debug) console.log('[LevelTest] onspeechstart');
+        if (debug) console.log('[SpeakingTest] onspeechstart');
       };
 
       recognition.onspeechend = () => {
@@ -488,219 +621,244 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
         recognition.stop();
       };
 
-      recognition.onresult = (event: any) => {
-        if (hasResult) return;
-        hasResult = true;
-
-        if (timeoutRef.current) {
-          clearTimeout(timeoutRef.current);
-          timeoutRef.current = null;
+      recognition.onresult = (event) => {
+        if (hasResult || hasFinal) return; // Ignore duplicate results
+        
+        // State transition: listening → processing
+        if (SPEAKING_TEST_STRICT_SESSION) {
+          if (sessionStateRef.current !== 'listening') {
+            if (debug) console.log('[SpeakingTest] ignoring late result, state:', sessionStateRef.current);
+            return;
+          }
+          sessionStateRef.current = 'processing';
         }
+        
+        hasResult = true;
+        const durationMs = Date.now() - startTimeRef.current;
 
-        if (debug) console.log('[LevelTest] onresult:', event.results);
+        if (debug) console.log('[SpeakingTest] onresult:', { 
+          resultIndex: event.resultIndex,
+          results: event.results.length,
+          isFinal: event.results[0]?.isFinal,
+          transcript: event.results[0]?.[0]?.transcript
+        });
 
-        try {
-          const results = event.results[0];
-          let bestTranscript = '';
-          let rawTranscript = '';
-          let bestConfidence = 0;
-          const audioDuration = (Date.now() - startTimeRef.current) / 1000;
+        const result = event.results[0];
+        if (result && result.isFinal) {
+          hasFinal = true;
+          if (debug) console.log('[SpeakingTest] final result received');
+          
+          let transcript = result[0].transcript;
+          let rawTranscript = transcript;
+          let engineTranscript = transcript;
 
-          if (SPEAKING_TEST_RAW_CAPTURE) {
-            // Dual transcript capture: raw (least processed) and engine (default)
-            
-            // Try to get the least processed transcript from alternatives
-            const alternatives = Array.from(results);
-            
-            // First, try to find any alternative marked as "raw" (browser-specific)
-            let rawAlternative = alternatives.find((alt: any) => 
-              alt.rawTranscript || alt.unformattedText || alt.unpunctuatedText);
-            
-            if (rawAlternative) {
-              rawTranscript = (rawAlternative as any).rawTranscript || 
-                             (rawAlternative as any).unformattedText ||
-                             (rawAlternative as any).unpunctuatedText;
-            } else {
-              // Fallback: use lowest confidence (often less processed) or last alternative
-              const lowestConfidenceAlt = alternatives.reduce((lowest: any, current: any) => 
-                (current.confidence || 0) < (lowest.confidence || Infinity) ? current : lowest, 
-                alternatives[0]);
-              
-              rawTranscript = (lowestConfidenceAlt as any).transcript || '';
-            }
-            
-            // Engine transcript (highest confidence, default processing)
-            for (let i = 0; i < results.length; i++) {
-              const alternative = results[i];
-              if (alternative.confidence > bestConfidence) {
-                bestTranscript = alternative.transcript;
-                bestConfidence = alternative.confidence;
+          // For raw capture, try to get the most unprocessed alternative
+          if (SPEAKING_TEST_RAW_CAPTURE && result.length > 1) {
+            // Look for alternatives that might be less processed
+            for (let i = 0; i < Math.min(result.length, 3); i++) {
+              const alt = result[i].transcript;
+              // Prefer alternatives with less punctuation/capitalization
+              if (alt && (alt.toLowerCase() === alt || alt.indexOf('.') === -1)) {
+                rawTranscript = alt;
+                break;
               }
-            }
-            
-            // Use first result if no confidence scores
-            if (!bestTranscript && results.length > 0) {
-              bestTranscript = results[0].transcript;
-            }
-            
-            // Clean transcripts (only trim whitespace, no other normalization)
-            rawTranscript = rawTranscript.trim();
-            bestTranscript = bestTranscript.trim();
-            
-            // Telemetry logging
-            console.log(`[SpeakingTest] raw="${rawTranscript}" len=${rawTranscript.length} durMs=${Math.round(audioDuration * 1000)} asr="webkitSpeechRecognition" errors=none advanced=false`);
-            
-            if (debug) {
-              console.log('[SpeakingTest] Raw capture results:', { 
-                rawTranscript, 
-                engineTranscript: bestTranscript, 
-                confidence: bestConfidence,
-                alternatives: alternatives.length
-              });
-            }
-            
-            // Store both transcripts
-            setRawTranscript(rawTranscript);
-            setEngineTranscript(bestTranscript);
-            
-            // Updated error condition: Only show "Didn't catch that" for:
-            // 1. rawTranscript length < 2 AND audio duration < 0.6s
-            const shouldShowError = rawTranscript.length < 2 && audioDuration < 0.6;
-            
-            if (shouldShowError) {
-              setMicState('idle');
-              setStatusMessage("Didn't catch that—try again");
-              console.log(`[SpeakingTest] Showing error: transcript too short (${rawTranscript.length}) and duration too brief (${audioDuration}s)`);
-            } else {
-              // Use rawTranscript for display and processing
-              setMicState('done');
-              setTranscript(rawTranscript); // Display raw transcript to user
-              setStatusMessage(`Recognized: "${rawTranscript}"`);
-            }
-            
-          } else {
-            // Original behavior when feature flag is off
-            
-            // Find highest confidence alternative
-            for (let i = 0; i < results.length; i++) {
-              const alternative = results[i];
-              if (alternative.confidence > bestConfidence) {
-                bestTranscript = alternative.transcript;
-                bestConfidence = alternative.confidence;
-              }
-            }
-
-            // Use first result if no confidence scores
-            if (!bestTranscript && results.length > 0) {
-              bestTranscript = results[0].transcript;
-            }
-
-            bestTranscript = bestTranscript.trim();
-            
-            if (debug) {
-              console.log('[LevelTest] best result:', { transcript: bestTranscript, confidence: bestConfidence });
-            }
-
-            if (bestTranscript) {
-              setMicState('done');
-              setTranscript(bestTranscript);
-              setStatusMessage(`Recognized: "${bestTranscript}"`);
-            } else {
-              setMicState('idle');
-              setStatusMessage("Didn't catch that—try again");
             }
           }
 
-        } catch (error) {
-          if (debug) console.error('[LevelTest] result processing error:', error);
-          console.log(`[SpeakingTest] raw="" len=0 durMs=0 asr="webkitSpeechRecognition" errors=processing_error advanced=false`);
-          setMicState('idle');
-          setStatusMessage("Didn't catch that—try again");
-        }
+          if (debug) console.log('[SpeakingTest] transcripts:', { 
+            display: transcript, 
+            raw: rawTranscript, 
+            engine: engineTranscript 
+          });
 
-        handleAudioContext(false); // Resume TTS context
+          const finalTranscript = SPEAKING_TEST_RAW_CAPTURE ? rawTranscript.trim() : transcript.trim();
+          
+          // Finalization rules: proceed to scoring if we have valid content
+          if (finalTranscript.length >= 2) {
+            if (SPEAKING_TEST_STRICT_SESSION) {
+              sessionStateRef.current = 'graded';
+            }
+            
+            setMicState('processing');
+            setStatusMessage('Processing...');
+            setTranscript(finalTranscript);
+            
+            if (SPEAKING_TEST_RAW_CAPTURE) {
+              setRawTranscript(rawTranscript);
+              setEngineTranscript(engineTranscript);
+            }
+
+            // Clean up timers
+            if (timeoutRef.current) {
+              clearTimeout(timeoutRef.current);
+              timeoutRef.current = null;
+            }
+
+            // Resume TTS audio context
+            handleAudioContext(false);
+
+            const durationSec = durationMs / 1000;
+            
+            // Telemetry for QA
+            logTelemetry('graded', finalTranscript, durationMs, retryCountRef.current, 'none');
+
+            // Save the answer and proceed
+            setTimeout(() => {
+              saveAnswer(qIndex, finalTranscript, durationSec);
+              setMicState('done');
+              setStatusMessage('');
+              
+              // Auto advance after a brief delay
+              setTimeout(() => {
+                handleContinue();
+              }, 800);
+            }, 500);
+          } else {
+            // Short or empty result - trigger retry or show error
+            handleNoCapture(durationMs, 'short_result');
+          }
+        }
       };
 
-      recognition.onerror = (event: any) => {
-        if (hasResult) return;
+      recognition.onnomatch = () => {
+        if (debug) console.log('[SpeakingTest] onnomatch');
+        const durationMs = Date.now() - startTimeRef.current;
+        handleNoCapture(durationMs, 'nomatch');
+      };
 
-        if (timeoutRef.current) {
-          clearTimeout(timeoutRef.current);
-          timeoutRef.current = null;
-        }
-
-        const audioDuration = (Date.now() - startTimeRef.current) / 1000;
-        
-        if (debug) console.log('[LevelTest] onerror:', event.error);
-
-        // Telemetry logging for errors
-        if (SPEAKING_TEST_RAW_CAPTURE) {
-          console.log(`[SpeakingTest] raw="" len=0 durMs=${Math.round(audioDuration * 1000)} asr="webkitSpeechRecognition" errors=${event.error} advanced=false`);
-        }
-
-        // Show "Didn't catch that" only for appropriate error conditions
-        if (event.error === 'not-allowed' || event.error === 'permission-denied') {
-          setPermissionError(true);
-          setStatusMessage('Microphone blocked. Tap the address bar → Allow mic.');
-        } else if (event.error === 'no-speech' || event.error === 'network') {
-          setStatusMessage("Didn't catch that—try again");
-        } else {
-          setStatusMessage("Didn't catch that—try again");
-        }
-
-        setMicState('idle');
-        handleAudioContext(false); // Resume TTS context
+      recognition.onerror = (event) => {
+        if (debug) console.log('[SpeakingTest] onerror:', event.error);
+        const durationMs = Date.now() - startTimeRef.current;
+        handleSpeechError(event.error, durationMs);
       };
 
       recognition.onend = () => {
-        if (debug) console.log('[LevelTest] onend, hasResult:', hasResult);
-
-        if (!hasResult) {
-          if (timeoutRef.current) {
-            clearTimeout(timeoutRef.current);
-            timeoutRef.current = null;
-          }
-
-          const audioDuration = (Date.now() - startTimeRef.current) / 1000;
-          
-          // Telemetry logging for onend without results
-          if (SPEAKING_TEST_RAW_CAPTURE) {
-            console.log(`[SpeakingTest] raw="" len=0 durMs=${Math.round(audioDuration * 1000)} asr="webkitSpeechRecognition" errors=no_results advanced=false`);
-          }
-
-          // Only show "no speech detected" if truly silent OR very brief audio
-          const shouldShowError = (!hasAudioStarted && !hasSoundStarted) || audioDuration < 0.6;
-          
-          if (shouldShowError) {
-            setStatusMessage("Didn't catch that—try again");
-          } else {
-            // Brief non-speech sounds detected but no transcription - still show error
-            setStatusMessage("Didn't catch that—try again");
-          }
-
-          setMicState('idle');
+        if (debug) console.log('[SpeakingTest] onend, hasResult:', hasResult, 'hasFinal:', hasFinal);
+        
+        if (!hasResult && !hasFinal) {
+          const durationMs = Date.now() - startTimeRef.current;
+          if (debug) console.log('[SpeakingTest] onend without result');
+          handleNoCapture(durationMs, 'no_results');
         }
-
+        
+        // Clean up recognition reference
         recognitionRef.current = null;
-        handleAudioContext(false); // Resume TTS context
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+          timeoutRef.current = null;
+        }
+        
+        // Resume TTS audio context
+        handleAudioContext(false);
       };
 
       // Start recognition
       recognition.start();
+      if (debug) console.log('[SpeakingTest] recognition started');
 
-    } catch (error: any) {
-      if (debug) console.error('[LevelTest] setup error:', error);
+    } catch (error) {
+      if (debug) console.log('[SpeakingTest] recognition error:', error);
+      
+      const durationMs = Date.now() - startTimeRef.current;
+      
+      if (SPEAKING_TEST_STRICT_SESSION) {
+        sessionStateRef.current = 'error';
+      }
+      setMicState('idle');
       
       if (error.name === 'NotAllowedError') {
         setPermissionError(true);
-        setStatusMessage('Microphone blocked. Tap the address bar → Allow mic.');
+        setStatusMessage("Microphone access denied. Please allow microphone access and try again.");
+        logTelemetry('error', '', durationMs, retryCountRef.current, 'not-allowed');
       } else {
-        setStatusMessage("Didn't catch that—try again");
+        setStatusMessage("Could not start speech recognition. Please try again.");
+        logTelemetry('error', '', durationMs, retryCountRef.current, 'start_error');
       }
       
-      setMicState('idle');
-      handleAudioContext(false); // Resume TTS context
+      // Resume TTS audio context
+      handleAudioContext(false);
     }
+  }
+
+  // Watchdog + one safe retry for no capture
+  function handleNoCapture(durationMs: number, errorType: string) {
+    if (debug) console.log('[SpeakingTest] handleNoCapture:', errorType, 'duration:', durationMs, 'retry:', retryCountRef.current);
+    
+    // Clean up timers
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    
+    // Resume TTS audio context
+    handleAudioContext(false);
+    
+    // Treat as no capture only if very short audio or specific errors
+    const isNoCapture = durationMs < 600 || ['no-speech', 'nomatch', 'no_results'].includes(errorType);
+    
+    if (isNoCapture && retryCountRef.current === 0 && SPEAKING_TEST_STRICT_SESSION) {
+      // One safe retry
+      if (debug) console.log('[SpeakingTest] attempting retry');
+      retryCountRef.current = 1;
+      sessionStateRef.current = 'idle'; // Reset for retry
+      setStatusMessage('Retrying...');
+      
+      // Brief delay before retry
+      setTimeout(() => {
+        startRecording();
+      }, 500);
+    } else {
+      // Show error after retry fails or on first attempt if not strict
+      if (SPEAKING_TEST_STRICT_SESSION) {
+        sessionStateRef.current = 'error';
+      }
+      setMicState('idle');
+      
+      if (isNoCapture) {
+        setStatusMessage("Didn't catch that—try again");
+      } else {
+        setStatusMessage("Please speak more clearly and try again");
+      }
+      
+      logTelemetry('error', '', durationMs, retryCountRef.current, errorType);
+    }
+  }
+
+  // Handle speech recognition errors (hard errors)
+  function handleSpeechError(errorType: string, durationMs: number) {
+    if (debug) console.log('[SpeakingTest] handleSpeechError:', errorType, 'duration:', durationMs);
+    
+    // Clean up timers
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    
+    if (SPEAKING_TEST_STRICT_SESSION) {
+      sessionStateRef.current = 'error';
+    }
+    setMicState('idle');
+    
+    // Resume TTS audio context immediately
+    handleAudioContext(false);
+    
+    // Handle different error types
+    switch (errorType) {
+      case 'not-allowed':
+        setPermissionError(true);
+        setStatusMessage("Microphone access denied. Please allow microphone access and try again.");
+        break;
+      case 'network':
+        setStatusMessage("Network error. Please check your connection and try again.");
+        break;
+      case 'audio-capture':
+        setStatusMessage("Could not capture audio. Please check your microphone and try again.");
+        break;
+      default:
+        setStatusMessage("Speech recognition error. Please try again.");
+    }
+    
+    logTelemetry('error', '', durationMs, retryCountRef.current, errorType);
   }
 
   // Continue to next question
