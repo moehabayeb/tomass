@@ -1,7 +1,7 @@
-import { configureUtterance, VOICE_CONFIG } from '@/config/voice';
+import { getBestEnglishVoice, getBestTurkishVoice, configureUtterance, VOICE_CONFIG } from '@/config/voice';
 
-// Feature flag for bilingual TTS
-const TTS_MULTI_LANG_ENABLED = true; // Can be controlled via config
+// Feature flag for bilingual TTS (controlled by voice upgrade)
+const TTS_MULTI_LANG_ENABLED = () => VOICE_CONFIG.UPGRADE_ENABLED;
 
 interface TextSegment {
   text: string;
@@ -63,7 +63,7 @@ class BilingualTTSService {
    * Main speak function with bilingual support
    */
   async speak(text: string, options: BilingualTTSOptions = {}): Promise<TTSResult> {
-    if (!TTS_MULTI_LANG_ENABLED) {
+    if (!TTS_MULTI_LANG_ENABLED()) {
       // Fallback to simple TTS when feature is disabled
       return this.fallbackToSimpleTTS(text);
     }
@@ -208,104 +208,33 @@ class BilingualTTSService {
   }
 
   /**
-   * Get best Turkish voice available
+   * Get best Turkish voice using enhanced voice system
    */
   private getTurkishVoice(): SpeechSynthesisVoice | null {
-    if (this.cachedTurkishVoice) {
-      const currentVoices = speechSynthesis.getVoices();
-      if (currentVoices.some(v => v.name === this.cachedTurkishVoice!.name)) {
-        return this.cachedTurkishVoice;
-      }
-      this.cachedTurkishVoice = null;
-    }
-
-    const voices = speechSynthesis.getVoices();
-    
-    // Priority 1: Exact tr-TR voices with good names
-    const preferredTurkishVoices = [
-      'Google Türkçe', 'Microsoft Filiz Desktop', 'Microsoft Zeynep Desktop',
-      'Filiz', 'Zeynep', 'Google Turkish', 'Microsoft Turkish'
-    ];
-
-    for (const preferredName of preferredTurkishVoices) {
-      const voice = voices.find(v => 
-        v.name.toLowerCase().includes(preferredName.toLowerCase()) && 
-        (v.lang === 'tr-TR' || v.lang?.startsWith('tr'))
-      );
-      if (voice) {
-        this.cachedTurkishVoice = voice;
-        console.log(`🎙️ [BilingualTTS] Turkish voice selected: ${voice.name} (${voice.lang})`);
-        return voice;
-      }
-    }
-
-    // Priority 2: Any tr-TR voice
-    const anyTurkishVoice = voices.find(v => v.lang === 'tr-TR');
-    if (anyTurkishVoice) {
-      this.cachedTurkishVoice = anyTurkishVoice;
-      console.log(`🎙️ [BilingualTTS] Turkish voice selected: ${anyTurkishVoice.name} (${anyTurkishVoice.lang})`);
-      return anyTurkishVoice;
-    }
-
-    // Priority 3: Any tr-* voice
-    const fallbackTurkishVoice = voices.find(v => v.lang?.startsWith('tr'));
-    if (fallbackTurkishVoice) {
-      this.cachedTurkishVoice = fallbackTurkishVoice;
-      console.log(`[TTS] fallback: requested tr-TR → using ${fallbackTurkishVoice.name} (${fallbackTurkishVoice.lang})`);
-      return fallbackTurkishVoice;
-    }
-
-    // Show warning once
-    if (!this.turkishVoiceWarningShown) {
+    // Use the enhanced voice selection from voice.ts
+    const voice = getBestTurkishVoice();
+    if (voice && !this.turkishVoiceWarningShown) {
+      this.cachedTurkishVoice = voice;
+    } else if (!voice && !this.turkishVoiceWarningShown) {
       this.turkishVoiceWarningShown = true;
-      console.warn('🎙️ [BilingualTTS] No Turkish voice available on this device');
-      // Could show toast here: "Turkish voice not available on this device"
+      console.warn('[TTS] unavailable tr → skipped');
     }
-
-    return null;
+    return voice;
   }
 
   /**
-   * Get best English voice (reuse existing logic)
+   * Get best English voice using enhanced voice system
    */
   private getEnglishVoice(): SpeechSynthesisVoice | null {
-    if (this.cachedEnglishVoice) {
-      const currentVoices = speechSynthesis.getVoices();
-      if (currentVoices.some(v => v.name === this.cachedEnglishVoice!.name)) {
-        return this.cachedEnglishVoice;
-      }
-      this.cachedEnglishVoice = null;
-    }
-
-    const voices = speechSynthesis.getVoices();
-    
-    // Use existing English voice selection logic
-    for (const preferredName of VOICE_CONFIG.PREFERRED_MALE_VOICES) {
-      const voice = voices.find(v => 
-        v.name.toLowerCase().includes(preferredName.toLowerCase()) && 
-        v.lang.startsWith('en')
-      );
-      if (voice) {
-        this.cachedEnglishVoice = voice;
-        console.log(`🎙️ [BilingualTTS] English voice selected: ${voice.name} (${voice.lang})`);
-        return voice;
-      }
-    }
-
-    // Fallback to any English voice
-    const englishVoice = voices.find(v => v.lang.startsWith('en'));
-    if (englishVoice) {
-      this.cachedEnglishVoice = englishVoice;
-      console.log(`[TTS] fallback: requested en-US → using ${englishVoice.name} (${englishVoice.lang})`);
-      return englishVoice;
-    }
-
-    if (!this.englishVoiceWarningShown) {
+    // Use the enhanced voice selection from voice.ts  
+    const voice = getBestEnglishVoice();
+    if (voice && !this.englishVoiceWarningShown) {
+      this.cachedEnglishVoice = voice;
+    } else if (!voice && !this.englishVoiceWarningShown) {
       this.englishVoiceWarningShown = true;
-      console.warn('🎙️ [BilingualTTS] No English voice available on this device');
+      console.warn('[TTS] unavailable en → skipped');
     }
-
-    return null;
+    return voice;
   }
 
   /**
@@ -316,23 +245,23 @@ class BilingualTTSService {
       const turkishVoice = this.getTurkishVoice();
       if (turkishVoice) {
         utterance.voice = turkishVoice;
-        utterance.lang = 'tr-TR';
-        utterance.rate = 0.95; // Slightly slower for Turkish
-        utterance.pitch = 1.0;
-        utterance.volume = 1.0;
+        utterance.lang = VOICE_CONFIG.TURKISH.LANG;
+        utterance.rate = VOICE_CONFIG.TURKISH.RATE;
+        utterance.pitch = VOICE_CONFIG.TURKISH.PITCH;
+        utterance.volume = VOICE_CONFIG.TURKISH.VOLUME;
       } else {
         // Skip Turkish segments if no voice available
         return;
       }
     } else {
-      // English - use existing configuration
+      // English - use enhanced configuration
       const englishVoice = this.getEnglishVoice();
       if (englishVoice) {
         utterance.voice = englishVoice;
-        utterance.lang = 'en-US';
-        utterance.rate = VOICE_CONFIG.RATE;
-        utterance.pitch = VOICE_CONFIG.PITCH;
-        utterance.volume = VOICE_CONFIG.VOLUME;
+        utterance.lang = VOICE_CONFIG.ENGLISH.LANG;
+        utterance.rate = VOICE_CONFIG.ENGLISH.RATE;
+        utterance.pitch = VOICE_CONFIG.ENGLISH.PITCH;
+        utterance.volume = VOICE_CONFIG.ENGLISH.VOLUME;
       } else {
         // Skip English segments if no voice available
         return;
