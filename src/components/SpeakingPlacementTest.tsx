@@ -58,7 +58,14 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
   // Status messages and transcript
   const [statusMessage, setStatusMessage] = useState('');
   const [transcript, setTranscript] = useState('');
+  const [rawTranscript, setRawTranscript] = useState('');
+  const [engineTranscript, setEngineTranscript] = useState('');
   const [permissionError, setPermissionError] = useState(false);
+
+  // Feature flag for raw capture
+  const SPEAKING_TEST_RAW_CAPTURE = typeof window !== 'undefined' && 
+    (localStorage.getItem('SPEAKING_TEST_RAW_CAPTURE') === 'true' || 
+     new URLSearchParams(window.location.search).get('SPEAKING_TEST_RAW_CAPTURE') === 'true');
 
   const runIdRef = useRef<string|null>(null);
   const ttsTimerRef = useRef<number|undefined>(undefined);
@@ -430,6 +437,20 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
       recognition.interimResults = false;
       recognition.maxAlternatives = 5;
 
+      // SPEAKING_TEST_RAW_CAPTURE: Disable normalization features
+      if (SPEAKING_TEST_RAW_CAPTURE) {
+        try {
+          // Attempt to disable automatic features (vendor-specific)
+          (recognition as any).webkitGrammar = false;
+          (recognition as any).webkitSpeechGrammar = false;
+          (recognition as any).serviceURI = null;
+          // Note: Chrome/Safari don't expose all normalization controls
+          // We'll get the most raw transcript available from alternatives
+        } catch (e) {
+          console.log('[SpeakingTest] Raw capture config warnings (expected):', e);
+        }
+      }
+
       let hasAudioStarted = false;
       let hasSoundStarted = false;
       let hasSpeechStarted = false;
@@ -481,39 +502,118 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
         try {
           const results = event.results[0];
           let bestTranscript = '';
+          let rawTranscript = '';
           let bestConfidence = 0;
+          const audioDuration = (Date.now() - startTimeRef.current) / 1000;
 
-          // Find highest confidence alternative
-          for (let i = 0; i < results.length; i++) {
-            const alternative = results[i];
-            if (alternative.confidence > bestConfidence) {
-              bestTranscript = alternative.transcript;
-              bestConfidence = alternative.confidence;
+          if (SPEAKING_TEST_RAW_CAPTURE) {
+            // Dual transcript capture: raw (least processed) and engine (default)
+            
+            // Try to get the least processed transcript from alternatives
+            const alternatives = Array.from(results);
+            
+            // First, try to find any alternative marked as "raw" (browser-specific)
+            let rawAlternative = alternatives.find((alt: any) => 
+              alt.rawTranscript || alt.unformattedText || alt.unpunctuatedText);
+            
+            if (rawAlternative) {
+              rawTranscript = (rawAlternative as any).rawTranscript || 
+                             (rawAlternative as any).unformattedText ||
+                             (rawAlternative as any).unpunctuatedText;
+            } else {
+              // Fallback: use lowest confidence (often less processed) or last alternative
+              const lowestConfidenceAlt = alternatives.reduce((lowest: any, current: any) => 
+                (current.confidence || 0) < (lowest.confidence || Infinity) ? current : lowest, 
+                alternatives[0]);
+              
+              rawTranscript = (lowestConfidenceAlt as any).transcript || '';
             }
-          }
-
-          // Use first result if no confidence scores
-          if (!bestTranscript && results.length > 0) {
-            bestTranscript = results[0].transcript;
-          }
-
-          bestTranscript = bestTranscript.trim();
-          
-          if (debug) {
-            console.log('[LevelTest] best result:', { transcript: bestTranscript, confidence: bestConfidence });
-          }
-
-          if (bestTranscript) {
-            setMicState('done');
-            setTranscript(bestTranscript);
-            setStatusMessage(`Recognized: "${bestTranscript}"`);
+            
+            // Engine transcript (highest confidence, default processing)
+            for (let i = 0; i < results.length; i++) {
+              const alternative = results[i];
+              if (alternative.confidence > bestConfidence) {
+                bestTranscript = alternative.transcript;
+                bestConfidence = alternative.confidence;
+              }
+            }
+            
+            // Use first result if no confidence scores
+            if (!bestTranscript && results.length > 0) {
+              bestTranscript = results[0].transcript;
+            }
+            
+            // Clean transcripts (only trim whitespace, no other normalization)
+            rawTranscript = rawTranscript.trim();
+            bestTranscript = bestTranscript.trim();
+            
+            // Telemetry logging
+            console.log(`[SpeakingTest] raw="${rawTranscript}" len=${rawTranscript.length} durMs=${Math.round(audioDuration * 1000)} asr="webkitSpeechRecognition" errors=none advanced=false`);
+            
+            if (debug) {
+              console.log('[SpeakingTest] Raw capture results:', { 
+                rawTranscript, 
+                engineTranscript: bestTranscript, 
+                confidence: bestConfidence,
+                alternatives: alternatives.length
+              });
+            }
+            
+            // Store both transcripts
+            setRawTranscript(rawTranscript);
+            setEngineTranscript(bestTranscript);
+            
+            // Updated error condition: Only show "Didn't catch that" for:
+            // 1. rawTranscript length < 2 AND audio duration < 0.6s
+            const shouldShowError = rawTranscript.length < 2 && audioDuration < 0.6;
+            
+            if (shouldShowError) {
+              setMicState('idle');
+              setStatusMessage("Didn't catch that—try again");
+              console.log(`[SpeakingTest] Showing error: transcript too short (${rawTranscript.length}) and duration too brief (${audioDuration}s)`);
+            } else {
+              // Use rawTranscript for display and processing
+              setMicState('done');
+              setTranscript(rawTranscript); // Display raw transcript to user
+              setStatusMessage(`Recognized: "${rawTranscript}"`);
+            }
+            
           } else {
-            setMicState('idle');
-            setStatusMessage("Didn't catch that—try again");
+            // Original behavior when feature flag is off
+            
+            // Find highest confidence alternative
+            for (let i = 0; i < results.length; i++) {
+              const alternative = results[i];
+              if (alternative.confidence > bestConfidence) {
+                bestTranscript = alternative.transcript;
+                bestConfidence = alternative.confidence;
+              }
+            }
+
+            // Use first result if no confidence scores
+            if (!bestTranscript && results.length > 0) {
+              bestTranscript = results[0].transcript;
+            }
+
+            bestTranscript = bestTranscript.trim();
+            
+            if (debug) {
+              console.log('[LevelTest] best result:', { transcript: bestTranscript, confidence: bestConfidence });
+            }
+
+            if (bestTranscript) {
+              setMicState('done');
+              setTranscript(bestTranscript);
+              setStatusMessage(`Recognized: "${bestTranscript}"`);
+            } else {
+              setMicState('idle');
+              setStatusMessage("Didn't catch that—try again");
+            }
           }
 
         } catch (error) {
           if (debug) console.error('[LevelTest] result processing error:', error);
+          console.log(`[SpeakingTest] raw="" len=0 durMs=0 asr="webkitSpeechRecognition" errors=processing_error advanced=false`);
           setMicState('idle');
           setStatusMessage("Didn't catch that—try again");
         }
@@ -529,12 +629,20 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
           timeoutRef.current = null;
         }
 
+        const audioDuration = (Date.now() - startTimeRef.current) / 1000;
+        
         if (debug) console.log('[LevelTest] onerror:', event.error);
 
+        // Telemetry logging for errors
+        if (SPEAKING_TEST_RAW_CAPTURE) {
+          console.log(`[SpeakingTest] raw="" len=0 durMs=${Math.round(audioDuration * 1000)} asr="webkitSpeechRecognition" errors=${event.error} advanced=false`);
+        }
+
+        // Show "Didn't catch that" only for appropriate error conditions
         if (event.error === 'not-allowed' || event.error === 'permission-denied') {
           setPermissionError(true);
           setStatusMessage('Microphone blocked. Tap the address bar → Allow mic.');
-        } else if (event.error === 'no-speech') {
+        } else if (event.error === 'no-speech' || event.error === 'network') {
           setStatusMessage("Didn't catch that—try again");
         } else {
           setStatusMessage("Didn't catch that—try again");
@@ -553,10 +661,20 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
             timeoutRef.current = null;
           }
 
-          // Only show "no speech detected" if truly silent
-          if (!hasAudioStarted && !hasSoundStarted) {
+          const audioDuration = (Date.now() - startTimeRef.current) / 1000;
+          
+          // Telemetry logging for onend without results
+          if (SPEAKING_TEST_RAW_CAPTURE) {
+            console.log(`[SpeakingTest] raw="" len=0 durMs=${Math.round(audioDuration * 1000)} asr="webkitSpeechRecognition" errors=no_results advanced=false`);
+          }
+
+          // Only show "no speech detected" if truly silent OR very brief audio
+          const shouldShowError = (!hasAudioStarted && !hasSoundStarted) || audioDuration < 0.6;
+          
+          if (shouldShowError) {
             setStatusMessage("Didn't catch that—try again");
           } else {
+            // Brief non-speech sounds detected but no transcription - still show error
             setStatusMessage("Didn't catch that—try again");
           }
 
@@ -596,6 +714,12 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     setMicState('idle');
     setStatusMessage('');
     setTranscript('');
+    
+    // Clear raw capture states when feature flag is enabled
+    if (SPEAKING_TEST_RAW_CAPTURE) {
+      setRawTranscript('');
+      setEngineTranscript('');
+    }
     
     // Move to next question or show results  
     if (qIndex < PROMPTS.length - 1) {
