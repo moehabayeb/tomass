@@ -61,6 +61,10 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
   const [rawTranscript, setRawTranscript] = useState('');
   const [engineTranscript, setEngineTranscript] = useState('');
   const [permissionError, setPermissionError] = useState(false);
+  
+  // Live transcript states
+  const [displayTranscript, setDisplayTranscript] = useState('');
+  const [finalRawTranscript, setFinalRawTranscript] = useState('');
 
   // Feature flags
   const SPEAKING_TEST_RAW_CAPTURE = typeof window !== 'undefined' && 
@@ -71,6 +75,14 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     (localStorage.getItem('SPEAKING_TEST_STRICT_SESSION') === 'true' || 
      new URLSearchParams(window.location.search).get('SPEAKING_TEST_STRICT_SESSION') === 'true');
 
+  const SPEAKING_TEST_LIVE_TRANSCRIPT = typeof window !== 'undefined' && 
+    (localStorage.getItem('SPEAKING_TEST_LIVE_TRANSCRIPT') === 'true' || 
+     new URLSearchParams(window.location.search).get('SPEAKING_TEST_LIVE_TRANSCRIPT') === 'true');
+
+  const SPEAKING_TEST_VAD_ENDPOINTING = typeof window !== 'undefined' && 
+    (localStorage.getItem('SPEAKING_TEST_VAD_ENDPOINTING') === 'true' || 
+     new URLSearchParams(window.location.search).get('SPEAKING_TEST_VAD_ENDPOINTING') === 'true');
+
   const runIdRef = useRef<string|null>(null);
   const ttsTimerRef = useRef<number|undefined>(undefined);
   const startTimeRef = useRef<number>(0);
@@ -80,6 +92,14 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
   const retryCountRef = useRef<number>(0);
   const sessionStateRef = useRef<MicState>('idle');
   const debug = window.location.search.includes('sttdebug=1');
+
+  // VAD (Voice Activity Detection) refs
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
+  const vadIntervalRef = useRef<number | null>(null);
+  const voicedStartTimeRef = useRef<number>(0);
+  const lastVoiceActivityRef = useRef<number>(0);
+  const totalVoicedDurationRef = useRef<number>(0);
 
   
   function newRunId() {
@@ -131,6 +151,9 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
       recognitionRef.current = null;
     }
     
+    // Clean up VAD
+    cleanupVAD();
+    
     // Clear all timers and event listeners
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
@@ -143,12 +166,161 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     setStatusMessage('');
     setPermissionError(false);
     
+    // Reset live transcript states
+    if (SPEAKING_TEST_LIVE_TRANSCRIPT) {
+      setDisplayTranscript('');
+      setFinalRawTranscript('');
+    }
+    
     // Reset session state
     sessionStateRef.current = 'idle';
     setMicState('idle');
     retryCountRef.current = 0;
     
     if (debug) console.log('[SpeakingTest] session reset complete');
+  }
+
+  // Clean up VAD resources
+  function cleanupVAD() {
+    if (vadIntervalRef.current) {
+      clearInterval(vadIntervalRef.current);
+      vadIntervalRef.current = null;
+    }
+    
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current.getTracks().forEach(track => track.stop());
+      mediaStreamRef.current = null;
+    }
+    
+    analyserRef.current = null;
+    voicedStartTimeRef.current = 0;
+    lastVoiceActivityRef.current = 0;
+    totalVoicedDurationRef.current = 0;
+  }
+
+  // Setup VAD audio analysis
+  async function setupVAD() {
+    if (!SPEAKING_TEST_VAD_ENDPOINTING) return null;
+    
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: { 
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: false
+        } 
+      });
+      
+      if (!audioContextRef.current) {
+        const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+        audioContextRef.current = new AudioContext();
+      }
+      
+      if (audioContextRef.current.state === 'suspended') {
+        await audioContextRef.current.resume();
+      }
+      
+      const analyser = audioContextRef.current.createAnalyser();
+      analyser.fftSize = 512;
+      analyser.smoothingTimeConstant = 0.8;
+      
+      const source = audioContextRef.current.createMediaStreamSource(stream);
+      source.connect(analyser);
+      
+      mediaStreamRef.current = stream;
+      analyserRef.current = analyser;
+      
+      return { analyser, stream };
+    } catch (error) {
+      if (debug) console.log('[SpeakingTest] VAD setup failed:', error);
+      return null;
+    }
+  }
+
+  // Analyze voice activity using RMS
+  function analyzeVoiceActivity(): { hasVoice: boolean; rms: number } {
+    if (!analyserRef.current) return { hasVoice: false, rms: 0 };
+    
+    const bufferLength = analyserRef.current.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+    analyserRef.current.getByteFrequencyData(dataArray);
+    
+    // Calculate RMS (Root Mean Square) for voice activity detection
+    let sum = 0;
+    for (let i = 0; i < bufferLength; i++) {
+      sum += dataArray[i] * dataArray[i];
+    }
+    const rms = Math.sqrt(sum / bufferLength);
+    
+    // Voice threshold - adjust based on typical background noise
+    const voiceThreshold = 25; // Adjusted for better sensitivity
+    const hasVoice = rms > voiceThreshold;
+    
+    return { hasVoice, rms };
+  }
+
+  // VAD-based end-of-speech detection
+  function startVADMonitoring() {
+    if (!SPEAKING_TEST_VAD_ENDPOINTING || !analyserRef.current || !recognitionRef.current) return;
+    
+    voicedStartTimeRef.current = 0;
+    lastVoiceActivityRef.current = Date.now();
+    totalVoicedDurationRef.current = 0;
+    
+    // Check voice activity every 200ms
+    vadIntervalRef.current = window.setInterval(() => {
+      const now = Date.now();
+      const { hasVoice, rms } = analyzeVoiceActivity();
+      
+      if (hasVoice) {
+        if (voicedStartTimeRef.current === 0) {
+          voicedStartTimeRef.current = now;
+          if (debug) console.log('[SpeakingTest] VAD: voice started');
+        }
+        lastVoiceActivityRef.current = now;
+      } else if (voicedStartTimeRef.current > 0) {
+        // Calculate total voiced duration
+        totalVoicedDurationRef.current = now - voicedStartTimeRef.current;
+      }
+      
+      // Check stopping conditions
+      const silenceDuration = now - lastVoiceActivityRef.current;
+      const totalRecordingTime = now - startTimeRef.current;
+      
+      // Mobile iOS: use longer silence threshold (1100-1200ms), desktop: 800ms
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      const silenceThreshold = isMobile ? 1150 : 800;
+      
+      // Stop conditions:
+      // 1. Sustained silence ≥ threshold AND at least 3.0s of voiced audio
+      // 2. Hard cap at 20s max
+      const shouldStopForSilence = silenceDuration >= silenceThreshold && 
+                                   totalVoicedDurationRef.current >= 3000;
+      const shouldStopForDuration = totalRecordingTime >= 20000;
+      
+      if ((shouldStopForSilence || shouldStopForDuration) && recognitionRef.current) {
+        if (debug) {
+          console.log('[SpeakingTest] VAD stopping:', {
+            silenceDuration,
+            totalVoiced: totalVoicedDurationRef.current,
+            totalRecording: totalRecordingTime,
+            reason: shouldStopForDuration ? 'duration_limit' : 'voice_silence'
+          });
+        }
+        
+        cleanupVAD();
+        
+        try {
+          recognitionRef.current.stop();
+        } catch (e) {
+          if (debug) console.log('[SpeakingTest] VAD stop error:', e);
+        }
+      }
+      
+      if (debug && hasVoice) {
+        console.log('[SpeakingTest] VAD:', { rms: rms.toFixed(1), silenceDuration, totalVoiced: totalVoicedDurationRef.current });
+      }
+    }, 200);
   }
 
   // Clean up recognition instance (legacy)
@@ -557,8 +729,8 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
       
       // Configure recognition with raw capture options
       recognition.lang = 'en-US';
-      recognition.continuous = false;
-      recognition.interimResults = false;
+      recognition.continuous = SPEAKING_TEST_VAD_ENDPOINTING ? true : false;
+      recognition.interimResults = SPEAKING_TEST_LIVE_TRANSCRIPT ? true : false;
       recognition.maxAlternatives = 5;
 
       // Clear grammars for clean recognition
@@ -580,13 +752,23 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
         }
       }
 
+      // Setup VAD for voice-sensitive end-of-speech
+      let vadSetup = null;
+      if (SPEAKING_TEST_VAD_ENDPOINTING) {
+        vadSetup = await setupVAD();
+        if (vadSetup) {
+          if (debug) console.log('[SpeakingTest] VAD setup successful');
+        }
+      }
+
       let hasAudioStarted = false;
       let hasSoundStarted = false;
       let hasSpeechStarted = false;
       let hasResult = false;
       let hasFinal = false;
 
-      // 15 second maximum timeout
+      // Timeout - adjusted for VAD endpointing (20s max vs 15s)
+      const maxTimeout = SPEAKING_TEST_VAD_ENDPOINTING ? 20000 : 15000;
       timeoutRef.current = window.setTimeout(() => {
         if (!hasResult && recognitionRef.current && !hasFinal) {
           if (debug) console.log('[SpeakingTest] max timeout reached');
@@ -594,7 +776,7 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
             recognition.stop();
           } catch (e) {}
         }
-      }, 15000);
+      }, maxTimeout);
 
       // Attach fresh listeners only for this attempt
       recognition.onstart = () => {
@@ -622,6 +804,29 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
       };
 
       recognition.onresult = (event) => {
+        // Handle interim results for live transcript display
+        if (SPEAKING_TEST_LIVE_TRANSCRIPT && event.results.length > 0) {
+          const lastResult = event.results[event.results.length - 1];
+          if (lastResult && !lastResult.isFinal) {
+            // Update live display transcript with interim results
+            let interimTranscript = lastResult[0]?.transcript || '';
+            
+            // For raw capture, get the most unprocessed alternative for interim display
+            if (SPEAKING_TEST_RAW_CAPTURE && lastResult.length > 1) {
+              for (let i = 0; i < Math.min(lastResult.length, 3); i++) {
+                const alt = lastResult[i].transcript;
+                if (alt && (alt.toLowerCase() === alt || alt.indexOf('.') === -1)) {
+                  interimTranscript = alt;
+                  break;
+                }
+              }
+            }
+            
+            setDisplayTranscript(interimTranscript.trim());
+            return; // Don't process as final result yet
+          }
+        }
+        
         if (hasResult || hasFinal) return; // Ignore duplicate results
         
         // State transition: listening → processing
@@ -648,6 +853,9 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
           hasFinal = true;
           if (debug) console.log('[SpeakingTest] final result received');
           
+          // Clean up VAD when we get final result
+          cleanupVAD();
+          
           let transcript = result[0].transcript;
           let rawTranscript = transcript;
           let engineTranscript = transcript;
@@ -672,6 +880,12 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
           });
 
           const finalTranscript = SPEAKING_TEST_RAW_CAPTURE ? rawTranscript.trim() : transcript.trim();
+          
+          // Update live transcript states for final result
+          if (SPEAKING_TEST_LIVE_TRANSCRIPT) {
+            setFinalRawTranscript(finalTranscript);
+            setDisplayTranscript(finalTranscript); // Lock to final transcript
+          }
           
           // Finalization rules: proceed to scoring if we have valid content
           if (finalTranscript.length >= 2) {
@@ -699,8 +913,17 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
 
             const durationSec = durationMs / 1000;
             
-            // Telemetry for QA
-            logTelemetry('graded', finalTranscript, durationMs, retryCountRef.current, 'none');
+            // Enhanced telemetry for VAD
+            if (SPEAKING_TEST_VAD_ENDPOINTING || SPEAKING_TEST_LIVE_TRANSCRIPT) {
+              const voicedMs = totalVoicedDurationRef.current;
+              const vadSilenceMs = Date.now() - lastVoiceActivityRef.current;
+              const interimLen = displayTranscript.length;
+              const finalLen = finalTranscript.length;
+              
+              console.log(`[SpeakingTest] q=${qIndex + 1} durMs=${durationMs} voicedMs=${voicedMs} vadSilenceMs=${vadSilenceMs} interimLen=${interimLen} finalLen=${finalLen} retry=${retryCountRef.current} state=final`);
+            } else {
+              logTelemetry('graded', finalTranscript, durationMs, retryCountRef.current, 'none');
+            }
 
             // Save the answer and proceed
             setTimeout(() => {
@@ -755,6 +978,17 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
       // Start recognition
       recognition.start();
       if (debug) console.log('[SpeakingTest] recognition started');
+
+      // Start VAD monitoring after recognition begins
+      if (SPEAKING_TEST_VAD_ENDPOINTING && vadSetup) {
+        // Wait briefly for recognition to stabilize, then start VAD
+        setTimeout(() => {
+          if (recognitionRef.current === recognition) {
+            startVADMonitoring();
+            if (debug) console.log('[SpeakingTest] VAD monitoring started');
+          }
+        }, 500);
+      }
 
     } catch (error) {
       if (debug) console.log('[SpeakingTest] recognition error:', error);
@@ -879,6 +1113,12 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
       setEngineTranscript('');
     }
     
+    // Clear live transcript states when feature flag is enabled
+    if (SPEAKING_TEST_LIVE_TRANSCRIPT) {
+      setDisplayTranscript('');
+      setFinalRawTranscript('');
+    }
+    
     // Move to next question or show results  
     if (qIndex < PROMPTS.length - 1) {
       setQIndex(qIndex + 1);
@@ -930,6 +1170,25 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
                   "{PROMPTS[qIndex]}"
                 </p>
               </div>
+              
+              {/* Live transcript display */}
+              {SPEAKING_TEST_LIVE_TRANSCRIPT && (displayTranscript || finalRawTranscript) && (
+                <div className="bg-white/5 rounded-xl p-4">
+                  <div className="text-white/60 text-xs font-medium mb-2 text-center">
+                    {micState === 'listening' ? 'You\'re saying:' : 'You said:'}
+                  </div>
+                  <div 
+                    className="text-white text-base leading-relaxed text-center max-h-20 overflow-y-auto"
+                    style={{ 
+                      wordBreak: 'break-word',
+                      scrollbarWidth: 'thin',
+                      scrollbarColor: 'rgba(255,255,255,0.3) transparent'
+                    }}
+                  >
+                    "{displayTranscript || finalRawTranscript}"
+                  </div>
+                </div>
+              )}
               
               <div className="flex flex-col items-center space-y-4">
                 <Button
