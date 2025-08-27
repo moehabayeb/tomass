@@ -3,7 +3,7 @@ import { enqueueMetric } from '@/lib/metrics';
 
 // ============= CONSTANTS =============
 export const INITIAL_SILENCE_MS = 20000; // 20 seconds for initial silence detection - allows thinking time
-export const SILENCE_TIMEOUT_MS = 2000; // 2 seconds of silence to stop recording
+export const SILENCE_TIMEOUT_MS = 5000; // 5 seconds of silence to stop recording - allows thinking pauses
 export const INIT_DELAY_MS = 600;
 export const MAX_RETRIES = 2;
 export const RETRY_DELAYS = [400, 800];
