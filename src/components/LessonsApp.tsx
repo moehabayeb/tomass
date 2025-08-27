@@ -7128,20 +7128,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     if (!item) console.warn('[Progress] No item at index', speakingIndex);
   }, [speakingIndex, selectedModule, currentModuleData]);
 
-
-  // Show loading skeleton while hydrating to prevent flash of default content
-  if (!isHydrated) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700">
-        <div className="p-4 max-w-4xl mx-auto">
-          <div className="animate-pulse">
-            <div className="h-8 bg-white/20 rounded mb-6"></div>
-            <div className="h-64 bg-white/10 rounded-lg"></div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  
   function celebrateAndAdvance() {
     // show confetti briefly
     setShowConfetti(true);
@@ -7815,6 +7802,19 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
   };
 
   // Render levels view
+  if (!isHydrated) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700">
+        <div className="p-4 max-w-4xl mx-auto">
+          <div className="animate-pulse">
+            <div className="h-8 bg-white/20 rounded mb-6"></div>
+            <div className="h-64 bg-white/10 rounded-lg"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (viewState === 'levels') {
     return (
       <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: 'hsl(var(--app-bg))' }}>
