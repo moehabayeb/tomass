@@ -57,16 +57,31 @@ export function processPlacementResults(
     // Determine placement using enhanced logic
     const placement = determinePlacement(normalizedScores);
     
-    // Telemetry logging
-    const vocabStr = normalizedScores.vocabulary ? ` V:${normalizedScores.vocabulary.toFixed(2)}` : '';
-    console.log(`🎯 Placement ${userId} -> ${placement.level} | P:${normalizedScores.pronunciation.toFixed(2)} G:${normalizedScores.grammar.toFixed(2)} F:${normalizedScores.fluency.toFixed(2)}${vocabStr} | answers:${answers.length}`);
+    // Non-regression: Check if user already has progress in a higher level
+    const currentLevel = localStorage.getItem('currentLevel');
+    const levelOrder = ['A1', 'A2', 'B1'];
+    const placedLevelIndex = levelOrder.indexOf(placement.level);
+    const currentLevelIndex = currentLevel ? levelOrder.indexOf(currentLevel) : -1;
     
-    // Save placement result
+    let finalLevel = placement.level;
+    let routingReason = 'placed';
+    
+    if (currentLevelIndex > placedLevelIndex) {
+      finalLevel = currentLevel as Level;
+      routingReason = 'kept-higher';
+      console.log(`🛡️ Non-regression: keeping ${currentLevel} instead of downgrading to ${placement.level}`);
+    }
+    
+    // Telemetry logging  
+    const vocabStr = normalizedScores.vocabulary ? ` V:${normalizedScores.vocabulary.toFixed(2)}` : '';
+    console.log(`🎯 Placement ${userId} -> ${finalLevel} | P:${normalizedScores.pronunciation.toFixed(2)} G:${normalizedScores.grammar.toFixed(2)} F:${normalizedScores.fluency.toFixed(2)}${vocabStr} | answers:${answers.length}`);
+    
+    // Save placement result (use original placement for scoring records)
     savePlacementResult(placement);
     
-    // Get post-test routing with resume logic
-    const route = getPostTestRoute(placement.level, userId);
-    console.log(`🧭 Routing: ${route.reasoning}`);
+    // Get post-test routing with resume logic for final level
+    const route = getPostTestRoute(finalLevel, userId);
+    console.log(`🧭 Route -> level=${route.level} module=${route.moduleId} q=${route.questionIndex + 1} reason=${routingReason}`);
     
     // Clear test progress
     localStorage.removeItem('speakingTestProgress');
@@ -90,7 +105,7 @@ export function processPlacementResults(
 
 function routeToLessons(level: Level, moduleId: number, questionIndex: number) {
   try {
-    // Set current level and module
+    // Set current level and module (Single Source of Truth)
     localStorage.setItem('currentLevel', level);
     localStorage.setItem('currentModule', String(moduleId));
     
@@ -99,6 +114,21 @@ function routeToLessons(level: Level, moduleId: number, questionIndex: number) {
     unlocks[level] = true;
     localStorage.setItem('unlocks', JSON.stringify(unlocks));
     localStorage.setItem('unlockedLevel', level);
+    
+    // Navigate to Lessons with redundant parameters for safety
+    const url = new URL(window.location.origin + '/lessons');
+    url.searchParams.set('level', level);
+    url.searchParams.set('module', String(moduleId));
+    if (questionIndex > 0) {
+      url.searchParams.set('q', String(questionIndex));
+    }
+    
+    // Navigation telemetry
+    const reason = questionIndex > 0 ? 'resume' : 'placed';
+    console.log(`🧭 Route -> level=${level} module=${moduleId} q=${questionIndex + 1} reason=${reason}`);
+    
+    // Replace current URL to avoid back navigation issues
+    window.history.replaceState(null, '', url.pathname + url.search);
     
     console.log(`🚀 Routed to ${level} Module ${moduleId}, Question ${questionIndex + 1}`);
   } catch (error) {

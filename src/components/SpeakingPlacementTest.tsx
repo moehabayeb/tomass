@@ -36,10 +36,31 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
   function routeToLevel(level: 'A1'|'A2'|'B1') {
     const map = { A1: {lvl:'A1', mod:1}, A2: {lvl:'A2', mod:51}, B1: {lvl:'B1', mod:101} };
     const t = map[level];
+    
+    // Single Source of Truth - set localStorage
     localStorage.setItem('currentLevel', t.lvl);
     localStorage.setItem('currentModule', String(t.mod));
     localStorage.setItem('userPlacement', JSON.stringify({ level: t.lvl, scores: {}, at: Date.now() }));
     localStorage.setItem('unlockedLevel', t.lvl);
+    
+    // Mark level as unlocked
+    const unlocks = JSON.parse(localStorage.getItem('unlocks') || '{}');
+    unlocks[t.lvl] = true;
+    localStorage.setItem('unlocks', JSON.stringify(unlocks));
+    
+    // Navigate to Lessons with URL parameters for safety
+    const url = new URL(window.location.origin + '/lessons');
+    url.searchParams.set('level', t.lvl);
+    url.searchParams.set('module', String(t.mod));
+    url.searchParams.set('q', '0');
+    
+    // Telemetry logging
+    console.log(`🎯 Placement -> ${t.lvl}`);
+    console.log(`🧭 Route -> level=${t.lvl} module=${t.mod} q=1 reason=placed`);
+    
+    // Replace current URL to avoid back navigation issues
+    window.history.replaceState(null, '', url.pathname + url.search);
+    
     onComplete(t.lvl, 75);
   }
 
@@ -91,7 +112,7 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
   const audioContextRef = useRef<AudioContext | null>(null);
   const retryCountRef = useRef<number>(0);
   const sessionStateRef = useRef<MicState>('idle');
-  const debug = window.location.search.includes('sttdebug=1');
+  const debug = typeof window !== 'undefined' && window.location.search.includes('sttdebug=1');
 
   // VAD (Voice Activity Detection) refs
   const analyserRef = useRef<AnalyserNode | null>(null);

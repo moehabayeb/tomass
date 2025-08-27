@@ -5341,6 +5341,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
   const [viewState, setViewState] = useState<ViewState>('levels');
   const [selectedLevel, setSelectedLevel] = useState<string>('');
   const [selectedModule, setSelectedModule] = useState<number>(0);
+  const [isHydrated, setIsHydrated] = useState(false);
   
   // Lesson state
   const [currentPhase, setCurrentPhase] = useState<LessonPhase>('intro');
@@ -6983,34 +6984,125 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     };
   }, []);
 
-  // Auto-resume from last position on app start or lessons view
+  // Hydration: Read from URL params, localStorage, or saved progress on mount
   useEffect(() => {
-    // Only check for resume when first entering lessons view
-    if (viewState === 'levels') {
+    if (isHydrated) return;
+    
+    const searchParams = new URLSearchParams(window.location.search);
+    const urlLevel = searchParams.get('level');
+    const urlModule = searchParams.get('module');
+    const urlQuestion = searchParams.get('q');
+    
+    let hydratedLevel = '';
+    let hydratedModule = 0;
+    let hydratedQuestion = 0;
+    let hydratedPhase: LessonPhase = 'intro';
+    let hydratedViewState: ViewState = 'levels';
+    let source = '';
+    
+    // Priority 1: URL parameters (wins over everything)
+    if (urlLevel && urlModule) {
+      hydratedLevel = urlLevel;
+      hydratedModule = parseInt(urlModule);
+      hydratedQuestion = urlQuestion ? parseInt(urlQuestion) : 0;
+      hydratedPhase = hydratedQuestion > 0 ? 'speaking' : 'intro';
+      hydratedViewState = 'lesson';
+      source = 'params';
+      
+      console.log(`📦 Hydrate -> source=params level=${hydratedLevel} module=${hydratedModule} q=${hydratedQuestion + 1}`);
+    }
+    // Priority 2: Saved progress (resume functionality)
+    else {
       const userId = 'guest'; // TODO: get from auth when available
       const lastPointer = resumeLastPointer(userId);
       
       if (lastPointer) {
-        console.log('🔄 Auto-resuming from last position:', lastPointer);
+        hydratedLevel = lastPointer.levelId;
+        hydratedModule = parseInt(lastPointer.moduleId);
+        hydratedQuestion = lastPointer.questionIndex;
+        hydratedPhase = hydratedQuestion > 0 ? 'speaking' : 'intro';
+        hydratedViewState = 'lesson';
+        source = 'saved_progress';
         
-        // Set the level and module
-        setSelectedLevel(lastPointer.levelId);
-        setSelectedModule(parseInt(lastPointer.moduleId));
-        setViewState('lesson');
+        console.log(`📦 Hydrate -> source=saved_progress level=${hydratedLevel} module=${hydratedModule} q=${hydratedQuestion + 1}`);
+      }
+      // Priority 3: localStorage (placed level from Speaking Test)
+      else {
+        const storedLevel = localStorage.getItem('currentLevel');
+        const storedModule = localStorage.getItem('currentModule');
         
-        // Set the phase and question index
-        if (lastPointer.questionIndex > 0) {
-          setCurrentPhase('speaking');
-          setSpeakingIndex(lastPointer.questionIndex);
-        } else {
-          setCurrentPhase('intro');
-          setSpeakingIndex(0);
+        if (storedLevel && storedModule) {
+          hydratedLevel = storedLevel;
+          hydratedModule = parseInt(storedModule);
+          hydratedQuestion = 0;
+          hydratedPhase = 'intro';
+          hydratedViewState = 'lesson';
+          source = 'storage';
+          
+          console.log(`📦 Hydrate -> source=storage level=${hydratedLevel} module=${hydratedModule} q=${hydratedQuestion + 1}`);
         }
-        
-        console.log(`🎯 Resumed: ${lastPointer.levelId} Module ${lastPointer.moduleId}, Question ${lastPointer.questionIndex + 1}`);
+        // Priority 4: Default fallback (A1/Module 1)
+        else {
+          hydratedLevel = 'A1';
+          hydratedModule = 1;
+          hydratedQuestion = 0;
+          hydratedPhase = 'intro';
+          hydratedViewState = 'levels';
+          source = 'default';
+          
+          console.log(`📦 Hydrate -> source=default level=${hydratedLevel} module=${hydratedModule} q=${hydratedQuestion + 1}`);
+        }
       }
     }
-  }, [viewState]);
+    
+    // Apply hydrated state
+    if (hydratedLevel && hydratedModule) {
+      setSelectedLevel(hydratedLevel);
+      setSelectedModule(hydratedModule);
+      setViewState(hydratedViewState);
+      
+      if (hydratedQuestion > 0) {
+        setCurrentPhase('speaking');
+        setSpeakingIndex(hydratedQuestion);
+      } else {
+        setCurrentPhase('intro');
+        setSpeakingIndex(0);
+      }
+    }
+    
+    setIsHydrated(true);
+    
+    // Show placement toast if this came from Speaking Test
+    const userPlacement = localStorage.getItem('userPlacement');
+    if (userPlacement && source === 'storage') {
+      try {
+        const placement = JSON.parse(userPlacement);
+        const placedLevel = placement.level;
+        const testTime = placement.at;
+        const now = Date.now();
+        
+        // Show toast if placement was recent (within last 5 minutes)
+        if (testTime && (now - testTime) < 300000) {
+          setTimeout(() => {
+            // Use toast import from hooks/use-toast
+            import('@/hooks/use-toast').then(({ toast }) => {
+              toast({
+                title: `Starting at ${placedLevel} based on your Speaking Test`,
+                description: `You've been placed in ${placedLevel} level. Good luck!`,
+                duration: 3000,
+              });
+            }).catch(error => {
+              console.warn('Failed to show toast:', error);
+              // Fallback notification
+              console.log(`🎯 Starting at ${placedLevel} based on your Speaking Test`);
+            });
+          }, 500);
+        }
+      } catch (e) {
+        console.warn('Failed to parse userPlacement:', e);
+      }
+    }
+  }, [isHydrated]);
 
   // Keep evaluator target fresh when index or module changes
   useEffect(() => {
@@ -7037,7 +7129,19 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
   }, [speakingIndex, selectedModule, currentModuleData]);
 
 
-  // Centralized celebration and advancement logic
+  // Show loading skeleton while hydrating to prevent flash of default content
+  if (!isHydrated) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700">
+        <div className="p-4 max-w-4xl mx-auto">
+          <div className="animate-pulse">
+            <div className="h-8 bg-white/20 rounded mb-6"></div>
+            <div className="h-64 bg-white/10 rounded-lg"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
   function celebrateAndAdvance() {
     // show confetti briefly
     setShowConfetti(true);
