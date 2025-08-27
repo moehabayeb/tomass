@@ -66,22 +66,22 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
   const [displayTranscript, setDisplayTranscript] = useState('');
   const [finalRawTranscript, setFinalRawTranscript] = useState('');
 
-  // Feature flags
-  const SPEAKING_TEST_RAW_CAPTURE = typeof window !== 'undefined' && 
-    (localStorage.getItem('SPEAKING_TEST_RAW_CAPTURE') === 'true' || 
-     new URLSearchParams(window.location.search).get('SPEAKING_TEST_RAW_CAPTURE') === 'true');
+  // Feature flags - default to true in both Preview & Production
+  const SPEAKING_TEST_RAW_CAPTURE = typeof window !== 'undefined' ? 
+    (localStorage.getItem('SPEAKING_TEST_RAW_CAPTURE') !== 'false' && 
+     new URLSearchParams(window.location.search).get('SPEAKING_TEST_RAW_CAPTURE') !== 'false') : true;
   
-  const SPEAKING_TEST_STRICT_SESSION = typeof window !== 'undefined' && 
-    (localStorage.getItem('SPEAKING_TEST_STRICT_SESSION') === 'true' || 
-     new URLSearchParams(window.location.search).get('SPEAKING_TEST_STRICT_SESSION') === 'true');
+  const SPEAKING_TEST_STRICT_SESSION = typeof window !== 'undefined' ? 
+    (localStorage.getItem('SPEAKING_TEST_STRICT_SESSION') !== 'false' && 
+     new URLSearchParams(window.location.search).get('SPEAKING_TEST_STRICT_SESSION') !== 'false') : true;
 
-  const SPEAKING_TEST_LIVE_TRANSCRIPT = typeof window !== 'undefined' && 
-    (localStorage.getItem('SPEAKING_TEST_LIVE_TRANSCRIPT') === 'true' || 
-     new URLSearchParams(window.location.search).get('SPEAKING_TEST_LIVE_TRANSCRIPT') === 'true');
+  const SPEAKING_TEST_LIVE_TRANSCRIPT = typeof window !== 'undefined' ? 
+    (localStorage.getItem('SPEAKING_TEST_LIVE_TRANSCRIPT') !== 'false' && 
+     new URLSearchParams(window.location.search).get('SPEAKING_TEST_LIVE_TRANSCRIPT') !== 'false') : true;
 
-  const SPEAKING_TEST_VAD_ENDPOINTING = typeof window !== 'undefined' && 
-    (localStorage.getItem('SPEAKING_TEST_VAD_ENDPOINTING') === 'true' || 
-     new URLSearchParams(window.location.search).get('SPEAKING_TEST_VAD_ENDPOINTING') === 'true');
+  const SPEAKING_TEST_VAD_ENDPOINTING = typeof window !== 'undefined' ? 
+    (localStorage.getItem('SPEAKING_TEST_VAD_ENDPOINTING') !== 'false' && 
+     new URLSearchParams(window.location.search).get('SPEAKING_TEST_VAD_ENDPOINTING') !== 'false') : true;
 
   const runIdRef = useRef<string|null>(null);
   const ttsTimerRef = useRef<number|undefined>(undefined);
