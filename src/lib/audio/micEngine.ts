@@ -2,7 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { enqueueMetric } from '@/lib/metrics';
 
 // ============= CONSTANTS =============
-export const INITIAL_SILENCE_MS = 7000; // 7 seconds for initial silence detection
+export const INITIAL_SILENCE_MS = 20000; // 20 seconds for initial silence detection - allows thinking time
 export const SILENCE_TIMEOUT_MS = 2000; // 2 seconds of silence to stop recording
 export const INIT_DELAY_MS = 600;
 export const MAX_RETRIES = 2;
