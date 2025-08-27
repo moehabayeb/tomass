@@ -104,6 +104,10 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     (localStorage.getItem('SPEAKING_TEST_VAD_ENDPOINTING') !== 'false' && 
      new URLSearchParams(window.location.search).get('SPEAKING_TEST_VAD_ENDPOINTING') !== 'false') : true;
 
+  const SPEAKING_TEST_VAD_TOLERANT_PAUSE = typeof window !== 'undefined' ? 
+    (localStorage.getItem('SPEAKING_TEST_VAD_TOLERANT_PAUSE') !== 'false' && 
+     new URLSearchParams(window.location.search).get('SPEAKING_TEST_VAD_TOLERANT_PAUSE') !== 'false') : true;
+
   const runIdRef = useRef<string|null>(null);
   const ttsTimerRef = useRef<number|undefined>(undefined);
   const startTimeRef = useRef<number>(0);
@@ -121,6 +125,14 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
   const voicedStartTimeRef = useRef<number>(0);
   const lastVoiceActivityRef = useRef<number>(0);
   const totalVoicedDurationRef = useRef<number>(0);
+
+  // Tolerant VAD state
+  const shortPauseCountRef = useRef<number>(0);
+  const ambientNoiseThresholdRef = useRef<number>(25); // Dynamic threshold based on calibration
+  const calibrationStartRef = useRef<number>(0);
+  const calibrationCompleteRef = useRef<boolean>(false);
+  const lastWordCountRef = useRef<number>(0);
+  const [pauseStatus, setPauseStatus] = useState<string>('');
 
   
   function newRunId() {
@@ -217,6 +229,14 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     voicedStartTimeRef.current = 0;
     lastVoiceActivityRef.current = 0;
     totalVoicedDurationRef.current = 0;
+    
+    // Reset tolerant VAD state
+    shortPauseCountRef.current = 0;
+    ambientNoiseThresholdRef.current = 25;
+    calibrationStartRef.current = 0;
+    calibrationCompleteRef.current = false;
+    lastWordCountRef.current = 0;
+    setPauseStatus('');
   }
 
   // Setup VAD audio analysis
@@ -280,7 +300,7 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     return { hasVoice, rms };
   }
 
-  // VAD-based end-of-speech detection
+  // Enhanced VAD-based end-of-speech detection with tolerant pause handling
   function startVADMonitoring() {
     if (!SPEAKING_TEST_VAD_ENDPOINTING || !analyserRef.current || !recognitionRef.current) return;
     
@@ -288,44 +308,172 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     lastVoiceActivityRef.current = Date.now();
     totalVoicedDurationRef.current = 0;
     
+    // Reset tolerant VAD state
+    shortPauseCountRef.current = 0;
+    calibrationStartRef.current = Date.now();
+    calibrationCompleteRef.current = false;
+    lastWordCountRef.current = 0;
+    setPauseStatus('');
+    
+    let calibrationSum = 0;
+    let calibrationCount = 0;
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    
+    // Tolerant thresholds
+    const silenceThreshold = SPEAKING_TEST_VAD_TOLERANT_PAUSE ? (isMobile ? 2000 : 1700) : (isMobile ? 1150 : 800);
+    const hardCap = SPEAKING_TEST_VAD_TOLERANT_PAUSE ? 22000 : 20000;
+    const minVoicedTime = SPEAKING_TEST_VAD_TOLERANT_PAUSE ? 4000 : 3000;
+    const minWordCount = SPEAKING_TEST_VAD_TOLERANT_PAUSE ? 8 : 0;
+    const maxShortPauses = 2;
+    
+    if (debug) {
+      console.log('[SpeakingTest] VAD tolerant mode:', SPEAKING_TEST_VAD_TOLERANT_PAUSE, 'thresholds:', {
+        silenceThreshold,
+        hardCap,
+        minVoicedTime,
+        minWordCount,
+        isMobile
+      });
+    }
+    
     // Check voice activity every 200ms
     vadIntervalRef.current = window.setInterval(() => {
       const now = Date.now();
       const { hasVoice, rms } = analyzeVoiceActivity();
+      const totalRecordingTime = now - startTimeRef.current;
       
-      if (hasVoice) {
+      // Ambient noise calibration (first 600-800ms)
+      if (SPEAKING_TEST_VAD_TOLERANT_PAUSE && !calibrationCompleteRef.current) {
+        const calibrationDuration = now - calibrationStartRef.current;
+        
+        if (calibrationDuration <= 700) {
+          calibrationSum += rms;
+          calibrationCount++;
+        } else {
+          // Complete calibration
+          if (calibrationCount > 0) {
+            const avgNoise = calibrationSum / calibrationCount;
+            ambientNoiseThresholdRef.current = Math.max(15, avgNoise + 8); // Dynamic threshold
+            if (debug) {
+              console.log('[SpeakingTest] VAD calibration complete:', {
+                avgNoise: avgNoise.toFixed(1),
+                threshold: ambientNoiseThresholdRef.current.toFixed(1)
+              });
+            }
+          }
+          calibrationCompleteRef.current = true;
+        }
+      }
+      
+      // Use calibrated threshold in tolerant mode
+      const effectiveThreshold = SPEAKING_TEST_VAD_TOLERANT_PAUSE && calibrationCompleteRef.current ? 
+        rms > ambientNoiseThresholdRef.current : rms > 25;
+      
+      const hasVoiceActivity = SPEAKING_TEST_VAD_TOLERANT_PAUSE ? effectiveThreshold : hasVoice;
+      
+      if (hasVoiceActivity) {
         if (voicedStartTimeRef.current === 0) {
           voicedStartTimeRef.current = now;
           if (debug) console.log('[SpeakingTest] VAD: voice started');
         }
         lastVoiceActivityRef.current = now;
+        setPauseStatus(''); // Clear pause status when voice is detected
       } else if (voicedStartTimeRef.current > 0) {
         // Calculate total voiced duration
         totalVoicedDurationRef.current = now - voicedStartTimeRef.current;
       }
       
-      // Check stopping conditions
+      // Calculate current metrics
       const silenceDuration = now - lastVoiceActivityRef.current;
-      const totalRecordingTime = now - startTimeRef.current;
       
-      // Mobile iOS: use longer silence threshold (1100-1200ms), desktop: 800ms
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-      const silenceThreshold = isMobile ? 1150 : 800;
+      // Get word count from current transcript
+      let currentWordCount = 0;
+      if (SPEAKING_TEST_VAD_TOLERANT_PAUSE) {
+        const currentTranscript = displayTranscript || finalRawTranscript || '';
+        currentWordCount = currentTranscript.trim().split(/\s+/).filter(Boolean).length;
+        lastWordCountRef.current = currentWordCount;
+      }
       
-      // Stop conditions:
-      // 1. Sustained silence ≥ threshold AND at least 3.0s of voiced audio
-      // 2. Hard cap at 20s max
-      const shouldStopForSilence = silenceDuration >= silenceThreshold && 
-                                   totalVoicedDurationRef.current >= 3000;
-      const shouldStopForDuration = totalRecordingTime >= 20000;
+      // Check for short pause (less than threshold)
+      const isShortPause = silenceDuration > 600 && silenceDuration < silenceThreshold && 
+                          totalVoicedDurationRef.current > 1000; // Must have some voice first
       
-      if ((shouldStopForSilence || shouldStopForDuration) && recognitionRef.current) {
+      if (SPEAKING_TEST_VAD_TOLERANT_PAUSE && isShortPause && shortPauseCountRef.current < maxShortPauses) {
+        // Show pause status but don't stop
+        if (pauseStatus !== 'short_pause') {
+          setPauseStatus('short_pause');
+          if (debug) {
+            console.log('[SpeakingTest] VAD: short pause detected', {
+              pauseNum: shortPauseCountRef.current + 1,
+              silenceDuration,
+              wordCount: currentWordCount
+            });
+          }
+        }
+        return; // Continue listening
+      }
+      
+      // Grace window for early pauses (before sufficient content)
+      const hasMinContent = totalVoicedDurationRef.current >= 2000 || currentWordCount >= 5;
+      if (SPEAKING_TEST_VAD_TOLERANT_PAUSE && !hasMinContent && silenceDuration >= silenceThreshold) {
+        // Extend listening time automatically
+        lastVoiceActivityRef.current = now - (silenceThreshold - 1500); // Give extra 1.5s
+        setPauseStatus('grace_period');
+        if (debug) {
+          console.log('[SpeakingTest] VAD: grace period applied', {
+            voicedTime: totalVoicedDurationRef.current,
+            wordCount: currentWordCount
+          });
+        }
+        return;
+      }
+      
+      // Check main stopping conditions
+      const hasLongSilence = silenceDuration >= silenceThreshold;
+      const hasMinVoiced = totalVoicedDurationRef.current >= minVoicedTime;
+      const hasMinWords = currentWordCount >= minWordCount;
+      const isHardCap = totalRecordingTime >= hardCap;
+      
+      // Stop conditions for tolerant mode:
+      // 1. Long silence AND (min voiced time OR min words)
+      // 2. Hard cap
+      let shouldStop = false;
+      let stopReason = '';
+      
+      if (isHardCap) {
+        shouldStop = true;
+        stopReason = 'duration_limit';
+      } else if (SPEAKING_TEST_VAD_TOLERANT_PAUSE) {
+        if (hasLongSilence && (hasMinVoiced || hasMinWords)) {
+          shouldStop = true;
+          stopReason = 'voice_silence';
+          
+          // Count this as a final pause if we had short pauses before
+          if (silenceDuration > silenceThreshold) {
+            shortPauseCountRef.current++;
+          }
+        }
+      } else {
+        // Original logic for non-tolerant mode
+        if (hasLongSilence && hasMinVoiced) {
+          shouldStop = true;
+          stopReason = 'voice_silence';
+        }
+      }
+      
+      if (shouldStop && recognitionRef.current) {
+        // Telemetry logging with enhanced data
         if (debug) {
           console.log('[SpeakingTest] VAD stopping:', {
+            reason: stopReason,
             silenceDuration,
             totalVoiced: totalVoicedDurationRef.current,
             totalRecording: totalRecordingTime,
-            reason: shouldStopForDuration ? 'duration_limit' : 'voice_silence'
+            wordCount: currentWordCount,
+            shortPauses: shortPauseCountRef.current,
+            deviceType: isMobile ? 'mobile' : 'desktop',
+            thresholdUsed: silenceThreshold,
+            tolerantMode: SPEAKING_TEST_VAD_TOLERANT_PAUSE
           });
         }
         
@@ -338,8 +486,16 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
         }
       }
       
-      if (debug && hasVoice) {
-        console.log('[SpeakingTest] VAD:', { rms: rms.toFixed(1), silenceDuration, totalVoiced: totalVoicedDurationRef.current });
+      // Debug logging
+      if (debug && hasVoiceActivity) {
+        console.log('[SpeakingTest] VAD:', { 
+          rms: rms.toFixed(1), 
+          threshold: (SPEAKING_TEST_VAD_TOLERANT_PAUSE ? ambientNoiseThresholdRef.current : 25).toFixed(1),
+          silenceDuration, 
+          totalVoiced: totalVoicedDurationRef.current,
+          wordCount: currentWordCount,
+          shortPauses: shortPauseCountRef.current
+        });
       }
     }, 200);
   }
@@ -1121,6 +1277,26 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     if (!transcript) return;
     
     const duration = (Date.now() - startTimeRef.current) / 1000;
+    const durationMs = duration * 1000;
+    
+    // Log telemetry for manual continue action
+    if (debug || SPEAKING_TEST_VAD_TOLERANT_PAUSE) {
+      const currentWordCount = transcript.trim().split(/\s+/).filter(Boolean).length;
+      console.log('[SpeakingTest] VAD manual continue:', {
+        reason: 'user_continue',
+        silenceMs: Date.now() - lastVoiceActivityRef.current,
+        voicedMs: totalVoicedDurationRef.current,
+        totalRecording: durationMs,
+        wordCount: currentWordCount,
+        shortPauses: shortPauseCountRef.current,
+        deviceType: /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
+        thresholdUsed: SPEAKING_TEST_VAD_TOLERANT_PAUSE ? 
+          (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ? 2000 : 1700) : 
+          (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ? 1150 : 800),
+        tolerantMode: SPEAKING_TEST_VAD_TOLERANT_PAUSE
+      });
+    }
+    
     saveAnswer(qIndex, transcript, duration);
     
     // Reset mic state
@@ -1255,6 +1431,10 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
                     </div>
                   ) : statusMessage ? (
                     <div className="text-white/80 text-sm">{statusMessage}</div>
+                  ) : SPEAKING_TEST_VAD_TOLERANT_PAUSE && pauseStatus === 'short_pause' ? (
+                    <div className="text-white/80 text-sm">Listening… (short pause detected)</div>
+                  ) : SPEAKING_TEST_VAD_TOLERANT_PAUSE && pauseStatus === 'grace_period' ? (
+                    <div className="text-white/80 text-sm">Listening… (grace period)</div>
                   ) : testState === 'prompting' ? (
                     <div className="text-white/80 text-sm">Reading question...</div>
                   ) : testState === 'ready' && micState === 'idle' ? (
