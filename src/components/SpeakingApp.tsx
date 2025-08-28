@@ -22,6 +22,7 @@ import { TTSManager } from '@/services/TTSManager';
 const SPEAKING_HANDS_FREE = false; // Default OFF
 const HF_BARGE_IN = false; // Barge-in feature flag (optional)
 const HF_VOICE_COMMANDS = true; // Voice commands feature flag (default ON)
+const SPEAKING_HF_MINUI = false; // Minimal hands-free UI (default OFF)
 
 // Sparkle component for background decoration
 const Sparkle = ({ className, delayed = false }: { className?: string; delayed?: boolean }) => (
@@ -154,6 +155,13 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   const [hfIsReprompting, setHfIsReprompting] = useState(false);
   const [hfAutoPaused, setHfAutoPaused] = useState(false);
   
+  // Minimal UI state
+  const [hfControlsVisible, setHfControlsVisible] = useState(true);
+  const [hfControlsTimeout, setHfControlsTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [hfLongPressTimeout, setHfLongPressTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [hfIsLongPressing, setHfIsLongPressing] = useState(false);
+  const [hfShowOverflow, setHfShowOverflow] = useState(false);
+  
   // Persist hfEnabled to localStorage
   useEffect(() => {
     localStorage.setItem('hfEnabled', hfEnabled.toString());
@@ -176,6 +184,26 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     }
     
     console.log('HF gate: off | reason: flag off & no param');
+    return false;
+  }, []);
+
+  // Check for minimal hands-free UI availability (feature flag OR query param ?hfui=1)
+  const isMinimalHFUIAvailable = useMemo(() => {
+    if (SPEAKING_HF_MINUI) {
+      console.log('HF MinUI gate: on | reason: flag');
+      return true;
+    }
+    
+    // Check for query param ?hfui=1
+    const urlParams = new URLSearchParams(window.location.search);
+    const hasParam = urlParams.get('hfui') === '1';
+    
+    if (hasParam) {
+      console.log('HF MinUI gate: on | reason: param');
+      return true;
+    }
+    
+    console.log('HF MinUI gate: off | reason: flag off & no param');
     return false;
   }, []);
   
@@ -542,6 +570,131 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     return null;
   };
 
+  // Earcons and haptics helpers
+  const playEarcon = (type: 'listening' | 'processing' | 'advance') => {
+    if (!soundEnabled) return;
+    
+    try {
+      // Simple beep tones using Web Audio API
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      // Different frequencies for different events
+      switch (type) {
+        case 'listening':
+          oscillator.frequency.value = 800; // Higher pitch for mic opening
+          break;
+        case 'processing':
+          oscillator.frequency.value = 600; // Mid pitch for processing
+          break;
+        case 'advance':
+          oscillator.frequency.value = 1000; // Highest for completion
+          break;
+      }
+      
+      oscillator.type = 'sine';
+      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.1);
+      gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.2);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.2);
+      
+      console.log('HF_EARCON:', type);
+    } catch (error) {
+      console.warn('Earcon failed:', error);
+    }
+  };
+
+  const playHaptic = (type: 'light' | 'medium') => {
+    try {
+      if ('vibrate' in navigator) {
+        const pattern = type === 'light' ? 50 : 100;
+        navigator.vibrate(pattern);
+        console.log('HF_HAPTIC:', type);
+      }
+    } catch (error) {
+      console.warn('Haptic failed:', error);
+    }
+  };
+
+  // Enhanced telemetry
+  const emitHFTelemetry = (event: string, data?: any) => {
+    const telemetryData = {
+      event,
+      timestamp: Date.now(),
+      device: navigator.userAgent.includes('Mobile') ? 'mobile' : 'desktop',
+      browser: navigator.userAgent.includes('Chrome') ? 'chrome' : 
+               navigator.userAgent.includes('Safari') ? 'safari' :
+               navigator.userAgent.includes('Firefox') ? 'firefox' : 'other',
+      hfStatus,
+      hfActive,
+      ...data
+    };
+    console.log('HF_TELEMETRY:', telemetryData);
+  };
+
+  // Auto-hide controls functionality
+  const showControls = () => {
+    setHfControlsVisible(true);
+    emitHFTelemetry('HF_UI_REVEAL');
+    
+    // Clear existing timeout
+    if (hfControlsTimeout) {
+      clearTimeout(hfControlsTimeout);
+    }
+    
+    // Set new timeout to hide controls after 2s
+    const timeout = setTimeout(() => {
+      setHfControlsVisible(false);
+      emitHFTelemetry('HF_UI_AUTOHIDE');
+    }, 2000);
+    setHfControlsTimeout(timeout);
+  };
+
+  const hideControls = () => {
+    if (hfControlsTimeout) {
+      clearTimeout(hfControlsTimeout);
+    }
+    setHfControlsVisible(false);
+  };
+
+  // Long-press functionality for repeat
+  const handlePrimaryButtonPress = () => {
+    const timeout = setTimeout(() => {
+      setHfIsLongPressing(true);
+      playHaptic('medium');
+      handleHandsFreeRepeat();
+      emitHFTelemetry('HF_REPEAT', { method: 'longpress' });
+    }, 800); // 800ms for long press
+    setHfLongPressTimeout(timeout);
+  };
+
+  const handlePrimaryButtonRelease = () => {
+    if (hfLongPressTimeout) {
+      clearTimeout(hfLongPressTimeout);
+      setHfLongPressTimeout(null);
+    }
+    
+    if (!hfIsLongPressing) {
+      // Short press - pause/resume
+      if (hfStatus === 'idle' || hfAutoPaused) {
+        handleHandsFreeResume();
+        emitHFTelemetry('HF_RESUME', { method: 'button' });
+      } else {
+        handleHandsFreePause();
+        emitHFTelemetry('HF_PAUSE', { method: 'button' });
+      }
+      playHaptic('light');
+    }
+    
+    setHfIsLongPressing(false);
+  };
+
   const handleVoiceCommand = async (command: string) => {
     console.log('HF_VOICE_COMMAND:', command);
     
@@ -641,14 +794,34 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     return () => {
       if (hfNoInputTimer) clearTimeout(hfNoInputTimer);
       if (hfRePromptTimer) clearTimeout(hfRePromptTimer);
+      if (hfControlsTimeout) clearTimeout(hfControlsTimeout);
+      if (hfLongPressTimeout) clearTimeout(hfLongPressTimeout);
     };
-  }, [hfNoInputTimer, hfRePromptTimer]);
+  }, [hfNoInputTimer, hfRePromptTimer, hfControlsTimeout, hfLongPressTimeout]);
+
+  // Auto-show controls on phase changes
+  useEffect(() => {
+    if (isMinimalHFUIAvailable && hfEnabled && hfActive) {
+      showControls();
+    }
+  }, [hfStatus, isMinimalHFUIAvailable, hfEnabled, hfActive]);
+
+  // Initial telemetry and controls setup for minimal UI
+  useEffect(() => {
+    if (isMinimalHFUIAvailable && hfEnabled) {
+      emitHFTelemetry('HF_UI_SHOW');
+      showControls();
+    }
+  }, [isMinimalHFUIAvailable, hfEnabled]);
 
   // Auto-advance after scoring completes in hands-free mode
   const handleHandsFreeAdvance = async () => {
     if (!hfActive || !hfSessionActive) return;
     
     console.log('HF_ADVANCE');
+    emitHFTelemetry('HF_ADVANCE');
+    playEarcon('advance');
+    playHaptic('light');
     
     // Small delay to let user process the feedback
     await new Promise(resolve => setTimeout(resolve, 2000));
@@ -704,6 +877,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     if (hfActive) return;
     
     console.log('HF_BOOTSTRAP');
+    emitHFTelemetry('HF_BOOTSTRAP');
     setHfPermissionBlocked(false);
     setErrorMessage(''); // Clear any previous errors
     
@@ -724,6 +898,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           stream.getTracks().forEach(track => track.stop());
         } catch (permissionError: any) {
           console.log('HF_ERROR_PERMISSION:', permissionError.message);
+          emitHFTelemetry('HF_ERROR_permission', { error: permissionError.message });
           setHfPermissionBlocked(true);
           return;
         }
@@ -734,6 +909,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       
     } catch (error: any) {
       console.log('HF_ERROR_BOOTSTRAP:', error.message);
+      emitHFTelemetry('HF_ERROR_bootstrap', { error: error.message });
       
       // Handle specific errors gracefully
       if (error.message.includes('autoplay') || error.message.includes('gesture')) {
@@ -851,6 +1027,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
   const startHandsFreeMicCapture = async () => {
     console.log('HF_MIC_OPEN');
+    emitHFTelemetry('HF_MIC_OPEN');
+    playEarcon('listening');
     setHfStatus('listening');
     setHfIsReprompting(false);
     setHfAutoPaused(false);
@@ -959,6 +1137,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       }
       
       setHfStatus('processing');
+      emitHFTelemetry('HF_RESULT_FINAL', { transcriptLength: result.transcript.length });
+      playEarcon('processing');
       
       // Display verbatim transcript (exact ASR output) - only for non-commands
       addChatBubble(`💭 You said: "${result.transcript}"`, "user");
@@ -1199,15 +1379,46 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
               </button>
             )}
             
-            {/* Show status chip when session is active */}
-            {hfActive && (
-              <div className="inline-flex bg-white/10 backdrop-blur-sm rounded-full px-3 py-1 text-white/80 text-xs font-medium">
-                {hfStatus === 'prompting' && (hfIsReprompting ? '🔄 Re-prompting...' : '📖 Reading...')}
-                {hfStatus === 'listening' && '👂 Listening...'}
-                {hfStatus === 'processing' && '🧠 Processing...'}
-                {hfStatus === 'idle' && (hfAutoPaused ? '⏸️ Auto-paused' : '⏸️ Ready')}
-              </div>
-            )}
+            {/* Always-visible status chip when HF is enabled */}
+            <div 
+              className="inline-flex bg-white/10 backdrop-blur-sm rounded-full px-3 py-1 text-white/80 text-xs font-medium transition-opacity duration-200"
+              aria-live="polite"
+              aria-label="Hands-free status"
+            >
+              {!hfActive ? (
+                <span className="flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-blue-400"></span>
+                  <span>Hands-Free Ready</span>
+                </span>
+              ) : (
+                <>
+                  {hfStatus === 'prompting' && (
+                    <span className="flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
+                      <span>{hfIsReprompting ? '🔄 Re-prompting...' : '📖 Reading...'}</span>
+                    </span>
+                  )}
+                  {hfStatus === 'listening' && (
+                    <span className="flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+                      <span>👂 Listening...</span>
+                    </span>
+                  )}
+                  {hfStatus === 'processing' && (
+                    <span className="flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></span>
+                      <span>🧠 Processing...</span>
+                    </span>
+                  )}
+                  {hfStatus === 'idle' && (
+                    <span className="flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-gray-400"></span>
+                      <span>{hfAutoPaused ? '⏸️ Paused' : '⏸️ Ready'}</span>
+                    </span>
+                  )}
+                </>
+              )}
+            </div>
           </div>
         )}
 
@@ -1255,44 +1466,90 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
             </Button>
           )}
 
-          {/* Hands-Free Control Bar (only when active) */}
-          {hfEnabled && hfActive && (
+          {/* Minimal Hands-Free Control - Single Primary Button with Auto-Hide */}
+          {hfEnabled && hfActive && isMinimalHFUIAvailable && (
+            <div 
+              className={`transition-all duration-300 ${hfControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+              onClick={showControls}
+            >
+              <div className="relative glass-card rounded-xl p-3 w-full max-w-sm">
+                <div className="flex items-center justify-center gap-3">
+                  {/* Single Primary Control Button */}
+                  <button
+                    onMouseDown={handlePrimaryButtonPress}
+                    onMouseUp={handlePrimaryButtonRelease}
+                    onTouchStart={handlePrimaryButtonPress}
+                    onTouchEnd={handlePrimaryButtonRelease}
+                    className="flex-1 bg-gradient-to-r from-blue-500/80 to-purple-500/80 hover:from-blue-600/90 hover:to-purple-600/90 backdrop-blur-sm rounded-lg px-4 py-3 text-white font-medium text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white/30"
+                    aria-label={hfStatus === 'idle' || hfAutoPaused ? "Resume hands-free" : "Pause hands-free"}
+                    title="Tap to pause/resume • Long-press to repeat"
+                  >
+                    {hfStatus === 'idle' || hfAutoPaused ? '▶︎ Resume' : '⏸️ Pause'}
+                  </button>
+                  
+                  {/* Overflow Menu */}
+                  <button
+                    onClick={() => setHfShowOverflow(!hfShowOverflow)}
+                    className="bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg px-3 py-3 text-white/80 hover:text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white/30"
+                    aria-label="More options"
+                  >
+                    ⋯
+                  </button>
+                </div>
+                
+                {/* Overflow Options */}
+                {hfShowOverflow && (
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-white/10 backdrop-blur-sm rounded-lg p-2 border border-white/20">
+                    <button
+                      onClick={() => {
+                        handleHandsFreeRepeat();
+                        setHfShowOverflow(false);
+                        emitHFTelemetry('HF_REPEAT', { method: 'overflow' });
+                      }}
+                      className="w-full text-left px-3 py-2 text-white/80 hover:text-white hover:bg-white/10 rounded text-sm transition-colors"
+                    >
+                      Repeat
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleHandsFreeStop();
+                        setHfShowOverflow(false);
+                        emitHFTelemetry('HF_STOP', { method: 'overflow' });
+                      }}
+                      className="w-full text-left px-3 py-2 text-red-300 hover:text-red-200 hover:bg-red-500/10 rounded text-sm transition-colors"
+                    >
+                      Stop
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Legacy Hands-Free Controls (when minimal UI is not available) */}
+          {hfEnabled && hfActive && !isMinimalHFUIAvailable && (
             <div className="glass-card rounded-xl p-3 w-full max-w-sm">
               <div className="flex items-center justify-between gap-2">
-                <Button
-                  onClick={handleHandsFreePause}
-                  variant="ghost"
-                  size="sm"
-                  className="text-white/80 hover:text-white hover:bg-white/10 focus:ring-2 focus:ring-white/30 focus:outline-none text-xs transition-all duration-200"
-                  aria-label="Pause hands-free session"
-                  title="Pause hands-free session"
-                >
+                <Button onClick={handleHandsFreePause} variant="ghost" size="sm" className="text-white/80 hover:text-white hover:bg-white/10 focus:ring-2 focus:ring-white/30 focus:outline-none text-xs transition-all duration-200">
                   Pause
                 </Button>
-                <span className="text-white/60 text-xs">•</span>
-                <Button
-                  onClick={handleHandsFreeRepeat}
-                  variant="ghost"
-                  size="sm"
-                  className="text-white/80 hover:text-white hover:bg-white/10 focus:ring-2 focus:ring-white/30 focus:outline-none text-xs transition-all duration-200"
-                  aria-label="Repeat current prompt"
-                  title="Repeat current prompt"
-                >
+                <Button onClick={handleHandsFreeRepeat} variant="ghost" size="sm" className="text-white/80 hover:text-white hover:bg-white/10 focus:ring-2 focus:ring-white/30 focus:outline-none text-xs transition-all duration-200">
                   Repeat
                 </Button>
-                <span className="text-white/60 text-xs">•</span>
-                <Button
-                  onClick={handleHandsFreeStop}
-                  variant="ghost"
-                  size="sm"
-                  className="text-white/80 hover:text-white hover:bg-white/10 focus:ring-2 focus:ring-white/30 focus:outline-none text-xs transition-all duration-200"
-                  aria-label="Stop hands-free session"
-                  title="Stop hands-free session"
-                >
+                <Button onClick={handleHandsFreeStop} variant="ghost" size="sm" className="text-white/80 hover:text-white hover:bg-white/10 focus:ring-2 focus:ring-white/30 focus:outline-none text-xs transition-all duration-200">
                   Stop
                 </Button>
               </div>
             </div>
+          )}
+
+          {/* Tap area to show controls when hidden */}
+          {hfEnabled && hfActive && isMinimalHFUIAvailable && !hfControlsVisible && (
+            <div 
+              onClick={showControls}
+              className="w-full max-w-sm h-12 bg-transparent cursor-pointer"
+              aria-label="Tap to show controls"
+            />
           )}
 
 
