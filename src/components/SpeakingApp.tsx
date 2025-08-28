@@ -139,9 +139,18 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   const [lastMessageTime, setLastMessageTime] = useState<number>();
   
   // Hands-Free Mode state and logic
-  const [hfEnabled, setHfEnabled] = useState(false);
+  const [hfEnabled, setHfEnabled] = useState(() => {
+    // Load from localStorage on initialization
+    const saved = localStorage.getItem('hf_mode');
+    return saved === 'true';
+  });
   const [hfActive, setHfActive] = useState(false);
   const [hfStatus, setHfStatus] = useState<'idle' | 'prompting' | 'listening' | 'processing'>('idle');
+  
+  // Persist hfEnabled to localStorage
+  useEffect(() => {
+    localStorage.setItem('hf_mode', hfEnabled.toString());
+  }, [hfEnabled]);
   
   // Check for hands-free mode availability (feature flag OR query param ?hf=1)
   const isHandsFreeModeAvailable = (() => {
@@ -635,6 +644,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
               color: 'white',
               boxShadow: micState === 'recording' 
                 ? '0 0 60px rgba(255, 79, 128, 0.6), 0 8px 32px rgba(255, 107, 157, 0.4)' 
+                : hfEnabled && !hfActive
+                ? '0 0 40px rgba(255, 79, 128, 0.5), 0 8px 32px rgba(255, 107, 157, 0.3), 0 4px 16px rgba(255, 107, 157, 0.2)'
                 : '0 8px 32px rgba(255, 79, 128, 0.3), 0 4px 16px rgba(255, 107, 157, 0.2)',
             }}
           >
@@ -658,8 +669,10 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
                   onClick={handleHandsFreePause}
                   variant="ghost"
                   size="sm"
-                  className="text-white/80 hover:text-white hover:bg-white/10 text-xs"
+                  className="text-white/80 hover:text-white hover:bg-white/10 focus:ring-2 focus:ring-white/30 focus:outline-none text-xs transition-all duration-200"
                   disabled
+                  aria-label="Pause hands-free session (coming soon)"
+                  title="Pause hands-free session (coming soon)"
                 >
                   Pause
                 </Button>
@@ -668,8 +681,10 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
                   onClick={handleHandsFreeRepeat}
                   variant="ghost"
                   size="sm"
-                  className="text-white/80 hover:text-white hover:bg-white/10 text-xs"
+                  className="text-white/80 hover:text-white hover:bg-white/10 focus:ring-2 focus:ring-white/30 focus:outline-none text-xs transition-all duration-200"
                   disabled
+                  aria-label="Repeat current prompt (coming soon)"
+                  title="Repeat current prompt (coming soon)"
                 >
                   Repeat
                 </Button>
@@ -678,7 +693,9 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
                   onClick={handleHandsFreeStop}
                   variant="ghost"
                   size="sm"
-                  className="text-white/80 hover:text-white hover:bg-white/10 text-xs"
+                  className="text-white/80 hover:text-white hover:bg-white/10 focus:ring-2 focus:ring-white/30 focus:outline-none text-xs transition-all duration-200"
+                  aria-label="Stop hands-free session"
+                  title="Stop hands-free session"
                 >
                   Stop
                 </Button>
