@@ -88,39 +88,56 @@ class TTSManagerService {
       return [normalized];
     }
 
+    // Robust sentence splitting - keeps final sentence intact
+    // Regex: (?<=[.!?…][""')]*)\s+ - splits after punctuation + optional quotes/brackets + whitespace
+    const sentences = normalized.split(/(?<=[.!?…][""')]*)\s+/).filter(s => s.trim().length > 0);
+    
+    if (sentences.length <= 1) {
+      return [normalized]; // Single sentence, don't split further
+    }
+
     const chunks: string[] = [];
-    const sentences = normalized.split(/([.!?;:])\s+/);
     let currentChunk = '';
 
     for (let i = 0; i < sentences.length; i++) {
-      const part = sentences[i];
-      const potential = currentChunk + (currentChunk ? ' ' : '') + part;
+      const sentence = sentences[i].trim();
+      const potential = currentChunk + (currentChunk ? ' ' : '') + sentence;
 
       if (potential.length <= maxLength) {
         currentChunk = potential;
       } else {
+        // Current chunk is full, save it and start new chunk
         if (currentChunk) {
           chunks.push(currentChunk.trim());
-          currentChunk = part;
+          currentChunk = sentence;
         } else {
-          // Single sentence too long, force split
-          chunks.push(part.substring(0, maxLength).trim());
-          currentChunk = part.substring(maxLength).trim();
+          // Single sentence too long, keep it as one chunk anyway
+          chunks.push(sentence);
+          currentChunk = '';
         }
       }
     }
 
-    if (currentChunk) {
+    // Always include the final chunk, even if short
+    if (currentChunk.trim()) {
       chunks.push(currentChunk.trim());
     }
 
-    return chunks.filter(chunk => chunk.length > 0);
+    // Ensure we never return empty array
+    return chunks.length > 0 ? chunks : [normalized];
   }
 
   private log(event: TTSLog): void {
     const debug = new URLSearchParams(window.location.search).has('sttdebug');
     if (debug) {
       console.log('[TTSManager]', event);
+    }
+  }
+
+  private logQueueEvent(event: string, extra: any = {}): void {
+    const debug = new URLSearchParams(window.location.search).has('sttdebug');
+    if (debug) {
+      console.log(`[TTSManager] ${event}`, extra);
     }
   }
 
@@ -160,16 +177,23 @@ class TTSManagerService {
     const text = this.currentChunks[chunkIndex];
     this.retryCount = 0;
 
+    this.logQueueEvent(`TTS_CHUNK ${chunkIndex + 1}/${this.currentChunks.length} starting`, {
+      text: text.substring(0, 50) + (text.length > 50 ? '...' : ''),
+      length: text.length
+    });
+
     try {
       this.currentUtterance = new SpeechSynthesisUtterance(text);
       configureUtterance(this.currentUtterance, text);
 
       this.currentUtterance.onstart = () => {
         this.clearWatchdog();
+        this.logQueueEvent(`TTS_CHUNK ${chunkIndex + 1}/${this.currentChunks.length} onstart`);
       };
 
       this.currentUtterance.onend = () => {
         this.clearWatchdog();
+        this.logQueueEvent(`TTS_CHUNK ${chunkIndex + 1}/${this.currentChunks.length} onend`);
         this.onChunkComplete(chunkIndex);
       };
 
@@ -179,6 +203,7 @@ class TTSManagerService {
         
         if (this.retryCount < this.maxRetries) {
           this.retryCount++;
+          this.logQueueEvent(`TTS_RETRY ${chunkIndex + 1}`, { error: event.error });
           this.log({
             event: 'TTS_RETRY',
             textLength: text.length,
@@ -235,15 +260,21 @@ class TTSManagerService {
     const nextIndex = chunkIndex + 1;
     if (nextIndex < this.currentChunks.length) {
       this.currentChunkIndex = nextIndex;
-      // Small delay between chunks for natural flow
-      setTimeout(() => this.speakChunk(nextIndex), 150);
+      // Inter-chunk delay to avoid Safari missing final onend
+      setTimeout(() => this.speakChunk(nextIndex), 120);
     } else {
+      // All chunks complete
+      this.logQueueEvent('TTS_COMPLETE', { chunks: this.currentChunks.length });
       this.complete(false);
     }
   }
 
   private complete(skipped: boolean): void {
     const duration = Date.now() - this.startTime;
+    
+    if (skipped) {
+      this.logQueueEvent('TTS_SKIP');
+    }
     
     this.log({
       event: skipped ? 'TTS_SKIP' : 'TTS_COMPLETE',
@@ -292,8 +323,12 @@ class TTSManagerService {
       };
     }
 
-    // Cancel any current speech
-    this.skip();
+    // Clear any previous synthesis before starting new prompt (but not during playback)
+    try {
+      speechSynthesis.cancel();
+    } catch (e) {
+      // Ignore errors
+    }
 
     return new Promise((resolve, reject) => {
       this.busy = true;
@@ -304,9 +339,15 @@ class TTSManagerService {
       this.onProgressCallback = options.onProgress || null;
       this.onSkipCallback = options.onSkip || null;
 
-      // Prepare chunks
+      // Prepare chunks with robust sentence splitting
       this.currentChunks = this.chunkText(text);
       this.currentChunkIndex = 0;
+
+      this.logQueueEvent('TTS_QUEUE_START', { 
+        len: text.length, 
+        chunks: this.currentChunks.length,
+        preview: text.substring(0, 100) + (text.length > 100 ? '...' : '')
+      });
 
       this.log({
         event: 'TTS_START',
@@ -331,6 +372,7 @@ class TTSManagerService {
     this.isSkipped = true;
     this.clearWatchdog();
 
+    // Only cancel on explicit skip
     try {
       speechSynthesis.cancel();
     } catch (e) {
