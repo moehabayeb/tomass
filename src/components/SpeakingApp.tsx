@@ -21,6 +21,7 @@ import { TTSManager } from '@/services/TTSManager';
 // Feature flags
 const SPEAKING_HANDS_FREE = false; // Default OFF
 const HF_BARGE_IN = false; // Barge-in feature flag (optional)
+const HF_VOICE_COMMANDS = true; // Voice commands feature flag (default ON)
 
 // Sparkle component for background decoration
 const Sparkle = ({ className, delayed = false }: { className?: string; delayed?: boolean }) => (
@@ -517,6 +518,58 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     }
   };
 
+  // Helper function to detect voice commands
+  const detectVoiceCommand = (transcript: string): string | null => {
+    if (!HF_VOICE_COMMANDS || !transcript) return null;
+    
+    // Normalize: trim, lowercase, remove punctuation
+    const normalized = transcript.trim().toLowerCase().replace(/[.,!?;:'"()-]/g, '');
+    
+    // Check for exact command matches
+    if (/^(pause|wait)$/i.test(normalized)) {
+      return 'pause';
+    }
+    if (/^(resume|continue|go on)$/i.test(normalized)) {
+      return 'resume';
+    }
+    if (/^(repeat|again)$/i.test(normalized)) {
+      return 'repeat';
+    }
+    if (/^(stop|end)$/i.test(normalized)) {
+      return 'stop';
+    }
+    
+    return null;
+  };
+
+  const handleVoiceCommand = async (command: string) => {
+    console.log('HF_VOICE_COMMAND:', command);
+    
+    switch (command) {
+      case 'pause':
+        // Finish current step and hold at idle
+        await handleHandsFreePause();
+        break;
+        
+      case 'resume':
+        // Resume from same prompt if paused
+        if (hfStatus === 'idle' && (hfAutoPaused || !hfSessionActive)) {
+          await handleHandsFreeResume();
+        }
+        break;
+        
+      case 'repeat':
+        // Replay last teacher message and re-open mic
+        await handleHandsFreeRepeat();
+        break;
+        
+      case 'stop':
+        // Graceful stop, keep HF toggle ON but session idle
+        handleHandsFreeStop();
+        break;
+    }
+  };
+
   // Hands-Free Mode handlers - Full orchestration
   const [hfPermissionBlocked, setHfPermissionBlocked] = useState(false);
   const [hfCurrentPrompt, setHfCurrentPrompt] = useState('');
@@ -789,11 +842,6 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       
       console.log('HF_RESULT_FINAL:', result.transcript.length);
       
-      setHfStatus('processing');
-      
-      // Display verbatim transcript (exact ASR output)
-      addChatBubble(`💭 You said: "${result.transcript}"`, "user");
-      
       if (!result.transcript) {
         setErrorMessage("No speech detected, please try again.");
         setHfActive(false);
@@ -802,9 +850,21 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         return;
       }
       
-      // Check if user said "resume" to resume paused session
+      // Check for voice commands first (don't display or score these)
+      const command = detectVoiceCommand(result.transcript);
+      if (command) {
+        await handleVoiceCommand(command);
+        return; // Don't process as normal input
+      }
+      
+      setHfStatus('processing');
+      
+      // Display verbatim transcript (exact ASR output) - only for non-commands
+      addChatBubble(`💭 You said: "${result.transcript}"`, "user");
+      
+      // Check if user said "resume" to resume paused session (fallback for non-exact matches)
       if (hfAutoPaused && result.transcript.toLowerCase().includes('resume')) {
-        console.log('HF_VOICE_RESUME: user said resume');
+        console.log('HF_VOICE_RESUME: user said resume (fallback)');
         setHfAutoPaused(false);
         setErrorMessage('');
         // Continue with current prompt
