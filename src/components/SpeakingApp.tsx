@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Mic, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -16,6 +16,7 @@ import { SampleAnswerButton } from './SampleAnswerButton';
 import BookmarkButton from './BookmarkButton';
 import { startRecording, stopRecording, getState, onState, cleanup, type MicState } from '@/lib/audio/micEngine';
 import { useToast } from '@/hooks/use-toast';
+import { TTSManager } from '@/services/TTSManager';
 
 // Feature flags
 const SPEAKING_HANDS_FREE = false; // Default OFF
@@ -153,7 +154,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   }, [hfEnabled]);
   
   // Check for hands-free mode availability (feature flag OR query param ?hf=1)
-  const isHandsFreeModeAvailable = (() => {
+  const isHandsFreeModeAvailable = useMemo(() => {
     if (SPEAKING_HANDS_FREE) {
       console.log('HF gate: on | reason: flag');
       return true;
@@ -170,7 +171,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     
     console.log('HF gate: off | reason: flag off & no param');
     return false;
-  })();
+  }, []);
   
   // Avatar state is now managed by useAvatarTTS hook
   
@@ -511,30 +512,171 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     }
   };
 
-  // Hands-Free Mode handlers (UI-only for now)
-  const handleHandsFreeStart = () => {
-    console.log('[Speaking] Hands-free mode starting');
+  // Hands-Free Mode handlers - Full orchestration
+  const [hfPermissionBlocked, setHfPermissionBlocked] = useState(false);
+  const [hfCurrentPrompt, setHfCurrentPrompt] = useState('');
+  
+  const handleHandsFreeStart = async () => {
+    console.log('HF_START');
     setHfActive(true);
+    setHfStatus('idle');
+    setHfPermissionBlocked(false);
+    
+    // Get the last AI message as the current prompt
+    const lastAIMessage = messages.filter(m => !m.isUser && !m.isSystem).pop();
+    const prompt = lastAIMessage?.text || currentQuestion;
+    setHfCurrentPrompt(prompt);
+    
+    try {
+      await startHandsFreePromptPlayback(prompt);
+    } catch (error: any) {
+      console.log('HF_ERROR_START:', error.message);
+      setErrorMessage(error.message);
+      setHfActive(false);
+      setHfStatus('idle');
+    }
+  };
+
+  const startHandsFreePromptPlayback = async (prompt: string) => {
+    if (!soundEnabled) {
+      // Skip TTS if sound is off, go straight to mic
+      await startHandsFreeMicCapture();
+      return;
+    }
+
+    console.log('HF_PROMPT_PLAY:', prompt.length);
     setHfStatus('prompting');
     
-    // Cycle through statuses for demo (no actual functionality yet)
-    setTimeout(() => setHfStatus('listening'), 1500);
-    setTimeout(() => setHfStatus('processing'), 3000);
-    setTimeout(() => setHfStatus('idle'), 4500);
+    try {
+      // Use TTSManager for complete prompt playback
+      await TTSManager.speak(prompt, { 
+        canSkip: true
+      });
+      
+      console.log('HF_TTS_COMPLETE');
+      
+      // Only start mic after TTS is completely done
+      await startHandsFreeMicCapture();
+      
+    } catch (error: any) {
+      console.log('HF_ERROR_TTS:', error.message);
+      throw error;
+    }
   };
 
-  const handleHandsFreePause = () => {
-    console.log('[Speaking] Hands-free pause (no-op for now)');
+  const startHandsFreeMicCapture = async () => {
+    console.log('HF_MIC_OPEN');
+    setHfStatus('listening');
+    
+    try {
+      const result = await startRecording();
+      console.log('HF_RESULT_FINAL:', result.transcript.length);
+      
+      setHfStatus('processing');
+      
+      // Display verbatim transcript (exact ASR output)
+      addChatBubble(`💭 You said: "${result.transcript}"`, "user");
+      
+      if (!result.transcript) {
+        setErrorMessage("No speech detected, please try again.");
+        setHfActive(false);
+        setHfStatus('idle');
+        return;
+      }
+      
+      // Execute existing teacher loop (unchanged)
+      await executeTeacherLoop(result.transcript);
+      
+      // Return to idle state after processing
+      setHfActive(false);
+      setHfStatus('idle');
+      
+    } catch (error: any) {
+      console.log('HF_ERROR_MIC:', error.message);
+      
+      // Check if it's a permission issue
+      if (error.message.includes('permission') || error.message.includes('NotAllowedError')) {
+        setHfPermissionBlocked(true);
+        setErrorMessage("Microphone access needed. Please allow and try again.");
+      } else {
+        setErrorMessage(error.message);
+      }
+      
+      setHfActive(false);
+      setHfStatus('idle');
+    }
   };
 
-  const handleHandsFreeRepeat = () => {
-    console.log('[Speaking] Hands-free repeat (no-op for now)');
+  const handleHandsFreePause = async () => {
+    console.log('HF_PAUSE');
+    
+    // Stop any current TTS
+    if (TTSManager.busy) {
+      TTSManager.stop();
+    }
+    
+    // Stop any recording
+    if (micState === 'recording') {
+      stopRecording();
+    }
+    
+    // Hold at idle on same prompt
+    setHfStatus('idle');
+  };
+
+  const handleHandsFreeRepeat = async () => {
+    console.log('HF_REPEAT');
+    
+    // Stop any current activity
+    if (TTSManager.busy) {
+      TTSManager.stop();
+    }
+    if (micState === 'recording') {
+      stopRecording();
+    }
+    
+    // Replay current prompt
+    if (hfCurrentPrompt) {
+      try {
+        await startHandsFreePromptPlayback(hfCurrentPrompt);
+      } catch (error: any) {
+        console.log('HF_ERROR_REPEAT:', error.message);
+        setErrorMessage(error.message);
+      }
+    }
   };
 
   const handleHandsFreeStop = () => {
-    console.log('[Speaking] Hands-free stop');
+    console.log('HF_STOP');
+    
+    // Stop any current TTS
+    if (TTSManager.busy) {
+      TTSManager.stop();
+    }
+    
+    // Stop any recording
+    if (micState === 'recording') {
+      stopRecording();
+    }
+    
     setHfActive(false);
     setHfStatus('idle');
+    setHfPermissionBlocked(false);
+  };
+
+  // Permission handler for blocked autoplay/mic
+  const handlePermissionUnblock = async () => {
+    setHfPermissionBlocked(false);
+    
+    // Continue the hands-free flow
+    if (hfActive && hfCurrentPrompt) {
+      try {
+        await startHandsFreePromptPlayback(hfCurrentPrompt);
+      } catch (error: any) {
+        console.log('HF_ERROR_UNBLOCK:', error.message);
+        setErrorMessage(error.message);
+      }
+    }
   };
 
   const handleRecordingClick = async () => {
@@ -681,9 +823,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
                   variant="ghost"
                   size="sm"
                   className="text-white/80 hover:text-white hover:bg-white/10 focus:ring-2 focus:ring-white/30 focus:outline-none text-xs transition-all duration-200"
-                  disabled
-                  aria-label="Pause hands-free session (coming soon)"
-                  title="Pause hands-free session (coming soon)"
+                  aria-label="Pause hands-free session"
+                  title="Pause hands-free session"
                 >
                   Pause
                 </Button>
@@ -693,9 +834,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
                   variant="ghost"
                   size="sm"
                   className="text-white/80 hover:text-white hover:bg-white/10 focus:ring-2 focus:ring-white/30 focus:outline-none text-xs transition-all duration-200"
-                  disabled
-                  aria-label="Repeat current prompt (coming soon)"
-                  title="Repeat current prompt (coming soon)"
+                  aria-label="Repeat current prompt"
+                  title="Repeat current prompt"
                 >
                   Repeat
                 </Button>
@@ -718,6 +858,22 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           {hfEnabled && hfActive && (
             <div className="bg-white/10 backdrop-blur-sm rounded-full px-3 py-1 text-white/80 text-xs font-medium">
               Status: {hfStatus.charAt(0).toUpperCase() + hfStatus.slice(1)}
+            </div>
+          )}
+
+          {/* Permission Blocked Nudge (only when needed) */}
+          {hfPermissionBlocked && (
+            <div className="bg-orange-500/20 backdrop-blur-sm rounded-lg px-4 py-2 border border-orange-400/30 text-center">
+              <p className="text-orange-200 text-sm font-medium mb-2">
+                🎤 Microphone access needed
+              </p>
+              <Button
+                onClick={handlePermissionUnblock}
+                size="sm"
+                className="bg-orange-500 hover:bg-orange-600 text-white text-xs"
+              >
+                Continue
+              </Button>
             </div>
           )}
           
