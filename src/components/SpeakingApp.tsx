@@ -515,10 +515,83 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   // Hands-Free Mode handlers - Full orchestration
   const [hfPermissionBlocked, setHfPermissionBlocked] = useState(false);
   const [hfCurrentPrompt, setHfCurrentPrompt] = useState('');
+  const [hfSessionActive, setHfSessionActive] = useState(false);
+  const [hfTabVisible, setHfTabVisible] = useState(true);
+  const [hfShowResume, setHfShowResume] = useState(false);
+  // Tab visibility handling for hands-free pause/resume
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      const isVisible = !document.hidden;
+      setHfTabVisible(isVisible);
+      
+      if (!isVisible && hfActive && hfSessionActive) {
+        // Tab backgrounded during hands-free session - auto-pause
+        console.log('HF_AUTO_PAUSE: tab backgrounded');
+        handleHandsFreePause();
+        setHfShowResume(true);
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [hfActive, hfSessionActive]);
+
+  // Auto-advance after scoring completes in hands-free mode
+  const handleHandsFreeAdvance = async () => {
+    if (!hfActive || !hfSessionActive) return;
+    
+    console.log('HF_ADVANCE');
+    
+    // Small delay to let user process the feedback
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // Get the latest AI message as the next prompt
+    const lastAIMessage = messages.filter(m => !m.isUser && !m.isSystem).pop();
+    const nextPrompt = lastAIMessage?.text || currentQuestion;
+    
+    if (nextPrompt && nextPrompt !== hfCurrentPrompt) {
+      setHfCurrentPrompt(nextPrompt);
+      
+      try {
+        // Continue the hands-free loop with the new prompt
+        await startHandsFreePromptPlayback(nextPrompt);
+      } catch (error: any) {
+        console.log('HF_ERROR_ADVANCE:', error.message);
+        setErrorMessage(error.message);
+        setHfActive(false);
+        setHfStatus('idle');
+        setHfSessionActive(false);
+      }
+    } else {
+      // No new prompt or same prompt - end session
+      console.log('HF_SESSION_END: no new prompt');
+      setHfActive(false);
+      setHfStatus('idle');
+      setHfSessionActive(false);
+    }
+  };
+
+  // Resume hands-free session
+  const handleHandsFreeResume = async () => {
+    console.log('HF_RESUME');
+    setHfShowResume(false);
+    
+    if (hfCurrentPrompt) {
+      try {
+        setHfActive(true);
+        setHfSessionActive(true);
+        await startHandsFreePromptPlayback(hfCurrentPrompt);
+      } catch (error: any) {
+        console.log('HF_ERROR_RESUME:', error.message);
+        setErrorMessage(error.message);
+      }
+    }
+  };
   
   const handleHandsFreeStart = async () => {
     console.log('HF_START');
     setHfActive(true);
+    setHfSessionActive(true); // Start session
     setHfStatus('idle');
     setHfPermissionBlocked(false);
     
@@ -533,6 +606,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       console.log('HF_ERROR_START:', error.message);
       setErrorMessage(error.message);
       setHfActive(false);
+      setHfSessionActive(false);
       setHfStatus('idle');
     }
   };
@@ -587,9 +661,15 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       // Execute existing teacher loop (unchanged)
       await executeTeacherLoop(result.transcript);
       
-      // Return to idle state after processing
-      setHfActive(false);
-      setHfStatus('idle');
+      // In hands-free mode, auto-advance to next prompt after scoring
+      if (hfActive && hfSessionActive) {
+        await handleHandsFreeAdvance();
+      } else {
+        // Return to idle state for manual mode
+        setHfActive(false);
+        setHfStatus('idle');
+        setHfSessionActive(false);
+      }
       
     } catch (error: any) {
       console.log('HF_ERROR_MIC:', error.message);
@@ -661,7 +741,9 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     
     setHfActive(false);
     setHfStatus('idle');
+    setHfSessionActive(false);
     setHfPermissionBlocked(false);
+    setHfShowResume(false);
   };
 
   // Permission handler for blocked autoplay/mic
@@ -858,6 +940,22 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           {hfEnabled && hfActive && (
             <div className="bg-white/10 backdrop-blur-sm rounded-full px-3 py-1 text-white/80 text-xs font-medium">
               Status: {hfStatus.charAt(0).toUpperCase() + hfStatus.slice(1)}
+            </div>
+          )}
+
+          {/* Resume Button (only when needed after backgrounding) */}
+          {hfShowResume && (
+            <div className="bg-blue-500/20 backdrop-blur-sm rounded-lg px-4 py-2 border border-blue-400/30 text-center">
+              <p className="text-blue-200 text-sm font-medium mb-2">
+                🔄 Session paused while tab was in background
+              </p>
+              <Button
+                onClick={handleHandsFreeResume}
+                size="sm"
+                className="bg-blue-500 hover:bg-blue-600 text-white text-xs"
+              >
+                Resume Hands-Free
+              </Button>
             </div>
           )}
 
