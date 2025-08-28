@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Mic, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 import DIDAvatar from './DIDAvatar';
 import { useAvatarState } from '@/hooks/useAvatarState';
 import { useSpeakingTTS } from '@/hooks/useSpeakingTTS';
@@ -15,6 +16,9 @@ import { SampleAnswerButton } from './SampleAnswerButton';
 import BookmarkButton from './BookmarkButton';
 import { startRecording, stopRecording, getState, onState, cleanup, type MicState } from '@/lib/audio/micEngine';
 import { useToast } from '@/hooks/use-toast';
+
+// Feature flags
+const SPEAKING_HANDS_FREE = false; // Default OFF
 
 // Sparkle component for background decoration
 const Sparkle = ({ className, delayed = false }: { className?: string; delayed?: boolean }) => (
@@ -133,6 +137,18 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   const [isProcessingTranscript, setIsProcessingTranscript] = useState(false);
   const [lastTranscript, setLastTranscript] = useState<string>('');
   const [lastMessageTime, setLastMessageTime] = useState<number>();
+  
+  // Hands-Free Mode state and logic
+  const [hfEnabled, setHfEnabled] = useState(false);
+  
+  // Check for hands-free mode availability (feature flag OR query param ?hf=1)
+  const isHandsFreeModeAvailable = (() => {
+    if (SPEAKING_HANDS_FREE) return true;
+    
+    // Check for query param ?hf=1
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('hf') === '1';
+  })();
   
   // Avatar state is now managed by useAvatarTTS hook
   
@@ -567,7 +583,19 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
         {/* Premium Speaking Button */}
         <div className="flex flex-col items-center space-y-4 sm:space-y-6 pb-6 sm:pb-8 relative z-10">
-          <Button 
+          {/* Hands-Free Mode Toggle (only when available) */}
+          {isHandsFreeModeAvailable && (
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-white/80 text-sm font-medium">Hands-Free (beta)</span>
+              <Switch
+                checked={hfEnabled}
+                onCheckedChange={setHfEnabled}
+                className="data-[state=checked]:bg-primary"
+              />
+            </div>
+          )}
+          
+          <Button
             onClick={handleRecordingClick}
             disabled={micState === 'processing' || isProcessingTranscript}
             className={`pill-button w-full max-w-sm py-6 sm:py-8 text-lg sm:text-xl font-bold border-0 shadow-xl min-h-[64px] ${micState === 'recording' ? 'animate-pulse' : ''}`}
