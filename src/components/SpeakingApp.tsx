@@ -20,6 +20,7 @@ import { TTSManager } from '@/services/TTSManager';
 
 // Feature flags
 const SPEAKING_HANDS_FREE = false; // Default OFF
+const HF_BARGE_IN = false; // Barge-in feature flag (optional)
 
 // Sparkle component for background decoration
 const Sparkle = ({ className, delayed = false }: { className?: string; delayed?: boolean }) => (
@@ -147,6 +148,10 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   });
   const [hfActive, setHfActive] = useState(false);
   const [hfStatus, setHfStatus] = useState<'idle' | 'prompting' | 'listening' | 'processing'>('idle');
+  const [hfNoInputTimer, setHfNoInputTimer] = useState<NodeJS.Timeout | null>(null);
+  const [hfRePromptTimer, setHfRePromptTimer] = useState<NodeJS.Timeout | null>(null);
+  const [hfIsReprompting, setHfIsReprompting] = useState(false);
+  const [hfAutoPaused, setHfAutoPaused] = useState(false);
   
   // Persist hfEnabled to localStorage
   useEffect(() => {
@@ -536,22 +541,42 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [hfActive, hfSessionActive]);
 
-  // Auto-start hands-free mode when toggle is switched ON or on page load
+  // Auto-start hands-free mode when toggle is switched ON
   useEffect(() => {
     if (hfEnabled && !hfActive && isHandsFreeModeAvailable) {
       // Auto-start the hands-free loop
       console.log('HF_AUTO_START: toggle enabled');
-      handleHandsFreeStart();
+      setTimeout(() => handleHandsFreeStart(), 100); // Small delay to ensure state is stable
     }
   }, [hfEnabled, isHandsFreeModeAvailable]);
 
   // Auto-start hands-free mode on page load if enabled
   useEffect(() => {
-    if (hfEnabled && isHandsFreeModeAvailable) {
+    if (hfEnabled && isHandsFreeModeAvailable && messages.length > 0) {
       console.log('HF_AUTO_START: page load with toggle enabled');
-      handleHandsFreeStart();
+      setTimeout(() => handleHandsFreeStart(), 500); // Delay to allow component to settle
     }
-  }, []);
+  }, [messages.length]); // Trigger when messages are loaded
+
+  // Auto-advance when new teacher messages arrive in hands-free mode
+  useEffect(() => {
+    if (hfActive && hfSessionActive && hfStatus === 'processing') {
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage && !lastMessage.isUser && !lastMessage.isSystem) {
+        console.log('HF_AUTO_ADVANCE: new teacher message detected');
+        // Delay to let user read the response
+        setTimeout(() => handleHandsFreeAdvance(), 2000);
+      }
+    }
+  }, [messages, hfActive, hfSessionActive, hfStatus]);
+
+  // Clear timers on cleanup
+  useEffect(() => {
+    return () => {
+      if (hfNoInputTimer) clearTimeout(hfNoInputTimer);
+      if (hfRePromptTimer) clearTimeout(hfRePromptTimer);
+    };
+  }, [hfNoInputTimer, hfRePromptTimer]);
 
   // Auto-advance after scoring completes in hands-free mode
   const handleHandsFreeAdvance = async () => {
@@ -592,6 +617,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   const handleHandsFreeResume = async () => {
     console.log('HF_RESUME');
     setHfShowResume(false);
+    setHfAutoPaused(false);
+    setErrorMessage('');
     
     if (hfCurrentPrompt) {
       try {
@@ -645,6 +672,35 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     console.log('HF_PROMPT_PLAY:', prompt.length);
     setHfStatus('prompting');
     
+    // Setup barge-in detection if feature is enabled
+    let bargeInDetected = false;
+    let bargeInListener: (() => void) | null = null;
+    
+    if (HF_BARGE_IN) {
+      // Setup voice activity detection during TTS
+      bargeInListener = () => {
+        if (!bargeInDetected && hfStatus === 'prompting') {
+          console.log('HF_BARGE_IN: user voice detected during TTS');
+          bargeInDetected = true;
+          
+          // Stop TTS early
+          if (TTSManager.busy) {
+            TTSManager.stop();
+          }
+          
+          // Transition to listening immediately
+          setTimeout(() => {
+            if (hfActive && hfStatus === 'prompting') {
+              startHandsFreeMicCapture();
+            }
+          }, 200);
+        }
+      };
+      
+      // Listen for voice activity events (if available)
+      window.addEventListener('voice:activity:start', bargeInListener);
+    }
+    
     try {
       // Use TTSManager for complete prompt playback
       await TTSManager.speak(prompt, { 
@@ -653,14 +709,28 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       
       console.log('HF_TTS_COMPLETE');
       
-      // Small delay before opening mic to prevent jarring transition
-      await new Promise(resolve => setTimeout(resolve, 300));
+      // Clean up barge-in listener
+      if (bargeInListener) {
+        window.removeEventListener('voice:activity:start', bargeInListener);
+      }
       
-      // Only start mic after TTS is completely done
-      await startHandsFreeMicCapture();
+      // Only continue if barge-in didn't interrupt
+      if (!bargeInDetected) {
+        // Small delay before opening mic to prevent jarring transition
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        // Only start mic after TTS is completely done
+        await startHandsFreeMicCapture();
+      }
       
     } catch (error: any) {
       console.log('HF_ERROR_TTS:', error.message);
+      
+      // Clean up barge-in listener on error
+      if (bargeInListener) {
+        window.removeEventListener('voice:activity:start', bargeInListener);
+      }
+      
       throw error;
     }
   };
@@ -668,9 +738,55 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   const startHandsFreeMicCapture = async () => {
     console.log('HF_MIC_OPEN');
     setHfStatus('listening');
+    setHfIsReprompting(false);
+    setHfAutoPaused(false);
+    
+    // Clear any existing timers
+    if (hfNoInputTimer) clearTimeout(hfNoInputTimer);
+    if (hfRePromptTimer) clearTimeout(hfRePromptTimer);
+    
+    // Start re-prompt timer (gentle nudge after 5s of no input)
+    const rePromptTimer = setTimeout(async () => {
+      if (hfStatus === 'listening' && !hfIsReprompting) {
+        console.log('HF_REPROMPT: no input detected after 5s');
+        setHfIsReprompting(true);
+        
+        // Play gentle re-prompt
+        try {
+          await TTSManager.speak("Take your time. I'm listening.", { canSkip: false });
+        } catch (error) {
+          console.log('HF_ERROR_REPROMPT:', error);
+        }
+        
+        setHfIsReprompting(false);
+      }
+    }, 5000);
+    setHfRePromptTimer(rePromptTimer);
+    
+    // Start auto-pause timer (pause session after 12-15s total)
+    const noinputTimer = setTimeout(async () => {
+      if (hfStatus === 'listening') {
+        console.log('HF_AUTO_PAUSE: no input after 12s total');
+        
+        // Stop recording and pause session
+        if (micState === 'recording') {
+          stopRecording();
+        }
+        
+        setHfAutoPaused(true);
+        setHfStatus('idle');
+        setErrorMessage("Session paused due to no input. Say 'resume' or tap Resume to continue.");
+      }
+    }, 12000);
+    setHfNoInputTimer(noinputTimer);
     
     try {
       const result = await startRecording();
+      
+      // Clear timers since we got input
+      if (hfNoInputTimer) clearTimeout(hfNoInputTimer);
+      if (hfRePromptTimer) clearTimeout(hfRePromptTimer);
+      
       console.log('HF_RESULT_FINAL:', result.transcript.length);
       
       setHfStatus('processing');
@@ -682,24 +798,31 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         setErrorMessage("No speech detected, please try again.");
         setHfActive(false);
         setHfStatus('idle');
+        setHfSessionActive(false);
+        return;
+      }
+      
+      // Check if user said "resume" to resume paused session
+      if (hfAutoPaused && result.transcript.toLowerCase().includes('resume')) {
+        console.log('HF_VOICE_RESUME: user said resume');
+        setHfAutoPaused(false);
+        setErrorMessage('');
+        // Continue with current prompt
+        await startHandsFreePromptPlayback(hfCurrentPrompt);
         return;
       }
       
       // Execute existing teacher loop (unchanged)
       await executeTeacherLoop(result.transcript);
       
-      // In hands-free mode, auto-advance to next prompt after scoring
-      if (hfActive && hfSessionActive) {
-        await handleHandsFreeAdvance();
-      } else {
-        // Return to idle state for manual mode
-        setHfActive(false);
-        setHfStatus('idle');
-        setHfSessionActive(false);
-      }
+      // Auto-advance handled by useEffect watching for new messages
       
     } catch (error: any) {
       console.log('HF_ERROR_MIC:', error.message);
+      
+      // Clear timers on error
+      if (hfNoInputTimer) clearTimeout(hfNoInputTimer);
+      if (hfRePromptTimer) clearTimeout(hfRePromptTimer);
       
       // Check if it's a permission issue
       if (error.message.includes('permission') || error.message.includes('NotAllowedError')) {
@@ -711,11 +834,16 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       
       setHfActive(false);
       setHfStatus('idle');
+      setHfSessionActive(false);
     }
   };
 
   const handleHandsFreePause = async () => {
     console.log('HF_PAUSE');
+    
+    // Clear timers
+    if (hfNoInputTimer) clearTimeout(hfNoInputTimer);
+    if (hfRePromptTimer) clearTimeout(hfRePromptTimer);
     
     // Stop any current TTS
     if (TTSManager.busy) {
@@ -729,6 +857,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     
     // Hold at idle on same prompt
     setHfStatus('idle');
+    setHfIsReprompting(false);
   };
 
   const handleHandsFreeRepeat = async () => {
@@ -756,6 +885,10 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   const handleHandsFreeStop = () => {
     console.log('HF_STOP');
     
+    // Clear timers
+    if (hfNoInputTimer) clearTimeout(hfNoInputTimer);
+    if (hfRePromptTimer) clearTimeout(hfRePromptTimer);
+    
     // Stop any current TTS
     if (TTSManager.busy) {
       TTSManager.stop();
@@ -771,6 +904,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     setHfSessionActive(false);
     setHfPermissionBlocked(false);
     setHfShowResume(false);
+    setHfAutoPaused(false);
+    setHfIsReprompting(false);
   };
 
   // Permission handler for blocked autoplay/mic
@@ -967,18 +1102,19 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           {/* Hands-Free Status Chip (only when active) */}
           {hfEnabled && hfActive && (
             <div className="bg-white/10 backdrop-blur-sm rounded-full px-3 py-1 text-white/80 text-xs font-medium">
-              {hfStatus === 'prompting' && '📖 Reading...'}
+              {hfStatus === 'prompting' && (hfIsReprompting ? '🔄 Re-prompting...' : '📖 Reading...')}
               {hfStatus === 'listening' && '👂 Listening...'}
               {hfStatus === 'processing' && '🧠 Processing...'}
-              {hfStatus === 'idle' && '⏸️ Ready'}
+              {hfStatus === 'idle' && (hfAutoPaused ? '⏸️ Auto-paused' : '⏸️ Ready')}
             </div>
           )}
 
-          {/* Resume Button (only when needed after backgrounding) */}
-          {hfShowResume && (
+          {/* Resume Button (only when needed after backgrounding or auto-pause) */}
+          {(hfShowResume || hfAutoPaused) && (
             <div className="bg-blue-500/20 backdrop-blur-sm rounded-lg px-4 py-2 border border-blue-400/30 text-center">
               <p className="text-blue-200 text-sm font-medium mb-2">
-                🔄 Session paused while tab was in background
+                {hfShowResume ? '🔄 Session paused while tab was in background' : 
+                 hfAutoPaused ? '⏸️ Paused due to no input' : ''}
               </p>
               <Button
                 onClick={handleHandsFreeResume}
