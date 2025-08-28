@@ -698,6 +698,54 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     }
   };
   
+  // Bootstrap function for one-tap start
+  const handleHandsFreeBootstrap = async () => {
+    // Prevent duplicate starts
+    if (hfActive) return;
+    
+    console.log('HF_BOOTSTRAP');
+    setHfPermissionBlocked(false);
+    setErrorMessage(''); // Clear any previous errors
+    
+    try {
+      // Resume audio context first (handle autoplay restrictions)
+      if (typeof window !== 'undefined' && window.AudioContext) {
+        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        if (audioContext.state === 'suspended') {
+          await audioContext.resume();
+        }
+      }
+      
+      // Request microphone permission proactively
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          // Close the stream immediately after getting permission
+          stream.getTracks().forEach(track => track.stop());
+        } catch (permissionError: any) {
+          console.log('HF_ERROR_PERMISSION:', permissionError.message);
+          setHfPermissionBlocked(true);
+          return;
+        }
+      }
+      
+      // Start the hands-free session
+      await handleHandsFreeStart();
+      
+    } catch (error: any) {
+      console.log('HF_ERROR_BOOTSTRAP:', error.message);
+      
+      // Handle specific errors gracefully
+      if (error.message.includes('autoplay') || error.message.includes('gesture')) {
+        setErrorMessage("Tap to continue - browser requires user interaction");
+      } else if (error.message.includes('microphone') || error.message.includes('permission')) {
+        setHfPermissionBlocked(true);
+      } else {
+        setErrorMessage(error.message);
+      }
+    }
+  };
+
   const handleHandsFreeStart = async () => {
     // Prevent duplicate starts
     if (hfActive) return;
@@ -1129,16 +1177,37 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           ))}
         </div>
 
-        {/* Status Chip Under Chat - Always Visible for Hands-Free Mode */}
+        {/* Bootstrap/Status Under Chat - Always Visible for Hands-Free Mode */}
         {hfEnabled && (
           <div className="text-center mb-4 relative z-10">
-            <div className="inline-flex bg-white/10 backdrop-blur-sm rounded-full px-3 py-1 text-white/80 text-xs font-medium">
-              {!hfActive && '⏸️ Hands-Free Ready'}
-              {hfActive && hfStatus === 'prompting' && (hfIsReprompting ? '🔄 Re-prompting...' : '📖 Reading...')}
-              {hfActive && hfStatus === 'listening' && '👂 Listening...'}
-              {hfActive && hfStatus === 'processing' && '🧠 Processing...'}
-              {hfActive && hfStatus === 'idle' && (hfAutoPaused ? '⏸️ Auto-paused' : '⏸️ Ready')}
-            </div>
+            {/* Show bootstrap pill when HF is enabled but not active */}
+            {!hfActive && !hfAutoPaused && !hfShowResume && (
+              <button
+                onClick={handleHandsFreeBootstrap}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleHandsFreeBootstrap();
+                  }
+                }}
+                className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500/80 to-purple-500/80 hover:from-blue-600/90 hover:to-purple-600/90 backdrop-blur-sm rounded-full px-4 py-2 text-white font-medium text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white/30 focus:ring-offset-2 focus:ring-offset-transparent cursor-pointer shadow-lg hover:shadow-xl"
+                aria-label="Start hands-free session"
+                title="Start hands-free conversation mode"
+              >
+                <span>▶︎</span>
+                <span>Start hands-free</span>
+              </button>
+            )}
+            
+            {/* Show status chip when session is active */}
+            {hfActive && (
+              <div className="inline-flex bg-white/10 backdrop-blur-sm rounded-full px-3 py-1 text-white/80 text-xs font-medium">
+                {hfStatus === 'prompting' && (hfIsReprompting ? '🔄 Re-prompting...' : '📖 Reading...')}
+                {hfStatus === 'listening' && '👂 Listening...'}
+                {hfStatus === 'processing' && '🧠 Processing...'}
+                {hfStatus === 'idle' && (hfAutoPaused ? '⏸️ Auto-paused' : '⏸️ Ready')}
+              </div>
+            )}
           </div>
         )}
 
@@ -1234,13 +1303,14 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
                 {hfShowResume ? '🔄 Session paused while tab was in background' : 
                  hfAutoPaused ? '⏸️ Paused due to no input' : ''}
               </p>
-              <Button
-                onClick={handleHandsFreeResume}
-                size="sm"
-                className="bg-blue-500 hover:bg-blue-600 text-white text-xs"
+              <button
+                onClick={handleHandsFreeBootstrap}
+                className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 rounded-lg px-4 py-2 text-white font-medium text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white/30 focus:ring-offset-2 focus:ring-offset-transparent cursor-pointer"
+                aria-label="Resume hands-free session"
               >
-                Resume Hands-Free
-              </Button>
+                <span>▶︎</span>
+                <span>Resume hands-free</span>
+              </button>
             </div>
           )}
 
@@ -1251,7 +1321,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
                 🎤 Microphone access needed
               </p>
               <Button
-                onClick={handlePermissionUnblock}
+                onClick={handleHandsFreeBootstrap}
                 size="sm"
                 className="bg-orange-500 hover:bg-orange-600 text-white text-xs"
               >
