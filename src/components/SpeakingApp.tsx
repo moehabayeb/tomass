@@ -140,6 +140,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   
   // Hands-Free Mode state and logic
   const [hfEnabled, setHfEnabled] = useState(false);
+  const [hfActive, setHfActive] = useState(false);
+  const [hfStatus, setHfStatus] = useState<'idle' | 'prompting' | 'listening' | 'processing'>('idle');
   
   // Check for hands-free mode availability (feature flag OR query param ?hf=1)
   const isHandsFreeModeAvailable = (() => {
@@ -489,6 +491,32 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     }
   };
 
+  // Hands-Free Mode handlers (UI-only for now)
+  const handleHandsFreeStart = () => {
+    console.log('[Speaking] Hands-free mode starting');
+    setHfActive(true);
+    setHfStatus('prompting');
+    
+    // Cycle through statuses for demo (no actual functionality yet)
+    setTimeout(() => setHfStatus('listening'), 1500);
+    setTimeout(() => setHfStatus('processing'), 3000);
+    setTimeout(() => setHfStatus('idle'), 4500);
+  };
+
+  const handleHandsFreePause = () => {
+    console.log('[Speaking] Hands-free pause (no-op for now)');
+  };
+
+  const handleHandsFreeRepeat = () => {
+    console.log('[Speaking] Hands-free repeat (no-op for now)');
+  };
+
+  const handleHandsFreeStop = () => {
+    console.log('[Speaking] Hands-free stop');
+    setHfActive(false);
+    setHfStatus('idle');
+  };
+
   const handleRecordingClick = async () => {
     if (micState === 'idle') {
       // Start recording
@@ -596,7 +624,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           )}
           
           <Button
-            onClick={handleRecordingClick}
+            onClick={hfEnabled && !hfActive ? handleHandsFreeStart : handleRecordingClick}
             disabled={micState === 'processing' || isProcessingTranscript}
             className={`pill-button w-full max-w-sm py-6 sm:py-8 text-lg sm:text-xl font-bold border-0 shadow-xl min-h-[64px] ${micState === 'recording' ? 'animate-pulse' : ''}`}
             size="lg"
@@ -617,10 +645,53 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
                 {micState === 'recording' ? "Recording... (tap to stop)" : 
                  micState === 'processing' ? "Processing..." : 
                  isProcessingTranscript ? "Thinking..." :
-                 "Start Speaking"}
+                 hfEnabled && !hfActive ? "Start hands-free" : "Start Speaking"}
               </span>
             </div>
           </Button>
+
+          {/* Hands-Free Control Bar (only when active) */}
+          {hfEnabled && hfActive && (
+            <div className="glass-card rounded-xl p-3 w-full max-w-sm">
+              <div className="flex items-center justify-between gap-2">
+                <Button
+                  onClick={handleHandsFreePause}
+                  variant="ghost"
+                  size="sm"
+                  className="text-white/80 hover:text-white hover:bg-white/10 text-xs"
+                  disabled
+                >
+                  Pause
+                </Button>
+                <span className="text-white/60 text-xs">•</span>
+                <Button
+                  onClick={handleHandsFreeRepeat}
+                  variant="ghost"
+                  size="sm"
+                  className="text-white/80 hover:text-white hover:bg-white/10 text-xs"
+                  disabled
+                >
+                  Repeat
+                </Button>
+                <span className="text-white/60 text-xs">•</span>
+                <Button
+                  onClick={handleHandsFreeStop}
+                  variant="ghost"
+                  size="sm"
+                  className="text-white/80 hover:text-white hover:bg-white/10 text-xs"
+                >
+                  Stop
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Hands-Free Status Chip (only when active) */}
+          {hfEnabled && hfActive && (
+            <div className="bg-white/10 backdrop-blur-sm rounded-full px-3 py-1 text-white/80 text-xs font-medium">
+              Status: {hfStatus.charAt(0).toUpperCase() + hfStatus.slice(1)}
+            </div>
+          )}
           
           {/* Error message display */}
           {errorMessage && (
