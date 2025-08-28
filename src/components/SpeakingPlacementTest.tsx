@@ -16,6 +16,7 @@ import { narration } from '../utils/narration';
 import CanvasAvatar from './CanvasAvatar';
 import { useGamification } from '@/hooks/useGamification';
 import { configureUtterance } from '@/config/voice';
+import { TTSManager } from '@/services/TTSManager';
 import { processPlacementResults } from './levelPlacementLogic';
 
 interface SpeakingPlacementTestProps {
@@ -549,65 +550,52 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     }
   }
 
-  // Enhanced TTS with safety guardrails
+  // Enhanced TTS with complete playback guarantee using TTSManager
   async function speakPrompt(text: string) {
     console.log('[LevelTest] speakPrompt:start', text.substring(0, 50) + '...');
     
     const id = newRunId();
-    runIdRef.current = id;
-    clearAllTimers();
+    if (testState === 'done') return;
+    if (!text.trim()) {
+      console.log('[LevelTest] empty prompt, unlocking immediately');
+      setTestState('ready');
+      return;
+    }
     
-    // Always cancel anything in progress
-    try { window?.speechSynthesis?.cancel(); } catch {}
-    try { narration.cancel(); } catch {}
-
+    runIdRef.current = id;
     setTestState('prompting');              // lock mic visually
     
     console.log('[LevelTest] tts:locked, id:', id);
 
-    // If we have Web Speech TTS, use it with onend
-    const hasWebTTS = typeof window !== 'undefined' && 'speechSynthesis' in window;
-    if (hasWebTTS) {
-      try {
-        const utter = new SpeechSynthesisUtterance(text);
-        // Configure with consistent Thomas voice settings
-        configureUtterance(utter, text);
-        utter.onend = () => {
-          console.log('[LevelTest] tts:onend');
-          if (!isStale(id)) {
-            clearAllTimers();
-            setTestState('ready');            // UNLOCK the mic
-            console.log('[LevelTest] mic:unlocked');
+    try {
+      const result = await TTSManager.speak(text, {
+        canSkip: true,
+        onProgress: (chunk) => {
+          if (debug) {
+            console.log('[LevelTest] tts:chunk', `${chunk.index}/${chunk.total}:`, 
+              chunk.text.substring(0, 30) + '...');
           }
-        };
-        utter.onerror = () => {
-          console.log('[LevelTest] tts:error');
-          if (!isStale(id)) {
-            clearAllTimers();
-            setTestState('ready');
-          }
-        };
-        window.speechSynthesis.speak(utter);
-        console.log('[LevelTest] tts:started');
-      } catch (err) {
-        console.log('[LevelTest] tts:catch-error', err);
-        // Fall through to time-based unlock
-      }
-    } else {
-      console.log('[LevelTest] no-web-tts, using narration');
-      // If you use a custom narration engine, call it here (non-blocking)
-      try { narration.speak(text); } catch {}
-    }
+        },
+        onSkip: () => {
+          console.log('[LevelTest] tts:skipped by user');
+        }
+      });
 
-    // SAFETY FALLBACK: unlock even if onend never fires (iOS quirks) - 6s maximum
-    const ms = Math.min(Math.max(text.length * 45, 1200), 6000); // 1.2s–6s
-    console.log('[LevelTest] tts:fallback-timer', ms + 'ms');
-    ttsTimerRef.current = window.setTimeout(() => {
-      console.log('[LevelTest] tts:timeout-unlock');
+      console.log('[LevelTest] tts:complete', result);
+      
+      // Only unlock if this is still the current operation
       if (!isStale(id)) {
+        clearAllTimers();
         setTestState('ready');                // UNLOCK the mic
       }
-    }, ms);
+    } catch (error) {
+      console.error('[LevelTest] tts:error', error);
+      // Unlock on error
+      if (!isStale(id)) {
+        clearAllTimers();
+        setTestState('ready');
+      }
+    }
   }
 
   // Question change hygiene - hard reset on every question change
@@ -626,8 +614,7 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     // cleanup if user leaves screen
     return () => {
       console.log('[LevelTest] cleanup-question');
-      try { window?.speechSynthesis?.cancel(); } catch {}
-      try { narration.cancel(); } catch {}
+      TTSManager.stop();
       clearAllTimers();
       if (SPEAKING_TEST_STRICT_SESSION) {
         hardResetSession();
@@ -689,8 +676,7 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
   useEffect(() => {
     return () => {
       if (debug) console.log('[LevelTest] component:unmounting');
-      try { window?.speechSynthesis?.cancel(); } catch {}
-      try { narration.cancel(); } catch {}
+      TTSManager.stop();
       clearAllTimers();
       if (SPEAKING_TEST_STRICT_SESSION) {
         hardResetSession();
@@ -788,10 +774,8 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     
     if (testState === 'prompting') {
       if (debug) console.log('[SpeakingTest] mic:override-tts');
-      // user wants to start now → cancel TTS and go
-      try { window?.speechSynthesis?.cancel(); } catch {}
-      try { narration.cancel(); } catch {}
-      clearAllTimers();
+      // user wants to start now → skip TTS and go
+      TTSManager.skip();
       setTestState('ready');
       if (debug) console.log('[SpeakingTest] mic:forced-ready');
     }
@@ -1436,7 +1420,9 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
                   ) : SPEAKING_TEST_VAD_TOLERANT_PAUSE && pauseStatus === 'grace_period' ? (
                     <div className="text-white/80 text-sm">Listening… (grace period)</div>
                   ) : testState === 'prompting' ? (
-                    <div className="text-white/80 text-sm">Reading question...</div>
+                    <div className="text-white/80 text-sm">
+                      Reading question... {TTSManager.isSpeaking() && <span className="opacity-60">(tap to skip)</span>}
+                    </div>
                   ) : testState === 'ready' && micState === 'idle' ? (
                     <div className="text-white/80 text-sm">Tap to start</div>
                   ) : null}
