@@ -47,6 +47,10 @@ class TTSManagerService {
   // Feature flag
   private readonly STRICT_QUEUE = true; // TTS_STRICT_QUEUE default ON
 
+  // Idempotent play gate for V2
+  private playedMessages = new Map<string, boolean>();
+  private currentMessageId: string | null = null;
+
   public busy = false;
 
   constructor() {
@@ -309,6 +313,31 @@ class TTSManagerService {
 
   public getSoundEnabled(): boolean {
     return this.isEnabled;
+  }
+
+  public async play(messageId: string, text: string, options: TTSOptions = {}): Promise<TTSResult> {
+    // Idempotent gate - return immediately if already played
+    if (this.playedMessages.get(messageId)) {
+      console.log('[TTSManager] Message already played:', messageId);
+      return {
+        completed: true,
+        skipped: false,
+        chunksSpoken: 0,
+        totalChunks: 0,
+        durationMs: 0
+      };
+    }
+
+    this.currentMessageId = messageId;
+    const result = await this.speak(text, options);
+    
+    // Mark as played only after successful completion
+    if (result.completed && !result.skipped) {
+      this.playedMessages.set(messageId, true);
+      console.log('[TTSManager] TTS_COMPLETE:', messageId);
+    }
+    
+    return result;
   }
 
   public async speak(text: string, options: TTSOptions = {}): Promise<TTSResult> {

@@ -17,12 +17,17 @@ import BookmarkButton from './BookmarkButton';
 import { startRecording, stopRecording, getState, onState, cleanup, type MicState } from '@/lib/audio/micEngine';
 import { useToast } from '@/hooks/use-toast';
 import { TTSManager } from '@/services/TTSManager';
+import { wakeLockManager } from '@/utils/wakeLock';
+import { Play, Pause, MoreHorizontal, RotateCcw, Square } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { cn } from '@/lib/utils';
 
 // Feature flags
 const SPEAKING_HANDS_FREE = false; // Default OFF
 const HF_BARGE_IN = false; // Barge-in feature flag (optional)
 const HF_VOICE_COMMANDS = true; // Voice commands feature flag (default ON)
 const SPEAKING_HF_MINUI = false; // Minimal hands-free UI (default OFF)
+const SPEAKING_HANDS_FREE_V2 = false; // V2 features (default OFF)
 
 // Sparkle component for background decoration
 const Sparkle = ({ className, delayed = false }: { className?: string; delayed?: boolean }) => (
@@ -161,6 +166,16 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   const [hfLongPressTimeout, setHfLongPressTimeout] = useState<NodeJS.Timeout | null>(null);
   const [hfIsLongPressing, setHfIsLongPressing] = useState(false);
   const [hfShowOverflow, setHfShowOverflow] = useState(false);
+  
+  // V2 enhancements
+  const hfV2Enabled = SPEAKING_HANDS_FREE_V2 || localStorage.getItem('SPEAKING_HANDS_FREE_V2') === 'true' || new URLSearchParams(window.location.search).has('hfv2');
+  const [hfBargeInDetector, setHfBargeInDetector] = useState<{
+    audioContext: AudioContext | null;
+    analyser: AnalyserNode | null;
+    stream: MediaStream | null;
+    isActive: boolean;
+  }>({ audioContext: null, analyser: null, stream: null, isActive: false });
+  const [hfOverflowOpen, setHfOverflowOpen] = useState(false);
   
   // Persist hfEnabled to localStorage
   useEffect(() => {
@@ -627,15 +642,86 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     const telemetryData = {
       event,
       timestamp: Date.now(),
-      device: navigator.userAgent.includes('Mobile') ? 'mobile' : 'desktop',
+      device: /Mobi|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
       browser: navigator.userAgent.includes('Chrome') ? 'chrome' : 
                navigator.userAgent.includes('Safari') ? 'safari' :
                navigator.userAgent.includes('Firefox') ? 'firefox' : 'other',
       hfStatus,
       hfActive,
+      v2: hfV2Enabled,
       ...data
     };
     console.log('HF_TELEMETRY:', telemetryData);
+  };
+
+  // Barge-in VAD detector for V2
+  const startBargeInDetector = async () => {
+    if (!hfV2Enabled || hfBargeInDetector.isActive) return;
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: { 
+          sampleRate: 16000,
+          channelCount: 1,
+          echoCancellation: true,
+          noiseSuppression: true 
+        } 
+      });
+      
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const analyser = audioContext.createAnalyser();
+      const source = audioContext.createMediaStreamSource(stream);
+      
+      analyser.fftSize = 256;
+      analyser.smoothingTimeConstant = 0.8;
+      source.connect(analyser);
+      
+      setHfBargeInDetector({ audioContext, analyser, stream, isActive: true });
+      
+      // Monitor for barge-in
+      const dataArray = new Uint8Array(analyser.frequencyBinCount);
+      let consecutiveHighSamples = 0;
+      const threshold = 150;
+      const requiredSamples = 15; // ~250ms at 60fps
+      
+      const checkForBargeIn = () => {
+        if (!TTSManager.isSpeaking()) return;
+        
+        analyser.getByteFrequencyData(dataArray);
+        const average = dataArray.reduce((a, b) => a + b) / dataArray.length;
+        
+        if (average > threshold) {
+          consecutiveHighSamples++;
+          if (consecutiveHighSamples >= requiredSamples) {
+            console.log('HF_BARGE_IN detected, RMS:', average);
+            emitHFTelemetry('HF_BARGE_IN', { rms: average });
+            TTSManager.skip();
+            consecutiveHighSamples = 0;
+          }
+        } else {
+          consecutiveHighSamples = 0;
+        }
+        
+        if (hfBargeInDetector.isActive) {
+          requestAnimationFrame(checkForBargeIn);
+        }
+      };
+      
+      requestAnimationFrame(checkForBargeIn);
+      
+    } catch (error) {
+      console.warn('Barge-in detector failed:', error);
+    }
+  };
+
+  const stopBargeInDetector = () => {
+    if (hfBargeInDetector.stream) {
+      hfBargeInDetector.stream.getTracks().forEach(track => track.stop());
+    }
+    if (hfBargeInDetector.audioContext) {
+      hfBargeInDetector.audioContext.close();
+    }
+    setHfBargeInDetector({ audioContext: null, analyser: null, stream: null, isActive: false });
   };
 
   // Auto-hide controls functionality
@@ -926,12 +1012,23 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     // Prevent duplicate starts
     if (hfActive) return;
     
-    console.log('HF_START');
+    console.log('HF_BOOTSTRAP');
+    emitHFTelemetry('HF_BOOTSTRAP');
     setHfActive(true);
     setHfSessionActive(true); // Start session
     setHfStatus('idle');
     setHfPermissionBlocked(false);
     setErrorMessage(''); // Clear any previous errors
+    
+    // Acquire wake lock if V2 enabled
+    if (hfV2Enabled) {
+      await wakeLockManager.request();
+    }
+    
+    // Start barge-in detector if V2 enabled
+    if (hfV2Enabled) {
+      await startBargeInDetector();
+    }
     
     // Get the last AI message as the current prompt
     const lastAIMessage = messages.filter(m => !m.isUser && !m.isSystem).pop();
@@ -942,10 +1039,17 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       await startHandsFreePromptPlayback(prompt);
     } catch (error: any) {
       console.log('HF_ERROR_START:', error.message);
+      emitHFTelemetry('HF_ERROR_start', { error: error.message });
       setErrorMessage(error.message);
       setHfActive(false);
       setHfSessionActive(false);
       setHfStatus('idle');
+      
+      // Clean up V2 features
+      if (hfV2Enabled) {
+        stopBargeInDetector();
+        wakeLockManager.release();
+      }
     }
   };
 
@@ -1182,6 +1286,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
   const handleHandsFreePause = async () => {
     console.log('HF_PAUSE');
+    emitHFTelemetry('HF_PAUSE');
     
     // Clear timers
     if (hfNoInputTimer) clearTimeout(hfNoInputTimer);
@@ -1195,6 +1300,12 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     // Stop any recording
     if (micState === 'recording') {
       stopRecording();
+    }
+    
+    // Clean up V2 features
+    if (hfV2Enabled) {
+      stopBargeInDetector();
+      wakeLockManager.release();
     }
     
     // Hold at idle on same prompt
