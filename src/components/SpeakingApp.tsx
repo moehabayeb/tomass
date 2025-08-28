@@ -141,7 +141,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   // Hands-Free Mode state and logic
   const [hfEnabled, setHfEnabled] = useState(() => {
     // Load from localStorage on initialization
-    const saved = localStorage.getItem('hf_mode');
+    const saved = localStorage.getItem('hfEnabled');
     return saved === 'true';
   });
   const [hfActive, setHfActive] = useState(false);
@@ -149,16 +149,27 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   
   // Persist hfEnabled to localStorage
   useEffect(() => {
-    localStorage.setItem('hf_mode', hfEnabled.toString());
+    localStorage.setItem('hfEnabled', hfEnabled.toString());
   }, [hfEnabled]);
   
   // Check for hands-free mode availability (feature flag OR query param ?hf=1)
   const isHandsFreeModeAvailable = (() => {
-    if (SPEAKING_HANDS_FREE) return true;
+    if (SPEAKING_HANDS_FREE) {
+      console.log('HF gate: on | reason: flag');
+      return true;
+    }
     
     // Check for query param ?hf=1
     const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get('hf') === '1';
+    const hasParam = urlParams.get('hf') === '1';
+    
+    if (hasParam) {
+      console.log('HF gate: on | reason: param');
+      return true;
+    }
+    
+    console.log('HF gate: off | reason: flag off & no param');
+    return false;
   })();
   
   // Avatar state is now managed by useAvatarTTS hook
