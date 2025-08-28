@@ -545,13 +545,22 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   const handleVoiceCommand = async (command: string) => {
     console.log('HF_VOICE_COMMAND:', command);
     
+    // Strict cleanup before executing command
+    try {
+      cleanup();
+    } catch (error) {
+      console.warn('HF_COMMAND_CLEANUP_WARNING:', error);
+    }
+    
     switch (command) {
       case 'pause':
+        console.log('HF_PAUSE');
         // Finish current step and hold at idle
         await handleHandsFreePause();
         break;
         
       case 'resume':
+        console.log('HF_RESUME');
         // Resume from same prompt if paused
         if (hfStatus === 'idle' && (hfAutoPaused || !hfSessionActive)) {
           await handleHandsFreeResume();
@@ -559,11 +568,13 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         break;
         
       case 'repeat':
+        console.log('HF_REPEAT');
         // Replay last teacher message and re-open mic
         await handleHandsFreeRepeat();
         break;
         
       case 'stop':
+        console.log('HF_STOP');
         // Graceful stop, keep HF toggle ON but session idle
         handleHandsFreeStop();
         break;
@@ -576,6 +587,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   const [hfSessionActive, setHfSessionActive] = useState(false);
   const [hfTabVisible, setHfTabVisible] = useState(true);
   const [hfShowResume, setHfShowResume] = useState(false);
+  const [hfRetryCount, setHfRetryCount] = useState(0);
+  const [hfEmptyTranscriptCount, setHfEmptyTranscriptCount] = useState(0);
   // Tab visibility handling for hands-free pause/resume
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -794,6 +807,13 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     setHfIsReprompting(false);
     setHfAutoPaused(false);
     
+    // Strict cleanup between steps - ensure clean microphone state
+    try {
+      cleanup(); // Clean up previous mic session
+    } catch (error) {
+      console.warn('HF_CLEANUP_WARNING:', error);
+    }
+    
     // Clear any existing timers
     if (hfNoInputTimer) clearTimeout(hfNoInputTimer);
     if (hfRePromptTimer) clearTimeout(hfRePromptTimer);
@@ -819,7 +839,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     // Start auto-pause timer (pause session after 12-15s total)
     const noinputTimer = setTimeout(async () => {
       if (hfStatus === 'listening') {
-        console.log('HF_AUTO_PAUSE: no input after 12s total');
+        console.log('HF_AUTOPAUSE_NO_INPUT: no input after 12s total');
         
         // Stop recording and pause session
         if (micState === 'recording') {
@@ -834,6 +854,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     setHfNoInputTimer(noinputTimer);
     
     try {
+      // Start recording with hard cap (keep existing duration limit)
       const result = await startRecording();
       
       // Clear timers since we got input
@@ -842,12 +863,44 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       
       console.log('HF_RESULT_FINAL:', result.transcript.length);
       
-      if (!result.transcript) {
-        setErrorMessage("No speech detected, please try again.");
-        setHfActive(false);
-        setHfStatus('idle');
-        setHfSessionActive(false);
-        return;
+      // Handle empty or too-short transcripts with retry logic
+      if (!result.transcript || result.transcript.trim().length < 2) {
+        console.log('HF_EMPTY_TRANSCRIPT:', hfEmptyTranscriptCount + 1);
+        
+        const newCount = hfEmptyTranscriptCount + 1;
+        setHfEmptyTranscriptCount(newCount);
+        
+        if (newCount >= 2) {
+          // After 2 empty transcripts, auto-repeat prompt once
+          console.log('HF_AUTO_REPEAT: too many empty transcripts');
+          setHfEmptyTranscriptCount(0); // Reset counter
+          
+          try {
+            await startHandsFreePromptPlayback(hfCurrentPrompt);
+            return;
+          } catch (error) {
+            console.log('HF_ERROR_AUTO_REPEAT:', error);
+            // Fall through to auto-pause
+          }
+          
+          // If repeat fails, auto-pause with nudge
+          setHfAutoPaused(true);
+          setHfStatus('idle');
+          setErrorMessage("No clear speech detected. Say 'resume' or tap Resume to continue.");
+          return;
+        } else {
+          // First empty transcript - retry once quickly
+          console.log('HF_RETRY: empty transcript, retrying');
+          setTimeout(() => {
+            if (hfActive && hfStatus === 'listening') {
+              startHandsFreeMicCapture();
+            }
+          }, 1000);
+          return;
+        }
+      } else {
+        // Reset empty transcript counter on successful input
+        setHfEmptyTranscriptCount(0);
       }
       
       // Check for voice commands first (don't display or score these)
@@ -886,6 +939,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       
       // Check if it's a permission issue
       if (error.message.includes('permission') || error.message.includes('NotAllowedError')) {
+        console.log('HF_ERROR_PERMISSION:', error.message);
         setHfPermissionBlocked(true);
         setErrorMessage("Microphone access needed. Please allow and try again.");
       } else {
@@ -1060,8 +1114,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           )}
         </div>
 
-        {/* Premium Chat Area */}
-        <div className="glass-card rounded-2xl sm:rounded-3xl p-4 sm:p-6 mb-6 sm:mb-8 overflow-y-auto min-h-[280px] max-h-[320px] space-y-2 relative z-10">
+          {/* Premium Chat Area */}
+        <div className="glass-card rounded-2xl sm:rounded-3xl p-4 sm:p-6 mb-4 sm:mb-6 overflow-y-auto min-h-[280px] max-h-[320px] space-y-2 relative z-10">
           <div className="text-center mb-4">
             <span className="text-white/80 text-sm font-medium bg-white/10 backdrop-blur-sm rounded-full px-3 py-1">💬 Conversation</span>
           </div>
@@ -1074,6 +1128,19 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
             />
           ))}
         </div>
+
+        {/* Status Chip Under Chat - Always Visible for Hands-Free Mode */}
+        {hfEnabled && (
+          <div className="text-center mb-4 relative z-10">
+            <div className="inline-flex bg-white/10 backdrop-blur-sm rounded-full px-3 py-1 text-white/80 text-xs font-medium">
+              {!hfActive && '⏸️ Hands-Free Ready'}
+              {hfActive && hfStatus === 'prompting' && (hfIsReprompting ? '🔄 Re-prompting...' : '📖 Reading...')}
+              {hfActive && hfStatus === 'listening' && '👂 Listening...'}
+              {hfActive && hfStatus === 'processing' && '🧠 Processing...'}
+              {hfActive && hfStatus === 'idle' && (hfAutoPaused ? '⏸️ Auto-paused' : '⏸️ Ready')}
+            </div>
+          </div>
+        )}
 
         {/* Premium Speaking Button */}
         <div className="flex flex-col items-center space-y-4 sm:space-y-6 pb-6 sm:pb-8 relative z-10">
@@ -1159,15 +1226,6 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
             </div>
           )}
 
-          {/* Hands-Free Status Chip (only when active) */}
-          {hfEnabled && hfActive && (
-            <div className="bg-white/10 backdrop-blur-sm rounded-full px-3 py-1 text-white/80 text-xs font-medium">
-              {hfStatus === 'prompting' && (hfIsReprompting ? '🔄 Re-prompting...' : '📖 Reading...')}
-              {hfStatus === 'listening' && '👂 Listening...'}
-              {hfStatus === 'processing' && '🧠 Processing...'}
-              {hfStatus === 'idle' && (hfAutoPaused ? '⏸️ Auto-paused' : '⏸️ Ready')}
-            </div>
-          )}
 
           {/* Resume Button (only when needed after backgrounding or auto-pause) */}
           {(hfShowResume || hfAutoPaused) && (
