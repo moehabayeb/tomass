@@ -536,6 +536,23 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [hfActive, hfSessionActive]);
 
+  // Auto-start hands-free mode when toggle is switched ON or on page load
+  useEffect(() => {
+    if (hfEnabled && !hfActive && isHandsFreeModeAvailable) {
+      // Auto-start the hands-free loop
+      console.log('HF_AUTO_START: toggle enabled');
+      handleHandsFreeStart();
+    }
+  }, [hfEnabled, isHandsFreeModeAvailable]);
+
+  // Auto-start hands-free mode on page load if enabled
+  useEffect(() => {
+    if (hfEnabled && isHandsFreeModeAvailable) {
+      console.log('HF_AUTO_START: page load with toggle enabled');
+      handleHandsFreeStart();
+    }
+  }, []);
+
   // Auto-advance after scoring completes in hands-free mode
   const handleHandsFreeAdvance = async () => {
     if (!hfActive || !hfSessionActive) return;
@@ -589,11 +606,15 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   };
   
   const handleHandsFreeStart = async () => {
+    // Prevent duplicate starts
+    if (hfActive) return;
+    
     console.log('HF_START');
     setHfActive(true);
     setHfSessionActive(true); // Start session
     setHfStatus('idle');
     setHfPermissionBlocked(false);
+    setErrorMessage(''); // Clear any previous errors
     
     // Get the last AI message as the current prompt
     const lastAIMessage = messages.filter(m => !m.isUser && !m.isSystem).pop();
@@ -614,6 +635,9 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   const startHandsFreePromptPlayback = async (prompt: string) => {
     if (!soundEnabled) {
       // Skip TTS if sound is off, go straight to mic
+      console.log('HF_PROMPT_SKIP: sound disabled');
+      setHfStatus('prompting'); // Show status briefly
+      await new Promise(resolve => setTimeout(resolve, 500)); // Brief pause
       await startHandsFreeMicCapture();
       return;
     }
@@ -628,6 +652,9 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       });
       
       console.log('HF_TTS_COMPLETE');
+      
+      // Small delay before opening mic to prevent jarring transition
+      await new Promise(resolve => setTimeout(resolve, 300));
       
       // Only start mic after TTS is completely done
       await startHandsFreeMicCapture();
@@ -867,34 +894,35 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
             </div>
           )}
           
-          <Button
-            onClick={hfEnabled && !hfActive ? handleHandsFreeStart : handleRecordingClick}
-            disabled={micState === 'processing' || isProcessingTranscript}
-            className={`pill-button w-full max-w-sm py-6 sm:py-8 text-lg sm:text-xl font-bold border-0 shadow-xl min-h-[64px] ${micState === 'recording' ? 'animate-pulse' : ''}`}
-            size="lg"
-            style={{
-              background: micState === 'recording' 
-                ? 'linear-gradient(135deg, #ff4f80, #ff6b9d, #c084fc)' 
-                : 'linear-gradient(135deg, #ff4f80, #ff6b9d)',
-              color: 'white',
-              boxShadow: micState === 'recording' 
-                ? '0 0 60px rgba(255, 79, 128, 0.6), 0 8px 32px rgba(255, 107, 157, 0.4)' 
-                : hfEnabled && !hfActive
-                ? '0 0 40px rgba(255, 79, 128, 0.5), 0 8px 32px rgba(255, 107, 157, 0.3), 0 4px 16px rgba(255, 107, 157, 0.2)'
-                : '0 8px 32px rgba(255, 79, 128, 0.3), 0 4px 16px rgba(255, 107, 157, 0.2)',
-            }}
-          >
-            <div className="flex items-center gap-3">
-              {micState === 'recording' ? "🎙️" : 
-               (micState === 'processing' || isProcessingTranscript) ? "⏳" : "🎤"}
-              <span className="drop-shadow-sm">
-                {micState === 'recording' ? "Recording... (tap to stop)" : 
-                 micState === 'processing' ? "Processing..." : 
-                 isProcessingTranscript ? "Thinking..." :
-                 hfEnabled && !hfActive ? "Start hands-free" : "Start Speaking"}
-              </span>
-            </div>
-          </Button>
+          {/* Hide the big Start Speaking button when hands-free is enabled */}
+          {!hfEnabled && (
+            <Button
+              onClick={handleRecordingClick}
+              disabled={micState === 'processing' || isProcessingTranscript}
+              className={`pill-button w-full max-w-sm py-6 sm:py-8 text-lg sm:text-xl font-bold border-0 shadow-xl min-h-[64px] ${micState === 'recording' ? 'animate-pulse' : ''}`}
+              size="lg"
+              style={{
+                background: micState === 'recording' 
+                  ? 'linear-gradient(135deg, #ff4f80, #ff6b9d, #c084fc)' 
+                  : 'linear-gradient(135deg, #ff4f80, #ff6b9d)',
+                color: 'white',
+                boxShadow: micState === 'recording' 
+                  ? '0 0 60px rgba(255, 79, 128, 0.6), 0 8px 32px rgba(255, 107, 157, 0.4)' 
+                  : '0 8px 32px rgba(255, 79, 128, 0.3), 0 4px 16px rgba(255, 107, 157, 0.2)',
+              }}
+            >
+              <div className="flex items-center gap-3">
+                {micState === 'recording' ? "🎙️" : 
+                 (micState === 'processing' || isProcessingTranscript) ? "⏳" : "🎤"}
+                <span className="drop-shadow-sm">
+                  {micState === 'recording' ? "Recording... (tap to stop)" : 
+                   micState === 'processing' ? "Processing..." : 
+                   isProcessingTranscript ? "Thinking..." :
+                   "Start Speaking"}
+                </span>
+              </div>
+            </Button>
+          )}
 
           {/* Hands-Free Control Bar (only when active) */}
           {hfEnabled && hfActive && (
@@ -939,7 +967,10 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           {/* Hands-Free Status Chip (only when active) */}
           {hfEnabled && hfActive && (
             <div className="bg-white/10 backdrop-blur-sm rounded-full px-3 py-1 text-white/80 text-xs font-medium">
-              Status: {hfStatus.charAt(0).toUpperCase() + hfStatus.slice(1)}
+              {hfStatus === 'prompting' && '📖 Reading...'}
+              {hfStatus === 'listening' && '👂 Listening...'}
+              {hfStatus === 'processing' && '🧠 Processing...'}
+              {hfStatus === 'idle' && '⏸️ Ready'}
             </div>
           )}
 
