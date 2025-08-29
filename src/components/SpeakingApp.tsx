@@ -5,6 +5,7 @@ import { Switch } from '@/components/ui/switch';
 import DIDAvatar from './DIDAvatar';
 import { useAvatarState } from '@/hooks/useAvatarState';
 import { useSpeakingTTS } from '@/hooks/useSpeakingTTS';
+import { useGlobalSound } from '@/hooks/useGlobalSound';
 import { supabase } from '@/integrations/supabase/client';
 import { useStreakTracker } from '@/hooks/useStreakTracker';
 import { useBadgeSystem } from '@/hooks/useBadgeSystem';
@@ -117,6 +118,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   const { incrementSpeakingSubmissions } = useBadgeSystem();
   const { user } = useAuthReady();
   const { toast } = useToast();
+  const { soundEnabled, enableSound } = useGlobalSound();
   
   const { level, xp_current, next_threshold, awardXp, lastLevelUpTime, fetchProgress, resetLevelUpNotification, subscribeToProgress } = useProgressStore();
   
@@ -124,20 +126,14 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     { text: "Hello! Ready to practice today? Let's start with a simple question.", isUser: false, isSystem: false, id: 'initial-1', role: 'assistant', content: "Hello! Ready to practice today? Let's start with a simple question." }
   ]);
 
-  // Convert messages for TTS
   const ttsMessages = messages.map(m => ({ 
     id: m.id || `msg-${Date.now()}`, 
     role: m.isUser ? 'user' : 'assistant', 
     content: m.text 
   })) as Array<{ id: string; role: 'user' | 'assistant'; content: string }>;
   
-  const [soundEnabled, setSoundEnabled] = useState(false);
   const { isSpeaking, toggleSound: handleToggleSound, stopSpeaking, clearHistory: clearSpeechHistory } = useSpeakingTTS(ttsMessages, soundEnabled);
   
-  const toggleSound = () => {
-    const newEnabled = handleToggleSound();
-    setSoundEnabled(newEnabled);
-  };
   const [micState, setMicState] = useState<MicState>('idle');
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [history, setHistory] = useState<Array<{input: string; corrected: string; time: string}>>([]);
@@ -1058,7 +1054,6 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     }
   };
   
-  // Bootstrap function for one-tap start
   const handleHandsFreeBootstrap = async () => {
     // Prevent duplicate starts
     if (hfActive) return;
@@ -1067,6 +1062,9 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     emitHFTelemetry('HF_BOOTSTRAP');
     setHfPermissionBlocked(false);
     setErrorMessage(''); // Clear any previous errors
+    
+    // Enable sound on first Play/Resume interaction (autoplay policy)
+    await enableSound();
     
     try {
       // Resume audio context first (handle autoplay restrictions)
@@ -1479,6 +1477,9 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
   const handleRecordingClick = async () => {
     if (micState === 'idle') {
+      // Enable sound on first interaction (autoplay policy)
+      await enableSound();
+      
       // Start recording
       console.log('[Speaking] recording:start-button-click');
       setErrorMessage('');

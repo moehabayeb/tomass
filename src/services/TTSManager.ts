@@ -315,7 +315,32 @@ class TTSManagerService {
     return this.isEnabled;
   }
 
+  /**
+   * Check if global sound is enabled by looking at localStorage
+   */
+  private getGlobalSoundEnabled(): boolean {
+    try {
+      const saved = localStorage.getItem('app.sound.enabled');
+      return saved !== null ? saved === 'true' : true; // Default true
+    } catch {
+      return true; // Default true if localStorage fails
+    }
+  }
+
   public async play(messageId: string, text: string, options: TTSOptions = {}): Promise<TTSResult> {
+    // Check global sound setting first
+    const globalSoundEnabled = this.getGlobalSoundEnabled();
+    if (!globalSoundEnabled) {
+      console.log('[TTSManager] Skipped - global sound disabled');
+      return {
+        completed: false,
+        skipped: true,
+        chunksSpoken: 0,
+        totalChunks: 0,
+        durationMs: 0
+      };
+    }
+
     // Idempotent gate - return immediately if already played
     if (this.playedMessages.get(messageId)) {
       console.log('[TTSManager] Message already played:', messageId);
@@ -341,8 +366,9 @@ class TTSManagerService {
   }
 
   public async speak(text: string, options: TTSOptions = {}): Promise<TTSResult> {
-    // If sound is disabled, resolve immediately
-    if (!this.isEnabled) {
+    // Check global sound setting first
+    const globalSoundEnabled = this.getGlobalSoundEnabled();
+    if (!globalSoundEnabled || !this.isEnabled) {
       return {
         completed: false,
         skipped: true,

@@ -70,23 +70,22 @@ export function NavigationDropdown({ currentMode, onModeChange }: NavigationDrop
 
   return (
     <>
-      <div className="fixed top-4 right-4 z-20">
-        <DropdownMenu open={open} onOpenChange={setOpen}>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-2xl border border-white/20 text-white/90 hover:bg-white/10 hover:text-white transition-all duration-200 px-4 py-2 h-auto relative"
-              style={{ boxShadow: 'var(--shadow-medium)' }}
-            >
-              <Menu className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">{currentItem?.label}</span>
-              <span className="sm:hidden">Menu</span>
-              {hasNewTip && (
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-orange-500 rounded-full animate-pulse"></div>
-              )}
-            </Button>
-          </DropdownMenuTrigger>
+      <DropdownMenu open={open} onOpenChange={setOpen}>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-2xl border border-white/20 text-white/90 hover:bg-white/10 hover:text-white transition-all duration-200 px-4 py-2 h-auto relative min-w-[44px] min-h-[44px]"
+            style={{ boxShadow: 'var(--shadow-medium)' }}
+          >
+            <Menu className="h-4 w-4 mr-2" />
+            <span className="hidden sm:inline">{currentItem?.label}</span>
+            <span className="sm:hidden">Menu</span>
+            {hasNewTip && (
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-orange-500 rounded-full animate-pulse"></div>
+            )}
+          </Button>
+        </DropdownMenuTrigger>
           <DropdownMenuContent 
             align="end" 
             className="w-48 bg-gradient-to-b from-white/95 to-white/90 backdrop-blur-xl border border-white/20 rounded-xl shadow-lg"
@@ -130,7 +129,6 @@ export function NavigationDropdown({ currentMode, onModeChange }: NavigationDrop
             })}
           </DropdownMenuContent>
         </DropdownMenu>
-      </div>
 
       {/* Daily Tips Modal */}
       {showDailyTips && (

@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { UserDropdown } from './UserDropdown';
 import { NavigationDropdown } from './NavigationDropdown';
 import { useAuthReady } from '@/hooks/useAuthReady';
+import { useGlobalSound } from '@/hooks/useGlobalSound';
+import { Volume2, VolumeX } from 'lucide-react';
 import SpeakingApp from './SpeakingApp';
 import GrammarModules from './GrammarModules';
 import LessonsApp from './LessonsApp';
@@ -31,6 +33,7 @@ export default function AppNavigation() {
   const [hasCompletedPlacement, setHasCompletedPlacement] = useState(false);
   const [profile, setProfile] = useState<any>(null);
   const { user, isAuthenticated } = useAuthReady();
+  const { soundEnabled, toggleSound } = useGlobalSound();
   const { userProfile, xpBoosts, showLevelUpPopup, pendingLevelUp, closeLevelUpPopup, getXPProgress, addXP } = useGamification();
   const { streakData, getStreakMessage, getNextMilestone, streakReward } = useStreakTracker(addXP);
   const { newlyUnlockedBadge, closeBadgeNotification, getFeatureProgress } = useBadgeSystem();
@@ -150,11 +153,27 @@ export default function AppNavigation() {
         )}
       </div>
 
-      {/* Navigation Dropdown - Always visible */}
-      <NavigationDropdown 
-        currentMode={currentMode} 
-        onModeChange={setCurrentMode} 
-      />
+      {/* Navigation Dropdown and Sound Toggle - Always visible */}
+      <div className="fixed top-4 right-4 z-20 flex items-center gap-3">
+        {/* Global Sound Toggle */}
+        <button
+          onClick={toggleSound}
+          className="bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full p-3 text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white/30 shadow-lg hover:shadow-xl min-w-[44px] min-h-[44px] flex items-center justify-center"
+          aria-label={soundEnabled ? "Mute sound" : "Enable sound"}
+          title={soundEnabled ? "Sound is ON - Click to mute" : "Sound is OFF - Click to enable"}
+        >
+          {soundEnabled ? (
+            <Volume2 className="w-5 h-5" />
+          ) : (
+            <VolumeX className="w-5 h-5" />
+          )}
+        </button>
+        
+        <NavigationDropdown 
+          currentMode={currentMode} 
+          onModeChange={setCurrentMode} 
+        />
+      </div>
 
       {/* User Avatar with Streak Badge - Hidden on speaking page for cleaner mobile experience */}
 
