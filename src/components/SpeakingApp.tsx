@@ -180,6 +180,13 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   const [hfShowFirstRunHint, setHfShowFirstRunHint] = useState(false);
   const [hfControlsMinimal, setHfControlsMinimal] = useState(true); // Default ON for speaking page - always minimal
   
+  // Turn token system for strict idempotency
+  const [currentTurnToken, setCurrentTurnToken] = useState<string>('');
+  const [lastPlayedMessageIds, setLastPlayedMessageIds] = useState<Set<string>>(new Set());
+  const [replayCounter, setReplayCounter] = useState(0);
+  const [ttsCompletionTimeouts, setTtsCompletionTimeouts] = useState<Set<NodeJS.Timeout>>(new Set());
+  const [micReopenTimeouts, setMicReopenTimeouts] = useState<Set<NodeJS.Timeout>>(new Set());
+  
   // Persist hfEnabled to localStorage
   useEffect(() => {
     localStorage.setItem('hfEnabled', hfEnabled.toString());
@@ -315,65 +322,155 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     clearSpeechHistory();
   }, []);
 
+  // Helper function to generate turn token (authoritative current turn)
+  const generateTurnToken = () => {
+    const timestamp = Date.now();
+    const token = `turn-${timestamp}-${Math.random().toString(36).substr(2, 6)}`;
+    console.log('HF_TURN_TOKEN_GENERATED:', token);
+    return token;
+  };
+
+  // Helper function to compute messageId for strict idempotency
+  const computeMessageId = (turnToken: string, phase: 'prompt' | 'feedback', text: string, replay = 0) => {
+    const baseId = `${turnToken}:${phase}:${text.substring(0, 50)}`;
+    const hash = baseId.split('').reduce((a, b) => {
+      a = ((a << 5) - a) + b.charCodeAt(0);
+      return a & a;
+    }, 0);
+    const replaySuffix = replay > 0 ? `:replay${replay}` : '';
+    return `msg-${Math.abs(hash)}-${phase}${replaySuffix}`;
+  };
+
+  // Cancel all old timeouts and listeners
+  const cancelOldListeners = () => {
+    console.log('HF_ADVANCE: canceling old listeners and timeouts');
+    
+    // Cancel TTS completion timeouts
+    ttsCompletionTimeouts.forEach(timeout => clearTimeout(timeout));
+    setTtsCompletionTimeouts(new Set());
+    
+    // Cancel mic reopen timeouts
+    micReopenTimeouts.forEach(timeout => clearTimeout(timeout));
+    setMicReopenTimeouts(new Set());
+    
+    // Cancel other hands-free timers
+    if (hfNoInputTimer) clearTimeout(hfNoInputTimer);
+    if (hfRePromptTimer) clearTimeout(hfRePromptTimer);
+  };
+
+  // Start a new turn with fresh token
+  const startNewTurn = () => {
+    const newToken = generateTurnToken();
+    setCurrentTurnToken(newToken);
+    setReplayCounter(0);
+    cancelOldListeners();
+    console.log('HF_NEW_TURN:', newToken);
+    return newToken;
+  };
+
   // Helper function to add chat bubbles with proper message structure
-  const addChatBubble = (text: string, type: "user" | "bot" | "system") => {
-    const messageId = `msg-${Date.now()}-${Math.random()}`;
+  const addChatBubble = (text: string, type: "user" | "bot" | "system", messageId?: string) => {
+    const id = messageId || `msg-${Date.now()}-${Math.random()}`;
     const newMessage = {
       text,
       isUser: type === "user",
       isSystem: type === "system",
-      id: messageId,
+      id,
       role: type === "user" ? "user" : "assistant",
       content: text
     };
     
     setMessages(prev => [...prev, newMessage]);
     setLastMessageTime(Date.now());
-    return messageId;
+    return id;
   };
 
-  // Enhanced bot message function - immediate TTS trigger with auto mic reopening
-  const showBotMessage = async (message: string) => {
+  // Enhanced bot message function - strict idempotent TTS with turn token
+  const showBotMessage = async (message: string, phase: 'prompt' | 'feedback' = 'feedback', isRepeat = false) => {
     console.log('[Speaking] Adding bot message:', message.substring(0, 50) + '...');
-    const messageId = addChatBubble(message, "bot");
     
-    // Trigger TTS immediately if sound is enabled
+    // Use current turn token or generate new one if missing
+    const turnToken = currentTurnToken || startNewTurn();
+    
+    // Compute messageId for strict idempotency
+    const replay = isRepeat ? replayCounter + 1 : 0;
+    const messageId = computeMessageId(turnToken, phase, message, replay);
+    
+    // Check if already played (strict idempotent TTS)
+    if (lastPlayedMessageIds.has(messageId) && !isRepeat) {
+      console.log('HF_TTS_SKIP: message already played:', messageId);
+      // Still trigger auto mic reopening if appropriate
+      await handleTTSCompletion(turnToken, messageId);
+      return messageId;
+    }
+    
+    // Add to chat
+    addChatBubble(message, "bot", messageId);
+    
+    // Mark as played immediately to prevent duplicates
+    setLastPlayedMessageIds(prev => new Set([...prev, messageId]));
+    if (isRepeat) {
+      setReplayCounter(replay);
+    }
+    
+    // Trigger TTS immediately if sound is enabled (single authority)
     if (soundEnabled) {
-      console.log('[Speaking] Triggering immediate TTS for message:', messageId);
+      console.log('HF_PROMPT_PLAY', { turnToken, messageId, phase });
       try {
         const { SimpleTTS } = await import('@/voice/SimpleTTS');
         await SimpleTTS.speak(message, messageId);
         
-        // Auto-reopen mic after TTS completes (hands-free mode only)
-        await handleTTSCompletion();
+        // Auto-reopen mic after TTS completes (gated by turn token)
+        await handleTTSCompletion(turnToken, messageId);
       } catch (error) {
         console.warn('[Speaking] Failed to speak message immediately:', error);
       }
     } else {
       // If sound is disabled, still check for auto mic reopening
-      await handleTTSCompletion();
+      await handleTTSCompletion(turnToken, messageId);
     }
+    
+    return messageId;
   };
 
-  // Handle TTS completion and auto-reopen mic when appropriate
-  const handleTTSCompletion = async () => {
+  // Handle TTS completion and auto-reopen mic when appropriate (gated by turn token)
+  const handleTTSCompletion = async (turnToken?: string, messageId?: string) => {
+    // Only proceed if turn token matches current one (prevent stale replays)
+    if (turnToken && turnToken !== currentTurnToken) {
+      console.log('HF_TTS_COMPLETE_STALE: ignoring stale completion for token:', turnToken);
+      return;
+    }
+    
+    // Log TTS completion with turn token
+    console.log('HF_TTS_COMPLETE', { turnToken: turnToken || currentTurnToken, messageId });
+    
     // Only in hands-free mode, when session is active, not paused, and not already listening
     if (hfActive && hfSessionActive && !hfAutoPaused && hfStatus !== 'listening') {
-      console.log('HF_TTS_COMPLETE');
-      
       // Small delay to prevent jarring transition
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      // Guard rail: ensure we're still in the right state after delay and not already listening
-      if (hfActive && hfSessionActive && !hfAutoPaused && (hfStatus === 'idle' || hfStatus === 'prompting' || hfStatus === 'processing')) {
-        console.log('HF_AUTO_MIC_REOPEN: reopening mic after TTS completion');
-        try {
-          await startHandsFreeMicCapture();
-        } catch (error: any) {
-          console.log('HF_ERROR_AUTO_REOPEN:', error.message);
-          setErrorMessage(error.message);
+      const timeout = setTimeout(async () => {
+        // Remove from active timeouts
+        setMicReopenTimeouts(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(timeout);
+          return newSet;
+        });
+        
+        // Guard rail: ensure we're still in the right state after delay and turn token still matches
+        const stillCurrentTurn = !turnToken || turnToken === currentTurnToken;
+        if (hfActive && hfSessionActive && !hfAutoPaused && stillCurrentTurn && 
+            (hfStatus === 'idle' || hfStatus === 'prompting' || hfStatus === 'processing')) {
+          console.log('HF_AUTO_MIC_REOPEN: reopening mic after TTS completion', { turnToken: turnToken || currentTurnToken });
+          try {
+            await startHandsFreeMicCapture();
+          } catch (error: any) {
+            console.log('HF_ERROR_AUTO_REOPEN:', error.message);
+            setErrorMessage(error.message);
+          }
         }
-      }
+      }, 300);
+      
+      // Track timeout for cleanup
+      setMicReopenTimeouts(prev => new Set([...prev, timeout]));
     }
   };
 
@@ -387,8 +484,15 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       fetchProgress();
     }
     
-    // Cleanup on unmount
+    // Initialize with first turn token
+    if (!currentTurnToken) {
+      startNewTurn();
+    }
+    
+    // Cleanup on unmount - single subscription management
     return () => {
+      console.log('[Speaking] Unmounting - cleaning up listeners and timeouts');
+      cancelOldListeners();
       cleanup();
     };
   }, [user]);
@@ -522,7 +626,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       // Step 3: Handle distress signals immediately
       if (intent === 'distress_signal') {
         console.log('[Speaking] distress signal detected - providing crisis support');
-        showBotMessage(crisisResponse);
+        await showBotMessage(crisisResponse, 'feedback');
         // Skip all other processing for safety
         return;
       }
@@ -540,7 +644,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         });
 
         if (smallTalkResponse.data?.response) {
-          showBotMessage(smallTalkResponse.data.response);
+          await showBotMessage(smallTalkResponse.data.response, 'feedback');
           // Update conversation context and continue
           setConversationContext(prev => 
             prev + ` User said: "${originalTranscript}". AI responded to ${intent}.`
@@ -568,14 +672,16 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
         // Show correction only if there's an actual mistake
         if (!feedback.isCorrect && feedback.message !== 'CORRECT') {
-          showBotMessage(feedback.message);
+          await showBotMessage(feedback.message, 'feedback');
         }
 
         // Generate and speak follow-up question naturally
         const nextQuestion = await generateFollowUpQuestion(originalTranscript);
         console.log('[Speaking] teacher-loop:next-question generated');
         
-        showBotMessage(nextQuestion);
+        // Start new turn for the next question
+        startNewTurn();
+        await showBotMessage(nextQuestion, 'prompt');
 
         // Track session (non-blocking)
         logSession(originalTranscript, feedback.corrected);
@@ -1139,13 +1245,16 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     // Prevent duplicate starts
     if (hfActive) return;
     
-    console.log('HF_BOOTSTRAP');
-    emitHFTelemetry('HF_BOOTSTRAP');
+    console.log('HF_START');
+    emitHFTelemetry('HF_START');
     setHfActive(true);
     setHfSessionActive(true); // Start session
     setHfStatus('idle');
     setHfPermissionBlocked(false);
     setErrorMessage(''); // Clear any previous errors
+    
+    // Start new turn for fresh session
+    const turnToken = startNewTurn();
     
     // Acquire wake lock if V2 enabled
     if (hfV2Enabled) {
@@ -1163,6 +1272,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     setHfCurrentPrompt(prompt);
     
     try {
+      console.log('HF_START_PLAYBACK', { turnToken, prompt: prompt.substring(0, 50) + '...' });
       await startHandsFreePromptPlayback(prompt);
     } catch (error: any) {
       console.log('HF_ERROR_START:', error.message);
@@ -1180,7 +1290,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     }
   };
 
-  const startHandsFreePromptPlayback = async (prompt: string) => {
+  const startHandsFreePromptPlayback = async (prompt: string, useCurrentToken = false) => {
     if (!soundEnabled) {
       // Skip TTS if sound is off, go straight to mic
       console.log('HF_PROMPT_SKIP: sound disabled');
@@ -1190,8 +1300,28 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       return;
     }
 
-    console.log('HF_PROMPT_PLAY:', prompt.length);
+    // Use existing token or start new turn
+    const turnToken = useCurrentToken && currentTurnToken ? currentTurnToken : startNewTurn();
+    
+    console.log('HF_PROMPT_PLAY', { turnToken, prompt: prompt.substring(0, 50) + '...' });
     setHfStatus('prompting');
+    setHfCurrentPrompt(prompt);
+    playEarcon('advance');
+    emitHFTelemetry('HF_PROMPT_PLAY', { promptLength: prompt.length, turnToken });
+    
+    // Compute messageId for strict idempotency
+    const messageId = computeMessageId(turnToken, 'prompt', prompt, 0);
+    
+    // Check if already played (strict idempotent TTS)
+    if (lastPlayedMessageIds.has(messageId)) {
+      console.log('HF_TTS_SKIP: prompt already played:', messageId);
+      // Skip to mic opening after delay
+      await handleTTSCompletion(turnToken, messageId);
+      return;
+    }
+    
+    // Mark as played to prevent duplicates
+    setLastPlayedMessageIds(prev => new Set([...prev, messageId]));
     
     // Setup barge-in detection if feature is enabled
     let bargeInDetected = false;
@@ -1228,7 +1358,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         canSkip: true
       });
       
-      console.log('HF_TTS_COMPLETE');
+      console.log('HF_TTS_COMPLETE', { turnToken, messageId });
       
       // Clean up barge-in listener
       if (bargeInListener) {
@@ -1238,13 +1368,23 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       // Only continue if barge-in didn't interrupt
       if (!bargeInDetected) {
         // Small delay before opening mic to prevent jarring transition
-        await new Promise(resolve => setTimeout(resolve, 300));
+        const timeout = setTimeout(async () => {
+          // Remove from active timeouts
+          setTtsCompletionTimeouts(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(timeout);
+            return newSet;
+          });
+          
+          // Guard rail: ensure we're still in hands-free mode after delay and turn token still matches
+          if (hfActive && hfSessionActive && !hfAutoPaused && turnToken === currentTurnToken) {
+            console.log('HF_MIC_OPEN', { turnToken });
+            await startHandsFreeMicCapture();
+          }
+        }, 300);
         
-        // Guard rail: ensure we're still in hands-free mode after delay
-        if (hfActive && hfSessionActive && !hfAutoPaused) {
-          console.log('HF_MIC_OPEN');
-          await startHandsFreeMicCapture();
-        }
+        // Track timeout for cleanup
+        setTtsCompletionTimeouts(prev => new Set([...prev, timeout]));
       }
       
     } catch (error: any) {
@@ -1454,10 +1594,24 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       stopRecording();
     }
     
-    // Replay current prompt
+    // Replay current prompt with increased replay counter (bypasses idempotency)
     if (hfCurrentPrompt) {
       try {
-        await startHandsFreePromptPlayback(hfCurrentPrompt);
+        // Increment replay counter for this turn
+        const newReplayCount = replayCounter + 1;
+        setReplayCounter(newReplayCount);
+        
+        // Create messageId with replay suffix 
+        const turnToken = currentTurnToken || startNewTurn();
+        const messageId = computeMessageId(turnToken, 'prompt', hfCurrentPrompt, newReplayCount);
+        
+        console.log('HF_REPEAT_PLAY', { turnToken, messageId, replayCount: newReplayCount });
+        
+        // Mark as played with replay suffix
+        setLastPlayedMessageIds(prev => new Set([...prev, messageId]));
+        
+        // Use current token to replay without starting new turn
+        await startHandsFreePromptPlayback(hfCurrentPrompt, true);
       } catch (error: any) {
         console.log('HF_ERROR_REPEAT:', error.message);
         setErrorMessage(error.message);
