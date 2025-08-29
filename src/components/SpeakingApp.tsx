@@ -23,11 +23,12 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { cn } from '@/lib/utils';
 
 // Feature flags
-const SPEAKING_HANDS_FREE = false; // Default OFF
-const HF_BARGE_IN = false; // Barge-in feature flag (optional)
+const SPEAKING_HANDS_FREE = true; // Default ON for minimal UI
+const HF_BARGE_IN = true; // Barge-in feature flag (enabled for V2)
 const HF_VOICE_COMMANDS = true; // Voice commands feature flag (default ON)
-const SPEAKING_HF_MINUI = false; // Minimal hands-free UI (default OFF)
+const SPEAKING_HF_MINUI = true; // Minimal hands-free UI (default ON)
 const SPEAKING_HANDS_FREE_V2 = true; // V2 features (default ON for speaking page)
+const SPEAKING_HANDS_FREE_MINIMAL = true; // Enable minimal UI by default
 
 // Sparkle component for background decoration
 const Sparkle = ({ className, delayed = false }: { className?: string; delayed?: boolean }) => (
@@ -182,12 +183,56 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     return localStorage.getItem('hfFirstRunHint') === 'shown';
   });
   const [hfShowFirstRunHint, setHfShowFirstRunHint] = useState(false);
-  const [hfControlsMinimal, setHfControlsMinimal] = useState(true); // Default ON for speaking page
+  const [hfControlsMinimal, setHfControlsMinimal] = useState(true); // Default ON for speaking page - always minimal
   
   // Persist hfEnabled to localStorage
   useEffect(() => {
     localStorage.setItem('hfEnabled', hfEnabled.toString());
   }, [hfEnabled]);
+
+  // Auto-hide controls after 5 seconds of inactivity
+  useEffect(() => {
+    if (hfActive && (hfStatus === 'prompting' || hfStatus === 'listening')) {
+      // Clear existing timeout
+      if (hfControlsTimeout) {
+        clearTimeout(hfControlsTimeout);
+      }
+      
+      // Set new timeout to hide controls
+      const timeout = setTimeout(() => {
+        setHfControlsVisible(false);
+      }, 5000);
+      
+      setHfControlsTimeout(timeout);
+      
+      return () => {
+        clearTimeout(timeout);
+      };
+    }
+  }, [hfActive, hfStatus, hfControlsTimeout]);
+
+  // Handle tap anywhere on lower 25% to reveal controls
+  useEffect(() => {
+    const handleRevealControls = (e: TouchEvent | MouseEvent) => {
+      const windowHeight = window.innerHeight;
+      const tapY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+      
+      // Check if tap is in lower 25% of screen
+      if (tapY > windowHeight * 0.75) {
+        setHfControlsVisible(true);
+      }
+    };
+
+    if (hfActive && !hfControlsVisible) {
+      document.addEventListener('touchstart', handleRevealControls);
+      document.addEventListener('click', handleRevealControls);
+      
+      return () => {
+        document.removeEventListener('touchstart', handleRevealControls);
+        document.removeEventListener('click', handleRevealControls);
+      };
+    }
+  }, [hfActive, hfControlsVisible]);
   
   // Check for hands-free mode availability (default ON for speaking page)
   const isHandsFreeModeAvailable = useMemo(() => {
@@ -215,10 +260,16 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     return false;
   }, [hfV2Enabled]);
 
-  // Check for minimal hands-free UI availability (feature flag OR query param ?hfui=1)
+  // Check for minimal hands-free UI availability (always ON when hands-free is available)
   const isMinimalHFUIAvailable = useMemo(() => {
-    if (SPEAKING_HF_MINUI) {
+    if (SPEAKING_HANDS_FREE_MINIMAL) {
       console.log('HF MinUI gate: on | reason: flag');
+      return true;
+    }
+    
+    // Always enable when hands-free is available
+    if (isHandsFreeModeAvailable) {
+      console.log('HF MinUI gate: on | reason: hands-free available');
       return true;
     }
     
@@ -233,7 +284,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     
     console.log('HF MinUI gate: off | reason: flag off & no param');
     return false;
-  }, []);
+  }, [isHandsFreeModeAvailable]);
   
   // Avatar state is now managed by useAvatarTTS hook
   
@@ -1806,22 +1857,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
             </div>
           )}
 
-          {/* Legacy Hands-Free Controls (when minimal UI is not available) */}
-          {hfEnabled && hfActive && !isMinimalHFUIAvailable && (
-            <div className="glass-card rounded-xl p-3 w-full max-w-sm">
-              <div className="flex items-center justify-between gap-2">
-                <Button onClick={handleHandsFreePause} variant="ghost" size="sm" className="text-white/80 hover:text-white hover:bg-white/10 focus:ring-2 focus:ring-white/30 focus:outline-none text-xs transition-all duration-200">
-                  Pause
-                </Button>
-                <Button onClick={handleHandsFreeRepeat} variant="ghost" size="sm" className="text-white/80 hover:text-white hover:bg-white/10 focus:ring-2 focus:ring-white/30 focus:outline-none text-xs transition-all duration-200">
-                  Repeat
-                </Button>
-                <Button onClick={handleHandsFreeStop} variant="ghost" size="sm" className="text-white/80 hover:text-white hover:bg-white/10 focus:ring-2 focus:ring-white/30 focus:outline-none text-xs transition-all duration-200">
-                  Stop
-                </Button>
-              </div>
-            </div>
-          )}
+          {/* Legacy controls are removed - minimal UI is always used */}
 
           {/* Tap area to show controls when hidden */}
           {hfEnabled && hfActive && isMinimalHFUIAvailable && !hfControlsVisible && (
@@ -1833,20 +1869,19 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           )}
 
 
-          {/* Resume Button (only when needed after backgrounding or auto-pause) */}
+          {/* Simplified Resume Banner - only when auto-paused or backgrounded */}
           {(hfShowResume || hfAutoPaused) && (
-            <div className="bg-blue-500/20 backdrop-blur-sm rounded-lg px-4 py-2 border border-blue-400/30 text-center">
+            <div className="bg-blue-500/20 backdrop-blur-sm rounded-lg px-4 py-3 border border-blue-400/30 text-center w-full max-w-sm">
               <p className="text-blue-200 text-sm font-medium mb-2">
-                {hfShowResume ? '🔄 Session paused while tab was in background' : 
-                 hfAutoPaused ? '⏸️ Paused due to no input' : ''}
+                {hfAutoPaused ? 'Paused' : 'Session paused'}
               </p>
               <button
                 onClick={handleHandsFreeBootstrap}
-                className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 rounded-lg px-4 py-2 text-white font-medium text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white/30 focus:ring-offset-2 focus:ring-offset-transparent cursor-pointer"
+                className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 rounded-lg px-4 py-2 text-white font-medium text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white/30 min-h-[44px]"
                 aria-label="Resume hands-free session"
               >
-                <span>▶︎</span>
-                <span>Resume hands-free</span>
+                <Play className="w-4 h-4" />
+                <span>Resume</span>
               </button>
             </div>
           )}
@@ -1874,28 +1909,30 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
             </div>
           )}
 
-          {/* Premium Controls */}
-          <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
-            <div 
-              className="pill-button glass-card glass-card-hover flex items-center gap-3 px-5 py-3 cursor-pointer border border-white/20"
-              onClick={toggleSound}
-            >
-              <Volume2 className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-              <span className="text-white font-medium text-sm sm:text-base drop-shadow-sm">
-                Sound {soundEnabled ? 'ON' : 'OFF'}
-              </span>
+          {/* Premium Controls - Hidden when hands-free is active */}
+          {!hfActive && (
+            <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
+              <div 
+                className="pill-button glass-card glass-card-hover flex items-center gap-3 px-5 py-3 cursor-pointer border border-white/20"
+                onClick={toggleSound}
+              >
+                <Volume2 className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                <span className="text-white font-medium text-sm sm:text-base drop-shadow-sm">
+                  Sound {soundEnabled ? 'ON' : 'OFF'}
+                </span>
+              </div>
+              
+              <select 
+                value={userLevel}
+                onChange={(e) => setUserLevel(e.target.value as typeof userLevel)}
+                className="pill-button glass-card px-5 py-3 text-white font-medium border border-white/20 outline-none cursor-pointer text-sm sm:text-base appearance-none bg-transparent"
+              >
+                <option value="beginner" className="bg-gray-800 text-white">🌱 Beginner</option>
+                <option value="intermediate" className="bg-gray-800 text-white">🌿 Intermediate</option>
+                <option value="advanced" className="bg-gray-800 text-white">🌳 Advanced</option>
+              </select>
             </div>
-            
-            <select 
-              value={userLevel}
-              onChange={(e) => setUserLevel(e.target.value as typeof userLevel)}
-              className="pill-button glass-card px-5 py-3 text-white font-medium border border-white/20 outline-none cursor-pointer text-sm sm:text-base appearance-none bg-transparent"
-            >
-              <option value="beginner" className="bg-gray-800 text-white">🌱 Beginner</option>
-              <option value="intermediate" className="bg-gray-800 text-white">🌿 Intermediate</option>
-              <option value="advanced" className="bg-gray-800 text-white">🌳 Advanced</option>
-            </select>
-          </div>
+          )}
         </div>
 
         {/* Token overlay for XP animations */}
