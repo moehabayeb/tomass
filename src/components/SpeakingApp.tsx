@@ -332,7 +332,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     return messageId;
   };
 
-  // Enhanced bot message function - immediate TTS trigger
+  // Enhanced bot message function - immediate TTS trigger with auto mic reopening
   const showBotMessage = async (message: string) => {
     console.log('[Speaking] Adding bot message:', message.substring(0, 50) + '...');
     const messageId = addChatBubble(message, "bot");
@@ -343,8 +343,36 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       try {
         const { SimpleTTS } = await import('@/voice/SimpleTTS');
         await SimpleTTS.speak(message, messageId);
+        
+        // Auto-reopen mic after TTS completes (hands-free mode only)
+        await handleTTSCompletion();
       } catch (error) {
         console.warn('[Speaking] Failed to speak message immediately:', error);
+      }
+    } else {
+      // If sound is disabled, still check for auto mic reopening
+      await handleTTSCompletion();
+    }
+  };
+
+  // Handle TTS completion and auto-reopen mic when appropriate
+  const handleTTSCompletion = async () => {
+    // Only in hands-free mode, when session is active, not paused, and not already listening
+    if (hfActive && hfSessionActive && !hfAutoPaused && hfStatus !== 'listening') {
+      console.log('HF_TTS_COMPLETE');
+      
+      // Small delay to prevent jarring transition
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      // Guard rail: ensure we're still in the right state after delay and not already listening
+      if (hfActive && hfSessionActive && !hfAutoPaused && (hfStatus === 'idle' || hfStatus === 'prompting' || hfStatus === 'processing')) {
+        console.log('HF_AUTO_MIC_REOPEN: reopening mic after TTS completion');
+        try {
+          await startHandsFreeMicCapture();
+        } catch (error: any) {
+          console.log('HF_ERROR_AUTO_REOPEN:', error.message);
+          setErrorMessage(error.message);
+        }
       }
     }
   };
@@ -1212,8 +1240,11 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         // Small delay before opening mic to prevent jarring transition
         await new Promise(resolve => setTimeout(resolve, 300));
         
-        // Only start mic after TTS is completely done
-        await startHandsFreeMicCapture();
+        // Guard rail: ensure we're still in hands-free mode after delay
+        if (hfActive && hfSessionActive && !hfAutoPaused) {
+          console.log('HF_MIC_OPEN');
+          await startHandsFreeMicCapture();
+        }
       }
       
     } catch (error: any) {
@@ -1359,7 +1390,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       // Execute existing teacher loop (unchanged)
       await executeTeacherLoop(result.transcript);
       
-      // Auto-advance handled by useEffect watching for new messages
+      // Note: Auto-advance now handled by TTS completion in showBotMessage
       
     } catch (error: any) {
       console.log('HF_ERROR_MIC:', error.message);
