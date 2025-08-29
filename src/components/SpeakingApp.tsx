@@ -150,9 +150,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   
   // Hands-Free Mode state and logic
   const [hfEnabled, setHfEnabled] = useState(() => {
-    // Load from localStorage on initialization
-    const saved = localStorage.getItem('hfEnabled');
-    return saved === 'true';
+    // Enable by default for minimal UI
+    return true;
   });
   const [hfActive, setHfActive] = useState(false);
   const [hfStatus, setHfStatus] = useState<'idle' | 'prompting' | 'listening' | 'processing'>('idle');
@@ -191,6 +190,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   }, [hfEnabled]);
 
   // Auto-hide controls after 5 seconds of inactivity
+  // TEMPORARILY DISABLED until QA passes
+  /*
   useEffect(() => {
     if (hfActive && (hfStatus === 'prompting' || hfStatus === 'listening')) {
       // Clear existing timeout
@@ -210,6 +211,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       };
     }
   }, [hfActive, hfStatus, hfControlsTimeout]);
+  */
 
   // Handle tap anywhere on lower 25% to reveal controls
   useEffect(() => {
@@ -813,6 +815,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     setHfControlsVisible(true);
     emitHFTelemetry('HF_UI_REVEAL');
     
+    // TEMPORARILY DISABLED: auto-hide timeout until QA passes
+    /*
     // Clear existing timeout
     if (hfControlsTimeout) {
       clearTimeout(hfControlsTimeout);
@@ -824,6 +828,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       emitHFTelemetry('HF_UI_AUTOHIDE');
     }, hfV2Enabled ? 3000 : 2000);
     setHfControlsTimeout(timeout);
+    */
   };
 
   const hideControls = () => {
@@ -1647,17 +1652,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
         {/* Premium Speaking Button */}
         <div className="flex flex-col items-center space-y-4 sm:space-y-6 pb-6 sm:pb-8 relative z-10">
-          {/* Hands-Free Mode Toggle (only when available) */}
-          {isHandsFreeModeAvailable && (
-            <div className="flex items-center gap-3 mb-2">
-              <span className="text-white/80 text-sm font-medium">Hands-Free (beta)</span>
-              <Switch
-                checked={hfEnabled}
-                onCheckedChange={setHfEnabled}
-                className="data-[state=checked]:bg-primary"
-              />
-            </div>
-          )}
+          {/* Hands-Free Mode Toggle removed for minimal UI */}
           
           {/* Hide the big Start Speaking button when hands-free is enabled */}
           {!hfEnabled && (
@@ -1690,7 +1685,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           )}
 
           {/* V2 Minimal Hands-Free Control - Single Primary Button (floating, bottom-center) */}
-          {hfEnabled && hfActive && hfV2Enabled && (
+          {/* Control is always mounted, but hidden when not needed */}
+          <div style={{ display: hfEnabled && hfV2Enabled ? 'block' : 'none' }}>
             <>
               {/* First-run hint tooltip */}
               {hfShowFirstRunHint && (
@@ -1782,7 +1778,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
                 </div>
                 
                 {/* Invisible tap area when controls are hidden */}
-                {!hfControlsVisible && (
+                {!hfActive && (
                   <div className="w-16 h-16 bg-transparent cursor-pointer" />
                 )}
               </div>
@@ -1795,7 +1791,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
                 />
               )}
             </>
-          )}
+          </div>
 
           {/* Legacy Minimal Hands-Free Controls (non-V2) */}
           {hfEnabled && hfActive && !hfV2Enabled && isMinimalHFUIAvailable && (
@@ -1909,19 +1905,9 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
             </div>
           )}
 
-          {/* Premium Controls - Hidden when hands-free is active */}
+          {/* Premium Controls - Hidden when hands-free is active, Sound toggle removed */}
           {!hfActive && (
             <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
-              <div 
-                className="pill-button glass-card glass-card-hover flex items-center gap-3 px-5 py-3 cursor-pointer border border-white/20"
-                onClick={toggleSound}
-              >
-                <Volume2 className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                <span className="text-white font-medium text-sm sm:text-base drop-shadow-sm">
-                  Sound {soundEnabled ? 'ON' : 'OFF'}
-                </span>
-              </div>
-              
               <select 
                 value={userLevel}
                 onChange={(e) => setUserLevel(e.target.value as typeof userLevel)}
