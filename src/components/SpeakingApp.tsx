@@ -123,16 +123,15 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   const { level, xp_current, next_threshold, awardXp, lastLevelUpTime, fetchProgress, resetLevelUpNotification, subscribeToProgress } = useProgressStore();
   
   const [messages, setMessages] = useState([
-    { text: "Hello! Ready to practice today? Let's start with a simple question.", isUser: false, isSystem: false, id: 'initial-1', role: 'assistant', content: "Hello! Ready to practice today? Let's start with a simple question." }
+    { text: "Hello! Ready to practice today? Let's start with a simple question.", isUser: false, isSystem: false, id: 'initial-1', role: 'assistant', content: "Hello! Ready to practice today? Let's start with a simple question.", seq: 1 }
   ]);
 
-  const ttsMessages = messages.map(m => ({ 
-    id: m.id || `msg-${Date.now()}`, 
-    role: m.isUser ? 'user' : 'assistant', 
-    content: m.text 
-  })) as Array<{ id: string; role: 'user' | 'assistant'; content: string }>;
+  // Strict turn-taking: track sequence of last spoken message
+  const [lastSpokenSeq, setLastSpokenSeq] = useState(0);
+  const [messageSeqCounter, setMessageSeqCounter] = useState(2); // Start after initial message
   
-  const { isSpeaking, toggleSound: handleToggleSound, stopSpeaking, clearHistory: clearSpeechHistory } = useSpeakingTTS(ttsMessages, soundEnabled);
+  // Remove useSpeakingTTS hook - we'll use strict turn-taking logic instead
+  const [isSpeaking, setIsSpeaking] = useState(false);
   
   const [micState, setMicState] = useState<MicState>('idle');
   const [errorMessage, setErrorMessage] = useState<string>('');
@@ -317,10 +316,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     }
   }, [isSpeaking, setAvatarState]);
 
-  // Clean up speech history when starting new conversation
-  useEffect(() => {
-    clearSpeechHistory();
-  }, []);
+  // Clean up speech history when starting new conversation - removed since we don't use useSpeakingTTS hook
 
   // Helper function to generate turn token (authoritative current turn)
   const generateTurnToken = () => {
@@ -368,26 +364,33 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     return newToken;
   };
 
-  // Helper function to add chat bubbles with proper message structure
+  // Helper function to add chat bubbles with proper message structure (strict turn-taking)
   const addChatBubble = (text: string, type: "user" | "bot" | "system", messageId?: string) => {
     const id = messageId || `msg-${Date.now()}-${Math.random()}`;
+    const seq = messageSeqCounter;
+    setMessageSeqCounter(prev => prev + 1);
+    
     const newMessage = {
       text,
       isUser: type === "user",
       isSystem: type === "system",
       id,
       role: type === "user" ? "user" : "assistant",
-      content: text
+      content: text,
+      seq
     };
     
     setMessages(prev => [...prev, newMessage]);
     setLastMessageTime(Date.now());
-    return id;
+    return { id, seq };
   };
 
-  // Enhanced bot message function - strict idempotent TTS with turn token
+  // Enhanced bot message function - strict turn-taking with sequence-based guard
   const showBotMessage = async (message: string, phase: 'prompt' | 'feedback' = 'feedback', isRepeat = false) => {
     console.log('[Speaking] Adding bot message:', message.substring(0, 50) + '...');
+    
+    // A) Eligible-to-Speak filter: Only assistant messages are read (role=assistant)
+    // (This function only handles assistant messages by design)
     
     // Use current turn token or generate new one if missing
     const turnToken = currentTurnToken || startNewTurn();
@@ -404,8 +407,22 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       return messageId;
     }
     
-    // Add to chat
-    addChatBubble(message, "bot", messageId);
+    // Add to chat and get sequence number
+    const { id, seq } = addChatBubble(message, "bot", messageId);
+    
+    // B) Single-message rule per turn: Only speak if msg.seq > lastSpokenSeq
+    if (seq <= lastSpokenSeq && !isRepeat) {
+      console.log('HF_TTS_SKIP: message seq already spoken:', { seq, lastSpokenSeq });
+      return messageId;
+    }
+    
+    // D) One voice at a time: Stop any ongoing TTS before starting new one
+    if (TTSManager.isSpeaking() && !isRepeat) {
+      console.log('HF_TTS_COALESCE: stopping old TTS for newer message');
+      TTSManager.skip();
+      setIsSpeaking(false);
+      setAvatarState('idle');
+    }
     
     // Mark as played immediately to prevent duplicates
     setLastPlayedMessageIds(prev => new Set([...prev, messageId]));
@@ -413,17 +430,32 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       setReplayCounter(replay);
     }
     
-    // Trigger TTS immediately if sound is enabled (single authority)
+    // Update lastSpokenSeq to prevent re-reading
+    setLastSpokenSeq(seq);
+    
+    // E) Single authority for speaking: Only hands-free controller calls TTS
     if (soundEnabled) {
-      console.log('HF_PROMPT_PLAY', { turnToken, messageId, phase });
+      console.log('HF_PROMPT_PLAY', { turnToken, messageId, phase, seq, textHash: message.substring(0, 20) });
+      
       try {
-        const { SimpleTTS } = await import('@/voice/SimpleTTS');
-        await SimpleTTS.speak(message, messageId);
+        setIsSpeaking(true);
+        setAvatarState('talking');
+        
+        await TTSManager.speak(message, {
+          canSkip: true
+        });
+        
+        console.log('HF_TTS_COMPLETE', { turnToken, messageId, seq });
+        
+        setIsSpeaking(false);
+        setAvatarState('idle');
         
         // Auto-reopen mic after TTS completes (gated by turn token)
         await handleTTSCompletion(turnToken, messageId);
       } catch (error) {
-        console.warn('[Speaking] Failed to speak message immediately:', error);
+        console.warn('[Speaking] Failed to speak message:', error);
+        setIsSpeaking(false);
+        setAvatarState('idle');
       }
     } else {
       // If sound is disabled, still check for auto mic reopening
@@ -497,15 +529,17 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     };
   }, [user]);
 
-  // Handle initial message from props (bookmarks) - avoid duplicate
+  // Handle initial message from props (bookmarks) - strict turn-taking
   useEffect(() => {
     if (initialMessage) {
       console.log('Adding continued message from bookmark:', initialMessage.substring(0, 50) + '...');
       const question = "Let's continue our conversation from here! What would you like to say about this?";
       setCurrentQuestion(question);
-      // Use showBotMessage to ensure TTS is triggered
+      // Use showBotMessage with strict turn-taking for consistent behavior
       setTimeout(() => {
-        showBotMessage(question);
+        // Start new turn for bookmark continuation
+        startNewTurn();
+        showBotMessage(question, 'prompt');
       }, 500);
     }
   }, [initialMessage]);
@@ -1131,7 +1165,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     }
   }, [isMinimalHFUIAvailable, hfEnabled]);
 
-  // Auto-advance after scoring completes in hands-free mode
+  // Auto-advance after scoring completes in hands-free mode (C - Turn token guard)
   const handleHandsFreeAdvance = async () => {
     if (!hfActive || !hfSessionActive) return;
     
@@ -1140,19 +1174,29 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     playEarcon('advance');
     playHaptic('light');
     
+    // F) Advance = cancel everything old (C - Turn token guard)
+    const oldTurnToken = currentTurnToken;
+    console.log('HF_ADVANCE', { oldTurnToken });
+    cancelOldListeners();
+    
     // Small delay to let user process the feedback
     await new Promise(resolve => setTimeout(resolve, 2000));
     
-    // Get the latest AI message as the next prompt
-    const lastAIMessage = messages.filter(m => !m.isUser && !m.isSystem).pop();
+    // A) Eligible-to-Speak filter: Get the newest assistant message (not user/meta)
+    const eligibleMessages = messages.filter(m => !m.isUser && !m.isSystem);
+    const lastAIMessage = eligibleMessages[eligibleMessages.length - 1];
     const nextPrompt = lastAIMessage?.text || currentQuestion;
     
     if (nextPrompt && nextPrompt !== hfCurrentPrompt) {
       setHfCurrentPrompt(nextPrompt);
       
       try {
-        // Continue the hands-free loop with the new prompt
-        await startHandsFreePromptPlayback(nextPrompt);
+        // F) Hands-free loop: Start new turn for next question, use showBotMessage for strict turn-taking
+        const newTurnToken = startNewTurn();
+        console.log('HF_ADVANCE: new turn started', { newTurnToken, nextPrompt: nextPrompt.substring(0, 50) + '...' });
+        
+        // Continue the hands-free loop with strict turn-taking
+        await showBotMessage(nextPrompt, 'prompt');
       } catch (error: any) {
         console.log('HF_ERROR_ADVANCE:', error.message);
         setErrorMessage(error.message);
@@ -1266,14 +1310,16 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       await startBargeInDetector();
     }
     
-    // Get the last AI message as the current prompt
-    const lastAIMessage = messages.filter(m => !m.isUser && !m.isSystem).pop();
+    // A) Eligible-to-Speak filter: Get the current assistant message (not user/system)
+    const eligibleMessages = messages.filter(m => !m.isUser && !m.isSystem);
+    const lastAIMessage = eligibleMessages[eligibleMessages.length - 1];
     const prompt = lastAIMessage?.text || currentQuestion;
     setHfCurrentPrompt(prompt);
     
     try {
       console.log('HF_START_PLAYBACK', { turnToken, prompt: prompt.substring(0, 50) + '...' });
-      await startHandsFreePromptPlayback(prompt);
+      // Use showBotMessage for consistent strict turn-taking
+      await showBotMessage(prompt, 'prompt');
     } catch (error: any) {
       console.log('HF_ERROR_START:', error.message);
       emitHFTelemetry('HF_ERROR_start', { error: error.message });
@@ -1292,7 +1338,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
   const startHandsFreePromptPlayback = async (prompt: string, useCurrentToken = false) => {
     if (!soundEnabled) {
-      // Skip TTS if sound is off, go straight to mic
+      // E) Play/Resume semantics: Skip TTS if sound is off, go straight to mic
       console.log('HF_PROMPT_SKIP: sound disabled');
       setHfStatus('prompting'); // Show status briefly
       await new Promise(resolve => setTimeout(resolve, 500)); // Brief pause
@@ -1309,92 +1355,14 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     playEarcon('advance');
     emitHFTelemetry('HF_PROMPT_PLAY', { promptLength: prompt.length, turnToken });
     
-    // Compute messageId for strict idempotency
-    const messageId = computeMessageId(turnToken, 'prompt', prompt, 0);
-    
-    // Check if already played (strict idempotent TTS)
-    if (lastPlayedMessageIds.has(messageId)) {
-      console.log('HF_TTS_SKIP: prompt already played:', messageId);
-      // Skip to mic opening after delay
-      await handleTTSCompletion(turnToken, messageId);
-      return;
-    }
-    
-    // Mark as played to prevent duplicates
-    setLastPlayedMessageIds(prev => new Set([...prev, messageId]));
-    
-    // Setup barge-in detection if feature is enabled
-    let bargeInDetected = false;
-    let bargeInListener: (() => void) | null = null;
-    
-    if (HF_BARGE_IN) {
-      // Setup voice activity detection during TTS
-      bargeInListener = () => {
-        if (!bargeInDetected && hfStatus === 'prompting') {
-          console.log('HF_BARGE_IN: user voice detected during TTS');
-          bargeInDetected = true;
-          
-          // Stop TTS early
-          if (TTSManager.busy) {
-            TTSManager.stop();
-          }
-          
-          // Transition to listening immediately
-          setTimeout(() => {
-            if (hfActive && hfStatus === 'prompting') {
-              startHandsFreeMicCapture();
-            }
-          }, 200);
-        }
-      };
-      
-      // Listen for voice activity events (if available)
-      window.addEventListener('voice:activity:start', bargeInListener);
-    }
-    
+    // Use showBotMessage for consistent strict turn-taking (A - Eligible-to-Speak filter)
+    // This ensures only assistant messages are spoken and follows sequence rules
     try {
-      // Use TTSManager for complete prompt playback
-      await TTSManager.speak(prompt, { 
-        canSkip: true
-      });
-      
-      console.log('HF_TTS_COMPLETE', { turnToken, messageId });
-      
-      // Clean up barge-in listener
-      if (bargeInListener) {
-        window.removeEventListener('voice:activity:start', bargeInListener);
-      }
-      
-      // Only continue if barge-in didn't interrupt
-      if (!bargeInDetected) {
-        // Small delay before opening mic to prevent jarring transition
-        const timeout = setTimeout(async () => {
-          // Remove from active timeouts
-          setTtsCompletionTimeouts(prev => {
-            const newSet = new Set(prev);
-            newSet.delete(timeout);
-            return newSet;
-          });
-          
-          // Guard rail: ensure we're still in hands-free mode after delay and turn token still matches
-          if (hfActive && hfSessionActive && !hfAutoPaused && turnToken === currentTurnToken) {
-            console.log('HF_MIC_OPEN', { turnToken });
-            await startHandsFreeMicCapture();
-          }
-        }, 300);
-        
-        // Track timeout for cleanup
-        setTtsCompletionTimeouts(prev => new Set([...prev, timeout]));
-      }
-      
+      // For hands-free playback, we use 'prompt' phase and pass isRepeat for replay scenarios
+      const isRepeat = useCurrentToken && !!currentTurnToken; // If using current token, it's likely a repeat
+      await showBotMessage(prompt, 'prompt', isRepeat);
     } catch (error: any) {
       console.log('HF_ERROR_TTS:', error.message);
-      
-      // Clean up barge-in listener on error
-      if (bargeInListener) {
-        window.removeEventListener('voice:activity:start', bargeInListener);
-      }
-      
       throw error;
     }
   };
@@ -1586,16 +1554,30 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   const handleHandsFreeRepeat = async () => {
     console.log('HF_REPEAT');
     
-    // Stop any current activity
-    if (TTSManager.busy) {
-      TTSManager.stop();
+    // Stop any current activity (D - One voice at a time)
+    if (TTSManager.isSpeaking()) {
+      TTSManager.skip();
+      setIsSpeaking(false);
+      setAvatarState('idle');
     }
     if (micState === 'recording') {
       stopRecording();
     }
     
-    // Replay current prompt with increased replay counter (bypasses idempotency)
-    if (hfCurrentPrompt) {
+    // Find current assistant message (last non-user, non-system message)
+    const currentAssistantMessage = messages.filter(m => !m.isUser && !m.isSystem).pop();
+    
+    if (currentAssistantMessage) {
+      try {
+        console.log('HF_REPEAT: replaying current assistant message');
+        // Use showBotMessage with isRepeat=true to bypass sequence guard for "again" command
+        await showBotMessage(currentAssistantMessage.text, 'prompt', true);
+      } catch (error: any) {
+        console.log('HF_ERROR_REPEAT:', error.message);
+        setErrorMessage(error.message);
+      }
+    } else if (hfCurrentPrompt) {
+      // Fallback to current prompt if no assistant message found
       try {
         // Increment replay counter for this turn
         const newReplayCount = replayCounter + 1;
