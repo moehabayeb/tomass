@@ -1,11 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Mic, Volume2 } from 'lucide-react';
+import { Mic, Volume2, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import DIDAvatar from './DIDAvatar';
 import { useAvatarState } from '@/hooks/useAvatarState';
 import { useSpeakingTTS } from '@/hooks/useSpeakingTTS';
-import { useGlobalSound } from '@/hooks/useGlobalSound';
 import { supabase } from '@/integrations/supabase/client';
 import { useStreakTracker } from '@/hooks/useStreakTracker';
 import { useBadgeSystem } from '@/hooks/useBadgeSystem';
@@ -118,9 +117,56 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   const { incrementSpeakingSubmissions } = useBadgeSystem();
   const { user } = useAuthReady();
   const { toast } = useToast();
-  const { soundEnabled, enableSound } = useGlobalSound();
+  
+  // G) Single source of truth: Speaking page sound state
+  const [speakingSoundEnabled, setSpeakingSoundEnabled] = useState(() => {
+    const saved = localStorage.getItem('speaking.sound.enabled');
+    return saved !== null ? saved === 'true' : true; // Default = true
+  });
+  const [audioContextResumed, setAudioContextResumed] = useState(false);
   
   const { level, xp_current, next_threshold, awardXp, lastLevelUpTime, fetchProgress, resetLevelUpNotification, subscribeToProgress } = useProgressStore();
+
+  // Helper function to enable audio context for TTS (autoplay policy compliance)
+  const enableAudioContext = async (): Promise<boolean> => {
+    try {
+      if (typeof window !== 'undefined' && window.AudioContext) {
+        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        if (audioContext.state === 'suspended') {
+          await audioContext.resume();
+          console.log('HF_SOUND: AudioContext resumed');
+        }
+        setAudioContextResumed(true);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.warn('Failed to resume AudioContext:', error);
+      return false;
+    }
+  };
+
+  // Keep icon and engine in sync: Persist sound state changes
+  const toggleSpeakingSound = () => {
+    const newEnabled = !speakingSoundEnabled;
+    console.log('HF_SOUND_TOGGLE', { enabled: newEnabled });
+    
+    setSpeakingSoundEnabled(newEnabled);
+    localStorage.setItem('speaking.sound.enabled', newEnabled.toString());
+    
+    // Immediately sync with TTS manager
+    if (!newEnabled && TTSManager.isSpeaking()) {
+      TTSManager.stop();
+      setIsSpeaking(false);
+      setAvatarState('idle');
+    }
+  };
+
+  // On mount, sync TTS manager with localStorage state
+  useEffect(() => {
+    console.log('HF_SOUND: Initializing with state:', speakingSoundEnabled);
+    // No explicit TTS manager sync needed - we check speakingSoundEnabled directly
+  }, []);
   
   // A) Stop duplicates at the source: NO default/initial assistant message seeded
   // Feed must come only from conversation store/back-end
@@ -451,7 +497,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     }
 
     // E) Single authority for speaking: Only hands-free controller calls TTS
-    if (soundEnabled) {
+    if (speakingSoundEnabled) {
       console.log('HF_PROMPT_PLAY', { turnToken, messageId, messageKey, phase, textHash: text.substring(0, 20) });
       
       try {
@@ -474,7 +520,9 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         setAvatarState('idle');
       }
     } else {
-      // If sound is disabled, still check for auto mic reopening
+      // Do not silently 'complete' when muted: log HF_PROMPT_SKIP instead
+      console.log('HF_PROMPT_SKIP: sound disabled', { turnToken, messageId, messageKey });
+      // Still trigger mic reopening
       await handleTTSCompletion(turnToken, messageId);
     }
     
@@ -530,7 +578,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     setLastSpokenSeq(seq);
     
     // E) Single authority for speaking: Only hands-free controller calls TTS
-    if (soundEnabled) {
+    if (speakingSoundEnabled) {
       console.log('HF_PROMPT_PLAY', { turnToken, messageId, phase, seq, textHash: message.substring(0, 20) });
       
       try {
@@ -947,7 +995,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
   // Earcons and haptics helpers
   const playEarcon = (type: 'listening' | 'processing' | 'advance') => {
-    if (!soundEnabled) return;
+    if (!speakingSoundEnabled) return;
     
     try {
       // Simple beep tones using Web Audio API
@@ -1347,8 +1395,9 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     setHfPermissionBlocked(false);
     setErrorMessage(''); // Clear any previous errors
     
-    // Enable sound on first Play/Resume interaction (autoplay policy)
-    await enableSound();
+    // Autoplay policy compliance: Resume audio context on first Play/Resume tap
+    const resumed = await enableAudioContext();
+    console.log('HF_SOUND', { enabled: speakingSoundEnabled, resumed });
     
     try {
       // Resume audio context first (handle autoplay restrictions)
@@ -1445,7 +1494,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   };
 
   const startHandsFreePromptPlayback = async (prompt: string, useCurrentToken = false) => {
-    if (!soundEnabled) {
+    if (!speakingSoundEnabled) {
       // E) Play/Resume semantics: Skip TTS if sound is off, go straight to mic
       console.log('HF_PROMPT_SKIP: sound disabled');
       setHfStatus('prompting'); // Show status briefly
@@ -1754,8 +1803,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
   const handleRecordingClick = async () => {
     if (micState === 'idle') {
-      // Enable sound on first interaction (autoplay policy)
-      await enableSound();
+      // Autoplay policy compliance: Resume audio context on first interaction
+      await enableAudioContext();
       
       // Start recording
       console.log('[Speaking] recording:start-button-click');
@@ -2183,9 +2232,28 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
             </div>
           )}
 
-          {/* Premium Controls - Hidden when hands-free is active, Sound toggle removed */}
+          {/* Premium Controls - Hidden when hands-free is active */}
           {!hfActive && (
             <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
+              {/* Sound Toggle */}
+              <button
+                onClick={toggleSpeakingSound}
+                className="pill-button glass-card px-4 py-3 text-white font-medium border border-white/20 transition-all duration-200 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/30 flex items-center gap-2"
+                aria-label={speakingSoundEnabled ? "Mute sound" : "Enable sound"}
+              >
+                {speakingSoundEnabled ? (
+                  <>
+                    <Volume2 className="w-4 h-4" />
+                    <span className="hidden sm:inline">🔊 Sound On</span>
+                  </>
+                ) : (
+                  <>
+                    <VolumeX className="w-4 h-4" />
+                    <span className="hidden sm:inline">🔇 Muted</span>
+                  </>
+                )}
+              </button>
+              
               <select 
                 value={userLevel}
                 onChange={(e) => setUserLevel(e.target.value as typeof userLevel)}
@@ -2200,7 +2268,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         </div>
 
         {/* Token overlay for XP animations */}
-        <TokenOverlay soundEnabled={soundEnabled} />
+        <TokenOverlay soundEnabled={speakingSoundEnabled} />
       </div>
     </div>
   );
