@@ -262,6 +262,10 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     return eligibleMessages[eligibleMessages.length - 1]; // Latest only
   };
 
+  // A) New state for ephemeral assistant ghost bubble and live captions
+  const [ephemeralAssistant, setEphemeralAssistant] = useState<null | { key: string; text: string }>(null);
+  const [interimCaption, setInterimCaption] = useState<string>(''); // live mic caption text
+
   // Ephemeral speak for bootstrap (no append)
   const speakEphemeral = async (text: string) => {
     if (!text.trim()) return;
@@ -270,6 +274,10 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     
     // Add to spoken keys to prevent re-reading when server appends same text
     setSpokenKeys(prev => new Set([...prev, messageKey]));
+    
+    // Set ephemeral ghost bubble
+    setEphemeralAssistant({ key: messageKey, text });
+    console.log('HF_GHOST', { key: messageKey, preview: text.slice(0, 40) });
     
     // Generate turn token for this speech
     const token = `turn-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -451,7 +459,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   
   // Avatar state is now managed by useAvatarTTS hook
   
-  // Subscribe to micEngine state changes
+  // Subscribe to micEngine state changes and interim results
   useEffect(() => {
     const unsubscribe = onState((newState) => {
       console.log('[Speaking] micEngine state change:', newState);
@@ -461,10 +469,29 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       if (newState !== 'idle') {
         setErrorMessage('');
       }
+      
+      // Clear interim caption when not recording
+      if (newState !== 'recording') {
+        setInterimCaption('');
+      }
     });
     
-    return unsubscribe;
-  }, []);
+    // Listen for interim speech results
+    const handleInterimResult = (event: CustomEvent) => {
+      if (flowState === 'LISTENING') {
+        const transcript = event.detail?.transcript || '';
+        setInterimCaption(transcript);
+        console.log('HF_LISTEN_CAPTION', { len: transcript.length });
+      }
+    };
+    
+    window.addEventListener('speech:interim', handleInterimResult as EventListener);
+    
+    return () => {
+      unsubscribe();
+      window.removeEventListener('speech:interim', handleInterimResult as EventListener);
+    };
+  }, [flowState]);
 
   // Handle avatar state based on TTS speaking
   useEffect(() => {
@@ -568,6 +595,10 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   // B) Separate "append" vs "speak": Only speak existing messages, never append when speaking
   const speakExistingMessage = async (text: string, messageKey: string, phase: 'prompt' | 'feedback' = 'feedback', isRepeat = false) => {
     console.log('[Speaking] Speaking existing message:', text.substring(0, 50) + '...', { flowState, messageKey });
+    
+    // Set ephemeral ghost bubble when speaking
+    setEphemeralAssistant({ key: messageKey, text });
+    console.log('HF_GHOST', { key: messageKey, preview: text.slice(0, 40) });
     
     // State machine: Only speak during READING state
     if (flowState !== 'READING' && !isRepeat) {
@@ -774,6 +805,12 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     
     const messageKey = stableMessageKey(latestMessage.text, latestMessage.id);
     
+    // Clear ephemeral ghost bubble if server message arrives with matching key
+    if (ephemeralAssistant && ephemeralAssistant.key === messageKey) {
+      setEphemeralAssistant(null);
+      console.log('HF_GHOST_CLEAR', { reason: 'server-arrived', messageKey });
+    }
+    
     // Check if this is a NEW assistant bubble (messageKey not in spokenKeys)
     if (!spokenKeys.has(messageKey)) {
       console.log('[Speaking] Message observer: New assistant message detected', { 
@@ -795,8 +832,11 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       
       // Small delay to avoid race conditions
       setTimeout(handleNewMessage, 100);
+    } else if (ephemeralAssistant && ephemeralAssistant.key === messageKey) {
+      // Message already spoken ephemerally and now server bubble arrived - don't re-speak
+      console.log('[Speaking] Message observer: Skipping re-speak of ephemeral message', { messageKey });
     }
-  }, [messages, flowState, ttsListenerActive, spokenKeys]);
+  }, [messages, flowState, ttsListenerActive, spokenKeys, ephemeralAssistant]);
 
   // Initialize component and progress store with single subscription management
   useEffect(() => {
@@ -1868,6 +1908,28 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     setHfIsReprompting(false);
     setHfAutoPaused(false);
     
+    // Mic health check - show tooltip if mic doesn't start within 1s
+    const micHealthTimer = setTimeout(() => {
+      if (micState !== 'recording') {
+        console.log('HF_MIC_HEALTH: microphone not active after 1s');
+        // Show a small tooltip hint
+        const tooltip = document.createElement('div');
+        tooltip.textContent = 'Tap Allow to use microphone';
+        tooltip.style.cssText = `
+          position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+          background: rgba(0,0,0,0.8); color: white; padding: 8px 12px;
+          border-radius: 6px; font-size: 12px; z-index: 10000;
+          pointer-events: none; opacity: 0; transition: opacity 0.2s;
+        `;
+        document.body.appendChild(tooltip);
+        setTimeout(() => tooltip.style.opacity = '1', 10);
+        setTimeout(() => {
+          tooltip.style.opacity = '0';
+          setTimeout(() => tooltip.remove(), 200);
+        }, 3000);
+      }
+    }, 1000);
+    
     // Strict cleanup between steps - ensure clean microphone state
     try {
       cleanup(); // Clean up previous mic session
@@ -1918,7 +1980,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       // Start recording with hard cap (keep existing duration limit)
       const result = await startRecording();
       
-      // Clear timers since we got input
+      // Clear health timer and other timers since we got input
+      clearTimeout(micHealthTimer);
       if (hfNoInputTimer) clearTimeout(hfNoInputTimer);
       if (hfRePromptTimer) clearTimeout(hfRePromptTimer);
       
@@ -1977,9 +2040,12 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       emitHFTelemetry('HF_RESULT_FINAL', { transcriptLength: result.transcript.length, turnToken: currentTurnToken });
       playEarcon('processing');
       
-      // B) Append exactly ONE user bubble on ASR_FINAL (not on interim)
-      const { id: userMessageId } = addChatBubble(`💭 You said: "${result.transcript}"`, "user");
-      console.log('HF_USER_MESSAGE_ADDED', { userMessageId, transcript: result.transcript });
+  // B) Append exactly ONE user bubble on ASR_FINAL (not on interim)
+  setInterimCaption(''); // Clear interim caption on final result
+  console.log('HF_USER_FINAL', { len: result.transcript.length });
+  
+  const { id: userMessageId } = addChatBubble(result.transcript, "user"); // Remove "💭 You said:" prefix
+  console.log('HF_USER_MESSAGE_ADDED', { userMessageId, transcript: result.transcript });
       
       // Check if user said "resume" to resume paused session (fallback for non-exact matches)
       if (hfAutoPaused && result.transcript.toLowerCase().includes('resume')) {
@@ -2060,7 +2126,11 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       stopRecording();
     }
     
-    // F) Voice command "again" replays only the current assistant message (no new bubble)
+      // Clear previous ghost on advance
+      if (ephemeralAssistant) {
+        setEphemeralAssistant(null);
+        console.log('HF_GHOST_CLEAR', { reason: 'advance' });
+      }
     const currentAssistantMessage = messages.filter(m => !m.isUser && !m.isSystem).pop();
     
     if (currentAssistantMessage) {
@@ -2204,7 +2274,40 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
               className={message.isSystem ? "opacity-75 italic" : ""}
             />
           ))}
+          
+          {/* Ephemeral ghost bubble - shows what's being spoken without appending to history */}
+          {ephemeralAssistant && (
+            <div className="ghost-bubble flex justify-start mb-3 sm:mb-4">
+              <div className="flex items-start space-x-2 sm:space-x-3 max-w-[90%] sm:max-w-[85%]">
+                <div className="conversation-bubble px-4 py-3 sm:px-5 sm:py-4 font-medium text-sm sm:text-base leading-relaxed flex-1 bg-gradient-to-br from-blue-50/60 to-blue-100/50 text-gray-800 border-l-4 border-blue-400/70 opacity-70 italic relative">
+                  {ephemeralAssistant.text}
+                  <div className="absolute top-1 right-2 text-xs text-blue-500/70 animate-pulse">
+                    Speaking...
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* Live interim caption during listening */}
+          {flowState === 'LISTENING' && interimCaption && (
+            <div className="text-center mb-2">
+              <div className="inline-block bg-white/20 backdrop-blur-sm rounded-lg px-3 py-1 text-white/80 text-sm italic">
+                {interimCaption}
+              </div>
+            </div>
+          )}
         </div>
+
+        {/* Mic status indicator during listening */}
+        {flowState === 'LISTENING' && (
+          <div className="text-center mb-4">
+            <div className="inline-flex items-center gap-2 bg-green-500/20 backdrop-blur-sm rounded-full px-3 py-1 text-green-200 text-sm">
+              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+              Listening...
+            </div>
+          </div>
+        )}
 
             {/* Bootstrap/Status Under Chat - Always Visible for Hands-Free Mode */}
             {hfEnabled && (

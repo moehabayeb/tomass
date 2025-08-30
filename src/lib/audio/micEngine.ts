@@ -287,11 +287,12 @@ async function startSpeechRecognition(id: number, maxSec: number): Promise<strin
     recognitionRef = new SpeechRecognition();
     
     recognitionRef.continuous = true;
-    recognitionRef.interimResults = false;
+    recognitionRef.interimResults = true; // Enable interim results for live captions
     recognitionRef.lang = 'en-US';
     recognitionRef.maxAlternatives = 1;
     
     let finalTranscript = '';
+    let interimTranscript = '';
     let hasStarted = false;
     let hasSpeech = false;
     let isFinished = false;
@@ -332,13 +333,31 @@ async function startSpeechRecognition(id: number, maxSec: number): Promise<strin
     recognitionRef.onresult = (event: any) => {
       if (isStale(id)) return;
       
+      let interimText = '';
+      let finalText = '';
+      
       for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
         if (event.results[i].isFinal) {
-          finalTranscript += event.results[i][0].transcript;
+          finalText += transcript;
+        } else {
+          interimText += transcript;
         }
       }
       
-      console.log('[Speaking] asr:onresult', finalTranscript);
+      // Update transcripts
+      if (finalText) {
+        finalTranscript += finalText;
+      }
+      if (interimText) {
+        interimTranscript = interimText;
+        // Emit interim result event for live captions
+        window.dispatchEvent(new CustomEvent('speech:interim', { 
+          detail: { transcript: interimText, runId: id }
+        }));
+      }
+      
+      console.log('[Speaking] asr:onresult', { final: finalTranscript, interim: interimText });
     };
     
     recognitionRef.onend = () => {
