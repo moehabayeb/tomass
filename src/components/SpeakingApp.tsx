@@ -125,6 +125,9 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   });
   const [audioContextResumed, setAudioContextResumed] = useState(false);
   
+  // TTS listener authority state
+  const [ttsListenerActive, setTtsListenerActive] = useState(false);
+  
   const { level, xp_current, next_threshold, awardXp, lastLevelUpTime, fetchProgress, resetLevelUpNotification, subscribeToProgress } = useProgressStore();
 
   // Helper function to enable audio context for TTS (autoplay policy compliance)
@@ -225,7 +228,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
   // Unread assistant detection
   const unreadAssistantExists = () => {
-    const latestMessage = findLatestAssistantMessage();
+    const latestMessage = findLatestEligibleAssistantMessage();
     if (!latestMessage) return false;
     
     const messageKey = stableMessageKey(latestMessage.text, latestMessage.id);
@@ -235,6 +238,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   };
   
   // Helper function to find newest eligible assistant message (B - Newest assistant only)
+  const findLatestEligibleAssistantMessage = () => {
     // B) Eligible-to-speak filter: Only assistant messages (role=assistant), never user/meta
     const eligibleMessages = messages.filter(m => 
       m.role === 'assistant' && 
@@ -629,7 +633,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     console.log('[Speaking] Finding latest assistant message to speak', { flowState });
     
     // B) Find newest eligible assistant message only
-    const latestMessage = findLatestAssistantMessage();
+    const latestMessage = findLatestEligibleAssistantMessage();
     
     if (!latestMessage) {
       console.log('HF_TTS_SKIP: no eligible assistant message found');
@@ -725,7 +729,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     // Only process when in the right states and we have authority
     if (!['IDLE', 'PROCESSING', 'PAUSED'].includes(flowState)) return;
     
-    const latestMessage = findLatestAssistantMessage();
+    const latestMessage = findLatestEligibleAssistantMessage();
     if (!latestMessage) return;
     
     const messageKey = stableMessageKey(latestMessage.text, latestMessage.id);
@@ -1567,7 +1571,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     await new Promise(resolve => setTimeout(resolve, 2000));
     
     // A) Find newest assistant message (not user/meta) to speak
-    const latestMessage = findLatestAssistantMessage();
+    const latestMessage = findLatestEligibleAssistantMessage();
     const nextPrompt = latestMessage?.text || currentQuestion;
     
     if (nextPrompt && nextPrompt !== hfCurrentPrompt) {
