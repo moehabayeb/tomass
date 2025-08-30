@@ -220,6 +220,17 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     return key;
   };
 
+  // Helper for ephemeral keys (text-only, no server id)
+  const stableKeyFromText = (text: string): string => {
+    const hash = text.substring(0, 200).split('').reduce((a, b) => {
+      a = ((a << 5) - a) + b.charCodeAt(0);
+      return a & a;
+    }, 0);
+    const key = `msg-${Math.abs(hash)}`;
+    console.log('HF_KEY', { key, source: 'ephemeral', previewText: text.substring(0, 30) });
+    return key;
+  };
+
   // Legacy computeMessageKey (deprecated - use stableMessageKey instead)
   const computeMessageKey = (level: string, module: string, qIndex: number, text: string, serverId?: string) => {
     // Redirect to stable version
@@ -249,6 +260,35 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     );
     
     return eligibleMessages[eligibleMessages.length - 1]; // Latest only
+  };
+
+  // Ephemeral speak for bootstrap (no append)
+  const speakEphemeral = async (text: string) => {
+    if (!text.trim()) return;
+    
+    const messageKey = stableKeyFromText(text);
+    
+    // Add to spoken keys to prevent re-reading when server appends same text
+    setSpokenKeys(prev => new Set([...prev, messageKey]));
+    
+    // Generate turn token for this speech
+    const token = `turn-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    setCurrentTurnToken(token);
+    
+    console.log('HF_BOOTSTRAP', { path: 'ephemeral', text: text.substring(0, 50), messageKey, token });
+    
+    try {
+      // Use existing TTS path - temporarily set state to READING for speakExistingMessage
+      setFlowState('READING');
+      await speakExistingMessage(text, messageKey, 'prompt', false);
+    } catch (error) {
+      console.warn('HF_BOOTSTRAP: ephemeral speak failed', error);
+      // On error, still transition to LISTENING
+      if (currentTurnToken === token) {
+        setFlowState('LISTENING');
+        startHandsFreeMicCapture();
+      }
+    }
   };
   
   // Remove useSpeakingTTS hook - we'll use strict turn-taking logic instead
@@ -1330,11 +1370,16 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           setPausedFrom(null);
           // Processing will continue naturally when backend responds
         } else {
-          // Check for unread assistant message first
-          const hasUnread = unreadAssistantExists();
-          if (hasUnread) {
-            // Unread assistant exists - go to READING and speak it first
-            console.log(`HF_PRIMARY`, { from: prevState, to: 'READING', action: 'read_unread', unread: true });
+          // New bootstrap logic
+          const latest = findLatestEligibleAssistantMessage();
+          const hasLatest = !!latest;
+          const hasCurrentQuestion = !!currentQuestion?.trim();
+          
+          console.log('HF_BOOTSTRAP', { path: 'backend', hasLatest, hasCurrentQuestion });
+          
+          if (latest) {
+            // Speak existing assistant message
+            console.log(`HF_PRIMARY`, { from: prevState, to: 'READING', action: 'read_existing', unread: unreadAssistantExists() });
             setFlowState('READING');
             setPausedFrom(null);
             
@@ -1345,30 +1390,37 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
               setErrorMessage(error.message);
               setFlowState('IDLE');
             }
+          } else if (hasCurrentQuestion) {
+            // Bootstrap without fabricating a bubble
+            console.log(`HF_PRIMARY`, { from: prevState, to: 'READING', action: 'bootstrap_ephemeral', unread: false });
+            setFlowState('READING');
+            setPausedFrom(null);
+            
+            try {
+              await speakEphemeral(currentQuestion.trim());
+            } catch (error: any) {
+              console.log('HF_ERROR_BOOTSTRAP:', error.message);
+              setErrorMessage(error.message);
+              setFlowState('IDLE');
+            }
           } else {
-            // Nothing unread - go straight to LISTENING
-            console.log(`HF_PRIMARY`, { from: prevState, to: 'LISTENING', action: 'start_listening', unread: false });
+            // Nothing to read and no cached question: fallback to LISTENING
+            console.log(`HF_PRIMARY`, { from: prevState, to: 'LISTENING', action: 'fallback_listening', unread: false });
             setFlowState('LISTENING');
             setPausedFrom(null);
             
             try {
               await startHandsFreeMicCapture();
             } catch (error: any) {
-              console.log('HF_ERROR_START_LISTENING:', error.message);
+              console.log('HF_ERROR_FALLBACK_LISTENING:', error.message);
               setErrorMessage(error.message);
               setFlowState('IDLE');
             }
           }
         }
         break;
-        // Pause reading
-        console.log(`HF_PRIMARY`, { from: prevState, to: 'PAUSED', action: 'pause_reading', unread: false });
-        TTSManager.stop();
-        setIsSpeaking(false);
-        setAvatarState('idle');
-        setFlowState('PAUSED');
-        setPausedFrom('READING');
-        break;
+        
+      case 'READING':
         
       case 'LISTENING':
         // Pause listening
