@@ -542,15 +542,34 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       setReplayCounter(replay);
     }
 
-    // C) Single authority: TTS can only be triggered by hands-free controller
+    // C) Single authority: TTS can only be triggered by the hands-free controller when it has authority
     if (!ttsListenerActive) {
-      console.log('HF_TTS_SKIP: no active TTS listener authority');
+      console.log('HF_TTS_SKIP: no active TTS listener authority', { ttsListenerActive });
       return messageKey;
     }
+    
+    // Turn token guard: Ensure we're still on the correct turn
+    if (turnToken !== currentTurnToken) {
+      console.log('HF_DROP_STALE: turn token mismatch during TTS', { turnToken, currentTurnToken });
+      return messageKey;
+    }
+    // D) Sound toggle compliance: Check if sound is enabled before TTS
     if (speakingSoundEnabled) {
+      // On first Play: Autoplay policy compliance - resume AudioContext
+      if (!audioContextResumed) {
+        const resumed = await enableAudioContext();
+        if (!resumed) {
+          console.log('HF_SOUND_FAIL: AudioContext resume failed', { turnToken, messageId });
+          // Show tooltip: "Tap Play to enable sound" but don't mark as complete
+          setErrorMessage("Tap Play to enable sound");
+          return messageKey;
+        }
+      }
+      
       console.log('HF_PROMPT_PLAY', { turnToken, messageId, messageKey, phase, textHash: text.substring(0, 20), state: flowState });
       
       try {
+        // A) State transition: Enter READING state for TTS
         setFlowState('READING');
         setIsSpeaking(true);
         setAvatarState('talking');
@@ -572,9 +591,9 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         setFlowState('IDLE');
       }
     } else {
-      // Do not silently 'complete' when muted: log HF_PROMPT_SKIP instead
+      // D) Do not silently 'complete' when muted: log HF_PROMPT_SKIP instead (never HF_TTS_COMPLETE)
       console.log('HF_PROMPT_SKIP: sound disabled', { turnToken, messageId, messageKey, state: flowState });
-      // Still trigger mic reopening
+      // Still proceed to mic opening
       await handleTTSCompletion(turnToken, messageId);
     }
     
@@ -688,27 +707,44 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       fetchProgress();
     }
     
-    // Initialize with first turn token
+    // Initialize with first turn token only once
     if (!currentTurnToken) {
-      startNewTurn();
+      const initialToken = startNewTurn();
+      console.log('[Speaking] Initial turn token created:', initialToken);
     }
 
-    // C) Single authority + single listener: Ensure only one active subscription per mount
+    // C) Single authority + single listener: Ensure EXACTLY one active subscription per mount
     let isMounted = true;
-    if (!ttsListenerActive) {
-      setTtsListenerActive(true);
-      console.log('[Speaking] Component mounted - single TTS subscription active');
-    }
+    
+    // Set TTS listener authority immediately on mount
+    setTtsListenerActive(true);
+    console.log('[Speaking] Component mounted - single TTS authority established');
     
     // Cleanup on unmount - single subscription management
     return () => {
+      if (isMounted) {
+        setTtsListenerActive(false);
+        console.log('[Speaking] Unmounting - releasing TTS authority and cleaning up');
+        
+        // Cancel all ongoing operations
+        cancelOldListeners();
+        
+        // Stop any active TTS
+        if (TTSManager.isSpeaking()) {
+          TTSManager.stop();
+        }
+        
+        // Stop any active recording
+        if (micState === 'recording') {
+          stopRecording();
+        }
+        
+        // Clean up mic engine
+        cleanup();
+      }
       isMounted = false;
-      setTtsListenerActive(false);
-      console.log('[Speaking] Unmounting - cleaning up listeners and timeouts');
-      cancelOldListeners();
-      cleanup();
     };
-  }, [user, ttsListenerActive]);
+  }, [user]); // Remove ttsListenerActive dependency to prevent re-runs
 
   // Handle initial message from props (bookmarks) - E) Advance without fabricating messages
   useEffect(() => {
@@ -1565,9 +1601,21 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     console.log('HF_MIC_OPEN', { turnToken: currentTurnToken, state: flowState });
     emitHFTelemetry('HF_MIC_OPEN', { turnToken: currentTurnToken });
     
-    // D) Mic gating: Only open mic during LISTENING state
+    // D) Mic gating: Strictly enforce LISTENING state only for mic access
     if (flowState !== 'LISTENING') {
-      console.log('HF_MIC_SKIP: not in LISTENING state', { flowState });
+      console.log('HF_MIC_SKIP: not in LISTENING state', { flowState, required: 'LISTENING' });
+      return;
+    }
+    
+    // D) Mic gating: During TTS playback, mic MUST be closed
+    if (isSpeaking || TTSManager.isSpeaking()) {
+      console.log('HF_MIC_SKIP: TTS is active, mic must wait', { isSpeaking, ttsBusy: TTSManager.isSpeaking() });
+      return;
+    }
+    
+    // C) Turn token guard: Ensure we're on the correct turn before opening mic
+    if (!currentTurnToken) {
+      console.log('HF_MIC_SKIP: no current turn token');
       return;
     }
     playEarcon('listening');
@@ -1678,12 +1726,15 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         return; // Don't process as normal input
       }
       
+      // D) State transition: Move to PROCESSING and close mic
+      setFlowState('PROCESSING');
       setHfStatus('processing');
-      emitHFTelemetry('HF_RESULT_FINAL', { transcriptLength: result.transcript.length });
+      emitHFTelemetry('HF_RESULT_FINAL', { transcriptLength: result.transcript.length, turnToken: currentTurnToken });
       playEarcon('processing');
       
-      // Display verbatim transcript (exact ASR output) - only for non-commands
-      addChatBubble(`💭 You said: "${result.transcript}"`, "user");
+      // B) Append exactly ONE user bubble on ASR_FINAL (not on interim)
+      const { id: userMessageId } = addChatBubble(`💭 You said: "${result.transcript}"`, "user");
+      console.log('HF_USER_MESSAGE_ADDED', { userMessageId, transcript: result.transcript });
       
       // Check if user said "resume" to resume paused session (fallback for non-exact matches)
       if (hfAutoPaused && result.transcript.toLowerCase().includes('resume')) {
