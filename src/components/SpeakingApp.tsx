@@ -199,21 +199,42 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   // C) Remember where we paused (for correct Resume)
   const [pausedFrom, setPausedFrom] = useState<'READING' | 'LISTENING' | 'PROCESSING' | null>(null);
 
-  // Helper function to compute stable messageKey for deduplication (B - Deduplicate by identity)
-  const computeMessageKey = (level: string, module: string, qIndex: number, text: string, serverId?: string) => {
-    // Use server ID if available, otherwise hash based on content
-    if (serverId) return `server-${serverId}`;
+  // Helper function to compute stable messageKey for deduplication (fix regression)
+  const stableMessageKey = (text: string, serverId?: string) => {
+    // Use server ID if available, otherwise hash ONLY the assistant text (no timestamps, no counters)
+    if (serverId) {
+      console.log('HF_KEY', { key: `server:${serverId}`, hasServerId: true, previewText: text.substring(0, 30) });
+      return `server:${serverId}`;
+    }
     
-    const baseContent = `${level}-${module}-${qIndex}-${text.substring(0, 100)}`;
-    const hash = baseContent.split('').reduce((a, b) => {
+    // Hash only the content for stability
+    const hash = text.substring(0, 200).split('').reduce((a, b) => {
       a = ((a << 5) - a) + b.charCodeAt(0);
       return a & a;
     }, 0);
-    return `msg-${Math.abs(hash)}`;
+    const key = `msg-${Math.abs(hash)}`;
+    console.log('HF_KEY', { key, hasServerId: false, previewText: text.substring(0, 30) });
+    return key;
   };
 
+  // Legacy computeMessageKey (deprecated - use stableMessageKey instead)
+  const computeMessageKey = (level: string, module: string, qIndex: number, text: string, serverId?: string) => {
+    // Redirect to stable version
+    return stableMessageKey(text, serverId);
+  };
+
+  // Unread assistant detection
+  const unreadAssistantExists = () => {
+    const latestMessage = findLatestAssistantMessage();
+    if (!latestMessage) return false;
+    
+    const messageKey = stableMessageKey(latestMessage.text, latestMessage.id);
+    const unread = !spokenKeys.has(messageKey);
+    console.log('HF_PRIMARY', { action: 'check_unread', unread, messageKey, previewText: latestMessage.text.substring(0, 30) });
+    return unread;
+  };
+  
   // Helper function to find newest eligible assistant message (B - Newest assistant only)
-  const findLatestAssistantMessage = () => {
     // B) Eligible-to-speak filter: Only assistant messages (role=assistant), never user/meta
     const eligibleMessages = messages.filter(m => 
       m.role === 'assistant' && 
@@ -616,8 +637,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       return;
     }
     
-    // Generate messageKey for deduplication
-    const messageKey = computeMessageKey('speaking', 'general', Date.now(), latestMessage.text, latestMessage.id);
+    // Generate messageKey for deduplication (fix regression - use stable key)
+    const messageKey = stableMessageKey(latestMessage.text, latestMessage.id);
     
     console.log('[Speaking] Latest assistant message found', { 
       messageKey, 
@@ -642,8 +663,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     // Add to chat and get sequence number - this is the ONLY place we append assistant messages
     const { id, seq } = addChatBubble(message, "bot", messageId);
     
-    // Generate messageKey for this new message
-    const messageKey = computeMessageKey('speaking', 'general', seq, message, id);
+    // Generate messageKey for this new message (use stable key)
+    const messageKey = stableMessageKey(message, id);
     
     // Now speak this newly added message
     await speakExistingMessage(message, messageKey, phase, false);
@@ -697,9 +718,42 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     }
   };
 
-  // C) Single authority + single listener: Ensure only one active TTS subscription per page
-  const [ttsListenerActive, setTtsListenerActive] = useState(false);
-  
+  // Message observer: Watch for new assistant messages and auto-speak them (no fabrication)
+  useEffect(() => {
+    if (!ttsListenerActive || messages.length === 0) return;
+    
+    // Only process when in the right states and we have authority
+    if (!['IDLE', 'PROCESSING', 'PAUSED'].includes(flowState)) return;
+    
+    const latestMessage = findLatestAssistantMessage();
+    if (!latestMessage) return;
+    
+    const messageKey = stableMessageKey(latestMessage.text, latestMessage.id);
+    
+    // Check if this is a NEW assistant bubble (messageKey not in spokenKeys)
+    if (!spokenKeys.has(messageKey)) {
+      console.log('[Speaking] Message observer: New assistant message detected', { 
+        messageKey, 
+        flowState,
+        text: latestMessage.text.substring(0, 50) + '...'
+      });
+      
+      // Auto-speak the new message
+      const handleNewMessage = async () => {
+        try {
+          setFlowState('READING');
+          await speakExistingMessage(latestMessage.text, messageKey, 'feedback', false);
+        } catch (error: any) {
+          console.log('HF_ERROR_AUTO_SPEAK:', error.message);
+          setFlowState('IDLE');
+        }
+      };
+      
+      // Small delay to avoid race conditions
+      setTimeout(handleNewMessage, 100);
+    }
+  }, [messages, flowState, ttsListenerActive, spokenKeys]);
+
   // Initialize component and progress store with single subscription management
   useEffect(() => {
     const savedHistory = JSON.parse(localStorage.getItem("chatHistory") || "[]");
@@ -749,21 +803,25 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     };
   }, [user]); // Remove ttsListenerActive dependency to prevent re-runs
 
-  // Handle initial message from props (bookmarks) - E) Advance without fabricating messages
+  // Handle initial message from props (bookmarks) - Remove client-side appending
   useEffect(() => {
     if (initialMessage) {
-      console.log('Adding continued message from bookmark:', initialMessage.substring(0, 50) + '...');
+      console.log('Setting contextual question for bookmark:', initialMessage.substring(0, 50) + '...');
       
-      // E) Advance without fabricating messages: Wait for back-end to provide the next assistant message
-      // For bookmarks, we create a contextual transition message
+      // Set contextual question but don't append - speak what's already in the feed
       const question = "Let's continue our conversation from here! What would you like to say about this?";
       setCurrentQuestion(question);
       
-      // Delay to ensure proper initialization
+      // Start new turn but don't fabricate messages
       setTimeout(() => {
         const newTurnToken = startNewTurn();
         console.log('HF_BOOKMARK_START', { turnToken: newTurnToken });
-        addAssistantMessage(question, 'prompt');
+        
+        // Check if there are existing assistant messages to speak
+        if (unreadAssistantExists()) {
+          setFlowState('READING');
+          speakLatestAssistantMessage();
+        }
       }, 500);
     }
   }, [initialMessage]);
@@ -943,17 +1001,18 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       console.log('HF_ADVANCE: advancing to new question');
       const newTurnToken = startNewTurn();
       
-      // Speak the new question that came from backend
-      await addAssistantMessage(nextQuestion, 'prompt');
+      // Remove client-side appending - wait for backend to post the next question
+      // The message observer will detect and speak it when it arrives
+      console.log('[Speaking] Waiting for backend to post next question...');
 
-        // Track session (non-blocking)
-        logSession(originalTranscript, feedback.corrected);
-        
-        // Award XP based on sophisticated rules
-        await calculateAndAwardXP(originalTranscript);
-        
-        // Track speaking submission for badges
-        incrementSpeakingSubmissions();
+      // Track session (non-blocking)
+      logSession(originalTranscript, feedback.corrected);
+      
+      // Award XP based on sophisticated rules
+      await calculateAndAwardXP(originalTranscript);
+      
+      // Track speaking submission for badges
+      incrementSpeakingSubmissions();
       }
       
       console.log('[Speaking] teacher-loop:completed successfully');
@@ -1247,10 +1306,10 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     switch (flowState) {
       case 'IDLE':
       case 'PAUSED':
-        // Resume from pause or start fresh
+        // Fix primary button flow: check for unread assistant first
         if (pausedFrom === 'LISTENING') {
           // Resume listening
-          console.log(`HF_TAP_PRIMARY`, { from: prevState, to: 'LISTENING', action: 'resume_listening' });
+          console.log(`HF_PRIMARY`, { from: prevState, to: 'LISTENING', action: 'resume_listening', unread: false });
           setFlowState('LISTENING');
           setPausedFrom(null);
           try {
@@ -1262,30 +1321,44 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           }
         } else if (pausedFrom === 'PROCESSING') {
           // Wait for next assistant bubble; when it appears, speak it then auto-open mic
-          console.log(`HF_TAP_PRIMARY`, { from: prevState, to: 'IDLE', action: 'resume_processing_wait' });
+          console.log(`HF_PRIMARY`, { from: prevState, to: 'IDLE', action: 'resume_processing_wait', unread: false });
           setFlowState('IDLE');
           setPausedFrom(null);
           // Processing will continue naturally when backend responds
         } else {
-          // Start fresh or resume reading
-          console.log(`HF_TAP_PRIMARY`, { from: prevState, to: 'READING', action: 'start_reading' });
-          setFlowState('READING');
-          setPausedFrom(null);
-          
-          // E) First-play success path: speak latest assistant message (never fabricate)
-          try {
-            await speakLatestAssistantMessage();
-          } catch (error: any) {
-            console.log('HF_ERROR_START_READING:', error.message);
-            setErrorMessage(error.message);
-            setFlowState('IDLE');
+          // Check for unread assistant message first
+          const hasUnread = unreadAssistantExists();
+          if (hasUnread) {
+            // Unread assistant exists - go to READING and speak it first
+            console.log(`HF_PRIMARY`, { from: prevState, to: 'READING', action: 'read_unread', unread: true });
+            setFlowState('READING');
+            setPausedFrom(null);
+            
+            try {
+              await speakLatestAssistantMessage();
+            } catch (error: any) {
+              console.log('HF_ERROR_START_READING:', error.message);
+              setErrorMessage(error.message);
+              setFlowState('IDLE');
+            }
+          } else {
+            // Nothing unread - go straight to LISTENING
+            console.log(`HF_PRIMARY`, { from: prevState, to: 'LISTENING', action: 'start_listening', unread: false });
+            setFlowState('LISTENING');
+            setPausedFrom(null);
+            
+            try {
+              await startHandsFreeMicCapture();
+            } catch (error: any) {
+              console.log('HF_ERROR_START_LISTENING:', error.message);
+              setErrorMessage(error.message);
+              setFlowState('IDLE');
+            }
           }
         }
         break;
-        
-      case 'READING':
         // Pause reading
-        console.log(`HF_TAP_PRIMARY`, { from: prevState, to: 'PAUSED', action: 'pause_reading' });
+        console.log(`HF_PRIMARY`, { from: prevState, to: 'PAUSED', action: 'pause_reading', unread: false });
         TTSManager.stop();
         setIsSpeaking(false);
         setAvatarState('idle');
@@ -1295,7 +1368,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         
       case 'LISTENING':
         // Pause listening
-        console.log(`HF_TAP_PRIMARY`, { from: prevState, to: 'PAUSED', action: 'pause_listening' });
+        console.log(`HF_PRIMARY`, { from: prevState, to: 'PAUSED', action: 'pause_listening', unread: false });
         if (micState === 'recording') {
           stopRecording();
         }
@@ -1305,7 +1378,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         
       case 'PROCESSING':
         // Treat as pause: cancel mic reopen timers only; keep evaluator/save untouched
-        console.log(`HF_TAP_PRIMARY`, { from: prevState, to: 'PAUSED', action: 'pause_processing' });
+        console.log(`HF_PRIMARY`, { from: prevState, to: 'PAUSED', action: 'pause_processing', unread: false });
         
         // Cancel pending mic reopen timeouts but don't touch the evaluation process
         micReopenTimeouts.forEach(timeout => clearTimeout(timeout));
@@ -1507,8 +1580,10 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           nextPrompt: nextPrompt.substring(0, 50) + '...' 
         });
         
-        // F) Hands-free loop: Continue with strict turn-taking
-        await addAssistantMessage(nextPrompt, 'prompt');
+        // F) Hands-free loop: Remove client-side appending - wait for backend
+        console.log('[Speaking] Waiting for backend to post next prompt, current:', nextPrompt.substring(0, 50) + '...');
+        
+        // The message observer will handle speaking when new content arrives
       } catch (error: any) {
         console.log('HF_ERROR_ADVANCE:', error.message);
         setErrorMessage(error.message);
@@ -1625,37 +1700,57 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       await startBargeInDetector();
     }
     
-    // B) Speak only the newest assistant message: target exactly one item
+    // Remove client-side appending - check for existing assistant messages first
     const eligibleMessages = messages.filter(m => !m.isUser && !m.isSystem);
     const latestAssistantMessage = eligibleMessages[eligibleMessages.length - 1];
     
-    // If no messages exist, use fallback prompt
-    const prompt = latestAssistantMessage?.text || currentQuestion || "Hello! Ready to practice today? Let's start with a simple question.";
-    setHfCurrentPrompt(prompt);
-    
-    try {
-      console.log('HF_START_PLAYBACK', { turnToken, prompt: prompt.substring(0, 50) + '...' });
-      // Use addAssistantMessage for consistent strict turn-taking
-      await addAssistantMessage(prompt, 'prompt');
-    } catch (error: any) {
-      console.log('HF_ERROR_START:', error.message);
-      emitHFTelemetry('HF_ERROR_start', { error: error.message });
-      setErrorMessage(error.message);
-      setHfActive(false);
-      setHfSessionActive(false);
-      setHfStatus('idle');
+    if (latestAssistantMessage && unreadAssistantExists()) {
+      // Speak existing assistant message
+      setHfCurrentPrompt(latestAssistantMessage.text);
+      console.log('HF_START_EXISTING', { turnToken, prompt: latestAssistantMessage.text.substring(0, 50) + '...' });
+      setFlowState('READING');
+      await speakLatestAssistantMessage();
+    } else {
+      // No unread assistant messages - use fallback prompt but don't append it
+      const prompt = currentQuestion || "Hello! Ready to practice today? Let's start with a simple question.";
+      setHfCurrentPrompt(prompt);
+      console.log('HF_START_FALLBACK', { turnToken, prompt: prompt.substring(0, 50) + '...' });
       
-      // Clean up V2 features
-      if (hfV2Enabled) {
-        stopBargeInDetector();
-        wakeLockManager.release();
+      // Speak fallback without appending to chat
+      try {
+        setFlowState('READING');
+        setIsSpeaking(true);
+        setAvatarState('talking');
+        
+        if (speakingSoundEnabled) {
+          await TTSManager.speak(prompt, { canSkip: true });
+        }
+        
+        setIsSpeaking(false);
+        setAvatarState('idle');
+        
+        // After speaking fallback, open mic
+        await handleTTSCompletion(turnToken, 'fallback');
+      } catch (error: any) {
+        console.log('HF_ERROR_START_FALLBACK:', error.message);
+        emitHFTelemetry('HF_ERROR_start', { error: error.message });
+        setErrorMessage(error.message);
+        setHfActive(false);
+        setHfSessionActive(false);
+        setHfStatus('idle');
+        
+        // Clean up V2 features
+        if (hfV2Enabled) {
+          stopBargeInDetector();
+          wakeLockManager.release();
+        }
       }
     }
   };
 
   const startHandsFreePromptPlayback = async (prompt: string, useCurrentToken = false) => {
     if (!speakingSoundEnabled) {
-      // E) Play/Resume semantics: Skip TTS if sound is off, go straight to mic
+      // Skip TTS if sound is off, go straight to mic
       console.log('HF_PROMPT_SKIP: sound disabled');
       setHfStatus('prompting'); // Show status briefly
       await new Promise(resolve => setTimeout(resolve, 500)); // Brief pause
@@ -1672,12 +1767,19 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     playEarcon('advance');
     emitHFTelemetry('HF_PROMPT_PLAY', { promptLength: prompt.length, turnToken });
     
-    // Use addAssistantMessage for consistent strict turn-taking (A - Eligible-to-Speak filter)
-    // This ensures only assistant messages are spoken and follows sequence rules
+    // Remove client-side appending - speak the prompt directly without adding to chat
     try {
-      // For hands-free playback, we use 'prompt' phase and pass isRepeat for replay scenarios
-      const isRepeat = useCurrentToken && !!currentTurnToken; // If using current token, it's likely a repeat
-      await addAssistantMessage(prompt, 'prompt');
+      setFlowState('READING');
+      setIsSpeaking(true);
+      setAvatarState('talking');
+      
+      await TTSManager.speak(prompt, { canSkip: true });
+      
+      setIsSpeaking(false);
+      setAvatarState('idle');
+      
+      // After TTS completion, auto-open mic
+      await handleTTSCompletion(turnToken, 'prompt-playback');
     } catch (error: any) {
       console.log('HF_ERROR_TTS:', error.message);
       throw error;
@@ -1908,8 +2010,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     if (currentAssistantMessage) {
       try {
         console.log('HF_REPEAT: replaying current assistant message');
-        // Generate messageKey for the existing message
-        const messageKey = computeMessageKey('speaking', 'general', Date.now(), currentAssistantMessage.text, currentAssistantMessage.id);
+        // Generate messageKey for the existing message (fix regression - use stable key)
+        const messageKey = stableMessageKey(currentAssistantMessage.text, currentAssistantMessage.id);
         // Speak existing message without appending new bubble
         await speakExistingMessage(currentAssistantMessage.text, messageKey, 'prompt', true);
       } catch (error: any) {
