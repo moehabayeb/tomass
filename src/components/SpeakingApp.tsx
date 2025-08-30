@@ -168,6 +168,10 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     // No explicit TTS manager sync needed - we check speakingSoundEnabled directly
   }, []);
   
+  // A) Authoritative flow (finite-state machine)
+  // States: IDLE / READING / LISTENING / PROCESSING / PAUSED
+  const [flowState, setFlowState] = useState<'IDLE' | 'READING' | 'LISTENING' | 'PROCESSING' | 'PAUSED'>('IDLE');
+  
   // A) Stop duplicates at the source: NO default/initial assistant message seeded
   // Feed must come only from conversation store/back-end
   const [messages, setMessages] = useState<Array<{
@@ -180,10 +184,44 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     seq: number;
   }>>([]);
 
-  // B) Single-message rule per turn: track sequence and messageKey deduplication
+  // B) No-duplicate rules + messageKey deduplication system
+  const [spokenKeys, setSpokenKeys] = useState<Set<string>>(new Set()); // Track spoken message keys
   const [lastSpokenSeq, setLastSpokenSeq] = useState(0);
   const [messageSeqCounter, setMessageSeqCounter] = useState(1); // Start from 1 (no initial message)
-  const [spokenKeys, setSpokenKeys] = useState<Set<string>>(new Set()); // Deduplicate by messageKey
+  
+  // C) Guard rails: Turn token system for preventing stale events
+  const [currentTurnToken, setCurrentTurnToken] = useState<string>('');
+  const [lastPlayedMessageIds, setLastPlayedMessageIds] = useState<Set<string>>(new Set());
+  const [replayCounter, setReplayCounter] = useState(0);
+  const [ttsCompletionTimeouts, setTtsCompletionTimeouts] = useState<Set<NodeJS.Timeout>>(new Set());
+  const [micReopenTimeouts, setMicReopenTimeouts] = useState<Set<NodeJS.Timeout>>(new Set());
+
+  // Helper function to compute stable messageKey for deduplication (B - Deduplicate by identity)
+  const computeMessageKey = (level: string, module: string, qIndex: number, text: string, serverId?: string) => {
+    // Use server ID if available, otherwise hash based on content
+    if (serverId) return `server-${serverId}`;
+    
+    const baseContent = `${level}-${module}-${qIndex}-${text.substring(0, 100)}`;
+    const hash = baseContent.split('').reduce((a, b) => {
+      a = ((a << 5) - a) + b.charCodeAt(0);
+      return a & a;
+    }, 0);
+    return `msg-${Math.abs(hash)}`;
+  };
+
+  // Helper function to find newest eligible assistant message (B - Newest assistant only)
+  const findLatestAssistantMessage = () => {
+    // B) Eligible-to-speak filter: Only assistant messages (role=assistant), never user/meta
+    const eligibleMessages = messages.filter(m => 
+      m.role === 'assistant' && 
+      !m.isUser && 
+      !m.isSystem && 
+      m.text.trim() &&
+      !m.text.startsWith('💭 You said:') // Never speak echo messages
+    );
+    
+    return eligibleMessages[eligibleMessages.length - 1]; // Latest only
+  };
   
   // Remove useSpeakingTTS hook - we'll use strict turn-taking logic instead
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -238,12 +276,6 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   const [hfPermissionBlocked, setHfPermissionBlocked] = useState(false); // Permission state
   const [hfEmptyTranscriptCount, setHfEmptyTranscriptCount] = useState(0); // Track empty transcripts
   
-  // Turn token system for strict idempotency
-  const [currentTurnToken, setCurrentTurnToken] = useState<string>('');
-  const [lastPlayedMessageIds, setLastPlayedMessageIds] = useState<Set<string>>(new Set());
-  const [replayCounter, setReplayCounter] = useState(0);
-  const [ttsCompletionTimeouts, setTtsCompletionTimeouts] = useState<Set<NodeJS.Timeout>>(new Set());
-  const [micReopenTimeouts, setMicReopenTimeouts] = useState<Set<NodeJS.Timeout>>(new Set());
   
   // Persist hfEnabled to localStorage
   useEffect(() => {
@@ -385,19 +417,6 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     return token;
   };
 
-  // Helper function to compute messageKey for stable deduplication (C - Deduplicate by identity)
-  const computeMessageKey = (level: string, module: string, qIndex: number, text: string, serverId?: string) => {
-    // Use server ID if available, otherwise hash based on content
-    if (serverId) return `server-${serverId}`;
-    
-    const baseContent = `${level}-${module}-${qIndex}-${text.substring(0, 100)}`;
-    const hash = baseContent.split('').reduce((a, b) => {
-      a = ((a << 5) - a) + b.charCodeAt(0);
-      return a & a;
-    }, 0);
-    return `msg-${Math.abs(hash)}`;
-  };
-
   // Helper function to compute messageId for turn token events
   const computeMessageId = (turnToken: string, phase: 'prompt' | 'feedback', text: string, replay = 0) => {
     const baseId = `${turnToken}:${phase}:${text.substring(0, 50)}`;
@@ -409,7 +428,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     return `msg-${Math.abs(hash)}-${phase}${replaySuffix}`;
   };
 
-  // Cancel all old timeouts and listeners
+  // D) Turn token guard: On ADVANCE, create new token and cancel old listeners
   const cancelOldListeners = () => {
     console.log('HF_ADVANCE: canceling old listeners and timeouts');
     
@@ -424,15 +443,36 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     // Cancel other hands-free timers
     if (hfNoInputTimer) clearTimeout(hfNoInputTimer);
     if (hfRePromptTimer) clearTimeout(hfRePromptTimer);
+    if (hfControlsTimeout) clearTimeout(hfControlsTimeout);
+    if (hfLongPressTimeout) clearTimeout(hfLongPressTimeout);
+    
+    // Stop any ongoing TTS from previous turn
+    if (TTSManager.isSpeaking()) {
+      console.log('HF_ADVANCE: stopping TTS from previous turn');
+      TTSManager.stop();
+      setIsSpeaking(false);
+      setAvatarState('idle');
+    }
+    
+    // Stop any recording from previous turn
+    if (micState === 'recording') {
+      console.log('HF_ADVANCE: stopping recording from previous turn');
+      stopRecording();
+    }
   };
 
-  // Start a new turn with fresh token
+  // Start a new turn with fresh token (C - Turn token guard)
   const startNewTurn = () => {
     const newToken = generateTurnToken();
+    
+    // D) Turn token guard: Cancel everything from the previous turn
+    cancelOldListeners();
+    
     setCurrentTurnToken(newToken);
     setReplayCounter(0);
-    cancelOldListeners();
-    console.log('HF_NEW_TURN:', newToken);
+    setFlowState('IDLE'); // Reset to idle when starting new turn
+    
+    console.log('HF_NEW_TURN', { newToken, state: 'IDLE' });
     return newToken;
   };
 
@@ -457,13 +497,19 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     return { id, seq, messageKey };
   };
 
-  // B) Separate "append" vs "speak": when we only need to speak an existing assistant message
+  // B) Separate "append" vs "speak": Only speak existing messages, never append when speaking
   const speakExistingMessage = async (text: string, messageKey: string, phase: 'prompt' | 'feedback' = 'feedback', isRepeat = false) => {
-    console.log('[Speaking] Speaking existing message:', text.substring(0, 50) + '...');
+    console.log('[Speaking] Speaking existing message:', text.substring(0, 50) + '...', { flowState, messageKey });
     
-    // C) Deduplicate by identity: Only speak if messageKey not in spokenKeys  
+    // State machine: Only speak during READING state
+    if (flowState !== 'READING' && !isRepeat) {
+      console.log('HF_TTS_SKIP: not in READING state', { flowState });
+      return messageKey;
+    }
+    
+    // B) Deduplicate by messageKey: Only speak if messageKey not in spokenKeys  
     if (spokenKeys.has(messageKey) && !isRepeat) {
-      console.log('HF_TTS_SKIP: messageKey already spoken:', messageKey);
+      console.log('HF_DROP_DUP: messageKey already spoken', { messageKey });
       return messageKey;
     }
 
@@ -476,7 +522,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     
     // Check if already played by messageId (turn-level idempotency)
     if (lastPlayedMessageIds.has(messageId) && !isRepeat) {
-      console.log('HF_TTS_SKIP: messageId already played:', messageId);
+      console.log('HF_DROP_STALE: messageId already played', { messageId, turnToken });
       await handleTTSCompletion(turnToken, messageId);
       return messageKey;
     }
@@ -496,11 +542,16 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       setReplayCounter(replay);
     }
 
-    // E) Single authority for speaking: Only hands-free controller calls TTS
+    // C) Single authority: TTS can only be triggered by hands-free controller
+    if (!ttsListenerActive) {
+      console.log('HF_TTS_SKIP: no active TTS listener authority');
+      return messageKey;
+    }
     if (speakingSoundEnabled) {
-      console.log('HF_PROMPT_PLAY', { turnToken, messageId, messageKey, phase, textHash: text.substring(0, 20) });
+      console.log('HF_PROMPT_PLAY', { turnToken, messageId, messageKey, phase, textHash: text.substring(0, 20), state: flowState });
       
       try {
+        setFlowState('READING');
         setIsSpeaking(true);
         setAvatarState('talking');
         
@@ -508,7 +559,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           canSkip: true
         });
         
-        console.log('HF_TTS_COMPLETE', { turnToken, messageId, messageKey });
+        console.log('HF_TTS_COMPLETE', { turnToken, messageId, messageKey, state: flowState });
         setIsSpeaking(false);
         setAvatarState('idle');
         
@@ -518,10 +569,11 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         console.warn('[Speaking] Failed to speak message:', error);
         setIsSpeaking(false);
         setAvatarState('idle');
+        setFlowState('IDLE');
       }
     } else {
       // Do not silently 'complete' when muted: log HF_PROMPT_SKIP instead
-      console.log('HF_PROMPT_SKIP: sound disabled', { turnToken, messageId, messageKey });
+      console.log('HF_PROMPT_SKIP: sound disabled', { turnToken, messageId, messageKey, state: flowState });
       // Still trigger mic reopening
       await handleTTSCompletion(turnToken, messageId);
     }
@@ -529,82 +581,50 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     return messageKey;
   };
 
-  // Enhanced bot message function - strict turn-taking with sequence-based guard
-  const showBotMessage = async (message: string, phase: 'prompt' | 'feedback' = 'feedback', isRepeat = false) => {
-    console.log('[Speaking] Adding bot message:', message.substring(0, 50) + '...');
+  // B) Separate "append" vs "speak": NEVER append when only speaking existing messages
+  const speakLatestAssistantMessage = async (isRepeat = false) => {
+    console.log('[Speaking] Finding latest assistant message to speak', { flowState });
     
-    // A) Eligible-to-Speak filter: Only assistant messages are read (role=assistant)
-    // (This function only handles assistant messages by design)
+    // B) Find newest eligible assistant message only
+    const latestMessage = findLatestAssistantMessage();
+    
+    if (!latestMessage) {
+      console.log('HF_TTS_SKIP: no eligible assistant message found');
+      setFlowState('IDLE');
+      return;
+    }
+    
+    // Generate messageKey for deduplication
+    const messageKey = computeMessageKey('speaking', 'general', Date.now(), latestMessage.text, latestMessage.id);
+    
+    console.log('[Speaking] Latest assistant message found', { 
+      messageKey, 
+      text: latestMessage.text.substring(0, 50) + '...',
+      spokenBefore: spokenKeys.has(messageKey)
+    });
+    
+    // Speak without appending - this message already exists in chat
+    await speakExistingMessage(latestMessage.text, messageKey, 'prompt', isRepeat);
+  };
+
+  // Only append new messages from backend, never fabricate client-side
+  const addAssistantMessage = async (message: string, phase: 'prompt' | 'feedback' = 'feedback') => {
+    console.log('[Speaking] Adding new assistant message from backend:', message.substring(0, 50) + '...', { flowState });
     
     // Use current turn token or generate new one if missing
     const turnToken = currentTurnToken || startNewTurn();
     
     // Compute messageId for strict idempotency
-    const replay = isRepeat ? replayCounter + 1 : 0;
-    const messageId = computeMessageId(turnToken, phase, message, replay);
+    const messageId = computeMessageId(turnToken, phase, message, 0);
     
-    // Check if already played (strict idempotent TTS)
-    if (lastPlayedMessageIds.has(messageId) && !isRepeat) {
-      console.log('HF_TTS_SKIP: message already played:', messageId);
-      // Still trigger auto mic reopening if appropriate
-      await handleTTSCompletion(turnToken, messageId);
-      return messageId;
-    }
-    
-    // Add to chat and get sequence number
+    // Add to chat and get sequence number - this is the ONLY place we append assistant messages
     const { id, seq } = addChatBubble(message, "bot", messageId);
     
-    // B) Single-message rule per turn: Only speak if msg.seq > lastSpokenSeq
-    if (seq <= lastSpokenSeq && !isRepeat) {
-      console.log('HF_TTS_SKIP: message seq already spoken:', { seq, lastSpokenSeq });
-      return messageId;
-    }
+    // Generate messageKey for this new message
+    const messageKey = computeMessageKey('speaking', 'general', seq, message, id);
     
-    // D) One voice at a time: Stop any ongoing TTS before starting new one
-    if (TTSManager.isSpeaking() && !isRepeat) {
-      console.log('HF_TTS_COALESCE: stopping old TTS for newer message');
-      TTSManager.skip();
-      setIsSpeaking(false);
-      setAvatarState('idle');
-    }
-    
-    // Mark as played immediately to prevent duplicates
-    setLastPlayedMessageIds(prev => new Set([...prev, messageId]));
-    if (isRepeat) {
-      setReplayCounter(replay);
-    }
-    
-    // Update lastSpokenSeq to prevent re-reading
-    setLastSpokenSeq(seq);
-    
-    // E) Single authority for speaking: Only hands-free controller calls TTS
-    if (speakingSoundEnabled) {
-      console.log('HF_PROMPT_PLAY', { turnToken, messageId, phase, seq, textHash: message.substring(0, 20) });
-      
-      try {
-        setIsSpeaking(true);
-        setAvatarState('talking');
-        
-        await TTSManager.speak(message, {
-          canSkip: true
-        });
-        
-        console.log('HF_TTS_COMPLETE', { turnToken, messageId, seq });
-        
-        setIsSpeaking(false);
-        setAvatarState('idle');
-        
-        // Auto-reopen mic after TTS completes (gated by turn token)
-        await handleTTSCompletion(turnToken, messageId);
-      } catch (error) {
-        console.warn('[Speaking] Failed to speak message:', error);
-        setIsSpeaking(false);
-        setAvatarState('idle');
-      }
-    } else {
-      // If sound is disabled, still check for auto mic reopening
-      await handleTTSCompletion(turnToken, messageId);
-    }
+    // Now speak this newly added message
+    await speakExistingMessage(message, messageKey, phase, false);
     
     return messageId;
   };
@@ -617,11 +637,11 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       return;
     }
     
-    // Log TTS completion with turn token
-    console.log('HF_TTS_COMPLETE', { turnToken: turnToken || currentTurnToken, messageId });
+    // Log TTS completion with turn token and state
+    console.log('HF_TTS_COMPLETE', { turnToken: turnToken || currentTurnToken, messageId, state: flowState });
     
-    // Only in hands-free mode, when session is active, not paused, and not already listening
-    if (hfActive && hfSessionActive && !hfAutoPaused && hfStatus !== 'listening') {
+    // F) Mic loop: After TTS_COMPLETE → open mic automatically if conditions are met
+    if (hfActive && hfSessionActive && !hfAutoPaused && flowState === 'READING') {
       // Small delay to prevent jarring transition
       const timeout = setTimeout(async () => {
         // Remove from active timeouts
@@ -633,23 +653,31 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         
         // Guard rail: ensure we're still in the right state after delay and turn token still matches
         const stillCurrentTurn = !turnToken || turnToken === currentTurnToken;
-        if (hfActive && hfSessionActive && !hfAutoPaused && stillCurrentTurn && 
-            (hfStatus === 'idle' || hfStatus === 'prompting' || hfStatus === 'processing')) {
-          console.log('HF_AUTO_MIC_REOPEN: reopening mic after TTS completion', { turnToken: turnToken || currentTurnToken });
+        if (hfActive && hfSessionActive && !hfAutoPaused && stillCurrentTurn && flowState === 'READING') {
+          console.log('HF_MIC_OPEN', { turnToken: turnToken || currentTurnToken, state: 'LISTENING' });
+          setFlowState('LISTENING');
+          
           try {
             await startHandsFreeMicCapture();
           } catch (error: any) {
             console.log('HF_ERROR_AUTO_REOPEN:', error.message);
             setErrorMessage(error.message);
+            setFlowState('IDLE');
           }
         }
       }, 300);
       
       // Track timeout for cleanup
       setMicReopenTimeouts(prev => new Set([...prev, timeout]));
+    } else {
+      // Not ready for mic, return to idle
+      setFlowState('IDLE');
     }
   };
 
+  // C) Single authority + single listener: Ensure only one active TTS subscription per page
+  const [ttsListenerActive, setTtsListenerActive] = useState(false);
+  
   // Initialize component and progress store with single subscription management
   useEffect(() => {
     const savedHistory = JSON.parse(localStorage.getItem("chatHistory") || "[]");
@@ -665,18 +693,22 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       startNewTurn();
     }
 
-    // C) Single authority + single listener: Ensure only one active subscription
+    // C) Single authority + single listener: Ensure only one active subscription per mount
     let isMounted = true;
-    console.log('[Speaking] Component mounted - single subscription active');
+    if (!ttsListenerActive) {
+      setTtsListenerActive(true);
+      console.log('[Speaking] Component mounted - single TTS subscription active');
+    }
     
     // Cleanup on unmount - single subscription management
     return () => {
       isMounted = false;
+      setTtsListenerActive(false);
       console.log('[Speaking] Unmounting - cleaning up listeners and timeouts');
       cancelOldListeners();
       cleanup();
     };
-  }, [user]);
+  }, [user, ttsListenerActive]);
 
   // Handle initial message from props (bookmarks) - E) Advance without fabricating messages
   useEffect(() => {
@@ -692,7 +724,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       setTimeout(() => {
         const newTurnToken = startNewTurn();
         console.log('HF_BOOKMARK_START', { turnToken: newTurnToken });
-        showBotMessage(question, 'prompt');
+        addAssistantMessage(question, 'prompt');
       }, 500);
     }
   }, [initialMessage]);
@@ -813,7 +845,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       // Step 3: Handle distress signals immediately (E - response from back-end)
       if (intent === 'distress_signal') {
         console.log('[Speaking] distress signal detected - providing crisis support');
-        await showBotMessage(crisisResponse, 'feedback');
+        await addAssistantMessage(crisisResponse, 'feedback');
         // Skip all other processing for safety
         return;
       }
@@ -832,7 +864,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
         if (smallTalkResponse.data?.response) {
           // E) Advance without fabricating messages: This response comes from back-end
-          await showBotMessage(smallTalkResponse.data.response, 'feedback');
+          await addAssistantMessage(smallTalkResponse.data.response, 'feedback');
           // Update conversation context and continue
           setConversationContext(prev => 
             prev + ` User said: "${originalTranscript}". AI responded to ${intent}.`
@@ -860,7 +892,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
         // Show correction only if there's an actual mistake (E - comes from back-end)
         if (!feedback.isCorrect && feedback.message !== 'CORRECT') {
-          await showBotMessage(feedback.message, 'feedback');
+          await addAssistantMessage(feedback.message, 'feedback');
         }
 
       // E) Advance without fabricating messages: Wait for back-end to append the next assistant message
@@ -873,7 +905,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       const newTurnToken = startNewTurn();
       
       // Speak the new question that came from backend
-      await showBotMessage(nextQuestion, 'prompt');
+      await addAssistantMessage(nextQuestion, 'prompt');
 
         // Track session (non-blocking)
         logSession(originalTranscript, feedback.corrected);
@@ -1328,35 +1360,39 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     playEarcon('advance');
     playHaptic('light');
     
-    // F) Advance = cancel everything old (C - Turn token guard)
+    // C) Turn token guard: Cancel everything old before advancing
     const oldTurnToken = currentTurnToken;
-    console.log('HF_ADVANCE', { oldTurnToken });
-    cancelOldListeners();
+    console.log('HF_ADVANCE', { oldTurnToken, oldState: flowState });
+    
+    // D) Turn token guard: On ADVANCE, cancel old listeners and create new token
+    const newTurnToken = startNewTurn();
     
     // Small delay to let user process the feedback
     await new Promise(resolve => setTimeout(resolve, 2000));
     
-    // A) Eligible-to-Speak filter: Get the newest assistant message (not user/meta)
-    const eligibleMessages = messages.filter(m => !m.isUser && !m.isSystem);
-    const lastAIMessage = eligibleMessages[eligibleMessages.length - 1];
-    const nextPrompt = lastAIMessage?.text || currentQuestion;
+    // A) Find newest assistant message (not user/meta) to speak
+    const latestMessage = findLatestAssistantMessage();
+    const nextPrompt = latestMessage?.text || currentQuestion;
     
     if (nextPrompt && nextPrompt !== hfCurrentPrompt) {
       setHfCurrentPrompt(nextPrompt);
       
       try {
-        // F) Hands-free loop: Start new turn for next question, use showBotMessage for strict turn-taking
-        const newTurnToken = startNewTurn();
-        console.log('HF_ADVANCE: new turn started', { newTurnToken, nextPrompt: nextPrompt.substring(0, 50) + '...' });
+        console.log('HF_ADVANCE: new turn started', { 
+          newTurnToken, 
+          oldTurnToken,
+          nextPrompt: nextPrompt.substring(0, 50) + '...' 
+        });
         
-        // Continue the hands-free loop with strict turn-taking
-        await showBotMessage(nextPrompt, 'prompt');
+        // F) Hands-free loop: Continue with strict turn-taking
+        await addAssistantMessage(nextPrompt, 'prompt');
       } catch (error: any) {
         console.log('HF_ERROR_ADVANCE:', error.message);
         setErrorMessage(error.message);
         setHfActive(false);
         setHfStatus('idle');
         setHfSessionActive(false);
+        setFlowState('IDLE');
       }
     } else {
       // No new prompt or same prompt - end session
@@ -1364,6 +1400,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       setHfActive(false);
       setHfStatus('idle');
       setHfSessionActive(false);
+      setFlowState('IDLE');
     }
   };
 
@@ -1378,7 +1415,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       try {
         setHfActive(true);
         setHfSessionActive(true);
-        await startHandsFreePromptPlayback(hfCurrentPrompt);
+        await speakLatestAssistantMessage();
       } catch (error: any) {
         console.log('HF_ERROR_RESUME:', error.message);
         setErrorMessage(error.message);
@@ -1475,8 +1512,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     
     try {
       console.log('HF_START_PLAYBACK', { turnToken, prompt: prompt.substring(0, 50) + '...' });
-      // Use showBotMessage for consistent strict turn-taking
-      await showBotMessage(prompt, 'prompt');
+      // Use addAssistantMessage for consistent strict turn-taking
+      await addAssistantMessage(prompt, 'prompt');
     } catch (error: any) {
       console.log('HF_ERROR_START:', error.message);
       emitHFTelemetry('HF_ERROR_start', { error: error.message });
@@ -1512,12 +1549,12 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     playEarcon('advance');
     emitHFTelemetry('HF_PROMPT_PLAY', { promptLength: prompt.length, turnToken });
     
-    // Use showBotMessage for consistent strict turn-taking (A - Eligible-to-Speak filter)
+    // Use addAssistantMessage for consistent strict turn-taking (A - Eligible-to-Speak filter)
     // This ensures only assistant messages are spoken and follows sequence rules
     try {
       // For hands-free playback, we use 'prompt' phase and pass isRepeat for replay scenarios
       const isRepeat = useCurrentToken && !!currentTurnToken; // If using current token, it's likely a repeat
-      await showBotMessage(prompt, 'prompt', isRepeat);
+      await addAssistantMessage(prompt, 'prompt');
     } catch (error: any) {
       console.log('HF_ERROR_TTS:', error.message);
       throw error;
@@ -1525,8 +1562,14 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   };
 
   const startHandsFreeMicCapture = async () => {
-    console.log('HF_MIC_OPEN');
-    emitHFTelemetry('HF_MIC_OPEN');
+    console.log('HF_MIC_OPEN', { turnToken: currentTurnToken, state: flowState });
+    emitHFTelemetry('HF_MIC_OPEN', { turnToken: currentTurnToken });
+    
+    // D) Mic gating: Only open mic during LISTENING state
+    if (flowState !== 'LISTENING') {
+      console.log('HF_MIC_SKIP: not in LISTENING state', { flowState });
+      return;
+    }
     playEarcon('listening');
     setHfStatus('listening');
     setHfIsReprompting(false);
@@ -1655,7 +1698,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       // Execute existing teacher loop (unchanged)
       await executeTeacherLoop(result.transcript);
       
-      // Note: Auto-advance now handled by TTS completion in showBotMessage
+      // Note: Auto-advance now handled by TTS completion in addAssistantMessage
       
     } catch (error: any) {
       console.log('HF_ERROR_MIC:', error.message);
