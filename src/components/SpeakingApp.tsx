@@ -195,6 +195,9 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   const [replayCounter, setReplayCounter] = useState(0);
   const [ttsCompletionTimeouts, setTtsCompletionTimeouts] = useState<Set<NodeJS.Timeout>>(new Set());
   const [micReopenTimeouts, setMicReopenTimeouts] = useState<Set<NodeJS.Timeout>>(new Set());
+  
+  // C) Remember where we paused (for correct Resume)
+  const [pausedFrom, setPausedFrom] = useState<'READING' | 'LISTENING' | 'PROCESSING' | null>(null);
 
   // Helper function to compute stable messageKey for deduplication (B - Deduplicate by identity)
   const computeMessageKey = (level: string, module: string, qIndex: number, text: string, serverId?: string) => {
@@ -1228,7 +1231,96 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     setHfControlsVisible(false);
   };
 
-  // Long-press functionality for repeat
+  // B) Single press handler with clear state transitions
+  const onPrimaryPress = async () => {
+    const prevState = flowState;
+    
+    // ALWAYS resume AudioContext on first gesture (autoplay policy compliance)
+    if (!audioContextResumed) {
+      const resumed = await enableAudioContext();
+      console.log('HF_SOUND', { enabled: speakingSoundEnabled, resumed });
+    }
+    
+    console.log(`HF_TAP_PRIMARY`, { from: prevState, to: 'pending' });
+    
+    // State map: Clear state transitions based on current flowState
+    switch (flowState) {
+      case 'IDLE':
+      case 'PAUSED':
+        // Resume from pause or start fresh
+        if (pausedFrom === 'LISTENING') {
+          // Resume listening
+          console.log(`HF_TAP_PRIMARY`, { from: prevState, to: 'LISTENING', action: 'resume_listening' });
+          setFlowState('LISTENING');
+          setPausedFrom(null);
+          try {
+            await startHandsFreeMicCapture();
+          } catch (error: any) {
+            console.log('HF_ERROR_RESUME_LISTENING:', error.message);
+            setErrorMessage(error.message);
+            setFlowState('IDLE');
+          }
+        } else if (pausedFrom === 'PROCESSING') {
+          // Wait for next assistant bubble; when it appears, speak it then auto-open mic
+          console.log(`HF_TAP_PRIMARY`, { from: prevState, to: 'IDLE', action: 'resume_processing_wait' });
+          setFlowState('IDLE');
+          setPausedFrom(null);
+          // Processing will continue naturally when backend responds
+        } else {
+          // Start fresh or resume reading
+          console.log(`HF_TAP_PRIMARY`, { from: prevState, to: 'READING', action: 'start_reading' });
+          setFlowState('READING');
+          setPausedFrom(null);
+          
+          // E) First-play success path: speak latest assistant message (never fabricate)
+          try {
+            await speakLatestAssistantMessage();
+          } catch (error: any) {
+            console.log('HF_ERROR_START_READING:', error.message);
+            setErrorMessage(error.message);
+            setFlowState('IDLE');
+          }
+        }
+        break;
+        
+      case 'READING':
+        // Pause reading
+        console.log(`HF_TAP_PRIMARY`, { from: prevState, to: 'PAUSED', action: 'pause_reading' });
+        TTSManager.stop();
+        setIsSpeaking(false);
+        setAvatarState('idle');
+        setFlowState('PAUSED');
+        setPausedFrom('READING');
+        break;
+        
+      case 'LISTENING':
+        // Pause listening
+        console.log(`HF_TAP_PRIMARY`, { from: prevState, to: 'PAUSED', action: 'pause_listening' });
+        if (micState === 'recording') {
+          stopRecording();
+        }
+        setFlowState('PAUSED');
+        setPausedFrom('LISTENING');
+        break;
+        
+      case 'PROCESSING':
+        // Treat as pause: cancel mic reopen timers only; keep evaluator/save untouched
+        console.log(`HF_TAP_PRIMARY`, { from: prevState, to: 'PAUSED', action: 'pause_processing' });
+        
+        // Cancel pending mic reopen timeouts but don't touch the evaluation process
+        micReopenTimeouts.forEach(timeout => clearTimeout(timeout));
+        setMicReopenTimeouts(new Set());
+        
+        setFlowState('PAUSED');
+        setPausedFrom('PROCESSING');
+        break;
+        
+      default:
+        console.warn(`HF_TAP_PRIMARY: Unknown state`, { flowState });
+    }
+  };
+
+  // Long-press functionality for repeat (B - Keep existing repeat functionality)
   const handlePrimaryButtonPress = () => {
     const timeout = setTimeout(() => {
       setHfIsLongPressing(true);
@@ -1246,14 +1338,9 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     }
     
     if (!hfIsLongPressing) {
-      // Short press - pause/resume
-      if (hfStatus === 'idle' || hfAutoPaused) {
-        handleHandsFreeResume();
-        emitHFTelemetry('HF_RESUME', { method: 'button' });
-      } else {
-        handleHandsFreePause();
-        emitHFTelemetry('HF_PAUSE', { method: 'button' });
-      }
+      // Short press - use new unified handler
+      onPrimaryPress();
+      emitHFTelemetry('HF_PRIMARY_PRESS', { method: 'button' });
       playHaptic('light');
     }
     
@@ -1895,39 +1982,10 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     }
   };
 
+  // Legacy recording handler - now uses unified primary press logic
   const handleRecordingClick = async () => {
-    if (micState === 'idle') {
-      // Autoplay policy compliance: Resume audio context on first interaction
-      await enableAudioContext();
-      
-      // Start recording
-      console.log('[Speaking] recording:start-button-click');
-      setErrorMessage('');
-      
-      try {
-        const result = await startRecording();
-        console.log('[Speaking] recording:completed, transcript:', result.transcript);
-        
-        // Display verbatim transcript (exact ASR output)
-        addChatBubble(`💭 You said: "${result.transcript}"`, "user");
-        
-        if (!result.transcript) {
-          setErrorMessage("No speech detected, please try again.");
-          return;
-        }
-        
-        // Execute teacher loop
-        await executeTeacherLoop(result.transcript);
-
-      } catch (error: any) {
-        console.error('[Speaking] recording:error', error);
-        setErrorMessage(error.message);
-      }
-    } else if (micState === 'recording') {
-      // Stop recording
-      console.log('[Speaking] recording:stop-button-click');
-      stopRecording();
-    }
+    // Use unified primary press handler for consistency
+    await onPrimaryPress();
   };
 
   return (
@@ -1990,39 +2048,41 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           ))}
         </div>
 
-        {/* Bootstrap/Status Under Chat - Always Visible for Hands-Free Mode */}
-        {hfEnabled && (
-          <div className="text-center mb-4 relative z-10">
-            {/* Show bootstrap pill when HF is enabled but not active */}
-            {!hfActive && !hfAutoPaused && !hfShowResume && (
-              <button
-                onClick={handleHandsFreeBootstrap}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    handleHandsFreeBootstrap();
-                  }
-                }}
-                className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500/80 to-purple-500/80 hover:from-blue-600/90 hover:to-purple-600/90 backdrop-blur-sm rounded-full px-4 py-2 text-white font-medium text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white/30 focus:ring-offset-2 focus:ring-offset-transparent cursor-pointer shadow-lg hover:shadow-xl"
-                aria-label="Start hands-free session"
-                title="Start hands-free conversation mode"
-              >
-                <span>▶︎</span>
-                <span>Start hands-free</span>
-              </button>
-            )}
+            {/* Bootstrap/Status Under Chat - Always Visible for Hands-Free Mode */}
+            {hfEnabled && (
+              <div className="text-center mb-4 relative z-10">
+                {/* Show bootstrap pill when HF is enabled but not active */}
+                {!hfActive && !hfAutoPaused && !hfShowResume && (
+                  <button
+                    onClick={onPrimaryPress}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        onPrimaryPress();
+                      }
+                    }}
+                    className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500/80 to-purple-500/80 hover:from-blue-600/90 hover:to-purple-600/90 backdrop-blur-sm rounded-full px-4 py-2 text-white font-medium text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white/30 focus:ring-offset-2 focus:ring-offset-transparent cursor-pointer shadow-lg hover:shadow-xl"
+                    style={{ pointerEvents: 'auto' }}
+                    aria-label="Start hands-free session"
+                    title="Start hands-free conversation mode"
+                  >
+                    <span>▶︎</span>
+                    <span>Start hands-free</span>
+                  </button>
+                )}
             
             {/* V2 Minimal Status Chip - Always visible while HF is on */}
             {(hfActive || hfAutoPaused) && hfV2Enabled && (
               <div 
-                className="inline-flex bg-white/10 backdrop-blur-sm rounded-full px-3 py-1 text-white/80 text-xs font-medium transition-opacity duration-200 mt-2"
-                aria-live="polite"
-                aria-label="Hands-free status"
-              >
-                {hfStatus === 'prompting' ? 'Reading…' :
-                 hfStatus === 'listening' ? 'Listening…' :
-                 hfStatus === 'processing' ? 'Thinking…' :
-                 hfAutoPaused ? 'Paused' : 'Ready'}
+                     className="inline-flex bg-white/10 backdrop-blur-sm rounded-full px-3 py-1 text-white/80 text-xs font-medium transition-opacity duration-200 mt-2"
+                     aria-live="polite"
+                     aria-label="Hands-free status"
+                   >
+                     {flowState === 'READING' ? 'Reading…' :
+                      flowState === 'LISTENING' ? 'Listening…' :
+                      flowState === 'PROCESSING' ? 'Thinking…' :
+                      flowState === 'PAUSED' ? 'Paused' :
+                      'Ready'}
               </div>
             )}
             
@@ -2075,35 +2135,37 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         <div className="flex flex-col items-center space-y-4 sm:space-y-6 pb-6 sm:pb-8 relative z-10">
           {/* Hands-Free Mode Toggle removed for minimal UI */}
           
-          {/* Hide the big Start Speaking button when hands-free is enabled */}
-          {!hfEnabled && (
-            <Button
-              onClick={handleRecordingClick}
-              disabled={micState === 'processing' || isProcessingTranscript}
-              className={`pill-button w-full max-w-sm py-6 sm:py-8 text-lg sm:text-xl font-bold border-0 shadow-xl min-h-[64px] ${micState === 'recording' ? 'animate-pulse' : ''}`}
-              size="lg"
-              style={{
-                background: micState === 'recording' 
-                  ? 'linear-gradient(135deg, #ff4f80, #ff6b9d, #c084fc)' 
-                  : 'linear-gradient(135deg, #ff4f80, #ff6b9d)',
-                color: 'white',
-                boxShadow: micState === 'recording' 
-                  ? '0 0 60px rgba(255, 79, 128, 0.6), 0 8px 32px rgba(255, 107, 157, 0.4)' 
-                  : '0 8px 32px rgba(255, 79, 128, 0.3), 0 4px 16px rgba(255, 107, 157, 0.2)',
-              }}
-            >
-              <div className="flex items-center gap-3">
-                {micState === 'recording' ? "🎙️" : 
-                 (micState === 'processing' || isProcessingTranscript) ? "⏳" : "🎤"}
-                <span className="drop-shadow-sm">
-                  {micState === 'recording' ? "Recording... (tap to stop)" : 
-                   micState === 'processing' ? "Processing..." : 
-                   isProcessingTranscript ? "Thinking..." :
-                   "Start Speaking"}
-                </span>
-              </div>
-            </Button>
-          )}
+            {/* Hide the big Start Speaking button when hands-free is enabled */}
+            {!hfEnabled && (
+              <Button
+                onClick={onPrimaryPress}
+                className={`pill-button w-full max-w-sm py-6 sm:py-8 text-lg sm:text-xl font-bold border-0 shadow-xl min-h-[64px]`}
+                size="lg"
+                style={{
+                  background: flowState === 'READING' || flowState === 'LISTENING'
+                    ? 'linear-gradient(135deg, #ff4f80, #ff6b9d, #c084fc)' 
+                    : 'linear-gradient(135deg, #ff4f80, #ff6b9d)',
+                  color: 'white',
+                  pointerEvents: 'auto',
+                  boxShadow: flowState === 'READING' || flowState === 'LISTENING'
+                    ? '0 0 60px rgba(255, 79, 128, 0.6), 0 8px 32px rgba(255, 107, 157, 0.4)' 
+                    : '0 8px 32px rgba(255, 79, 128, 0.3), 0 4px 16px rgba(255, 107, 157, 0.2)',
+                }}
+              >
+                <div className="flex items-center gap-3">
+                  {flowState === 'READING' ? "🎙️" : 
+                   flowState === 'LISTENING' ? "👂" :
+                   flowState === 'PROCESSING' ? "⏳" : "🎤"}
+                  <span className="drop-shadow-sm">
+                    {flowState === 'READING' ? "Speaking... (tap to pause)" : 
+                     flowState === 'LISTENING' ? "Listening... (tap to pause)" :
+                     flowState === 'PROCESSING' ? "Thinking..." :
+                     flowState === 'PAUSED' ? "Resume" :
+                     "Start Speaking"}
+                  </span>
+                </div>
+              </Button>
+            )}
 
           {/* V2 Minimal Hands-Free Control - Single Primary Button (floating, bottom-center) */}
           {/* Control is always mounted, but hidden when not needed */}
@@ -2129,7 +2191,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
                 }}
               >
                 {/* Single primary control button */}
-                <div className={`transition-all duration-300 ${hfControlsVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
+                <div className={`hf-primary transition-all duration-300 ${hfControlsVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`} style={{ pointerEvents: 'auto', zIndex: 9999 }}>
                   <div className="flex items-center gap-3">
                     {/* Main floating mic button */}
                     <button
@@ -2139,17 +2201,18 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
                       onTouchStart={handlePrimaryButtonPress}
                       onTouchEnd={handlePrimaryButtonRelease}
                       className="flex items-center justify-center w-14 h-14 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 rounded-full text-white font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-white/30 active:scale-95"
-                      aria-label={hfStatus === 'idle' || hfAutoPaused ? "Start" : "Hold"}
-                      title={hfStatus === 'idle' || hfAutoPaused ? "Tap to start • Long-press for again" : "Tap to hold • Long-press for again"}
+                      aria-label={flowState === 'IDLE' || flowState === 'PAUSED' ? "Play" : "Pause"}
+                      title={flowState === 'IDLE' || flowState === 'PAUSED' ? "Tap to play • Long-press for again" : "Tap to pause • Long-press for again"}
                       style={{ 
                         minWidth: '56px', 
                         minHeight: '56px',
-                        boxShadow: hfStatus === 'listening' 
+                        pointerEvents: 'auto',
+                        boxShadow: flowState === 'LISTENING' 
                           ? '0 0 20px rgba(59, 130, 246, 0.5), 0 4px 16px rgba(0, 0, 0, 0.2)' 
                           : '0 4px 16px rgba(0, 0, 0, 0.2)' 
                       }}
                     >
-                      {hfStatus === 'idle' || hfAutoPaused ? (
+                      {flowState === 'IDLE' || flowState === 'PAUSED' ? (
                         <Play className="w-6 h-6" />
                       ) : (
                         <Pause className="w-6 h-6" />
@@ -2198,10 +2261,20 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
                   )}
                 </div>
                 
-                {/* Invisible tap area when controls are hidden */}
-                {!hfActive && (
-                  <div className="w-16 h-16 bg-transparent cursor-pointer" />
-                )}
+                {/* Invisible tap area when controls are hidden - A) Button must always accept taps */}
+                <div 
+                  className="w-16 h-16 bg-transparent cursor-pointer"
+                  style={{ pointerEvents: 'auto', zIndex: 9998 }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    showControls();
+                    // Also handle primary press if not active
+                    if (!hfActive) {
+                      onPrimaryPress();
+                    }
+                  }}
+                  aria-label="Tap to show controls and start"
+                />
               </div>
               
               {/* Click outside to close overflow */}

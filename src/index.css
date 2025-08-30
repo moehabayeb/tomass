@@ -573,3 +573,14 @@
     transform: translateY(-1px);
   }
 }
+
+/* A) Button must always accept taps - ensure pointer events work */
+.hf-primary {
+  pointer-events: auto !important;
+  z-index: 9999 !important;
+}
+
+/* Make sure button transitions don't disable pointer events */
+.hf-primary button {
+  pointer-events: auto !important;
+}
