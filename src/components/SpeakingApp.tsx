@@ -2031,7 +2031,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         
         console.log('HF_REPEAT_PLAY', { turnToken, messageId, replayCount: newReplayCount });
         
-        // Mark as played with replay suffix
+        // Mark as played with replay suffix  
         setLastPlayedMessageIds(prev => new Set([...prev, messageId]));
         
         // Use current token to replay without starting new turn
@@ -2541,4 +2541,4 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       </div>
     </div>
   );
-}
+} // End of SpeakingApp component
