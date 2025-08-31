@@ -265,6 +265,11 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   // A) New state for ephemeral assistant ghost bubble and live captions
   const [ephemeralAssistant, setEphemeralAssistant] = useState<null | { key: string; text: string }>(null);
   const [interimCaption, setInterimCaption] = useState<string>(''); // live mic caption text
+  const [speakingMessageKey, setSpeakingMessageKey] = useState<string | null>(null);
+
+  // Helper to check if server bubble exists for a given key
+  const hasServerAssistant = (key: string) =>
+    messages.some(m => m.role === 'assistant' && stableMessageKey(m.text, m.id) === key);
 
   // Ephemeral speak for bootstrap (no append)
   const speakEphemeral = async (text: string) => {
@@ -279,9 +284,9 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     setEphemeralAssistant({ key: messageKey, text });
     console.log('HF_GHOST', { key: messageKey, preview: text.slice(0, 40) });
     
-    // Generate turn token for this speech
+    // Generate turn token for this speech - but don't clobber existing valid token
     const token = `turn-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    setCurrentTurnToken(token);
+    if (!currentTurnToken) setCurrentTurnToken(token);
     
     console.log('HF_BOOTSTRAP', { path: 'ephemeral', text: text.substring(0, 50), messageKey, token });
     
@@ -596,9 +601,14 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   const speakExistingMessage = async (text: string, messageKey: string, phase: 'prompt' | 'feedback' = 'feedback', isRepeat = false) => {
     console.log('[Speaking] Speaking existing message:', text.substring(0, 50) + '...', { flowState, messageKey });
     
-    // Set ephemeral ghost bubble when speaking
-    setEphemeralAssistant({ key: messageKey, text });
-    console.log('HF_GHOST', { key: messageKey, preview: text.slice(0, 40) });
+    // Use ghost only when there's no server bubble; otherwise highlight the real bubble
+    if (!hasServerAssistant(messageKey)) {
+      setEphemeralAssistant({ key: messageKey, text });
+      console.log('HF_GHOST', { key: messageKey, preview: text.slice(0, 40) });
+    } else {
+      setSpeakingMessageKey(messageKey);
+      console.log('HF_SPEAKING', { key: messageKey });
+    }
     
     // State machine: Only speak during READING state
     if (flowState !== 'READING' && !isRepeat) {
@@ -680,6 +690,10 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         console.log('HF_TTS_COMPLETE', { turnToken, messageId, messageKey, state: flowState });
         setIsSpeaking(false);
         setAvatarState('idle');
+        
+        // Clear speaking indicators on TTS completion
+        setSpeakingMessageKey(null);
+        setEphemeralAssistant(null);
         
         // Auto-reopen mic after TTS completes (gated by turn token)
         await handleTTSCompletion(turnToken, messageId);
@@ -798,7 +812,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     if (!ttsListenerActive || messages.length === 0) return;
     
     // Only process when in the right states and we have authority
-    if (!['IDLE', 'PROCESSING', 'PAUSED'].includes(flowState)) return;
+    if (!['IDLE', 'PROCESSING'].includes(flowState)) return;
     
     const latestMessage = findLatestEligibleAssistantMessage();
     if (!latestMessage) return;
@@ -1414,12 +1428,14 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           const latest = findLatestEligibleAssistantMessage();
           const hasLatest = !!latest;
           const hasCurrentQuestion = !!currentQuestion?.trim();
+          const unread = unreadAssistantExists();
           
           console.log('HF_BOOTSTRAP', { path: 'backend', hasLatest, hasCurrentQuestion });
+          console.log('HF_PRIMARY', { from: prevState, to: 'pending', unread });
           
           if (latest) {
             // Speak existing assistant message
-            console.log(`HF_PRIMARY`, { from: prevState, to: 'READING', action: 'read_existing', unread: unreadAssistantExists() });
+            console.log(`HF_PRIMARY`, { from: prevState, to: 'READING', action: 'read_existing', unread });
             setFlowState('READING');
             setPausedFrom(null);
             
@@ -1432,7 +1448,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
             }
           } else if (hasCurrentQuestion) {
             // Bootstrap without fabricating a bubble
-            console.log(`HF_PRIMARY`, { from: prevState, to: 'READING', action: 'bootstrap_ephemeral', unread: false });
+            console.log(`HF_PRIMARY`, { from: prevState, to: 'READING', action: 'bootstrap_ephemeral', unread });
             setFlowState('READING');
             setPausedFrom(null);
             
@@ -1445,7 +1461,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
             }
           } else {
             // Nothing to read and no cached question: fallback to LISTENING
-            console.log(`HF_PRIMARY`, { from: prevState, to: 'LISTENING', action: 'fallback_listening', unread: false });
+            console.log(`HF_PRIMARY`, { from: prevState, to: 'LISTENING', action: 'fallback_listening', unread });
             setFlowState('LISTENING');
             setPausedFrom(null);
             
@@ -1461,6 +1477,16 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         break;
         
       case 'READING':
+        // Pause reading
+        console.log(`HF_PRIMARY`, { from: prevState, to: 'PAUSED', action: 'pause_reading', unread: false });
+        if (TTSManager.isSpeaking()) {
+          TTSManager.stop();
+          setIsSpeaking(false);
+          setAvatarState('idle');
+        }
+        setFlowState('PAUSED');
+        setPausedFrom('READING');
+        break;
         
       case 'LISTENING':
         // Pause listening
@@ -1468,6 +1494,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         if (micState === 'recording') {
           stopRecording();
         }
+        // Clear interim caption on transition out of LISTENING
+        setInterimCaption('');
         setFlowState('PAUSED');
         setPausedFrom('LISTENING');
         break;
@@ -2126,11 +2154,12 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       stopRecording();
     }
     
-      // Clear previous ghost on advance
+      // Clear previous ghost and speaking indicators on advance
       if (ephemeralAssistant) {
         setEphemeralAssistant(null);
         console.log('HF_GHOST_CLEAR', { reason: 'advance' });
       }
+      setSpeakingMessageKey(null);
     const currentAssistantMessage = messages.filter(m => !m.isUser && !m.isSystem).pop();
     
     if (currentAssistantMessage) {
@@ -2266,14 +2295,21 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           <div className="text-center mb-4">
             <span className="text-white/80 text-sm font-medium bg-white/10 backdrop-blur-sm rounded-full px-3 py-1">💬 Conversation</span>
           </div>
-          {messages.map((message, index) => (
-            <ChatBubble 
-              key={message.id || index}
-              message={message.text} 
-              isUser={message.isUser}
-              className={message.isSystem ? "opacity-75 italic" : ""}
-            />
-          ))}
+          {messages.map((message, index) => {
+            const messageKey = stableMessageKey(message.text, message.id);
+            const isCurrentlySpeaking = speakingMessageKey === messageKey;
+            return (
+              <ChatBubble 
+                key={message.id || index}
+                message={message.text} 
+                isUser={message.isUser}
+                className={cn(
+                  message.isSystem ? "opacity-75 italic" : "",
+                  isCurrentlySpeaking ? "speaking" : ""
+                )}
+              />
+            );
+          })}
           
           {/* Ephemeral ghost bubble - shows what's being spoken without appending to history */}
           {ephemeralAssistant && (
