@@ -1834,9 +1834,10 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       await startBargeInDetector();
     }
     
-    // Remove client-side appending - check for existing assistant messages first
+    // Check for existing assistant messages first
     const eligibleMessages = messages.filter(m => !m.isUser && !m.isSystem);
     const latestAssistantMessage = eligibleMessages[eligibleMessages.length - 1];
+    const hasAssistant = messages.some(m => m.role === 'assistant');
     
     if (latestAssistantMessage && unreadAssistantExists()) {
       // Speak existing assistant message
@@ -1844,6 +1845,16 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       console.log('HF_START_EXISTING', { turnToken, prompt: latestAssistantMessage.text.substring(0, 50) + '...' });
       setFlowState('READING');
       await speakLatestAssistantMessage();
+    } else if (!hasAssistant) {
+      // First Play from IDLE/PAUSED with no assistant bubbles yet - use starter prompt
+      const text = 'What would you like to talk about?';
+      const key = stableKeyFromText(text);
+      setSpokenKeys(prev => new Set([...prev, key]));
+      setEphemeralAssistant({ key, text });
+      setHfCurrentPrompt(text);
+      console.log('HF_START_STARTER', { turnToken, key, text });
+      setFlowState('READING');
+      await speakExistingMessage(text, key, 'prompt');
     } else {
       // No unread assistant messages - use fallback prompt but don't append it
       const prompt = currentQuestion || "Hello! Ready to practice today? Let's start with a simple question.";
