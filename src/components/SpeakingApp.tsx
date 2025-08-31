@@ -481,6 +481,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       }
     });
     
+  // Listen for interim speech results and clear captions when leaving LISTENING
+  useEffect(() => {
     // Listen for interim speech results
     const handleInterimResult = (event: CustomEvent) => {
       if (flowState === 'LISTENING') {
@@ -491,6 +493,11 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     };
     
     window.addEventListener('speech:interim', handleInterimResult as EventListener);
+    
+    // Clear interim captions when leaving LISTENING state
+    if (flowState !== 'LISTENING') {
+      setInterimCaption('');
+    }
     
     return () => {
       unsubscribe();
@@ -639,7 +646,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     // Check if already played by messageId (turn-level idempotency)
     if (lastPlayedMessageIds.has(messageId) && !isRepeat) {
       console.log('HF_DROP_STALE: messageId already played', { messageId, turnToken });
-      await handleTTSCompletion(turnToken, messageId);
+      await handleTTSCompletion(turnToken);
       return messageKey;
     }
 
@@ -718,13 +725,13 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         setEphemeralAssistant(null);
         
         // Always drive the loop forward even if audio failed
-        await handleTTSCompletion(turnToken, messageId);
+        await handleTTSCompletion(turnToken);
       }
     } else {
       // D) Do not silently 'complete' when muted: log HF_PROMPT_SKIP instead (never HF_TTS_COMPLETE)
       console.log('HF_PROMPT_SKIP: sound disabled', { turnToken, messageId, messageKey, state: flowState });
       // Still proceed to mic opening
-      await handleTTSCompletion(turnToken, messageId);
+      await handleTTSCompletion(turnToken);
     }
     
     return messageKey;
@@ -779,28 +786,30 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     return messageId;
   };
 
-  // Handle TTS completion and auto-reopen mic when appropriate (gated by turn token)
-  const handleTTSCompletion = async (token?: string, messageId?: string) => {
-    if (token && token !== currentTurnToken) {
+  // 5) Single user bubble creation function
+  const onUserFinalTranscript = (finalText: string, token: string) => {
+    if (!finalText.trim()) return;
+    addChatBubble(finalText, 'user');    // ← restore this
+    setFlowState('PROCESSING');          // close mic; scoring runs as before
+    // existing executeTeacherLoop(...) or whatever you already call
+  };
+  const handleTTSCompletion = async (token: string) => {
+    if (token !== currentTurnToken) {
       console.log('HF_TTS_COMPLETE_STALE', { token, currentTurnToken });
-      return; // no state change on stale
+      return;
     }
-
-    console.log('HF_TTS_COMPLETE', { token: token || currentTurnToken, messageId, state: flowState });
-
-    // Open mic if we just finished reading (hands-free or not)
-    if (flowState === 'READING') {
+    
+    console.log('HF_TTS_COMPLETE', { token, state: flowState });
+    
+    if (hfEnabled) {
+      // small delay avoids race with setState batching
       setTimeout(async () => {
-        // recheck current token but DO NOT require hfActive flags to progress on Speaking page
-        if (!token || token === currentTurnToken) {
-          setFlowState('LISTENING');
-          try { 
-            await startHandsFreeMicCapture(); 
-          } catch { 
-            setFlowState('IDLE'); 
-          }
-        }
-      }, 250);
+        if (token !== currentTurnToken) return;
+        setFlowState('LISTENING');
+        await startHandsFreeMicCapture({ token });
+      }, 200);
+    } else {
+      setFlowState('IDLE'); // manual push-to-talk waits for the next tap
     }
   };
 
@@ -1863,7 +1872,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         setAvatarState('idle');
         
         // After speaking fallback, open mic
-        await handleTTSCompletion(turnToken, 'fallback');
+        await handleTTSCompletion(turnToken);
       } catch (error: any) {
         console.log('HF_ERROR_START_FALLBACK:', error.message);
         emitHFTelemetry('HF_ERROR_start', { error: error.message });
@@ -1912,30 +1921,22 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       setAvatarState('idle');
       
       // After TTS completion, auto-open mic
-      await handleTTSCompletion(turnToken, 'prompt-playback');
+      await handleTTSCompletion(turnToken);
     } catch (error: any) {
       console.log('HF_ERROR_TTS:', error.message);
       throw error;
     }
   };
 
-  const startHandsFreeMicCapture = async () => {
-    console.log('HF_MIC_OPEN', { turnToken: currentTurnToken, state: flowState });
-    emitHFTelemetry('HF_MIC_OPEN', { turnToken: currentTurnToken });
-    
-    // Mic gating: Ensure we're ready for mic access
-    
-    // D) Mic gating: During TTS playback, mic MUST be closed
-    if (isSpeaking || TTSManager.isSpeaking()) {
-      console.log('HF_MIC_SKIP: TTS is active, mic must wait', { isSpeaking, ttsBusy: TTSManager.isSpeaking() });
-      return;
-    }
-    
-    // C) Turn token guard: Ensure we're on the correct turn before opening mic
-    if (!currentTurnToken) {
-      console.log('HF_MIC_SKIP: no current turn token');
-      return;
-    }
+  // 4) startHandsFreeMicCapture must not early-return on state
+  const startHandsFreeMicCapture = async ({ token }: { token?: string } = {}) => {
+    const tok = token ?? currentTurnToken ?? startNewTurn();
+
+    // set state ourselves to avoid race
+    if (flowState !== 'LISTENING') setFlowState('LISTENING');
+
+    if (isSpeaking || TTSManager.isSpeaking()) return; // keep mutual exclusion
+    if (!tok) return;
     playEarcon('listening');
     setHfStatus('listening');
     setHfIsReprompting(false);
@@ -2073,9 +2074,10 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       emitHFTelemetry('HF_RESULT_FINAL', { transcriptLength: result.transcript.length, turnToken: currentTurnToken });
       playEarcon('processing');
       
-      // Show user text once & move to PROCESSING
-      const final = (result?.transcript || '').trim();
-      if (final) addChatBubble(final, 'user');
+      // 5) Append exactly one user bubble on ASR_FINAL
+      onUserFinalTranscript(result?.transcript || '', tok);
+      
+      // Remove duplicate user bubble creation - handled by onUserFinalTranscript
       setInterimCaption('');
       
       // Check if user said "resume" to resume paused session (fallback for non-exact matches)
@@ -2089,7 +2091,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       }
       
       // Execute existing teacher loop (unchanged)
-      await executeTeacherLoop(final);
+      await executeTeacherLoop(result?.transcript || '');
       
       // Note: Auto-advance now handled by TTS completion in addAssistantMessage
       
