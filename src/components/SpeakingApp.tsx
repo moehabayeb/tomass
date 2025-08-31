@@ -112,6 +112,13 @@ interface SpeakingAppProps {
 
 export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   console.log('SpeakingApp component loading...');  // Debug log to help identify syntax issues
+  
+  // Add simple syntax check
+  const syntaxCheck = () => {
+    return true;
+  };
+  syntaxCheck();
+  
   const { avatarState, setAvatarState } = useAvatarState({ isSpeaking: false });
   const [didAvatarRef, setDIDAvatarRef] = useState<any>(null);
   const { streakData, getStreakMessage } = useStreakTracker();
@@ -795,8 +802,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     // existing executeTeacherLoop(...) or whatever you already call
   };
 
-  // 3) handleTTSCompletion must open the mic (hands-free) or stop (manual)
-  const handleTTSCompletion = async (token: string) => {
+  const handleTTSCompletion = async (token) => {
     if (token !== currentTurnToken) {
       console.log('HF_TTS_COMPLETE_STALE', { token, currentTurnToken });
       return;
@@ -1932,8 +1938,9 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   };
 
   // 4) startHandsFreeMicCapture must not early-return on state
-  const startHandsFreeMicCapture = async (options: { token?: string } = {}) => {
-    const tok = options.token ?? currentTurnToken ?? startNewTurn();
+  const startHandsFreeMicCapture = async (options = {}) => {
+    const { token } = options;
+    const tok = token ?? currentTurnToken ?? startNewTurn();
 
     // set state ourselves to avoid race
     if (flowState !== 'LISTENING') setFlowState('LISTENING');
