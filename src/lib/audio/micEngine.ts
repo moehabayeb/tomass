@@ -353,7 +353,7 @@ async function startSpeechRecognition(id: number, maxSec: number): Promise<strin
         interimTranscript = interimText;
         // Emit interim result event for live captions
         window.dispatchEvent(new CustomEvent('speech:interim', { 
-          detail: { transcript: interimText, runId: id }
+          detail: { transcript: interimText }
         }));
       }
       

@@ -1924,11 +1924,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     console.log('HF_MIC_OPEN', { turnToken: currentTurnToken, state: flowState });
     emitHFTelemetry('HF_MIC_OPEN', { turnToken: currentTurnToken });
     
-    // D) Mic gating: Strictly enforce LISTENING state only for mic access
-    if (flowState !== 'LISTENING') {
-      console.log('HF_MIC_SKIP: not in LISTENING state', { flowState, required: 'LISTENING' });
-      return;
-    }
+    // Mic gating: Ensure we're ready for mic access
     
     // D) Mic gating: During TTS playback, mic MUST be closed
     if (isSpeaking || TTSManager.isSpeaking()) {
@@ -2078,13 +2074,10 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       emitHFTelemetry('HF_RESULT_FINAL', { transcriptLength: result.transcript.length, turnToken: currentTurnToken });
       playEarcon('processing');
       
-      // B) Append exactly ONE user bubble on ASR_FINAL (not on interim)
+      // Show user text once & move to PROCESSING
       const final = (result?.transcript || '').trim();
-      if (final) {
-        addChatBubble(final, 'user'); // ONE user bubble
-        console.log('HF_USER_FINAL', { len: final.length });
-      }
-      setInterimCaption(''); // clear live captions
+      if (final) addChatBubble(final, 'user');
+      setInterimCaption('');
       
       // Check if user said "resume" to resume paused session (fallback for non-exact matches)
       if (hfAutoPaused && result.transcript.toLowerCase().includes('resume')) {
@@ -2327,9 +2320,13 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           
           {/* Ephemeral ghost bubble - shows what's being spoken without appending to history */}
           {ephemeralAssistant && (
-            <div className="bot-bubble ghost" aria-live="polite">
-              <div className="text">{ephemeralAssistant.text}</div>
-              <div className="hint">Speaking…</div>
+            <div className="flex justify-start mb-3 sm:mb-4">
+              <div className="flex items-start space-x-2 sm:space-x-3 max-w-[90%] sm:max-w-[85%]">
+                <div className="conversation-bubble px-4 py-3 sm:px-5 sm:py-4 font-medium text-sm sm:text-base leading-relaxed flex-1 bg-gradient-to-br from-blue-50/60 to-blue-100/50 text-gray-800 border-l-4 border-blue-400/70 ghost">
+                  {ephemeralAssistant.text}
+                  <div className="hint">Speaking…</div>
+                </div>
+              </div>
             </div>
           )}
           
