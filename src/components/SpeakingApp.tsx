@@ -111,6 +111,7 @@ interface SpeakingAppProps {
 }
 
 export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
+  console.log('SpeakingApp component loading...');  // Debug log to help identify syntax issues
   const { avatarState, setAvatarState } = useAvatarState({ isSpeaking: false });
   const [didAvatarRef, setDIDAvatarRef] = useState<any>(null);
   const { streakData, getStreakMessage } = useStreakTracker();
@@ -793,6 +794,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     setFlowState('PROCESSING');          // close mic; scoring runs as before
     // existing executeTeacherLoop(...) or whatever you already call
   };
+
+  // 3) handleTTSCompletion must open the mic (hands-free) or stop (manual)
   const handleTTSCompletion = async (token: string) => {
     if (token !== currentTurnToken) {
       console.log('HF_TTS_COMPLETE_STALE', { token, currentTurnToken });
@@ -1929,8 +1932,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   };
 
   // 4) startHandsFreeMicCapture must not early-return on state
-  const startHandsFreeMicCapture = async ({ token }: { token?: string } = {}) => {
-    const tok = token ?? currentTurnToken ?? startNewTurn();
+  const startHandsFreeMicCapture = async (options: { token?: string } = {}) => {
+    const tok = options.token ?? currentTurnToken ?? startNewTurn();
 
     // set state ourselves to avoid race
     if (flowState !== 'LISTENING') setFlowState('LISTENING');
@@ -1949,12 +1952,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         // Show a small tooltip hint
         const tooltip = document.createElement('div');
         tooltip.textContent = 'Tap Allow to use microphone';
-        tooltip.style.cssText = `
-          position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-          background: rgba(0,0,0,0.8); color: white; padding: 8px 12px;
-          border-radius: 6px; font-size: 12px; z-index: 10000;
-          pointer-events: none; opacity: 0; transition: opacity 0.2s;
-        `;
+        tooltip.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); color: white; padding: 8px 12px; border-radius: 6px; font-size: 12px; z-index: 10000; pointer-events: none; opacity: 0; transition: opacity 0.2s;';
         document.body.appendChild(tooltip);
         setTimeout(() => tooltip.style.opacity = '1', 10);
         setTimeout(() => {
