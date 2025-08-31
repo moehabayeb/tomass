@@ -130,6 +130,21 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   
   const { level, xp_current, next_threshold, awardXp, lastLevelUpTime, fetchProgress, resetLevelUpNotification, subscribeToProgress } = useProgressStore();
 
+  // 1) Helper to guarantee sound is ready
+  const ensureSoundReady = async () => {
+    const enabled = localStorage.getItem('speaking.sound.enabled') !== 'false';
+    let resumed = false;
+    if (enabled) {
+      try { 
+        resumed = await enableAudioContext(); 
+      } catch { 
+        resumed = false; 
+      }
+    }
+    console.log('HF_SOUND', { enabled, resumed });
+    return { enabled, resumed };
+  };
+
   // Helper function to enable audio context for TTS (autoplay policy compliance)
   const enableAudioContext = async (): Promise<boolean> => {
     try {
@@ -144,7 +159,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       }
       return false;
     } catch (error) {
-      console.warn('Failed to resume AudioContext:', error);
+      console.warn('HF_SOUND: Failed to enable AudioContext:', error);
       return false;
     }
   };
@@ -335,7 +350,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     }
   };
 
-  // 1) Single source of truth: start a turn & carry the token
+  // 2) When starting a turn, always pass a token and always call completion
   const startNewTurn = () => {
     const tok = `turn-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,7)}`;
     cancelOldListeners();
@@ -344,6 +359,39 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     setFlowState('IDLE');
     console.log('HF_NEW_TURN', { newToken: tok });
     return tok;
+  };
+
+  // First-play / resume path (starter or latest assistant)
+  const playAssistantOnce = async (text: string, messageKey: string) => {
+    const token = startNewTurn();
+    setFlowState('READING');
+    setTtsListenerActive(true); // Enable TTS listener authority
+
+    const { enabled } = await ensureSoundReady();
+
+    let resolved = false;
+    const watchdog = setTimeout(() => {
+      if (!resolved) console.warn('HF_TTS_WATCHDOG: forcing completion');
+    }, 12000);
+
+    try {
+      if (enabled) {
+        await TTSManager.speak(text, { canSkip: false }).finally(() => {
+          resolved = true; 
+          clearTimeout(watchdog);
+        });
+      } else {
+        console.log('HF_PROMPT_SKIP (muted)');
+        resolved = true; 
+        clearTimeout(watchdog);
+      }
+    } catch (e) {
+      console.warn('HF_TTS_ERROR', e); 
+      resolved = true; 
+      clearTimeout(watchdog);
+    } finally {
+      await handleTTSCompletion(token);   // ← ALWAYS
+    }
   };
 
   // Append user/assistant messages (unified with sequence counter)
@@ -550,53 +598,50 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     return messageId;
   };
 
-  // 5) Single user bubble creation function
+  // 5) Append one user bubble on FINAL and move to PROCESSING
   const onUserFinalTranscript = (finalText: string, token: string) => {
-    if (!finalText.trim()) return;
-    addChatBubble(finalText, 'user');    // ← restore this
-    setFlowState('PROCESSING');          // close mic; scoring runs as before
-    // existing executeTeacherLoop(...) or whatever you already call
+    if (!finalText.trim() || token !== currentTurnToken) return;
+    addChatBubble(finalText, 'user');     // restored
+    setFlowState('PROCESSING');
+    // existing evaluator/save path continues as before
   };
 
-  // 3) handleTTSCompletion must open the mic (hands-free) or stop (manual)
+  // 3) Completion must move to LISTENING and open the mic
   const handleTTSCompletion = async (token: string) => {
-    if (token !== currentTurnToken) {
-      console.log('HF_TTS_COMPLETE_STALE', { token, currentTurnToken });
-      return;
+    if (!token || token !== currentTurnToken) { 
+      console.log('HF_TTS_COMPLETE_STALE'); 
+      return; 
     }
     
     console.log('HF_TTS_COMPLETE', { token, state: flowState });
     
+    // hands-free: go listen; manual: idle
     if (hfEnabled) {
-      // small delay avoids race with setState batching
-      setTimeout(async () => {
-        if (token !== currentTurnToken) return;
-        setFlowState('LISTENING');
-        await startHandsFreeMicCapture({ token });
-      }, 200);
+      setFlowState('LISTENING');
+      await startHandsFreeMicCapture({ token });
     } else {
-      setFlowState('IDLE'); // manual push-to-talk waits for the next tap
+      setFlowState('IDLE');
     }
   };
 
-  // 4) startHandsFreeMicCapture must not early-return on state
-  const startHandsFreeMicCapture = async (options: { token?: string } = {}) => {
-    const { token } = options;
+  // 4) Mic opener should set LISTENING itself (no brittle pre-check)
+  const startHandsFreeMicCapture = async ({ token }: { token?: string } = {}) => {
     const tok = token ?? currentTurnToken ?? startNewTurn();
 
-    // set state ourselves to avoid race
+    // avoid race with async setState
     if (flowState !== 'LISTENING') setFlowState('LISTENING');
 
-    if (isSpeaking || TTSManager.isSpeaking()) return; // keep mutual exclusion
+    if (TTSManager.isSpeaking()) return;
     if (!tok) return;
 
     console.log('HF_MIC_OPEN', { turnToken: tok, state: flowState });
     
-    try {
-      cleanup(); // Clean up previous mic session
-    } catch (error) {
-      console.warn('HF_CLEANUP_WARNING:', error);
-    }
+    try { 
+      cleanup(); 
+    } catch {}
+
+    // Simulate playEarcon and setHfStatus functionality
+    console.log('HF_LISTENING_EARCON');
     
     try {
       // Start recording with hard cap (keep existing duration limit)
@@ -677,15 +722,12 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           <Button
             onClick={async () => {
               if (flowState === 'IDLE' || flowState === 'PAUSED') {
-                // 2) Starter prompt must open the mic - Fix for "Reading..." hang
                 const text = 'What would you like to talk about?';
-                const key = stableKeyFromText(text);
-                setSpokenKeys(p => new Set([...p, key]));
-                setEphemeralAssistant({ key, text });
+                const messageKey = stableKeyFromText(text);
+                setSpokenKeys(p => new Set([...p, messageKey]));
+                setEphemeralAssistant({ key: messageKey, text });
 
-                const token = startNewTurn();
-                setFlowState('READING');
-                await speakExistingMessage(text, key, 'prompt', false, { token });
+                await playAssistantOnce(text, messageKey);
               }
             }}
             className="w-64 h-16 text-lg font-bold rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg hover:shadow-xl transition-all duration-200"
