@@ -598,7 +598,14 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   };
 
   // B) Separate "append" vs "speak": Only speak existing messages, never append when speaking
-  const speakExistingMessage = async (text: string, messageKey: string, phase: 'prompt' | 'feedback' = 'feedback', isRepeat = false) => {
+  type SpeakOpts = { token?: string };
+  const speakExistingMessage = async (
+    text: string, 
+    messageKey: string, 
+    phase: 'prompt' | 'feedback' = 'feedback', 
+    isRepeat = false, 
+    opts: SpeakOpts = {}
+  ) => {
     console.log('[Speaking] Speaking existing message:', text.substring(0, 50) + '...', { flowState, messageKey });
     
     // Use ghost only when there's no server bubble; otherwise highlight the real bubble
@@ -622,8 +629,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       return messageKey;
     }
 
-    // Use current turn token or generate new one if missing
-    const turnToken = currentTurnToken || startNewTurn();
+    // Use explicit token or current turn token - NEVER mint a second token if one was given
+    const turnToken = opts.token ?? currentTurnToken ?? startNewTurn();
     
     // Compute messageId for turn token events
     const replay = isRepeat ? replayCounter + 1 : 0;
@@ -746,7 +753,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     });
     
     // Speak without appending - this message already exists in chat
-    await speakExistingMessage(latestMessage.text, messageKey, 'prompt', isRepeat);
+    const token = currentTurnToken || startNewTurn();
+    await speakExistingMessage(latestMessage.text, messageKey, 'prompt', isRepeat, { token });
   };
 
   // Only append new messages from backend, never fabricate client-side
@@ -766,54 +774,33 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     const messageKey = stableMessageKey(message, id);
     
     // Now speak this newly added message
-    await speakExistingMessage(message, messageKey, phase, false);
+    await speakExistingMessage(message, messageKey, phase, false, { token: turnToken });
     
     return messageId;
   };
 
   // Handle TTS completion and auto-reopen mic when appropriate (gated by turn token)
-  const handleTTSCompletion = async (turnToken?: string, messageId?: string) => {
-    // Only proceed if turn token matches current one (prevent stale replays)
-    if (turnToken && turnToken !== currentTurnToken) {
-      console.log('HF_TTS_COMPLETE_STALE: ignoring stale completion for token:', turnToken);
-      return;
+  const handleTTSCompletion = async (token?: string, messageId?: string) => {
+    if (token && token !== currentTurnToken) {
+      console.log('HF_TTS_COMPLETE_STALE', { token, currentTurnToken });
+      return; // no state change on stale
     }
-    
-    // Log TTS completion with turn token and state
-    console.log('HF_TTS_COMPLETE', { turnToken: turnToken || currentTurnToken, messageId, state: flowState });
-    
-    // F) Mic loop: After TTS_COMPLETE → open mic automatically if conditions are met
-    if (hfActive && hfSessionActive && !hfAutoPaused && flowState === 'READING') {
-      // Small delay to prevent jarring transition
-      const timeout = setTimeout(async () => {
-        // Remove from active timeouts
-        setMicReopenTimeouts(prev => {
-          const newSet = new Set(prev);
-          newSet.delete(timeout);
-          return newSet;
-        });
-        
-        // Guard rail: ensure we're still in the right state after delay and turn token still matches
-        const stillCurrentTurn = !turnToken || turnToken === currentTurnToken;
-        if (hfActive && hfSessionActive && !hfAutoPaused && stillCurrentTurn && flowState === 'READING') {
-          console.log('HF_MIC_OPEN', { turnToken: turnToken || currentTurnToken, state: 'LISTENING' });
+
+    console.log('HF_TTS_COMPLETE', { token: token || currentTurnToken, messageId, state: flowState });
+
+    // Open mic if we just finished reading (hands-free or not)
+    if (flowState === 'READING') {
+      setTimeout(async () => {
+        // recheck current token but DO NOT require hfActive flags to progress on Speaking page
+        if (!token || token === currentTurnToken) {
           setFlowState('LISTENING');
-          
-          try {
-            await startHandsFreeMicCapture();
-          } catch (error: any) {
-            console.log('HF_ERROR_AUTO_REOPEN:', error.message);
-            setErrorMessage(error.message);
-            setFlowState('IDLE');
+          try { 
+            await startHandsFreeMicCapture(); 
+          } catch { 
+            setFlowState('IDLE'); 
           }
         }
-      }, 300);
-      
-      // Track timeout for cleanup
-      setMicReopenTimeouts(prev => new Set([...prev, timeout]));
-    } else {
-      // Not ready for mic, return to idle
-      setFlowState('IDLE');
+      }, 250);
     }
   };
 
@@ -843,11 +830,12 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         text: latestMessage.text.substring(0, 50) + '...'
       });
       
-      // Auto-speak the new message
+      // Auto-speak the new message with current or new token
       const handleNewMessage = async () => {
         try {
+          const token = currentTurnToken || startNewTurn();
           setFlowState('READING');
-          await speakExistingMessage(latestMessage.text, messageKey, 'feedback', false);
+          await speakExistingMessage(latestMessage.text, messageKey, 'feedback', false, { token });
         } catch (error: any) {
           console.log('HF_ERROR_AUTO_SPEAK:', error.message);
           setFlowState('IDLE');
@@ -1854,7 +1842,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       setHfCurrentPrompt(text);
       console.log('HF_START_STARTER', { turnToken, key, text });
       setFlowState('READING');
-      await speakExistingMessage(text, key, 'prompt');
+      await speakExistingMessage(text, key, 'prompt', false, { token: turnToken });
     } else {
       // No unread assistant messages - use fallback prompt but don't append it
       const prompt = currentQuestion || "Hello! Ready to practice today? Let's start with a simple question.";
