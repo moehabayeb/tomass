@@ -606,32 +606,23 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     // existing evaluator/save path continues as before
   };
 
-  // 3) Completion must move to LISTENING and open the mic
+  // 3) Completion: always go to LISTENING and open mic (no HF gate)
   const handleTTSCompletion = async (token: string) => {
     if (!token || token !== currentTurnToken) { 
       console.log('HF_TTS_COMPLETE_STALE'); 
       return; 
     }
-    
-    console.log('HF_TTS_COMPLETE', { token, state: flowState });
-    
-    // hands-free: go listen; manual: idle
-    if (hfEnabled) {
-      setFlowState('LISTENING');
-      await startHandsFreeMicCapture({ token });
-    } else {
-      setFlowState('IDLE');
-    }
+    setFlowState('LISTENING');             // move state first to avoid races
+    await startHandsFreeMicCapture({ token });
   };
 
-  // 4) Mic opener should set LISTENING itself (no brittle pre-check)
+  // 3) Mic opener: be idempotent, don't pre-require LISTENING, append one user bubble, call evaluator
   const startHandsFreeMicCapture = async ({ token }: { token?: string } = {}) => {
     const tok = token ?? currentTurnToken ?? startNewTurn();
 
-    // avoid race with async setState
+    // Normalize state and clear leftovers
     if (flowState !== 'LISTENING') setFlowState('LISTENING');
-
-    if (TTSManager.isSpeaking()) return;
+    if (TTSManager.isSpeaking()) return; // one voice at a time
     if (!tok) return;
 
     console.log('HF_MIC_OPEN', { turnToken: tok, state: flowState });
@@ -640,24 +631,25 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       cleanup(); 
     } catch {}
 
-    // Simulate playEarcon and setHfStatus functionality
     console.log('HF_LISTENING_EARCON');
     
     try {
-      // Start recording with hard cap (keep existing duration limit)
-      const result = await startRecording();
-      
-      console.log('HF_RESULT_FINAL:', result.transcript.length);
-      
-      // 5) Append exactly one user bubble on ASR_FINAL
-      onUserFinalTranscript(result?.transcript || '', tok);
-      
-      // Execute existing teacher loop (unchanged)
-      await executeTeacherLoop(result?.transcript || '');
-      
-    } catch (error: any) {
-      console.log('HF_ERROR_MIC:', error.message);
-      setErrorMessage(error.message);
+      const result = await startRecording();      // existing micEngine
+      const final = (result?.transcript || '').trim();
+
+      if (final) {
+        addChatBubble(final, 'user');             // ← show user text again
+        setFlowState('PROCESSING');               // mic closed now
+        await executeTeacherLoop(final);          // ← existing evaluator/teacher loop
+        // message observer will notice the new assistant bubble and speak it
+      } else {
+        // Nothing captured: gently resume listening or auto-pause per your existing policy
+        setFlowState('LISTENING');
+        await startHandsFreeMicCapture({ token: tok });
+      }
+    } catch (err: any) {
+      console.warn('HF_MIC_ERROR', err);
+      setFlowState('PAUSED');                     // safe fallback
     }
   };
 
