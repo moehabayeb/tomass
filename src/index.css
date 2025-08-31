@@ -597,3 +597,20 @@
   font-size: 11px; 
   opacity: .7;
 }
+
+/* Ghost bubble styling */
+.ghost { 
+  opacity: .85; 
+  filter: saturate(0.9); 
+}
+
+.ghost .hint { 
+  font-size: 11px; 
+  opacity: .7; 
+  margin-top: 2px; 
+}
+
+/* Speaking bubble highlight */
+.bot-bubble.speaking { 
+  outline: 2px solid rgba(255,255,255,.2); 
+}

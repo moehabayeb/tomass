@@ -682,12 +682,27 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         setFlowState('READING');
         setIsSpeaking(true);
         setAvatarState('talking');
-        
+
+        // Watchdog (fallback) — 12s max read
+        let resolved = false;
+        const watchdog = setTimeout(() => {
+          if (!resolved) {
+            console.warn('HF_TTS_WATCHDOG: forcing completion');
+            // fall through to finally; handleTTSCompletion will run
+          }
+        }, 12000);
+
         await TTSManager.speak(text, {
           canSkip: true
+        }).finally(() => {
+          resolved = true;
+          clearTimeout(watchdog);
         });
-        
+
         console.log('HF_TTS_COMPLETE', { turnToken, messageId, messageKey, state: flowState });
+      } catch (error) {
+        console.warn('[Speaking] Failed to speak message:', error);
+      } finally {
         setIsSpeaking(false);
         setAvatarState('idle');
         
@@ -695,13 +710,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         setSpeakingMessageKey(null);
         setEphemeralAssistant(null);
         
-        // Auto-reopen mic after TTS completes (gated by turn token)
+        // Always drive the loop forward even if audio failed
         await handleTTSCompletion(turnToken, messageId);
-      } catch (error) {
-        console.warn('[Speaking] Failed to speak message:', error);
-        setIsSpeaking(false);
-        setAvatarState('idle');
-        setFlowState('IDLE');
       }
     } else {
       // D) Do not silently 'complete' when muted: log HF_PROMPT_SKIP instead (never HF_TTS_COMPLETE)
@@ -2068,12 +2078,13 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       emitHFTelemetry('HF_RESULT_FINAL', { transcriptLength: result.transcript.length, turnToken: currentTurnToken });
       playEarcon('processing');
       
-  // B) Append exactly ONE user bubble on ASR_FINAL (not on interim)
-  setInterimCaption(''); // Clear interim caption on final result
-  console.log('HF_USER_FINAL', { len: result.transcript.length });
-  
-  const { id: userMessageId } = addChatBubble(result.transcript, "user"); // Remove "💭 You said:" prefix
-  console.log('HF_USER_MESSAGE_ADDED', { userMessageId, transcript: result.transcript });
+      // B) Append exactly ONE user bubble on ASR_FINAL (not on interim)
+      const final = (result?.transcript || '').trim();
+      if (final) {
+        addChatBubble(final, 'user'); // ONE user bubble
+        console.log('HF_USER_FINAL', { len: final.length });
+      }
+      setInterimCaption(''); // clear live captions
       
       // Check if user said "resume" to resume paused session (fallback for non-exact matches)
       if (hfAutoPaused && result.transcript.toLowerCase().includes('resume')) {
@@ -2086,7 +2097,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       }
       
       // Execute existing teacher loop (unchanged)
-      await executeTeacherLoop(result.transcript);
+      await executeTeacherLoop(final);
       
       // Note: Auto-advance now handled by TTS completion in addAssistantMessage
       
@@ -2299,29 +2310,26 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
             const messageKey = stableMessageKey(message.text, message.id);
             const isCurrentlySpeaking = speakingMessageKey === messageKey;
             return (
-              <ChatBubble 
+              <div 
                 key={message.id || index}
-                message={message.text} 
-                isUser={message.isUser}
-                className={cn(
-                  message.isSystem ? "opacity-75 italic" : "",
-                  isCurrentlySpeaking ? "speaking" : ""
-                )}
-              />
+                className={cn('bot-bubble', isCurrentlySpeaking && 'speaking')}
+              >
+                <ChatBubble 
+                  message={message.text} 
+                  isUser={message.isUser}
+                  className={cn(
+                    message.isSystem ? "opacity-75 italic" : ""
+                  )}
+                />
+              </div>
             );
           })}
           
           {/* Ephemeral ghost bubble - shows what's being spoken without appending to history */}
           {ephemeralAssistant && (
-            <div className="ghost-bubble flex justify-start mb-3 sm:mb-4">
-              <div className="flex items-start space-x-2 sm:space-x-3 max-w-[90%] sm:max-w-[85%]">
-                <div className="conversation-bubble px-4 py-3 sm:px-5 sm:py-4 font-medium text-sm sm:text-base leading-relaxed flex-1 bg-gradient-to-br from-blue-50/60 to-blue-100/50 text-gray-800 border-l-4 border-blue-400/70 opacity-70 italic relative">
-                  {ephemeralAssistant.text}
-                  <div className="absolute top-1 right-2 text-xs text-blue-500/70 animate-pulse">
-                    Speaking...
-                  </div>
-                </div>
-              </div>
+            <div className="bot-bubble ghost" aria-live="polite">
+              <div className="text">{ephemeralAssistant.text}</div>
+              <div className="hint">Speaking…</div>
             </div>
           )}
           
