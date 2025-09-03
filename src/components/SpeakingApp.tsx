@@ -663,16 +663,16 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   const MascotHeader = () => {
     const { level, xp_current, next_threshold } = useProgressStore();
     
-    // Format XP with thousands separator
-    const formatXP = (xp: number) => {
-      return xp ? xp.toLocaleString() : "—";
-    };
+    // Format XP with thousands separator and memoize to avoid re-renders
+    const formattedXP = useMemo(() => {
+      return xp_current ? xp_current.toLocaleString() : "—";
+    }, [xp_current]);
     
     return (
-      <div className="mx-auto mt-6 flex flex-col items-center gap-2" style={{ zIndex: 10 }}>
+      <div className="hf-header mx-auto mt-3 flex flex-col items-center gap-2 pointer-events-none z-10">
         {/* Avatar */}
         <div 
-          className="h-24 w-24 rounded-full ring-2 ring-white/20 shadow-lg relative"
+          className="h-24 w-24 rounded-full ring-2 ring-white/20 shadow-lg pointer-events-none"
           role="img"
           aria-label="Tutor avatar"
         >
@@ -681,12 +681,13 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
               "w-full h-full rounded-full object-cover transition-all duration-300",
               isSpeaking && "ring-4 ring-primary/50 shadow-glow"
             )}
+            hideLoadingText={true}
           />
         </div>
         
         {/* XP Chip */}
-        <div className="px-3 py-1 rounded-full text-sm bg-white/10 text-white/90 backdrop-blur-sm">
-          XP: {formatXP(xp_current)}
+        <div className="px-3 py-1 rounded-full text-sm bg-white/10 text-white/90 backdrop-blur-sm pointer-events-none">
+          XP: {formattedXP}
         </div>
       </div>
     );
@@ -695,6 +696,16 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   // Component return with locked minimal UI
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+      {/* Top bar with sound toggle (position: fixed or absolute for proper stacking) */}
+      <div className="fixed top-4 right-4 z-20">
+        <button
+          onClick={toggleSpeakingSound}
+          className="flex items-center gap-2 px-4 py-2 bg-white/10 rounded-lg backdrop-blur-sm text-white hover:bg-white/20 transition-colors"
+        >
+          {speakingSoundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+        </button>
+      </div>
+
       <div className="w-full max-w-4xl mx-auto space-y-6">
         
         {/* Mascot Header */}
@@ -852,15 +863,6 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           </DropdownMenu>
         </div>
 
-        {/* Sound toggle (speaker icon only - in top bar semantically) */}
-        <div className="flex justify-center">
-          <button
-            onClick={toggleSpeakingSound}
-            className="flex items-center gap-2 px-4 py-2 bg-white/10 rounded-lg backdrop-blur-sm text-white hover:bg-white/20 transition-colors"
-          >
-            {speakingSoundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-          </button>
-        </div>
 
         {/* Error message */}
         {errorMessage && (

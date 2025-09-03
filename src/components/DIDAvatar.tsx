@@ -5,13 +5,15 @@ interface DIDAvatarProps {
   state?: 'idle' | 'talking' | 'listening' | 'thinking';
   className?: string;
   isSpeaking?: boolean; // Controls animation state
+  hideLoadingText?: boolean; // Hide loading text display
 }
 
 export default function DIDAvatar({ 
   size = 'md', 
   state = 'idle',
   className = "",
-  isSpeaking = false
+  isSpeaking = false,
+  hideLoadingText = false
 }: DIDAvatarProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [agentLoaded, setAgentLoaded] = useState(false);
@@ -177,7 +179,7 @@ export default function DIDAvatar({
           </div>
         )}
         
-        {!agentLoaded && !agentFailed && (
+        {!agentLoaded && !agentFailed && !hideLoadingText && (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-white/60 text-xs">Loading...</div>
           </div>
