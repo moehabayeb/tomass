@@ -1,10 +1,8 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Mic, Volume2, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
 import DIDAvatar from './DIDAvatar';
 import { useAvatarState } from '@/hooks/useAvatarState';
-import { useSpeakingTTS } from '@/hooks/useSpeakingTTS';
 import { supabase } from '@/integrations/supabase/client';
 import { useStreakTracker } from '@/hooks/useStreakTracker';
 import { useBadgeSystem } from '@/hooks/useBadgeSystem';
@@ -14,7 +12,7 @@ import { useAuthReady } from '@/hooks/useAuthReady';
 import { StreakCounter } from './StreakCounter';
 import { SampleAnswerButton } from './SampleAnswerButton';
 import BookmarkButton from './BookmarkButton';
-import { startRecording, stopRecording, getState, onState, cleanup, type MicState } from '@/lib/audio/micEngine';
+import { startRecording, stopRecording, cleanup, onState, type MicState } from '@/lib/audio/micEngine';
 import { useToast } from '@/hooks/use-toast';
 import { TTSManager } from '@/services/TTSManager';
 import { wakeLockManager } from '@/utils/wakeLock';
@@ -22,65 +20,31 @@ import { Play, Pause, MoreHorizontal, RotateCcw, Square } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 
-// Feature flags
-const SPEAKING_HANDS_FREE = true;
-const HF_BARGE_IN = true;
-const HF_VOICE_COMMANDS = true;
-const SPEAKING_HF_MINUI = true;
-const SPEAKING_HANDS_FREE_V2 = true;
-const SPEAKING_HANDS_FREE_MINIMAL = true;
+// Finite state machine: IDLE | READING | LISTENING | PROCESSING | PAUSED
+type FlowState = 'IDLE' | 'READING' | 'LISTENING' | 'PROCESSING' | 'PAUSED';
 
-// Sparkle component for background decoration
-const Sparkle = ({ className, delayed = false }: { className?: string; delayed?: boolean }) => (
-  <div 
-    className={`absolute w-2 h-2 bg-yellow-300 rounded-full ${delayed ? 'sparkle-delayed' : 'sparkle'} ${className}`}
-    style={{ 
-      boxShadow: '0 0 8px currentColor',
-      clipPath: 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)'
-    }}
-  />
-);
-
-// Premium XP Progress Bar component
-const XPProgressBar = ({ current, max, className }: { current: number; max: number; className?: string }) => {
-  const percentage = (current / max) * 100;
-  
-  return (
-    <div className={`relative ${className}`}>
-      <div 
-        className="w-full h-4 rounded-full overflow-hidden bg-black/20 backdrop-blur-sm"
-        style={{ boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)' }}
-      >
-        <div 
-          className="h-full transition-all duration-700 ease-out rounded-full relative overflow-hidden"
-          style={{ 
-            width: `${percentage}%`,
-            background: 'var(--gradient-xp)',
-            boxShadow: 'var(--shadow-glow)'
-          }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse" />
-        </div>
-      </div>
-      <div className="flex justify-between items-center mt-2">
-        <span className="text-white/90 text-sm font-medium">⚡ XP</span>
-        <span className="text-white font-bold text-sm">
-          {current} / {max}
-        </span>
-      </div>
-    </div>
-  );
-};
+// Message interface
+interface Message {
+  id: string;
+  text: string;
+  role: 'user' | 'assistant';
+  content: string;
+  isUser: boolean;
+  isSystem: boolean;
+  seq: number;
+}
 
 // Premium Chat Bubble component
 const ChatBubble = ({ 
   message, 
   isUser = false, 
-  className 
+  className,
+  isGhost = false
 }: { 
   message: string; 
   isUser?: boolean; 
   className?: string; 
+  isGhost?: boolean;
 }) => (
   <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-3 sm:mb-4 ${className}`}>
     <div className="flex items-start space-x-2 sm:space-x-3 max-w-[90%] sm:max-w-[85%]">
@@ -88,6 +52,8 @@ const ChatBubble = ({
         className={`conversation-bubble px-4 py-3 sm:px-5 sm:py-4 font-medium text-sm sm:text-base leading-relaxed flex-1 ${
           isUser 
             ? 'bg-gradient-to-br from-white/95 to-white/85 text-gray-800 border-l-4 border-orange-400' 
+            : isGhost
+            ? 'bg-gradient-to-br from-gray-50/50 to-gray-100/40 text-gray-600 border-l-4 border-gray-300 opacity-70'
             : 'bg-gradient-to-br from-blue-50/90 to-blue-100/80 text-gray-800 border-l-4 border-blue-400'
         }`}
       >
@@ -95,7 +61,7 @@ const ChatBubble = ({
       </div>
       
       {/* Bookmark button for non-user messages (AI responses) */}
-      {!isUser && (
+      {!isUser && !isGhost && (
         <BookmarkButton
           content={message}
           type="message"
@@ -112,648 +78,539 @@ interface SpeakingAppProps {
 
 export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   const { avatarState, setAvatarState } = useAvatarState({ isSpeaking: false });
-  const [didAvatarRef, setDIDAvatarRef] = useState<any>(null);
-  const { streakData, getStreakMessage } = useStreakTracker();
+  const { streakData } = useStreakTracker();
   const { incrementSpeakingSubmissions } = useBadgeSystem();
   const { user } = useAuthReady();
   const { toast } = useToast();
   
-  // G) Single source of truth: Speaking page sound state
-  const [speakingSoundEnabled, setSpeakingSoundEnabled] = useState(() => {
-    const saved = localStorage.getItem('speaking.sound.enabled');
-    return saved !== null ? saved === 'true' : true; // Default = true
+  // Single controller state machine
+  const [flowState, setFlowState] = useState<FlowState>('IDLE');
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [spokenKeys, setSpokenKeys] = useState<Set<string>>(new Set());
+  const [currentTurnToken, setCurrentTurnToken] = useState<string>('');
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [micState, setMicState] = useState<MicState>('idle');
+  const [interimCaption, setInterimCaption] = useState('');
+  const [ghostBubble, setGhostBubble] = useState<{ key: string; text: string } | null>(null);
+  const [errorMessage, setErrorMessage] = useState('');
+  
+  // Sound handling via localStorage
+  const [soundEnabled, setSoundEnabled] = useState(() => {
+    return localStorage.getItem('speaking.sound.enabled') !== 'false';
   });
-  const [audioContextResumed, setAudioContextResumed] = useState(false);
   
-  // TTS listener authority state
-  const [ttsListenerActive, setTtsListenerActive] = useState(false);
+  // Progress tracking
+  const { level, xp_current, next_threshold, awardXp, fetchProgress } = useProgressStore();
   
-  const { level, xp_current, next_threshold, awardXp, lastLevelUpTime, fetchProgress, resetLevelUpNotification, subscribeToProgress } = useProgressStore();
+  // TTS watchdog and completion handler refs
+  const ttsWatchdogRef = useRef<NodeJS.Timeout>();
+  const currentControllerRef = useRef<AbortController>();
 
-  // 1) Helper to guarantee sound is ready
-  const ensureSoundReady = async () => {
+  // Message key generation for deduplication
+  const generateMessageKey = (text: string, serverId?: string): string => {
+    if (serverId) return `server:${serverId}`;
+    const hash = text.substring(0, 200).split('').reduce((a, b) => {
+      a = ((a << 5) - a) + b.charCodeAt(0);
+      return a & a;
+    }, 0);
+    return `msg-${Math.abs(hash)}`;
+  };
+
+  // Turn token generation
+  const generateTurnToken = (): string => {
+    return `turn-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
+  };
+
+  // Sound ready helper
+  const ensureSoundReady = async (): Promise<{ enabled: boolean }> => {
     const enabled = localStorage.getItem('speaking.sound.enabled') !== 'false';
-    let resumed = false;
     if (enabled) {
-      try { 
-        resumed = await enableAudioContext(); 
-      } catch { 
-        resumed = false; 
-      }
-    }
-    console.log('HF_SOUND', { enabled, resumed });
-    return { enabled, resumed };
-  };
-
-  // Helper function to enable audio context for TTS (autoplay policy compliance)
-  const enableAudioContext = async (): Promise<boolean> => {
-    try {
-      if (typeof window !== 'undefined' && window.AudioContext) {
-        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-        if (audioContext.state === 'suspended') {
-          await audioContext.resume();
-          console.log('HF_SOUND: AudioContext resumed');
+      try {
+        if (typeof window !== 'undefined' && window.AudioContext) {
+          const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+          if (audioContext.state === 'suspended') {
+            await audioContext.resume();
+          }
         }
-        setAudioContextResumed(true);
-        return true;
+      } catch (error) {
+        console.warn('Failed to enable AudioContext:', error);
       }
-      return false;
-    } catch (error) {
-      console.warn('HF_SOUND: Failed to enable AudioContext:', error);
-      return false;
     }
+    console.log('HF_SOUND', { enabled });
+    return { enabled };
   };
 
-  // Keep icon and engine in sync: Persist sound state changes
-  const toggleSpeakingSound = () => {
-    const newEnabled = !speakingSoundEnabled;
-    console.log('HF_SOUND_TOGGLE', { enabled: newEnabled });
-    
-    setSpeakingSoundEnabled(newEnabled);
-    localStorage.setItem('speaking.sound.enabled', newEnabled.toString());
-    
-    // Immediately sync with TTS manager
-    if (!newEnabled && TTSManager.isSpeaking()) {
+  // Clean up previous operations
+  const cleanupPreviousOperations = () => {
+    // Cancel current controller
+    if (currentControllerRef.current) {
+      currentControllerRef.current.abort();
+    }
+    currentControllerRef.current = new AbortController();
+
+    // Clear TTS watchdog
+    if (ttsWatchdogRef.current) {
+      clearTimeout(ttsWatchdogRef.current);
+    }
+
+    // Stop TTS if speaking
+    if (TTSManager.isSpeaking()) {
       TTSManager.stop();
       setIsSpeaking(false);
       setAvatarState('idle');
     }
-  };
 
-  // On mount, sync TTS manager with localStorage state
-  useEffect(() => {
-    console.log('HF_SOUND: Initializing with state:', speakingSoundEnabled);
-    // No explicit TTS manager sync needed - we check speakingSoundEnabled directly
-  }, []);
-  
-  // A) Authoritative flow (finite-state machine)
-  // States: IDLE / READING / LISTENING / PROCESSING / PAUSED
-  const [flowState, setFlowState] = useState<'IDLE' | 'READING' | 'LISTENING' | 'PROCESSING' | 'PAUSED'>('IDLE');
-  
-  // A) Stop duplicates at the source: NO default/initial assistant message seeded
-  // Feed must come only from conversation store/back-end
-  const [messages, setMessages] = useState<Array<{
-    text: string;
-    isUser: boolean;
-    isSystem: boolean;
-    id: string;
-    role: 'user' | 'assistant';
-    content: string;
-    seq: number;
-  }>>([]);
-
-  // B) No-duplicate rules + messageKey deduplication system
-  const [spokenKeys, setSpokenKeys] = useState<Set<string>>(new Set()); // Track spoken message keys
-  const [lastSpokenSeq, setLastSpokenSeq] = useState(0);
-  const [messageSeqCounter, setMessageSeqCounter] = useState(1); // Start from 1 (no initial message)
-  
-  // C) Guard rails: Turn token system for preventing stale events
-  const [currentTurnToken, setCurrentTurnToken] = useState<string>('');
-  const [lastPlayedMessageIds, setLastPlayedMessageIds] = useState<Set<string>>(new Set());
-  const [replayCounter, setReplayCounter] = useState(0);
-  const [ttsCompletionTimeouts, setTtsCompletionTimeouts] = useState<Set<NodeJS.Timeout>>(new Set());
-  const [micReopenTimeouts, setMicReopenTimeouts] = useState<Set<NodeJS.Timeout>>(new Set());
-  
-  // C) Remember where we paused (for correct Resume)
-  const [pausedFrom, setPausedFrom] = useState<'READING' | 'LISTENING' | 'PROCESSING' | null>(null);
-
-  // Helper function to compute stable messageKey for deduplication (fix regression)
-  const stableMessageKey = (text: string, serverId?: string) => {
-    // Use server ID if available, otherwise hash ONLY the assistant text (no timestamps, no counters)
-    if (serverId) {
-      console.log('HF_KEY', { key: `server:${serverId}`, hasServerId: true, previewText: text.substring(0, 30) });
-      return `server:${serverId}`;
+    // Stop mic if recording
+    if (micState === 'recording') {
+      cleanup();
     }
-    
-    // Hash only the content for stability
-    const hash = text.substring(0, 200).split('').reduce((a, b) => {
-      a = ((a << 5) - a) + b.charCodeAt(0);
-      return a & a;
-    }, 0);
-    const key = `msg-${Math.abs(hash)}`;
-    console.log('HF_KEY', { key, hasServerId: false, previewText: text.substring(0, 30) });
-    return key;
   };
 
-  // Helper for ephemeral keys (text-only, no server id)
-  const stableKeyFromText = (text: string): string => {
-    const hash = text.substring(0, 200).split('').reduce((a, b) => {
-      a = ((a << 5) - a) + b.charCodeAt(0);
-      return a & a;
-    }, 0);
-    const key = `msg-${Math.abs(hash)}`;
-    console.log('HF_KEY', { key, source: 'ephemeral', previewText: text.substring(0, 30) });
-    return key;
-  };
-
-  // Legacy computeMessageKey (deprecated - use stableMessageKey instead)
-  const computeMessageKey = (level: string, module: string, qIndex: number, text: string, serverId?: string) => {
-    // Redirect to stable version
-    return stableMessageKey(text, serverId);
-  };
-
-  // Unread assistant detection
-  const unreadAssistantExists = () => {
-    const latestMessage = findLatestEligibleAssistantMessage();
-    if (!latestMessage) return false;
-    
-    const messageKey = stableMessageKey(latestMessage.text, latestMessage.id);
-    const unread = !spokenKeys.has(messageKey);
-    console.log('HF_PRIMARY', { action: 'check_unread', unread, messageKey, previewText: latestMessage.text.substring(0, 30) });
-    return unread;
-  };
-  
-  // Helper function to find newest eligible assistant message (B - Newest assistant only)
-  const findLatestEligibleAssistantMessage = () => {
-    // B) Eligible-to-speak filter: Only assistant messages (role=assistant), never user/meta
-    const eligibleMessages = messages.filter(m => 
-      m.role === 'assistant' && 
-      !m.isUser && 
-      !m.isSystem && 
-      m.text.trim() &&
-      !m.text.startsWith('💭 You said:') // Never speak echo messages
-    );
-    
-    return eligibleMessages[eligibleMessages.length - 1]; // Latest only
-  };
-
-  // A) New state for ephemeral assistant ghost bubble and live captions
-  const [ephemeralAssistant, setEphemeralAssistant] = useState<null | { key: string; text: string }>(null);
-  const [interimCaption, setInterimCaption] = useState<string>(''); // live mic caption text
-  const [speakingMessageKey, setSpeakingMessageKey] = useState<string | null>(null);
-
-  // Helper to check if server bubble exists for a given key
-  const hasServerAssistant = (key: string) =>
-    messages.some(m => m.role === 'assistant' && stableMessageKey(m.text, m.id) === key);
-
-  // Remove useSpeakingTTS hook - we'll use strict turn-taking logic instead
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  
-  const [micState, setMicState] = useState<MicState>('idle');
-  const [errorMessage, setErrorMessage] = useState<string>('');
-  const [history, setHistory] = useState<Array<{input: string; corrected: string; time: string}>>([]);
-  const [currentQuestion, setCurrentQuestion] = useState("What did you have for lunch today?");
-  const [conversationContext, setConversationContext] = useState("");
-  const [userLevel, setUserLevel] = useState<'beginner' | 'intermediate' | 'advanced'>('beginner');
-  const [isProcessingTranscript, setIsProcessingTranscript] = useState(false);
-  const [lastTranscript, setLastTranscript] = useState<string>('');
-  const [lastMessageTime, setLastMessageTime] = useState<number>();
-  
-  // Hands-Free Mode state and logic
-  const [hfEnabled, setHfEnabled] = useState(() => {
-    // Enable by default for minimal UI
-    return true;
-  });
-
-  // Helper function to generate turn token (authoritative current turn)
-  const generateTurnToken = () => {
-    const timestamp = Date.now();
-    const random = Math.random().toString(36).substr(2, 9);
-    const token = `turn-${timestamp}-${random}`;
-    console.log('HF_TURN_TOKEN_GENERATED:', token);
+  // Start new turn with token
+  const startNewTurn = (): string => {
+    const token = generateTurnToken();
+    cleanupPreviousOperations();
+    setCurrentTurnToken(token);
+    setFlowState('IDLE');
+    console.log('Starting new turn:', token);
     return token;
   };
 
-  // Helper function to compute messageId from turnToken + phase + text + replay
-  const computeMessageId = (turnToken: string, phase: 'prompt' | 'feedback', text: string, replay = 0) => {
-    const baseId = `${turnToken}-${phase}-${text.substring(0, 20).replace(/[^a-zA-Z0-9]/g, '')}`;
-    const hash = baseId.split('').reduce((a, b) => {
-      a = ((a << 5) - a) + b.charCodeAt(0);
-      return a & a;
-    }, 0);
-    const replaySuffix = replay > 0 ? `-r${replay}` : '';
-    return `msg-${Math.abs(hash)}-${phase}${replaySuffix}`;
-  };
-
-  // Clear old state/timers on every new turn
-  const cancelOldListeners = () => {
-    // Clear TTS completion timeouts
-    ttsCompletionTimeouts.forEach(clearTimeout);
-    setTtsCompletionTimeouts(new Set());
-    
-    // Clear mic reopen timeouts
-    micReopenTimeouts.forEach(clearTimeout);
-    setMicReopenTimeouts(new Set());
-    
-    // Stop any current TTS (no coalesce)
-    if (TTSManager.isSpeaking()) {
-      console.log('HF_ADVANCE: stopping TTS for new turn');
-      TTSManager.stop();
-      setIsSpeaking(false);
-      setAvatarState('idle');
+  // TTS completion handler
+  const handleTTSCompletion = async (token: string) => {
+    if (token !== currentTurnToken) {
+      console.log('Stale TTS completion, ignoring');
+      return;
     }
-    
-    // Stop recording if active
-    if (micState === 'recording') {
-      console.log('HF_ADVANCE: stopping recording for new turn');
-      stopRecording();
-    }
+    console.log('TTS completed, transitioning to LISTENING');
+    setFlowState('LISTENING');
+    await startMicCapture(token);
   };
 
-  // 2) When starting a turn, always pass a token and always call completion
-  const startNewTurn = () => {
-    const tok = `turn-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,7)}`;
-    cancelOldListeners();
-    setCurrentTurnToken(tok);
-    setReplayCounter(0);
-    setFlowState('IDLE');
-    console.log('HF_NEW_TURN', { newToken: tok });
-    return tok;
-  };
-
-  // First-play / resume path (starter or latest assistant)
-  const playAssistantOnce = async (text: string, messageKey: string) => {
+  // Main play function - single entry point
+  const playAssistantMessage = async (text: string, messageKey: string) => {
     const token = startNewTurn();
     setFlowState('READING');
-    setTtsListenerActive(true); // Enable TTS listener authority
 
     const { enabled } = await ensureSoundReady();
 
-    let resolved = false;
-    const watchdog = setTimeout(() => {
-      if (!resolved) console.warn('HF_TTS_WATCHDOG: forcing completion');
+    // Mark as spoken to prevent duplicates
+    setSpokenKeys(prev => new Set([...prev, messageKey]));
+
+    // Show ghost bubble if no server message exists
+    if (!hasServerMessage(messageKey)) {
+      setGhostBubble({ key: messageKey, text });
+    }
+
+    // Set up TTS watchdog
+    let completed = false;
+    ttsWatchdogRef.current = setTimeout(() => {
+      if (!completed) {
+        console.warn('TTS watchdog triggered - forcing completion');
+        completed = true;
+        handleTTSCompletion(token);
+      }
     }, 12000);
 
     try {
       if (enabled) {
-        await TTSManager.speak(text, { canSkip: false }).finally(() => {
-          resolved = true; 
-          clearTimeout(watchdog);
-        });
+        setIsSpeaking(true);
+        setAvatarState('talking');
+        await TTSManager.speak(text, { canSkip: false });
       } else {
-        console.log('HF_PROMPT_SKIP (muted)');
-        resolved = true; 
-        clearTimeout(watchdog);
+        console.log('Sound disabled, skipping TTS');
       }
-    } catch (e) {
-      console.warn('HF_TTS_ERROR', e); 
-      resolved = true; 
-      clearTimeout(watchdog);
+    } catch (error) {
+      console.warn('TTS error:', error);
     } finally {
-      await handleTTSCompletion(token);   // ← ALWAYS
+      completed = true;
+      if (ttsWatchdogRef.current) {
+        clearTimeout(ttsWatchdogRef.current);
+      }
+      setIsSpeaking(false);
+      setAvatarState('idle');
+      await handleTTSCompletion(token);
     }
   };
 
-  // Append user/assistant messages (unified with sequence counter)
-  const addChatBubble = (text: string, type: "user" | "bot" | "system", messageId?: string, messageKey?: string) => {
-    const seq = messageSeqCounter;
-    setMessageSeqCounter(prev => prev + 1);
+  // Check if server message exists for key
+  const hasServerMessage = (key: string): boolean => {
+    return messages.some(m => 
+      m.role === 'assistant' && generateMessageKey(m.text, m.id) === key
+    );
+  };
+
+  // Start mic capture
+  const startMicCapture = async (token: string) => {
+    if (token !== currentTurnToken) return;
+    if (TTSManager.isSpeaking()) return; // One voice at a time
     
-    const id = messageId || `${type}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    const newMessage = {
-      id,
+    setMicState('recording');
+    setInterimCaption('');
+
+    // Set up interim caption listener
+    const unsubscribe = onState((newState) => {
+      setMicState(newState);
+    });
+
+    try {
+      const result = await startRecording();
+      const finalTranscript = result?.transcript?.trim() || '';
+
+      // Clear interim caption
+      setInterimCaption('');
+      if (unsubscribe) unsubscribe();
+
+      if (finalTranscript) {
+        // Add user message
+        addMessage(finalTranscript, 'user');
+        setFlowState('PROCESSING');
+        
+        // Execute teacher loop (existing evaluator)
+        await executeTeacherLoop(finalTranscript);
+      } else {
+        // No input captured, restart listening
+        console.log('No input captured, restarting');
+        await startMicCapture(token);
+      }
+    } catch (error) {
+      console.warn('Mic capture error:', error);
+      if (unsubscribe) unsubscribe();
+      setFlowState('PAUSED');
+      setErrorMessage(error instanceof Error ? error.message : 'Recording failed');
+    }
+  };
+
+  // Add message to conversation
+  const addMessage = (text: string, role: 'user' | 'assistant', serverId?: string): Message => {
+    const message: Message = {
+      id: serverId || `${role}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
       text: text.trim(),
-      isUser: type === "user",
-      isSystem: type === "system",
-      role: type === "user" ? "user" as const : "assistant" as const,
       content: text.trim(),
-      seq
+      role,
+      isUser: role === 'user',
+      isSystem: false,
+      seq: messages.length + 1
     };
-    
-    setMessages(prev => [...prev, newMessage]);
-    setLastMessageTime(Date.now());
-    
-    return { id, seq, messageKey };
+
+    setMessages(prev => [...prev, message]);
+    return message;
   };
 
-  // B) Separate "append" vs "speak": Only speak existing messages, never append when speaking
-  type SpeakOpts = { token?: string };
-  const speakExistingMessage = async (
-    text: string, 
-    messageKey: string, 
-    phase: 'prompt' | 'feedback' = 'feedback', 
-    isRepeat = false, 
-    opts: SpeakOpts = {}
-  ) => {
-    console.log('[Speaking] Speaking existing message:', text.substring(0, 50) + '...', { flowState, messageKey });
+  // Get latest unspoken assistant message
+  const getLatestUnspokenAssistant = (): { message: Message; key: string } | null => {
+    const assistantMessages = messages.filter(m => 
+      m.role === 'assistant' && !m.isSystem && m.text.trim()
+    );
     
-    // Use ghost only when there's no server bubble; otherwise highlight the real bubble
-    if (!hasServerAssistant(messageKey)) {
-      setEphemeralAssistant({ key: messageKey, text });
-      console.log('HF_GHOST', { key: messageKey, preview: text.slice(0, 40) });
+    if (assistantMessages.length === 0) return null;
+    
+    const latest = assistantMessages[assistantMessages.length - 1];
+    const key = generateMessageKey(latest.text, latest.id);
+    
+    if (spokenKeys.has(key)) return null;
+    
+    return { message: latest, key };
+  };
+
+  // Play button handler
+  const handlePlay = async () => {
+    if (flowState === 'PAUSED') {
+      // Resume from pause
+      setFlowState('LISTENING');
+      await startMicCapture(currentTurnToken);
+      return;
+    }
+
+    // Check for unspoken assistant message
+    const unspoken = getLatestUnspokenAssistant();
+    if (unspoken) {
+      await playAssistantMessage(unspoken.message.text, unspoken.key);
     } else {
-      setSpeakingMessageKey(messageKey);
-      console.log('HF_SPEAKING', { key: messageKey });
+      // Play starter prompt
+      const starterText = "What would you like to talk about?";
+      const starterKey = generateMessageKey(starterText);
+      await playAssistantMessage(starterText, starterKey);
     }
-    
-    // State machine: Only speak during READING state
-    if (flowState !== 'READING' && !isRepeat) {
-      console.log('HF_TTS_SKIP: not in READING state', { flowState });
-      return messageKey;
-    }
-    
-    // B) Deduplicate by messageKey: Only speak if messageKey not in spokenKeys  
-    if (spokenKeys.has(messageKey) && !isRepeat) {
-      console.log('HF_DROP_DUP: messageKey already spoken', { messageKey });
-      return messageKey;
-    }
+  };
 
-    // Use explicit token or current turn token - NEVER mint a second token if one was given
-    const turnToken = opts.token ?? currentTurnToken ?? startNewTurn();
-    
-    // Compute messageId for turn token events
-    const replay = isRepeat ? replayCounter + 1 : 0;
-    const messageId = computeMessageId(turnToken, phase, text, replay);
-    
-    // Check if already played by messageId (turn-level idempotency)
-    if (lastPlayedMessageIds.has(messageId) && !isRepeat) {
-      console.log('HF_DROP_STALE: messageId already played', { messageId, turnToken });
-      await handleTTSCompletion(turnToken);
-      return messageKey;
-    }
+  // Pause handler
+  const handlePause = () => {
+    cleanupPreviousOperations();
+    setFlowState('PAUSED');
+    setInterimCaption('');
+  };
 
-    // D) One voice at a time: Stop any ongoing TTS before starting new one
-    if (TTSManager.isSpeaking() && !isRepeat) {
-      console.log('HF_TTS_COALESCE: stopping old TTS for newer message');
+  // Sound toggle
+  const toggleSound = () => {
+    const newEnabled = !soundEnabled;
+    setSoundEnabled(newEnabled);
+    localStorage.setItem('speaking.sound.enabled', newEnabled.toString());
+    
+    if (!newEnabled && isSpeaking) {
       TTSManager.stop();
       setIsSpeaking(false);
       setAvatarState('idle');
     }
+  };
 
-    // Mark as spoken and played
-    setSpokenKeys(prev => new Set([...prev, messageKey]));
-    setLastPlayedMessageIds(prev => new Set([...prev, messageId]));
-    if (isRepeat) {
-      setReplayCounter(replay);
+  // Execute teacher loop (placeholder - implement your existing logic)
+  const executeTeacherLoop = async (userInput: string) => {
+    try {
+      setErrorMessage('');
+      
+      // Simulate processing delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Mock response - replace with your actual evaluator logic
+      const responses = [
+        "That's interesting! Can you tell me more about that?",
+        "Great! I'd like to know more details about your experience.",
+        "Wonderful! What made that special for you?",
+        "Fascinating! How did that make you feel?",
+        "Nice! Can you describe that in more detail?"
+      ];
+      
+      const response = responses[Math.floor(Math.random() * responses.length)];
+      
+      // Add assistant response
+      addMessage(response, 'assistant');
+      
+      // Award XP for participation
+      await awardXp(10, 'speaking_practice');
+      
+    } catch (error) {
+      console.warn('Teacher loop error:', error);
+      setErrorMessage('Failed to process your input. Please try again.');
+      setFlowState('PAUSED');
     }
+  };
 
-    // C) Single authority: TTS can only be triggered by the hands-free controller when it has authority
-    if (!ttsListenerActive) {
-      console.log('HF_TTS_SKIP: no active TTS listener authority', { ttsListenerActive });
-      return messageKey;
-    }
+  // Message observer - watch for new assistant messages and speak them
+  useEffect(() => {
+    if (!['PROCESSING', 'IDLE'].includes(flowState)) return;
     
-    // Turn token guard: Ensure we're still on the correct turn
-    if (turnToken !== currentTurnToken) {
-      console.log('HF_DROP_STALE: turn token mismatch during TTS', { turnToken, currentTurnToken });
-      return messageKey;
-    }
-    // D) Sound toggle compliance: Check if sound is enabled before TTS
-    if (speakingSoundEnabled) {
-      // On first Play: Autoplay policy compliance - resume AudioContext
-      if (!audioContextResumed) {
-        const resumed = await enableAudioContext();
-        if (!resumed) {
-          console.log('HF_SOUND_FAIL: AudioContext resume failed', { turnToken, messageId });
-          // Show tooltip: "Tap Play to enable sound" but don't mark as complete
-          setErrorMessage("Tap Play to enable sound");
-          return messageKey;
-        }
+    const unspoken = getLatestUnspokenAssistant();
+    if (unspoken && flowState === 'PROCESSING') {
+      // Clear ghost bubble if we have a real message
+      if (ghostBubble && hasServerMessage(ghostBubble.key)) {
+        setGhostBubble(null);
       }
       
-      console.log('HF_PROMPT_PLAY', { turnToken, messageId, messageKey, phase, textHash: text.substring(0, 20), state: flowState });
-      
-      try {
-        // A) State transition: Enter READING state for TTS
-        setFlowState('READING');
-        setIsSpeaking(true);
-        setAvatarState('talking');
+      // Speak the new assistant message
+      playAssistantMessage(unspoken.message.text, unspoken.key);
+    }
+  }, [messages, flowState]);
 
-        // Watchdog (fallback) — 12s max read
-        let resolved = false;
-        const watchdog = setTimeout(() => {
-          if (!resolved) {
-            console.warn('HF_TTS_WATCHDOG: forcing completion');
-            // fall through to finally; handleTTSCompletion will run
-          }
-        }, 12000);
+  // Clean up on unmount
+  useEffect(() => {
+    return () => {
+      cleanupPreviousOperations();
+      cleanup();
+    };
+  }, []);
 
-        await TTSManager.speak(text, {
-          canSkip: true
-        }).finally(() => {
-          resolved = true;
-          clearTimeout(watchdog);
-        });
-
-        console.log('HF_TTS_COMPLETE', { turnToken, messageId, messageKey, state: flowState });
-      } catch (error) {
-        console.warn('[Speaking] Failed to speak message:', error);
-      } finally {
+  // Barge-in handling - stop TTS if user starts talking during READING
+  useEffect(() => {
+    if (flowState === 'READING' && micState === 'recording') {
+      console.log('Barge-in detected, stopping TTS');
+      if (TTSManager.isSpeaking()) {
+        TTSManager.stop();
         setIsSpeaking(false);
         setAvatarState('idle');
-        
-        // Clear speaking indicators on TTS completion
-        setSpeakingMessageKey(null);
-        setEphemeralAssistant(null);
-        
-        // Always drive the loop forward even if audio failed
-        await handleTTSCompletion(turnToken);
       }
-    } else {
-      // D) Do not silently 'complete' when muted: log HF_PROMPT_SKIP instead (never HF_TTS_COMPLETE)
-      console.log('HF_PROMPT_SKIP: sound disabled', { turnToken, messageId, messageKey, state: flowState });
-      // Still proceed to mic opening
-      await handleTTSCompletion(turnToken);
     }
-    
-    return messageKey;
-  };
+  }, [flowState, micState]);
 
-  // B) Separate "append" vs "speak": NEVER append when only speaking existing messages
-  const speakLatestAssistantMessage = async (isRepeat = false) => {
-    console.log('[Speaking] Finding latest assistant message to speak', { flowState });
-    
-    // B) Find newest eligible assistant message only
-    const latestMessage = findLatestEligibleAssistantMessage();
-    
-    if (!latestMessage) {
-      console.log('HF_TTS_SKIP: no eligible assistant message found');
-      setFlowState('IDLE');
-      return;
-    }
-    
-    // Generate messageKey for deduplication (fix regression - use stable key)
-    const messageKey = stableMessageKey(latestMessage.text, latestMessage.id);
-    
-    console.log('[Speaking] Latest assistant message found', { 
-      messageKey, 
-      text: latestMessage.text.substring(0, 50) + '...',
-      spokenBefore: spokenKeys.has(messageKey)
-    });
-    
-    // Speak without appending - this message already exists in chat
-    const token = currentTurnToken || startNewTurn();
-    await speakExistingMessage(latestMessage.text, messageKey, 'prompt', isRepeat, { token });
-  };
-
-  // Only append new messages from backend, never fabricate client-side
-  const addAssistantMessage = async (message: string, phase: 'prompt' | 'feedback' = 'feedback') => {
-    console.log('[Speaking] Adding new assistant message from backend:', message.substring(0, 50) + '...', { flowState });
-    
-    // Use current turn token or generate new one if missing
-    const turnToken = currentTurnToken || startNewTurn();
-    
-    // Compute messageId for strict idempotency
-    const messageId = computeMessageId(turnToken, phase, message, 0);
-    
-    // Add to chat and get sequence number - this is the ONLY place we append assistant messages
-    const { id, seq } = addChatBubble(message, "bot", messageId);
-    
-    // Generate messageKey for this new message (use stable key)
-    const messageKey = stableMessageKey(message, id);
-    
-    // Now speak this newly added message
-    await speakExistingMessage(message, messageKey, phase, false, { token: turnToken });
-    
-    return messageId;
-  };
-
-  // 5) Append one user bubble on FINAL and move to PROCESSING
-  const onUserFinalTranscript = (finalText: string, token: string) => {
-    if (!finalText.trim() || token !== currentTurnToken) return;
-    addChatBubble(finalText, 'user');     // restored
-    setFlowState('PROCESSING');
-    // existing evaluator/save path continues as before
-  };
-
-  // 3) Completion: always go to LISTENING and open mic (no HF gate)
-  const handleTTSCompletion = async (token: string) => {
-    if (!token || token !== currentTurnToken) { 
-      console.log('HF_TTS_COMPLETE_STALE'); 
-      return; 
-    }
-    setFlowState('LISTENING');             // move state first to avoid races
-    await startHandsFreeMicCapture({ token });
-  };
-
-  // 3) Mic opener: be idempotent, don't pre-require LISTENING, append one user bubble, call evaluator
-  const startHandsFreeMicCapture = async ({ token }: { token?: string } = {}) => {
-    const tok = token ?? currentTurnToken ?? startNewTurn();
-
-    // Normalize state and clear leftovers
-    if (flowState !== 'LISTENING') setFlowState('LISTENING');
-    if (TTSManager.isSpeaking()) return; // one voice at a time
-    if (!tok) return;
-
-    console.log('HF_MIC_OPEN', { turnToken: tok, state: flowState });
-    
-    try { 
-      cleanup(); 
-    } catch {}
-
-    console.log('HF_LISTENING_EARCON');
-    
-    try {
-      const result = await startRecording();      // existing micEngine
-      const final = (result?.transcript || '').trim();
-
-      if (final) {
-        addChatBubble(final, 'user');             // ← show user text again
-        setFlowState('PROCESSING');               // mic closed now
-        await executeTeacherLoop(final);          // ← existing evaluator/teacher loop
-        // message observer will notice the new assistant bubble and speak it
-      } else {
-        // Nothing captured: gently resume listening or auto-pause per your existing policy
-        setFlowState('LISTENING');
-        await startHandsFreeMicCapture({ token: tok });
+  // Voice commands handling
+  const handleVoiceCommand = (command: string) => {
+    const lowerCommand = command.toLowerCase();
+    if (lowerCommand.includes('again') || lowerCommand.includes('repeat')) {
+      const latest = getLatestUnspokenAssistant();
+      if (latest) {
+        // Remove from spoken keys to allow replay
+        setSpokenKeys(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(latest.key);
+          return newSet;
+        });
+        playAssistantMessage(latest.message.text, latest.key);
       }
-    } catch (err: any) {
-      console.warn('HF_MIC_ERROR', err);
-      setFlowState('PAUSED');                     // safe fallback
     }
   };
 
-  // Mock executeTeacherLoop function for this demo
-  const executeTeacherLoop = async (transcript: string) => {
-    console.log('Executing teacher loop with transcript:', transcript);
-    // This would normally contain the actual teacher loop logic
+  // State display helpers
+  const getStateChip = () => {
+    switch (flowState) {
+      case 'IDLE': return { text: 'Ready', color: 'bg-gray-500' };
+      case 'READING': return { text: 'Speaking', color: 'bg-blue-500' };
+      case 'LISTENING': return { text: 'Listening', color: 'bg-green-500' };
+      case 'PROCESSING': return { text: 'Processing', color: 'bg-yellow-500' };
+      case 'PAUSED': return { text: 'Paused', color: 'bg-red-500' };
+      default: return { text: 'Unknown', color: 'bg-gray-500' };
+    }
   };
 
-  // Simple component return with minimal UI for demo
+  const stateChip = getStateChip();
+
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
-      <div className="w-full max-w-4xl mx-auto space-y-6">
-        
-        {/* Chat messages */}
-        <div className="space-y-4 max-h-96 overflow-y-auto">
-          {messages.map((message, index) => (
-            <ChatBubble
-              key={`${message.id}-${index}`}
-              message={message.text}
-              isUser={message.isUser}
-            />
-          ))}
-          
-          {/* Ephemeral ghost bubble */}
-          {ephemeralAssistant && (
-            <ChatBubble
-              message={ephemeralAssistant.text}
-              isUser={false}
-              className="opacity-70"
-            />
-          )}
-          
-          {/* Live captions */}
-          {flowState === 'LISTENING' && interimCaption && (
-            <div className="text-white/60 italic text-sm text-center">
-              "{interimCaption}"
+    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 relative overflow-hidden">
+      {/* Background elements */}
+      <div className="absolute inset-0 bg-black/20" />
+      
+      {/* Main content */}
+      <div className="relative z-10 flex flex-col min-h-screen">
+        {/* Header */}
+        <div className="p-4 sm:p-6 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <h1 className="text-2xl sm:text-3xl font-bold text-white">Speaking Practice</h1>
+            <div className={`px-3 py-1 rounded-full text-xs font-medium text-white ${stateChip.color}`}>
+              {stateChip.text}
             </div>
-          )}
-        </div>
-
-        {/* Status indicator */}
-        <div className="text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 rounded-full backdrop-blur-sm">
-            <div className={`w-3 h-3 rounded-full ${
-              flowState === 'READING' ? 'bg-blue-400 animate-pulse' :
-              flowState === 'LISTENING' ? 'bg-green-400 animate-pulse' :
-              flowState === 'PROCESSING' ? 'bg-yellow-400 animate-pulse' :
-              'bg-gray-400'
-            }`} />
-            <span className="text-white text-sm">
-              {flowState === 'READING' ? 'Reading...' :
-               flowState === 'LISTENING' ? 'Listening...' :
-               flowState === 'PROCESSING' ? 'Processing...' :
-               'Ready'}
-            </span>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <StreakCounter />
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={toggleSound}
+              className="text-white border-white/20 hover:bg-white/10"
+            >
+              {soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
+            </Button>
           </div>
         </div>
 
-        {/* Primary button */}
-        <div className="flex justify-center">
-          <Button
-            onClick={async () => {
-              if (flowState === 'IDLE' || flowState === 'PAUSED') {
-                const text = 'What would you like to talk about?';
-                const messageKey = stableKeyFromText(text);
-                setSpokenKeys(p => new Set([...p, messageKey]));
-                setEphemeralAssistant({ key: messageKey, text });
+        {/* Conversation area */}
+        <div className="flex-1 px-4 sm:px-6 pb-6 flex flex-col">
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 sm:p-6 flex-1 flex flex-col">
+            
+            {/* Avatar */}
+            <div className="flex justify-center mb-6">
+              <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white/20">
+                <DIDAvatar 
+                  ref={setDIDAvatarRef}
+                  className="w-full h-full"
+                />
+              </div>
+            </div>
 
-                await playAssistantOnce(text, messageKey);
-              }
-            }}
-            className="w-64 h-16 text-lg font-bold rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg hover:shadow-xl transition-all duration-200"
-          >
-            {flowState === 'IDLE' ? 'Start Speaking' : 
-             flowState === 'READING' ? 'Reading...' :
-             flowState === 'LISTENING' ? 'Listening...' :
-             flowState === 'PROCESSING' ? 'Processing...' :
-             'Paused'}
-          </Button>
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto max-h-96 mb-6">
+              {messages.map((msg) => (
+                <ChatBubble
+                  key={msg.id}
+                  message={msg.text}
+                  isUser={msg.isUser}
+                />
+              ))}
+              
+              {/* Ghost bubble */}
+              {ghostBubble && (
+                <ChatBubble
+                  message={ghostBubble.text}
+                  isUser={false}
+                  isGhost={true}
+                />
+              )}
+              
+              {/* Interim caption */}
+              {interimCaption && (
+                <div className="text-center text-white/70 text-sm italic mb-2">
+                  "{interimCaption}"
+                </div>
+              )}
+            </div>
+
+            {/* Error message */}
+            {errorMessage && (
+              <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3 mb-4 text-red-200 text-sm">
+                {errorMessage}
+              </div>
+            )}
+
+            {/* Controls */}
+            <div className="flex justify-center gap-4">
+              {flowState === 'PAUSED' ? (
+                <Button
+                  onClick={handlePlay}
+                  className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-full"
+                >
+                  <Play size={20} className="mr-2" />
+                  Resume
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    onClick={handlePlay}
+                    disabled={flowState === 'READING' || flowState === 'PROCESSING'}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-full disabled:opacity-50"
+                  >
+                    <Play size={20} className="mr-2" />
+                    {flowState === 'IDLE' ? 'Start' : 'Play'}
+                  </Button>
+                  
+                  <Button
+                    onClick={handlePause}
+                    disabled={flowState === 'IDLE'}
+                    variant="outline"
+                    className="border-white/20 text-white hover:bg-white/10 px-8 py-3 rounded-full disabled:opacity-50"
+                  >
+                    <Pause size={20} className="mr-2" />
+                    Pause
+                  </Button>
+                </>
+              )}
+            </div>
+
+            {/* Additional controls */}
+            <div className="flex justify-center mt-4 gap-2">
+              <SampleAnswerButton />
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="border-white/20 text-white hover:bg-white/10">
+                    <MoreHorizontal size={16} />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => {
+                    setMessages([]);
+                    setSpokenKeys(new Set());
+                    setGhostBubble(null);
+                    setFlowState('IDLE');
+                  }}>
+                    <RotateCcw size={16} className="mr-2" />
+                    Clear Conversation
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
         </div>
 
-        {/* Sound toggle */}
-        <div className="flex justify-center">
-          <button
-            onClick={toggleSpeakingSound}
-            className="flex items-center gap-2 px-4 py-2 bg-white/10 rounded-lg backdrop-blur-sm text-white hover:bg-white/20 transition-colors"
-          >
-            {speakingSoundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-            <span>{speakingSoundEnabled ? 'Sound On' : 'Muted'}</span>
-          </button>
-        </div>
-
-        {/* Error message */}
-        {errorMessage && (
-          <div className="text-center">
-            <div className="inline-block px-4 py-2 bg-red-500/20 text-red-300 rounded-lg backdrop-blur-sm">
-              {errorMessage}
+        {/* Progress indicator */}
+        {user && (
+          <div className="p-4 sm:p-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl p-4">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-white/90 text-sm font-medium">Level {level}</span>
+                <span className="text-white font-bold text-sm">
+                  {xp_current} / {next_threshold} XP
+                </span>
+              </div>
+              <div className="w-full h-3 bg-black/20 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300"
+                  style={{ width: `${(xp_current / next_threshold) * 100}%` }}
+                />
+              </div>
             </div>
           </div>
         )}
 
-        {/* Token overlay for XP animations */}
-        <TokenOverlay soundEnabled={speakingSoundEnabled} />
+        <TokenOverlay />
       </div>
     </div>
   );
