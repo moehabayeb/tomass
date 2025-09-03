@@ -83,6 +83,12 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   const { user } = useAuthReady();
   const { toast } = useToast();
   
+  // Feature flags for minimal UI
+  const SPEAKING_HANDS_FREE_MINIMAL = true;
+  const HF_DEBUG = false;
+  const SHOW_SAMPLE_ANSWERS = false;
+  const SHOW_TOKEN_OVERLAY = false;
+  
   // Single controller state machine
   const [flowState, setFlowState] = useState<FlowState>('IDLE');
   const [messages, setMessages] = useState<Message[]>([]);
