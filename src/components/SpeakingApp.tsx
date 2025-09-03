@@ -458,7 +458,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     // Check if already played by messageId (turn-level idempotency)
     if (lastPlayedMessageIds.has(messageId) && !isRepeat) {
       console.log('HF_DROP_STALE: messageId already played', { messageId, turnToken });
-      await handleTTSCompletion(turnToken);
+      await handleTTSCompletion(turnToken, messageId);
       return messageKey;
     }
 
@@ -509,14 +509,15 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         setIsSpeaking(true);
         setAvatarState('talking');
 
-        // Watchdog (fallback) — 12s max read
+        // Watchdog (fallback) — 10s max read + completion fallback
         let resolved = false;
         const watchdog = setTimeout(() => {
           if (!resolved) {
-            console.warn('HF_TTS_WATCHDOG: forcing completion');
-            // fall through to finally; handleTTSCompletion will run
+            console.warn('HF_TTS_WATCHDOG: forcing completion after 10s');
+            resolved = true;
+            handleTTSCompletion(turnToken, messageId);
           }
-        }, 12000);
+        }, 10000);
 
         await TTSManager.speak(text, {
           canSkip: true
@@ -537,13 +538,13 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         setEphemeralAssistant(null);
         
         // Always drive the loop forward even if audio failed
-        await handleTTSCompletion(turnToken);
+        await handleTTSCompletion(turnToken, messageId);
       }
     } else {
-      // D) Do not silently 'complete' when muted: log HF_PROMPT_SKIP instead (never HF_TTS_COMPLETE)
+      // D) When muted, emit HF_PROMPT_SKIP and call same completion path
       console.log('HF_PROMPT_SKIP: sound disabled', { turnToken, messageId, messageKey, state: flowState });
-      // Still proceed to mic opening
-      await handleTTSCompletion(turnToken);
+      // Call same completion path as TTS end (no waiting for audio)
+      await handleTTSCompletion(turnToken, messageId);
     }
     
     return messageKey;
@@ -607,13 +608,34 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   };
 
   // 3) Completion: always go to LISTENING and open mic (no HF gate)
-  const handleTTSCompletion = async (token: string) => {
-    if (!token || token !== currentTurnToken) { 
-      console.log('HF_TTS_COMPLETE_STALE'); 
+  const handleTTSCompletion = async (token: string, messageId?: string) => {
+    // Guard: Check token mismatch
+    if (token !== currentTurnToken) { 
+      console.log('HF_TTS_COMPLETE_STALE', { token, currentTurnToken }); 
       return; 
     }
-    setFlowState('LISTENING');             // move state first to avoid races
-    await startHandsFreeMicCapture({ token });
+    
+    // Guard: Check if PAUSED
+    if (flowState === 'PAUSED') {
+      console.log('HF_TTS_COMPLETE_PAUSED', { flowState });
+      return;
+    }
+    
+    // Guard: Check if TTS still speaking
+    if (TTSManager.isSpeaking()) {
+      console.log('HF_TTS_COMPLETE_STILL_SPEAKING');
+      return;
+    }
+    
+    // Always transition to LISTENING if not already there
+    if (flowState !== 'LISTENING') {
+      setFlowState('LISTENING');
+    }
+    
+    // Open mic only if not already recording
+    if (micState !== 'recording') {
+      await startHandsFreeMicCapture({ token });
+    }
   };
 
   // 3) Mic opener: be idempotent, don't pre-require LISTENING, append one user bubble, call evaluator
@@ -653,15 +675,149 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     }
   };
 
+  // Helper functions for grammar correction filtering (protect foreign words)
+  const allowedForeign = new Set(['café','jalapeño','résumé','crème','tapas','sushi','tortilla','bruschetta','piñata']);
+  
+  const isProtectedToken = (word: string): boolean => {
+    // Check for non-ASCII characters or words in allowedForeign set
+    return /[^\u0000-\u007F]/.test(word) || allowedForeign.has(word.toLowerCase());
+  };
+  
+  // Filter correction suggestions to avoid "correcting" foreign words
+  const filterCorrection = (originalText: string, correctedText: string): string => {
+    if (!correctedText || correctedText === originalText) {
+      return correctedText;
+    }
+    
+    // Simple approach: If any protected token exists in the original,
+    // and the correction seems to modify it, suppress the entire correction
+    const originalTokens = originalText.toLowerCase().split(/\s+/);
+    const hasProtectedWords = originalTokens.some(token => isProtectedToken(token));
+    
+    if (hasProtectedWords) {
+      // Check if correction changes any protected words
+      const correctedTokens = correctedText.toLowerCase().split(/\s+/);
+      const protectedChanged = originalTokens.some(origToken => {
+        if (isProtectedToken(origToken)) {
+          // If this protected token is not preserved in correction, suppress
+          return !correctedTokens.includes(origToken);
+        }
+        return false;
+      });
+      
+      if (protectedChanged) {
+        console.log('Grammar correction suppressed due to protected foreign word');
+        return ''; // Suppress the correction
+      }
+    }
+    
+    return correctedText;
+  };
+
   // Mock executeTeacherLoop function for this demo
   const executeTeacherLoop = async (transcript: string) => {
     console.log('Executing teacher loop with transcript:', transcript);
-    // This would normally contain the actual teacher loop logic
+    
+    try {
+      setIsProcessingTranscript(true);
+      
+      // Call the actual evaluation backend
+      const { data, error } = await supabase.functions.invoke('evaluate-speaking', {
+        body: {
+          question: currentQuestion,
+          answer: transcript, // exact transcript, no normalization
+          level: userLevel
+        }
+      });
+      
+      if (error) {
+        console.error('Teacher evaluation error:', error);
+        addChatBubble("I couldn't evaluate your answer right now. Please try again.", 'bot');
+        return;
+      }
+      
+      const evaluation = data;
+      console.log('Teacher evaluation result:', evaluation);
+      
+      // Create assistant response with feedback and follow-up
+      let response = '';
+      
+      // Add correction if needed (with foreign word filtering)
+      if (evaluation.corrected && evaluation.corrected !== transcript) {
+        const filteredCorrection = filterCorrection(transcript, evaluation.corrected);
+        if (filteredCorrection.trim()) {
+          response += `${filteredCorrection}\n\n`;
+        }
+      }
+      
+      // Add feedback
+      if (evaluation.feedback) {
+        response += `${evaluation.feedback}\n\n`;
+      }
+      
+      // Add follow-up question
+      if (evaluation.followUpQuestion) {
+        response += evaluation.followUpQuestion;
+        setCurrentQuestion(evaluation.followUpQuestion);
+      } else {
+        // Default follow-up
+        response += "What would you like to talk about next?";
+      }
+      
+      // Add the assistant message (this will trigger TTS via message observer)
+      await addAssistantMessage(response.trim(), 'feedback');
+      
+      // Update conversation context
+      setConversationContext(prev => `${prev}\nUser: ${transcript}\nAssistant: ${response}`.trim());
+      
+    } catch (error) {
+      console.error('Error in teacher loop:', error);
+      addChatBubble("Sorry, I encountered an error. Let's continue our conversation.", 'bot');
+    } finally {
+      setIsProcessingTranscript(false);
+    }
   };
+
+  // Event listeners for mic state and interim captions
+  useEffect(() => {
+    // Listen for interim captions during LISTENING state only
+    const handleInterimCaption = (event: CustomEvent) => {
+      if (flowState === 'LISTENING') {
+        const transcript = event.detail?.transcript || '';
+        setInterimCaption(transcript);
+        console.log('Interim caption:', transcript);
+      }
+    };
+    
+    // Listen for mic state changes
+    const handleMicStateChange = (newState: MicState) => {
+      setMicState(newState);
+      
+      // Clear interim caption when mic stops or when not in LISTENING state
+      if (newState !== 'recording' || flowState !== 'LISTENING') {
+        setInterimCaption('');
+      }
+    };
+    
+    // Add event listeners
+    window.addEventListener('speech:interim', handleInterimCaption as EventListener);
+    const unsubscribeMicState = onState(handleMicStateChange);
+    
+    return () => {
+      window.removeEventListener('speech:interim', handleInterimCaption as EventListener);
+      unsubscribeMicState();
+    };
+  }, [flowState]);
+  
+  // Clear interim caption when flow state changes from LISTENING
+  useEffect(() => {
+    if (flowState !== 'LISTENING') {
+      setInterimCaption('');
+    }
+  }, [flowState]);
 
   // Mascot Header Component  
   const MascotHeader = () => {
-    const { level, xp_current, next_threshold } = useProgressStore();
     
     // Format XP with thousands separator and memoize to avoid re-renders
     const formattedXP = useMemo(() => {
