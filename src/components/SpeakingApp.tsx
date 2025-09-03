@@ -470,7 +470,12 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           </div>
           
           <div className="flex items-center gap-2">
-            <StreakCounter />
+            <StreakCounter 
+              currentStreak={streakData?.currentStreak || 0}
+              message={getStreakMessage()}
+              bestStreak={streakData?.bestStreak || 0}
+              compact={true}
+            />
             <Button 
               variant="outline" 
               size="sm" 
