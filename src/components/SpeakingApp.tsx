@@ -659,87 +659,206 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     // This would normally contain the actual teacher loop logic
   };
 
-  // Simple component return with minimal UI for demo
+  // Mascot Header Component  
+  const MascotHeader = () => {
+    const { level, xp_current, next_threshold } = useProgressStore();
+    
+    // Format XP with thousands separator
+    const formatXP = (xp: number) => {
+      return xp ? xp.toLocaleString() : "—";
+    };
+    
+    return (
+      <div className="mx-auto mt-6 flex flex-col items-center gap-2" style={{ zIndex: 10 }}>
+        {/* Avatar */}
+        <div 
+          className="h-24 w-24 rounded-full ring-2 ring-white/20 shadow-lg relative"
+          role="img"
+          aria-label="Tutor avatar"
+        >
+          <DIDAvatar 
+            className={cn(
+              "w-full h-full rounded-full object-cover transition-all duration-300",
+              isSpeaking && "ring-4 ring-primary/50 shadow-glow"
+            )}
+          />
+        </div>
+        
+        {/* XP Chip */}
+        <div className="px-3 py-1 rounded-full text-sm bg-white/10 text-white/90 backdrop-blur-sm">
+          XP: {formatXP(xp_current)}
+        </div>
+      </div>
+    );
+  };
+
+  // Component return with locked minimal UI
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
       <div className="w-full max-w-4xl mx-auto space-y-6">
         
-        {/* Chat messages */}
-        <div className="space-y-4 max-h-96 overflow-y-auto">
-          {messages.map((message, index) => (
-            <ChatBubble
-              key={`${message.id}-${index}`}
-              message={message.text}
-              isUser={message.isUser}
-            />
-          ))}
-          
-          {/* Ephemeral ghost bubble */}
-          {ephemeralAssistant && (
-            <ChatBubble
-              message={ephemeralAssistant.text}
-              isUser={false}
-              className="opacity-70"
-            />
-          )}
-          
-          {/* Live captions */}
-          {flowState === 'LISTENING' && interimCaption && (
-            <div className="text-white/60 italic text-sm text-center">
-              "{interimCaption}"
-            </div>
-          )}
+        {/* Mascot Header */}
+        <MascotHeader />
+        
+        {/* Chat messages container */}
+        <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 min-h-[400px] max-h-[500px] overflow-y-auto">
+          <div className="space-y-4">
+            {messages.map((message, index) => (
+              <ChatBubble
+                key={`${message.id}-${index}`}
+                message={message.text}
+                isUser={message.isUser}
+              />
+            ))}
+            
+            {/* Ephemeral ghost bubble */}
+            {ephemeralAssistant && (
+              <ChatBubble
+                message={ephemeralAssistant.text}
+                isUser={false}
+                className="opacity-70"
+              />
+            )}
+            
+            {/* Live captions */}
+            {flowState === 'LISTENING' && interimCaption && (
+              <div className="text-white/60 italic text-sm text-center">
+                "{interimCaption}"
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Status indicator */}
+        {/* Status chip under conversation */}
         <div className="text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 rounded-full backdrop-blur-sm">
+          <div 
+            className="hf-status-chip inline-flex items-center gap-2 px-4 py-2 bg-white/10 rounded-full backdrop-blur-sm"
+            aria-live="polite"
+          >
             <div className={`w-3 h-3 rounded-full ${
               flowState === 'READING' ? 'bg-blue-400 animate-pulse' :
               flowState === 'LISTENING' ? 'bg-green-400 animate-pulse' :
               flowState === 'PROCESSING' ? 'bg-yellow-400 animate-pulse' :
+              flowState === 'PAUSED' ? 'bg-orange-400' :
               'bg-gray-400'
             }`} />
             <span className="text-white text-sm">
-              {flowState === 'READING' ? 'Reading...' :
-               flowState === 'LISTENING' ? 'Listening...' :
-               flowState === 'PROCESSING' ? 'Processing...' :
+              {flowState === 'READING' ? 'Reading…' :
+               flowState === 'LISTENING' ? 'Listening…' :
+               flowState === 'PROCESSING' ? 'Thinking…' :
+               flowState === 'PAUSED' ? 'Paused' :
                'Ready'}
             </span>
           </div>
         </div>
 
-        {/* Primary button */}
-        <div className="flex justify-center">
+        {/* Primary control (always mounted, opacity for hide/reveal) */}
+        <div className="flex justify-center items-center gap-4">
           <Button
+            className="hf-primary w-16 h-16 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center"
             onClick={async () => {
-              if (flowState === 'IDLE' || flowState === 'PAUSED') {
+              if (flowState === 'IDLE') {
                 const text = 'What would you like to talk about?';
                 const messageKey = stableKeyFromText(text);
                 setSpokenKeys(p => new Set([...p, messageKey]));
                 setEphemeralAssistant({ key: messageKey, text });
-
                 await playAssistantOnce(text, messageKey);
+              } else if (flowState === 'PAUSED') {
+                if (pausedFrom === 'READING') {
+                  setFlowState('READING');
+                  setPausedFrom(null);
+                } else if (pausedFrom === 'LISTENING') {
+                  setFlowState('LISTENING');
+                  setPausedFrom(null);
+                } else if (pausedFrom === 'PROCESSING') {
+                  setFlowState('PROCESSING');
+                  setPausedFrom(null);
+                } else {
+                  // Resume from where we left off
+                  const latestMessage = findLatestEligibleAssistantMessage();
+                  if (latestMessage && unreadAssistantExists()) {
+                    const messageKey = stableMessageKey(latestMessage.text, latestMessage.id);
+                    await playAssistantOnce(latestMessage.text, messageKey);
+                  }
+                }
+              } else if (flowState === 'READING' || flowState === 'LISTENING' || flowState === 'PROCESSING') {
+                // Pause current state
+                setPausedFrom(flowState);
+                setFlowState('PAUSED');
+                
+                // Stop TTS if speaking
+                if (TTSManager.isSpeaking()) {
+                  TTSManager.stop();
+                  setIsSpeaking(false);
+                  setAvatarState('idle');
+                }
+                
+                // Stop mic if listening
+                if (micState === 'recording') {
+                  stopRecording();
+                }
               }
             }}
-            className="w-64 h-16 text-lg font-bold rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg hover:shadow-xl transition-all duration-200"
           >
-            {flowState === 'IDLE' ? 'Start Speaking' : 
-             flowState === 'READING' ? 'Reading...' :
-             flowState === 'LISTENING' ? 'Listening...' :
-             flowState === 'PROCESSING' ? 'Processing...' :
-             'Paused'}
+            {flowState === 'IDLE' ? <Play className="w-6 h-6" /> :
+             flowState === 'PAUSED' ? <Play className="w-6 h-6" /> :
+             <Pause className="w-6 h-6" />}
           </Button>
+
+          {/* Overflow menu (optional) */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="hf-overflow text-white/60 hover:text-white hover:bg-white/10">
+                <MoreHorizontal className="w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="bg-black/90 backdrop-blur-sm border-white/20 text-white">
+              <DropdownMenuItem 
+                onClick={async () => {
+                  // Again - replay current message
+                  const latestMessage = findLatestEligibleAssistantMessage();
+                  if (latestMessage) {
+                    const messageKey = stableMessageKey(latestMessage.text, latestMessage.id);
+                    await playAssistantOnce(latestMessage.text, messageKey);
+                  }
+                }}
+                className="hover:bg-white/10 focus:bg-white/10"
+              >
+                <RotateCcw className="w-4 h-4 mr-2" />
+                Again
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="bg-white/20" />
+              <DropdownMenuItem 
+                onClick={() => {
+                  setFlowState('IDLE');
+                  setMessages([]);
+                  setEphemeralAssistant(null);
+                  setCurrentTurnToken('');
+                  if (TTSManager.isSpeaking()) {
+                    TTSManager.stop();
+                    setIsSpeaking(false);
+                    setAvatarState('idle');
+                  }
+                  if (micState === 'recording') {
+                    stopRecording();
+                  }
+                }}
+                className="hover:bg-white/10 focus:bg-white/10 text-red-400"
+              >
+                <Square className="w-4 h-4 mr-2" />
+                End
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
-        {/* Sound toggle */}
+        {/* Sound toggle (speaker icon only - in top bar semantically) */}
         <div className="flex justify-center">
           <button
             onClick={toggleSpeakingSound}
             className="flex items-center gap-2 px-4 py-2 bg-white/10 rounded-lg backdrop-blur-sm text-white hover:bg-white/20 transition-colors"
           >
             {speakingSoundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-            <span>{speakingSoundEnabled ? 'Sound On' : 'Muted'}</span>
           </button>
         </div>
 
@@ -751,9 +870,6 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
             </div>
           </div>
         )}
-
-        {/* Token overlay for XP animations */}
-        <TokenOverlay soundEnabled={speakingSoundEnabled} />
       </div>
     </div>
   );
