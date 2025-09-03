@@ -503,36 +503,35 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       
       console.log('HF_PROMPT_PLAY', { turnToken, messageId, messageKey, phase, textHash: text.substring(0, 20), state: flowState });
       
-      try {
-        // A) State transition: Enter READING state for TTS
-        setFlowState('READING');
-        setIsSpeaking(true);
-        setAvatarState('talking');
+      // A) State transition: Enter READING state for TTS
+      setFlowState('READING');
+      setIsSpeaking(true);
+      setAvatarState('talking');
 
-        // Add 10s watchdog around TTSManager.speak()
-        let resolved = false;
-        const watchdog = setTimeout(() => {
-          if (!resolved) {
-            console.warn('HF_TTS_WATCHDOG: forcing completion after 10s');
-            resolved = true;
-            handleTTSCompletion(turnToken, messageId);
-          }
-        }, 10000);
-
-        await TTSManager.speak(text, {
-          canSkip: true
-        }).finally(() => {
+      // Wrap TTSManager.speak with watchdog and always-finally
+      let resolved = false;
+      const wd = setTimeout(() => {
+        if (!resolved) {
+          console.warn('HF_TTS_WD_FIRED');
           resolved = true;
-          clearTimeout(watchdog);
-          // Always call handleTTSCompletion after TTS finishes
-          handleTTSCompletion(turnToken, messageId);
-        });
+          forceToListening('watchdog');
+        }
+      }, 7000); // 7s is enough for a short prompt
 
-        console.log('HF_TTS_COMPLETE', { turnToken, messageId, messageKey, state: flowState });
+      try {
+        await TTSManager.speak(text, { canSkip: true })
+          .then(() => console.log('HF_TTS_DONE'))
+          .catch(e => console.warn('HF_TTS_ERR', e))
+          .finally(() => {
+            resolved = true;
+            clearTimeout(wd);
+            forceToListening('tts-finally');
+          });
       } catch (error) {
         console.warn('[Speaking] Failed to speak message:', error);
-        // Even on error, drive loop forward
-        await handleTTSCompletion(turnToken, messageId);
+        resolved = true;
+        clearTimeout(wd);
+        forceToListening('tts-error');
       } finally {
         setIsSpeaking(false);
         setAvatarState('idle');
@@ -542,15 +541,15 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         setEphemeralAssistant(null);
       }
     } else {
-      // When muted (we emit HF_PROMPT_SKIP) call the same completion path (no waiting for audio)
-      console.log('HF_PROMPT_SKIP: sound disabled', { turnToken, messageId, messageKey, state: flowState });
+      // When muted (we emit HF_PROMPT_SKIP) call forceToListening instead of setState-only
+      console.log('HF_TTS_SKIP');
       
       // Clear speaking indicators  
       setSpeakingMessageKey(null);
       setEphemeralAssistant(null);
       
-      // Call same completion path as TTS end
-      await handleTTSCompletion(turnToken, messageId);
+      // Force to listening with muted skip reason
+      forceToListening('muted-skip');
     }
     
     return messageKey;
@@ -616,6 +615,16 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     // existing evaluator/save path continues as before
   };
 
+  // Helper: Force transition to LISTENING with mic activation (single authority)
+  const forceToListening = (reason: string) => {
+    if (!currentTurnToken) return;
+    if (flowState === 'PAUSED') return;
+    if (flowState !== 'LISTENING') setFlowState('LISTENING');
+    // queueMicrotask avoids racing the state update
+    queueMicrotask(() => startHandsFreeMicCaptureSafe());
+    console.log('HF_FORCE_LISTEN', { reason, state: flowState });
+  };
+
   // A) TTS → LISTENING (always) - FSM enforced completion
   const handleTTSCompletion = async (token: string, messageId?: string) => {
     // Guard: Drop if token stale
@@ -661,7 +670,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       return;
     }
     
-    // Guard: not already recording
+    // Guard: not already recording  
     if (micState === 'recording') {
       console.log('HF_MIC_SKIP: already recording');
       return;
