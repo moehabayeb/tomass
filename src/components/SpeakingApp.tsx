@@ -615,14 +615,20 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     // existing evaluator/save path continues as before
   };
 
-  // Helper: Force transition to LISTENING with mic activation (single authority)
+  // Helper: Force transition to LISTENING with mic activation (unconditional)
   const forceToListening = (reason: string) => {
-    if (!currentTurnToken) return;
-    if (flowState === 'PAUSED') return;
-    if (flowState !== 'LISTENING') setFlowState('LISTENING');
-    // queueMicrotask avoids racing the state update
-    queueMicrotask(() => startHandsFreeMicCaptureSafe());
-    console.log('HF_FORCE_LISTEN', { reason, state: flowState });
+    // Stop any lingering TTS state
+    try { TTSManager.stop(); } catch {}
+    setIsSpeaking(false);
+    setAvatarState('idle');
+
+    // Ensure we have a token; if missing, create a simple one
+    if (!currentTurnToken) setCurrentTurnToken(`force-${Date.now()}`);
+
+    // Enter LISTENING and start the mic (no guards)
+    setFlowState('LISTENING');
+    queueMicrotask(() => startHandsFreeMicCaptureSafe(true)); // pass force=true
+    console.log('HF_FORCE_LISTEN', { reason });
   };
 
   // A) TTS → LISTENING (always) - FSM enforced completion
@@ -657,38 +663,42 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   };
 
   // B) Mic + interim captions (LISTENING only) - FSM enforced guards
-  const startHandsFreeMicCaptureSafe = async () => {
-    // Guard: state===LISTENING
-    if (flowState !== 'LISTENING') {
-      console.log('HF_MIC_SKIP: not in LISTENING state', { flowState });
-      return;
-    }
-    
-    // Guard: not speaking
-    if (TTSManager.isSpeaking()) {
-      console.log('HF_MIC_SKIP: TTS still speaking');
-      return;
-    }
-    
-    // Guard: not already recording  
-    if (micState === 'recording') {
-      console.log('HF_MIC_SKIP: already recording');
-      return;
+  const startHandsFreeMicCaptureSafe = async (force = false) => {
+    console.log('HF_MIC_ATTEMPT', { force, flowState, micState, ttsBusy: TTSManager.isSpeaking() });
+
+    // if not forced, keep existing guards; if forced, bypass
+    if (!force) {
+      if (flowState !== 'LISTENING') {
+        console.log('HF_MIC_SKIP: not in LISTENING state', { flowState });
+        return;
+      }
+      
+      if (TTSManager.isSpeaking()) {
+        console.log('HF_MIC_SKIP: TTS still speaking');
+        return;
+      }
+      
+      if (!currentTurnToken) {
+        console.log('HF_MIC_SKIP: no turn token');
+        return;
+      }
     }
 
-    console.log('HF_MIC_OPEN', { turnToken: currentTurnToken, state: flowState });
-    
-    // Cleanup previous session
+    // Always make sure audio context is unlocked
+    try { await enableAudioContext(); } catch {}
+
+    // Clean mic channel between turns
     try { 
       cleanup(); 
     } catch {}
 
-    // Clear interim caption
+    // Start recording immediately
     setInterimCaption('');
     
     try {
       // Start recording using existing micEngine
       const result = await startRecording();
+      console.log('HF_MIC_STARTED', { hasResult: !!result });
       const finalTranscript = (result?.transcript || '').trim();
 
       // C) Final ASR → single user bubble → evaluation
