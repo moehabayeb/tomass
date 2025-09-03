@@ -599,6 +599,9 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     // Generate messageKey for this new message (use stable key)
     const messageKey = stableMessageKey(message, id);
     
+    // Transition to READING state before speaking (FSM requirement)
+    setFlowState('READING');
+    
     // Now speak this newly added message
     await speakExistingMessage(message, messageKey, phase, false, { token: turnToken });
     
