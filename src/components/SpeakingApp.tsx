@@ -600,6 +600,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     
     // Transition to READING state before speaking (FSM requirement)
     setFlowState('READING');
+    setTtsListenerActive(true); // Enable TTS authority so speakExistingMessage doesn't skip
     
     // Now speak this newly added message
     await speakExistingMessage(message, messageKey, phase, false, { token: turnToken });
