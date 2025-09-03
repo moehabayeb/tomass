@@ -599,6 +599,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     const messageKey = stableMessageKey(message, id);
     
     // Transition to READING state before speaking (FSM requirement)
+    console.log('📖 Transitioning to READING state for new assistant message');
     setFlowState('READING');
     setTtsListenerActive(true); // Enable TTS authority so speakExistingMessage doesn't skip
     
@@ -618,6 +619,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
   // Helper: Force transition to LISTENING with mic activation (unconditional)
   const forceToListening = (reason: string) => {
+    console.log('🔄 forceToListening called:', { reason, currentState: flowState, token: currentTurnToken });
+    
     // Stop any lingering TTS state
     try { TTSManager.stop(); } catch {}
     setIsSpeaking(false);
@@ -626,9 +629,16 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     // Ensure we have a token; if missing, create a simple one
     if (!currentTurnToken) setCurrentTurnToken(`force-${Date.now()}`);
 
-    // Enter LISTENING and start the mic (no guards)
+    // Enter LISTENING state first
     setFlowState('LISTENING');
-    queueMicrotask(() => startHandsFreeMicCaptureSafe(true)); // pass force=true
+    console.log('🎯 State set to LISTENING, starting mic in 50ms...');
+    
+    // Start mic with small delay to ensure state has updated (fix race condition)
+    setTimeout(() => {
+      console.log('🎤 Starting hands-free mic capture...');
+      startHandsFreeMicCaptureSafe(true); // pass force=true
+    }, 50);
+    
     console.log('HF_FORCE_LISTEN', { reason });
   };
 
@@ -869,6 +879,23 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       setInterimCaption('');
     }
   }, [flowState]);
+
+  // Stuck state detection and debugging
+  useEffect(() => {
+    console.log('🔄 Flow state changed:', { flowState, isSpeaking, micState });
+    
+    if (flowState === 'READING' && !isSpeaking) {
+      console.log('⚠️ In READING state but not speaking, setting fallback timer...');
+      // If we're in READING but not speaking for 3 seconds, transition to LISTENING
+      const timer = setTimeout(() => {
+        if (flowState === 'READING' && !isSpeaking) {
+          console.log('🚨 STUCK in READING state - forcing transition to LISTENING');
+          forceToListening('stuck-reading-fallback');
+        }
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [flowState, isSpeaking, micState]);
 
   // Mascot Header Component  
   const MascotHeader = () => {
