@@ -78,7 +78,7 @@ interface SpeakingAppProps {
 
 export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   const { avatarState, setAvatarState } = useAvatarState({ isSpeaking: false });
-  const { streakData } = useStreakTracker();
+  const { streakData, getStreakMessage } = useStreakTracker();
   const { incrementSpeakingSubmissions } = useBadgeSystem();
   const { user } = useAuthReady();
   const { toast } = useToast();
@@ -377,7 +377,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       addMessage(response, 'assistant');
       
       // Award XP for participation
-      await awardXp(10, 'speaking_practice');
+      await awardXp(10);
       
     } catch (error) {
       console.warn('Teacher loop error:', error);
@@ -495,7 +495,6 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
             <div className="flex justify-center mb-6">
               <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white/20">
                 <DIDAvatar 
-                  ref={setDIDAvatarRef}
                   className="w-full h-full"
                 />
               </div>
@@ -571,7 +570,13 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
             {/* Additional controls */}
             <div className="flex justify-center mt-4 gap-2">
-              <SampleAnswerButton />
+              <SampleAnswerButton 
+                question="What would you like to talk about?"
+                onSpeak={(text) => {
+                  const key = generateMessageKey(text);
+                  playAssistantMessage(text, key);
+                }}
+              />
               
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -615,7 +620,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           </div>
         )}
 
-        <TokenOverlay />
+        <TokenOverlay soundEnabled={soundEnabled} />
       </div>
     </div>
   );
