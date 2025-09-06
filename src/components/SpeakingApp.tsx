@@ -111,7 +111,9 @@ interface SpeakingAppProps {
 }
 
 export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
-  const { avatarState, setAvatarState } = useAvatarState({ isSpeaking: false });
+  // Initialize isSpeaking state first
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const { avatarState, setAvatarState } = useAvatarState({ isSpeaking });
   const [didAvatarRef, setDIDAvatarRef] = useState<any>(null);
   const { streakData, getStreakMessage } = useStreakTracker();
   const { incrementSpeakingSubmissions } = useBadgeSystem();
@@ -287,7 +289,6 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     messages.some(m => m.role === 'assistant' && stableMessageKey(m.text, m.id) === key);
 
   // Remove useSpeakingTTS hook - we'll use strict turn-taking logic instead
-  const [isSpeaking, setIsSpeaking] = useState(false);
   
   const [micState, setMicState] = useState<MicState>('idle');
   const [errorMessage, setErrorMessage] = useState<string>('');

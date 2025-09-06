@@ -18,6 +18,8 @@ export function useAvatarState({
   const [avatarState, setAvatarState] = useState<AvatarState>('idle');
 
   useEffect(() => {
+    let timer: NodeJS.Timeout | undefined;
+    
     if (isProcessing) {
       setAvatarState('thinking');
     } else if (isSpeaking) {
@@ -26,12 +28,14 @@ export function useAvatarState({
       setAvatarState('listening');
     } else {
       // Return to idle after a brief delay
-      const timer = setTimeout(() => {
+      timer = setTimeout(() => {
         setAvatarState('idle');
       }, 1000);
-      
-      return () => clearTimeout(timer);
     }
+    
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
   }, [isRecording, isSpeaking, isProcessing]);
 
   // React to new messages with a brief talking animation
