@@ -1,0 +1,616 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Premium design system with gradients, shadows, and modern styling */
+
+@layer base {
+  :root {
+    --background: 238 63% 25%;
+    --foreground: 0 0% 100%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 238 63% 25%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+
+    /* Premium app colors */
+    --app-bg: 238 63% 25%;
+    --avatar-bg: 35 100% 65%;
+    --chat-bubble-ai: 195 100% 90%;
+    --chat-bubble-user: 45 100% 85%;
+    --mic-button: 350 85% 65%;
+    --text-white: 0 0% 100%;
+    --text-dark: 240 35% 20%;
+    
+    /* Premium gradients */
+    --gradient-xp: linear-gradient(90deg, hsl(45, 100%, 55%), hsl(39, 100%, 50%));
+    --gradient-streak: linear-gradient(135deg, hsl(45, 100%, 95%), hsl(39, 100%, 90%));
+    --gradient-card: linear-gradient(135deg, hsl(0, 0%, 100%), hsl(0, 0%, 98%));
+    --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    --gradient-frosted: linear-gradient(145deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
+    --gradient-card-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+    
+    /* XP award colors */
+    --xp-green: 160 84% 39%;
+    --xp-green-bg: 160 84% 39%;
+    --xp-green-glow: rgba(16, 185, 129, 0.4);
+    
+    /* Premium shadows with glass effects */
+    --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.08);
+    --shadow-medium: 0 8px 30px rgba(0, 0, 0, 0.12);
+    --shadow-strong: 0 12px 40px rgba(0, 0, 0, 0.15);
+    --shadow-glow: 0 0 20px rgba(245, 158, 11, 0.3);
+    --shadow-bubble: 0 2px 10px rgba(0, 0, 0, 0.06);
+    --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.12), 0 4px 16px rgba(0, 0, 0, 0.08);
+    --shadow-elevated: 0 16px 64px rgba(0, 0, 0, 0.16), 0 8px 32px rgba(0, 0, 0, 0.12);
+    --shadow-premium: 0 20px 80px rgba(0, 0, 0, 0.2), 0 10px 40px rgba(0, 0, 0, 0.15);
+    
+    /* Glass morphism effects */
+    --glass-bg: rgba(255, 255, 255, 0.1);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --glass-hover: rgba(255, 255, 255, 0.15);
+
+    --radius: 1.5rem;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  /* Sparkle animation */
+  .sparkle {
+    animation: sparkle 2s infinite;
+  }
+  
+  .sparkle-delayed {
+    animation: sparkle 2s infinite 1s;
+  }
+  
+  @keyframes sparkle {
+    0%, 100% { opacity: 0.3; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.2); }
+  }
+  
+  /* Custom shadows */
+  .shadow-soft {
+    box-shadow: var(--shadow-soft);
+  }
+  
+  .shadow-button {
+    box-shadow: var(--shadow-button);
+  }
+  
+  /* Chat bubble styles */
+  .chat-bubble-ai {
+    background-color: hsl(var(--chat-bubble-ai));
+    color: hsl(var(--text-dark));
+  }
+  
+  .chat-bubble-user {
+    background-color: hsl(var(--chat-bubble-user));
+    color: hsl(var(--text-dark));
+  }
+  
+  /* XP bar styles */
+  .xp-bar-bg {
+    background-color: hsl(var(--text-dark) / 0.3);
+  }
+  
+  .xp-bar-fill {
+    background-color: hsl(var(--xp-bar));
+  }
+  
+  /* Mic button */
+  .mic-button {
+    background-color: hsl(var(--mic-button));
+    color: hsl(var(--text-white));
+  }
+  
+  /* Glow animation for microphone button */
+  .glow {
+    animation: glow 1.5s infinite;
+  }
+  
+/* Badge Animation Delays */
+.animation-delay-1000 {
+  animation-delay: 1s;
+}
+
+/* Floating Token Animation Classes */
+.token-spawn {
+  animation: tokenSpawn 250ms ease-out forwards;
+}
+
+.token-travel {
+  animation: tokenTravel 600ms cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.token-land {
+  animation: tokenLand 120ms ease-out forwards;
+}
+
+.token-reduced-spawn {
+  animation: tokenReducedSpawn 200ms ease-out forwards;
+}
+
+.token-reduced-land {
+  animation: tokenReducedLand 300ms ease-out forwards;
+}
+
+.token-sparkle {
+  animation: tokenSparkle 300ms ease-out forwards;
+}
+
+/* Meter feedback animations */
+.meter-glow {
+  animation: meterGlow 250ms ease-out forwards;
+}
+
+.meter-pop {
+  animation: meterPop 120ms ease-out forwards;
+}
+
+@keyframes tokenSpawn {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes tokenTravel {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    opacity: 1;
+    /* Quadratic Bezier path to center header */
+    transform: translate(calc(-50vw + 50%), calc(4rem - 50%)) scale(0.9);
+  }
+}
+
+@keyframes tokenLand {
+  0% {
+    opacity: 1;
+    transform: translate(calc(-50vw + 50%), calc(4rem - 50%)) scale(0.9);
+  }
+  50% {
+    transform: translate(calc(-50vw + 50%), calc(4rem - 50%)) scale(1.06);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50vw + 50%), calc(4rem - 50%)) scale(1);
+  }
+}
+
+@keyframes tokenReducedSpawn {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@keyframes tokenReducedLand {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, 0);
+  }
+}
+
+@keyframes tokenSparkle {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+  50% {
+    opacity: 0.8;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+}
+
+@keyframes meterGlow {
+  0% {
+    filter: brightness(1);
+    box-shadow: none;
+  }
+  50% {
+    filter: brightness(1.2);
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.4);
+  }
+  100% {
+    filter: brightness(1);
+    box-shadow: none;
+  }
+}
+
+@keyframes meterPop {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* XP meter pulse effect */
+.xp-meter-pulse {
+  animation: xp-meter-pulse 0.25s ease-out;
+}
+
+@keyframes xp-meter-pulse {
+  0% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(1.06); filter: brightness(1.2) drop-shadow(0 0 8px hsl(var(--primary) / 0.6)); }
+  100% { transform: scale(1); filter: brightness(1); }
+}
+  @keyframes glow {
+    0% { box-shadow: 0 0 5px #ff4f80; }
+    50% { box-shadow: 0 0 20px #ff4f80; }
+    100% { box-shadow: 0 0 5px #ff4f80; }
+  }
+  
+  /* Level up celebration animation */
+  .level-up {
+    animation: levelUp 0.8s ease-out;
+  }
+
+  @keyframes levelUp {
+    0% { transform: scale(1); }
+    25% { transform: scale(1.2); color: #ffd700; }
+    50% { transform: scale(1.1); }
+    75% { transform: scale(1.15); color: #ff6b9d; }
+    100% { transform: scale(1); }
+  }
+  
+  /* Pop animation for modals */
+  @keyframes pop {
+    0% {
+      transform: scale(0.7);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  /* Line clamp utility for text truncation */
+  .line-clamp-4 {
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Background star animation */
+  .background-stars {
+    animation: floatStars 30s linear infinite;
+  }
+
+  @keyframes floatStars {
+    0% { background-position: 0 0; }
+    100% { background-position: 100px 200px; }
+  }
+
+  /* Enhanced XP boost animation */
+  @keyframes xp-boost-enter {
+    0% {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes xp-boost-exit {
+    0% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-8px) scale(0.95);
+    }
+  }
+
+  @keyframes xp-particle-burst {
+    0% {
+      opacity: 0.8;
+      transform: scale(0.3);
+    }
+    50% {
+      opacity: 0.6;
+      transform: scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(1.2);
+    }
+  }
+
+  @keyframes xp-count-up {
+    0% {
+      transform: scale(1.2);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  .xp-boost-enter {
+    animation: xp-boost-enter 300ms ease-out forwards;
+  }
+
+  .xp-boost-exit {
+    animation: xp-boost-exit 600ms ease-out forwards;
+  }
+
+  .xp-particle {
+    animation: xp-particle-burst 800ms ease-out forwards;
+  }
+
+  .xp-count-up {
+    animation: xp-count-up 200ms ease-out;
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .xp-boost-enter {
+      animation: none;
+      opacity: 1;
+      transform: scale(1);
+    }
+    
+    .xp-boost-exit {
+      animation: none;
+      opacity: 0;
+      transform: scale(1);
+      transition: opacity 300ms ease-out;
+    }
+
+    .xp-particle {
+      display: none;
+    }
+
+    .xp-count-up {
+      animation: none;
+    }
+  }
+
+  /* Slow spin animation for decorative elements */
+  @keyframes spin-slow {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .animate-spin-slow {
+    animation: spin-slow 3s linear infinite;
+  }
+
+  /* Confetti animation for achievements */
+  .confetti-animation {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(255,215,0,0.8) 1px, transparent 1px),
+                radial-gradient(circle, rgba(255,0,150,0.8) 1px, transparent 1px),
+                radial-gradient(circle, rgba(0,255,255,0.8) 1px, transparent 1px),
+                radial-gradient(circle, rgba(255,69,0,0.8) 1px, transparent 1px);
+    background-size: 50px 50px, 80px 80px, 40px 40px, 60px 60px;
+    animation: confetti-fall 3s ease-out infinite;
+  }
+
+  @keyframes confetti-fall {
+    0% {
+      background-position: 0% 0%, 50% 0%, 25% 0%, 75% 0%;
+      opacity: 1;
+    }
+    100% {
+      background-position: 0% 100%, 50% 120%, 25% 80%, 75% 110%;
+      opacity: 0;
+    }
+  }
+
+  /* Pulse animation for badges */
+  @keyframes badge-pulse {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+  }
+
+  /* Glass morphism utilities */
+  .glass-card {
+    background: var(--gradient-glass);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-glass);
+  }
+
+  .glass-card-hover {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .glass-card-hover:hover {
+    background: var(--gradient-frosted);
+    box-shadow: var(--shadow-elevated);
+    transform: translateY(-2px);
+  }
+
+  .pill-button {
+    border-radius: 2rem;
+    backdrop-filter: blur(10px);
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .pill-button:hover {
+    box-shadow: var(--shadow-glow);
+    transform: translateY(-1px) scale(1.02);
+  }
+
+  /* Conversation bubble styles */
+  .conversation-bubble {
+    background: var(--gradient-card-glass);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1.25rem;
+    box-shadow: var(--shadow-bubble);
+    transition: all 0.3s ease;
+  }
+
+  .conversation-bubble:hover {
+    box-shadow: var(--shadow-medium);
+    transform: translateY(-1px);
+  }
+}
+
+/* A) Button must always accept taps - ensure pointer events work */
+.hf-primary {
+  pointer-events: auto !important;
+  z-index: 9999 !important;
+}
+
+/* Make sure button transitions don't disable pointer events */
+.hf-primary button {
+  pointer-events: auto !important;
+}
+
+/* Speaking indicator for real bubbles */
+.speaking { 
+  position: relative; 
+}
+.speaking::after {
+  content: 'Speaking…';
+  position: absolute; 
+  bottom: -14px; 
+  left: 12px;
+  font-size: 11px; 
+  opacity: .7;
+}
+
+/* Ghost bubble styling */
+.ghost { 
+  opacity: .85; 
+  filter: saturate(0.9); 
+}
+
+.ghost .hint { 
+  font-size: 11px; 
+  opacity: .7; 
+  margin-top: 2px; 
+}
+
+/* Speaking bubble highlight */
+.bot-bubble.speaking { 
+  outline: 2px solid rgba(255,255,255,.2); 
+}

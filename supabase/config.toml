@@ -1,0 +1,7 @@
+project_id = "sgzhbiknaiqsuknwgvjr"
+
+[functions.transcribe]
+verify_jwt = false
+
+[functions.feedback]
+verify_jwt = false

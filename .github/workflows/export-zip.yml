@@ -1,0 +1,52 @@
+name: Export Project ZIP
+on:
+  workflow_dispatch:
+    inputs:
+      include_build:
+        description: 'Run build before zipping?'
+        required: false
+        default: 'true'
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Use Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install deps
+        run: npm ci || npm i
+
+      - name: Build (optional)
+        if: ${{ github.event.inputs.include_build == 'true' }}
+        run: npm run build || true
+
+      - name: Create .env.example (no secrets)
+        run: |
+          if [ -f .env ]; then
+            grep -o '^[A-Za-z0-9_]\+=' .env | sed 's/=.*/=TODO_REPLACE/' > .env.example
+          fi
+
+      - name: Zip project
+        run: |
+          ZIP_NAME="project-export-${GITHUB_RUN_ID}.zip"
+          echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
+          zip -r "$ZIP_NAME" . \
+            -x "node_modules/*" ".git/*" ".github/*" ".DS_Store" "*.log" "*.map" \
+               ".next/cache/*" ".nuxt/*" ".vercel/*" ".turbo/*" "coverage/*" "tmp/*" \
+               ".idea/*" ".vscode/*" ".env" ".env.*"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: project-export
+          path: ${{ env.ZIP_NAME }}
+          retention-days: 7
