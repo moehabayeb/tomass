@@ -7905,6 +7905,15 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
   // Render modules view
   if (viewState === 'modules') {
     console.log('🔍 [LessonsApp] Rendering: Modules view for level:', selectedLevel);
+    
+    // Safety check: if no level selected, redirect to levels view
+    if (!selectedLevel || !MODULES_BY_LEVEL[selectedLevel as keyof typeof MODULES_BY_LEVEL]) {
+      console.warn('⚠️ [LessonsApp] Invalid selectedLevel, redirecting to levels view:', selectedLevel);
+      setViewState('levels');
+      setSelectedLevel('');
+      return null; // Prevent rendering during state transition
+    }
+    
     return (
       <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: 'hsl(var(--app-bg))' }}>
         <div className="relative z-10 p-4 max-w-sm mx-auto">
@@ -7930,20 +7939,30 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
 
           {/* Modules Grid */}
           <div className="space-y-3">
-            {MODULES_BY_LEVEL[selectedLevel as keyof typeof MODULES_BY_LEVEL].length === 0 ? (
-              <Card className="bg-white/10 border-white/20">
-                <CardContent className="p-8 text-center">
-                  <div className="text-white/70 space-y-2">
-                    <BookOpen className="h-12 w-12 mx-auto mb-4 text-white/50" />
-                    <h3 className="text-lg font-semibold text-white">Content Coming Soon</h3>
-                    <p className="text-sm">
-                      {selectedLevel} modules are currently being developed. Please check back later or try A1 level.
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            ) : (
-              MODULES_BY_LEVEL[selectedLevel as keyof typeof MODULES_BY_LEVEL].map((module) => {
+            {(() => {
+              // Safety guard: get modules array or empty array if level doesn't exist
+              const modules = MODULES_BY_LEVEL[selectedLevel as keyof typeof MODULES_BY_LEVEL] || [];
+              
+              return modules.length === 0 ? (
+                <Card className="bg-white/10 border-white/20">
+                  <CardContent className="p-8 text-center">
+                    <div className="text-white/70 space-y-2">
+                      <BookOpen className="h-12 w-12 mx-auto mb-4 text-white/50" />
+                      <h3 className="text-lg font-semibold text-white">Content Coming Soon</h3>
+                      <p className="text-sm">
+                        {selectedLevel} modules are currently being developed. Please check back later or try A1 level.
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : (
+                modules.map((module) => {
+                // Null safety check for module
+                if (!module || !module.id || !module.title) {
+                  console.warn('⚠️ [LessonsApp] Invalid module data:', module);
+                  return null;
+                }
+                
                 const isUnlocked = isModuleUnlocked(module.id);
                 const isCompleted = completedModules.includes(`module-${module.id}`);
               
@@ -8015,7 +8034,8 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
                 </Card>
                 );
               })
-            )}
+              );
+            })()}
           </div>
         </div>
       </div>
