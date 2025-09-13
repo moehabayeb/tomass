@@ -20,8 +20,6 @@ import { narration } from '@/utils/narration';
 import { CelebrationOverlay } from './CelebrationOverlay';
 // Import QA test for browser console access
 import '../utils/placementQA';
-import MultipleChoiceCard from './MultipleChoiceCard';
-import { buildClozeAndChoices } from '../lib/mcq';
 
 // ---------- Module Order and Next Module Logic ----------
 const ORDER_A1 = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50];
@@ -5352,7 +5350,6 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
   const [hasBeenRead, setHasBeenRead] = useState<Record<string, boolean>>({});
   const [listeningIndex, setListeningIndex] = useState(0);
   const [speakingIndex, setSpeakingIndex] = useState(0);
-  const [speakStep, setSpeakStep] = useState<'mcq' | 'speak'>('mcq');
   const [showCelebration, setShowCelebration] = useState(false);
   const [correctAnswers, setCorrectAnswers] = useState(0);
   const [attempts, setAttempts] = useState(0);
@@ -5362,11 +5359,6 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
   const [showConfetti, setShowConfetti] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [lastResponseTime, setLastResponseTime] = useState(0);
-  // Reset MCQ step when question changes
-  useEffect(() => {
-    setSpeakStep('mcq');
-  }, [speakingIndex, selectedModule]);
-
   // Guards for module-scoped timers and safe progression
   const moduleGuardRef = useRef<number | null>(null);
   const timeoutRef = useRef<number | null>(null);
@@ -8379,39 +8371,13 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
                       );
                     } else {
                       return (
-<>
-                          <p className="text-white/70 text-sm mb-2">Soru:</p>
-                          <h3 className="text-3xl md:text-4xl font-semibold tracking-tight mb-4">
-                            {currentPracticeItem.question}
-                          </h3>
-                          
-                          {(() => {
-                            const mcq = buildClozeAndChoices(currentPracticeItem.question || "", currentPracticeItem.answer || "");
-                            
-                            return (
-                              <>
-                                {/* STEP 1 — Multiple Choice */}
-                                {mcq && speakStep === 'mcq' && (
-                                  <MultipleChoiceCard
-                                    cloze={mcq.cloze}
-                                    options={mcq.options}
-                                    correct={mcq.correct}
-                                    onCorrect={() => setSpeakStep('speak')}
-                                  />
-                                )}
-                                
-                                {/* STEP 2 — Speaking */}
-                                {(!mcq || speakStep === 'speak') && (
-                                  <>
-                                    <p className="text-base md:text-lg text-white/80 mb-2">Cevap (Answer):</p>
-                                    <p className="text-xl md:text-2xl mb-2">
-                                      Say: "{currentPracticeItem.answer}"
-                                    </p>
-                                  </>
-                                )}
-                              </>
-                            );
-                          })()}
+                        <>
+                          <p className="text-white/70 text-sm mb-2">
+                            Soru: {currentPracticeItem.question}
+                          </p>
+                          <p className="text-white text-lg font-medium mb-2">
+                            Say: "{currentPracticeItem.answer}"
+                          </p>
                         </>
                       );
                     }
@@ -8427,9 +8393,6 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
                     Listen
                   </Button>
                 </div>
-                {/* STEP 2 — Speaking: Gate mic behind MCQ */}
-                {(!mcq || speakStep === 'speak') && (
-                  <>
 
                 {/* Recording Button */}
                 <div className="mb-4">
@@ -8464,8 +8427,6 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
                     )}
                   </Button>
                 </div>
-                  </>
-                )}
 
                 <div style={{ pointerEvents: 'none' }}>
                   <p className="text-white/70 text-sm mb-4">
