@@ -5344,6 +5344,29 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
   const [selectedLevel, setSelectedLevel] = useState<string>('');
   const [selectedModule, setSelectedModule] = useState<number>(0);
   const [isHydrated, setIsHydrated] = useState(false);
+
+  // Debug logging for component state
+  useEffect(() => {
+    console.log('🔍 [LessonsApp] Component mounted/updated:', {
+      viewState,
+      selectedLevel,
+      selectedModule,
+      isHydrated,
+      timestamp: new Date().toISOString()
+    });
+  }, [viewState, selectedLevel, selectedModule, isHydrated]);
+
+  // Fallback hydration timer - ensure component doesn't get stuck in loading
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!isHydrated) {
+        console.warn('⚠️ [LessonsApp] Hydration timeout - forcing completion');
+        setIsHydrated(true);
+      }
+    }, 2000); // 2 second timeout
+
+    return () => clearTimeout(timer);
+  }, []); // Run only once on mount
   
   // Lesson state
   const [currentPhase, setCurrentPhase] = useState<LessonPhase>('intro');
@@ -7811,6 +7834,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
 
   // Render levels view
   if (!isHydrated) {
+    console.log('🔍 [LessonsApp] Rendering: Not hydrated yet, showing loading...');
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700">
         <div className="p-4 max-w-4xl mx-auto">
@@ -7824,6 +7848,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
   }
 
   if (viewState === 'levels') {
+    console.log('🔍 [LessonsApp] Rendering: Levels view');
     return (
       <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: 'hsl(var(--app-bg))' }}>
         <div className="relative z-10 p-4 max-w-sm mx-auto">
@@ -7879,6 +7904,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
 
   // Render modules view
   if (viewState === 'modules') {
+    console.log('🔍 [LessonsApp] Rendering: Modules view for level:', selectedLevel);
     return (
       <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: 'hsl(var(--app-bg))' }}>
         <div className="relative z-10 p-4 max-w-sm mx-auto">
@@ -7998,6 +8024,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
 
   // Lesson completion view
   if (currentPhase === 'completed') {
+    console.log('🔍 [LessonsApp] Rendering: Lesson completed view');
     return (
       <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: 'hsl(var(--app-bg))' }}>
         {showConfetti && <Confetti width={width} height={height} />}
@@ -8037,6 +8064,13 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
   }
 
   // Render lesson content
+  console.log('🔍 [LessonsApp] Rendering: Main lesson content', { 
+    currentPhase, 
+    selectedModule, 
+    viewState,
+    listeningIndex,
+    speakingIndex 
+  });
   return (
     <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: 'hsl(var(--app-bg))' }}>
       <div className="relative z-10 p-4 max-w-sm mx-auto">
@@ -8495,6 +8529,20 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
           </Card>
         )}
       </div>
+
+      {/* Debug Overlay - Only in development */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="fixed top-4 right-4 z-50 bg-black/80 text-white text-xs p-3 rounded-lg font-mono max-w-xs">
+          <div className="font-semibold mb-2">🔍 Debug Info</div>
+          <div>View: {viewState}</div>
+          <div>Level: {selectedLevel || 'none'}</div>
+          <div>Module: {selectedModule || 'none'}</div>
+          <div>Phase: {currentPhase}</div>
+          <div>Hydrated: {isHydrated ? '✅' : '❌'}</div>
+          <div>Speaking: {speakingIndex}/{currentModuleData?.speakingPractice?.length || 0}</div>
+          <div>MCQ Step: {speakStep}</div>
+        </div>
+      )}
 
       {/* Celebration Overlay */}
       {showCelebration && (

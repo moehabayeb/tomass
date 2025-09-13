@@ -7,6 +7,7 @@ import { Volume2, VolumeX } from 'lucide-react';
 import SpeakingApp from './SpeakingApp';
 import GrammarModules from './GrammarModules';
 import LessonsApp from './LessonsApp';
+import ErrorBoundary from './ErrorBoundary';
 import { SpeakingPlacementTest } from './SpeakingPlacementTest';
 import { GamesApp } from './GamesApp';
 import MeetingsApp from './MeetingsApp';
@@ -180,7 +181,9 @@ export default function AppNavigation() {
 
       {/* Content based on current mode */}
       {currentMode === 'lessons' && (
-        <LessonsApp onBack={() => setCurrentMode('speaking')} />
+        <ErrorBoundary>
+          <LessonsApp onBack={() => setCurrentMode('speaking')} />
+        </ErrorBoundary>
       )}
       
       {currentMode === 'bookmarks' && (
