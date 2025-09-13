@@ -5367,11 +5367,6 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     setSpeakStep('mcq');
   }, [speakingIndex, selectedModule]);
 
-  // Reset MCQ step when question changes
-  useEffect(() => {
-    setSpeakStep('mcq');
-  }, [speakingIndex, selectedModule]);
-
   // Guards for module-scoped timers and safe progression
   const moduleGuardRef = useRef<number | null>(null);
   const timeoutRef = useRef<number | null>(null);
@@ -8387,11 +8382,11 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
                         <>
                           <p className="text-white/70 text-sm mb-2">Soru:</p>
                           <h3 className="text-3xl md:text-4xl font-semibold tracking-tight mb-4">
-                            {currentPracticeItem.question}
+                            {currentPracticeItem?.question || "No question available"}
                           </h3>
                           
                           {(() => {
-                            const mcq = buildClozeAndChoices(currentPracticeItem.question || "", currentPracticeItem.answer || "");
+                            const mcq = buildClozeAndChoices(currentPracticeItem?.question || "", currentPracticeItem?.answer || "");
                             
                             return (
                               <>
@@ -8410,7 +8405,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
                                   <>
                                     <p className="text-base md:text-lg text-white/80 mb-2">Cevap (Answer):</p>
                                     <p className="text-xl md:text-2xl mb-2">
-                                      Say: "{currentPracticeItem.answer}"
+                                      Say: "{currentPracticeItem?.answer || "No answer available"}"
                                     </p>
                                   </>
                                 )}
