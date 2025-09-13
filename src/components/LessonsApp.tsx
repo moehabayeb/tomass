@@ -22,6 +22,7 @@ import { CelebrationOverlay } from './CelebrationOverlay';
 import '../utils/placementQA';
 import MultipleChoiceCard from './MultipleChoiceCard';
 import { buildClozeAndChoices } from '../lib/mcq';
+import ErrorBoundary from './ErrorBoundary';
 
 // ---------- Module Order and Next Module Logic ----------
 const ORDER_A1 = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50];
@@ -6731,6 +6732,146 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
   ]
 };
 
+// Placeholder template for A2 and B1 modules (51-140)
+const createPlaceholderModuleData = (moduleId: number, level: string, title: string) => ({
+  title: `Module ${moduleId}: ${title}`,
+  description: `${level} level module - Content coming soon`,
+  intro: `This is Module ${moduleId} for ${level} level. Content is being prepared and will be available soon.`,
+  tip: "This module is under development",
+  table: [],
+  listeningExamples: [],
+  speakingPractice: [
+    { question: "This is a placeholder question?", answer: "This is a placeholder answer." },
+    { question: "Is this module ready?", answer: "This module is coming soon." }
+  ]
+});
+
+// A2 Modules (51-100) - Placeholder data
+const MODULE_51_DATA = createPlaceholderModuleData(51, "A2", "Elementary Grammar Review");
+const MODULE_52_DATA = createPlaceholderModuleData(52, "A2", "Past Simple Regular Verbs");
+const MODULE_53_DATA = createPlaceholderModuleData(53, "A2", "Past Simple Irregular Verbs");
+const MODULE_54_DATA = createPlaceholderModuleData(54, "A2", "Past Simple Questions");
+const MODULE_55_DATA = createPlaceholderModuleData(55, "A2", "Past Continuous");
+const MODULE_56_DATA = createPlaceholderModuleData(56, "A2", "Past Simple vs Past Continuous");
+const MODULE_57_DATA = createPlaceholderModuleData(57, "A2", "Future with Will");
+const MODULE_58_DATA = createPlaceholderModuleData(58, "A2", "Future with Going To");
+const MODULE_59_DATA = createPlaceholderModuleData(59, "A2", "Present Perfect Simple");
+const MODULE_60_DATA = createPlaceholderModuleData(60, "A2", "Present Perfect vs Past Simple");
+
+// Generate remaining A2 modules (61-100)
+const MODULE_61_DATA = createPlaceholderModuleData(61, "A2", "Countable and Uncountable Nouns");
+const MODULE_62_DATA = createPlaceholderModuleData(62, "A2", "Some, Any, Much, Many");
+const MODULE_63_DATA = createPlaceholderModuleData(63, "A2", "Comparative Adjectives");
+const MODULE_64_DATA = createPlaceholderModuleData(64, "A2", "Superlative Adjectives");
+const MODULE_65_DATA = createPlaceholderModuleData(65, "A2", "Modal Verbs: Can, Could, May, Might");
+const MODULE_66_DATA = createPlaceholderModuleData(66, "A2", "Modal Verbs: Should, Must, Have To");
+const MODULE_67_DATA = createPlaceholderModuleData(67, "A2", "First Conditional");
+const MODULE_68_DATA = createPlaceholderModuleData(68, "A2", "Second Conditional");
+const MODULE_69_DATA = createPlaceholderModuleData(69, "A2", "Used To");
+const MODULE_70_DATA = createPlaceholderModuleData(70, "A2", "Would Like vs Like");
+
+// Continue with more A2 modules (71-100)
+const MODULE_71_DATA = createPlaceholderModuleData(71, "A2", "Gerunds and Infinitives");
+const MODULE_72_DATA = createPlaceholderModuleData(72, "A2", "Question Tags");
+const MODULE_73_DATA = createPlaceholderModuleData(73, "A2", "Reported Speech");
+const MODULE_74_DATA = createPlaceholderModuleData(74, "A2", "Passive Voice");
+const MODULE_75_DATA = createPlaceholderModuleData(75, "A2", "Relative Pronouns");
+const MODULE_76_DATA = createPlaceholderModuleData(76, "A2", "Phrasal Verbs");
+const MODULE_77_DATA = createPlaceholderModuleData(77, "A2", "Time Expressions");
+const MODULE_78_DATA = createPlaceholderModuleData(78, "A2", "Prepositions of Time");
+const MODULE_79_DATA = createPlaceholderModuleData(79, "A2", "Prepositions of Place");
+const MODULE_80_DATA = createPlaceholderModuleData(80, "A2", "Family and Relationships");
+
+// A2 modules 81-100
+const MODULE_81_DATA = createPlaceholderModuleData(81, "A2", "Food and Cooking");
+const MODULE_82_DATA = createPlaceholderModuleData(82, "A2", "Shopping and Clothes");
+const MODULE_83_DATA = createPlaceholderModuleData(83, "A2", "Health and Body");
+const MODULE_84_DATA = createPlaceholderModuleData(84, "A2", "Travel and Transportation");
+const MODULE_85_DATA = createPlaceholderModuleData(85, "A2", "Weather and Seasons");
+const MODULE_86_DATA = createPlaceholderModuleData(86, "A2", "House and Furniture");
+const MODULE_87_DATA = createPlaceholderModuleData(87, "A2", "Jobs and Work");
+const MODULE_88_DATA = createPlaceholderModuleData(88, "A2", "Education and School");
+const MODULE_89_DATA = createPlaceholderModuleData(89, "A2", "Sports and Exercise");
+const MODULE_90_DATA = createPlaceholderModuleData(90, "A2", "Entertainment and Media");
+
+const MODULE_91_DATA = createPlaceholderModuleData(91, "A2", "Technology and Internet");
+const MODULE_92_DATA = createPlaceholderModuleData(92, "A2", "Nature and Environment");
+const MODULE_93_DATA = createPlaceholderModuleData(93, "A2", "Holidays and Celebrations");
+const MODULE_94_DATA = createPlaceholderModuleData(94, "A2", "Money and Banking");
+const MODULE_95_DATA = createPlaceholderModuleData(95, "A2", "Describing People");
+const MODULE_96_DATA = createPlaceholderModuleData(96, "A2", "Describing Places");
+const MODULE_97_DATA = createPlaceholderModuleData(97, "A2", "Making Plans");
+const MODULE_98_DATA = createPlaceholderModuleData(98, "A2", "Giving Opinions");
+const MODULE_99_DATA = createPlaceholderModuleData(99, "A2", "Making Requests");
+const MODULE_100_DATA = createPlaceholderModuleData(100, "A2", "A2 Review and Assessment");
+
+// B1 Modules (121-140) - Placeholder data (101-120 already have full implementations)
+const MODULE_121_DATA = createPlaceholderModuleData(121, "B1", "Advanced Vocabulary");
+const MODULE_122_DATA = createPlaceholderModuleData(122, "B1", "Academic Writing");
+const MODULE_123_DATA = createPlaceholderModuleData(123, "B1", "Email Writing");
+const MODULE_124_DATA = createPlaceholderModuleData(124, "B1", "Presentation Skills");
+const MODULE_125_DATA = createPlaceholderModuleData(125, "B1", "Negotiation Language");
+const MODULE_126_DATA = createPlaceholderModuleData(126, "B1", "Problem Solving");
+const MODULE_127_DATA = createPlaceholderModuleData(127, "B1", "Critical Thinking");
+const MODULE_128_DATA = createPlaceholderModuleData(128, "B1", "Cultural Awareness");
+const MODULE_129_DATA = createPlaceholderModuleData(129, "B1", "Advanced Communication");
+const MODULE_130_DATA = createPlaceholderModuleData(130, "B1", "Media Literacy");
+
+const MODULE_131_DATA = createPlaceholderModuleData(131, "B1", "Digital Communication");
+const MODULE_132_DATA = createPlaceholderModuleData(132, "B1", "Global Issues");
+const MODULE_133_DATA = createPlaceholderModuleData(133, "B1", "Environmental Topics");
+const MODULE_134_DATA = createPlaceholderModuleData(134, "B1", "Science and Technology");
+const MODULE_135_DATA = createPlaceholderModuleData(135, "B1", "History and Culture");
+const MODULE_136_DATA = createPlaceholderModuleData(136, "B1", "Art and Literature");
+const MODULE_137_DATA = createPlaceholderModuleData(137, "B1", "Philosophy and Ethics");
+const MODULE_138_DATA = createPlaceholderModuleData(138, "B1", "Psychology and Behavior");
+const MODULE_139_DATA = createPlaceholderModuleData(139, "B1", "Advanced Discussion Topics");
+const MODULE_140_DATA = createPlaceholderModuleData(140, "B1", "B1 Final Assessment");
+
+  // Validate module data structure
+  const validateModuleData = (moduleData: any) => {
+    if (!moduleData) {
+      console.error('Module data is null or undefined');
+      return false;
+    }
+    
+    if (!moduleData.title || typeof moduleData.title !== 'string') {
+      console.error('Module missing title');
+      return false;
+    }
+    
+    if (!moduleData.description || typeof moduleData.description !== 'string') {
+      console.error('Module missing description');
+      return false;
+    }
+    
+    if (!moduleData.intro || typeof moduleData.intro !== 'string') {
+      console.error('Module missing intro');
+      return false;
+    }
+    
+    if (!Array.isArray(moduleData.speakingPractice)) {
+      console.error('Module missing speakingPractice array');
+      return false;
+    }
+    
+    if (moduleData.speakingPractice.length === 0) {
+      console.error('Module has empty speakingPractice array');
+      return false;
+    }
+    
+    // Validate each speaking practice item
+    for (let i = 0; i < moduleData.speakingPractice.length; i++) {
+      const item = moduleData.speakingPractice[i];
+      if (!item.question || !item.answer) {
+        console.error(`Speaking practice item ${i} missing question or answer`);
+        return false;
+      }
+    }
+    
+    return true;
+  };
+
   // Get current module data
   const getCurrentModuleData = () => {
     // A1 Modules
@@ -6803,8 +6944,39 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     if (selectedModule === 65) return MODULE_65_DATA;
     if (selectedModule === 66) return MODULE_66_DATA;
     if (selectedModule === 67) return MODULE_67_DATA;
-    // A2 Modules 68-100 - Add remaining modules as needed
-    if (selectedModule >= 68 && selectedModule <= 100) return MODULE_51_DATA; // Fallback to Module 51 structure
+    if (selectedModule === 68) return MODULE_68_DATA;
+    if (selectedModule === 69) return MODULE_69_DATA;
+    if (selectedModule === 70) return MODULE_70_DATA;
+    if (selectedModule === 71) return MODULE_71_DATA;
+    if (selectedModule === 72) return MODULE_72_DATA;
+    if (selectedModule === 73) return MODULE_73_DATA;
+    if (selectedModule === 74) return MODULE_74_DATA;
+    if (selectedModule === 75) return MODULE_75_DATA;
+    if (selectedModule === 76) return MODULE_76_DATA;
+    if (selectedModule === 77) return MODULE_77_DATA;
+    if (selectedModule === 78) return MODULE_78_DATA;
+    if (selectedModule === 79) return MODULE_79_DATA;
+    if (selectedModule === 80) return MODULE_80_DATA;
+    if (selectedModule === 81) return MODULE_81_DATA;
+    if (selectedModule === 82) return MODULE_82_DATA;
+    if (selectedModule === 83) return MODULE_83_DATA;
+    if (selectedModule === 84) return MODULE_84_DATA;
+    if (selectedModule === 85) return MODULE_85_DATA;
+    if (selectedModule === 86) return MODULE_86_DATA;
+    if (selectedModule === 87) return MODULE_87_DATA;
+    if (selectedModule === 88) return MODULE_88_DATA;
+    if (selectedModule === 89) return MODULE_89_DATA;
+    if (selectedModule === 90) return MODULE_90_DATA;
+    if (selectedModule === 91) return MODULE_91_DATA;
+    if (selectedModule === 92) return MODULE_92_DATA;
+    if (selectedModule === 93) return MODULE_93_DATA;
+    if (selectedModule === 94) return MODULE_94_DATA;
+    if (selectedModule === 95) return MODULE_95_DATA;
+    if (selectedModule === 96) return MODULE_96_DATA;
+    if (selectedModule === 97) return MODULE_97_DATA;
+    if (selectedModule === 98) return MODULE_98_DATA;
+    if (selectedModule === 99) return MODULE_99_DATA;
+    if (selectedModule === 100) return MODULE_100_DATA;
     
     // B1 Modules
     if (selectedModule === 101) return MODULE_101_DATA;
@@ -6827,8 +6999,26 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     if (selectedModule === 118) return MODULE_118_DATA;
     if (selectedModule === 119) return MODULE_119_DATA;
     if (selectedModule === 120) return MODULE_120_DATA;
-    // B1 Modules 121-150 - Add remaining modules as needed  
-    if (selectedModule >= 121 && selectedModule <= 150) return MODULE_101_DATA; // Fallback to Module 101 structure
+    if (selectedModule === 121) return MODULE_121_DATA;
+    if (selectedModule === 122) return MODULE_122_DATA;
+    if (selectedModule === 123) return MODULE_123_DATA;
+    if (selectedModule === 124) return MODULE_124_DATA;
+    if (selectedModule === 125) return MODULE_125_DATA;
+    if (selectedModule === 126) return MODULE_126_DATA;
+    if (selectedModule === 127) return MODULE_127_DATA;
+    if (selectedModule === 128) return MODULE_128_DATA;
+    if (selectedModule === 129) return MODULE_129_DATA;
+    if (selectedModule === 130) return MODULE_130_DATA;
+    if (selectedModule === 131) return MODULE_131_DATA;
+    if (selectedModule === 132) return MODULE_132_DATA;
+    if (selectedModule === 133) return MODULE_133_DATA;
+    if (selectedModule === 134) return MODULE_134_DATA;
+    if (selectedModule === 135) return MODULE_135_DATA;
+    if (selectedModule === 136) return MODULE_136_DATA;
+    if (selectedModule === 137) return MODULE_137_DATA;
+    if (selectedModule === 138) return MODULE_138_DATA;
+    if (selectedModule === 139) return MODULE_139_DATA;
+    if (selectedModule === 140) return MODULE_140_DATA;
     
     // Fallback to Module 1 for unknown modules
     return MODULE_1_DATA;
@@ -7973,6 +8163,166 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
                   onClick={() => {
                     if (isUnlocked && ((module.id >= 1 && module.id <= 50) || (module.id >= 51 && module.id <= 100) || (module.id >= 101 && module.id <= 150))) { // All A1, A2, B1 modules are implemented
                       narration.cancel();
+                      
+                      // Get the module data for validation (before setting state)
+                      const getModuleDataForValidation = (moduleId: number) => {
+                        // A1 Modules
+                        if (moduleId === 1) return MODULE_1_DATA;
+                        if (moduleId === 2) return MODULE_2_DATA;
+                        if (moduleId === 3) return MODULE_3_DATA;
+                        if (moduleId === 4) return MODULE_4_DATA;
+                        if (moduleId === 5) return MODULE_5_DATA;
+                        if (moduleId === 6) return MODULE_6_DATA;
+                        if (moduleId === 7) return MODULE_7_DATA;
+                        if (moduleId === 8) return MODULE_8_DATA;
+                        if (moduleId === 9) return MODULE_9_DATA;
+                        if (moduleId === 10) return MODULE_10_DATA;
+                        if (moduleId === 11) return MODULE_11_DATA;
+                        if (moduleId === 12) return MODULE_12_DATA;
+                        if (moduleId === 13) return MODULE_13_DATA;
+                        if (moduleId === 14) return MODULE_14_DATA;
+                        if (moduleId === 15) return MODULE_15_DATA;
+                        if (moduleId === 16) return MODULE_16_DATA;
+                        if (moduleId === 17) return MODULE_17_DATA;
+                        if (moduleId === 18) return MODULE_18_DATA;
+                        if (moduleId === 19) return MODULE_19_DATA;
+                        if (moduleId === 20) return MODULE_20_DATA;
+                        if (moduleId === 21) return MODULE_21_DATA;
+                        if (moduleId === 22) return MODULE_22_DATA;
+                        if (moduleId === 23) return MODULE_23_DATA;
+                        if (moduleId === 24) return MODULE_24_DATA;
+                        if (moduleId === 25) return MODULE_25_DATA;
+                        if (moduleId === 26) return MODULE_26_DATA;
+                        if (moduleId === 27) return MODULE_27_DATA;
+                        if (moduleId === 28) return MODULE_28_DATA;
+                        if (moduleId === 29) return MODULE_29_DATA;
+                        if (moduleId === 30) return MODULE_30_DATA;
+                        if (moduleId === 31) return MODULE_31_DATA;
+                        if (moduleId === 32) return MODULE_32_DATA;
+                        if (moduleId === 33) return MODULE_33_DATA;
+                        if (moduleId === 34) return MODULE_34_DATA;
+                        if (moduleId === 35) return MODULE_35_DATA;
+                        if (moduleId === 36) return MODULE_36_DATA;
+                        if (moduleId === 37) return MODULE_37_DATA;
+                        if (moduleId === 38) return MODULE_38_DATA;
+                        if (moduleId === 39) return MODULE_39_DATA;
+                        if (moduleId === 40) return MODULE_40_DATA;
+                        if (moduleId === 41) return MODULE_41_DATA;
+                        if (moduleId === 42) return MODULE_42_DATA;
+                        if (moduleId === 43) return MODULE_43_DATA;
+                        if (moduleId === 44) return MODULE_44_DATA;
+                        if (moduleId === 45) return MODULE_45_DATA;
+                        if (moduleId === 46) return MODULE_46_DATA;
+                        if (moduleId === 47) return MODULE_47_DATA;
+                        if (moduleId === 48) return MODULE_48_DATA;
+                        if (moduleId === 49) return MODULE_49_DATA;
+                        if (moduleId === 50) return MODULE_50_DATA;
+                        
+                        // A2 Modules
+                        if (moduleId === 51) return MODULE_51_DATA;
+                        if (moduleId === 52) return MODULE_52_DATA;
+                        if (moduleId === 53) return MODULE_53_DATA;
+                        if (moduleId === 54) return MODULE_54_DATA;
+                        if (moduleId === 55) return MODULE_55_DATA;
+                        if (moduleId === 56) return MODULE_56_DATA;
+                        if (moduleId === 57) return MODULE_57_DATA;
+                        if (moduleId === 58) return MODULE_58_DATA;
+                        if (moduleId === 59) return MODULE_59_DATA;
+                        if (moduleId === 60) return MODULE_60_DATA;
+                        if (moduleId === 61) return MODULE_61_DATA;
+                        if (moduleId === 62) return MODULE_62_DATA;
+                        if (moduleId === 63) return MODULE_63_DATA;
+                        if (moduleId === 64) return MODULE_64_DATA;
+                        if (moduleId === 65) return MODULE_65_DATA;
+                        if (moduleId === 66) return MODULE_66_DATA;
+                        if (moduleId === 67) return MODULE_67_DATA;
+                        if (moduleId === 68) return MODULE_68_DATA;
+                        if (moduleId === 69) return MODULE_69_DATA;
+                        if (moduleId === 70) return MODULE_70_DATA;
+                        if (moduleId === 71) return MODULE_71_DATA;
+                        if (moduleId === 72) return MODULE_72_DATA;
+                        if (moduleId === 73) return MODULE_73_DATA;
+                        if (moduleId === 74) return MODULE_74_DATA;
+                        if (moduleId === 75) return MODULE_75_DATA;
+                        if (moduleId === 76) return MODULE_76_DATA;
+                        if (moduleId === 77) return MODULE_77_DATA;
+                        if (moduleId === 78) return MODULE_78_DATA;
+                        if (moduleId === 79) return MODULE_79_DATA;
+                        if (moduleId === 80) return MODULE_80_DATA;
+                        if (moduleId === 81) return MODULE_81_DATA;
+                        if (moduleId === 82) return MODULE_82_DATA;
+                        if (moduleId === 83) return MODULE_83_DATA;
+                        if (moduleId === 84) return MODULE_84_DATA;
+                        if (moduleId === 85) return MODULE_85_DATA;
+                        if (moduleId === 86) return MODULE_86_DATA;
+                        if (moduleId === 87) return MODULE_87_DATA;
+                        if (moduleId === 88) return MODULE_88_DATA;
+                        if (moduleId === 89) return MODULE_89_DATA;
+                        if (moduleId === 90) return MODULE_90_DATA;
+                        if (moduleId === 91) return MODULE_91_DATA;
+                        if (moduleId === 92) return MODULE_92_DATA;
+                        if (moduleId === 93) return MODULE_93_DATA;
+                        if (moduleId === 94) return MODULE_94_DATA;
+                        if (moduleId === 95) return MODULE_95_DATA;
+                        if (moduleId === 96) return MODULE_96_DATA;
+                        if (moduleId === 97) return MODULE_97_DATA;
+                        if (moduleId === 98) return MODULE_98_DATA;
+                        if (moduleId === 99) return MODULE_99_DATA;
+                        if (moduleId === 100) return MODULE_100_DATA;
+                        
+                        // B1 Modules
+                        if (moduleId === 101) return MODULE_101_DATA;
+                        if (moduleId === 102) return MODULE_102_DATA;
+                        if (moduleId === 103) return MODULE_103_DATA;
+                        if (moduleId === 104) return MODULE_104_DATA;
+                        if (moduleId === 105) return MODULE_105_DATA;
+                        if (moduleId === 106) return MODULE_106_DATA;
+                        if (moduleId === 107) return MODULE_107_DATA;
+                        if (moduleId === 108) return MODULE_108_DATA;
+                        if (moduleId === 109) return MODULE_109_DATA;
+                        if (moduleId === 110) return MODULE_110_DATA;
+                        if (moduleId === 111) return MODULE_111_DATA;
+                        if (moduleId === 112) return MODULE_112_DATA;
+                        if (moduleId === 113) return MODULE_113_DATA;
+                        if (moduleId === 114) return MODULE_114_DATA;
+                        if (moduleId === 115) return MODULE_115_DATA;
+                        if (moduleId === 116) return MODULE_116_DATA;
+                        if (moduleId === 117) return MODULE_117_DATA;
+                        if (moduleId === 118) return MODULE_118_DATA;
+                        if (moduleId === 119) return MODULE_119_DATA;
+                        if (moduleId === 120) return MODULE_120_DATA;
+                        if (moduleId === 121) return MODULE_121_DATA;
+                        if (moduleId === 122) return MODULE_122_DATA;
+                        if (moduleId === 123) return MODULE_123_DATA;
+                        if (moduleId === 124) return MODULE_124_DATA;
+                        if (moduleId === 125) return MODULE_125_DATA;
+                        if (moduleId === 126) return MODULE_126_DATA;
+                        if (moduleId === 127) return MODULE_127_DATA;
+                        if (moduleId === 128) return MODULE_128_DATA;
+                        if (moduleId === 129) return MODULE_129_DATA;
+                        if (moduleId === 130) return MODULE_130_DATA;
+                        if (moduleId === 131) return MODULE_131_DATA;
+                        if (moduleId === 132) return MODULE_132_DATA;
+                        if (moduleId === 133) return MODULE_133_DATA;
+                        if (moduleId === 134) return MODULE_134_DATA;
+                        if (moduleId === 135) return MODULE_135_DATA;
+                        if (moduleId === 136) return MODULE_136_DATA;
+                        if (moduleId === 137) return MODULE_137_DATA;
+                        if (moduleId === 138) return MODULE_138_DATA;
+                        if (moduleId === 139) return MODULE_139_DATA;
+                        if (moduleId === 140) return MODULE_140_DATA;
+                        
+                        // Fallback to Module 1 for unknown modules
+                        return MODULE_1_DATA;
+                      };
+                      
+                      // Validate module data before navigation
+                      const moduleData = getModuleDataForValidation(module.id);
+                      if (!validateModuleData(moduleData)) {
+                        console.error(`Module ${module.id} failed validation. Navigation blocked.`);
+                        return;
+                      }
+                      
                       setSelectedModule(module.id);
                       setViewState('lesson');
                       setCurrentPhase('intro');
@@ -8188,18 +8538,25 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
 
         {/* INTRO SECTION */}
         {currentPhase === 'intro' && (
-          <div ref={introRef}>
-            <Card className="bg-white/10 border-white/20 mb-6">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center">
-                <BookOpen className="h-5 w-5 mr-2" />
-                {currentModuleData.title}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="text-white/90 whitespace-pre-line text-sm leading-relaxed">
-                {currentModuleData.intro}
-              </div>
+          <ErrorBoundary fallback={
+            <Card className="bg-red-500/10 border-red-400/20 mb-6">
+              <CardContent className="p-4 text-center">
+                <p className="text-red-400">Error loading introduction. Please try refreshing.</p>
+              </CardContent>
+            </Card>
+          }>
+            <div ref={introRef}>
+              <Card className="bg-white/10 border-white/20 mb-6">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center">
+                  <BookOpen className="h-5 w-5 mr-2" />
+                  {currentModuleData.title}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="text-white/90 whitespace-pre-line text-sm leading-relaxed">
+                  {currentModuleData.intro}
+                </div>
               
               {'table' in currentModuleData && currentModuleData.table && (
                 <div className="bg-white/5 rounded-xl p-4">
@@ -8357,6 +8714,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
             </CardContent>
           </Card>
           </div>
+          </ErrorBoundary>
         )}
 
         {/* Listening Phase */}
@@ -8403,7 +8761,14 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
 
         {/* Speaking Phase */}
         {currentPhase === 'speaking' && (
-          <Card key={speakingIndex} className="bg-white/10 border-white/20">
+          <ErrorBoundary fallback={
+            <Card className="bg-red-500/10 border-red-400/20">
+              <CardContent className="p-4 text-center">
+                <p className="text-red-400">Error loading speaking practice. Please try refreshing.</p>
+              </CardContent>
+            </Card>
+          }>
+            <Card key={speakingIndex} className="bg-white/10 border-white/20">
             <CardHeader>
               <CardTitle className="text-white flex items-center justify-between">
                 <div className="flex items-center">
@@ -8547,6 +8912,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
               </div>
             </CardContent>
           </Card>
+          </ErrorBoundary>
         )}
       </div>
 
