@@ -8781,71 +8781,78 @@ const MODULE_140_DATA = createPlaceholderModuleData(140, "B1", "B1 Final Assessm
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="text-center">
-                <div className="bg-white/5 rounded-xl p-4 mb-4">
-                  {(() => {
-                    const currentPracticeItem = currentModuleData?.speakingPractice?.[speakingIndex];
-                    if (!currentPracticeItem) {
-                      return (
-                        <p className="text-white/70 text-sm">Preparing next question...</p>
-                      );
-                    }
-                    if (typeof currentPracticeItem === 'string') {
-                      return (
-                        <p className="text-white text-lg font-medium mb-2">
-                          "{currentPracticeItem}"
-                        </p>
-                      );
-                    } else {
-                      return (
-                        <>
-                          <p className="text-white/70 text-sm mb-2">Soru:</p>
-                          <h3 className="text-3xl md:text-4xl font-semibold tracking-tight mb-4">
-                            {currentPracticeItem?.question || "No question available"}
-                          </h3>
-                          
-                          {(() => {
-                            const mcq = buildClozeAndChoices(currentPracticeItem?.question || "", currentPracticeItem?.answer || "");
-                            
+              {(() => {
+                // Define mcq and currentPracticeItem at CardContent scope so they can be accessed throughout
+                const currentPracticeItem = currentModuleData?.speakingPractice?.[speakingIndex];
+                const mcq = currentPracticeItem && typeof currentPracticeItem === 'object' 
+                  ? buildClozeAndChoices(currentPracticeItem?.question || "", currentPracticeItem?.answer || "")
+                  : null;
+                
+                return (
+                  <>
+                    <div className="text-center">
+                      <div className="bg-white/5 rounded-xl p-4 mb-4">
+                        {(() => {
+                          if (!currentPracticeItem) {
+                            return (
+                              <p className="text-white/70 text-sm">Preparing next question...</p>
+                            );
+                          }
+                          if (typeof currentPracticeItem === 'string') {
+                            return (
+                              <p className="text-white text-lg font-medium mb-2">
+                                "{currentPracticeItem}"
+                              </p>
+                            );
+                          } else {
                             return (
                               <>
-                                {/* STEP 1 — Multiple Choice */}
-                                {mcq && speakStep === 'mcq' && (
-                                  <MultipleChoiceCard
-                                    cloze={mcq.cloze}
-                                    options={mcq.options}
-                                    correct={mcq.correct}
-                                    onCorrect={() => setSpeakStep('speak')}
-                                  />
-                                )}
+                                <p className="text-white/70 text-sm mb-2">Soru:</p>
+                                <h3 className="text-3xl md:text-4xl font-semibold tracking-tight mb-4">
+                                  {currentPracticeItem?.question || "No question available"}
+                                </h3>
                                 
-                                {/* STEP 2 — Speaking */}
-                                {(!mcq || speakStep === 'speak') && (
-                                  <>
-                                    <p className="text-base md:text-lg text-white/80 mb-2">Cevap (Answer):</p>
-                                    <p className="text-xl md:text-2xl mb-2">
-                                      Say: "{currentPracticeItem?.answer || "No answer available"}"
-                                    </p>
-                                  </>
-                                )}
+                                {(() => {
+                                  return (
+                                      <>
+                                        {/* STEP 1 — Multiple Choice */}
+                                        {mcq && speakStep === 'mcq' && (
+                                          <MultipleChoiceCard
+                                            cloze={mcq.cloze}
+                                            options={mcq.options}
+                                            correct={mcq.correct}
+                                            onCorrect={() => setSpeakStep('speak')}
+                                          />
+                                        )}
+                                        
+                                        {/* STEP 2 — Speaking */}
+                                        {(!mcq || speakStep === 'speak') && (
+                                          <>
+                                            <p className="text-base md:text-lg text-white/80 mb-2">Cevap (Answer):</p>
+                                            <p className="text-xl md:text-2xl mb-2">
+                                              Say: "{currentPracticeItem?.answer || "No answer available"}"
+                                            </p>
+                                          </>
+                                        )}
+                                      </>
+                                  );
+                                })()}
                               </>
                             );
-                          })()}
-                        </>
-                      );
-                    }
-                  })()}
-                  <Button
-                    onClick={speakCurrentSentence}
-                    variant="ghost"
-                    size="sm"
-                    className="text-white/70 hover:text-white hover:bg-white/10"
-                    disabled={isSpeaking}
-                  >
-                    <Volume2 className="h-4 w-4 mr-1" />
-                    Listen
-                  </Button>
-                </div>
+                          }
+                        })()}
+                        <Button
+                          onClick={speakCurrentSentence}
+                          variant="ghost"
+                          size="sm"
+                          className="text-white/70 hover:text-white hover:bg-white/10"
+                          disabled={isSpeaking}
+                        >
+                          <Volume2 className="h-4 w-4 mr-1" />
+                          Listen
+                        </Button>
+                      </div>
+                    </div>
                 {/* STEP 2 — Speaking: Gate mic behind MCQ */}
                 {(!mcq || speakStep === 'speak') && (
                   <>
@@ -8910,6 +8917,9 @@ const MODULE_140_DATA = createPlaceholderModuleData(140, "B1", "B1 Final Assessm
                   </div>
                 )}
               </div>
+              </>
+            );
+          })()}
             </CardContent>
           </Card>
           </ErrorBoundary>
