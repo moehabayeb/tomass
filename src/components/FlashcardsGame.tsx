@@ -1,13 +1,15 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Mic, MicOff, Volume2, RotateCcw, Star, ChevronRight, Trophy, BookOpen } from 'lucide-react';
+import { ArrowLeft, Volume2, RotateCcw, Star, ChevronRight, Trophy, BookOpen } from 'lucide-react';
 import { useTextToSpeech } from '@/hooks/useTextToSpeech';
 import { supabase } from '@/integrations/supabase/client';
 import { useGamification } from '@/hooks/useGamification';
-import { useGameVocabulary, type GameWord } from '@/hooks/useGameVocabulary';
+import { useGameVocabulary } from '@/hooks/useGameVocabulary';
+import { useHangmanAchievements } from '@/hooks/useHangmanAchievements';
+import type { GameWord } from '@/hooks/useGameVocabulary';
 
 interface FlashcardsGameProps {
   onBack: () => void;
@@ -16,12 +18,12 @@ interface FlashcardsGameProps {
 export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
   const [flashcardWords, setFlashcardWords] = useState<GameWord[]>([]);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
-  const [showBack, setShowBack] = useState(false);
+  const [, setShowBack] = useState(false);
   const [gamePhase, setGamePhase] = useState<'front' | 'back' | 'speaking' | 'feedback'>('front');
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [userResponse, setUserResponse] = useState('');
-  const [pronunciationFeedback, setPronunciationFeedback] = useState('');
+  const [, setPronunciationFeedback] = useState('');
   const [cardResults, setCardResults] = useState<Array<{
     word: GameWord;
     userSaid: string;
@@ -37,9 +39,15 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
   const mediaRecorder = useRef<MediaRecorder | null>(null);
   const audioChunks = useRef<Blob[]>([]);
   
-  const { speak } = useTextToSpeech();
+  const { speak, soundEnabled, isSpeaking } = useTextToSpeech();
   const { addXP } = useGamification();
   const { getWordsForFlashcards, isLoading: vocabLoading } = useGameVocabulary();
+  const {
+    checkAchievements,
+    recordGameStart,
+    recordGameWin,
+    recordGameLoss
+  } = useHangmanAchievements();
 
   // Initialize vocabulary when loaded
   useEffect(() => {
@@ -47,15 +55,53 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
       const words = getWordsForFlashcards();
       const selectedWords = words.slice(0, 8); // Limit to 8 cards for better experience
       setFlashcardWords(selectedWords);
+
+      // Record game start for achievements
+      if (selectedWords.length > 0) {
+        recordGameStart();
+      }
     }
-  }, [vocabLoading, getWordsForFlashcards]);
+  }, [vocabLoading, getWordsForFlashcards, recordGameStart]);
 
   const currentCard = flashcardWords[currentCardIndex];
   const progress = flashcardWords.length > 0 ? ((currentCardIndex + 1) / flashcardWords.length) * 100 : 0;
 
   const playCardPronunciation = () => {
-    if (!currentCard) return;
+    if (!currentCard) {
+      console.log('🔊 No current card available for pronunciation');
+      return;
+    }
+
+    console.log('🔊 Playing pronunciation for:', currentCard.english);
+    console.log('🔊 Sound enabled:', soundEnabled);
+    console.log('🔊 Currently speaking:', isSpeaking);
+
+    // Try the speak function first
     speak(currentCard.english);
+
+    // Fallback to direct Web Speech API (always runs as backup)
+    setTimeout(() => {
+      if ('speechSynthesis' in window) {
+        console.log('🔊 Using fallback Web Speech API');
+
+        // Clear any existing speech
+        window.speechSynthesis.cancel();
+
+        const utterance = new SpeechSynthesisUtterance(currentCard.english);
+        utterance.lang = 'en-US';
+        utterance.rate = 0.9;
+        utterance.pitch = 1.0;
+        utterance.volume = 1.0;
+
+        utterance.onstart = () => console.log('🔊 Fallback speech started');
+        utterance.onend = () => console.log('🔊 Fallback speech ended');
+        utterance.onerror = (error) => console.error('🔊 Fallback speech error:', error);
+
+        window.speechSynthesis.speak(utterance);
+      } else {
+        console.error('🔊 Speech synthesis not supported in this browser');
+      }
+    }, 100); // Small delay to avoid conflicts
   };
 
   const flipCard = () => {
@@ -141,13 +187,13 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
       setIsRecording(true);
       console.log('🎙️ Recording started');
 
-      // Auto-stop recording after 3 seconds for better responsiveness
+      // Auto-stop recording after 5 seconds for better word capture
       setTimeout(() => {
         if (mediaRecorder.current && mediaRecorder.current.state === 'recording') {
-          console.log('⏰ Auto-stopping recording after 3 seconds');
+          console.log('⏰ Auto-stopping recording after 5 seconds');
           stopRecording();
         }
-      }, 3000);
+      }, 5000);
 
     } catch (error) {
       console.error('❌ Error accessing microphone:', error);
@@ -167,140 +213,98 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
     try {
       setIsProcessing(true);
       console.log('🔄 Starting audio processing...');
-      
-      const reader = new FileReader();
-      reader.readAsDataURL(audioBlob);
-      reader.onloadend = async () => {
-        try {
-          const base64data = reader.result as string;
-          const audioData = base64data.split(',')[1];
-          console.log('📤 Sending audio for transcription, size:', audioData.length);
 
-          // First transcribe
-          const { data: transcribeData, error: transcribeError } = await supabase.functions.invoke('transcribe', {
-            body: { audio: audioData }
-          });
+      // Create FormData with the audio file (as expected by transcribe function)
+      const formData = new FormData();
+      formData.append('audio', audioBlob, 'recording.webm');
 
-          if (transcribeError) {
-            console.error('❌ Transcription error:', transcribeError);
-            throw transcribeError;
-          }
+      console.log('📤 Sending audio for transcription, blob size:', audioBlob.size);
 
-          const transcription = transcribeData?.text || transcribeData?.transcript || '';
-          console.log('✅ Raw transcription received:', transcription);
-          
-          if (!transcription.trim()) {
-            setUserResponse('❌ No audio detected - please try speaking louder');
-            setIsProcessing(false);
-            setTimeout(() => {
-              setUserResponse('');
-            }, 3000);
-            return;
-          }
+      // First transcribe using FormData
+      const { data: transcribeData, error: transcribeError } = await supabase.functions.invoke('transcribe', {
+        body: formData
+      });
 
-          // Show what the user actually said first
-          setUserResponse(`What you said: "${transcription}"`);
-          console.log('🗣️ User said:', transcription);
+      if (transcribeError) {
+        console.error('❌ Transcription error:', transcribeError);
+        throw transcribeError;
+      }
 
-          // Skip the initial display - go directly to evaluation
+      const transcription = transcribeData?.text || transcribeData?.transcript || '';
+      console.log('✅ Raw transcription received:', transcription);
 
-          // Then evaluate pronunciation
-          console.log('🤖 Evaluating pronunciation...');
-          const { data: evaluateData, error: evaluateError } = await supabase.functions.invoke('evaluate-speaking', {
-            body: {
-              question: `Say the English word for "${currentCard.turkish}"`,
-              answer: transcription,
-              expectedAnswer: currentCard.english,
-              level: 'A1'
-            }
-          });
+      if (!transcription.trim()) {
+        setUserResponse('❌ No audio detected - please try speaking louder');
+        setIsProcessing(false);
+        setTimeout(() => {
+          setUserResponse('');
+        }, 3000);
+        return;
+      }
 
-          if (evaluateError) {
-            console.error('❌ Evaluation error:', evaluateError);
-            throw evaluateError;
-          }
+      // Show what the user actually said first
+      setUserResponse(`What you said: "${transcription}"`);
+      console.log('🗣️ User said:', transcription);
 
-          const evaluation = evaluateData;
-          console.log('📊 Evaluation result:', evaluation);
-          setPronunciationFeedback(evaluation.feedback);
-          
-          // STRICT single-word matching implementation
-          const cleanedUserInput = transcription.toLowerCase().trim().replace(/[^\w\s]/g, '');
-          const cleanedExpected = currentCard.english.toLowerCase().trim();
-          
-          console.log('🔍 STRICT Word comparison:', {
-            originalSpoken: transcription,
-            cleanedUserInput: cleanedUserInput,
-            cleanedExpected: cleanedExpected,
-            exactMatch: cleanedUserInput === cleanedExpected,
-            isSingleWord: !cleanedUserInput.includes(' '),
-            currentCardData: currentCard
-          });
-          
-          // BULLETPROOF: Only accept if it's an exact single-word match
-          const isCorrect = cleanedUserInput === cleanedExpected && !cleanedUserInput.includes(' ');
-          
-          console.log('🎯 FINAL DECISION:', {
-            isCorrect,
-            reason: isCorrect ? 'Exact match found' : `"${cleanedUserInput}" !== "${cleanedExpected}" or contains spaces`
-          });
-          const xpEarned = isCorrect ? 20 : 5;
-          
-          // Enhanced feedback for gamified experience
-          let finalFeedback;
-          let motivationalText = '';
-          
-          if (isCorrect) {
-            finalFeedback = `Perfect! You correctly said "${currentCard.english}"!`;
-          } else {
-            if (cleanedUserInput.includes(' ')) {
-              finalFeedback = `Please say only one word! You said "${transcription}" but the correct answer is just "${currentCard.english}".`;
-              motivationalText = "You're close! Try again!";
-            } else {
-              finalFeedback = `Wrong word! You said "${transcription}" but the correct answer is "${currentCard.english}".`;
-              motivationalText = "Almost there, keep going!";
-            }
-          }
-          
-          // Store additional data for enhanced feedback display
-          const feedbackData = {
-            isCorrect,
-            userSaid: transcription,
-            correctAnswer: currentCard.english,
-            motivationalText
-          };
-          
-          setCardResults(prev => [...prev, { 
-            word: currentCard, 
-            userSaid: transcription,
-            feedback: finalFeedback,
-            score: evaluation.score,
-            success: isCorrect,
-            xpEarned,
-            motivationalText
-          }]);
+      // SIMPLIFIED WORD MATCHING (no more conversation AI)
+      const cleanedUserInput = transcription.toLowerCase().trim().replace(/[^\w\s]/g, '');
+      const cleanedExpected = currentCard.english.toLowerCase().trim();
 
-          setPronunciationFeedback(finalFeedback);
+      console.log('🔍 STRICT Word comparison:', {
+        originalSpoken: transcription,
+        cleanedUserInput: cleanedUserInput,
+        cleanedExpected: cleanedExpected,
+        exactMatch: cleanedUserInput === cleanedExpected,
+        isSingleWord: !cleanedUserInput.includes(' '),
+        currentCardData: currentCard
+      });
 
-          setTotalXPEarned(prev => prev + xpEarned);
+      // BULLETPROOF: Only accept if it's an exact single-word match
+      const isCorrect = cleanedUserInput === cleanedExpected && !cleanedUserInput.includes(' ');
 
-          if (isCorrect) {
-            addXP(20, 'Perfect pronunciation!');
-          } else {
-            addXP(5, 'Good effort!'); // Encourage even failed attempts
-          }
+      console.log('🎯 FINAL DECISION:', {
+        isCorrect,
+        reason: isCorrect ? 'Exact match found' : `"${cleanedUserInput}" !== "${cleanedExpected}" or contains spaces`
+      });
+      const xpEarned = isCorrect ? 20 : 5;
 
-          setGamePhase('feedback');
-          setIsProcessing(false);
-        } catch (innerError) {
-          console.error('❌ Processing error:', innerError);
-          setUserResponse('❌ Processing failed - please try again');
-          setIsProcessing(false);
-          setTimeout(() => {
-            setUserResponse('');
-          }, 3000);
+      // Enhanced feedback for gamified experience
+      let finalFeedback;
+      let motivationalText = '';
+
+      if (isCorrect) {
+        finalFeedback = `Perfect! You correctly said "${currentCard.english}"!`;
+      } else {
+        if (cleanedUserInput.includes(' ')) {
+          finalFeedback = `Please say only one word! You said "${transcription}" but the correct answer is just "${currentCard.english}".`;
+          motivationalText = "You're close! Try again!";
+        } else {
+          finalFeedback = `Wrong word! You said "${transcription}" but the correct answer is "${currentCard.english}".`;
+          motivationalText = "Almost there, keep going!";
         }
-      };
+      }
+
+      setCardResults(prev => [...prev, {
+        word: currentCard,
+        userSaid: transcription,
+        feedback: finalFeedback,
+        score: isCorrect ? 5 : 2, // Simplified scoring
+        success: isCorrect,
+        xpEarned,
+        motivationalText
+      }]);
+
+      setPronunciationFeedback(finalFeedback);
+      setTotalXPEarned(prev => prev + xpEarned);
+
+      if (isCorrect) {
+        addXP(20, 'Perfect pronunciation!');
+      } else {
+        addXP(5, 'Good effort!'); // Encourage even failed attempts
+      }
+
+      setGamePhase('feedback');
+      setIsProcessing(false);
     } catch (error) {
       console.error('❌ Audio processing error:', error);
       setUserResponse('❌ Audio processing failed');
@@ -320,6 +324,19 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
       setPronunciationFeedback('');
     } else {
       setRoundComplete(true);
+
+      // Record game completion for achievements
+      const correctCount = cardResults.filter(result => result.success).length;
+      const percentage = (correctCount / cardResults.length) * 100;
+
+      if (percentage >= 70) {
+        recordGameWin();
+      } else {
+        recordGameLoss();
+      }
+
+      // Check for new achievements
+      checkAchievements();
     }
   };
 
@@ -561,10 +578,16 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
                       <p className="text-white/60 text-sm">From: {currentCard.source}</p>
                     )}
                      <Button
-                       onClick={playCardPronunciation}
+                       onClick={(e) => {
+                         e.stopPropagation();
+                         e.preventDefault();
+                         console.log('🔊 Pronunciation button clicked');
+                         playCardPronunciation();
+                       }}
+                       type="button"
                        size="lg"
                        variant="outline"
-                       className="border-white/40 text-white hover:bg-white/20 bg-gradient-to-r from-white/15 to-white/5 backdrop-blur-sm py-3 px-6"
+                       className="border-white/40 text-white hover:bg-white/20 bg-gradient-to-r from-white/15 to-white/5 backdrop-blur-sm py-3 px-6 transition-all duration-200 hover:scale-105"
                      >
                        <Volume2 className="h-5 w-5 mr-3" />
                        🔊 Listen to Pronunciation
@@ -617,35 +640,61 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
                    </div>
                  )}
 
-                 {/* Simple, Functional Recording Button */}
+                 {/* Enhanced Recording Button with Visual Feedback */}
                  <div className="flex flex-col items-center space-y-4">
+                   {/* Microphone Level Indicator */}
+                   {isRecording && (
+                     <div className="flex items-center space-x-2 mb-4">
+                       <div className="text-red-400 text-sm font-medium">Recording:</div>
+                       <div className="flex space-x-1">
+                         {[...Array(5)].map((_, i) => (
+                           <div
+                             key={i}
+                             className={`w-2 h-6 bg-red-400 rounded-full animate-pulse`}
+                             style={{
+                               animationDelay: `${i * 0.1}s`,
+                               animationDuration: '0.8s'
+                             }}
+                           />
+                         ))}
+                       </div>
+                     </div>
+                   )}
+
                    <Button
                      onClick={isRecording ? stopRecording : startRecording}
                      disabled={isProcessing}
-                     className={`w-48 h-16 text-lg font-medium transition-all duration-300 ${
-                       isRecording 
-                         ? 'bg-red-500 hover:bg-red-600 text-white animate-pulse' 
-                         : 'bg-emerald-500 hover:bg-emerald-600 text-white'
-                     } ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                     className={`w-52 h-20 text-xl font-bold transition-all duration-300 rounded-2xl shadow-2xl ${
+                       isRecording
+                         ? 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white animate-pulse border-4 border-red-300'
+                         : 'bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white hover:scale-105'
+                     } ${isProcessing ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-xl'}`}
                    >
                      {isProcessing ? (
                        <>
-                         <div className="animate-spin mr-2">⚙️</div>
-                         Processing...
+                         <div className="animate-spin mr-3 text-2xl">⚙️</div>
+                         Processing Audio...
                        </>
                      ) : isRecording ? (
                        <>
-                         🛑 Click to Stop Recording
+                         🛑 Stop Recording
                        </>
                      ) : (
                        <>
-                         🎤 Tap to Speak Word
+                         🎤 Start Recording
                        </>
                      )}
                    </Button>
-                   
-                   <div className="text-sm text-white/70 text-center">
-                     {isRecording ? '🎙️ Listening... Speak clearly!' : 'Tap the button to start recording'}
+
+                   <div className="text-center space-y-2">
+                     <div className="text-sm text-white/80 font-medium">
+                       {isRecording ? '🔴 Listening... Speak the English word clearly!' : '💡 Tap to record your pronunciation'}
+                     </div>
+                     {isRecording && (
+                       <div className="text-xs text-white/60">
+                         Auto-stop in 5 seconds
+                       </div>
+                     )}
                    </div>
                  </div>
                 

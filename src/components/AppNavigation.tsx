@@ -5,7 +5,6 @@ import { useAuthReady } from '@/hooks/useAuthReady';
 import { useGlobalSound } from '@/hooks/useGlobalSound';
 import { Volume2, VolumeX } from 'lucide-react';
 import SpeakingApp from './SpeakingApp';
-import GrammarModules from './GrammarModules';
 import LessonsApp from './LessonsApp';
 import ErrorBoundary from './ErrorBoundary';
 import { SpeakingPlacementTest } from './SpeakingPlacementTest';
@@ -13,15 +12,14 @@ import { GamesApp } from './GamesApp';
 import MeetingsApp from './MeetingsApp';
 import BookmarksView from './BookmarksView';
 import BadgesView from './BadgesView';
-import { EnhancedAvatarDisplay } from './EnhancedAvatarDisplay';
 import { LevelUpPopup } from './LevelUpPopup';
-import { StreakCounter } from './StreakCounter';
 import { StreakRewardPopup } from './StreakRewardPopup';
 import { StreakWelcomePopup } from './StreakWelcomePopup';
 import { BadgeAchievement } from './BadgeAchievement';
 import { useGamification } from '@/hooks/useGamification';
 import { useStreakTracker } from '@/hooks/useStreakTracker';
 import { useBadgeSystem } from '@/hooks/useBadgeSystem';
+import { useUserData } from '@/hooks/useUserData';
 import { Toaster } from '@/components/ui/toaster';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -31,27 +29,45 @@ export default function AppNavigation() {
   const [currentMode, setCurrentMode] = useState<AppMode>('speaking');
   const [continuedMessage, setContinuedMessage] = useState<string | undefined>();
   const [showStreakWelcome, setShowStreakWelcome] = useState(false);
-  const [hasCompletedPlacement, setHasCompletedPlacement] = useState(false);
+  const [, setHasCompletedPlacement] = useState(false);
   const [profile, setProfile] = useState<any>(null);
   const { user, isAuthenticated } = useAuthReady();
   const { soundEnabled, toggleSound } = useGlobalSound();
-  const { userProfile, xpBoosts, showLevelUpPopup, pendingLevelUp, closeLevelUpPopup, getXPProgress, addXP } = useGamification();
-  const { streakData, getStreakMessage, getNextMilestone, streakReward } = useStreakTracker(addXP);
-  const { newlyUnlockedBadge, closeBadgeNotification, getFeatureProgress } = useBadgeSystem();
+  const { userProfile, updateProfile } = useUserData();
+  const { showLevelUpPopup, pendingLevelUp, closeLevelUpPopup, getXPProgress, addXP } = useGamification();
+  const { streakData, streakReward } = useStreakTracker(addXP, userProfile, updateProfile);
+  const { newlyUnlockedBadge, closeBadgeNotification } = useBadgeSystem();
 
-  // Show streak welcome popup on first load
+  // ENHANCED: Show streak welcome popup daily when streak increases
   useEffect(() => {
-    const hasShownToday = sessionStorage.getItem('streakWelcomeShown');
-    if (!hasShownToday && streakData.currentStreak > 0) {
+    const lastShownDate = localStorage.getItem('lastStreakPopupDate');
+    const today = new Date().toDateString();
+
+    console.log('[AppNavigation] Streak popup check:', {
+      lastShownDate,
+      today,
+      currentStreak: streakData.currentStreak,
+      lastVisitDate: streakData.lastVisitDate
+    });
+
+    // Show popup if:
+    // 1. We have a streak
+    // 2. Haven't shown popup today
+    // 3. This is a new day's first visit (lastVisitDate matches today)
+    if (streakData.currentStreak > 0 &&
+        lastShownDate !== today &&
+        streakData.lastVisitDate === today) {
+
+      console.log('[AppNavigation] Showing streak welcome popup');
       const timer = setTimeout(() => {
         setShowStreakWelcome(true);
-        sessionStorage.setItem('streakWelcomeShown', 'true');
+        localStorage.setItem('lastStreakPopupDate', today);
       }, 1000);
       return () => clearTimeout(timer);
     }
-  }, [streakData.currentStreak]);
+  }, [streakData.currentStreak, streakData.lastVisitDate]);
 
-  const xpProgress = getXPProgress();
+  getXPProgress(); // Called for side effects
 
   // Fetch user profile when authenticated
   useEffect(() => {
@@ -187,39 +203,51 @@ export default function AppNavigation() {
       )}
       
       {currentMode === 'bookmarks' && (
-        <BookmarksView 
-          onBack={() => setCurrentMode('speaking')} 
-          onContinueFromMessage={(content) => {
-            setContinuedMessage(content);
-            setCurrentMode('speaking');
-          }}
-        />
+        <ErrorBoundary>
+          <BookmarksView 
+            onBack={() => setCurrentMode('speaking')} 
+            onContinueFromMessage={(content) => {
+              setContinuedMessage(content);
+              setCurrentMode('speaking');
+            }}
+          />
+        </ErrorBoundary>
       )}
       
       {currentMode === 'badges' && (
-        <BadgesView onBack={() => setCurrentMode('speaking')} />
+        <ErrorBoundary>
+          <BadgesView onBack={() => setCurrentMode('speaking')} />
+        </ErrorBoundary>
       )}
       
       {currentMode === 'placement-test' && (
-        <SpeakingPlacementTest 
-          onBack={() => setCurrentMode('speaking')} 
-          onComplete={handlePlacementComplete}
-        />
+        <ErrorBoundary>
+          <SpeakingPlacementTest 
+            onBack={() => setCurrentMode('speaking')} 
+            onComplete={handlePlacementComplete}
+          />
+        </ErrorBoundary>
       )}
       
       {currentMode === 'games' && (
-        <GamesApp onBack={() => setCurrentMode('speaking')} />
+        <ErrorBoundary>
+          <GamesApp onBack={() => setCurrentMode('speaking')} />
+        </ErrorBoundary>
       )}
       
       {currentMode === 'meetings' && (
-        <MeetingsApp onBack={() => setCurrentMode('speaking')} />
+        <ErrorBoundary>
+          <MeetingsApp onBack={() => setCurrentMode('speaking')} />
+        </ErrorBoundary>
       )}
       
       {currentMode === 'speaking' && (
-        <SpeakingApp 
-          initialMessage={continuedMessage}
-          key={continuedMessage ? `continued-${Date.now()}` : 'default'} // Force re-mount when continuing
-        />
+        <ErrorBoundary>
+          <SpeakingApp 
+            initialMessage={continuedMessage}
+            key={continuedMessage ? `continued-${Date.now()}` : 'default'} // Force re-mount when continuing
+          />
+        </ErrorBoundary>
       )}
 
       {/* Toast Notifications */}

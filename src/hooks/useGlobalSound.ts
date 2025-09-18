@@ -27,7 +27,7 @@ export const useGlobalSound = () => {
     try {
       localStorage.setItem(STORAGE_KEY, soundEnabled.toString());
     } catch (error) {
-      console.warn('Failed to persist sound setting:', error);
+      if (process.env.NODE_ENV === 'development') console.warn('Failed to persist sound setting:', error);
     }
   }, [soundEnabled]);
 
@@ -41,14 +41,14 @@ export const useGlobalSound = () => {
         const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
         if (audioContext.state === 'suspended') {
           await audioContext.resume();
-          console.log('🔊 AudioContext resumed for autoplay policy');
+          if (process.env.NODE_ENV === 'development') console.log('🔊 AudioContext resumed for autoplay policy');
         }
         audioContext.close(); // Clean up test context
       }
       
       setAudioContextResumed(true);
     } catch (error) {
-      console.warn('Failed to resume AudioContext:', error);
+      if (process.env.NODE_ENV === 'development') console.warn('Failed to resume AudioContext:', error);
     }
   };
 

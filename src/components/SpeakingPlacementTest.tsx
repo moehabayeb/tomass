@@ -117,6 +117,7 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
   const audioContextRef = useRef<AudioContext | null>(null);
   const retryCountRef = useRef<number>(0);
   const sessionStateRef = useRef<MicState>('idle');
+  const isInitialMountRef = useRef<boolean>(true);
   const debug = typeof window !== 'undefined' && window.location.search.includes('sttdebug=1');
 
   // VAD (Voice Activity Detection) refs
@@ -149,11 +150,31 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     ttsTimerRef.current = undefined;
   }
   
+  // ENHANCED: Comprehensive CEFR-aligned speaking assessment questions
   const PROMPTS = useMemo(() => [
-    "Tell me your name and where you are from. Speak clearly for about 15 seconds.",
-    "Describe your typical weekday. What do you usually do?",
-    "Talk about a past event. What did you do last weekend?",
-    "What are your goals for learning English this year?"
+    // A1 Level - Basic personal information
+    "Tell me your name, where you are from, and your age. Speak clearly for about 15 seconds.",
+
+    // A1-A2 Level - Daily routines
+    "Describe your typical weekday. What time do you wake up? What do you eat for breakfast?",
+
+    // A2 Level - Past experiences
+    "Talk about something interesting you did last weekend. Where did you go and who did you meet?",
+
+    // A2-B1 Level - Future plans
+    "What are your goals for learning English? How will you use English in the future?",
+
+    // B1 Level - Opinions and preferences
+    "Do you prefer living in a big city or a small town? Explain your reasons with specific examples.",
+
+    // B1 Level - Hypothetical situations
+    "If you could travel anywhere in the world, where would you go and why? What would you do there?",
+
+    // B1-B2 Level - Abstract concepts
+    "What role does technology play in your daily life? Do you think it makes life better or worse?",
+
+    // B2 Level - Complex opinions
+    "Some people say that learning languages is becoming less important because of translation technology. What is your opinion on this?"
   ], []);
 
   function saveAnswer(qIndex: number, transcript: string, durationSec: number) {
@@ -206,12 +227,26 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
       setFinalRawTranscript('');
     }
     
-    // Reset session state
+    // ENHANCED: Reset ALL session state for bulletproof transitions
     sessionStateRef.current = 'idle';
     setMicState('idle');
     retryCountRef.current = 0;
-    
-    if (debug) console.log('[SpeakingTest] session reset complete');
+
+    // Reset VAD tracking variables
+    voicedStartTimeRef.current = 0;
+    lastVoiceActivityRef.current = 0;
+    totalVoicedDurationRef.current = 0;
+    shortPauseCountRef.current = 0;
+    calibrationCompleteRef.current = false;
+    lastWordCountRef.current = 0;
+
+    // Clear pause status
+    setPauseStatus('');
+
+    // Clear transcript display
+    setTranscript('');
+
+    if (debug) console.log('[SpeakingTest] BULLETPROOF session reset complete');
   }
 
   // Clean up VAD resources
@@ -528,25 +563,28 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     const scored = scorePlacement(answers);
     console.log('[LevelTest] results:', { g: scored.grammar, v: scored.vocab, p: scored.pron, level: scored.level });
     setResult(scored);
-    
+
     // Enhanced placement with new logic
     try {
       processPlacementResults(scored, answers, onComplete);
     } catch (error) {
       console.error('Placement processing failed, using fallback:', error);
-      // Fallback to current behavior
+      // Fallback to current behavior - REMOVED AUTO-NAVIGATION
       const placement = { level: scored.level, g: scored.grammar, v: scored.vocab, p: scored.pron, date: Date.now() };
       localStorage.setItem('placement', JSON.stringify(placement));
       localStorage.setItem('userPlacement', JSON.stringify({ level: scored.level, scores: scored, at: Date.now() }));
       localStorage.setItem('unlockedLevel', scored.level);
       unlockLevel(scored.level);
-      
+
       // Clear progress
       localStorage.removeItem('speakingTestProgress');
-      
+
+      // Trigger celebration but don't auto-navigate
       // @ts-ignore
       window.triggerConfetti?.();
-      setTimeout(() => routeToLevel(scored.level), 1200);
+
+      // Let user control navigation with the button
+      console.log('[LevelTest] Results displayed - waiting for user to click "Direct me to my level"');
     }
   }
 
@@ -598,19 +636,65 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     }
   }
 
-  // Question change hygiene - hard reset on every question change
+  // Question change hygiene - bulletproof reset on every question change
   useEffect(() => {
-    console.log('[LevelTest] question-changed:', qIndex);
-    
-    // Hard reset before starting new question
+    console.log('[LevelTest] question-changed:', qIndex, 'isInitialMount:', isInitialMountRef.current);
+
+    // Skip TTS on initial mount if we're resuming from saved progress
+    if (isInitialMountRef.current) {
+      isInitialMountRef.current = false;
+
+      // Only speak if we're starting from question 0 (fresh start)
+      if (qIndex === 0) {
+        console.log('[LevelTest] Fresh start - will speak question');
+      } else {
+        console.log('[LevelTest] Resuming from question', qIndex, '- skipping TTS');
+
+        // Just reset state without speaking for resumed questions
+        if (SPEAKING_TEST_STRICT_SESSION) {
+          hardResetSession();
+          setTimeout(() => {
+            if (sessionStateRef.current !== 'idle') {
+              sessionStateRef.current = 'idle';
+              setMicState('idle');
+            }
+            setTestState('ready'); // Set ready state without TTS
+          }, 50);
+        } else {
+          setTestState('ready');
+        }
+        return;
+      }
+    }
+
+    // Normal question transition - speak the prompt
+    console.log('[LevelTest] Normal transition - will speak question');
+
+    // BULLETPROOF: Force complete reset before starting new question
     if (SPEAKING_TEST_STRICT_SESSION) {
       hardResetSession();
+
+      // Wait briefly to ensure reset is complete before proceeding
+      setTimeout(() => {
+        // Validate state is clean before starting
+        if (sessionStateRef.current !== 'idle') {
+          console.log('[LevelTest] ⚠️ State not clean after reset, forcing:', sessionStateRef.current);
+          sessionStateRef.current = 'idle';
+          setMicState('idle');
+        }
+
+        const text = PROMPTS[qIndex];
+        if (text) {
+          speakPrompt(text);
+        }
+      }, 50);
+    } else {
+      const text = PROMPTS[qIndex];
+      if (text) {
+        speakPrompt(text);
+      }
     }
-    
-    const text = PROMPTS[qIndex];
-    if (!text) return;
-    speakPrompt(text);
-    
+
     // cleanup if user leaves screen
     return () => {
       console.log('[LevelTest] cleanup-question');
@@ -826,11 +910,26 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
   // Start clean recognition with strict session management
   async function startRecording() {
     if (debug) console.log('[SpeakingTest] recording:start, strict:', SPEAKING_TEST_STRICT_SESSION);
-    
+
+    // ENHANCED: Validate state before starting recording
+    if (SPEAKING_TEST_STRICT_SESSION) {
+      if (sessionStateRef.current !== 'idle') {
+        if (debug) console.log('[SpeakingTest] ❌ Invalid state for recording:', sessionStateRef.current);
+        setStatusMessage('Please wait for microphone to be ready');
+        return;
+      }
+
+      if (testState !== 'ready') {
+        if (debug) console.log('[SpeakingTest] ❌ Test not ready for recording:', testState);
+        setStatusMessage('Please wait for question to finish');
+        return;
+      }
+    }
+
     // Check for speech recognition support
     const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
     if (!SpeechRecognition) {
-      const errorMsg = "Speech recognition not supported";
+      const errorMsg = "Speech recognition not supported in this browser";
       setStatusMessage(errorMsg);
       if (SPEAKING_TEST_STRICT_SESSION) {
         sessionStateRef.current = 'error';
@@ -1161,7 +1260,7 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
       }
       setMicState('idle');
       
-      if (error.name === 'NotAllowedError') {
+      if (error instanceof Error && error.name === 'NotAllowedError') {
         setPermissionError(true);
         setStatusMessage("Microphone access denied. Please allow microphone access and try again.");
         logTelemetry('error', '', durationMs, retryCountRef.current, 'not-allowed');
@@ -1219,40 +1318,70 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     }
   }
 
-  // Handle speech recognition errors (hard errors)
+  // Handle speech recognition errors with retry logic
   function handleSpeechError(errorType: string, durationMs: number) {
-    if (debug) console.log('[SpeakingTest] handleSpeechError:', errorType, 'duration:', durationMs);
-    
+    if (debug) console.log('[SpeakingTest] handleSpeechError:', errorType, 'duration:', durationMs, 'retry:', retryCountRef.current);
+
     // Clean up timers
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
     }
-    
+
+    // Resume TTS audio context immediately
+    handleAudioContext(false);
+
+    // ENHANCED: Automatic retry for recoverable errors
+    const recoverableErrors = ['audio-capture', 'network', 'aborted'];
+    const isRecoverable = recoverableErrors.includes(errorType);
+
+    if (isRecoverable && retryCountRef.current === 0 && SPEAKING_TEST_STRICT_SESSION) {
+      if (debug) console.log('[SpeakingTest] ⚡ Auto-retry for recoverable error:', errorType);
+
+      retryCountRef.current = 1;
+      sessionStateRef.current = 'idle'; // Reset for retry
+      setStatusMessage('Connection issue, retrying...');
+
+      // Brief delay before retry
+      setTimeout(() => {
+        if (sessionStateRef.current === 'idle') { // Still in valid state
+          startRecording();
+        }
+      }, 1000);
+      return;
+    }
+
+    // Set error state after retry fails or for non-recoverable errors
     if (SPEAKING_TEST_STRICT_SESSION) {
       sessionStateRef.current = 'error';
     }
     setMicState('idle');
-    
-    // Resume TTS audio context immediately
-    handleAudioContext(false);
-    
-    // Handle different error types
+
+    // Handle different error types with enhanced messaging
     switch (errorType) {
       case 'not-allowed':
         setPermissionError(true);
         setStatusMessage("Microphone access denied. Please allow microphone access and try again.");
         break;
       case 'network':
-        setStatusMessage("Network error. Please check your connection and try again.");
+        setStatusMessage(retryCountRef.current > 0
+          ? "Network connection failed. Please check your internet and try again."
+          : "Network error. Please check your connection and try again.");
         break;
       case 'audio-capture':
-        setStatusMessage("Could not capture audio. Please check your microphone and try again.");
+        setStatusMessage(retryCountRef.current > 0
+          ? "Microphone unavailable. Please check your microphone and try again."
+          : "Could not capture audio. Please check your microphone and try again.");
+        break;
+      case 'aborted':
+        setStatusMessage("Recording was interrupted. Please try again.");
         break;
       default:
-        setStatusMessage("Speech recognition error. Please try again.");
+        setStatusMessage(retryCountRef.current > 0
+          ? "Recording failed after retry. Please try again."
+          : "Speech recognition error. Please try again.");
     }
-    
+
     logTelemetry('error', '', durationMs, retryCountRef.current, errorType);
   }
 
@@ -1404,13 +1533,34 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
                   {permissionError ? (
                     <div className="text-center">
                       <div className="text-red-300 text-sm mb-2">{statusMessage}</div>
-                      <Button 
-                        onClick={onMicPress} 
-                        size="sm" 
-                        variant="outline" 
+                      <Button
+                        onClick={onMicPress}
+                        size="sm"
+                        variant="outline"
                         className="text-white border-white/30 hover:bg-white/10"
                       >
                         Retry
+                      </Button>
+                    </div>
+                  ) : sessionStateRef.current === 'error' && SPEAKING_TEST_STRICT_SESSION ? (
+                    <div className="text-center">
+                      <div className="text-orange-300 text-sm mb-3">{statusMessage}</div>
+                      <Button
+                        onClick={() => {
+                          // Manual retry - reset error state and retry count
+                          retryCountRef.current = 0;
+                          sessionStateRef.current = 'idle';
+                          setMicState('idle');
+                          setStatusMessage('');
+                          setPermissionError(false);
+                          // Start recording immediately
+                          setTimeout(() => startRecording(), 100);
+                        }}
+                        size="sm"
+                        variant="outline"
+                        className="text-white border-orange-300/50 bg-orange-500/20 hover:bg-orange-500/30 transition-colors"
+                      >
+                        🔄 Try Again
                       </Button>
                     </div>
                   ) : statusMessage ? (
@@ -1448,58 +1598,216 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
   );
 }
 
-function ResultCard({ res, onStartLevel }: { 
-  res: {grammar:number; vocab:number; pron:number; level:'A1'|'A2'|'B1'}; 
+function ResultCard({ res, onStartLevel }: {
+  res: {grammar:number; vocab:number; pron:number; level:'A1'|'A2'|'B1'};
   onStartLevel: () => void;
 }) {
+  // Enhanced feedback based on level
+  const getLevelDescription = (level: string) => {
+    switch(level) {
+      case 'A1':
+        return {
+          title: 'Beginner Level',
+          description: 'You can understand and use familiar everyday expressions. Perfect foundation to build upon!',
+          nextSteps: 'Focus on basic vocabulary, simple present tense, and everyday conversations.'
+        };
+      case 'A2':
+        return {
+          title: 'Elementary Level',
+          description: 'You can communicate in simple tasks requiring basic information exchange. Good progress!',
+          nextSteps: 'Work on past tense, future plans, and expressing opinions.'
+        };
+      case 'B1':
+        return {
+          title: 'Intermediate Level',
+          description: 'You can handle most situations when traveling and express opinions. Excellent level!',
+          nextSteps: 'Develop complex grammar, advanced vocabulary, and nuanced expressions.'
+        };
+      default:
+        return {
+          title: 'Your Level',
+          description: 'Based on your speaking assessment, we\'ve determined your English proficiency.',
+          nextSteps: 'Continue practicing to improve your skills.'
+        };
+    }
+  };
+
+  const levelInfo = getLevelDescription(res.level);
+  const averageScore = Math.round((res.grammar + res.vocab + res.pron) / 3 * 10);
+
   return (
-    <Card className="bg-white/10 border-white/20 backdrop-blur-sm">
+    <Card className="bg-gradient-to-br from-white/10 to-white/5 border-white/20 backdrop-blur-sm">
       <CardHeader>
         <CardTitle className="text-white text-center flex items-center justify-center space-x-2">
-          <Award className="h-6 w-6" />
-          <span>Placement Complete!</span>
+          <Award className="h-8 w-8 text-yellow-400" />
+          <span className="text-2xl">Speaking Assessment Complete!</span>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="text-center">
-          <div className="mb-4">
-            <Badge variant="secondary" className="text-2xl px-4 py-2 bg-white/20 text-white border-white/30">
-              Level {res.level}
-            </Badge>
+          {/* Level Badge with Animation */}
+          <div className="mb-6">
+            <div className="flex items-center justify-center space-x-4 mb-2">
+              <Badge variant="secondary" className="text-3xl px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white border-none">
+                Level {res.level}
+              </Badge>
+              <div className="flex space-x-1">
+                {[...Array(3)].map((_, i) => (
+                  <Star
+                    key={i}
+                    className={`h-6 w-6 ${
+                      averageScore >= (i + 1) * 25
+                        ? 'text-yellow-400 fill-current'
+                        : 'text-gray-400'
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+            <h3 className="text-xl font-bold text-white mb-2">{levelInfo.title}</h3>
+            <p className="text-white/80 text-base">{levelInfo.description}</p>
           </div>
-          
-          <div className="space-y-3 mb-6">
-            <Meter label="Grammar" value={res.grammar} />
-            <Meter label="Vocabulary" value={res.vocab} />
-            <Meter label="Pronunciation" value={res.pron} />
+
+          {/* Detailed Score Breakdown */}
+          <div className="bg-white/5 rounded-xl p-6 mb-6">
+            <h4 className="text-white font-bold mb-4 flex items-center justify-center space-x-2">
+              <CheckCircle className="h-5 w-5 text-green-400" />
+              <span>Your Performance Breakdown</span>
+            </h4>
+            <div className="space-y-4">
+              <EnhancedMeter label="Grammar & Structure" value={res.grammar} icon="📝" />
+              <EnhancedMeter label="Vocabulary Range" value={res.vocab} icon="📚" />
+              <EnhancedMeter label="Pronunciation & Fluency" value={res.pron} icon="🗣️" />
+            </div>
+            <div className="mt-4 pt-4 border-t border-white/10">
+              <div className="flex justify-between items-center">
+                <span className="text-white/80 font-medium">Overall Score</span>
+                <span className="text-2xl font-bold text-white">{averageScore}%</span>
+              </div>
+            </div>
           </div>
-          
-          <p className="text-white/80 mb-6">
-            Great! We'll take you to the best starting module for {res.level}.
-          </p>
-          
-          <Button 
-            onClick={onStartLevel}
+
+          {/* Next Steps */}
+          <div className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-xl p-6 mb-6">
+            <h4 className="text-white font-bold mb-3 flex items-center justify-center space-x-2">
+              <AlertCircle className="h-5 w-5 text-blue-400" />
+              <span>Recommended Focus Areas</span>
+            </h4>
+            <p className="text-white/90 text-sm">{levelInfo.nextSteps}</p>
+          </div>
+
+          {/* Action Button */}
+          <Button
+            onClick={() => {
+              // Check for pending route first, fallback to onStartLevel
+              const pendingRoute = localStorage.getItem('pendingRoute');
+              if (pendingRoute) {
+                try {
+                  const route = JSON.parse(pendingRoute);
+                  console.log('[LevelTest] Using stored route:', route);
+
+                  // Use the enhanced routing information from levelPlacementLogic
+                  // Set current level and module (Single Source of Truth)
+                  localStorage.setItem('currentLevel', route.level);
+                  localStorage.setItem('currentModule', String(route.moduleId));
+
+                  // Mark level as unlocked
+                  const unlocks = JSON.parse(localStorage.getItem('unlocks') || '{}');
+                  unlocks[route.level] = true;
+                  localStorage.setItem('unlocks', JSON.stringify(unlocks));
+                  localStorage.setItem('unlockedLevel', route.level);
+
+                  // Navigate to Lessons with comprehensive parameters
+                  const url = new URL(window.location.origin + '/lessons');
+                  url.searchParams.set('level', route.level);
+                  url.searchParams.set('module', String(route.moduleId));
+                  if (route.questionIndex > 0) {
+                    url.searchParams.set('q', String(route.questionIndex));
+                  }
+
+                  // Navigation telemetry
+                  const reason = route.questionIndex > 0 ? 'resume' : 'placed';
+                  console.log(`🧭 Route -> level=${route.level} module=${route.moduleId} q=${route.questionIndex + 1} reason=${reason}`);
+
+                  // Replace current URL to avoid back navigation issues
+                  window.history.replaceState(null, '', url.pathname + url.search);
+
+                  // Clean up
+                  localStorage.removeItem('pendingRoute');
+
+                  console.log(`🚀 Routed to ${route.level} Module ${route.moduleId}, Question ${route.questionIndex + 1}`);
+                } catch (error) {
+                  console.error('Failed to parse pending route, using fallback:', error);
+                  onStartLevel();
+                }
+              } else {
+                // Fallback to original behavior
+                onStartLevel();
+              }
+            }}
             size="lg"
-            className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+            className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white border-none py-4 text-xl font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
           >
-            Start {res.level} Now
+            🚀 Direct me to my level ({res.level})
           </Button>
+
+          <p className="text-white/60 text-sm mt-4">
+            You'll be taken to {res.level} lessons tailored to your speaking ability
+          </p>
         </div>
       </CardContent>
     </Card>
   );
 }
 
+// Enhanced meter component with better visual feedback
+function EnhancedMeter({label, value, icon}:{label:string; value:number; icon:string}) {
+  const getColorClass = (score: number) => {
+    if (score >= 8) return 'from-green-400 to-emerald-500';
+    if (score >= 6) return 'from-yellow-400 to-orange-500';
+    if (score >= 4) return 'from-orange-400 to-red-500';
+    return 'from-red-400 to-red-600';
+  };
+
+  const getScoreLabel = (score: number) => {
+    if (score >= 8) return 'Excellent';
+    if (score >= 6) return 'Good';
+    if (score >= 4) return 'Fair';
+    return 'Needs Practice';
+  };
+
+  return (
+    <div className="flex items-center justify-between bg-white/5 rounded-lg p-4">
+      <div className="flex items-center space-x-3">
+        <span className="text-2xl">{icon}</span>
+        <div>
+          <span className="text-white font-medium">{label}</span>
+          <div className="text-xs text-white/60">{getScoreLabel(value)}</div>
+        </div>
+      </div>
+      <div className="flex items-center space-x-3">
+        <div className="w-32 h-3 bg-white/10 rounded-full overflow-hidden">
+          <div
+            className={`h-full bg-gradient-to-r ${getColorClass(value)} rounded-full transition-all duration-1000 ease-out`}
+            style={{width: `${value*10}%`}}
+          />
+        </div>
+        <span className="text-white font-bold min-w-[3rem] text-lg">{value}/10</span>
+      </div>
+    </div>
+  );
+}
+
+// Legacy meter component (kept for compatibility)
 function Meter({label, value}:{label:string; value:number}) {
   return (
     <div className="flex items-center justify-between bg-white/5 rounded-lg p-3">
       <span className="text-white/80 font-medium">{label}</span>
       <div className="flex items-center space-x-3">
         <div className="w-24 h-2 bg-white/10 rounded-full overflow-hidden">
-          <div 
+          <div
             className="h-full bg-gradient-to-r from-blue-400 to-purple-400 rounded-full transition-all duration-500"
-            style={{width: `${value*10}%`}} 
+            style={{width: `${value*10}%`}}
           />
         </div>
         <span className="text-white font-semibold min-w-[3rem]">{value}/10</span>

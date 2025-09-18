@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { ArrowLeft, Play, Pause, Mic, MicOff, Volume2, RefreshCw, Star, CheckCircle, AlertCircle, Lock, BookOpen, Trophy } from 'lucide-react';
-import {
-  getProgress, setProgress, clearProgress, keyFor, ModuleProgress as StoreModuleProgress
-} from '../utils/ProgressStore';
+import { ArrowLeft, Play, Pause, Mic, MicOff, Volume2, RefreshCw, Star, CheckCircle, AlertCircle, Lock, BookOpen, Trophy, FastForward } from 'lucide-react';
+import progressService from '../services/progressService';
+import { getProgress, setProgress, ModuleProgress as StoreModuleProgress } from '../utils/ProgressStore';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -47,57 +46,58 @@ type LessonPhaseType = 'intro' | 'listening' | 'speaking' | 'complete';
 
 // Import robust evaluator and progress system
 import { evaluateAnswer, EvalOptions } from '../utils/evaluator';
-import { save as saveProgress, resumeLastPointer, getModuleState, clearProgress as clearModuleProgress } from '../utils/progress';
+import { 
+  save as saveProgress, 
+  resumeLastPointer,
+  getModuleState, 
+  clearProgress as clearModuleProgress,
+  getAllCompletedModules,
+  getProgressSummary
+} from '../utils/progress';
 
-// Enhanced progress saving with new progress system
-function saveModuleProgress(level: string, moduleId: number, phase: LessonPhaseType, questionIndex: number = 0) {
+// Enhanced progress saving with unified progress service
+async function saveModuleProgress(level: string, moduleId: number, phase: LessonPhaseType, questionIndex: number = 0, correctAnswers: number = 0, timeSpent: number = 0) {
   try {
-    // Save to both old and new systems for compatibility
-    const progressData: StoreModuleProgress = {
-      level: level,
-      module: moduleId,
-      phase: phase as any,
-      listeningIndex: 0,
-      speakingIndex: questionIndex,
-      completed: phase === 'complete',
-      totalListening: 0,
-      totalSpeaking: 40, // All modules have 40 questions
-      updatedAt: Date.now(),
-      v: 1
-    };
-    
-    setProgress(progressData);
-
-    // Save to new progress system for exact resume
-    const userId = 'guest'; // TODO: get from auth when available
     const total = 40; // All modules have 40 questions
-    const correct = Math.min(questionIndex + 1, total); // questions answered correctly so far
     const completed = phase === 'complete';
     
-    saveProgress(userId, level, String(moduleId), questionIndex, total, correct, completed);
+    await progressService.saveLessonProgress({
+      level,
+      moduleId,
+      phase,
+      currentQuestionIndex: questionIndex,
+      totalQuestions: total,
+      correctAnswers,
+      timeSpent,
+      completed,
+      mcqCompleted: phase === 'listening' || phase === 'complete',
+      speakingCompleted: phase === 'complete'
+    });
     
-    console.log(`💾 Progress saved: ${level} Module ${moduleId}, Question ${questionIndex + 1}/40, Phase: ${phase}`);
+    if (process.env.NODE_ENV === 'development') console.log(`💾 Progress saved: ${level} Module ${moduleId}, Question ${questionIndex + 1}/${total}, Phase: ${phase}`);
   } catch (error) {
     console.error('Error saving progress:', error);
   }
 }
 
-// Load progress using ProgressStore
-function loadModuleProgress(level: string, moduleId: number): { phase: LessonPhaseType; questionIndex: number } {
+// Load progress using unified progress service
+async function loadModuleProgress(level: string, moduleId: number): Promise<{ phase: LessonPhaseType; questionIndex: number; correctAnswers: number; timeSpent: number }> {
   try {
-    const progress = getProgress(level, moduleId);
+    const progress = await progressService.loadLessonProgress(level, moduleId);
     if (progress) {
-      console.log(`📚 Restored progress: ${level} Module ${moduleId}, Question ${progress.speakingIndex + 1}/40`);
+      if (process.env.NODE_ENV === 'development') console.log(`📚 Restored progress: ${level} Module ${moduleId}, Question ${progress.currentQuestionIndex + 1}/${progress.totalQuestions}`);
       return {
-        phase: progress.completed ? 'complete' : (progress.phase as LessonPhaseType) || 'intro',
-        questionIndex: progress.speakingIndex || 0
+        phase: progress.completed ? 'complete' : progress.phase,
+        questionIndex: progress.currentQuestionIndex,
+        correctAnswers: progress.correctAnswers,
+        timeSpent: progress.timeSpent
       };
     }
   } catch (error) {
     console.error('Error loading progress:', error);
   }
   
-  return { phase: 'intro', questionIndex: 0 };
+  return { phase: 'intro', questionIndex: 0, correctAnswers: 0, timeSpent: 0 };
 }
 
 function normalize(s: string) {
@@ -5348,7 +5348,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
 
   // Debug logging for component state
   useEffect(() => {
-    console.log('🔍 [LessonsApp] Component mounted/updated:', {
+    if (process.env.NODE_ENV === 'development') console.log('🔍 [LessonsApp] Component mounted/updated:', {
       viewState,
       selectedLevel,
       selectedModule,
@@ -5361,7 +5361,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
   useEffect(() => {
     const timer = setTimeout(() => {
       if (!isHydrated) {
-        console.warn('⚠️ [LessonsApp] Hydration timeout - forcing completion');
+        if (process.env.NODE_ENV === 'development') console.warn('⚠️ [LessonsApp] Hydration timeout - forcing completion');
         setIsHydrated(true);
       }
     }, 2000); // 2 second timeout
@@ -5697,7 +5697,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     };
     
     const result = evaluateAnswer(spokenRaw, evalOptions);
-    console.log(`🔍 Answer Check: "${spokenRaw}" vs "${targetRaw}" = ${result ? 'CORRECT' : 'INCORRECT'}`);
+    if (process.env.NODE_ENV === 'development') console.log(`🔍 Answer Check: "${spokenRaw}" vs "${targetRaw}" = ${result ? 'CORRECT' : 'INCORRECT'}`);
     
     return result;
   }
@@ -5808,7 +5808,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
       const parsed = JSON.parse(stored || '[]');
       return Array.isArray(parsed) ? parsed : [];
     } catch (error) {
-      console.warn('Error parsing completedModules from localStorage:', error);
+      if (process.env.NODE_ENV === 'development') console.warn('Error parsing completedModules from localStorage:', error);
       return [];
     }
   };
@@ -7117,6 +7117,19 @@ const MODULE_140_DATA = createPlaceholderModuleData(140, "B1", "B1 Final Assessm
     setIsProcessing(false);
   }, [selectedModule]);
 
+  // Migrate existing progress data on component mount
+  useEffect(() => {
+    const migrateData = async () => {
+      try {
+        await progressService.migrateExistingData();
+      } catch (error) {
+        console.error('Failed to migrate progress data:', error);
+      }
+    };
+
+    migrateData();
+  }, []); // Run only once on mount
+
   // Restore progress safely when a module opens
   const userId = 'anon'; // TODO: adapt to your auth; fallback to 'anon'
   const totals = {
@@ -7128,18 +7141,30 @@ const MODULE_140_DATA = createPlaceholderModuleData(140, "B1", "B1 Final Assessm
     // Run when module changes; restore once.
     if (!selectedModule || !currentModuleData || restoredOnceRef.current) return;
 
-    const saved = loadModuleProgress(String(selectedLevel), selectedModule);
-    if (saved && saved.phase !== 'complete') {
-      // restore
-      setCurrentPhase(saved.phase);
-      setListeningIndex(0);
-      setSpeakingIndex(saved.questionIndex);
-    } else {
-      // fresh start for this module
-      setCurrentPhase('intro');
-      setListeningIndex(0);
-      setSpeakingIndex(0);
-    }
+    const restoreProgress = async () => {
+      try {
+        const saved = await loadModuleProgress(String(selectedLevel), selectedModule);
+        if (saved && saved.phase !== 'complete') {
+          // restore
+          setCurrentPhase(saved.phase);
+          setListeningIndex(0);
+          setSpeakingIndex(saved.questionIndex);
+        } else {
+          // fresh start for this module
+          setCurrentPhase('intro');
+          setListeningIndex(0);
+          setSpeakingIndex(0);
+        }
+      } catch (error) {
+        console.error('Error restoring progress:', error);
+        // fallback to fresh start
+        setCurrentPhase('intro');
+        setListeningIndex(0);
+        setSpeakingIndex(0);
+      }
+    };
+
+    restoreProgress();
 
     restoredOnceRef.current = true;
     // also cancel any stray timers/narration here
@@ -7152,10 +7177,19 @@ const MODULE_140_DATA = createPlaceholderModuleData(140, "B1", "B1 Final Assessm
     if (currentPhase !== 'speaking') return;
     // Do not reset if we already restored or if we have progress saved.
     // Only set to 0 when starting a truly fresh module.
-    const saved = loadModuleProgress(String(selectedLevel), selectedModule);
-    if (!saved || saved.phase === 'complete') {
-      setSpeakingIndex(0);
-    }
+    const checkProgress = async () => {
+      try {
+        const saved = await loadModuleProgress(String(selectedLevel), selectedModule);
+        if (!saved || saved.phase === 'complete') {
+          setSpeakingIndex(0);
+        }
+      } catch (error) {
+        console.error('Error checking progress:', error);
+        setSpeakingIndex(0);
+      }
+    };
+
+    checkProgress();
     // else: keep restored index
     lessonCompletedRef.current = false;
     if (timeoutRef.current) { clearTimeout(timeoutRef.current); timeoutRef.current = null; }
@@ -7173,13 +7207,17 @@ const MODULE_140_DATA = createPlaceholderModuleData(140, "B1", "B1 Final Assessm
 
     // debounce a bit to avoid hammering storage
     if (autosaveTimeoutRef.current) window.clearTimeout(autosaveTimeoutRef.current);
-    autosaveTimeoutRef.current = window.setTimeout(() => {
-      saveModuleProgress(
-        String(selectedLevel),
-        selectedModule,
-        (currentPhase === 'listening' || currentPhase === 'speaking') ? currentPhase as LessonPhaseType : 'intro',
-        speakingIndex
-      );
+    autosaveTimeoutRef.current = window.setTimeout(async () => {
+      try {
+        await saveModuleProgress(
+          String(selectedLevel),
+          selectedModule,
+          (currentPhase === 'listening' || currentPhase === 'speaking') ? currentPhase as LessonPhaseType : 'intro',
+          speakingIndex
+        );
+      } catch (error) {
+        console.error('Error auto-saving progress:', error);
+      }
       autosaveTimeoutRef.current = null;
     }, 250);
   }, [userId, selectedLevel, selectedModule, currentPhase, listeningIndex, speakingIndex, currentModuleData]);
@@ -7230,7 +7268,7 @@ const MODULE_140_DATA = createPlaceholderModuleData(140, "B1", "B1 Final Assessm
       hydratedViewState = 'lesson';
       source = 'params';
       
-      console.log(`📦 Hydrate -> source=params level=${hydratedLevel} module=${hydratedModule} q=${hydratedQuestion + 1}`);
+      if (process.env.NODE_ENV === 'development') console.log(`📦 Hydrate -> source=params level=${hydratedLevel} module=${hydratedModule} q=${hydratedQuestion + 1}`);
     }
     // Priority 2: Saved progress (resume functionality)
     else {
@@ -7245,7 +7283,7 @@ const MODULE_140_DATA = createPlaceholderModuleData(140, "B1", "B1 Final Assessm
         hydratedViewState = 'lesson';
         source = 'saved_progress';
         
-        console.log(`📦 Hydrate -> source=saved_progress level=${hydratedLevel} module=${hydratedModule} q=${hydratedQuestion + 1}`);
+        if (process.env.NODE_ENV === 'development') console.log(`📦 Hydrate -> source=saved_progress level=${hydratedLevel} module=${hydratedModule} q=${hydratedQuestion + 1}`);
       }
       // Priority 3: localStorage (placed level from Speaking Test)
       else {
@@ -7260,7 +7298,7 @@ const MODULE_140_DATA = createPlaceholderModuleData(140, "B1", "B1 Final Assessm
           hydratedViewState = 'lesson';
           source = 'storage';
           
-          console.log(`📦 Hydrate -> source=storage level=${hydratedLevel} module=${hydratedModule} q=${hydratedQuestion + 1}`);
+          if (process.env.NODE_ENV === 'development') console.log(`📦 Hydrate -> source=storage level=${hydratedLevel} module=${hydratedModule} q=${hydratedQuestion + 1}`);
         }
         // Priority 4: Default fallback (A1/Module 1)
         else {
@@ -7271,7 +7309,7 @@ const MODULE_140_DATA = createPlaceholderModuleData(140, "B1", "B1 Final Assessm
           hydratedViewState = 'levels';
           source = 'default';
           
-          console.log(`📦 Hydrate -> source=default level=${hydratedLevel} module=${hydratedModule} q=${hydratedQuestion + 1}`);
+          if (process.env.NODE_ENV === 'development') console.log(`📦 Hydrate -> source=default level=${hydratedLevel} module=${hydratedModule} q=${hydratedQuestion + 1}`);
         }
       }
     }
@@ -7313,14 +7351,14 @@ const MODULE_140_DATA = createPlaceholderModuleData(140, "B1", "B1 Final Assessm
                 duration: 3000,
               });
             }).catch(error => {
-              console.warn('Failed to show toast:', error);
+              if (process.env.NODE_ENV === 'development') console.warn('Failed to show toast:', error);
               // Fallback notification
-              console.log(`🎯 Starting at ${placedLevel} based on your Speaking Test`);
+              if (process.env.NODE_ENV === 'development') console.log(`🎯 Starting at ${placedLevel} based on your Speaking Test`);
             });
           }, 500);
         }
       } catch (e) {
-        console.warn('Failed to parse userPlacement:', e);
+        if (process.env.NODE_ENV === 'development') console.warn('Failed to parse userPlacement:', e);
       }
     }
   }, [isHydrated]);
@@ -7330,7 +7368,7 @@ const MODULE_140_DATA = createPlaceholderModuleData(140, "B1", "B1 Final Assessm
     const item = currentModuleData?.speakingPractice?.[speakingIndex];
     evaluatorTargetRef.current = computeTargetFromItem(item);
     // QA log to confirm we're using the right target
-    console.log('[Eval] index', speakingIndex, 'target:', evaluatorTargetRef.current);
+    if (process.env.NODE_ENV === 'development') console.log('[Eval] index', speakingIndex, 'target:', evaluatorTargetRef.current);
   }, [selectedModule, speakingIndex, currentModuleData]);
 
   // Cleanup on unmount
@@ -7345,12 +7383,16 @@ const MODULE_140_DATA = createPlaceholderModuleData(140, "B1", "B1 Final Assessm
   useEffect(() => {
     const total = currentModuleData?.speakingPractice?.length ?? 0;
     const item = currentModuleData?.speakingPractice?.[speakingIndex];
-    console.log('[Progress] index:', speakingIndex, 'of', total, 'module:', selectedModule);
-    if (!item) console.warn('[Progress] No item at index', speakingIndex);
+    if (process.env.NODE_ENV === 'development') {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[Progress] index:', speakingIndex, 'of', total, 'module:', selectedModule);
+        if (!item) console.warn('[Progress] No item at index', speakingIndex);
+      }
+    }
   }, [speakingIndex, selectedModule, currentModuleData]);
 
   
-  function celebrateAndAdvance() {
+  async function celebrateAndAdvance() {
     // show confetti briefly
     setShowConfetti(true);
 
@@ -7372,12 +7414,18 @@ const MODULE_140_DATA = createPlaceholderModuleData(140, "B1", "B1 Final Assessm
     } catch {}
 
     // persist completion in new progress store
-    saveModuleProgress(
-      String(selectedLevel),
-      selectedModule,
-      'complete',
-      speakingIndexRef.current
-    );
+    try {
+      await saveModuleProgress(
+        String(selectedLevel),
+        selectedModule,
+        'complete',
+        speakingIndexRef.current,
+        currentModuleData?.speakingPractice?.length ?? 40, // correct answers = total for completion
+        0 // time spent - we don't track this yet, so using 0
+      );
+    } catch (error) {
+      console.error('Error saving completion progress:', error);
+    }
 
     // Save progress to completed modules
     const newCompletedModules = [...completedModules];
@@ -7414,14 +7462,25 @@ const MODULE_140_DATA = createPlaceholderModuleData(140, "B1", "B1 Final Assessm
   }
 
   // Enhanced progress update every correct answer (Module 51 standard)
-  function advanceSpeakingOnce() {
+  async function advanceSpeakingOnce() {
     const total = currentModuleData?.speakingPractice?.length ?? 0;
     const curr = speakingIndexRef.current;
 
-    console.log(`📝 Progress: Question ${curr + 1}/${total} completed`);
+    if (process.env.NODE_ENV === 'development') console.log(`📝 Progress: Question ${curr + 1}/${total} completed`);
     
     // Save progress after each question (exact resume point)
-    saveModuleProgress(String(selectedLevel), selectedModule!, 'speaking', curr + 1);
+    try {
+      await saveModuleProgress(
+        String(selectedLevel), 
+        selectedModule!, 
+        'speaking', 
+        curr + 1,
+        curr + 1, // assume all previous questions were correct for now
+        0 // time spent - we don't track this yet, so using 0
+      );
+    } catch (error) {
+      console.error('Error saving question progress:', error);
+    }
 
     // still inside the range → move to next question
     if (curr + 1 < total) {
@@ -7436,7 +7495,7 @@ const MODULE_140_DATA = createPlaceholderModuleData(140, "B1", "B1 Final Assessm
     }
 
     // curr is the last index → celebrate and move on
-    console.log(`🎉 Module ${selectedModule} completed! All ${total} questions finished.`);
+    if (process.env.NODE_ENV === 'development') console.log(`🎉 Module ${selectedModule} completed! All ${total} questions finished.`);
     setSpeakStatus('idle');
     setIsProcessing(false);
     celebrateAndAdvance();
@@ -7481,6 +7540,25 @@ const MODULE_140_DATA = createPlaceholderModuleData(140, "B1", "B1 Final Assessm
     setHasBeenRead(prev => ({ ...prev, [lessonKey]: true }));
   };
 
+  // Skip to questions handler
+  const skipToQuestions = useCallback(() => {
+    // Cancel any ongoing narration
+    narration.cancel();
+
+    // Stop teacher reading state
+    setIsTeacherReading(false);
+    setReadingComplete(true);
+
+    // Move directly to listening phase
+    setCurrentPhase('listening');
+
+    // Mark lesson as read to prevent re-reading
+    const lessonKey = `${selectedLevel}-${selectedModule}`;
+    setHasBeenRead(prev => ({ ...prev, [lessonKey]: true }));
+
+    console.log('⏭️ Skipped to questions phase');
+  }, [selectedLevel, selectedModule]);
+
   // Audio recording setup
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
@@ -7492,9 +7570,9 @@ const MODULE_140_DATA = createPlaceholderModuleData(140, "B1", "B1 Final Assessm
       setMicrophoneError(null);
       
       if (isRetry) {
-        console.log('🔄 Retrying microphone initialization...');
+        if (process.env.NODE_ENV === 'development') console.log('🔄 Retrying microphone initialization...');
       } else {
-        console.log('🎤 Requesting microphone access...');
+        if (process.env.NODE_ENV === 'development') console.log('🎤 Requesting microphone access...');
       }
       
       // Check if getUserMedia is supported
@@ -7516,7 +7594,7 @@ const MODULE_140_DATA = createPlaceholderModuleData(140, "B1", "B1 Final Assessm
       
       const stream = await navigator.mediaDevices.getUserMedia(audioConstraints);
       
-      console.log('✅ Microphone access granted!', {
+      if (process.env.NODE_ENV === 'development') console.log('✅ Microphone access granted!', {
         streamId: stream.id,
         audioTracks: stream.getAudioTracks().length,
         trackSettings: stream.getAudioTracks()[0]?.getSettings()
@@ -7534,9 +7612,9 @@ const MODULE_140_DATA = createPlaceholderModuleData(140, "B1", "B1 Final Assessm
       const supportedType = supportedTypes.find(type => MediaRecorder.isTypeSupported(type));
       if (supportedType) {
         mimeType = supportedType;
-        console.log('📱 Using MIME type:', mimeType);
+        if (process.env.NODE_ENV === 'development') console.log('📱 Using MIME type:', mimeType);
       } else {
-        console.warn('⚠️ No supported MIME types found, using default');
+        if (process.env.NODE_ENV === 'development') console.warn('⚠️ No supported MIME types found, using default');
       }
       
       const recorder = new MediaRecorder(stream, { mimeType });
@@ -7544,28 +7622,28 @@ const MODULE_140_DATA = createPlaceholderModuleData(140, "B1", "B1 Final Assessm
       let currentAudioChunks: Blob[] = [];
       
       recorder.ondataavailable = (event) => {
-        console.log('📊 Audio chunk received:', event.data.size, 'bytes');
+        if (process.env.NODE_ENV === 'development') console.log('📊 Audio chunk received:', event.data.size, 'bytes');
         if (event.data.size > 0) {
           currentAudioChunks.push(event.data);
         }
       };
       
       recorder.onstart = () => {
-        console.log('🎙️ Recording started successfully');
+        if (process.env.NODE_ENV === 'development') console.log('🎙️ Recording started successfully');
         currentAudioChunks = [];
         setRetryAttempts(0); // Reset retry count on successful start
       };
       
       recorder.onstop = async () => {
-        console.log('⏹️ Recording stopped. Chunks:', currentAudioChunks.length);
+        if (process.env.NODE_ENV === 'development') console.log('⏹️ Recording stopped. Chunks:', currentAudioChunks.length);
         
         if (currentAudioChunks.length > 0) {
           const totalSize = currentAudioChunks.reduce((sum, chunk) => sum + chunk.size, 0);
-          console.log('📦 Total audio size:', totalSize, 'bytes');
+          if (process.env.NODE_ENV === 'development') console.log('📦 Total audio size:', totalSize, 'bytes');
           
           if (totalSize > 1000) { // Minimum 1KB for meaningful audio
             const audioBlob = new Blob(currentAudioChunks, { type: mimeType });
-            console.log('🎵 Final blob created:', {
+            if (process.env.NODE_ENV === 'development') console.log('🎵 Final blob created:', {
               size: audioBlob.size,
               type: audioBlob.type,
               chunks: currentAudioChunks.length
@@ -7584,7 +7662,7 @@ const MODULE_140_DATA = createPlaceholderModuleData(140, "B1", "B1 Final Assessm
               }, 3000);
             }
           } else {
-            console.warn('⚠️ Audio recording too small:', totalSize, 'bytes');
+            if (process.env.NODE_ENV === 'development') console.warn('⚠️ Audio recording too small:', totalSize, 'bytes');
             setFeedback('Recording too short. Please speak for at least 2 seconds.');
             setFeedbackType('error');
             setTimeout(() => {
@@ -7594,7 +7672,7 @@ const MODULE_140_DATA = createPlaceholderModuleData(140, "B1", "B1 Final Assessm
           }
           currentAudioChunks = [];
         } else {
-          console.warn('⚠️ No audio chunks recorded');
+          if (process.env.NODE_ENV === 'development') console.warn('⚠️ No audio chunks recorded');
           setFeedback('No audio was captured. Please check your microphone and try again.');
           setFeedbackType('error');
           setTimeout(() => {
@@ -7612,7 +7690,7 @@ const MODULE_140_DATA = createPlaceholderModuleData(140, "B1", "B1 Final Assessm
       };
       
       setMediaRecorder(recorder);
-      console.log('🎤 MediaRecorder initialized successfully');
+      if (process.env.NODE_ENV === 'development') console.log('🎤 MediaRecorder initialized successfully');
       
     } catch (error: any) {
       console.error('❌ Error accessing microphone:', error);
@@ -7679,14 +7757,16 @@ const MODULE_140_DATA = createPlaceholderModuleData(140, "B1", "B1 Final Assessm
   useEffect(() => {
     const total = currentModuleData?.speakingPractice?.length ?? 0;
     const item = currentModuleData?.speakingPractice?.[speakingIndex];
-    console.log('✅ speakingIndex changed to:', speakingIndex);
-    console.log('✅ Current module data total questions:', total);
-    console.log('✅ Current question:', item);
-    console.log('✅ Moved to question:', speakingIndex + 1);
+    if (process.env.NODE_ENV === 'development') console.log('✅ speakingIndex changed to:', speakingIndex);
+    if (process.env.NODE_ENV === 'development') console.log('✅ Current module data total questions:', total);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('✅ Current question:', item);
+      console.log('✅ Moved to question:', speakingIndex + 1);
+    }
     
     // Safety: Ensure isProcessing is reset when moving to new question
     if (isProcessing) {
-      console.log('⚠️ isProcessing was still true when question changed - resetting it');
+      if (process.env.NODE_ENV === 'development') console.log('⚠️ isProcessing was still true when question changed - resetting it');
       setIsProcessing(false);
     }
   }, [speakingIndex, currentModuleData, isProcessing]);
@@ -7694,7 +7774,7 @@ const MODULE_140_DATA = createPlaceholderModuleData(140, "B1", "B1 Final Assessm
   const processAudioRecording = useCallback(async (audioBlob: Blob) => {
     // 🔒 CRITICAL: Prevent concurrent processing and lock current state
     if (isProcessing) {
-      console.log('⚠️ Audio processing already in progress, ignoring duplicate request');
+      if (process.env.NODE_ENV === 'development') console.log('⚠️ Audio processing already in progress, ignoring duplicate request');
       return;
     }
 
@@ -7702,19 +7782,21 @@ const MODULE_140_DATA = createPlaceholderModuleData(140, "B1", "B1 Final Assessm
     setIsProcessing(true);
     setAttempts(prev => prev + 1);
     
-    console.log('🔒 PROCESSING STARTED - isProcessing set to TRUE');
+    if (process.env.NODE_ENV === 'development') console.log('🔒 PROCESSING STARTED - isProcessing set to TRUE');
     
     // Clear any previous feedback to prevent confusion
     setFeedback('');
     setFeedbackType('info');
     
     try {
-      console.log('🎵 Processing audio recording...');
-      console.log('📊 Blob details:', {
-        size: audioBlob.size,
-        type: audioBlob.type,
-        isEmpty: audioBlob.size === 0
-      });
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🎵 Processing audio recording...');
+        console.log('📊 Blob details:', {
+          size: audioBlob.size,
+          type: audioBlob.type,
+          isEmpty: audioBlob.size === 0
+        });
+      }
       
       // Validate audio blob
       if (!audioBlob || audioBlob.size === 0) {
@@ -7730,7 +7812,7 @@ const MODULE_140_DATA = createPlaceholderModuleData(140, "B1", "B1 Final Assessm
       
       // Check minimum audio size (should be at least a few KB for meaningful audio)
       if (audioBlob.size < 1000) {
-        console.warn('⚠️ Audio blob is very small:', audioBlob.size, 'bytes');
+        if (process.env.NODE_ENV === 'development') console.warn('⚠️ Audio blob is very small:', audioBlob.size, 'bytes');
         setFeedback('Audio recording too short. Please speak for at least 2 seconds.');
         setFeedbackType('error');
         setTimeout(() => {
@@ -7748,7 +7830,7 @@ const MODULE_140_DATA = createPlaceholderModuleData(140, "B1", "B1 Final Assessm
       const filename = `recording_${timestamp}.webm`;
       formData.append('audio', audioBlob, filename);
       
-      console.log('📤 Sending audio to transcribe endpoint...', {
+      if (process.env.NODE_ENV === 'development') console.log('📤 Sending audio to transcribe endpoint...', {
         blobSize: audioBlob.size,
         filename: filename,
         type: audioBlob.type
@@ -7758,7 +7840,7 @@ const MODULE_140_DATA = createPlaceholderModuleData(140, "B1", "B1 Final Assessm
         body: formData
       });
 
-      console.log('📥 Transcribe response:', transcribeResponse);
+      if (process.env.NODE_ENV === 'development') console.log('📥 Transcribe response:', transcribeResponse);
 
       if (transcribeResponse.error) {
         console.error('❌ Transcribe error:', transcribeResponse.error);
@@ -7775,10 +7857,10 @@ const MODULE_140_DATA = createPlaceholderModuleData(140, "B1", "B1 Final Assessm
       const finalTranscript = transcript || text || '';
       
       
-      console.log('📝 Raw transcribed text (verbatim):', finalTranscript);
+      if (process.env.NODE_ENV === 'development') console.log('📝 Raw transcribed text (verbatim):', finalTranscript);
       
       if (!finalTranscript || finalTranscript.trim() === '') {
-        console.warn('⚠️ Empty transcript received');
+        if (process.env.NODE_ENV === 'development') console.warn('⚠️ Empty transcript received');
         setFeedback('I couldn\'t understand what you said. Please speak clearly and try again.');
         setFeedbackType('error');
         setTimeout(() => {
@@ -7856,7 +7938,7 @@ const MODULE_140_DATA = createPlaceholderModuleData(140, "B1", "B1 Final Assessm
   // Optional: Reset progress for current module
   function resetThisModuleProgress() {
     if (selectedLevel && selectedModule != null) {
-      clearProgress(selectedLevel, selectedModule);
+      clearModuleProgress(selectedLevel, selectedModule.toString());
       setCurrentPhase('intro');
       setListeningIndex(0);
       setSpeakingIndex(0);
@@ -7924,7 +8006,7 @@ const MODULE_140_DATA = createPlaceholderModuleData(140, "B1", "B1 Final Assessm
         setIsRecording(true);
         setFeedback('');
         setMicrophoneError(null);
-        console.log('🎙️ Starting MediaRecorder...');
+        if (process.env.NODE_ENV === 'development') console.log('🎙️ Starting MediaRecorder...');
         
         // Record minimum of 2 seconds, maximum of 10 seconds
         const startTime = Date.now();
@@ -8434,13 +8516,6 @@ const MODULE_140_DATA = createPlaceholderModuleData(140, "B1", "B1 Final Assessm
   }
 
   // Render lesson content
-  console.log('🔍 [LessonsApp] Rendering: Main lesson content', { 
-    currentPhase, 
-    selectedModule, 
-    viewState,
-    listeningIndex,
-    speakingIndex 
-  });
   return (
     <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: 'hsl(var(--app-bg))' }}>
       <div className="relative z-10 p-4 max-w-sm mx-auto">
@@ -8525,11 +8600,20 @@ const MODULE_140_DATA = createPlaceholderModuleData(140, "B1", "B1 Final Assessm
                 </div>
                 <div className="text-white/90 text-base">
                   <p className="mb-4">🎧 Listen carefully as Tomas reads through this lesson...</p>
-                  <div className="flex items-center justify-center space-x-2">
+                  <div className="flex items-center justify-center space-x-2 mb-4">
                     <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
                     <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
                     <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
                   </div>
+                  <Button
+                    onClick={skipToQuestions}
+                    variant="outline"
+                    size="sm"
+                    className="bg-white/10 border-white/30 text-white hover:bg-white/20 hover:border-white/40 transition-all duration-200"
+                  >
+                    <FastForward className="h-4 w-4 mr-2" />
+                    Skip to Questions
+                  </Button>
                 </div>
               </div>
             </CardContent>
@@ -8558,7 +8642,7 @@ const MODULE_140_DATA = createPlaceholderModuleData(140, "B1", "B1 Final Assessm
                   {currentModuleData.intro}
                 </div>
               
-              {'table' in currentModuleData && currentModuleData.table && (
+              {(('table' in currentModuleData && currentModuleData.table) && (
                 <div className="bg-white/5 rounded-xl p-4">
                   <h4 className="text-white font-semibold mb-3 text-center">
                     {selectedModule === 1 ? '📊 Verb To Be Tablosu:' : 
@@ -8685,7 +8769,7 @@ const MODULE_140_DATA = createPlaceholderModuleData(140, "B1", "B1 Final Assessm
                     </table>
                   </div>
                 </div>
-              )}
+              )) as React.ReactNode}
 
               {!hasBeenRead[lessonKey] && (
                 <div className="text-center pt-4">
@@ -8821,6 +8905,7 @@ const MODULE_140_DATA = createPlaceholderModuleData(140, "B1", "B1 Final Assessm
                                             cloze={mcq.cloze}
                                             options={mcq.options}
                                             correct={mcq.correct}
+                                            questionIndex={speakingIndex}
                                             onCorrect={() => setSpeakStep('speak')}
                                           />
                                         )}
@@ -8916,7 +9001,6 @@ const MODULE_140_DATA = createPlaceholderModuleData(140, "B1", "B1 Final Assessm
                     </div>
                   </div>
                 )}
-              </div>
               </>
             );
           })()}

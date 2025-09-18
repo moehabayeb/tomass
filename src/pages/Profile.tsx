@@ -6,6 +6,7 @@ import { useAuthReady } from '@/hooks/useAuthReady';
 import { useUserData } from '@/hooks/useUserData';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { dataService } from '@/services/dataService';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { AvatarDisplay } from '@/components/AvatarDisplay';
 import { Badge } from '@/components/ui/badge';
@@ -154,19 +155,18 @@ export default function Profile() {
 
   const handleSignOut = async () => {
     try {
+      // First clear all user data comprehensively
+      await dataService.clearAllUserData();
+
+      // Then sign out from Supabase
       const { error } = await signOut();
       if (error) throw error;
-      
-      // Clear any stored state
-      localStorage.removeItem('streakData');
-      localStorage.removeItem('recommendedStartLevel');
-      localStorage.removeItem('recommendedStartModule');
-      
+
       toast({
         title: "Logged out successfully",
-        description: "See you next time!",
+        description: "All your data has been cleared. See you next time!",
       });
-      
+
       navigate('/');
     } catch (error) {
       console.error('Error signing out:', error);
@@ -195,10 +195,10 @@ export default function Profile() {
         title: "Profile updated",
         description: "Your name has been updated successfully.",
       });
-      
+
       setIsEditingName(false);
-      // Force a page refresh to update the UI
-      window.location.reload();
+      // Real-time update without page refresh
+      setProfile(prev => prev ? { ...prev, full_name: editedName.trim() } : prev);
     } catch (error) {
       console.error('Error updating profile:', error);
       toast({
@@ -277,8 +277,8 @@ export default function Profile() {
         description: "Your profile picture has been updated successfully.",
       });
 
-      // Force a page refresh to update the UI
-      window.location.reload();
+      // Real-time update without page refresh
+      setProfile(prev => prev ? { ...prev, avatar_url: publicUrl } : prev);
     } catch (error) {
       console.error('Error uploading avatar:', error);
       toast({
@@ -321,8 +321,8 @@ export default function Profile() {
         description: "Your profile picture has been removed.",
       });
 
-      // Force a page refresh to update the UI
-      window.location.reload();
+      // Real-time update without page refresh
+      setProfile(prev => prev ? { ...prev, avatar_url: null } : prev);
     } catch (error) {
       console.error('Error removing avatar:', error);
       toast({
@@ -416,7 +416,7 @@ export default function Profile() {
                       userName={profile.full_name || 'User'}
                       showXPBar={true}
                       size="lg"
-                      avatarUrl={profile.avatar_url}
+                      avatarUrl={profile.avatar_url || undefined}
                     />
                   </div>
                   

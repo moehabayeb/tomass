@@ -63,7 +63,7 @@ export const AvatarDisplay = ({
 }: AvatarDisplayProps) => {
   const unlockedAccessories = AVATAR_ACCESSORIES.filter(acc => level >= acc.unlockLevel);
   const nextAccessory = AVATAR_ACCESSORIES.find(acc => level < acc.unlockLevel);
-  const xpProgress = (xp / maxXP) * 100;
+  // XP progress calculation removed as unused
 
   const getAvatarSize = () => {
     switch (size) {

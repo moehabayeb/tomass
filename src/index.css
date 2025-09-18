@@ -614,3 +614,69 @@
 .bot-bubble.speaking { 
   outline: 2px solid rgba(255,255,255,.2); 
 }
+
+/* ============================================
+   MULTIPLE CHOICE CARD ANIMATIONS AND FIXES
+   ============================================ */
+
+/* Animation keyframes for MCQ feedback */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+  20%, 40%, 60%, 80% { transform: translateX(4px); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Animation classes */
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+/* Critical z-index fixes for backdrop elements */
+.backdrop-blur-md {
+  pointer-events: none !important;
+}
+
+.backdrop-blur-md > * {
+  pointer-events: auto !important;
+}
+
+/* Ensure buttons are always clickable */
+button[disabled] {
+  pointer-events: none !important;
+}
+
+button:not([disabled]) {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+/* Mobile touch optimization */
+@media (hover: none) and (pointer: coarse) {
+  button {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    min-height: 56px;
+  }
+  
+  /* Enhanced touch targets for MCQ buttons */
+  .multiple-choice-button {
+    min-height: 64px;
+    touch-action: manipulation;
+  }
+}
+
+/* MCQ Button interaction fixes */
+.mcq-container button {
+  position: relative !important;
+  z-index: 100 !important;
+  pointer-events: auto !important;
+}

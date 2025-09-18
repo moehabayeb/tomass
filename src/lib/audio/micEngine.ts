@@ -202,13 +202,25 @@ function clearAllTimers() {
 
 // ============= AUDIO CONTEXT MANAGEMENT =============
 async function ensureAudioContext(): Promise<void> {
-  if (!audioContextRef) {
-    audioContextRef = new AudioContext({ sampleRate: 44100 });
+  // FIXED: Check if context is closed and recreate if necessary
+  if (!audioContextRef || audioContextRef.state === 'closed') {
+    try {
+      audioContextRef = new AudioContext({ sampleRate: 44100 });
+      console.log('[Speaking] audioContext:created');
+    } catch (error) {
+      console.error('[Speaking] audioContext:creation-failed', error);
+      throw error;
+    }
   }
   
   if (audioContextRef.state === 'suspended') {
-    await audioContextRef.resume();
-    console.log('[Speaking] audio-context:resumed');
+    try {
+      await audioContextRef.resume();
+      console.log('[Speaking] audioContext:resumed');
+    } catch (error) {
+      console.error('[Speaking] audioContext:resume-failed', error);
+      throw error;
+    }
   }
 }
 
@@ -216,6 +228,15 @@ function attachStreamToContext(stream: MediaStream) {
   if (!audioContextRef || !stream) return;
   
   try {
+    // FIXED: Clean up existing source node first
+    if (sourceNodeRef) {
+      try {
+        sourceNodeRef.disconnect();
+      } catch (error) {
+        console.warn('[Speaking] sourceNode:cleanup-failed', error);
+      }
+    }
+    
     // Create source node but don't connect to destination (no echo)
     sourceNodeRef = audioContextRef.createMediaStreamSource(stream);
     
@@ -241,9 +262,27 @@ function cleanupResources() {
   // Cancel TTS
   try { window?.speechSynthesis?.cancel(); } catch {}
   
-  // Stop recognition
+  // Stop recognition - FIXED: Comprehensive cleanup
   if (recognitionRef) {
-    try { recognitionRef.stop(); } catch {}
+    try { 
+      // Remove all event listeners before stopping
+      recognitionRef.onstart = null;
+      recognitionRef.onend = null;
+      recognitionRef.onerror = null;
+      recognitionRef.onresult = null;
+      recognitionRef.onspeechstart = null;
+      recognitionRef.onspeechend = null;
+      recognitionRef.onsoundstart = null;
+      recognitionRef.onsoundend = null;
+      recognitionRef.onaudiostart = null;
+      recognitionRef.onaudioend = null;
+      recognitionRef.onnomatch = null;
+      
+      recognitionRef.stop();
+      console.log('[Speaking] recognition:stopped-and-cleaned');
+    } catch (error) {
+      console.warn('[Speaking] recognition:cleanup-failed', error);
+    }
     recognitionRef = null;
   }
   
@@ -253,24 +292,51 @@ function cleanupResources() {
     mediaRecorderRef = null;
   }
   
-  // Stop stream
+  // Stop stream - FIXED: More comprehensive track cleanup
   if (streamRef) {
     streamRef.getTracks().forEach(track => {
-      track.stop();
-      console.log('[Speaking] track:stopped', track.kind);
+      try {
+        track.stop();
+        console.log('[Speaking] track:stopped', track.kind, track.readyState);
+      } catch (error) {
+        console.warn('[Speaking] track:stop-failed', error);
+      }
     });
+    
+    // FIXED: Remove all event listeners from stream
+    try {
+      streamRef.removeEventListener('addtrack', () => {});
+      streamRef.removeEventListener('removetrack', () => {});
+      streamRef.removeEventListener('inactive', () => {});
+    } catch (error) {
+      console.warn('[Speaking] stream:event-cleanup-failed', error);
+    }
+    
     streamRef = null;
   }
   
-  // Cleanup audio context
+  // Cleanup audio context - FIXED: Proper disconnection and closure
   if (sourceNodeRef) {
-    try { sourceNodeRef.disconnect(); } catch {}
-    sourceNodeRef = null;
+    try { 
+      sourceNodeRef.disconnect();
+      sourceNodeRef = null;
+      console.log('[Speaking] sourceNode:disconnected');
+    } catch (error) {
+      console.warn('[Speaking] sourceNode:disconnect-failed', error);
+    }
   }
   
   if (audioContextRef) {
-    try { audioContextRef.suspend(); } catch {}
-    // Don't close immediately - may be reused
+    try { 
+      // Close AudioContext to prevent memory leaks
+      if (audioContextRef.state !== 'closed') {
+        audioContextRef.close();
+        console.log('[Speaking] audioContext:closed');
+      }
+      audioContextRef = null;
+    } catch (error) {
+      console.warn('[Speaking] audioContext:close-failed', error);
+    }
   }
   
   console.log('[Speaking] cleanup:complete');
@@ -411,6 +477,9 @@ async function startMediaRecorder(id: number, maxSec: number): Promise<string> {
     }
     
     try {
+      if (!streamRef) {
+        throw new Error('Media stream is not available');
+      }
       mediaRecorderRef = new MediaRecorder(streamRef, { mimeType: 'audio/webm' });
       
       mediaRecorderRef.ondataavailable = (event) => {

@@ -34,26 +34,34 @@ export default function BookmarkButton({
 
   // Generate a unique ID for the bookmark based on content
   const getBookmarkId = (content: string) => {
-    // Use a safer encoding method that works with all characters
-    try {
-      return btoa(unescape(encodeURIComponent(content.slice(0, 50)))).replace(/[^a-zA-Z0-9]/g, '').slice(0, 20);
-    } catch (error) {
-      // Fallback to simple string hashing if encoding fails
-      let hash = 0;
-      const str = content.slice(0, 50);
-      for (let i = 0; i < str.length; i++) {
-        const char = str.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash = hash & hash; // Convert to 32bit integer
-      }
-      return Math.abs(hash).toString(36).slice(0, 20);
+    // Use consistent hashing without encoding issues
+    let hash = 0;
+    const str = content.slice(0, 100); // Increased for better uniqueness
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32bit integer
     }
+    // Create a stable, safe ID
+    return `bookmark_${Math.abs(hash).toString(36)}_${type}`;
   };
 
   // Check if item is bookmarked on mount
   useEffect(() => {
-    checkBookmarkStatus();
-  }, [content]);
+    let isMounted = true;
+
+    const checkStatus = async () => {
+      if (isMounted) {
+        await checkBookmarkStatus();
+      }
+    };
+
+    checkStatus();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [content, type]);
 
   const checkBookmarkStatus = async () => {
     try {
@@ -61,16 +69,19 @@ export default function BookmarkButton({
       const localBookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]');
       const bookmarkId = getBookmarkId(content);
       const isLocallyBookmarked = localBookmarks.some((b: BookmarkItem) => b.id === bookmarkId);
-      
+
       setIsBookmarked(isLocallyBookmarked);
-      
+
       // TODO: Also check Supabase when user authentication is implemented
       // const { data: { user } } = await supabase.auth.getUser();
       // if (user) {
       //   // Check Supabase bookmarks
       // }
     } catch (error) {
-      console.error('Error checking bookmark status:', error);
+      // Reduce console noise
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error checking bookmark status:', error);
+      }
     }
   };
 
@@ -118,7 +129,10 @@ export default function BookmarkButton({
       // }
 
     } catch (error) {
-      console.error('Error toggling bookmark:', error);
+      // Reduce console noise
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error toggling bookmark:', error);
+      }
     } finally {
       setIsLoading(false);
     }

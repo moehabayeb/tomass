@@ -16,13 +16,16 @@ interface MeetingsAppProps {
 interface Meeting {
   id: string;
   title: string;
-  description?: string;
+  description: string | null;
   teacher_name: string;
   focus_topic: string;
   scheduled_at: string;
   zoom_link: string;
-  duration_minutes?: number;
-  max_participants?: number;
+  duration_minutes: number | null;
+  max_participants: number | null;
+  created_at: string;
+  updated_at: string;
+  is_active: boolean | null;
 }
 
 interface UserReminder {

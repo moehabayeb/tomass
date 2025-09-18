@@ -12,12 +12,12 @@ const mockRecognition = {
   interimResults: false,
   lang: '',
   maxAlternatives: 1,
-  onstart: null,
-  onend: null,
-  onerror: null,
-  onresult: null,
-  onspeechstart: null,
-  onspeechend: null,
+  onstart: null as ((event: Event) => void) | null,
+  onend: null as ((event: Event) => void) | null,
+  onerror: null as ((event: Event) => void) | null,
+  onresult: null as ((event: SpeechRecognitionEvent) => void) | null,
+  onspeechstart: null as ((event: Event) => void) | null,
+  onspeechend: null as ((event: Event) => void) | null,
 };
 
 const mockMediaStream = {
@@ -90,13 +90,20 @@ describe('micEngine v1.0', () => {
       
       // Simulate recognition events
       setTimeout(() => {
-        mockRecognition.onstart?.();
-        mockRecognition.onspeechstart?.();
+        mockRecognition.onstart?.(new Event('start'));
+        mockRecognition.onspeechstart?.(new Event('speechstart'));
+        const mockResult = {
+          isFinal: true,
+          length: 1,
+          item: (i: number) => ({ transcript: 'hello world', confidence: 0.9 }),
+          0: { transcript: 'hello world', confidence: 0.9 },
+          [Symbol.iterator]: function* () { yield this[0]; }
+        };
         mockRecognition.onresult?.({
           resultIndex: 0,
-          results: [{ isFinal: true, 0: { transcript: 'hello world' } }]
-        });
-        mockRecognition.onend?.();
+          results: [mockResult]
+        } as unknown as SpeechRecognitionEvent);
+        mockRecognition.onend?.(new Event('end'));
       }, 100);
       
       vi.advanceTimersByTime(2000);
@@ -117,7 +124,7 @@ describe('micEngine v1.0', () => {
       
       // Cleanup the first promise
       stopRecording();
-      mockRecognition.onend?.();
+      mockRecognition.onend?.(new Event('end'));
       await firstPromise.catch(() => {});
     });
   });
@@ -130,14 +137,14 @@ describe('micEngine v1.0', () => {
       await expect(startRecording()).rejects.toThrow('Button debounced');
       
       stopRecording();
-      mockRecognition.onend?.();
+      mockRecognition.onend?.(new Event('end'));
       await first.catch(() => {});
     });
     
     it('should allow recording after debounce period', async () => {
       const first = startRecording();
       stopRecording();
-      mockRecognition.onend?.();
+      mockRecognition.onend?.(new Event('end'));
       await first.catch(() => {});
       
       vi.advanceTimersByTime(400); // More than BUTTON_DEBOUNCE_MS
@@ -146,7 +153,7 @@ describe('micEngine v1.0', () => {
       expect(second).toBeDefined();
       
       stopRecording();
-      mockRecognition.onend?.();
+      mockRecognition.onend?.(new Event('end'));
       await second.catch(() => {});
     });
   });
@@ -157,7 +164,7 @@ describe('micEngine v1.0', () => {
       
       // Simulate no speech detected
       setTimeout(() => {
-        mockRecognition.onstart?.();
+        mockRecognition.onstart?.(new Event('start'));
         // No onspeechstart call - simulates silence
       }, 100);
       
@@ -171,13 +178,20 @@ describe('micEngine v1.0', () => {
       const recordingPromise = startRecording();
       
       setTimeout(() => {
-        mockRecognition.onstart?.();
-        mockRecognition.onspeechstart?.(); // Speech detected
+        mockRecognition.onstart?.(new Event('start'));
+        mockRecognition.onspeechstart?.(new Event('speechstart')); // Speech detected
+        const mockResult1 = {
+          isFinal: true,
+          length: 1,
+          item: (i: number) => ({ transcript: 'test', confidence: 0.9 }),
+          0: { transcript: 'test', confidence: 0.9 },
+          [Symbol.iterator]: function* () { yield this[0]; }
+        };
         mockRecognition.onresult?.({
           resultIndex: 0,
-          results: [{ isFinal: true, 0: { transcript: 'test' } }]
-        });
-        mockRecognition.onend?.();
+          results: [mockResult1]
+        } as unknown as SpeechRecognitionEvent);
+        mockRecognition.onend?.(new Event('end'));
       }, 100);
       
       vi.advanceTimersByTime(6000); // More than INITIAL_SILENCE_MS
@@ -205,7 +219,7 @@ describe('micEngine v1.0', () => {
       const recordingPromise = startRecording();
       
       setTimeout(() => {
-        mockRecognition.onerror?.({ error: 'network' });
+        mockRecognition.onerror?.(Object.assign(new Event('error'), { error: 'network' }));
       }, 100);
       
       vi.advanceTimersByTime(1000);
@@ -222,16 +236,23 @@ describe('micEngine v1.0', () => {
       mockRecognition.start = vi.fn(() => {
         callCount++;
         if (callCount === 1) {
-          setTimeout(() => mockRecognition.onerror?.({ error: 'no-speech' }), 50);
+          setTimeout(() => mockRecognition.onerror?.(Object.assign(new Event('error'), { error: 'no-speech' })), 50);
         } else {
           setTimeout(() => {
-            mockRecognition.onstart?.();
-            mockRecognition.onspeechstart?.();
+            mockRecognition.onstart?.(new Event('start'));
+            mockRecognition.onspeechstart?.(new Event('speechstart'));
+            const mockResult2 = {
+              isFinal: true,
+              length: 1,
+              item: (i: number) => ({ transcript: 'retry success', confidence: 0.9 }),
+              0: { transcript: 'retry success', confidence: 0.9 },
+              [Symbol.iterator]: function* () { yield this[0]; }
+            };
             mockRecognition.onresult?.({
               resultIndex: 0,
-              results: [{ isFinal: true, 0: { transcript: 'retry success' } }]
-            });
-            mockRecognition.onend?.();
+              results: [mockResult2]
+            } as unknown as SpeechRecognitionEvent);
+            mockRecognition.onend?.(new Event('end'));
           }, 50);
         }
       });
@@ -284,9 +305,9 @@ describe('micEngine v1.0', () => {
       const recordingPromise = startRecording();
       
       setTimeout(() => {
-        mockRecognition.onstart?.();
+        mockRecognition.onstart?.(new Event('start'));
         stopRecording(); // User stops recording
-        mockRecognition.onend?.();
+        mockRecognition.onend?.(new Event('end'));
       }, 100);
       
       vi.advanceTimersByTime(1000);
@@ -308,7 +329,7 @@ describe('micEngine v1.0', () => {
       await expect(startRecording()).rejects.toThrow('Recording already in progress');
       
       stopRecording();
-      mockRecognition.onend?.();
+      mockRecognition.onend?.(new Event('end'));
       await recordingPromise.catch(() => {});
       
       consoleSpy.mockRestore();

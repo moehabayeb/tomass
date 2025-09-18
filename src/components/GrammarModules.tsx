@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react';
-import { ArrowLeft, ArrowRight, CheckCircle, BookOpen, Target, Trophy, Star } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle, BookOpen, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import Lottie from 'lottie-react';
-import { supabase } from '@/integrations/supabase/client';
 import Confetti from 'react-confetti';
 import { useWindowSize } from '@react-hook/window-size';
 import BookmarkButton from './BookmarkButton';
@@ -13,20 +11,7 @@ import { useTextToSpeech } from '@/hooks/useTextToSpeech';
 import { useAvatarState } from '@/hooks/useAvatarState';
 import AnimatedAvatar from './AnimatedAvatar';
 
-// Simple confetti animation data (placeholder)
-const confettiAnimation = {
-  v: "5.7.4",
-  fr: 60,
-  ip: 0,
-  op: 120,
-  w: 400,
-  h: 400,
-  nm: "Confetti",
-  ddd: 0,
-  assets: [],
-  layers: [],
-  markers: []
-};
+// A1 Lessons removed confetti animation (unused)
 
 const A1Lessons = [
   "The Verb 'To Be' (Present)",

@@ -269,16 +269,16 @@ export default function DailyTips({ onClose }: DailyTipsProps) {
               {getHistoryTips().map(({ date, tip }, index) => (
                 <Card key={index} className="p-2 sm:p-3 hover:bg-gray-50 transition-colors">
                   <div className="flex items-start space-x-2 sm:space-x-3">
-                    <div className="text-lg sm:text-2xl shrink-0">{tip.emoji}</div>
+                    <div className="text-lg sm:text-2xl shrink-0">{tip?.emoji}</div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-1 gap-2">
-                        <h4 className="font-medium text-xs sm:text-sm truncate">{tip.title}</h4>
+                        <h4 className="font-medium text-xs sm:text-sm truncate">{tip?.title}</h4>
                         <span className="text-xs text-gray-500 shrink-0">
                           {new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                         </span>
                       </div>
                       <p className="text-xs text-gray-600 leading-relaxed line-clamp-3">
-                        {tip.content}
+                        {tip?.content}
                       </p>
                     </div>
                   </div>

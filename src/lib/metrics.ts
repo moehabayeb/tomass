@@ -19,7 +19,7 @@ const RETRY_DELAY = 1000; // 1 second
 
 // Global state
 let metricsQueue: Metric[] = [];
-let sessionId: string;
+let sessionId: string = '';
 let deviceInfo: string;
 let batchTimer: number | undefined;
 let isOnline = true;

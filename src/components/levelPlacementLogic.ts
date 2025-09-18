@@ -78,23 +78,30 @@ export function processPlacementResults(
     
     // Save placement result (use original placement for scoring records)
     savePlacementResult(placement);
-    
+
     // Get post-test routing with resume logic for final level
     const route = getPostTestRoute(finalLevel, userId);
     console.log(`🧭 Route -> level=${route.level} module=${route.moduleId} q=${route.questionIndex + 1} reason=${routingReason}`);
-    
+
     // Clear test progress
     localStorage.removeItem('speakingTestProgress');
-    
+
     // Trigger celebration
     // @ts-ignore
     window.triggerConfetti?.();
-    
-    // Route to lessons after delay
-    setTimeout(() => {
-      routeToLessons(route.level, route.moduleId, route.questionIndex);
-      onComplete(route.level, Math.round((normalizedScores.pronunciation + normalizedScores.grammar + normalizedScores.fluency) * 100 / 3));
-    }, 1200);
+
+    // REMOVED AUTO-NAVIGATION: Let user control navigation with "Direct me to my level" button
+    // Store routing info for when user clicks the button
+    localStorage.setItem('pendingRoute', JSON.stringify({
+      level: route.level,
+      moduleId: route.moduleId,
+      questionIndex: route.questionIndex
+    }));
+
+    // Update state to show results but don't navigate
+    onComplete(route.level, Math.round((normalizedScores.pronunciation + normalizedScores.grammar + normalizedScores.fluency) * 100 / 3));
+
+    console.log('[LevelTest] Results displayed - waiting for user to click "Direct me to my level"');
     
   } catch (error) {
     console.error('Placement processing failed:', error);

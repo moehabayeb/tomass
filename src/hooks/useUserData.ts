@@ -22,13 +22,29 @@ export const useUserData = () => {
     try {
       setIsLoading(true);
       const userId = user?.id;
-      
+
+      if (!userId) {
+        setUserProfile(null);
+        return;
+      }
+
+      // Check if profile creation is already in progress
+      const creationLockKey = `profile_creation_lock_${userId}`;
+      const existingLock = sessionStorage.getItem(creationLockKey);
+
+      if (existingLock && Date.now() - parseInt(existingLock) < 5000) {
+        console.log('[useUserData] Profile creation in progress, waiting...');
+        // Wait and retry
+        setTimeout(() => loadUserData(), 1000);
+        return;
+      }
+
       const profile = await dataService.getUserProfile(userId);
-      
+
       if (profile) {
         setUserProfile(profile);
-      } else if (userId) {
-        // Create default profile for new authenticated user
+      } else {
+        // Create default profile for new authenticated user with race condition protection
         const defaultProfile: UserProfileData = {
           userId,
           name: user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Student',
@@ -40,9 +56,26 @@ export const useUserData = () => {
           userLevel: 'beginner',
           soundEnabled: true
         };
-        
-        await dataService.saveUserProfile(defaultProfile);
-        setUserProfile(defaultProfile);
+
+        try {
+          // The dataService now handles all race conditions and duplicate key errors
+          await dataService.saveUserProfile(defaultProfile);
+          setUserProfile(defaultProfile);
+        } catch (error) {
+          // Handle any remaining errors gracefully
+          if (error instanceof Error && (error.message.includes('duplicate') || error.message.includes('unique constraint'))) {
+            console.log('[useUserData] Profile already exists - refetching...');
+            // Profile was created by another process, fetch it
+            const existingProfile = await dataService.getUserProfile(userId);
+            if (existingProfile) {
+              setUserProfile(existingProfile);
+            }
+          } else {
+            console.error('Error creating user profile:', error);
+            // Set a minimal profile to prevent app breakage
+            setUserProfile(defaultProfile);
+          }
+        }
       }
     } catch (error) {
       console.error('Error loading user data:', error);

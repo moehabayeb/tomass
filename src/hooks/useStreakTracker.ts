@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { dataService, UserProfileData } from '@/services/dataService';
 
 interface StreakData {
   currentStreak: number;
@@ -22,12 +23,43 @@ const STREAK_REWARDS: StreakReward[] = [
   { day: 30, xp: 100, message: "Month mastery! 👑", showConfetti: true }
 ];
 
-export const useStreakTracker = (addXP?: (points: number, activity: string) => Promise<number>) => {
-  const [streakData, setStreakData] = useState<StreakData>({
-    currentStreak: 0,
-    lastVisitDate: '',
-    bestStreak: 0,
-    lastXPRewardDay: 0
+export const useStreakTracker = (
+  addXP?: (points: number, activity: string) => Promise<number>,
+  userProfile?: UserProfileData | null,
+  updateProfile?: (updates: Partial<UserProfileData>) => Promise<void>
+) => {
+  // ENHANCED: Initialize from database if authenticated, else localStorage
+  const [streakData, setStreakData] = useState<StreakData>(() => {
+    if (userProfile) {
+      console.log('[useStreakTracker] Initializing from user profile:', {
+        currentStreak: userProfile.currentStreak,
+        bestStreak: userProfile.bestStreak,
+        lastVisitDate: userProfile.lastVisitDate
+      });
+      return {
+        currentStreak: userProfile.currentStreak || 0,
+        lastVisitDate: userProfile.lastVisitDate || '',
+        bestStreak: userProfile.bestStreak || 0,
+        lastXPRewardDay: 0
+      };
+    }
+
+    // Fallback to localStorage for non-authenticated users
+    console.log('[useStreakTracker] Falling back to localStorage');
+    const saved = localStorage.getItem('streakData');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      console.log('[useStreakTracker] Loaded from localStorage:', parsed);
+      return parsed;
+    }
+
+    console.log('[useStreakTracker] Using default streak data');
+    return {
+      currentStreak: 0,
+      lastVisitDate: '',
+      bestStreak: 0,
+      lastXPRewardDay: 0
+    };
   });
   
   const [streakReward, setStreakReward] = useState<StreakReward | null>(null);
@@ -108,13 +140,38 @@ export const useStreakTracker = (addXP?: (points: number, activity: string) => P
     
     setStreakData(newData);
     localStorage.setItem('streakData', JSON.stringify(newData));
-    
+
+    // ENHANCED: Save to database if authenticated user
+    if (userProfile?.userId && updateProfile) {
+      console.log('[useStreakTracker] Saving streak to database:', newData);
+      try {
+        await dataService.updateStreakData(
+          userProfile.userId,
+          newData.currentStreak,
+          newData.bestStreak,
+          newData.lastVisitDate
+        );
+
+        // Also update the local profile state
+        await updateProfile({
+          currentStreak: newData.currentStreak,
+          bestStreak: newData.bestStreak,
+          lastVisitDate: newData.lastVisitDate
+        });
+
+        console.log('[useStreakTracker] Streak saved to database successfully');
+      } catch (error) {
+        console.error('[useStreakTracker] Failed to save streak to database:', error);
+        // Continue - don't break the flow if database save fails
+      }
+    }
+
     if (rewardEarned) {
       setStreakReward(rewardEarned);
       // Clear reward after showing it
       setTimeout(() => setStreakReward(null), 3000);
     }
-  }, [addXP]);
+  }, [addXP, userProfile, updateProfile]);
 
   useEffect(() => {
     updateStreak();
