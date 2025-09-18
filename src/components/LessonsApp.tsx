@@ -7087,7 +7087,7 @@ const MODULE_140_DATA = createPlaceholderModuleData(140, "B1", "B1 Final Assessm
       !hasBeenRead[lessonKey] &&
       introVisibleRef.current; // must be on screen
 
-    if (canRead) startTeacherReading();
+    // if (canRead) startTeacherReading(); // Disabled: intro is now silent
 
     return () => cancelAllNarration();
   }, [
@@ -8771,6 +8771,7 @@ const MODULE_140_DATA = createPlaceholderModuleData(140, "B1", "B1 Final Assessm
                 </div>
               )) as React.ReactNode}
 
+              {/* Manual read button disabled - intro is now silent
               {!hasBeenRead[lessonKey] && (
                 <div className="text-center pt-4">
                   <Button
@@ -8782,6 +8783,8 @@ const MODULE_140_DATA = createPlaceholderModuleData(140, "B1", "B1 Final Assessm
                   </Button>
                 </div>
               )}
+              */}
+              {/* Replay button disabled - intro is now silent
               {hasBeenRead[lessonKey] && (
                 <div className="text-center pt-4">
                   <Button
@@ -8795,6 +8798,7 @@ const MODULE_140_DATA = createPlaceholderModuleData(140, "B1", "B1 Final Assessm
                   </Button>
                 </div>
               )}
+              */}
             </CardContent>
           </Card>
           </div>
