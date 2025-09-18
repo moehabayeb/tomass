@@ -1,0 +1,19 @@
+﻿# Node / Vite
+node_modules/
+dist/
+.env
+.env.*
+*.local
+
+# OS cruft
+.DS_Store
+
+# Local dev tools
+.claude/
+.cursorrules
+
+# local junk
+tomass-main/
+*.zip
+NUL
+
