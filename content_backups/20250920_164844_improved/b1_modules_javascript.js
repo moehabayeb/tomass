@@ -1,0 +1,2401 @@
+// Module 101 Data
+const MODULE_101_DATA = {
+  title: "Module 101 - Present Perfect Continuous",
+  description: "Learn present perfect continuous - B1 intermediate level grammar",
+  intro: `🎯 Objective:\nStudents will learn to use the Present Perfect Continuous tense to talk about actions that started in the past and are still continuing or have just stopped with present results.\n\n📘 Konu Anlatımı (Türkçe Açıklama)`,
+  tip: "📗 Structure",
+
+  table: [],
+
+  listeningExamples: [
+    "Yapısı: have/has + been + V-ing şeklindedir.",
+    "Örnek: I’ve been studying all day.",
+    "(Tüm gün boyunca ders çalışıyorum / çalışıyordum.",
+    "🧠 Example Sentences."
+  ],
+
+  speakingPractice: [
+    { question: "Have you been studying English for long?", answer: "I have been studying English for three years." },
+    { question: "What have you been doing recently?", answer: "I have been working on improving my English." },
+    { question: "How long have you been living here?", answer: "I have been living here since last year." },
+    { question: "Have you been feeling well lately?", answer: "Yes, I have been feeling much better." },
+    { question: "What had you done before coming here?", answer: "I had finished my homework before coming here." },
+    { question: "Had you ever seen this before?", answer: "No, I had never seen this before." },
+    { question: "Will you have finished by tomorrow?", answer: "Yes, I will have finished by tomorrow." },
+    { question: "How long will you have been working by then?", answer: "I will have been working for eight hours." },
+    { question: "Can you tell what happened?", answer: "Yes, I can tell exactly what happened." },
+    { question: "Must this be correct?", answer: "Yes, this must be correct." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What have you been doing recently?", answer: "I have been working on improving my English." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Had you ever seen this before?", answer: "No, I had never seen this before." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Must this be correct?", answer: "Yes, this must be correct." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Have you been feeling well lately?", answer: "Yes, I have been feeling much better." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "How long will you have been working by then?", answer: "I will have been working for eight hours." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What have you been doing recently?", answer: "I have been working on improving my English." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Had you ever seen this before?", answer: "No, I had never seen this before." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Must this be correct?", answer: "Yes, this must be correct." }
+  ]
+};
+
+// Module 102 Data
+const MODULE_102_DATA = {
+  title: "Module 102 - Present Perfect Vs Continuous",
+  description: "Learn present perfect vs continuous - B1 intermediate level grammar",
+  intro: `🎯 Objective:\nStudents will understand the difference between the Present Perfect and the Present Perfect Continuous tenses and practice using them accurately in context.\n\n📘 Konu Anlatımı (Türkçe Açıklama)`,
+  tip: "📗 Structure & Usage",
+
+  table: [],
+
+  listeningExamples: [
+    "Örnek:\n- I’ve read the book.",
+    "(Kitabı okudum - sonuç önemli)\n- I’ve been reading the book.",
+    "(Kitabı okuyordum - süreç önemli).",
+    "✅ Present Perfect: have/has + past participle (V3)\n→ Focuses on the result or completion.",
+    "Examples:\n- She has written three emails."
+  ],
+
+  speakingPractice: [
+    { question: "Have you been studying English for long?", answer: "I have been studying English for three years." },
+    { question: "What have you been doing recently?", answer: "I have been working on improving my English." },
+    { question: "How long have you been living here?", answer: "I have been living here since last year." },
+    { question: "Have you been feeling well lately?", answer: "Yes, I have been feeling much better." },
+    { question: "What had you done before coming here?", answer: "I had finished my homework before coming here." },
+    { question: "Had you ever seen this before?", answer: "No, I had never seen this before." },
+    { question: "Will you have finished by tomorrow?", answer: "Yes, I will have finished by tomorrow." },
+    { question: "How long will you have been working by then?", answer: "I will have been working for eight hours." },
+    { question: "Can you tell what happened?", answer: "Yes, I can tell exactly what happened." },
+    { question: "Must this be correct?", answer: "Yes, this must be correct." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What have you been doing recently?", answer: "I have been working on improving my English." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Had you ever seen this before?", answer: "No, I had never seen this before." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Must this be correct?", answer: "Yes, this must be correct." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Have you been feeling well lately?", answer: "Yes, I have been feeling much better." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "How long will you have been working by then?", answer: "I will have been working for eight hours." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What have you been doing recently?", answer: "I have been working on improving my English." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Had you ever seen this before?", answer: "No, I had never seen this before." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Must this be correct?", answer: "Yes, this must be correct." }
+  ]
+};
+
+// Module 103 Data
+const MODULE_103_DATA = {
+  title: "Module 103 - Past Perfect Affirmative",
+  description: "Learn past perfect affirmative - B1 intermediate level grammar",
+  intro: `🎯 Objective:\nStudents will learn how to form and use the Past Perfect Tense (affirmative) to describe completed actions that happened before another action in the past.\n\n📘 Konu Anlatımı (Türkçe Açıklama)`,
+  tip: "🎯 Objective:\nStudents will learn how to form and use the Past Perfect Tense (affirmative) to describe completed actions that happened before another action in the past.",
+
+  table: [],
+
+  listeningExamples: [
+    "Yapı: Subject + had + V3 (past participle)\n\nÖrnek:\n- She had left before I arrived.",
+    "(Ben gelmeden önce o çıkmıştı.",
+    "Examples:\n- I had finished my homework before dinner.",
+    "- They had already left when we arrived.",
+    "🧠 Example Sentences."
+  ],
+
+  speakingPractice: [
+    { question: "Have you been studying English for long?", answer: "I have been studying English for three years." },
+    { question: "What have you been doing recently?", answer: "I have been working on improving my English." },
+    { question: "How long have you been living here?", answer: "I have been living here since last year." },
+    { question: "Have you been feeling well lately?", answer: "Yes, I have been feeling much better." },
+    { question: "What had you done before coming here?", answer: "I had finished my homework before coming here." },
+    { question: "Had you ever seen this before?", answer: "No, I had never seen this before." },
+    { question: "Will you have finished by tomorrow?", answer: "Yes, I will have finished by tomorrow." },
+    { question: "How long will you have been working by then?", answer: "I will have been working for eight hours." },
+    { question: "Can you tell what happened?", answer: "Yes, I can tell exactly what happened." },
+    { question: "Must this be correct?", answer: "Yes, this must be correct." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What have you been doing recently?", answer: "I have been working on improving my English." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Had you ever seen this before?", answer: "No, I had never seen this before." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Must this be correct?", answer: "Yes, this must be correct." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Have you been feeling well lately?", answer: "Yes, I have been feeling much better." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "How long will you have been working by then?", answer: "I will have been working for eight hours." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What have you been doing recently?", answer: "I have been working on improving my English." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Had you ever seen this before?", answer: "No, I had never seen this before." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Must this be correct?", answer: "Yes, this must be correct." }
+  ]
+};
+
+// Module 104 Data
+const MODULE_104_DATA = {
+  title: "Module 104 - Past Present Negative",
+  description: "Learn past present negative - B1 intermediate level grammar",
+  intro: `🎯 Objective:\nStudents will learn how to form and use the negative form of the Past Perfect tense to describe what had not happened before another event in the past.\n\n📘 Konu Anlatımı (Türkçe Açıklama)`,
+  tip: "🎯 Objective:\nStudents will learn how to form and use the negative form of the Past Perfect tense to describe what had not happened before another event in the past.",
+
+  table: [],
+
+  listeningExamples: [
+    "Yapı: Subject + had not (hadn’t) + V3\n\nÖrnek:\n- I hadn’t eaten before the meeting started.",
+    "(Toplantı başlamadan önce yemek yememiştim.",
+    "Examples:\n- They hadn’t arrived when we started the dinner.",
+    "- She hadn’t studied for the test, so she was nervous.",
+    "🧠 Example Sentences."
+  ],
+
+  speakingPractice: [
+    { question: "Have you been studying English for long?", answer: "I have been studying English for three years." },
+    { question: "What have you been doing recently?", answer: "I have been working on improving my English." },
+    { question: "How long have you been living here?", answer: "I have been living here since last year." },
+    { question: "Have you been feeling well lately?", answer: "Yes, I have been feeling much better." },
+    { question: "What had you done before coming here?", answer: "I had finished my homework before coming here." },
+    { question: "Had you ever seen this before?", answer: "No, I had never seen this before." },
+    { question: "Will you have finished by tomorrow?", answer: "Yes, I will have finished by tomorrow." },
+    { question: "How long will you have been working by then?", answer: "I will have been working for eight hours." },
+    { question: "Can you tell what happened?", answer: "Yes, I can tell exactly what happened." },
+    { question: "Must this be correct?", answer: "Yes, this must be correct." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What have you been doing recently?", answer: "I have been working on improving my English." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Had you ever seen this before?", answer: "No, I had never seen this before." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Must this be correct?", answer: "Yes, this must be correct." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Have you been feeling well lately?", answer: "Yes, I have been feeling much better." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "How long will you have been working by then?", answer: "I will have been working for eight hours." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What have you been doing recently?", answer: "I have been working on improving my English." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Had you ever seen this before?", answer: "No, I had never seen this before." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Must this be correct?", answer: "Yes, this must be correct." }
+  ]
+};
+
+// Module 105 Data
+const MODULE_105_DATA = {
+  title: "Module 105 - Past Perfect Questions",
+  description: "Learn past perfect questions - B1 intermediate level grammar",
+  intro: `🎯 Objective:\nStudents will learn how to form and use questions in the Past Perfect tense to ask about actions that occurred before other events in the past.\n\n📘 Konu Anlatımı (Türkçe Açıklama)`,
+  tip: "🎯 Objective:\nStudents will learn how to form and use questions in the Past Perfect tense to ask about actions that occurred before other events in the past.",
+
+  table: [],
+
+  listeningExamples: [
+    "Yapı: Had + subject + V3\n\nÖrnek:\n- Had she arrived before the meeting started.",
+    "(Toplantı başlamadan önce o gelmiş miydi.",
+    "✅ Structure: Had + subject + past participle (V3).",
+    "→ Used to ask whether an action was completed before another one in the past.",
+    "Examples:\n- Had they eaten before you arrived."
+  ],
+
+  speakingPractice: [
+    { question: "Have you been studying English for long?", answer: "I have been studying English for three years." },
+    { question: "What have you been doing recently?", answer: "I have been working on improving my English." },
+    { question: "How long have you been living here?", answer: "I have been living here since last year." },
+    { question: "Have you been feeling well lately?", answer: "Yes, I have been feeling much better." },
+    { question: "What had you done before coming here?", answer: "I had finished my homework before coming here." },
+    { question: "Had you ever seen this before?", answer: "No, I had never seen this before." },
+    { question: "Will you have finished by tomorrow?", answer: "Yes, I will have finished by tomorrow." },
+    { question: "How long will you have been working by then?", answer: "I will have been working for eight hours." },
+    { question: "Can you tell what happened?", answer: "Yes, I can tell exactly what happened." },
+    { question: "Must this be correct?", answer: "Yes, this must be correct." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What have you been doing recently?", answer: "I have been working on improving my English." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Had you ever seen this before?", answer: "No, I had never seen this before." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Must this be correct?", answer: "Yes, this must be correct." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Have you been feeling well lately?", answer: "Yes, I have been feeling much better." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "How long will you have been working by then?", answer: "I will have been working for eight hours." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What have you been doing recently?", answer: "I have been working on improving my English." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Had you ever seen this before?", answer: "No, I had never seen this before." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Must this be correct?", answer: "Yes, this must be correct." }
+  ]
+};
+
+// Module 106 Data
+const MODULE_106_DATA = {
+  title: "Module 106 - Past Perfect Continuous",
+  description: "Learn past perfect continuous - B1 intermediate level grammar",
+  intro: `🎯 Objective:\nStudents will learn to use the Past Perfect Continuous tense to describe actions that were in progress before a certain point in the past.\n\n📘 Konu Anlatımı (Türkçe Açıklama)`,
+  tip: "📗 Structure & Usage",
+
+  table: [],
+
+  listeningExamples: [
+    "(Tüm gün çalışıyordum, sonunda ara verdim.",
+    "Examples:\n- She had been studying for hours before the exam started.",
+    "- We had been waiting for the bus when it suddenly started raining.",
+    "🧠 Example Sentences."
+  ],
+
+  speakingPractice: [
+    { question: "Have you been studying English for long?", answer: "I have been studying English for three years." },
+    { question: "What have you been doing recently?", answer: "I have been working on improving my English." },
+    { question: "How long have you been living here?", answer: "I have been living here since last year." },
+    { question: "Have you been feeling well lately?", answer: "Yes, I have been feeling much better." },
+    { question: "What had you done before coming here?", answer: "I had finished my homework before coming here." },
+    { question: "Had you ever seen this before?", answer: "No, I had never seen this before." },
+    { question: "Will you have finished by tomorrow?", answer: "Yes, I will have finished by tomorrow." },
+    { question: "How long will you have been working by then?", answer: "I will have been working for eight hours." },
+    { question: "Can you tell what happened?", answer: "Yes, I can tell exactly what happened." },
+    { question: "Must this be correct?", answer: "Yes, this must be correct." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What have you been doing recently?", answer: "I have been working on improving my English." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Had you ever seen this before?", answer: "No, I had never seen this before." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Must this be correct?", answer: "Yes, this must be correct." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Have you been feeling well lately?", answer: "Yes, I have been feeling much better." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "How long will you have been working by then?", answer: "I will have been working for eight hours." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What have you been doing recently?", answer: "I have been working on improving my English." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Had you ever seen this before?", answer: "No, I had never seen this before." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Must this be correct?", answer: "Yes, this must be correct." }
+  ]
+};
+
+// Module 107 Data
+const MODULE_107_DATA = {
+  title: "Module 107 - Future Perfect",
+  description: "Learn future perfect - B1 intermediate level grammar",
+  intro: `🎯 Objective:\nStudents will learn to use the Future Perfect tense to describe actions that will be completed before a specific point in the future.\n\n📘 Konu Anlatımı (Türkçe Açıklama)`,
+  tip: "📗 Structure & Usage",
+
+  table: [],
+
+  listeningExamples: [
+    "(Gelecek haftaya kadar bu kitabı bitirmiş olacağım.",
+    "Examples:\n- She will have graduated by June.",
+    "- They will have built the house before winter starts.",
+    "🧠 Example Sentences."
+  ],
+
+  speakingPractice: [
+    { question: "Have you been studying English for long?", answer: "I have been studying English for three years." },
+    { question: "What have you been doing recently?", answer: "I have been working on improving my English." },
+    { question: "How long have you been living here?", answer: "I have been living here since last year." },
+    { question: "Have you been feeling well lately?", answer: "Yes, I have been feeling much better." },
+    { question: "What had you done before coming here?", answer: "I had finished my homework before coming here." },
+    { question: "Had you ever seen this before?", answer: "No, I had never seen this before." },
+    { question: "Will you have finished by tomorrow?", answer: "Yes, I will have finished by tomorrow." },
+    { question: "How long will you have been working by then?", answer: "I will have been working for eight hours." },
+    { question: "Can you tell what happened?", answer: "Yes, I can tell exactly what happened." },
+    { question: "Must this be correct?", answer: "Yes, this must be correct." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What have you been doing recently?", answer: "I have been working on improving my English." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Had you ever seen this before?", answer: "No, I had never seen this before." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Must this be correct?", answer: "Yes, this must be correct." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Have you been feeling well lately?", answer: "Yes, I have been feeling much better." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "How long will you have been working by then?", answer: "I will have been working for eight hours." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What have you been doing recently?", answer: "I have been working on improving my English." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Had you ever seen this before?", answer: "No, I had never seen this before." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Must this be correct?", answer: "Yes, this must be correct." }
+  ]
+};
+
+// Module 108 Data
+const MODULE_108_DATA = {
+  title: "Module 108 - Future Continuous Vs Future Perfect",
+  description: "Learn future continuous vs future perfect - B1 intermediate level grammar",
+  intro: `🎯 Objective:\nStudents will learn the difference between the Future Continuous and Future Perfect tenses and how to use them to talk about actions at and by specific future times.\n\n📘 Konu Anlatımı (Türkçe Açıklama)`,
+  tip: "📗 Structure & Usage",
+
+  table: [],
+
+  listeningExamples: [
+    "Örnek:\n- At 10 a.",
+    ", I will be driving to work.",
+    "(Future Continuous)\n- By 10 a.",
+    ", I will have arrived at work.",
+    "(Future Perfect)."
+  ],
+
+  speakingPractice: [
+    { question: "Have you been studying English for long?", answer: "I have been studying English for three years." },
+    { question: "What have you been doing recently?", answer: "I have been working on improving my English." },
+    { question: "How long have you been living here?", answer: "I have been living here since last year." },
+    { question: "Have you been feeling well lately?", answer: "Yes, I have been feeling much better." },
+    { question: "What had you done before coming here?", answer: "I had finished my homework before coming here." },
+    { question: "Had you ever seen this before?", answer: "No, I had never seen this before." },
+    { question: "Will you have finished by tomorrow?", answer: "Yes, I will have finished by tomorrow." },
+    { question: "How long will you have been working by then?", answer: "I will have been working for eight hours." },
+    { question: "Can you tell what happened?", answer: "Yes, I can tell exactly what happened." },
+    { question: "Must this be correct?", answer: "Yes, this must be correct." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What have you been doing recently?", answer: "I have been working on improving my English." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Had you ever seen this before?", answer: "No, I had never seen this before." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Must this be correct?", answer: "Yes, this must be correct." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Have you been feeling well lately?", answer: "Yes, I have been feeling much better." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "How long will you have been working by then?", answer: "I will have been working for eight hours." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What have you been doing recently?", answer: "I have been working on improving my English." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Had you ever seen this before?", answer: "No, I had never seen this before." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Must this be correct?", answer: "Yes, this must be correct." }
+  ]
+};
+
+// Module 109 Data
+const MODULE_109_DATA = {
+  title: "Module 109 - Modals Of Deduction",
+  description: "Learn modals of deduction - B1 intermediate level grammar",
+  intro: `🎯 Objective:\nStudents will learn to use modal verbs (must, might, can't) to express logical deductions about present situations.\n\n📘 Konu Anlatımı (Türkçe Açıklama)`,
+  tip: "📗 Structure & Usage",
+
+  table: [],
+
+  listeningExamples: [
+    "Modals of Deduction, bir durumu değerlendirerek mantıksal çıkarım yapmak için kullanılır.",
+    "(Kesin yorgundur.",
+    ")\n- She might be at home.",
+    "(Evde olabilir.",
+    ")\n- That can’t be true."
+  ],
+
+  speakingPractice: [
+    { question: "Have you been studying English for long?", answer: "I have been studying English for three years." },
+    { question: "What have you been doing recently?", answer: "I have been working on improving my English." },
+    { question: "How long have you been living here?", answer: "I have been living here since last year." },
+    { question: "Have you been feeling well lately?", answer: "Yes, I have been feeling much better." },
+    { question: "What had you done before coming here?", answer: "I had finished my homework before coming here." },
+    { question: "Had you ever seen this before?", answer: "No, I had never seen this before." },
+    { question: "Will you have finished by tomorrow?", answer: "Yes, I will have finished by tomorrow." },
+    { question: "How long will you have been working by then?", answer: "I will have been working for eight hours." },
+    { question: "Can you tell what happened?", answer: "Yes, I can tell exactly what happened." },
+    { question: "Must this be correct?", answer: "Yes, this must be correct." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What have you been doing recently?", answer: "I have been working on improving my English." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Had you ever seen this before?", answer: "No, I had never seen this before." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Must this be correct?", answer: "Yes, this must be correct." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Have you been feeling well lately?", answer: "Yes, I have been feeling much better." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "How long will you have been working by then?", answer: "I will have been working for eight hours." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What have you been doing recently?", answer: "I have been working on improving my English." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Had you ever seen this before?", answer: "No, I had never seen this before." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Must this be correct?", answer: "Yes, this must be correct." }
+  ]
+};
+
+// Module 110 Data
+const MODULE_110_DATA = {
+  title: "Module 110 - Modals Of Probability",
+  description: "Learn modals of probability - B1 intermediate level grammar",
+  intro: `🎯 Objective:\nStudents will learn how to use the modal verbs 'could', 'may', and 'might' to express different degrees of probability about present and future situations.\n\n📘 Konu Anlatımı (Türkçe Açıklama)`,
+  tip: "📗 Structure & Usage",
+
+  table: [],
+
+  listeningExamples: [
+    "'Could', 'may' ve 'might' modal fiilleri bir olayın olma ihtimali hakkında konuşurken kullanılır.",
+    "Örnek:\n- She may be at the library.",
+    "- It could rain this evening.",
+    "- He might not come to the party.",
+    "- She may join us later."
+  ],
+
+  speakingPractice: [
+    { question: "Have you been studying English for long?", answer: "I have been studying English for three years." },
+    { question: "What have you been doing recently?", answer: "I have been working on improving my English." },
+    { question: "How long have you been living here?", answer: "I have been living here since last year." },
+    { question: "Have you been feeling well lately?", answer: "Yes, I have been feeling much better." },
+    { question: "What had you done before coming here?", answer: "I had finished my homework before coming here." },
+    { question: "Had you ever seen this before?", answer: "No, I had never seen this before." },
+    { question: "Will you have finished by tomorrow?", answer: "Yes, I will have finished by tomorrow." },
+    { question: "How long will you have been working by then?", answer: "I will have been working for eight hours." },
+    { question: "Can you tell what happened?", answer: "Yes, I can tell exactly what happened." },
+    { question: "Must this be correct?", answer: "Yes, this must be correct." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What have you been doing recently?", answer: "I have been working on improving my English." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Had you ever seen this before?", answer: "No, I had never seen this before." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Must this be correct?", answer: "Yes, this must be correct." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Have you been feeling well lately?", answer: "Yes, I have been feeling much better." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "How long will you have been working by then?", answer: "I will have been working for eight hours." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What have you been doing recently?", answer: "I have been working on improving my English." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Had you ever seen this before?", answer: "No, I had never seen this before." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Must this be correct?", answer: "Yes, this must be correct." }
+  ]
+};
+
+// Module 111 Data
+const MODULE_111_DATA = {
+  title: "Module 111 - Modals Of Obligation",
+  description: "Learn modals of obligation - B1 intermediate level grammar",
+  intro: `🎯 Objective:\nStudents will learn to use modal verbs (must, have to, should) to express obligation, necessity, and advice.\n\n📘 Konu Anlatımı (Türkçe Açıklama)`,
+  tip: "📗 Structure & Usage",
+
+  table: [],
+
+  listeningExamples: [
+    "- I have to wake up early tomorrow.",
+    "- You should drink more water.",
+    "(obligation)\n- He has to finish his report by Friday.",
+    "(necessity)\n- You should see a doctor.",
+    "🧠 Example Sentences."
+  ],
+
+  speakingPractice: [
+    { question: "What would you do if you won the lottery?", answer: "If I won the lottery, I would travel the world." },
+    { question: "If you could change one thing, what would it be?", answer: "If I could change one thing, I would learn more languages." },
+    { question: "Do you wish you had studied harder?", answer: "Yes, I wish I had studied harder." },
+    { question: "What do you wish you could do?", answer: "I wish I could speak fluent English." },
+    { question: "If you had known earlier, what would you have done?", answer: "If I had known earlier, I would have prepared better." },
+    { question: "Would you mind if I asked you something?", answer: "No, I wouldn't mind at all." },
+    { question: "What if we tried a different approach?", answer: "That would be a good idea." },
+    { question: "Do you regret not doing something?", answer: "Yes, I regret not practicing more." },
+    { question: "If only you could change the past, what would you change?", answer: "If only I could change the past, I would study harder." },
+    { question: "What would have happened if things were different?", answer: "Things would have been much better." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "If you could change one thing, what would it be?", answer: "If I could change one thing, I would learn more languages." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Would you mind if I asked you something?", answer: "No, I wouldn't mind at all." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What would have happened if things were different?", answer: "Things would have been much better." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you wish you could do?", answer: "I wish I could speak fluent English." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Do you regret not doing something?", answer: "Yes, I regret not practicing more." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "If you could change one thing, what would it be?", answer: "If I could change one thing, I would learn more languages." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Would you mind if I asked you something?", answer: "No, I wouldn't mind at all." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What would have happened if things were different?", answer: "Things would have been much better." }
+  ]
+};
+
+// Module 112 Data
+const MODULE_112_DATA = {
+  title: "Module 112 - Modals Of Prohibition",
+  description: "Learn modals of prohibition - B1 intermediate level grammar",
+  intro: `🎯 Objective:\nStudents will learn to use the modals 'mustn’t' and 'can’t' to express prohibition or lack of permission.\n\n📘 Konu Anlatımı (Türkçe Açıklama)`,
+  tip: "📗 Structure & Usage",
+
+  table: [],
+
+  listeningExamples: [
+    "'Mustn’t' ve 'can’t' modal fiilleri, yasaklama ve izin verilmediğini belirtmek için kullanılır.",
+    "(Burada sigara içmemelisin.",
+    ")\n- You can’t enter without a ticket.",
+    "(Biletsiz giremezsin.",
+    "✅ Structure: Subject + mustn’t/can’t + base verb\n\nExamples:\n- You mustn’t touch the wires."
+  ],
+
+  speakingPractice: [
+    { question: "What would you do if you won the lottery?", answer: "If I won the lottery, I would travel the world." },
+    { question: "If you could change one thing, what would it be?", answer: "If I could change one thing, I would learn more languages." },
+    { question: "Do you wish you had studied harder?", answer: "Yes, I wish I had studied harder." },
+    { question: "What do you wish you could do?", answer: "I wish I could speak fluent English." },
+    { question: "If you had known earlier, what would you have done?", answer: "If I had known earlier, I would have prepared better." },
+    { question: "Would you mind if I asked you something?", answer: "No, I wouldn't mind at all." },
+    { question: "What if we tried a different approach?", answer: "That would be a good idea." },
+    { question: "Do you regret not doing something?", answer: "Yes, I regret not practicing more." },
+    { question: "If only you could change the past, what would you change?", answer: "If only I could change the past, I would study harder." },
+    { question: "What would have happened if things were different?", answer: "Things would have been much better." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "If you could change one thing, what would it be?", answer: "If I could change one thing, I would learn more languages." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Would you mind if I asked you something?", answer: "No, I wouldn't mind at all." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What would have happened if things were different?", answer: "Things would have been much better." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you wish you could do?", answer: "I wish I could speak fluent English." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Do you regret not doing something?", answer: "Yes, I regret not practicing more." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "If you could change one thing, what would it be?", answer: "If I could change one thing, I would learn more languages." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Would you mind if I asked you something?", answer: "No, I wouldn't mind at all." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What would have happened if things were different?", answer: "Things would have been much better." }
+  ]
+};
+
+// Module 113 Data
+const MODULE_113_DATA = {
+  title: "Module 113 - Reported Speech Requests And Commands",
+  description: "Learn reported speech requests and commands - B1 intermediate level grammar",
+  intro: `🎯 Objective:\nStudents will learn to report requests and commands using correct structure and appropriate reporting verbs such as 'ask', 'tell', 'order', and 'request'.\n\n📘 Konu Anlatımı (Türkçe Açıklama)`,
+  tip: "🎯 Objective:\nStudents will learn to report requests and commands using correct structure and appropriate reporting verbs such as 'ask', 'tell', 'order', and 'request'.",
+
+  table: [],
+
+  listeningExamples: [
+    "” → She told me to close the window.",
+    "- “Don’t talk.",
+    "” → The teacher told us not to talk.",
+    "- “Can you help me.",
+    "” → He asked me to help him."
+  ],
+
+  speakingPractice: [
+    { question: "What would you do if you won the lottery?", answer: "If I won the lottery, I would travel the world." },
+    { question: "If you could change one thing, what would it be?", answer: "If I could change one thing, I would learn more languages." },
+    { question: "Do you wish you had studied harder?", answer: "Yes, I wish I had studied harder." },
+    { question: "What do you wish you could do?", answer: "I wish I could speak fluent English." },
+    { question: "If you had known earlier, what would you have done?", answer: "If I had known earlier, I would have prepared better." },
+    { question: "Would you mind if I asked you something?", answer: "No, I wouldn't mind at all." },
+    { question: "What if we tried a different approach?", answer: "That would be a good idea." },
+    { question: "Do you regret not doing something?", answer: "Yes, I regret not practicing more." },
+    { question: "If only you could change the past, what would you change?", answer: "If only I could change the past, I would study harder." },
+    { question: "What would have happened if things were different?", answer: "Things would have been much better." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "If you could change one thing, what would it be?", answer: "If I could change one thing, I would learn more languages." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Would you mind if I asked you something?", answer: "No, I wouldn't mind at all." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What would have happened if things were different?", answer: "Things would have been much better." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you wish you could do?", answer: "I wish I could speak fluent English." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Do you regret not doing something?", answer: "Yes, I regret not practicing more." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "If you could change one thing, what would it be?", answer: "If I could change one thing, I would learn more languages." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Would you mind if I asked you something?", answer: "No, I wouldn't mind at all." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What would have happened if things were different?", answer: "Things would have been much better." }
+  ]
+};
+
+// Module 114 Data
+const MODULE_114_DATA = {
+  title: "Module 114 - Reported Speech Questions",
+  description: "Learn reported speech questions - B1 intermediate level grammar",
+  intro: `🎯 Objective:\nStudents will learn how to report both yes/no and WH- questions using appropriate reporting verbs and correct word order.\n\n📘 Konu Anlatımı (Türkçe Açıklama)`,
+  tip: "📗 Structure & Usage",
+
+  table: [],
+
+  listeningExamples: [
+    "- 'Asked' ve 'wanted to know' gibi fiiller kullanılır.",
+    "- Yes/No questions için 'if/whether', WH-questions için 'wh-word' ile devam edilir.",
+    "Örnek:\n- “Are you happy.",
+    "” → He asked if I was happy.",
+    "- “Where do you live."
+  ],
+
+  speakingPractice: [
+    { question: "What would you do if you won the lottery?", answer: "If I won the lottery, I would travel the world." },
+    { question: "If you could change one thing, what would it be?", answer: "If I could change one thing, I would learn more languages." },
+    { question: "Do you wish you had studied harder?", answer: "Yes, I wish I had studied harder." },
+    { question: "What do you wish you could do?", answer: "I wish I could speak fluent English." },
+    { question: "If you had known earlier, what would you have done?", answer: "If I had known earlier, I would have prepared better." },
+    { question: "Would you mind if I asked you something?", answer: "No, I wouldn't mind at all." },
+    { question: "What if we tried a different approach?", answer: "That would be a good idea." },
+    { question: "Do you regret not doing something?", answer: "Yes, I regret not practicing more." },
+    { question: "If only you could change the past, what would you change?", answer: "If only I could change the past, I would study harder." },
+    { question: "What would have happened if things were different?", answer: "Things would have been much better." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "If you could change one thing, what would it be?", answer: "If I could change one thing, I would learn more languages." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Would you mind if I asked you something?", answer: "No, I wouldn't mind at all." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What would have happened if things were different?", answer: "Things would have been much better." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you wish you could do?", answer: "I wish I could speak fluent English." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Do you regret not doing something?", answer: "Yes, I regret not practicing more." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "If you could change one thing, what would it be?", answer: "If I could change one thing, I would learn more languages." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Would you mind if I asked you something?", answer: "No, I wouldn't mind at all." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What would have happened if things were different?", answer: "Things would have been much better." }
+  ]
+};
+
+// Module 115 Data
+const MODULE_115_DATA = {
+  title: "Module 115 - Passive Voice Present Perfect",
+  description: "Learn passive voice present perfect - B1 intermediate level grammar",
+  intro: `🎯 Objective:\nStudents will learn how to form and use the passive voice in the present perfect tense to describe actions where the doer is unknown or unimportant.\n\n📘 Konu Anlatımı (Türkçe Açıklama)`,
+  tip: "🎯 Objective:\nStudents will learn how to form and use the passive voice in the present perfect tense to describe actions where the doer is unknown or unimportant.",
+
+  table: [],
+
+  listeningExamples: [
+    "- Passive: The classroom has been cleaned.",
+    "- Dinner has been prepared.",
+    "- Many emails have been written today.",
+    "🧠 Example Sentences."
+  ],
+
+  speakingPractice: [
+    { question: "What would you do if you won the lottery?", answer: "If I won the lottery, I would travel the world." },
+    { question: "If you could change one thing, what would it be?", answer: "If I could change one thing, I would learn more languages." },
+    { question: "Do you wish you had studied harder?", answer: "Yes, I wish I had studied harder." },
+    { question: "What do you wish you could do?", answer: "I wish I could speak fluent English." },
+    { question: "If you had known earlier, what would you have done?", answer: "If I had known earlier, I would have prepared better." },
+    { question: "Would you mind if I asked you something?", answer: "No, I wouldn't mind at all." },
+    { question: "What if we tried a different approach?", answer: "That would be a good idea." },
+    { question: "Do you regret not doing something?", answer: "Yes, I regret not practicing more." },
+    { question: "If only you could change the past, what would you change?", answer: "If only I could change the past, I would study harder." },
+    { question: "What would have happened if things were different?", answer: "Things would have been much better." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "If you could change one thing, what would it be?", answer: "If I could change one thing, I would learn more languages." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Would you mind if I asked you something?", answer: "No, I wouldn't mind at all." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What would have happened if things were different?", answer: "Things would have been much better." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you wish you could do?", answer: "I wish I could speak fluent English." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Do you regret not doing something?", answer: "Yes, I regret not practicing more." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "If you could change one thing, what would it be?", answer: "If I could change one thing, I would learn more languages." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Would you mind if I asked you something?", answer: "No, I wouldn't mind at all." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What would have happened if things were different?", answer: "Things would have been much better." }
+  ]
+};
+
+// Module 116 Data
+const MODULE_116_DATA = {
+  title: "Module 116 - Passive Voice Future",
+  description: "Learn passive voice future - B1 intermediate level grammar",
+  intro: `🎯 Objective:\nStudents will learn how to use the passive voice in the future simple tense to describe actions that will be done by someone in the future.\n\n📘 Konu Anlatımı (Türkçe Açıklama)`,
+  tip: "📗 Structure & Usage",
+
+  table: [],
+
+  listeningExamples: [
+    "Gelecekte edilgen (passive) yapı, bir işin gelecekte yapılacağını belirtirken kullanılır.",
+    "✅ will + be + V3 (past participle)\n\nÖrnek:\n- Active: They will deliver the package tomorrow.",
+    "- Passive: The package will be delivered tomorrow.",
+    "✅ Structure:\n- Subject + will + be + past participle\n\nExamples:\n- The room will be cleaned.",
+    "- A new bridge will be built."
+  ],
+
+  speakingPractice: [
+    { question: "What would you do if you won the lottery?", answer: "If I won the lottery, I would travel the world." },
+    { question: "If you could change one thing, what would it be?", answer: "If I could change one thing, I would learn more languages." },
+    { question: "Do you wish you had studied harder?", answer: "Yes, I wish I had studied harder." },
+    { question: "What do you wish you could do?", answer: "I wish I could speak fluent English." },
+    { question: "If you had known earlier, what would you have done?", answer: "If I had known earlier, I would have prepared better." },
+    { question: "Would you mind if I asked you something?", answer: "No, I wouldn't mind at all." },
+    { question: "What if we tried a different approach?", answer: "That would be a good idea." },
+    { question: "Do you regret not doing something?", answer: "Yes, I regret not practicing more." },
+    { question: "If only you could change the past, what would you change?", answer: "If only I could change the past, I would study harder." },
+    { question: "What would have happened if things were different?", answer: "Things would have been much better." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "If you could change one thing, what would it be?", answer: "If I could change one thing, I would learn more languages." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Would you mind if I asked you something?", answer: "No, I wouldn't mind at all." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What would have happened if things were different?", answer: "Things would have been much better." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you wish you could do?", answer: "I wish I could speak fluent English." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Do you regret not doing something?", answer: "Yes, I regret not practicing more." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "If you could change one thing, what would it be?", answer: "If I could change one thing, I would learn more languages." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Would you mind if I asked you something?", answer: "No, I wouldn't mind at all." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What would have happened if things were different?", answer: "Things would have been much better." }
+  ]
+};
+
+// Module 117 Data
+const MODULE_117_DATA = {
+  title: "Module 117 - Conditionals Review",
+  description: "Learn conditionals review - B1 intermediate level grammar",
+  intro: `🎯 Objective:\nStudents will review and compare all four main conditional sentence types (Zero, First, Second, and Third) for form and function.\n\n📘 Konu Anlatımı (Türkçe Açıklama)`,
+  tip: "🎯 Objective:\nStudents will review and compare all four main conditional sentence types (Zero, First, Second, and Third) for form and function.",
+
+  table: [],
+
+  listeningExamples: [
+    "Koşul cümleleri (conditionals), bir eylemin sonucunu belirtmek için kullanılır.",
+    "Bu modülde dört temel conditional tipi gözden geçirilir:\n\n✅ 0.",
+    "Conditional → Gerçek gelecek:\nIf + present simple, will + V1\nÖrnek: If it rains, I will stay home.",
+    "🧠 Example Sentences."
+  ],
+
+  speakingPractice: [
+    { question: "What would you do if you won the lottery?", answer: "If I won the lottery, I would travel the world." },
+    { question: "If you could change one thing, what would it be?", answer: "If I could change one thing, I would learn more languages." },
+    { question: "Do you wish you had studied harder?", answer: "Yes, I wish I had studied harder." },
+    { question: "What do you wish you could do?", answer: "I wish I could speak fluent English." },
+    { question: "If you had known earlier, what would you have done?", answer: "If I had known earlier, I would have prepared better." },
+    { question: "Would you mind if I asked you something?", answer: "No, I wouldn't mind at all." },
+    { question: "What if we tried a different approach?", answer: "That would be a good idea." },
+    { question: "Do you regret not doing something?", answer: "Yes, I regret not practicing more." },
+    { question: "If only you could change the past, what would you change?", answer: "If only I could change the past, I would study harder." },
+    { question: "What would have happened if things were different?", answer: "Things would have been much better." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "If you could change one thing, what would it be?", answer: "If I could change one thing, I would learn more languages." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Would you mind if I asked you something?", answer: "No, I wouldn't mind at all." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What would have happened if things were different?", answer: "Things would have been much better." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you wish you could do?", answer: "I wish I could speak fluent English." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Do you regret not doing something?", answer: "Yes, I regret not practicing more." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "If you could change one thing, what would it be?", answer: "If I could change one thing, I would learn more languages." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Would you mind if I asked you something?", answer: "No, I wouldn't mind at all." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What would have happened if things were different?", answer: "Things would have been much better." }
+  ]
+};
+
+// Module 118 Data
+const MODULE_118_DATA = {
+  title: "Module 118 - Third Conditional",
+  description: "Learn third conditional - B1 intermediate level grammar",
+  intro: `🎯 Objective:\nStudents will learn how to use the third conditional to describe unreal situations in the past and their imagined results.\n\n📘 Konu Anlatımı (Türkçe Açıklama)`,
+  tip: "3. tip koşul cümleleri (Third Conditional), geçmişte gerçekleşmemiş olaylar ve onların hayali sonuçları hakkında konuşmak için kullanılır.\n✅ If + past perfect, would have + V3\n\nÖrnek:\n- If I had studied, I would have passed the exam.\n(Ben çalışsaydım, sınavı geçerdim - ama çalışmadım.)",
+
+  table: [],
+
+  listeningExamples: [
+    "✅ If + past perfect, would have + V3\n\nÖrnek:\n- If I had studied, I would have passed the exam.",
+    "(Ben çalışsaydım, sınavı geçerdim - ama çalışmadım.",
+    "- If she had taken the medicine, she would have felt better.",
+    "- If I had known, I would have helped you.",
+    "🧠 Example Sentences."
+  ],
+
+  speakingPractice: [
+    { question: "What would you do if you won the lottery?", answer: "If I won the lottery, I would travel the world." },
+    { question: "If you could change one thing, what would it be?", answer: "If I could change one thing, I would learn more languages." },
+    { question: "Do you wish you had studied harder?", answer: "Yes, I wish I had studied harder." },
+    { question: "What do you wish you could do?", answer: "I wish I could speak fluent English." },
+    { question: "If you had known earlier, what would you have done?", answer: "If I had known earlier, I would have prepared better." },
+    { question: "Would you mind if I asked you something?", answer: "No, I wouldn't mind at all." },
+    { question: "What if we tried a different approach?", answer: "That would be a good idea." },
+    { question: "Do you regret not doing something?", answer: "Yes, I regret not practicing more." },
+    { question: "If only you could change the past, what would you change?", answer: "If only I could change the past, I would study harder." },
+    { question: "What would have happened if things were different?", answer: "Things would have been much better." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "If you could change one thing, what would it be?", answer: "If I could change one thing, I would learn more languages." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Would you mind if I asked you something?", answer: "No, I wouldn't mind at all." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What would have happened if things were different?", answer: "Things would have been much better." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you wish you could do?", answer: "I wish I could speak fluent English." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Do you regret not doing something?", answer: "Yes, I regret not practicing more." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "If you could change one thing, what would it be?", answer: "If I could change one thing, I would learn more languages." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Would you mind if I asked you something?", answer: "No, I wouldn't mind at all." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What would have happened if things were different?", answer: "Things would have been much better." }
+  ]
+};
+
+// Module 119 Data
+const MODULE_119_DATA = {
+  title: "Module 119 - Mixed Conditionals",
+  description: "Learn mixed conditionals - B1 intermediate level grammar",
+  intro: `🎯 Objective:\nStudents will learn how to use mixed conditionals to talk about hypothetical situations involving different time references.\n\n📘 Konu Anlatımı (Türkçe Açıklama)`,
+  tip: "📗 Structure & Usage",
+
+  table: [],
+
+  listeningExamples: [
+    "İki yaygın mixed conditional yapısı vardır:\n1.",
+    "🧠 Example Sentences."
+  ],
+
+  speakingPractice: [
+    { question: "What would you do if you won the lottery?", answer: "If I won the lottery, I would travel the world." },
+    { question: "If you could change one thing, what would it be?", answer: "If I could change one thing, I would learn more languages." },
+    { question: "Do you wish you had studied harder?", answer: "Yes, I wish I had studied harder." },
+    { question: "What do you wish you could do?", answer: "I wish I could speak fluent English." },
+    { question: "If you had known earlier, what would you have done?", answer: "If I had known earlier, I would have prepared better." },
+    { question: "Would you mind if I asked you something?", answer: "No, I wouldn't mind at all." },
+    { question: "What if we tried a different approach?", answer: "That would be a good idea." },
+    { question: "Do you regret not doing something?", answer: "Yes, I regret not practicing more." },
+    { question: "If only you could change the past, what would you change?", answer: "If only I could change the past, I would study harder." },
+    { question: "What would have happened if things were different?", answer: "Things would have been much better." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "If you could change one thing, what would it be?", answer: "If I could change one thing, I would learn more languages." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Would you mind if I asked you something?", answer: "No, I wouldn't mind at all." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What would have happened if things were different?", answer: "Things would have been much better." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you wish you could do?", answer: "I wish I could speak fluent English." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Do you regret not doing something?", answer: "Yes, I regret not practicing more." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "If you could change one thing, what would it be?", answer: "If I could change one thing, I would learn more languages." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Would you mind if I asked you something?", answer: "No, I wouldn't mind at all." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What would have happened if things were different?", answer: "Things would have been much better." }
+  ]
+};
+
+// Module 120 Data
+const MODULE_120_DATA = {
+  title: "Module 120 - Wish Ifonly Pastsimple",
+  description: "Learn wish ifonly pastsimple - B1 intermediate level grammar",
+  intro: `Module 120: Wish / If only + Past Simple (Present Regrets)\n\n📘 Konu Anlatımı (Türkçe Açıklama)`,
+  tip: "📗 Structure & Usage",
+
+  table: [],
+
+  listeningExamples: [
+    "Örnekler:\n- I wish I had a car.",
+    ")\n- If only I were taller.",
+    "(Ama değilim.",
+    "✅ Structure:\n- Subject + wish / if only + past simple\n\nExamples:\n- I wish I knew her name.",
+    "- If only it weren’t raining."
+  ],
+
+  speakingPractice: [
+    { question: "What would you do if you won the lottery?", answer: "If I won the lottery, I would travel the world." },
+    { question: "If you could change one thing, what would it be?", answer: "If I could change one thing, I would learn more languages." },
+    { question: "Do you wish you had studied harder?", answer: "Yes, I wish I had studied harder." },
+    { question: "What do you wish you could do?", answer: "I wish I could speak fluent English." },
+    { question: "If you had known earlier, what would you have done?", answer: "If I had known earlier, I would have prepared better." },
+    { question: "Would you mind if I asked you something?", answer: "No, I wouldn't mind at all." },
+    { question: "What if we tried a different approach?", answer: "That would be a good idea." },
+    { question: "Do you regret not doing something?", answer: "Yes, I regret not practicing more." },
+    { question: "If only you could change the past, what would you change?", answer: "If only I could change the past, I would study harder." },
+    { question: "What would have happened if things were different?", answer: "Things would have been much better." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "If you could change one thing, what would it be?", answer: "If I could change one thing, I would learn more languages." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Would you mind if I asked you something?", answer: "No, I wouldn't mind at all." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What would have happened if things were different?", answer: "Things would have been much better." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you wish you could do?", answer: "I wish I could speak fluent English." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Do you regret not doing something?", answer: "Yes, I regret not practicing more." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "If you could change one thing, what would it be?", answer: "If I could change one thing, I would learn more languages." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Would you mind if I asked you something?", answer: "No, I wouldn't mind at all." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What would have happened if things were different?", answer: "Things would have been much better." }
+  ]
+};
+
+// Module 121 Data
+const MODULE_121_DATA = {
+  title: "Module 121 - Wish Ifonly Pastperfect",
+  description: "Learn wish ifonly pastperfect - B1 intermediate level grammar",
+  intro: `Module 121: Wish / If only + Past Perfect (Past Regrets)\n\n📘 Konu Anlatımı (Türkçe Açıklama)`,
+  tip: "📗 Structure & Usage",
+
+  table: [],
+
+  listeningExamples: [
+    "✅ Yapı:\n- Wish / If only + past perfect (had + V3)\n\nÖrnekler:\n- I wish I had studied harder.",
+    "(Keşke daha çok çalışsaydım.",
+    ")\n- If only I had left earlier.",
+    "(Keşke daha erken çıksaydım.",
+    "- If only she had called me."
+  ],
+
+  speakingPractice: [
+    { question: "Are you used to speaking English?", answer: "Yes, I am getting used to speaking English." },
+    { question: "What do you need to have done?", answer: "I need to have my homework checked." },
+    { question: "Can you describe the person who called?", answer: "The person who called was very polite." },
+    { question: "Do you enjoy reading books?", answer: "Yes, I enjoy reading books very much." },
+    { question: "What do you get excited about?", answer: "I get excited about learning new things." },
+    { question: "Can you take care of this?", answer: "Yes, I can take care of this problem." },
+    { question: "Which phrasal verb do you use most?", answer: "I use 'look up' most often." },
+    { question: "Do you make decisions quickly?", answer: "Yes, I usually make decisions quickly." },
+    { question: "What separates good students from great ones?", answer: "Practice separates good students from great ones." },
+    { question: "How do you make progress?", answer: "I make progress by practicing every day." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you need to have done?", answer: "I need to have my homework checked." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Can you take care of this?", answer: "Yes, I can take care of this problem." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "How do you make progress?", answer: "I make progress by practicing every day." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Do you enjoy reading books?", answer: "Yes, I enjoy reading books very much." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Do you make decisions quickly?", answer: "Yes, I usually make decisions quickly." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you need to have done?", answer: "I need to have my homework checked." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Can you take care of this?", answer: "Yes, I can take care of this problem." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "How do you make progress?", answer: "I make progress by practicing every day." }
+  ]
+};
+
+// Module 122 Data
+const MODULE_122_DATA = {
+  title: "Module 122 - Usedto Beusedto Getusedto",
+  description: "Learn usedto beusedto getusedto - B1 intermediate level grammar",
+  intro: `🎯 Objective:\nStudents will understand the differences in form and meaning between 'used to', 'be used to', and 'get used to' and use them appropriately in context.\n\n📘 Konu Anlatımı (Türkçe Açıklama)`,
+  tip: "🎯 Objective:\nStudents will understand the differences in form and meaning between 'used to', 'be used to', and 'get used to' and use them appropriately in context.",
+
+  table: [],
+
+  listeningExamples: [
+    "🧠 Example Sentences."
+  ],
+
+  speakingPractice: [
+    { question: "Are you used to speaking English?", answer: "Yes, I am getting used to speaking English." },
+    { question: "What do you need to have done?", answer: "I need to have my homework checked." },
+    { question: "Can you describe the person who called?", answer: "The person who called was very polite." },
+    { question: "Do you enjoy reading books?", answer: "Yes, I enjoy reading books very much." },
+    { question: "What do you get excited about?", answer: "I get excited about learning new things." },
+    { question: "Can you take care of this?", answer: "Yes, I can take care of this problem." },
+    { question: "Which phrasal verb do you use most?", answer: "I use 'look up' most often." },
+    { question: "Do you make decisions quickly?", answer: "Yes, I usually make decisions quickly." },
+    { question: "What separates good students from great ones?", answer: "Practice separates good students from great ones." },
+    { question: "How do you make progress?", answer: "I make progress by practicing every day." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you need to have done?", answer: "I need to have my homework checked." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Can you take care of this?", answer: "Yes, I can take care of this problem." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "How do you make progress?", answer: "I make progress by practicing every day." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Do you enjoy reading books?", answer: "Yes, I enjoy reading books very much." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Do you make decisions quickly?", answer: "Yes, I usually make decisions quickly." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you need to have done?", answer: "I need to have my homework checked." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Can you take care of this?", answer: "Yes, I can take care of this problem." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "How do you make progress?", answer: "I make progress by practicing every day." }
+  ]
+};
+
+// Module 123 Data
+const MODULE_123_DATA = {
+  title: "Module 123 - Causative Have Get Something Done",
+  description: "Learn causative have get something done - B1 intermediate level grammar",
+  intro: `🎯 Objective:\nStudents will learn how to use the causative structure 'have/get something done' to express that someone arranges for another person to do something for them.\n\n📘 Konu Anlatımı (Türkçe Açıklama)`,
+  tip: "🎯 Objective:\nStudents will learn how to use the causative structure 'have/get something done' to express that someone arranges for another person to do something for them.",
+
+  table: [],
+
+  listeningExamples: [
+    "Örnekler:\n- I had my hair cut.",
+    "(Saçımı kestirdim.",
+    ")\n- She got her car repaired.",
+    "(Arabayı tamir ettirdi.",
+    "- We’re getting our documents translated."
+  ],
+
+  speakingPractice: [
+    { question: "Are you used to speaking English?", answer: "Yes, I am getting used to speaking English." },
+    { question: "What do you need to have done?", answer: "I need to have my homework checked." },
+    { question: "Can you describe the person who called?", answer: "The person who called was very polite." },
+    { question: "Do you enjoy reading books?", answer: "Yes, I enjoy reading books very much." },
+    { question: "What do you get excited about?", answer: "I get excited about learning new things." },
+    { question: "Can you take care of this?", answer: "Yes, I can take care of this problem." },
+    { question: "Which phrasal verb do you use most?", answer: "I use 'look up' most often." },
+    { question: "Do you make decisions quickly?", answer: "Yes, I usually make decisions quickly." },
+    { question: "What separates good students from great ones?", answer: "Practice separates good students from great ones." },
+    { question: "How do you make progress?", answer: "I make progress by practicing every day." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you need to have done?", answer: "I need to have my homework checked." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Can you take care of this?", answer: "Yes, I can take care of this problem." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "How do you make progress?", answer: "I make progress by practicing every day." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Do you enjoy reading books?", answer: "Yes, I enjoy reading books very much." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Do you make decisions quickly?", answer: "Yes, I usually make decisions quickly." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you need to have done?", answer: "I need to have my homework checked." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Can you take care of this?", answer: "Yes, I can take care of this problem." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "How do you make progress?", answer: "I make progress by practicing every day." }
+  ]
+};
+
+// Module 124 Data
+const MODULE_124_DATA = {
+  title: "Module 124 - Relative Clauses Defining Nondefining",
+  description: "Learn relative clauses defining nondefining - B1 intermediate level grammar",
+  intro: `🎯 Objective:\nStudents will learn how to use defining and non-defining relative clauses to give essential and extra information about nouns.\n\n📘 Konu Anlatımı (Türkçe Açıklama)`,
+  tip: "🎯 Objective:\nStudents will learn how to use defining and non-defining relative clauses to give essential and extra information about nouns.",
+
+  table: [],
+
+  listeningExamples: [
+    "Relative clause (ilgi cümleciği), bir isim hakkında daha fazla bilgi vermek için kullanılır.",
+    "Virgül kullanılmaz.",
+    "- Örnek: The man who lives next door is a doctor.",
+    "Virgül kullanılır.",
+    "- Örnek: My brother, who lives in Paris, is coming tomorrow."
+  ],
+
+  speakingPractice: [
+    { question: "Are you used to speaking English?", answer: "Yes, I am getting used to speaking English." },
+    { question: "What do you need to have done?", answer: "I need to have my homework checked." },
+    { question: "Can you describe the person who called?", answer: "The person who called was very polite." },
+    { question: "Do you enjoy reading books?", answer: "Yes, I enjoy reading books very much." },
+    { question: "What do you get excited about?", answer: "I get excited about learning new things." },
+    { question: "Can you take care of this?", answer: "Yes, I can take care of this problem." },
+    { question: "Which phrasal verb do you use most?", answer: "I use 'look up' most often." },
+    { question: "Do you make decisions quickly?", answer: "Yes, I usually make decisions quickly." },
+    { question: "What separates good students from great ones?", answer: "Practice separates good students from great ones." },
+    { question: "How do you make progress?", answer: "I make progress by practicing every day." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you need to have done?", answer: "I need to have my homework checked." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Can you take care of this?", answer: "Yes, I can take care of this problem." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "How do you make progress?", answer: "I make progress by practicing every day." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Do you enjoy reading books?", answer: "Yes, I enjoy reading books very much." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Do you make decisions quickly?", answer: "Yes, I usually make decisions quickly." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you need to have done?", answer: "I need to have my homework checked." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Can you take care of this?", answer: "Yes, I can take care of this problem." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "How do you make progress?", answer: "I make progress by practicing every day." }
+  ]
+};
+
+// Module 125 Data
+const MODULE_125_DATA = {
+  title: "Module 125 - Gerunds And Infinitives Review",
+  description: "Learn gerunds and infinitives review - B1 intermediate level grammar",
+  intro: `🎯 Objective:\nStudents will review and consolidate their understanding of gerunds and infinitives, including verbs followed by gerunds, infinitives, or both with a change in meaning.\n\n📘 Konu Anlatımı (Türkçe Açıklama)`,
+  tip: "Gerund (fiil+ing) ve infinitive (to + fiil) yapıları fiillerden sonra kullanılır ve hangi fiilin hangisini aldığı ezberlenmelidir.\nBazı fiiller yalnızca gerund, bazıları yalnızca infinitive, bazıları ise her ikisini alır ancak anlam değişebilir.\n\n✅ Gerund (Verb + -ing):\n- enjoy, avoid, suggest, finish, mind, etc.\n- Örnek: I enjoy reading.\n\n✅ Infinitive (to + Verb):\n- want, hope, decide, plan, learn, etc.\n- Örnek: I want to go.\n\n✅ Both (anlam değişebilir):\n- remember, stop, try, forget, etc.\n- Örnek: I stopped smoking. (Bıraktım) / I stopped to smoke. (Durdum, sonra sigara içtim)",
+
+  table: [],
+
+  listeningExamples: [
+    "✅ Gerund (Verb + -ing):\n- enjoy, avoid, suggest, finish, mind, etc.",
+    "- Örnek: I enjoy reading.",
+    "✅ Infinitive (to + Verb):\n- want, hope, decide, plan, learn, etc.",
+    "- Örnek: I want to go.",
+    "✅ Both (anlam değişebilir):\n- remember, stop, try, forget, etc."
+  ],
+
+  speakingPractice: [
+    { question: "Are you used to speaking English?", answer: "Yes, I am getting used to speaking English." },
+    { question: "What do you need to have done?", answer: "I need to have my homework checked." },
+    { question: "Can you describe the person who called?", answer: "The person who called was very polite." },
+    { question: "Do you enjoy reading books?", answer: "Yes, I enjoy reading books very much." },
+    { question: "What do you get excited about?", answer: "I get excited about learning new things." },
+    { question: "Can you take care of this?", answer: "Yes, I can take care of this problem." },
+    { question: "Which phrasal verb do you use most?", answer: "I use 'look up' most often." },
+    { question: "Do you make decisions quickly?", answer: "Yes, I usually make decisions quickly." },
+    { question: "What separates good students from great ones?", answer: "Practice separates good students from great ones." },
+    { question: "How do you make progress?", answer: "I make progress by practicing every day." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you need to have done?", answer: "I need to have my homework checked." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Can you take care of this?", answer: "Yes, I can take care of this problem." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "How do you make progress?", answer: "I make progress by practicing every day." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Do you enjoy reading books?", answer: "Yes, I enjoy reading books very much." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Do you make decisions quickly?", answer: "Yes, I usually make decisions quickly." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you need to have done?", answer: "I need to have my homework checked." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Can you take care of this?", answer: "Yes, I can take care of this problem." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "How do you make progress?", answer: "I make progress by practicing every day." }
+  ]
+};
+
+// Module 126 Data
+const MODULE_126_DATA = {
+  title: "Module 126 - Expressions With Get",
+  description: "Learn expressions with get - B1 intermediate level grammar",
+  intro: `Module 126: Expressions with Get (get ready, get tired, etc.)\n\n📘 Konu Anlatımı (Türkçe Açıklama)`,
+  tip: "📗 Structure & Usage",
+
+  table: [],
+
+  listeningExamples: [
+    "- She got married last year.",
+    "- He’s getting ready for the meeting.",
+    "🧠 Example Sentences."
+  ],
+
+  speakingPractice: [
+    { question: "Are you used to speaking English?", answer: "Yes, I am getting used to speaking English." },
+    { question: "What do you need to have done?", answer: "I need to have my homework checked." },
+    { question: "Can you describe the person who called?", answer: "The person who called was very polite." },
+    { question: "Do you enjoy reading books?", answer: "Yes, I enjoy reading books very much." },
+    { question: "What do you get excited about?", answer: "I get excited about learning new things." },
+    { question: "Can you take care of this?", answer: "Yes, I can take care of this problem." },
+    { question: "Which phrasal verb do you use most?", answer: "I use 'look up' most often." },
+    { question: "Do you make decisions quickly?", answer: "Yes, I usually make decisions quickly." },
+    { question: "What separates good students from great ones?", answer: "Practice separates good students from great ones." },
+    { question: "How do you make progress?", answer: "I make progress by practicing every day." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you need to have done?", answer: "I need to have my homework checked." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Can you take care of this?", answer: "Yes, I can take care of this problem." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "How do you make progress?", answer: "I make progress by practicing every day." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Do you enjoy reading books?", answer: "Yes, I enjoy reading books very much." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Do you make decisions quickly?", answer: "Yes, I usually make decisions quickly." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you need to have done?", answer: "I need to have my homework checked." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Can you take care of this?", answer: "Yes, I can take care of this problem." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "How do you make progress?", answer: "I make progress by practicing every day." }
+  ]
+};
+
+// Module 127 Data
+const MODULE_127_DATA = {
+  title: "Module 127 - Expressions With Take",
+  description: "Learn expressions with take - B1 intermediate level grammar",
+  intro: `Module 127: Expressions with Take (take part, take place, etc.)\n\n📘 Konu Anlatımı (Türkçe Açıklama)`,
+  tip: "📗 Structure & Usage",
+
+  table: [],
+
+  listeningExamples: [
+    "✅ Structure:\n- Subject + take + noun/expression\n\nExamples:\n- She took part in the discussion.",
+    "- The event will take place tomorrow.",
+    "- Please take care of the documents.",
+    "- I need to take a break.",
+    "🧠 Example Sentences."
+  ],
+
+  speakingPractice: [
+    { question: "Are you used to speaking English?", answer: "Yes, I am getting used to speaking English." },
+    { question: "What do you need to have done?", answer: "I need to have my homework checked." },
+    { question: "Can you describe the person who called?", answer: "The person who called was very polite." },
+    { question: "Do you enjoy reading books?", answer: "Yes, I enjoy reading books very much." },
+    { question: "What do you get excited about?", answer: "I get excited about learning new things." },
+    { question: "Can you take care of this?", answer: "Yes, I can take care of this problem." },
+    { question: "Which phrasal verb do you use most?", answer: "I use 'look up' most often." },
+    { question: "Do you make decisions quickly?", answer: "Yes, I usually make decisions quickly." },
+    { question: "What separates good students from great ones?", answer: "Practice separates good students from great ones." },
+    { question: "How do you make progress?", answer: "I make progress by practicing every day." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you need to have done?", answer: "I need to have my homework checked." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Can you take care of this?", answer: "Yes, I can take care of this problem." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "How do you make progress?", answer: "I make progress by practicing every day." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Do you enjoy reading books?", answer: "Yes, I enjoy reading books very much." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Do you make decisions quickly?", answer: "Yes, I usually make decisions quickly." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you need to have done?", answer: "I need to have my homework checked." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Can you take care of this?", answer: "Yes, I can take care of this problem." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "How do you make progress?", answer: "I make progress by practicing every day." }
+  ]
+};
+
+// Module 128 Data
+const MODULE_128_DATA = {
+  title: "Module 128 - Phrasal Verbs Separable Inseparable",
+  description: "Learn phrasal verbs separable inseparable - B1 intermediate level grammar",
+  intro: `🎯 Objective:\nStudents will learn to distinguish between separable and inseparable phrasal verbs and use them correctly in different sentence structures.\n\n📘 Konu Anlatımı (Türkçe Açıklama)`,
+  tip: "🎯 Objective:\nStudents will learn to distinguish between separable and inseparable phrasal verbs and use them correctly in different sentence structures.",
+
+  table: [],
+
+  listeningExamples: [
+    "Phrasal verbs (öbek fiiller), bir fiil ile bir edat veya zarfın birleşmesiyle oluşur.",
+    "Anlamları çoğu zaman fiilin kendi anlamından farklıdır.",
+    "- Örnek: Turn off the lights / Turn the lights off.",
+    "✅ Inseparable (Ayrılamayan):\n- Nesne mutlaka phrasal verb’den sonra gelir.",
+    "- Örnek: Look after the baby (NOT: ~Look the baby after~)."
+  ],
+
+  speakingPractice: [
+    { question: "Are you used to speaking English?", answer: "Yes, I am getting used to speaking English." },
+    { question: "What do you need to have done?", answer: "I need to have my homework checked." },
+    { question: "Can you describe the person who called?", answer: "The person who called was very polite." },
+    { question: "Do you enjoy reading books?", answer: "Yes, I enjoy reading books very much." },
+    { question: "What do you get excited about?", answer: "I get excited about learning new things." },
+    { question: "Can you take care of this?", answer: "Yes, I can take care of this problem." },
+    { question: "Which phrasal verb do you use most?", answer: "I use 'look up' most often." },
+    { question: "Do you make decisions quickly?", answer: "Yes, I usually make decisions quickly." },
+    { question: "What separates good students from great ones?", answer: "Practice separates good students from great ones." },
+    { question: "How do you make progress?", answer: "I make progress by practicing every day." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you need to have done?", answer: "I need to have my homework checked." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Can you take care of this?", answer: "Yes, I can take care of this problem." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "How do you make progress?", answer: "I make progress by practicing every day." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Do you enjoy reading books?", answer: "Yes, I enjoy reading books very much." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Do you make decisions quickly?", answer: "Yes, I usually make decisions quickly." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you need to have done?", answer: "I need to have my homework checked." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Can you take care of this?", answer: "Yes, I can take care of this problem." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "How do you make progress?", answer: "I make progress by practicing every day." }
+  ]
+};
+
+// Module 129 Data
+const MODULE_129_DATA = {
+  title: "Module 129 - Phrasal Verbs Common Everyday Verbs",
+  description: "Learn phrasal verbs common everyday verbs - B1 intermediate level grammar",
+  intro: `🎯 Objective:\nStudents will learn and practice common phrasal verbs used in everyday English conversations.\n\n📘 Konu Anlatımı (Türkçe Açıklama)`,
+  tip: "📗 Structure & Usage",
+
+  table: [],
+
+  listeningExamples: [
+    "✅ Examples:\n- I wake up at 7 a.",
+    "- She gave up smoking last year.",
+    "- We’re looking for a new apartment.",
+    "- He found out the truth.",
+    "- Don’t forget to turn off the lights."
+  ],
+
+  speakingPractice: [
+    { question: "Are you used to speaking English?", answer: "Yes, I am getting used to speaking English." },
+    { question: "What do you need to have done?", answer: "I need to have my homework checked." },
+    { question: "Can you describe the person who called?", answer: "The person who called was very polite." },
+    { question: "Do you enjoy reading books?", answer: "Yes, I enjoy reading books very much." },
+    { question: "What do you get excited about?", answer: "I get excited about learning new things." },
+    { question: "Can you take care of this?", answer: "Yes, I can take care of this problem." },
+    { question: "Which phrasal verb do you use most?", answer: "I use 'look up' most often." },
+    { question: "Do you make decisions quickly?", answer: "Yes, I usually make decisions quickly." },
+    { question: "What separates good students from great ones?", answer: "Practice separates good students from great ones." },
+    { question: "How do you make progress?", answer: "I make progress by practicing every day." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you need to have done?", answer: "I need to have my homework checked." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Can you take care of this?", answer: "Yes, I can take care of this problem." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "How do you make progress?", answer: "I make progress by practicing every day." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Do you enjoy reading books?", answer: "Yes, I enjoy reading books very much." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Do you make decisions quickly?", answer: "Yes, I usually make decisions quickly." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you need to have done?", answer: "I need to have my homework checked." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Can you take care of this?", answer: "Yes, I can take care of this problem." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "How do you make progress?", answer: "I make progress by practicing every day." }
+  ]
+};
+
+// Module 130 Data
+const MODULE_130_DATA = {
+  title: "Module 130 - Collocations With Make And Do",
+  description: "Learn collocations with make and do - B1 intermediate level grammar",
+  intro: `🎯 Objective:\nStudents will learn common collocations with 'make' and 'do' and be able to use them correctly in various contexts.\n\n📘 Konu Anlatımı (Türkçe Açıklama)`,
+  tip: "📗 Structure & Usage",
+
+  table: [],
+
+  listeningExamples: [
+    "✅ 'Make' is often used when we talk about producing, creating, or constructing something.",
+    "✅ 'Do' is usually used for actions, obligations, and repetitive tasks.",
+    "Examples:\n- I made a cake for her birthday.",
+    "- He did the laundry last night.",
+    "- They made a big mistake."
+  ],
+
+  speakingPractice: [
+    { question: "Are you used to speaking English?", answer: "Yes, I am getting used to speaking English." },
+    { question: "What do you need to have done?", answer: "I need to have my homework checked." },
+    { question: "Can you describe the person who called?", answer: "The person who called was very polite." },
+    { question: "Do you enjoy reading books?", answer: "Yes, I enjoy reading books very much." },
+    { question: "What do you get excited about?", answer: "I get excited about learning new things." },
+    { question: "Can you take care of this?", answer: "Yes, I can take care of this problem." },
+    { question: "Which phrasal verb do you use most?", answer: "I use 'look up' most often." },
+    { question: "Do you make decisions quickly?", answer: "Yes, I usually make decisions quickly." },
+    { question: "What separates good students from great ones?", answer: "Practice separates good students from great ones." },
+    { question: "How do you make progress?", answer: "I make progress by practicing every day." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you need to have done?", answer: "I need to have my homework checked." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Can you take care of this?", answer: "Yes, I can take care of this problem." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "How do you make progress?", answer: "I make progress by practicing every day." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Do you enjoy reading books?", answer: "Yes, I enjoy reading books very much." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Do you make decisions quickly?", answer: "Yes, I usually make decisions quickly." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you need to have done?", answer: "I need to have my homework checked." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Can you take care of this?", answer: "Yes, I can take care of this problem." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "How do you make progress?", answer: "I make progress by practicing every day." }
+  ]
+};
+
+// Module 131 Data
+const MODULE_131_DATA = {
+  title: "Module 131 - Indirect Questions",
+  description: "Learn indirect questions - B1 intermediate level grammar",
+  intro: `Indirect questions are more polite and formal than direct questions. They often start with phrases like:\n- Could you tell me...\n- Do you know...\n- Would you mind telling me...\n- I was wondering...\n\nThe word order in indirect questions is the same as in statements (subject + verb), not the question form.\n\nExamples:\n- Direct: Where is the bank?\n- Indirect: Could you tell me where the bank is?\n\n- Direct: What time does the movie start?\n- Indirect: Do you know what time the movie starts?\n\nNo auxiliary verbs like 'do/does/did' are used in the indirect part of the question.`,
+  tip: "Indirect questions are more polite and formal than direct questions. They often start with phrases like:\n- Could you tell me...\n- Do you know...\n- Would you mind telling me...\n- I was wondering...\n\nThe word order in indirect questions is the same as in statements (subject + verb), not the question form.\n\nExamples:\n- Direct: Where is the bank?\n- Indirect: Could you tell me where the bank is?\n\n- Direct: What time does the movie start?\n- Indirect: Do you know what time the movie starts?\n\nNo auxiliary verbs like 'do/does/did' are used in the indirect part of the question.",
+
+  table: [],
+
+  listeningExamples: [
+    "Indirect questions are more polite and formal than direct questions.",
+    "They often start with phrases like:\n- Could you tell me.",
+    "- Do you know.",
+    "- Would you mind telling me.",
+    "- I was wondering."
+  ],
+
+  speakingPractice: [
+    { question: "Could you tell me where the station is?", answer: "Yes, the station is just around the corner." },
+    { question: "What do you think about this idea?", answer: "I think it's a great idea." },
+    { question: "Do you agree with this opinion?", answer: "Yes, I completely agree with this opinion." },
+    { question: "What might happen next?", answer: "I think it might rain later." },
+    { question: "If you were in my situation, what would you do?", answer: "If I were you, I would ask for help." },
+    { question: "Which do you prefer, coffee or tea?", answer: "I prefer coffee to tea." },
+    { question: "What happened first in your story?", answer: "First, I woke up early in the morning." },
+    { question: "However, what was the main problem?", answer: "However, the main problem was lack of time." },
+    { question: "Can you describe your most memorable experience?", answer: "My most memorable experience was traveling abroad." },
+    { question: "Why did this happen?", answer: "This happened because of poor planning." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you think about this idea?", answer: "I think it's a great idea." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Which do you prefer, coffee or tea?", answer: "I prefer coffee to tea." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Why did this happen?", answer: "This happened because of poor planning." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What might happen next?", answer: "I think it might rain later." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "However, what was the main problem?", answer: "However, the main problem was lack of time." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you think about this idea?", answer: "I think it's a great idea." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Which do you prefer, coffee or tea?", answer: "I prefer coffee to tea." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Why did this happen?", answer: "This happened because of poor planning." }
+  ]
+};
+
+// Module 132 Data
+const MODULE_132_DATA = {
+  title: "Module 132 - Giving Opinions Agreeing Disagreeing",
+  description: "Learn giving opinions agreeing disagreeing - B1 intermediate level grammar",
+  intro: `• In my opinion... → In my opinion, school should start later.`,
+  tip: "20. Do you think school uniforms are good?\n→ In my opinion, they are useful.",
+
+  table: [],
+
+  listeningExamples: [
+    "→ I think it's a good idea.",
+    "• In my opinion.",
+    "→ In my opinion, school should start later.",
+    "• I believe.",
+    "→ I believe he is right."
+  ],
+
+  speakingPractice: [
+    { question: "Could you tell me where the station is?", answer: "Yes, the station is just around the corner." },
+    { question: "What do you think about this idea?", answer: "I think it's a great idea." },
+    { question: "Do you agree with this opinion?", answer: "Yes, I completely agree with this opinion." },
+    { question: "What might happen next?", answer: "I think it might rain later." },
+    { question: "If you were in my situation, what would you do?", answer: "If I were you, I would ask for help." },
+    { question: "Which do you prefer, coffee or tea?", answer: "I prefer coffee to tea." },
+    { question: "What happened first in your story?", answer: "First, I woke up early in the morning." },
+    { question: "However, what was the main problem?", answer: "However, the main problem was lack of time." },
+    { question: "Can you describe your most memorable experience?", answer: "My most memorable experience was traveling abroad." },
+    { question: "Why did this happen?", answer: "This happened because of poor planning." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you think about this idea?", answer: "I think it's a great idea." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Which do you prefer, coffee or tea?", answer: "I prefer coffee to tea." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Why did this happen?", answer: "This happened because of poor planning." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What might happen next?", answer: "I think it might rain later." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "However, what was the main problem?", answer: "However, the main problem was lack of time." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you think about this idea?", answer: "I think it's a great idea." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Which do you prefer, coffee or tea?", answer: "I prefer coffee to tea." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Why did this happen?", answer: "This happened because of poor planning." }
+  ]
+};
+
+// Module 133 Data
+const MODULE_133_DATA = {
+  title: "Module 133 - Speculating And Expressing Possibility",
+  description: "Learn speculating and expressing possibility - B1 intermediate level grammar",
+  intro: `Module 133: Speculating and Expressing Possibility`,
+  tip: "5. Is this information true?\n→ Perhaps it’s true.",
+
+  table: [],
+
+  listeningExamples: [
+    "• might → It might rain tomorrow.",
+    "• may → She may come later.",
+    "• could → He could be at home.",
+    "• must → She must be tired.",
+    "(strong assumption)."
+  ],
+
+  speakingPractice: [
+    { question: "Could you tell me where the station is?", answer: "Yes, the station is just around the corner." },
+    { question: "What do you think about this idea?", answer: "I think it's a great idea." },
+    { question: "Do you agree with this opinion?", answer: "Yes, I completely agree with this opinion." },
+    { question: "What might happen next?", answer: "I think it might rain later." },
+    { question: "If you were in my situation, what would you do?", answer: "If I were you, I would ask for help." },
+    { question: "Which do you prefer, coffee or tea?", answer: "I prefer coffee to tea." },
+    { question: "What happened first in your story?", answer: "First, I woke up early in the morning." },
+    { question: "However, what was the main problem?", answer: "However, the main problem was lack of time." },
+    { question: "Can you describe your most memorable experience?", answer: "My most memorable experience was traveling abroad." },
+    { question: "Why did this happen?", answer: "This happened because of poor planning." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you think about this idea?", answer: "I think it's a great idea." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Which do you prefer, coffee or tea?", answer: "I prefer coffee to tea." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Why did this happen?", answer: "This happened because of poor planning." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What might happen next?", answer: "I think it might rain later." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "However, what was the main problem?", answer: "However, the main problem was lack of time." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you think about this idea?", answer: "I think it's a great idea." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Which do you prefer, coffee or tea?", answer: "I prefer coffee to tea." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Why did this happen?", answer: "This happened because of poor planning." }
+  ]
+};
+
+// Module 134 Data
+const MODULE_134_DATA = {
+  title: "Module 134 - Talking About Hypothetical Situations",
+  description: "Learn talking about hypothetical situations - B1 intermediate level grammar",
+  intro: `Bu modülde varsayımsal (gerçek olmayan, hayali) durumları ifade etmeyi öğreneceğiz. Genellikle 'if' cümleleriyle kurulur ve ikinci koşul (Second Conditional) yapısı kullanılır.\n\nBu modülde varsayımsal (gerçek olmayan, hayali) durumları ifade etmeyi öğreneceğiz. Genellikle 'if' cümleleriyle kurulur ve ikinci koşul (Second Conditional) yapısı kullanılır.`,
+  tip: "Remember to practice this grammar structure regularly.",
+
+  table: [],
+
+  listeningExamples: [
+    "→ If I won the lottery, I would buy a big house.",
+    "• If I were rich, I would travel the world.",
+    "• If he studied more, he would pass the exam.",
+    "• If we had a car, we would go to the beach.",
+    "• If I were you, I would talk to her."
+  ],
+
+  speakingPractice: [
+    { question: "Could you tell me where the station is?", answer: "Yes, the station is just around the corner." },
+    { question: "What do you think about this idea?", answer: "I think it's a great idea." },
+    { question: "Do you agree with this opinion?", answer: "Yes, I completely agree with this opinion." },
+    { question: "What might happen next?", answer: "I think it might rain later." },
+    { question: "If you were in my situation, what would you do?", answer: "If I were you, I would ask for help." },
+    { question: "Which do you prefer, coffee or tea?", answer: "I prefer coffee to tea." },
+    { question: "What happened first in your story?", answer: "First, I woke up early in the morning." },
+    { question: "However, what was the main problem?", answer: "However, the main problem was lack of time." },
+    { question: "Can you describe your most memorable experience?", answer: "My most memorable experience was traveling abroad." },
+    { question: "Why did this happen?", answer: "This happened because of poor planning." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you think about this idea?", answer: "I think it's a great idea." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Which do you prefer, coffee or tea?", answer: "I prefer coffee to tea." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Why did this happen?", answer: "This happened because of poor planning." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What might happen next?", answer: "I think it might rain later." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "However, what was the main problem?", answer: "However, the main problem was lack of time." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you think about this idea?", answer: "I think it's a great idea." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Which do you prefer, coffee or tea?", answer: "I prefer coffee to tea." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Why did this happen?", answer: "This happened because of poor planning." }
+  ]
+};
+
+// Module 135 Data
+const MODULE_135_DATA = {
+  title: "Module 135 - Expressing Preferences",
+  description: "Learn expressing preferences - B1 intermediate level grammar",
+  intro: `Bu modülde tercihlerimizi ifade etmeyi öğreneceğiz. İngilizcede bir şeyi başka bir şeye tercih ettiğimizi belirtmek için 'I prefer' ve 'I’d rather (I would rather)' kalıpları kullanılır.`,
+  tip: "Remember to practice this grammar structure regularly.",
+
+  table: [],
+
+  listeningExamples: [
+    "📌 Yapılar ve Örnekler."
+  ],
+
+  speakingPractice: [
+    { question: "Could you tell me where the station is?", answer: "Yes, the station is just around the corner." },
+    { question: "What do you think about this idea?", answer: "I think it's a great idea." },
+    { question: "Do you agree with this opinion?", answer: "Yes, I completely agree with this opinion." },
+    { question: "What might happen next?", answer: "I think it might rain later." },
+    { question: "If you were in my situation, what would you do?", answer: "If I were you, I would ask for help." },
+    { question: "Which do you prefer, coffee or tea?", answer: "I prefer coffee to tea." },
+    { question: "What happened first in your story?", answer: "First, I woke up early in the morning." },
+    { question: "However, what was the main problem?", answer: "However, the main problem was lack of time." },
+    { question: "Can you describe your most memorable experience?", answer: "My most memorable experience was traveling abroad." },
+    { question: "Why did this happen?", answer: "This happened because of poor planning." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you think about this idea?", answer: "I think it's a great idea." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Which do you prefer, coffee or tea?", answer: "I prefer coffee to tea." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Why did this happen?", answer: "This happened because of poor planning." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What might happen next?", answer: "I think it might rain later." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "However, what was the main problem?", answer: "However, the main problem was lack of time." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you think about this idea?", answer: "I think it's a great idea." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Which do you prefer, coffee or tea?", answer: "I prefer coffee to tea." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Why did this happen?", answer: "This happened because of poor planning." }
+  ]
+};
+
+// Module 136 Data
+const MODULE_136_DATA = {
+  title: "Module 136 - Narratives Sequencing Words",
+  description: "Learn narratives sequencing words - B1 intermediate level grammar",
+  intro: `Bu modülde bir hikaye veya olay anlatırken olayların sırasını belirten kelimeleri (sequencing words) kullanmayı öğreneceğiz. Bu kelimeler anlatımın düzenli ve anlaşılır olmasına yardımcı olur.`,
+  tip: "Remember to practice this grammar structure regularly.",
+
+  table: [],
+
+  listeningExamples: [
+    "📖 Örnek Paragraf."
+  ],
+
+  speakingPractice: [
+    { question: "Could you tell me where the station is?", answer: "Yes, the station is just around the corner." },
+    { question: "What do you think about this idea?", answer: "I think it's a great idea." },
+    { question: "Do you agree with this opinion?", answer: "Yes, I completely agree with this opinion." },
+    { question: "What might happen next?", answer: "I think it might rain later." },
+    { question: "If you were in my situation, what would you do?", answer: "If I were you, I would ask for help." },
+    { question: "Which do you prefer, coffee or tea?", answer: "I prefer coffee to tea." },
+    { question: "What happened first in your story?", answer: "First, I woke up early in the morning." },
+    { question: "However, what was the main problem?", answer: "However, the main problem was lack of time." },
+    { question: "Can you describe your most memorable experience?", answer: "My most memorable experience was traveling abroad." },
+    { question: "Why did this happen?", answer: "This happened because of poor planning." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you think about this idea?", answer: "I think it's a great idea." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Which do you prefer, coffee or tea?", answer: "I prefer coffee to tea." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Why did this happen?", answer: "This happened because of poor planning." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What might happen next?", answer: "I think it might rain later." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "However, what was the main problem?", answer: "However, the main problem was lack of time." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you think about this idea?", answer: "I think it's a great idea." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Which do you prefer, coffee or tea?", answer: "I prefer coffee to tea." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Why did this happen?", answer: "This happened because of poor planning." }
+  ]
+};
+
+// Module 137 Data
+const MODULE_137_DATA = {
+  title: "Module 137 - Linking Words",
+  description: "Learn linking words - B1 intermediate level grammar",
+  intro: `Bu modülde fikirler arasında bağ kuran linking words'leri (bağlaçları) öğreneceğiz. Özellikle zıtlık (contrast) belirten 'however', 'although', 'despite' gibi kelimelere odaklanacağız.`,
+  tip: "36. He is shy. Does he perform well?\n→ Yes, although he’s shy.",
+
+  table: [],
+
+  listeningExamples: [
+    "📌 Önemli Linking Words ve Örnekler."
+  ],
+
+  speakingPractice: [
+    { question: "Could you tell me where the station is?", answer: "Yes, the station is just around the corner." },
+    { question: "What do you think about this idea?", answer: "I think it's a great idea." },
+    { question: "Do you agree with this opinion?", answer: "Yes, I completely agree with this opinion." },
+    { question: "What might happen next?", answer: "I think it might rain later." },
+    { question: "If you were in my situation, what would you do?", answer: "If I were you, I would ask for help." },
+    { question: "Which do you prefer, coffee or tea?", answer: "I prefer coffee to tea." },
+    { question: "What happened first in your story?", answer: "First, I woke up early in the morning." },
+    { question: "However, what was the main problem?", answer: "However, the main problem was lack of time." },
+    { question: "Can you describe your most memorable experience?", answer: "My most memorable experience was traveling abroad." },
+    { question: "Why did this happen?", answer: "This happened because of poor planning." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you think about this idea?", answer: "I think it's a great idea." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Which do you prefer, coffee or tea?", answer: "I prefer coffee to tea." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Why did this happen?", answer: "This happened because of poor planning." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What might happen next?", answer: "I think it might rain later." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "However, what was the main problem?", answer: "However, the main problem was lack of time." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you think about this idea?", answer: "I think it's a great idea." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Which do you prefer, coffee or tea?", answer: "I prefer coffee to tea." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Why did this happen?", answer: "This happened because of poor planning." }
+  ]
+};
+
+// Module 138 Data
+const MODULE_138_DATA = {
+  title: "Module 138 - Describing Experiences Narratives",
+  description: "Learn describing experiences narratives - B1 intermediate level grammar",
+  intro: `Bu modülde geçmişte yaşanmış olayları, anıları veya deneyimleri anlatmayı öğreneceğiz. Genellikle past simple ve sequencing words (first, then, after that, finally) kullanılır.`,
+  tip: "Remember to practice this grammar structure regularly.",
+
+  table: [],
+
+  listeningExamples: [
+    "📌 Yapılar ve Örnekler."
+  ],
+
+  speakingPractice: [
+    { question: "Could you tell me where the station is?", answer: "Yes, the station is just around the corner." },
+    { question: "What do you think about this idea?", answer: "I think it's a great idea." },
+    { question: "Do you agree with this opinion?", answer: "Yes, I completely agree with this opinion." },
+    { question: "What might happen next?", answer: "I think it might rain later." },
+    { question: "If you were in my situation, what would you do?", answer: "If I were you, I would ask for help." },
+    { question: "Which do you prefer, coffee or tea?", answer: "I prefer coffee to tea." },
+    { question: "What happened first in your story?", answer: "First, I woke up early in the morning." },
+    { question: "However, what was the main problem?", answer: "However, the main problem was lack of time." },
+    { question: "Can you describe your most memorable experience?", answer: "My most memorable experience was traveling abroad." },
+    { question: "Why did this happen?", answer: "This happened because of poor planning." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you think about this idea?", answer: "I think it's a great idea." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Which do you prefer, coffee or tea?", answer: "I prefer coffee to tea." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Why did this happen?", answer: "This happened because of poor planning." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What might happen next?", answer: "I think it might rain later." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "However, what was the main problem?", answer: "However, the main problem was lack of time." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you think about this idea?", answer: "I think it's a great idea." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Which do you prefer, coffee or tea?", answer: "I prefer coffee to tea." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Why did this happen?", answer: "This happened because of poor planning." }
+  ]
+};
+
+// Module 139 Data
+const MODULE_139_DATA = {
+  title: "Module 139 - Cause And Effect",
+  description: "Learn cause and effect - B1 intermediate level grammar",
+  intro: `Bu modülde neden-sonuç ilişkisi kurmayı öğreneceğiz. 'So' sonucu, 'because' ise nedeni açıklar. Bu bağlaçlar, olaylar arasındaki bağlantıyı anlamamıza yardımcı olur.`,
+  tip: "38. Why were you surprised?\n→ Because they remembered my birthday.",
+
+  table: [],
+
+  listeningExamples: [
+    "📌 Yapılar ve Örnekler."
+  ],
+
+  speakingPractice: [
+    { question: "Could you tell me where the station is?", answer: "Yes, the station is just around the corner." },
+    { question: "What do you think about this idea?", answer: "I think it's a great idea." },
+    { question: "Do you agree with this opinion?", answer: "Yes, I completely agree with this opinion." },
+    { question: "What might happen next?", answer: "I think it might rain later." },
+    { question: "If you were in my situation, what would you do?", answer: "If I were you, I would ask for help." },
+    { question: "Which do you prefer, coffee or tea?", answer: "I prefer coffee to tea." },
+    { question: "What happened first in your story?", answer: "First, I woke up early in the morning." },
+    { question: "However, what was the main problem?", answer: "However, the main problem was lack of time." },
+    { question: "Can you describe your most memorable experience?", answer: "My most memorable experience was traveling abroad." },
+    { question: "Why did this happen?", answer: "This happened because of poor planning." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you think about this idea?", answer: "I think it's a great idea." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Which do you prefer, coffee or tea?", answer: "I prefer coffee to tea." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Why did this happen?", answer: "This happened because of poor planning." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What might happen next?", answer: "I think it might rain later." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "However, what was the main problem?", answer: "However, the main problem was lack of time." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you think about this idea?", answer: "I think it's a great idea." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Which do you prefer, coffee or tea?", answer: "I prefer coffee to tea." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Why did this happen?", answer: "This happened because of poor planning." }
+  ]
+};
+
+// Module 140 Data
+const MODULE_140_DATA = {
+  title: "Module 140 - Talking About Purpose",
+  description: "Learn talking about purpose - B1 intermediate level grammar",
+  intro: `Module 140: Talking about Purpose (to, in order to, so that)\n\nBu modülde bir eylemin amacını ifade etmeyi öğreneceğiz. 'To', 'in order to' ve 'so that' gibi kalıplar, neden bir şey yaptığımızı açıklamak için kullanılır.`,
+  tip: "17. Why did she take notes?\n→ So that she could remember later.",
+
+  table: [],
+
+  listeningExamples: [
+    "📌 Yapılar ve Örnekler."
+  ],
+
+  speakingPractice: [
+    { question: "Could you tell me where the station is?", answer: "Yes, the station is just around the corner." },
+    { question: "What do you think about this idea?", answer: "I think it's a great idea." },
+    { question: "Do you agree with this opinion?", answer: "Yes, I completely agree with this opinion." },
+    { question: "What might happen next?", answer: "I think it might rain later." },
+    { question: "If you were in my situation, what would you do?", answer: "If I were you, I would ask for help." },
+    { question: "Which do you prefer, coffee or tea?", answer: "I prefer coffee to tea." },
+    { question: "What happened first in your story?", answer: "First, I woke up early in the morning." },
+    { question: "However, what was the main problem?", answer: "However, the main problem was lack of time." },
+    { question: "Can you describe your most memorable experience?", answer: "My most memorable experience was traveling abroad." },
+    { question: "Why did this happen?", answer: "This happened because of poor planning." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you think about this idea?", answer: "I think it's a great idea." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Which do you prefer, coffee or tea?", answer: "I prefer coffee to tea." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Why did this happen?", answer: "This happened because of poor planning." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What might happen next?", answer: "I think it might rain later." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "However, what was the main problem?", answer: "However, the main problem was lack of time." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "What do you think about this idea?", answer: "I think it's a great idea." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Which do you prefer, coffee or tea?", answer: "I prefer coffee to tea." },
+    { question: "Can you explain how to use this grammar?", answer: "Yes, I can explain this grammar rule." },
+    { question: "Do you understand this concept?", answer: "Yes, I understand this concept well." },
+    { question: "Would you like to practice more?", answer: "Yes, I would like more practice." },
+    { question: "Why did this happen?", answer: "This happened because of poor planning." }
+  ]
+};
