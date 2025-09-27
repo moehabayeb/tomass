@@ -124,7 +124,7 @@ export function VoiceControls({
     executeCommand,
     getAvailableCommands
   } = useVoiceCommands({
-    enabled: visible && isSupported,
+    enabled: visible,
     autoStart: false,
     config: {
       autoHideDelay: autoHideDelay

@@ -23,6 +23,7 @@ import VoiceControls from './lessons/VoiceControls';
 import ResumeChip from './lessons/ResumeChip';
 import { CelebrationOverlay } from './CelebrationOverlay';
 import { LessonAutoReader, type LessonContent, type ReadingProgress } from '@/utils/lessonAutoReader';
+import MobileCompactIntro from './MobileCompactIntro';
 // Import QA test for browser console access
 import '../utils/placementQA';
 
@@ -9303,205 +9304,22 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
 
         {/* Removed duplicate "Tomas is Teaching" card - consolidated below */}
 
-        {/* COMPACT INTRO SECTION - iPhone Optimized */}
+        {/* MOBILE COMPACT INTRO */}
         {(currentPhase === 'intro' || currentPhase === 'teacher-reading') && (
           <div ref={introRef}>
-            <Card className="bg-white/10 border-white/20 mb-4 rounded-2xl shadow-lg shadow-black/10">
-            <CardContent className="p-3 space-y-3">
-              {/* Compact Header with Tip */}
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <h3 className="text-white font-semibold text-base mb-1">{currentModuleData.title}</h3>
-                  <p className="text-white/70 text-xs">{currentModuleData.description}</p>
-                </div>
-                {'tip' in currentModuleData && currentModuleData.tip && (
-                  <div className="ml-2 bg-blue-500/20 rounded-full px-2 py-1 flex-shrink-0">
-                    <span className="text-blue-300 text-xs">💡</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Grammar Tip - Inline when available */}
-              {'tip' in currentModuleData && currentModuleData.tip && (
-                <div className="bg-blue-500/10 rounded-lg px-3 py-2">
-                  <p className="text-blue-300 text-xs font-medium">💡 {currentModuleData.tip}</p>
-                </div>
-              )}
-
-              {/* Lesson Content */}
-              <div className="text-white/90 whitespace-pre-line text-sm leading-relaxed">
-                {currentModuleData.intro}
-              </div>
-              
-              {'table' in currentModuleData && currentModuleData.table && (
-                <div className="bg-white/5 rounded-xl p-4">
-                  <h4 className="text-white font-semibold mb-3 text-center">
-                    {selectedModule === 1 ? '📊 Verb To Be Tablosu:' : 
-                     selectedModule === 2 ? '🧩 Verb To Be Negatif Tablosu:' : 
-                     selectedModule === 3 ? '❓ Verb To Be Soru Tablosu:' :
-                     selectedModule === 4 ? '💬 Verb To Be Short Answers Tablosu:' :
-                     selectedModule === 5 ? '👥 Subject Pronouns Tablosu:' :
-                     selectedModule === 6 ? '🏠 Possessive Adjectives Tablosu:' :
-                     selectedModule === 8 ? '📍 There is / There are Tablosu:' :
-                     selectedModule === 9 ? '🚫 There isn\'t / There aren\'t Tablosu:' :
-                     selectedModule === 10 ? '❓ There is / There are Soru Tablosu:' :
-                     selectedModule === 11 ? '📰 Articles Tablosu:' :
-                     selectedModule === 19 ? '❓ Simple Present Yes/No Questions Tablosu:' :
-                     '📊 Grammar Tablosu:'}
-                  </h4>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-white/90 text-sm">
-                      <thead>
-                        <tr className="border-b border-white/20">
-                          {selectedModule === 3 ? (
-                            <>
-                              <th className="text-left py-2 px-1">Verb To Be</th>
-                              <th className="text-left py-2 px-1">Subject</th>
-                              <th className="text-left py-2 px-1">Complement</th>
-                              <th className="text-left py-2 px-1">Example</th>
-                            </>
-                          ) : selectedModule === 4 ? (
-                            <>
-                              <th className="text-left py-2 px-1">Subject Pronoun</th>
-                              <th className="text-left py-2 px-1">Example</th>
-                            </>
-                          ) : selectedModule === 5 ? (
-                            <>
-                              <th className="text-left py-2 px-1">Subject Pronoun</th>
-                              <th className="text-left py-2 px-1">Example</th>
-                            </>
-                          ) : selectedModule === 6 ? (
-                            <>
-                              <th className="text-left py-2 px-1">Subject Pronoun</th>
-                              <th className="text-left py-2 px-1">Possessive Adjective</th>
-                              <th className="text-left py-2 px-1">Example</th>
-                            </>
-                          ) : selectedModule === 8 || selectedModule === 9 || selectedModule === 10 ? (
-                            <>
-                              <th className="text-left py-2 px-1">Structure</th>
-                              <th className="text-left py-2 px-1">Example</th>
-                            </>
-                           ) : selectedModule === 11 ? (
-                             <>
-                               <th className="text-left py-2 px-1">Article</th>
-                               <th className="text-left py-2 px-1">Usage</th>
-                               <th className="text-left py-2 px-1">Example</th>
-                             </>
-                           ) : selectedModule === 19 ? (
-                             <>
-                               <th className="text-left py-2 px-1">Structure</th>
-                               <th className="text-left py-2 px-1">Example</th>
-                             </>
-                           ) : (
-                            <>
-                              <th className="text-left py-2 px-1">Subject</th>
-                              <th className="text-left py-2 px-1">Verb To Be</th>
-                              {selectedModule === 2 && <th className="text-left py-2 px-1">Not</th>}
-                              <th className="text-left py-2 px-1">Complement</th>
-                              <th className="text-left py-2 px-1">Example</th>
-                            </>
-                          )}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {'table' in currentModuleData && currentModuleData.table && Array.isArray(currentModuleData.table) && currentModuleData.table.map((row, index) => (
-                          <tr key={index} className="border-b border-white/10">
-                            {selectedModule === 3 ? (
-                              <>
-                                <td className="py-2 px-1 text-blue-300 font-medium">{(row as any).verb}</td>
-                                <td className="py-2 px-1">{(row as any).subject}</td>
-                                <td className="py-2 px-1">{(row as any).complement}</td>
-                                <td className="py-2 px-1 italic">{(row as any).example}</td>
-                              </>
-                            ) : selectedModule === 4 ? (
-                              <>
-                                <td className="py-2 px-1 text-purple-300 font-medium">{(row as any).pronoun}</td>
-                                <td className="py-2 px-1 italic">{(row as any).example}</td>
-                              </>
-                            ) : selectedModule === 5 ? (
-                              <>
-                                <td className="py-2 px-1 text-purple-300 font-medium">{(row as any).pronoun}</td>
-                                <td className="py-2 px-1 italic">{(row as any).example}</td>
-                              </>
-                            ) : selectedModule === 6 ? (
-                              <>
-                                <td className="py-2 px-1 text-purple-300 font-medium">{(row as any).pronoun}</td>
-                                <td className="py-2 px-1 text-orange-300 font-medium">{(row as any).possessive}</td>
-                                <td className="py-2 px-1 italic">{(row as any).example}</td>
-                              </>
-                            ) : selectedModule === 8 || selectedModule === 9 || selectedModule === 10 ? (
-                              <>
-                                <td className="py-2 px-1 text-green-300 font-medium">{(row as any).structure}</td>
-                                <td className="py-2 px-1 italic">{(row as any).example}</td>
-                              </>
-                             ) : selectedModule === 11 ? (
-                               <>
-                                 <td className="py-2 px-1 text-blue-300 font-medium">{(row as any).article}</td>
-                                 <td className="py-2 px-1">{(row as any).usage}</td>
-                                 <td className="py-2 px-1 italic">{(row as any).example}</td>
-                               </>
-                             ) : selectedModule === 19 ? (
-                               <>
-                                 <td className="py-2 px-1 text-green-300 font-medium">{(row as any).structure}</td>
-                                 <td className="py-2 px-1 italic">{(row as any).example}</td>
-                               </>
-                             ) : (
-                              <>
-                                <td className="py-2 px-1 font-medium">{(row as any).subject}</td>
-                                <td className="py-2 px-1 text-blue-300">{(row as any).verb}</td>
-                                {selectedModule === 2 && 'not' in row && <td className="py-2 px-1 text-red-300">{(row as any).not}</td>}
-                                <td className="py-2 px-1">{(row as any).complement}</td>
-                                <td className="py-2 px-1 italic">{(row as any).example}</td>
-                              </>
-                            )}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
-
-              {/* Ultra-Compact iPhone Reading Indicator */}
-              {readingProgress && readingProgress.isReading && (
-                <div className="pt-2">
-                  <div className="flex items-center justify-between bg-white/10 rounded-full px-3 py-2 text-white shadow-sm">
-                    <div className="flex items-center space-x-2">
-                      <div className="animate-pulse text-xs">🎤</div>
-                      <span className="text-xs font-medium truncate">
-                        {readingProgress.currentSection} ({readingProgress.progress.toFixed(0)}%)
-                      </span>
-                    </div>
-                    <div className="w-12 bg-white/20 rounded-full h-1">
-                      <div 
-                        className="bg-gradient-to-r from-blue-400 to-blue-500 h-1 rounded-full transition-all duration-300"
-                        style={{ width: `${readingProgress.progress}%` }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-              
-              {/* Auto-reading happens automatically - no manual buttons needed */}
-
-              {/* Compact Replay Button */}
-              {hasBeenRead[lessonKey] && !readingProgress?.isReading && (
-                <div className="text-center pt-2">
-                  <Button
-                    onClick={startAutoReading}
-                    size="sm"
-                    className="bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 border-blue-500/30 rounded-full px-4 py-2 text-xs font-medium"
-                    disabled={isSpeaking}
-                  >
-                    🔁 Listen Again
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+            <MobileCompactIntro
+              title={currentModuleData.title}
+              preview={currentModuleData.intro?.split('\n')[0] || ''}
+              fullContent={currentModuleData.intro || ''}
+              table={('table' in currentModuleData && currentModuleData.table) ? currentModuleData.table : []}
+              tip={('tip' in currentModuleData && currentModuleData.tip) ? currentModuleData.tip : undefined}
+              listeningExamples={currentModuleData.listeningExamples || []}
+              moduleId={selectedModule}
+              level={selectedLevel}
+              onGoToQuestions={() => setCurrentPhase('listening')}
+            />
           </div>
         )}
-
         {/* Listening Phase */}
         {currentPhase === 'listening' && (
           <Card className="bg-white/10 border-white/20">
