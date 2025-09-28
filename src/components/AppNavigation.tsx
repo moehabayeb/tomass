@@ -21,8 +21,10 @@ import { useBadgeSystem } from '@/hooks/useBadgeSystem';
 import { Toaster } from '@/components/ui/toaster';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
+import MeetingsAdminPage from '@/pages/admin/MeetingsAdminPage';
+import { MeetingsWidget } from '@/components/meetings/MeetingsWidget';
 
-type AppMode = 'speaking' | 'lessons' | 'bookmarks' | 'badges' | 'placement-test' | 'games' | 'meetings';
+type AppMode = 'speaking' | 'lessons' | 'bookmarks' | 'badges' | 'placement-test' | 'games' | 'meetings' | 'admin';
 
 export default function AppNavigation() {
   const [currentMode, setCurrentMode] = useState<AppMode>('speaking');
@@ -166,12 +168,21 @@ export default function AppNavigation() {
             <VolumeX className="w-5 h-5" />
           )}
         </button>
-        
-        <NavigationDropdown 
-          currentMode={currentMode} 
-          onModeChange={setCurrentMode} 
+
+        <NavigationDropdown
+          currentMode={currentMode}
+          onModeChange={setCurrentMode}
         />
       </div>
+
+      {/* Meetings Widget - Show on speaking page */}
+      {currentMode === 'speaking' && (
+        <div className="fixed bottom-4 right-4 z-10 max-w-sm">
+          <MeetingsWidget
+            className="border-white/20 bg-white/10 backdrop-blur-xl text-white"
+          />
+        </div>
+      )}
 
       {/* User Avatar with Streak Badge - Hidden on speaking page for cleaner mobile experience */}
 
@@ -208,9 +219,13 @@ export default function AppNavigation() {
       {currentMode === 'meetings' && (
         <MeetingsApp onBack={() => setCurrentMode('speaking')} />
       )}
-      
+
+      {currentMode === 'admin' && (
+        <MeetingsAdminPage />
+      )}
+
       {currentMode === 'speaking' && (
-        <SpeakingApp 
+        <SpeakingApp
           initialMessage={continuedMessage}
           key={continuedMessage ? `continued-${Date.now()}` : 'default'} // Force re-mount when continuing
         />
