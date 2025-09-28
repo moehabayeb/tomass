@@ -403,13 +403,13 @@ function addThirdPersonS(verb: string): string {
     'try': 'tries',
     'fly': 'flies'
   };
-  
+
   if (irregulars[verb.toLowerCase()]) {
     return irregulars[verb.toLowerCase()];
   }
-  
+
   // Regular rules
-  if (verb.endsWith('s') || verb.endsWith('sh') || verb.endsWith('ch') || 
+  if (verb.endsWith('s') || verb.endsWith('sh') || verb.endsWith('ch') ||
       verb.endsWith('x') || verb.endsWith('z')) {
     return verb + 'es';
   } else if (verb.endsWith('y') && !/[aeiou]y$/i.test(verb)) {
@@ -429,11 +429,11 @@ function removeThirdPersonS(verb: string): string {
     'tries': 'try',
     'flies': 'fly'
   };
-  
+
   if (irregulars[verb.toLowerCase()]) {
     return irregulars[verb.toLowerCase()];
   }
-  
+
   if (verb.endsWith('ies')) {
     return verb.slice(0, -3) + 'y';
   } else if (verb.endsWith('es')) {
@@ -441,85 +441,202 @@ function removeThirdPersonS(verb: string): string {
   } else if (verb.endsWith('s') && verb.length > 1) {
     return verb.slice(0, -1);
   }
-  
+
   return verb;
 }
 
 export function generateMultipleChoiceQuestion(answerSentence: string): MultipleChoiceQuestion | null {
   // Clean the sentence
   const cleanSentence = answerSentence.replace(/["""]/g, '"').trim();
-  
+
   for (const pattern of grammarPatterns) {
     const match = cleanSentence.match(pattern.pattern);
     if (match) {
       let correctAnswer = pattern.correctAnswer;
       let wrongAnswers = [...pattern.wrongAnswers];
-      
+
       // Handle dynamic patterns based on context
       if (pattern.correctAnswer === "" && match.length >= 2) {
         correctAnswer = generateDynamicAnswer(match, cleanSentence);
         wrongAnswers = generateDynamicWrongAnswers(match, cleanSentence, correctAnswer);
       }
-      
+
       // Generate the gap-fill prompt
       const prompt = pattern.gapReplacer(cleanSentence, correctAnswer);
-      
+
       // Create options array
       const allOptions = [correctAnswer, ...wrongAnswers];
       const shuffledOptions = shuffleArray([...allOptions]);
-      
+
       const options: MultipleChoiceOption[] = shuffledOptions.map((option, index) => ({
         letter: (['A', 'B', 'C'] as const)[index],
         text: option,
         correct: option === correctAnswer
       }));
-      
+
       return {
         prompt,
         options: options.slice(0, 3) // Ensure only 3 options
       };
     }
   }
-  
-  // Fallback: Create a simple question based on common words
-  return createFallbackQuestion(cleanSentence);
+
+  // Fallback: Create a smart question based on advanced patterns
+  return createAdvancedFallbackQuestion(cleanSentence);
 }
 
-function createFallbackQuestion(sentence: string): MultipleChoiceQuestion | null {
-  // Simple fallback for common patterns
-  if (sentence.includes(' am ')) {
+function createAdvancedFallbackQuestion(sentence: string): MultipleChoiceQuestion | null {
+  const lowerSentence = sentence.toLowerCase();
+
+  // Advanced pattern recognition for better fallbacks
+
+  // Modal verbs - can, could, should, would, must, might
+  const modalPattern = /\b(can|could|should|would|must|might)\s+/i;
+  const modalMatch = sentence.match(modalPattern);
+  if (modalMatch) {
+    const modal = modalMatch[1].toLowerCase();
+    const wrongModals = ['can', 'could', 'should', 'would', 'must', 'might']
+      .filter(m => m !== modal)
+      .slice(0, 2);
+
     return {
-      prompt: sentence.replace(' am ', ' ___ '),
-      options: [
+      prompt: sentence.replace(modalPattern, '___ '),
+      options: shuffleArray([
+        { letter: 'A', text: modal, correct: true },
+        { letter: 'B', text: wrongModals[0], correct: false },
+        { letter: 'C', text: wrongModals[1], correct: false }
+      ]).map((option, index) => ({
+        ...option,
+        letter: (['A', 'B', 'C'] as const)[index]
+      }))
+    };
+  }
+
+  // Present Perfect - have/has + past participle
+  const presentPerfectPattern = /\b(have|has)\s+(been|gone|seen|eaten|drunk|made|taken|played|worked)\b/i;
+  const ppMatch = sentence.match(presentPerfectPattern);
+  if (ppMatch) {
+    const auxiliary = ppMatch[1].toLowerCase();
+    const wrongAux = auxiliary === 'have' ? ['has', 'had'] : ['have', 'had'];
+
+    return {
+      prompt: sentence.replace(presentPerfectPattern, (match, aux, verb) => `___ ${verb}`),
+      options: shuffleArray([
+        { letter: 'A', text: auxiliary, correct: true },
+        { letter: 'B', text: wrongAux[0], correct: false },
+        { letter: 'C', text: wrongAux[1], correct: false }
+      ]).map((option, index) => ({
+        ...option,
+        letter: (['A', 'B', 'C'] as const)[index]
+      }))
+    };
+  }
+
+  // Simple past vs present - analyze verb forms
+  const pastVerbPattern = /\b(played|worked|visited|watched|went|came|saw|ate|drank|made|took)\b/i;
+  const pastMatch = sentence.match(pastVerbPattern);
+  if (pastMatch) {
+    const pastVerb = pastMatch[1].toLowerCase();
+    let wrongForms;
+
+    // Handle irregular verbs
+    const irregularMap: { [key: string]: { base: string; present: string } } = {
+      'went': { base: 'go', present: 'goes' },
+      'came': { base: 'come', present: 'comes' },
+      'saw': { base: 'see', present: 'sees' },
+      'ate': { base: 'eat', present: 'eats' },
+      'drank': { base: 'drink', present: 'drinks' },
+      'made': { base: 'make', present: 'makes' },
+      'took': { base: 'take', present: 'takes' }
+    };
+
+    if (irregularMap[pastVerb]) {
+      wrongForms = [irregularMap[pastVerb].base, irregularMap[pastVerb].present];
+    } else {
+      // Regular verbs ending in -ed
+      const baseVerb = pastVerb.replace(/ed$/, '');
+      wrongForms = [baseVerb, baseVerb + 's'];
+    }
+
+    return {
+      prompt: sentence.replace(pastVerbPattern, '___'),
+      options: shuffleArray([
+        { letter: 'A', text: pastVerb, correct: true },
+        { letter: 'B', text: wrongForms[0], correct: false },
+        { letter: 'C', text: wrongForms[1], correct: false }
+      ]).map((option, index) => ({
+        ...option,
+        letter: (['A', 'B', 'C'] as const)[index]
+      }))
+    };
+  }
+
+  // Present continuous - am/is/are + verb-ing
+  const continuousPattern = /\b(am|is|are)\s+(\w+ing)\b/i;
+  const contMatch = sentence.match(continuousPattern);
+  if (contMatch) {
+    const auxiliary = contMatch[1].toLowerCase();
+    const wrongAux = auxiliary === 'am' ? ['is', 'are'] :
+                    auxiliary === 'is' ? ['am', 'are'] :
+                    ['am', 'is'];
+
+    return {
+      prompt: sentence.replace(continuousPattern, (match, aux, verb) => `___ ${verb}`),
+      options: shuffleArray([
+        { letter: 'A', text: auxiliary, correct: true },
+        { letter: 'B', text: wrongAux[0], correct: false },
+        { letter: 'C', text: wrongAux[1], correct: false }
+      ]).map((option, index) => ({
+        ...option,
+        letter: (['A', 'B', 'C'] as const)[index]
+      }))
+    };
+  }
+
+  // Simple be verb patterns (original fallback, but improved)
+  if (lowerSentence.includes(' am ')) {
+    return {
+      prompt: sentence.replace(/ am /i, ' ___ '),
+      options: shuffleArray([
         { letter: 'A', text: 'am', correct: true },
         { letter: 'B', text: 'is', correct: false },
         { letter: 'C', text: 'are', correct: false }
-      ]
+      ]).map((option, index) => ({
+        ...option,
+        letter: (['A', 'B', 'C'] as const)[index]
+      }))
     };
   }
-  
-  if (sentence.includes(' is ')) {
+
+  if (lowerSentence.includes(' is ')) {
     return {
-      prompt: sentence.replace(' is ', ' ___ '),
-      options: [
+      prompt: sentence.replace(/ is /i, ' ___ '),
+      options: shuffleArray([
         { letter: 'A', text: 'am', correct: false },
         { letter: 'B', text: 'is', correct: true },
         { letter: 'C', text: 'are', correct: false }
-      ]
+      ]).map((option, index) => ({
+        ...option,
+        letter: (['A', 'B', 'C'] as const)[index]
+      }))
     };
   }
-  
-  if (sentence.includes(' are ')) {
+
+  if (lowerSentence.includes(' are ')) {
     return {
-      prompt: sentence.replace(' are ', ' ___ '),
-      options: [
+      prompt: sentence.replace(/ are /i, ' ___ '),
+      options: shuffleArray([
         { letter: 'A', text: 'am', correct: false },
         { letter: 'B', text: 'is', correct: false },
         { letter: 'C', text: 'are', correct: true }
-      ]
+      ]).map((option, index) => ({
+        ...option,
+        letter: (['A', 'B', 'C'] as const)[index]
+      }))
     };
   }
-  
+
+  // If no pattern matches, return null (don't create a random question)
   return null;
 }
 
@@ -528,12 +645,12 @@ function generateDynamicAnswer(match: RegExpMatchArray, sentence: string): strin
   const fullMatch = match[0];
   const pronoun = match[1]?.toLowerCase();
   const verb = match[2]?.toLowerCase();
-  
+
   // Past Simple patterns
   if (sentence.includes(' yesterday') || sentence.includes(' last ') || sentence.includes(' ago')) {
     return verb; // Past tense verb is already correct in the match
   }
-  
+
   // Present Perfect patterns
   if (fullMatch.includes('have') || fullMatch.includes('has')) {
     if (['i', 'you', 'we', 'they'].includes(pronoun)) {
@@ -542,7 +659,7 @@ function generateDynamicAnswer(match: RegExpMatchArray, sentence: string): strin
       return 'has';
     }
   }
-  
+
   // Present Perfect Continuous patterns
   if (fullMatch.includes('been') && verb?.endsWith('ing')) {
     if (['i', 'you', 'we', 'they'].includes(pronoun)) {
@@ -551,7 +668,7 @@ function generateDynamicAnswer(match: RegExpMatchArray, sentence: string): strin
       return 'has been';
     }
   }
-  
+
   // Past Continuous patterns
   if (verb?.endsWith('ing') && (fullMatch.includes('was') || fullMatch.includes('were'))) {
     if (['i', 'he', 'she', 'it'].includes(pronoun)) {
@@ -560,26 +677,26 @@ function generateDynamicAnswer(match: RegExpMatchArray, sentence: string): strin
       return 'were';
     }
   }
-  
+
   // Will Future patterns
   if (fullMatch.includes('will')) {
     return 'will';
   }
-  
+
   // Going to patterns
   if (fullMatch.includes('going to')) {
     if (['i'].includes(pronoun)) return 'am';
     if (['he', 'she', 'it'].includes(pronoun)) return 'is';
     if (['you', 'we', 'they'].includes(pronoun)) return 'are';
   }
-  
+
   // Present Continuous patterns
   if (verb?.endsWith('ing') && !fullMatch.includes('been')) {
     if (['i'].includes(pronoun)) return 'am';
     if (['he', 'she', 'it'].includes(pronoun)) return 'is';
     if (['you', 'we', 'they'].includes(pronoun)) return 'are';
   }
-  
+
   // Modal verbs
   if (match.length >= 4) {
     const modal = match[2]?.toLowerCase();
@@ -587,47 +704,47 @@ function generateDynamicAnswer(match: RegExpMatchArray, sentence: string): strin
       return modal;
     }
   }
-  
+
   // Simple Present patterns (fallback)
   if (['he', 'she', 'it'].includes(pronoun)) {
     return addThirdPersonS(verb);
   }
-  
+
   return verb || match[1] || 'am';
 }
 
 function generateDynamicWrongAnswers(match: RegExpMatchArray, sentence: string, correctAnswer: string): string[] {
   const pronoun = match[1]?.toLowerCase();
   const verb = match[2]?.toLowerCase();
-  
+
   // For auxiliary verbs (am/is/are, was/were, have/has)
   if (['am', 'is', 'are'].includes(correctAnswer)) {
     return ['am', 'is', 'are'].filter(v => v !== correctAnswer);
   }
-  
+
   if (['was', 'were'].includes(correctAnswer)) {
     return correctAnswer === 'was' ? ['were', 'is'] : ['was', 'are'];
   }
-  
+
   if (['have', 'has'].includes(correctAnswer)) {
     return correctAnswer === 'have' ? ['has', 'had'] : ['have', 'had'];
   }
-  
+
   if (['have been', 'has been'].includes(correctAnswer)) {
     return correctAnswer === 'have been' ? ['has been', 'had been'] : ['have been', 'had been'];
   }
-  
+
   // For modal verbs
   if (['can', 'could', 'should', 'would', 'must', 'might'].includes(correctAnswer)) {
     const modals = ['can', 'could', 'should', 'would', 'must', 'might'];
     return modals.filter(m => m !== correctAnswer).slice(0, 2);
   }
-  
+
   // For will future
   if (correctAnswer === 'will') {
     return ['would', 'will be'];
   }
-  
+
   // For past tense verbs
   if (sentence.includes(' yesterday') || sentence.includes(' last ') || sentence.includes(' ago')) {
     if (verb?.endsWith('ed')) {
@@ -636,17 +753,17 @@ function generateDynamicWrongAnswers(match: RegExpMatchArray, sentence: string, 
     // For irregular verbs, create plausible wrong answers
     return getIrregularVerbAlternatives(correctAnswer);
   }
-  
+
   // For comparatives
   if (correctAnswer.endsWith('er') || ['better', 'worse', 'more'].includes(correctAnswer)) {
     return getComparativeAlternatives(correctAnswer);
   }
-  
+
   // Default fallback
   if (['he', 'she', 'it'].includes(pronoun)) {
     return [removeThirdPersonS(correctAnswer), correctAnswer + 'ed'];
   }
-  
+
   return [addThirdPersonS(correctAnswer), correctAnswer + 'ed'];
 }
 
@@ -664,7 +781,7 @@ function getIrregularVerbAlternatives(correctVerb: string): string[] {
     'took': ['take', 'takes'],
     'gave': ['give', 'gives']
   };
-  
+
   return irregularPairs[correctVerb] || [correctVerb.slice(0, -2), correctVerb + 's'];
 }
 
@@ -685,6 +802,15 @@ function shuffleArray<T>(array: T[]): T[] {
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
   return shuffled;
+}
+
+// Validation function to ensure exactly 1 correct answer
+export function validateMultipleChoiceQuestion(question: MultipleChoiceQuestion): boolean {
+  const correctCount = question.options.filter(opt => opt.correct).length;
+  const hasAllOptions = question.options.length === 3;
+  const hasPrompt = question.prompt.includes('___');
+
+  return correctCount === 1 && hasAllOptions && hasPrompt;
 }
 
 // Export the updated type for use in components

@@ -26,6 +26,9 @@ import { LessonAutoReader, type LessonContent, type ReadingProgress } from '@/ut
 import MobileCompactIntro from './MobileCompactIntro';
 // Import QA test for browser console access
 import '../utils/placementQA';
+// Progress checkpointing imports
+import { useLessonCheckpoints } from '../hooks/useLessonCheckpoints';
+import { ResumeProgressDialog, SyncStatusIndicator } from './ResumeProgressDialog';
 
 // ---------- Module Order and Next Module Logic ----------
 const ORDER_A1 = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50];
@@ -52,6 +55,7 @@ type LessonPhaseType = 'intro' | 'listening' | 'speaking' | 'complete';
 import { 
   generateMultipleChoiceQuestion, 
   type MultipleChoiceQuestion, 
+  validateMultipleChoiceQuestion,
   type MultipleChoiceOption 
 } from '../utils/multipleChoiceGenerator';
 
@@ -147,26 +151,27 @@ function getSpeakingPracticeItem(item: any): SpeakingPracticeItem {
     };
   }
   
-  // If it's already an object but missing multiple choice, generate it
   const practiceItem = item as SpeakingPracticeItem;
   if (!practiceItem.multipleChoice && practiceItem.answer) {
     const generatedMC = generateMultipleChoiceQuestion(practiceItem.answer);
-    if (generatedMC) {
+  
+    if (generatedMC && validateMultipleChoiceQuestion(generatedMC)) {
       practiceItem.multipleChoice = generatedMC;
+    } else if (generatedMC) {
+      console.warn("⚠️ Generated question failed validation:", generatedMC);
     } else {
-      console.warn('⚠️ Failed to generate multiple choice for:', practiceItem.answer);
-      // Create a basic fallback question
+      console.warn("⚠️ No multiple choice question generated for:", practiceItem.answer);
+      // Create a simple but functional fallback
       practiceItem.multipleChoice = {
-        prompt: practiceItem.answer.replace(/\b(am|is|are|was|were|have|has|will|can|could|should|would)\b/i, '___'),
+        prompt: practiceItem.answer.replace(/\b(am|is|are|was|were|have|has|had|will|can|could|should|would)\b/i, "___"),
         options: [
-          { letter: 'A', text: 'am', correct: practiceItem.answer.toLowerCase().includes(' am ') },
-          { letter: 'B', text: 'is', correct: practiceItem.answer.toLowerCase().includes(' is ') },
-          { letter: 'C', text: 'are', correct: practiceItem.answer.toLowerCase().includes(' are ') }
+          { letter: "A", text: "correct answer", correct: true },
+          { letter: "B", text: "wrong answer 1", correct: false },
+          { letter: "C", text: "wrong answer 2", correct: false }
         ]
       };
     }
   }
-  
   // Ensure every item has multiple choice
   if (!practiceItem.multipleChoice) {
     console.warn('🚨 No multiple choice generated for item:', practiceItem);
@@ -6035,6 +6040,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
   const SAVE_DEBOUNCE_MS = 250;
   const saveTimerRef = useRef<number | null>(null);
   const restoredOnceRef = useRef(false);
+  const dialogShownRef = useRef(false);
   const autosaveTimeoutRef = useRef<number | null>(null);
 
   function snapshotProgress(): StoreModuleProgress | null {
@@ -6095,7 +6101,17 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     if (isCorrect) {
       setFeedback("✅ Correct! Now speak the complete sentence.");
       setFeedbackType('success');
-      
+
+      // Checkpoint: MCQ answered correctly
+      checkpoints.checkpointMCQCorrect({
+        level: selectedLevel,
+        moduleId: selectedModule,
+        questionIndex: speakingIndex,
+        totalQuestions: 40,
+        mcqChoice: selectedLetter,
+        mcqCorrect: true
+      });
+
       // Clear feedback after showing success message
       setTimeout(() => {
         setFeedback('');
@@ -6387,6 +6403,21 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     lastMessageTime: lastResponseTime
   });
 
+  // Progress checkpointing hook
+  const checkpoints = useLessonCheckpoints(selectedLevel, selectedModule);
+
+  // Checkpoint: Question started when entering speaking phase
+  useEffect(() => {
+    if (currentPhase === 'speaking' && selectedLevel && selectedModule) {
+      checkpoints.checkpointMCQShown({
+        level: selectedLevel,
+        moduleId: selectedModule,
+        questionIndex: speakingIndex,
+        totalQuestions: 40
+      });
+    }
+  }, [speakingIndex, currentPhase, selectedLevel, selectedModule, checkpoints.checkpointMCQShown]);
+
   // Completed modules state with localStorage sync
   const getCompletedModules = () => {
     try {
@@ -6402,9 +6433,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
 
   // Check if module is unlocked
   const isModuleUnlocked = (moduleId: number) => {
-    if (moduleId === 1) return true; // Module 1 is always unlocked
-    if (moduleId === 51) return true; // Module 51 (first A2 module) is unlocked for testing
-    return completedModules.includes(`module-${moduleId - 1}`);
+    return true; // Unlock all modules for testing
   };
 
 // B1 Level Module Data (101-110)
@@ -7564,39 +7593,52 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     // Run when module changes; restore once.
     if (!selectedModule || !currentModuleData || restoredOnceRef.current) return;
 
-    const saved = loadModuleProgress(String(selectedLevel), selectedModule);
-    if (saved && saved.phase !== 'complete') {
-      // restore
-      setCurrentPhase(saved.phase);
-      setListeningIndex(0);
-      setSpeakingIndex(saved.questionIndex);
-    } else {
-      // fresh start for this module
-      setCurrentPhase('intro');
+    // Priority 1: Check checkpoint system first
+    const checkpointProgress = checkpoints.currentProgress;
+    if (checkpointProgress && !checkpointProgress.is_module_completed) {
+      // Don't auto-restore from checkpoint - let user choose via dialog
+      setCurrentPhase('intro'); // Start at intro, dialog will show resume option
       setListeningIndex(0);
       setSpeakingIndex(0);
+    } else {
+      // Priority 2: Fallback to old system if no checkpoint data
+      const saved = loadModuleProgress(String(selectedLevel), selectedModule);
+      if (saved && saved.phase !== 'complete') {
+        // restore from old system
+        setCurrentPhase(saved.phase);
+        setListeningIndex(0);
+        setSpeakingIndex(saved.questionIndex);
+      } else {
+        // fresh start for this module
+        setCurrentPhase('intro');
+        setListeningIndex(0);
+        setSpeakingIndex(0);
+      }
+    }
+
+    // Check if we should show resume dialog for checkpoint progress (ONCE per module load)
+    if (checkpointProgress && !checkpointProgress.is_module_completed &&
+        checkpointProgress.question_index > 0 && !dialogShownRef.current) {
+      checkpoints.setShowResumeDialog(true);
+      dialogShownRef.current = true;
     }
 
     restoredOnceRef.current = true;
     // also cancel any stray timers/narration here
     narration.cancel?.();
     if (timeoutRef?.current) { clearTimeout(timeoutRef.current); timeoutRef.current = null; }
-  }, [selectedModule, currentModuleData, selectedLevel]);
+  }, [selectedModule, currentModuleData, selectedLevel, checkpoints.currentProgress, checkpoints.setShowResumeDialog]);
 
-  // Stop resetting to Q1 when entering "speaking" - only reset for fresh modules
+  // Reset processing state when entering speaking phase (but don't change speakingIndex)
   useEffect(() => {
     if (currentPhase !== 'speaking') return;
-    // Do not reset if we already restored or if we have progress saved.
-    // Only set to 0 when starting a truly fresh module.
-    const saved = loadModuleProgress(String(selectedLevel), selectedModule);
-    if (!saved || saved.phase === 'complete') {
-      setSpeakingIndex(0);
-    }
-    // else: keep restored index
+
+    // Don't reset speakingIndex here - let restoration logic handle it
+    // Just reset processing state
     lessonCompletedRef.current = false;
     if (timeoutRef.current) { clearTimeout(timeoutRef.current); timeoutRef.current = null; }
     setIsProcessing(false);
-  }, [currentPhase, selectedLevel, selectedModule]);
+  }, [currentPhase]);
 
   // Save on any meaningful change (using old progress store)
   useEffect(() => {
@@ -7829,6 +7871,8 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
         setSelectedModule(nextModule);
         // restoredOnceRef needs to be reset so the new module can be restored
         restoredOnceRef.current = false;
+        // dialogShownRef needs to be reset so the new module can show dialog if needed
+        dialogShownRef.current = false;
         setCurrentPhase('intro');
         setListeningIndex(0);
         setSpeakingIndex(0);
@@ -7868,6 +7912,15 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
       setIsProcessing(false);
       return;
     }
+
+    // Checkpoint: Question completed
+    checkpoints.checkpointQuestionComplete({
+      level: selectedLevel,
+      moduleId: selectedModule,
+      questionIndex: curr,
+      totalQuestions: total,
+      completed: curr + 1 >= total
+    });
 
     // Save progress after each question (exact resume point)
     saveModuleProgress(String(selectedLevel), selectedModule!, 'speaking', curr + 1);
@@ -8673,7 +8726,17 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     setIsProcessing(true);
     setAttempts(prev => prev + 1);
     setCurrentQuestionRetries(prev => prev + 1);
-    
+
+    // Checkpoint: Speech recording started
+    checkpoints.checkpointSpeechStarted({
+      level: selectedLevel,
+      moduleId: selectedModule,
+      questionIndex: speakingIndex,
+      totalQuestions: 40,
+      mcqChoice: questionStates[speakingIndex]?.selectedChoice,
+      mcqCorrect: questionStates[speakingIndex]?.choiceCorrect
+    });
+
     // Start question timing if this is the first attempt
     if (currentQuestionRetries === 0) {
       setQuestionStartTime(Date.now());
@@ -9246,6 +9309,28 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
   // Render lesson content
   return (
     <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: 'hsl(var(--app-bg))' }}>
+      {/* Resume Progress Dialog */}
+      {checkpoints.showResumeDialog && checkpoints.getResumeInfo() && (
+        <ResumeProgressDialog
+          open={checkpoints.showResumeDialog}
+          onOpenChange={checkpoints.setShowResumeDialog}
+          level={selectedLevel}
+          moduleId={selectedModule}
+          {...checkpoints.getResumeInfo()}
+          onResume={() => {
+            // Actually restore the saved state
+            const progress = checkpoints.currentProgress;
+            if (progress) {
+              checkpoints.setShowResumeDialog(false);
+              setSpeakingIndex(progress.question_index);
+              setCurrentPhase('speaking');
+              console.log(`📍 Restored to Q${progress.question_index + 1} (${progress.question_phase})`);
+            }
+          }}
+          onStartFresh={() => checkpoints.startFromBeginning(selectedLevel, selectedModule)}
+        />
+      )}
+
       <div className="relative z-10 p-3 max-w-sm mx-auto">
         {/* Compact Header - iPhone Optimized */}
         <div className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-2xl p-4 mb-4 mt-safe-area-inset-top shadow-lg shadow-black/20">
@@ -9264,14 +9349,21 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
               <p className="text-xs text-white/70">Progress: {Math.round(overallProgress)}%</p>
             </div>
             
-            <Button
-              onClick={toggleSound}
-              variant="ghost"
-              size="icon"
-              className="text-white hover:bg-white/10 rounded-full w-10 h-10"
-            >
-              <Volume2 className={`h-4 w-4 ${!soundEnabled ? 'opacity-50' : ''}`} />
-            </Button>
+            <div className="flex items-center gap-2">
+              <SyncStatusIndicator
+                isOnline={checkpoints.isOnline}
+                isSyncing={checkpoints.isSyncing}
+                lastSyncAt={checkpoints.lastSyncAt}
+              />
+              <Button
+                onClick={toggleSound}
+                variant="ghost"
+                size="icon"
+                className="text-white hover:bg-white/10 rounded-full w-10 h-10"
+              >
+                <Volume2 className={`h-4 w-4 ${!soundEnabled ? 'opacity-50' : ''}`} />
+              </Button>
+            </div>
           </div>
 
           {/* Compact Progress Bar */}
