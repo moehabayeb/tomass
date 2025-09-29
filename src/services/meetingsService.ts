@@ -126,23 +126,58 @@ export class MeetingsService {
    */
   static async createMeeting(meetingData: CreateMeetingData): Promise<AdminMeeting> {
     try {
+      // Client-side validation
+      if (!meetingData.title?.trim() || meetingData.title.trim().length < 3) {
+        throw new Error('Meeting title must be at least 3 characters long');
+      }
+
+      if (!meetingData.meeting_url?.trim() || !meetingData.meeting_url.match(/^https?:\/\//)) {
+        throw new Error('Please provide a valid meeting URL (must start with http:// or https://)');
+      }
+
+      if (!meetingData.scheduled_at) {
+        throw new Error('Please select a date and time for the meeting');
+      }
+
+      // Check if meeting is scheduled for the future
+      const scheduledDate = new Date(meetingData.scheduled_at);
+      const now = new Date();
+      if (scheduledDate <= now) {
+        throw new Error('Meeting must be scheduled for a future date and time');
+      }
+
+      if (!meetingData.duration_minutes || meetingData.duration_minutes <= 0 || meetingData.duration_minutes > 480) {
+        throw new Error('Meeting duration must be between 1 and 480 minutes (8 hours)');
+      }
+
       const { data, error } = await supabase.rpc('create_meeting', {
-        p_title: meetingData.title,
-        p_description: meetingData.description || null,
-        p_meeting_url: meetingData.meeting_url,
+        p_title: meetingData.title.trim(),
+        p_description: meetingData.description?.trim() || null,
+        p_meeting_url: meetingData.meeting_url.trim(),
         p_scheduled_at: meetingData.scheduled_at,
         p_duration_minutes: meetingData.duration_minutes
       });
 
       if (error) {
         console.error('Error creating meeting:', error);
-        throw error;
+        // Provide user-friendly error messages
+        if (error.message?.includes('Permission denied')) {
+          throw new Error('You do not have permission to create meetings. Admin access required.');
+        }
+        throw new Error(error.message || 'Failed to create meeting. Please try again.');
+      }
+
+      if (!data) {
+        throw new Error('Meeting was created but no data was returned. Please refresh the page.');
       }
 
       return data;
     } catch (error) {
       console.error('Error in createMeeting:', error);
-      throw error;
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('An unexpected error occurred while creating the meeting');
     }
   }
 
@@ -151,11 +186,28 @@ export class MeetingsService {
    */
   static async updateMeeting(meetingId: string, meetingData: UpdateMeetingData): Promise<AdminMeeting> {
     try {
+      // Client-side validation
+      if (!meetingData.title?.trim() || meetingData.title.trim().length < 3) {
+        throw new Error('Meeting title must be at least 3 characters long');
+      }
+
+      if (!meetingData.meeting_url?.trim() || !meetingData.meeting_url.match(/^https?:\/\//)) {
+        throw new Error('Please provide a valid meeting URL (must start with http:// or https://)');
+      }
+
+      if (!meetingData.scheduled_at) {
+        throw new Error('Please select a date and time for the meeting');
+      }
+
+      if (!meetingData.duration_minutes || meetingData.duration_minutes <= 0 || meetingData.duration_minutes > 480) {
+        throw new Error('Meeting duration must be between 1 and 480 minutes (8 hours)');
+      }
+
       const { data, error } = await supabase.rpc('update_meeting', {
         p_meeting_id: meetingId,
-        p_title: meetingData.title,
-        p_description: meetingData.description || null,
-        p_meeting_url: meetingData.meeting_url,
+        p_title: meetingData.title.trim(),
+        p_description: meetingData.description?.trim() || null,
+        p_meeting_url: meetingData.meeting_url.trim(),
         p_scheduled_at: meetingData.scheduled_at,
         p_duration_minutes: meetingData.duration_minutes,
         p_is_active: meetingData.is_active
@@ -163,13 +215,27 @@ export class MeetingsService {
 
       if (error) {
         console.error('Error updating meeting:', error);
-        throw error;
+        // Provide user-friendly error messages
+        if (error.message?.includes('Permission denied')) {
+          throw new Error('You do not have permission to update meetings. Admin access required.');
+        }
+        if (error.message?.includes('not found')) {
+          throw new Error('Meeting not found or you do not have permission to update it.');
+        }
+        throw new Error(error.message || 'Failed to update meeting. Please try again.');
+      }
+
+      if (!data) {
+        throw new Error('Meeting was updated but no data was returned. Please refresh the page.');
       }
 
       return data;
     } catch (error) {
       console.error('Error in updateMeeting:', error);
-      throw error;
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('An unexpected error occurred while updating the meeting');
     }
   }
 
