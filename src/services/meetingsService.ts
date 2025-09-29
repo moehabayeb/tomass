@@ -68,7 +68,7 @@ export class MeetingsService {
       const isAdmin = await this.isAdmin();
 
       let query = supabase
-        .from('admin_meetings')
+        .from('meetings')
         .select('*')
         .order('scheduled_at', { ascending: true });
 
@@ -101,7 +101,7 @@ export class MeetingsService {
       nextWeek.setDate(now.getDate() + 7);
 
       const { data, error } = await supabase
-        .from('admin_meetings')
+        .from('meetings')
         .select('*')
         .eq('is_active', true)
         .gte('scheduled_at', now.toISOString())
