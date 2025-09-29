@@ -12,7 +12,7 @@ export interface AdminMeeting {
   meeting_url: string;
   scheduled_at: string; // ISO timestamp
   duration_minutes: number;
-  created_by: string;
+  created_by: string | null;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -45,9 +45,8 @@ export class MeetingsService {
    */
   static async isAdmin(): Promise<boolean> {
     try {
-      const { data, error } = await supabase.rpc('is_admin', {
-        check_user_id: (await supabase.auth.getUser()).data.user?.id
-      });
+      // Use zero-arg version for simpler call
+      const { data, error } = await supabase.rpc('is_admin');
 
       if (error) {
         console.error('Error checking admin status:', error);
