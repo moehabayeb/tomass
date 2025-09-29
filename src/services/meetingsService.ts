@@ -1,6 +1,7 @@
 /**
  * Meetings Service
  * Handles all API calls for admin meetings system
+ * Updated for new schema with proper parameter ordering
  */
 
 import { supabase } from '@/integrations/supabase/client';
@@ -10,12 +11,29 @@ export interface AdminMeeting {
   title: string;
   description: string | null;
   meeting_url: string;
-  scheduled_at: string; // ISO timestamp
-  duration_minutes: number;
+  starts_at: string; // ISO timestamp
+  ends_at: string | null; // ISO timestamp
+  scheduled_at: string; // Computed field for backward compatibility
+  duration_minutes: number; // Computed field for backward compatibility
   created_by: string | null;
   is_active: boolean;
   created_at: string;
   updated_at: string;
+}
+
+export interface PublicMeeting {
+  id: string;
+  title: string;
+  description: string | null;
+  meeting_url: string;
+  starts_at: string; // ISO timestamp
+  ends_at: string | null; // ISO timestamp
+  scheduled_at: string; // Computed field for backward compatibility
+  duration_minutes: number; // Computed field for backward compatibility
+  teacher_name: string; // Computed field
+  focus_topic: string; // Computed field
+  zoom_link: string; // Computed field
+  created_at: string;
 }
 
 export interface MeetingRSVP {
@@ -35,8 +53,12 @@ export interface CreateMeetingData {
   duration_minutes: number;
 }
 
-export interface UpdateMeetingData extends CreateMeetingData {
-  is_active: boolean;
+export interface UpdateMeetingData {
+  title: string;
+  description?: string;
+  meeting_url: string;
+  scheduled_at: string; // ISO timestamp
+  duration_minutes: number;
 }
 
 export class MeetingsService {
@@ -61,26 +83,17 @@ export class MeetingsService {
   }
 
   /**
-   * Get all active meetings for users, all meetings for admins
+   * Get all meetings for admin (admin view)
    */
   static async getMeetings(): Promise<AdminMeeting[]> {
     try {
-      const isAdmin = await this.isAdmin();
-
-      let query = supabase
-        .from('meetings')
+      const { data, error } = await supabase
+        .from('admin_meetings')
         .select('*')
-        .order('scheduled_at', { ascending: true });
-
-      // Non-admins only see active meetings
-      if (!isAdmin) {
-        query = query.eq('is_active', true);
-      }
-
-      const { data, error } = await query;
+        .order('starts_at', { ascending: false });
 
       if (error) {
-        console.error('Error fetching meetings:', error);
+        console.error('Error fetching admin meetings:', error);
         throw error;
       }
 
@@ -92,7 +105,29 @@ export class MeetingsService {
   }
 
   /**
-   * Get upcoming meetings (next 7 days)
+   * Get public meetings (active & upcoming for public page)
+   */
+  static async getPublicMeetings(): Promise<PublicMeeting[]> {
+    try {
+      const { data, error } = await supabase
+        .from('public_meetings')
+        .select('*')
+        .limit(10);
+
+      if (error) {
+        console.error('Error fetching public meetings:', error);
+        throw error;
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('Error in getPublicMeetings:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get upcoming meetings (next 7 days) - for admin
    */
   static async getUpcomingMeetings(): Promise<AdminMeeting[]> {
     try {
@@ -101,12 +136,12 @@ export class MeetingsService {
       nextWeek.setDate(now.getDate() + 7);
 
       const { data, error } = await supabase
-        .from('meetings')
+        .from('admin_meetings')
         .select('*')
         .eq('is_active', true)
-        .gte('scheduled_at', now.toISOString())
-        .lte('scheduled_at', nextWeek.toISOString())
-        .order('scheduled_at', { ascending: true })
+        .gte('starts_at', now.toISOString())
+        .lte('starts_at', nextWeek.toISOString())
+        .order('starts_at', { ascending: true })
         .limit(5);
 
       if (error) {
@@ -123,6 +158,7 @@ export class MeetingsService {
 
   /**
    * Create new meeting (admin only)
+   * Uses ALPHABETICAL parameter order: p_description, p_duration_minutes, p_meeting_url, p_scheduled_at, p_title
    */
   static async createMeeting(meetingData: CreateMeetingData): Promise<AdminMeeting> {
     try {
@@ -150,12 +186,13 @@ export class MeetingsService {
         throw new Error('Meeting duration must be between 1 and 480 minutes (8 hours)');
       }
 
+      // CRITICAL: Parameters in ALPHABETICAL order to match Supabase function signature!
       const { data, error } = await supabase.rpc('create_meeting', {
-        p_title: meetingData.title.trim(),
         p_description: meetingData.description?.trim() || null,
+        p_duration_minutes: meetingData.duration_minutes,
         p_meeting_url: meetingData.meeting_url.trim(),
         p_scheduled_at: meetingData.scheduled_at,
-        p_duration_minutes: meetingData.duration_minutes
+        p_title: meetingData.title.trim()
       });
 
       if (error) {
@@ -183,6 +220,7 @@ export class MeetingsService {
 
   /**
    * Update meeting (admin only)
+   * Uses ALPHABETICAL parameter order: p_description, p_duration_minutes, p_meeting_id, p_meeting_url, p_scheduled_at, p_title
    */
   static async updateMeeting(meetingId: string, meetingData: UpdateMeetingData): Promise<AdminMeeting> {
     try {
@@ -203,14 +241,14 @@ export class MeetingsService {
         throw new Error('Meeting duration must be between 1 and 480 minutes (8 hours)');
       }
 
+      // CRITICAL: Parameters in ALPHABETICAL order to match Supabase function signature!
       const { data, error } = await supabase.rpc('update_meeting', {
-        p_meeting_id: meetingId,
-        p_title: meetingData.title.trim(),
         p_description: meetingData.description?.trim() || null,
+        p_duration_minutes: meetingData.duration_minutes,
+        p_meeting_id: meetingId,
         p_meeting_url: meetingData.meeting_url.trim(),
         p_scheduled_at: meetingData.scheduled_at,
-        p_duration_minutes: meetingData.duration_minutes,
-        p_is_active: meetingData.is_active
+        p_title: meetingData.title.trim()
       });
 
       if (error) {
@@ -240,9 +278,51 @@ export class MeetingsService {
   }
 
   /**
+   * Hide meeting (admin only)
+   */
+  static async hideMeeting(meetingId: string): Promise<AdminMeeting> {
+    try {
+      const { data, error } = await supabase.rpc('hide_meeting', {
+        p_meeting_id: meetingId
+      });
+
+      if (error) {
+        console.error('Error hiding meeting:', error);
+        throw new Error(error.message || 'Failed to hide meeting. Please try again.');
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error in hideMeeting:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Unhide meeting (admin only)
+   */
+  static async unhideMeeting(meetingId: string): Promise<AdminMeeting> {
+    try {
+      const { data, error } = await supabase.rpc('unhide_meeting', {
+        p_meeting_id: meetingId
+      });
+
+      if (error) {
+        console.error('Error unhiding meeting:', error);
+        throw new Error(error.message || 'Failed to unhide meeting. Please try again.');
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error in unhideMeeting:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Delete meeting (admin only)
    */
-  static async deleteMeeting(meetingId: string): Promise<boolean> {
+  static async deleteMeeting(meetingId: string): Promise<AdminMeeting> {
     try {
       const { data, error } = await supabase.rpc('delete_meeting', {
         p_meeting_id: meetingId
@@ -250,7 +330,7 @@ export class MeetingsService {
 
       if (error) {
         console.error('Error deleting meeting:', error);
-        throw error;
+        throw new Error(error.message || 'Failed to delete meeting. Please try again.');
       }
 
       return data;
@@ -366,7 +446,7 @@ export class MeetingsService {
   }
 
   /**
-   * Format meeting time for display
+   * Format meeting time for display (supports both starts_at and scheduled_at)
    */
   static formatMeetingTime(isoTimestamp: string): string {
     const date = new Date(isoTimestamp);
@@ -403,7 +483,7 @@ export class MeetingsService {
   }
 
   /**
-   * Get time until meeting starts (for countdown)
+   * Get time until meeting starts (for countdown) - supports both starts_at and scheduled_at
    */
   static getTimeUntilMeeting(isoTimestamp: string): {
     isLive: boolean;

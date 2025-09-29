@@ -64,6 +64,30 @@ export function useMeetings() {
     }
   }, [loadMeetings]);
 
+  const hideMeeting = useCallback(async (meetingId: string) => {
+    try {
+      setError(null);
+      await MeetingsService.hideMeeting(meetingId);
+      await loadMeetings(); // Refresh list
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Failed to hide meeting';
+      setError(errorMsg);
+      throw new Error(errorMsg);
+    }
+  }, [loadMeetings]);
+
+  const unhideMeeting = useCallback(async (meetingId: string) => {
+    try {
+      setError(null);
+      await MeetingsService.unhideMeeting(meetingId);
+      await loadMeetings(); // Refresh list
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Failed to unhide meeting';
+      setError(errorMsg);
+      throw new Error(errorMsg);
+    }
+  }, [loadMeetings]);
+
   const deleteMeeting = useCallback(async (meetingId: string) => {
     try {
       setError(null);
@@ -83,6 +107,8 @@ export function useMeetings() {
     loadMeetings,
     createMeeting,
     updateMeeting,
+    hideMeeting,
+    unhideMeeting,
     deleteMeeting
   };
 }

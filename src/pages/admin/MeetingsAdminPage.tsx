@@ -24,7 +24,7 @@ export default function MeetingsAdminPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { isAdmin, isLoading: adminLoading } = useAdminRole();
-  const { meetings, isLoading, error, createMeeting, updateMeeting, deleteMeeting } = useMeetings();
+  const { meetings, isLoading, error, createMeeting, updateMeeting, hideMeeting, unhideMeeting, deleteMeeting } = useMeetings();
 
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [editingMeeting, setEditingMeeting] = useState<AdminMeeting | null>(null);
@@ -139,19 +139,19 @@ export default function MeetingsAdminPage() {
 
   const handleToggleActive = async (meeting: AdminMeeting) => {
     try {
-      const updateData: UpdateMeetingData = {
-        title: meeting.title,
-        description: meeting.description || '',
-        meeting_url: meeting.meeting_url,
-        scheduled_at: meeting.scheduled_at,
-        duration_minutes: meeting.duration_minutes,
-        is_active: !meeting.is_active
-      };
-      await updateMeeting(meeting.id, updateData);
-      toast({
-        title: 'Success',
-        description: `Meeting ${updateData.is_active ? 'activated' : 'deactivated'} successfully.`,
-      });
+      if (meeting.is_active) {
+        await hideMeeting(meeting.id);
+        toast({
+          title: 'Success',
+          description: 'Meeting hidden successfully.',
+        });
+      } else {
+        await unhideMeeting(meeting.id);
+        toast({
+          title: 'Success',
+          description: 'Meeting unhidden successfully.',
+        });
+      }
     } catch (error) {
       toast({
         title: 'Error',

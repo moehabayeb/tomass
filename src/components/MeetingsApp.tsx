@@ -69,14 +69,11 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
   const loadMeetingsData = async () => {
     try {
       setLoading(true);
-      
-      // Get all upcoming meetings
+
+      // Get all upcoming meetings using the public meetings view
       const { data: meetings, error } = await supabase
-        .from('meetings')
-        .select('*')
-        .gte('scheduled_at', new Date().toISOString())
-        .eq('is_active', true)
-        .order('scheduled_at', { ascending: true });
+        .from('public_meetings')
+        .select('*');
 
       if (error) {
         toast({
