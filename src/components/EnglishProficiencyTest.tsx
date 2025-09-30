@@ -145,12 +145,13 @@ export default function EnglishProficiencyTest({
       const vocabularyScore = vocabularyResult.score;
       const fluencyScore = speechResult.fluencyScore;
 
-      // For comprehension, use a combination of factors
-      // In a real implementation, you might have specific comprehension questions
-      const comprehensionScore = Math.min(100,
-        (vocabularyScore * 0.4) +
-        (grammarScore * 0.3) +
-        (fluencyScore * 0.3)
+      // Real comprehension scoring based on response accuracy
+      const comprehensionScore = calculateComprehensionScore(
+        transcript,
+        testPrompts[currentPhase],
+        vocabularyScore,
+        grammarScore,
+        fluencyScore
       );
 
       const phaseDuration = Date.now() - phaseStartTime;
@@ -274,6 +275,114 @@ export default function EnglishProficiencyTest({
     }
   };
 
+  const calculateComprehensionScore = (
+    transcript: string,
+    prompt: TestPrompt,
+    vocabScore: number,
+    grammarScore: number,
+    fluencyScore: number
+  ): number => {
+    let score = 0;
+
+    // Base responsiveness check (0-40 points)
+    const responseLength = transcript.trim().split(/\s+/).length;
+    const promptType = prompt.prompt_type;
+
+    // Check if response length is appropriate for the task
+    const expectedLengths = {
+      introduction: 15, // Should be brief
+      description: 30,  // More detailed
+      storytelling: 40, // Detailed narrative
+      discussion: 50,   // Comprehensive opinion
+      listening: 25     // Summary response
+    };
+
+    const expectedLength = expectedLengths[promptType as keyof typeof expectedLengths] || 30;
+    const lengthRatio = Math.min(responseLength / expectedLength, 2); // Cap at 2x expected
+
+    if (lengthRatio >= 0.7) {
+      score += 25; // Good response length
+    } else if (lengthRatio >= 0.5) {
+      score += 15; // Acceptable length
+    } else if (lengthRatio >= 0.3) {
+      score += 8;  // Too brief
+    }
+    // Very short responses get 0 points
+
+    // Content relevance check (0-30 points)
+    const relevanceKeywords = {
+      introduction: ['name', 'from', 'like', 'free time', 'hobby', 'work', 'study'],
+      description: ['yesterday', 'morning', 'afternoon', 'evening', 'went', 'did', 'met'],
+      storytelling: ['experience', 'happened', 'felt', 'remember', 'trip', 'celebration', 'event'],
+      discussion: ['think', 'opinion', 'believe', 'positive', 'negative', 'impact', 'society', 'because'],
+      listening: ['heard', 'mentioned', 'about', 'summary', 'main', 'point', 'topic']
+    };
+
+    const keywords = relevanceKeywords[promptType as keyof typeof relevanceKeywords] || [];
+    const foundKeywords = keywords.filter(keyword =>
+      transcript.toLowerCase().includes(keyword.toLowerCase())
+    ).length;
+
+    const keywordRatio = foundKeywords / keywords.length;
+    if (keywordRatio >= 0.5) {
+      score += 25; // Highly relevant
+    } else if (keywordRatio >= 0.3) {
+      score += 18; // Relevant
+    } else if (keywordRatio >= 0.1) {
+      score += 10; // Somewhat relevant
+    }
+
+    // Coherence and structure (0-20 points)
+    const sentences = transcript.split(/[.!?]+/).filter(s => s.trim().length > 0);
+    if (sentences.length >= 3) {
+      score += 10; // Multiple sentences show structure
+
+      // Check for connecting words
+      const connectors = ['and', 'but', 'because', 'so', 'then', 'after', 'before', 'when', 'while'];
+      const hasConnectors = connectors.some(connector =>
+        transcript.toLowerCase().includes(connector)
+      );
+
+      if (hasConnectors) {
+        score += 10; // Good use of connectors
+      }
+    }
+
+    // Question answering accuracy (0-10 points)
+    // Check if the response actually addresses what was asked
+    const instructionWords = prompt.instructions.toLowerCase().split(/\s+/);
+    const questionWords = ['what', 'where', 'when', 'why', 'how', 'describe', 'tell', 'explain'];
+    const hasQuestionFocus = questionWords.some(qw =>
+      instructionWords.includes(qw) &&
+      transcript.toLowerCase().includes(qw.replace('describe', 'description').replace('explain', 'explanation'))
+    );
+
+    if (hasQuestionFocus || foundKeywords >= 2) {
+      score += 10; // Addresses the question
+    }
+
+    // Apply minimum language competency requirements
+    // Poor grammar/vocabulary should limit comprehension score
+    if (grammarScore < 30) {
+      score = Math.min(score, 30); // Grammar too poor for good comprehension
+    } else if (grammarScore < 50) {
+      score = Math.min(score, 50); // Limited grammar affects comprehension
+    }
+
+    if (vocabScore < 25) {
+      score = Math.min(score, 25); // Vocabulary too limited
+    } else if (vocabScore < 40) {
+      score = Math.min(score, 40); // Limited vocabulary affects comprehension
+    }
+
+    // Very poor fluency also impacts comprehension
+    if (fluencyScore < 30) {
+      score = Math.min(score, 35); // Too hesitant to show good comprehension
+    }
+
+    return Math.max(0, Math.min(100, Math.round(score)));
+  };
+
   const calculateOverallScores = () => {
     if (phaseData.length === 0) {
       return {
@@ -306,9 +415,22 @@ export default function EnglishProficiencyTest({
       comprehension: Math.round(totals.comprehension / count)
     };
 
-    const overall = Math.round(
+    // Apply overall CEFR level caps based on weakest areas
+    const weakestScore = Math.min(scores.pronunciation, scores.grammar, scores.vocabulary, scores.fluency, scores.comprehension);
+    let overall = Math.round(
       (scores.pronunciation + scores.grammar + scores.vocabulary + scores.fluency + scores.comprehension) / 5
     );
+
+    // Cap overall score based on weakest area
+    if (weakestScore <= 25) {
+      overall = Math.min(overall, 35); // A1 level cap
+    } else if (weakestScore <= 40) {
+      overall = Math.min(overall, 45); // A2 level cap
+    } else if (weakestScore <= 55) {
+      overall = Math.min(overall, 60); // B1 level cap
+    } else if (weakestScore <= 70) {
+      overall = Math.min(overall, 75); // B2 level cap
+    }
 
     return { overall, ...scores };
   };

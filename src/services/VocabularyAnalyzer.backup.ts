@@ -257,117 +257,36 @@ export class VocabularyAnalyzer {
   private calculateVocabularyScore(words: string[], lexicalDiversity: number, levelBreakdown: Record<string, number>): number {
     if (words.length === 0) return 0;
 
-    let score = 0; // Start from 0 and earn points
+    let score = 50; // Base score
 
-    const totalWords = words.length;
+    // Lexical diversity component (0-25 points)
+    score += (lexicalDiversity / 100) * 25;
+
+    // Level distribution component (0-25 points)
     const totalRecognized = Object.values(levelBreakdown).reduce((sum, count) => sum + count, 0) - levelBreakdown['Unknown'];
+    if (totalRecognized > 0) {
+      const levelScore = (
+        (levelBreakdown['A1'] * 1) +
+        (levelBreakdown['A2'] * 2) +
+        (levelBreakdown['B1'] * 3) +
+        (levelBreakdown['B2'] * 4) +
+        (levelBreakdown['C1'] * 5) +
+        (levelBreakdown['C2'] * 6)
+      ) / totalRecognized;
 
-    // Basic vocabulary foundation (0-30 points)
-    const basicWords = levelBreakdown['A1'] + levelBreakdown['A2'];
-    const intermediateWords = levelBreakdown['B1'] + levelBreakdown['B2'];
-    const advancedWords = levelBreakdown['C1'] + levelBreakdown['C2'];
-
-    // Must have some vocabulary foundation
-    if (basicWords > 0) {
-      score += 15; // Basic vocabulary present
+      score += (levelScore / 6) * 25;
     }
 
-    // Progressive vocabulary complexity scoring
-    if (totalWords >= 10) {
-      const basicRatio = basicWords / totalWords;
-      const intermediateRatio = intermediateWords / totalWords;
-      const advancedRatio = advancedWords / totalWords;
+    // Bonus for advanced vocabulary usage
+    const advancedWordCount = levelBreakdown['C1'] + levelBreakdown['C2'];
+    const advancedBonus = Math.min(10, advancedWordCount * 2);
+    score += advancedBonus;
 
-      // Penalize over-reliance on basic vocabulary
-      if (basicRatio > 0.8) {
-        score += 5; // Too basic - A1 level
-      } else if (basicRatio > 0.6) {
-        score += 15; // Mostly basic - A2 level
-      } else if (basicRatio > 0.4) {
-        score += 25; // Mixed vocabulary - B1 level
-      } else {
-        score += 30; // Good vocabulary range
-      }
+    // Penalty for too many unknown words
+    const unknownPenalty = Math.min(15, (levelBreakdown['Unknown'] / words.length) * 30);
+    score -= unknownPenalty;
 
-      // Bonus for intermediate vocabulary
-      if (intermediateRatio >= 0.2) {
-        score += 15; // Good intermediate usage
-      } else if (intermediateRatio >= 0.1) {
-        score += 10; // Some intermediate words
-      }
-
-      // Bonus for advanced vocabulary
-      if (advancedRatio >= 0.15) {
-        score += 20; // Excellent advanced usage
-      } else if (advancedRatio >= 0.05) {
-        score += 10; // Some advanced words
-      }
-    }
-
-    // Lexical diversity (0-20 points)
-    if (lexicalDiversity >= 80) {
-      score += 20; // Excellent variety
-    } else if (lexicalDiversity >= 60) {
-      score += 15; // Good variety
-    } else if (lexicalDiversity >= 40) {
-      score += 10; // Acceptable variety
-    } else if (lexicalDiversity >= 20) {
-      score += 5; // Limited variety
-    }
-
-    // Heavy penalty for too many unknown words
-    const unknownRatio = levelBreakdown['Unknown'] / totalWords;
-    if (unknownRatio > 0.4) {
-      score -= 30; // Too many unrecognized words
-    } else if (unknownRatio > 0.2) {
-      score -= 15; // Many unrecognized words
-    } else if (unknownRatio > 0.1) {
-      score -= 5; // Some unrecognized words
-    }
-
-    // Apply CEFR vocabulary level caps
-    score = this.applyVocabularyCEFRCaps(score, levelBreakdown, totalWords);
-
-    return Math.max(0, Math.min(100, Math.round(score)));
-  }
-
-  private applyVocabularyCEFRCaps(score: number, levelBreakdown: Record<string, number>, totalWords: number): number {
-    const basicWords = levelBreakdown['A1'] + levelBreakdown['A2'];
-    const intermediateWords = levelBreakdown['B1'] + levelBreakdown['B2'];
-    const advancedWords = levelBreakdown['C1'] + levelBreakdown['C2'];
-    const unknownWords = levelBreakdown['Unknown'];
-
-    const basicRatio = basicWords / totalWords;
-    const intermediateRatio = intermediateWords / totalWords;
-    const advancedRatio = advancedWords / totalWords;
-    const unknownRatio = unknownWords / totalWords;
-
-    // A1 level cap (max 25%) - only basic vocabulary
-    if (basicRatio > 0.9 || unknownRatio > 0.4 || intermediateWords === 0) {
-      return Math.min(score, 25);
-    }
-
-    // A2 level cap (max 40%) - mostly basic vocabulary
-    if (basicRatio > 0.7 || unknownRatio > 0.3 || intermediateRatio < 0.05) {
-      return Math.min(score, 40);
-    }
-
-    // B1 level cap (max 55%) - requires some intermediate vocabulary
-    if (basicRatio > 0.5 || intermediateRatio < 0.1 || advancedWords === 0) {
-      return Math.min(score, 55);
-    }
-
-    // B2 level cap (max 70%) - requires good intermediate vocabulary
-    if (basicRatio > 0.3 || intermediateRatio < 0.2 || advancedRatio < 0.03) {
-      return Math.min(score, 70);
-    }
-
-    // C1+ requires substantial advanced vocabulary
-    if (advancedRatio < 0.1 && score > 85) {
-      return Math.min(score, 85);
-    }
-
-    return score;
+    return Math.max(0, Math.min(100, score));
   }
 
   private recommendLevel(averageWordLevel: string, score: number): string {

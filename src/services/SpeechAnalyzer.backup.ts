@@ -246,164 +246,50 @@ export class SpeechAnalyzer {
   private calculatePronunciationScore(): number {
     if (this.confidenceScores.length === 0) return 0;
 
-    // Start from perfect score and deduct for issues
-    let score = 100;
-
-    // Confidence-based deductions
     const averageConfidence = this.confidenceScores.reduce((sum, score) => sum + score, 0) / this.confidenceScores.length;
 
-    // Much stricter confidence thresholds
-    if (averageConfidence < 0.3) {
-      score -= 50; // Very poor pronunciation
-    } else if (averageConfidence < 0.5) {
-      score -= 35; // Poor pronunciation
-    } else if (averageConfidence < 0.7) {
-      score -= 20; // Below average
-    } else if (averageConfidence < 0.8) {
-      score -= 10; // Slightly below average
-    }
+    // Convert confidence to pronunciation score (0-100)
+    let score = averageConfidence * 100;
 
-    // Individual word confidence penalties
-    const lowConfidenceWords = this.confidenceScores.filter(score => score < 0.6).length;
-    const veryLowConfidenceWords = this.confidenceScores.filter(score => score < 0.4).length;
-
-    score -= lowConfidenceWords * 3; // 3 points per unclear word
-    score -= veryLowConfidenceWords * 7; // Additional 7 points for very unclear words
-
-    // Pronunciation issues analysis
+    // Adjust based on pronunciation issues
     const issues = this.identifyPronunciationIssues();
-    const issueDeduction = issues.reduce((total, issue) => {
+    const deduction = issues.reduce((total, issue) => {
       switch (issue.severity) {
-        case 'high': return total + 15; // Major pronunciation problems
-        case 'medium': return total + 8; // Noticeable issues
-        case 'low': return total + 3; // Minor issues
+        case 'high': return total + 10;
+        case 'medium': return total + 5;
+        case 'low': return total + 2;
         default: return total;
       }
     }, 0);
 
-    score -= issueDeduction;
-
-    // Word clarity ratio penalty
-    const totalWords = this.wordTimestamps.length;
-    if (totalWords > 0) {
-      const unclearWordsRatio = (lowConfidenceWords / totalWords);
-      if (unclearWordsRatio > 0.5) {
-        score -= 25; // More than half unclear
-      } else if (unclearWordsRatio > 0.3) {
-        score -= 15; // Many unclear words
-      } else if (unclearWordsRatio > 0.1) {
-        score -= 5; // Some unclear words
-      }
-    }
-
-    // Apply CEFR level caps for pronunciation
-    score = this.applyPronunciationCEFRCaps(score, averageConfidence, issues.length);
-
-    return Math.max(0, Math.min(100, Math.round(score)));
-  }
-
-  private applyPronunciationCEFRCaps(score: number, averageConfidence: number, issueCount: number): number {
-    // A1 level cap (max 25%) - very poor pronunciation
-    if (averageConfidence < 0.4 || issueCount >= 8) {
-      return Math.min(score, 25);
-    }
-
-    // A2 level cap (max 40%) - poor pronunciation
-    if (averageConfidence < 0.5 || issueCount >= 6) {
-      return Math.min(score, 40);
-    }
-
-    // B1 level cap (max 55%) - below average pronunciation
-    if (averageConfidence < 0.65 || issueCount >= 4) {
-      return Math.min(score, 55);
-    }
-
-    // B2 level cap (max 70%) - acceptable pronunciation
-    if (averageConfidence < 0.75 || issueCount >= 3) {
-      return Math.min(score, 70);
-    }
-
-    // C1+ requires very clear pronunciation
-    if (averageConfidence < 0.85 && score > 85) {
-      return Math.min(score, 85);
-    }
-
-    return score;
+    return Math.max(0, Math.min(100, score - deduction));
   }
 
   private calculateFluencyScore(metrics: SpeechMetrics, wordsPerMinute: number): number {
     let score = 100;
 
-    // Much stricter WPM evaluation
-    if (wordsPerMinute < 60) {
-      score -= 40; // Very slow speech
-    } else if (wordsPerMinute < 90) {
-      score -= 25; // Slow speech
-    } else if (wordsPerMinute < 120) {
-      score -= 10; // Below average
-    } else if (wordsPerMinute > 200) {
-      score -= 15; // Too fast, unclear
-    }
+    // Ideal WPM is 140-160, adjust score based on deviation
+    const idealWPM = 150;
+    const wpmDeviation = Math.abs(wordsPerMinute - idealWPM);
+    score -= Math.min(30, wpmDeviation / 2);
 
-    // Severe penalties for pauses
-    const pausesPenalty = Math.min(35, metrics.totalPauses * 4);
+    // Penalize excessive pauses
+    const pausesPenalty = Math.min(20, metrics.totalPauses * 2);
     score -= pausesPenalty;
 
-    // Heavy penalty for filler words
-    const fillerPenalty = Math.min(25, metrics.fillerWords.length * 3);
+    // Penalize filler words
+    const fillerPenalty = Math.min(15, metrics.fillerWords.length * 1.5);
     score -= fillerPenalty;
 
-    // Repetition penalty
-    const repetitionPenalty = Math.min(20, metrics.repetitions.length * 4);
+    // Penalize repetitions
+    const repetitionPenalty = Math.min(10, metrics.repetitions.length * 2);
     score -= repetitionPenalty;
 
-    // Self-correction penalty (natural corrections are ok, but too many indicate struggle)
-    const correctionPenalty = Math.min(15, Math.max(0, metrics.selfCorrections - 2) * 5);
+    // Slight penalty for excessive self-corrections
+    const correctionPenalty = Math.min(5, Math.max(0, metrics.selfCorrections - 1) * 2);
     score -= correctionPenalty;
 
-    // Speaking time ratio (should speak more than pause)
-    const speakingTimeRatio = metrics.totalSpeakingTime > 0 ?
-      (metrics.totalSpeakingTime - (metrics.totalPauses * metrics.averagePauseLength)) / metrics.totalSpeakingTime : 0;
-
-    if (speakingTimeRatio < 0.6) {
-      score -= 20; // Too much pausing relative to speaking
-    } else if (speakingTimeRatio < 0.8) {
-      score -= 10; // Some hesitation
-    }
-
-    // Apply CEFR fluency caps
-    score = this.applyFluencyCEFRCaps(score, wordsPerMinute, metrics);
-
-    return Math.max(0, Math.min(100, Math.round(score)));
-  }
-
-  private applyFluencyCEFRCaps(score: number, wpm: number, metrics: SpeechMetrics): number {
-    // A1 level cap (max 25%) - very hesitant speech
-    if (wpm < 60 || metrics.totalPauses >= 8 || metrics.fillerWords.length >= 6) {
-      return Math.min(score, 25);
-    }
-
-    // A2 level cap (max 40%) - hesitant speech
-    if (wpm < 80 || metrics.totalPauses >= 6 || metrics.fillerWords.length >= 4) {
-      return Math.min(score, 40);
-    }
-
-    // B1 level cap (max 55%) - somewhat fluent
-    if (wpm < 100 || metrics.totalPauses >= 4 || metrics.fillerWords.length >= 3) {
-      return Math.min(score, 55);
-    }
-
-    // B2 level cap (max 70%) - generally fluent
-    if (wpm < 120 || metrics.totalPauses >= 3 || metrics.fillerWords.length >= 2) {
-      return Math.min(score, 70);
-    }
-
-    // C1+ requires very fluent speech
-    if (wpm < 140 && score > 85) {
-      return Math.min(score, 85);
-    }
-
-    return score;
+    return Math.max(0, Math.min(100, score));
   }
 
   private identifyPronunciationIssues(): PronunciationIssue[] {

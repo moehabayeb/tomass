@@ -27,68 +27,45 @@ interface TensePattern {
 }
 
 export class GrammarChecker {
-  // Grammar patterns and rules - Comprehensive error detection
+  // Grammar patterns and rules
   private grammarRules = {
     subjectVerbAgreement: [
-      { pattern: /\b(I|you|we|they)\s+(is|was|doesn't|don't)\b/gi, correction: 'are/were/don\'t', severity: 'high' as const },
-      { pattern: /\b(he|she|it)\s+(are|were|don't)\b/gi, correction: 'is/was/doesn\'t', severity: 'high' as const },
-      { pattern: /\bthere\s+is\s+\w+\s+(and|,)/gi, correction: 'there are', severity: 'medium' as const },
-      { pattern: /\b(he|she|it)\s+have\b/gi, correction: 'has', severity: 'high' as const },
-      { pattern: /\b(I|you|we|they)\s+has\b/gi, correction: 'have', severity: 'high' as const }
+      { pattern: /\b(I|you|we|they)\s+(is|was)\b/gi, correction: 'are/were', severity: 'high' as const },
+      { pattern: /\b(he|she|it)\s+(are|were)\b/gi, correction: 'is/was', severity: 'high' as const },
+      { pattern: /\bthere\s+is\s+\w+\s+(and|,)/gi, correction: 'there are', severity: 'medium' as const }
     ],
 
     verbTenses: [
       { pattern: /\bI\s+go\s+yesterday\b/gi, correction: 'I went yesterday', severity: 'high' as const },
       { pattern: /\bI\s+will\s+went\b/gi, correction: 'I will go', severity: 'high' as const },
       { pattern: /\bI\s+have\s+go\b/gi, correction: 'I have gone', severity: 'high' as const },
-      { pattern: /\bhave\s+\w+ed\s+\w+ed\b/gi, correction: 'Check past participle', severity: 'medium' as const },
-      { pattern: /\byesterday\s+I\s+(go|went|am\s+going)\b/gi, correction: 'yesterday I went', severity: 'high' as const },
-      { pattern: /\btomorrow\s+I\s+(go|went)\b/gi, correction: 'tomorrow I will go', severity: 'high' as const },
-      { pattern: /\bI\s+am\s+\w+ed\b/gi, correction: 'Use past continuous or present perfect', severity: 'medium' as const }
+      { pattern: /\bhave\s+\w+ed\s+\w+ed\b/gi, correction: 'Check past participle', severity: 'medium' as const }
     ],
 
     articleUsage: [
       { pattern: /\ba\s+[aeiou]/gi, correction: 'an', severity: 'medium' as const },
       { pattern: /\ban\s+[bcdfghjklmnpqrstvwxyz]/gi, correction: 'a', severity: 'medium' as const },
-      { pattern: /\bthe\s+\w+\s+are\s+good\b/gi, correction: 'Consider removing "the"', severity: 'low' as const },
-      { pattern: /\b(play|like|study)\s+(the\s+)?(soccer|football|tennis|music|piano)\b/gi, correction: 'No article needed', severity: 'medium' as const }
+      { pattern: /\bthe\s+\w+\s+are\s+good\b/gi, correction: 'Consider removing "the"', severity: 'low' as const }
     ],
 
     prepositions: [
       { pattern: /\bdepends\s+of\b/gi, correction: 'depends on', severity: 'medium' as const },
       { pattern: /\blisten\s+music\b/gi, correction: 'listen to music', severity: 'medium' as const },
       { pattern: /\bwait\s+you\b/gi, correction: 'wait for you', severity: 'medium' as const },
-      { pattern: /\bthink\s+about\s+to\b/gi, correction: 'think about doing', severity: 'low' as const },
-      { pattern: /\bmarried\s+with\b/gi, correction: 'married to', severity: 'medium' as const },
-      { pattern: /\bdifferent\s+than\b/gi, correction: 'different from', severity: 'medium' as const },
-      { pattern: /\binterested\s+for\b/gi, correction: 'interested in', severity: 'medium' as const }
+      { pattern: /\bthink\s+about\s+to\b/gi, correction: 'think about doing', severity: 'low' as const }
     ],
 
     wordOrder: [
       { pattern: /\balways\s+I\b/gi, correction: 'I always', severity: 'medium' as const },
       { pattern: /\bvery\s+much\s+I\s+like\b/gi, correction: 'I like very much', severity: 'high' as const },
-      { pattern: /\bhow\s+you\s+are\?\b/gi, correction: 'how are you?', severity: 'medium' as const },
-      { pattern: /\bvery\s+I\s+like\b/gi, correction: 'I like very much', severity: 'high' as const },
-      { pattern: /\b(never|always|often|sometimes)\s+(I|we|they|he|she|it)\b/gi, correction: 'Subject + adverb', severity: 'medium' as const }
+      { pattern: /\bhow\s+you\s+are\?\b/gi, correction: 'how are you?', severity: 'medium' as const }
     ],
 
     plurals: [
-      { pattern: /\bmany\s+\w+(?<!s|children|people|men|women|feet|teeth)\b/gi, correction: 'Use plural form', severity: 'medium' as const },
+      { pattern: /\bmany\s+\w+(?<!s)\b/gi, correction: 'Use plural form', severity: 'medium' as const },
       { pattern: /\bchilds\b/gi, correction: 'children', severity: 'high' as const },
-      { pattern: /\bpeoples\b/gi, correction: 'people', severity: 'high' as const },
-      { pattern: /\binformations\b/gi, correction: 'information', severity: 'high' as const },
-      { pattern: /\bmans\b/gi, correction: 'men', severity: 'high' as const },
-      { pattern: /\bwomans\b/gi, correction: 'women', severity: 'high' as const }
-    ],
-
-    basicMistakes: [
-      { pattern: /\bI\s+am\s+agree\b/gi, correction: 'I agree', severity: 'high' as const },
-      { pattern: /\bI\s+am\s+like\b/gi, correction: 'I like', severity: 'high' as const },
-      { pattern: /\bI\s+am\s+prefer\b/gi, correction: 'I prefer', severity: 'high' as const },
-      { pattern: /\bhow\s+to\s+call\s+you\b/gi, correction: 'what is your name', severity: 'high' as const },
-      { pattern: /\bI\s+have\s+\d+\s+years\s+old\b/gi, correction: 'I am X years old', severity: 'high' as const },
-      { pattern: /\bmake\s+homework\b/gi, correction: 'do homework', severity: 'medium' as const },
-      { pattern: /\bmake\s+sport\b/gi, correction: 'do sports', severity: 'medium' as const }
+      { pattern: /\bpeoples\b/gi, correction: 'people', severity: 'medium' as const },
+      { pattern: /\binformations\b/gi, correction: 'information', severity: 'medium' as const }
     ]
   };
 
@@ -274,90 +251,32 @@ export class GrammarChecker {
   }
 
   private calculateGrammarScore(errors: GrammarError[], complexityScore: number, tenseConsistency: number): number {
-    // Start from 0 and build up score based on achievements
-    let score = 0;
+    let score = 100;
 
-    // Base grammar competency score (0-40 points)
-    const highSeverityErrors = errors.filter(e => e.severity === 'high').length;
-    const mediumSeverityErrors = errors.filter(e => e.severity === 'medium').length;
-    const lowSeverityErrors = errors.filter(e => e.severity === 'low').length;
+    // Deduct points for errors based on severity
+    errors.forEach(error => {
+      switch (error.severity) {
+        case 'high':
+          score -= 8;
+          break;
+        case 'medium':
+          score -= 5;
+          break;
+        case 'low':
+          score -= 2;
+          break;
+      }
+    });
 
-    // Severe penalty for high severity errors (basic grammar)
-    if (highSeverityErrors === 0) {
-      score += 25; // Basic grammar mastery
-    } else if (highSeverityErrors <= 1) {
-      score += 15; // Acceptable for intermediate
-    } else if (highSeverityErrors <= 2) {
-      score += 8; // Beginner level
-    }
-    // More than 2 high severity errors = 0 points for basic grammar
+    // Bonus for complexity (up to 10 points)
+    const complexityBonus = Math.min(10, (complexityScore / 100) * 10);
+    score += complexityBonus;
 
-    // Medium severity errors penalty
-    if (mediumSeverityErrors === 0) {
-      score += 15; // Intermediate grammar mastery
-    } else if (mediumSeverityErrors <= 2) {
-      score += 10; // Some errors acceptable
-    } else if (mediumSeverityErrors <= 4) {
-      score += 5; // Many errors but some understanding
-    }
+    // Adjust for tense consistency
+    const consistencyFactor = tenseConsistency / 100;
+    score *= consistencyFactor;
 
-    // Complexity and sophistication (0-30 points)
-    // Only award complexity points if basic grammar is solid
-    if (highSeverityErrors <= 1) {
-      const complexityPoints = Math.min(25, (complexityScore / 100) * 25);
-      score += complexityPoints;
-    }
-
-    // Tense consistency (0-20 points)
-    const consistencyPoints = (tenseConsistency / 100) * 20;
-    score += consistencyPoints;
-
-    // Fluency and naturalness (0-15 points)
-    // Award points for longer, more complex sentences without errors
-    if (errors.length === 0 && complexityScore > 50) {
-      score += 15; // Perfect grammar with complexity
-    } else if (errors.length <= 2 && complexityScore > 30) {
-      score += 10; // Good grammar with some complexity
-    } else if (errors.length <= 4) {
-      score += 5; // Basic but functional
-    }
-
-    // Apply CEFR level caps based on error patterns
-    score = this.applyCEFRLevelCaps(score, errors, complexityScore);
-
-    return Math.max(0, Math.min(100, Math.round(score)));
-  }
-
-  private applyCEFRLevelCaps(score: number, errors: GrammarError[], complexityScore: number): number {
-    const highSeverityErrors = errors.filter(e => e.severity === 'high').length;
-    const totalErrors = errors.length;
-
-    // A1 level cap (max 25%) - basic grammar errors
-    if (highSeverityErrors >= 3 || totalErrors >= 8) {
-      return Math.min(score, 25);
-    }
-
-    // A2 level cap (max 40%) - some basic errors
-    if (highSeverityErrors >= 2 || totalErrors >= 6) {
-      return Math.min(score, 40);
-    }
-
-    // B1 level cap (max 55%) - intermediate errors acceptable
-    if (highSeverityErrors >= 1 || (totalErrors >= 4 && complexityScore < 30)) {
-      return Math.min(score, 55);
-    }
-
-    // B2 level cap (max 70%) - advanced errors only
-    if (totalErrors >= 3 && complexityScore < 50) {
-      return Math.min(score, 70);
-    }
-
-    // C1+ requires near-perfect grammar with complexity
-    if (complexityScore < 60 && score > 85) {
-      return Math.min(score, 85);
-    }
-
-    return score;
+    return Math.max(0, Math.min(100, score));
   }
 
   // Additional methods for specific grammar checks
