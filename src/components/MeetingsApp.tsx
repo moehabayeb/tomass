@@ -23,6 +23,9 @@ interface Meeting {
   zoom_link: string;
   duration_minutes?: number;
   max_participants?: number;
+  level_code: string; // A1, A2, B1, B2, C1, C2
+  section_name: string; // Apples, Avocado, Banana, etc.
+  capacity: number; // Max attendees
 }
 
 interface UserReminder {

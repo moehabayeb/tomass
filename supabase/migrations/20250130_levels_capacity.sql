@@ -284,7 +284,93 @@ begin
 end;
 $$;
 
--- 3) UPDATE UPSERT_RSVP WITH CAPACITY ENFORCEMENT
+-- 3) HIDE MEETING
+create or replace function public.hide_meeting(p_meeting_id uuid)
+returns jsonb
+language plpgsql
+security definer
+volatile
+as $$
+declare
+  v_user_id uuid := auth.uid();
+  v_meeting meetings%rowtype;
+begin
+  -- Admin check
+  if not public.is_admin(v_user_id) then
+    raise exception 'Permission denied: Admin role required' using errcode = 'P0001';
+  end if;
+
+  update public.meetings
+  set is_active = false, updated_at = now()
+  where id = p_meeting_id
+  returning * into v_meeting;
+
+  if v_meeting.id is null then
+    raise exception 'Meeting not found' using errcode = 'P0002';
+  end if;
+
+  return to_jsonb(v_meeting);
+end;
+$$;
+
+-- 4) UNHIDE MEETING
+create or replace function public.unhide_meeting(p_meeting_id uuid)
+returns jsonb
+language plpgsql
+security definer
+volatile
+as $$
+declare
+  v_user_id uuid := auth.uid();
+  v_meeting meetings%rowtype;
+begin
+  -- Admin check
+  if not public.is_admin(v_user_id) then
+    raise exception 'Permission denied: Admin role required' using errcode = 'P0001';
+  end if;
+
+  update public.meetings
+  set is_active = true, updated_at = now()
+  where id = p_meeting_id
+  returning * into v_meeting;
+
+  if v_meeting.id is null then
+    raise exception 'Meeting not found' using errcode = 'P0002';
+  end if;
+
+  return to_jsonb(v_meeting);
+end;
+$$;
+
+-- 5) DELETE MEETING
+create or replace function public.delete_meeting(p_meeting_id uuid)
+returns jsonb
+language plpgsql
+security definer
+volatile
+as $$
+declare
+  v_user_id uuid := auth.uid();
+  v_meeting meetings%rowtype;
+begin
+  -- Admin check
+  if not public.is_admin(v_user_id) then
+    raise exception 'Permission denied: Admin role required' using errcode = 'P0001';
+  end if;
+
+  delete from public.meetings
+  where id = p_meeting_id
+  returning * into v_meeting;
+
+  if v_meeting.id is null then
+    raise exception 'Meeting not found' using errcode = 'P0002';
+  end if;
+
+  return to_jsonb(v_meeting);
+end;
+$$;
+
+-- 6) UPDATE UPSERT_RSVP WITH CAPACITY ENFORCEMENT
 create or replace function public.upsert_rsvp(
   p_meeting_id uuid,
   p_status text
@@ -354,6 +440,9 @@ $$;
 grant execute on function public.get_section_name(text) to authenticated;
 grant execute on function public.create_meeting(integer, text, integer, text, text, timestamptz, text) to authenticated;
 grant execute on function public.update_meeting(integer, text, integer, text, uuid, text, timestamptz, text) to authenticated;
+grant execute on function public.hide_meeting(uuid) to authenticated;
+grant execute on function public.unhide_meeting(uuid) to authenticated;
+grant execute on function public.delete_meeting(uuid) to authenticated;
 
 -- Revoke old function permissions (they're dropped anyway)
 revoke execute on function public.create_meeting(text, integer, text, timestamptz, text) from authenticated;
