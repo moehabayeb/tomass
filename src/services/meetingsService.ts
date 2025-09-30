@@ -13,6 +13,9 @@ export interface AdminMeeting {
   meeting_url: string;
   starts_at: string; // ISO timestamp
   ends_at: string | null; // ISO timestamp
+  level_code: string; // A1, A2, B1, B2, C1, C2
+  section_name: string; // Apples, Avocado, Banana, etc.
+  capacity: number; // Max attendees (1-50)
   scheduled_at: string; // Computed field for backward compatibility
   duration_minutes: number; // Computed field for backward compatibility
   created_by: string | null;
@@ -28,6 +31,9 @@ export interface PublicMeeting {
   meeting_url: string;
   starts_at: string; // ISO timestamp
   ends_at: string | null; // ISO timestamp
+  level_code: string; // A1, A2, B1, B2, C1, C2
+  section_name: string; // Apples, Avocado, Banana, etc.
+  capacity: number; // Max attendees (1-50)
   scheduled_at: string; // Computed field for backward compatibility
   duration_minutes: number; // Computed field for backward compatibility
   teacher_name: string; // Computed field
@@ -51,6 +57,8 @@ export interface CreateMeetingData {
   meeting_url: string;
   scheduled_at: string; // ISO timestamp
   duration_minutes: number;
+  level_code: string; // A1, A2, B1, B2, C1, C2
+  capacity: number; // Max attendees (1-50), default 8
 }
 
 export interface UpdateMeetingData {
@@ -59,7 +67,30 @@ export interface UpdateMeetingData {
   meeting_url: string;
   scheduled_at: string; // ISO timestamp
   duration_minutes: number;
+  level_code: string; // A1, A2, B1, B2, C1, C2
+  capacity: number; // Max attendees (1-50)
 }
+
+// Level to section mapping
+export const LEVEL_SECTIONS = {
+  'A1': 'Apples',
+  'A2': 'Avocado',
+  'B1': 'Banana',
+  'B2': 'Blueberry',
+  'C1': 'Cherry',
+  'C2': 'Coconut'
+} as const;
+
+export type LevelCode = keyof typeof LEVEL_SECTIONS;
+
+export const LEVEL_OPTIONS = [
+  { value: 'A1' as LevelCode, label: 'A1', section: 'Apples' },
+  { value: 'A2' as LevelCode, label: 'A2', section: 'Avocado' },
+  { value: 'B1' as LevelCode, label: 'B1', section: 'Banana' },
+  { value: 'B2' as LevelCode, label: 'B2', section: 'Blueberry' },
+  { value: 'C1' as LevelCode, label: 'C1', section: 'Cherry' },
+  { value: 'C2' as LevelCode, label: 'C2', section: 'Coconut' }
+];
 
 export class MeetingsService {
   /**
@@ -158,7 +189,7 @@ export class MeetingsService {
 
   /**
    * Create new meeting (admin only)
-   * Uses ALPHABETICAL parameter order: p_description, p_duration_minutes, p_meeting_url, p_scheduled_at, p_title
+   * Uses ALPHABETICAL parameter order: p_capacity, p_description, p_duration_minutes, p_level_code, p_meeting_url, p_scheduled_at, p_title
    */
   static async createMeeting(meetingData: CreateMeetingData): Promise<AdminMeeting> {
     try {
@@ -186,10 +217,20 @@ export class MeetingsService {
         throw new Error('Meeting duration must be between 1 and 480 minutes (8 hours)');
       }
 
+      if (!meetingData.level_code || !['A1', 'A2', 'B1', 'B2', 'C1', 'C2'].includes(meetingData.level_code)) {
+        throw new Error('Please select a valid level (A1, A2, B1, B2, C1, or C2)');
+      }
+
+      if (!meetingData.capacity || meetingData.capacity < 1 || meetingData.capacity > 50) {
+        throw new Error('Meeting capacity must be between 1 and 50 attendees');
+      }
+
       // CRITICAL: Parameters in ALPHABETICAL order to match Supabase function signature!
       const { data, error } = await supabase.rpc('create_meeting', {
+        p_capacity: meetingData.capacity,
         p_description: meetingData.description?.trim() || null,
         p_duration_minutes: meetingData.duration_minutes,
+        p_level_code: meetingData.level_code,
         p_meeting_url: meetingData.meeting_url.trim(),
         p_scheduled_at: meetingData.scheduled_at,
         p_title: meetingData.title.trim()
@@ -200,6 +241,9 @@ export class MeetingsService {
         // Provide user-friendly error messages
         if (error.message?.includes('Permission denied')) {
           throw new Error('You do not have permission to create meetings. Admin access required.');
+        }
+        if (error.message?.includes('Meeting is full')) {
+          throw new Error(error.message);
         }
         throw new Error(error.message || 'Failed to create meeting. Please try again.');
       }
@@ -220,7 +264,7 @@ export class MeetingsService {
 
   /**
    * Update meeting (admin only)
-   * Uses ALPHABETICAL parameter order: p_description, p_duration_minutes, p_meeting_id, p_meeting_url, p_scheduled_at, p_title
+   * Uses ALPHABETICAL parameter order: p_capacity, p_description, p_duration_minutes, p_level_code, p_meeting_id, p_meeting_url, p_scheduled_at, p_title
    */
   static async updateMeeting(meetingId: string, meetingData: UpdateMeetingData): Promise<AdminMeeting> {
     try {
@@ -241,10 +285,20 @@ export class MeetingsService {
         throw new Error('Meeting duration must be between 1 and 480 minutes (8 hours)');
       }
 
+      if (!meetingData.level_code || !['A1', 'A2', 'B1', 'B2', 'C1', 'C2'].includes(meetingData.level_code)) {
+        throw new Error('Please select a valid level (A1, A2, B1, B2, C1, or C2)');
+      }
+
+      if (!meetingData.capacity || meetingData.capacity < 1 || meetingData.capacity > 50) {
+        throw new Error('Meeting capacity must be between 1 and 50 attendees');
+      }
+
       // CRITICAL: Parameters in ALPHABETICAL order to match Supabase function signature!
       const { data, error } = await supabase.rpc('update_meeting', {
+        p_capacity: meetingData.capacity,
         p_description: meetingData.description?.trim() || null,
         p_duration_minutes: meetingData.duration_minutes,
+        p_level_code: meetingData.level_code,
         p_meeting_id: meetingId,
         p_meeting_url: meetingData.meeting_url.trim(),
         p_scheduled_at: meetingData.scheduled_at,
@@ -259,6 +313,9 @@ export class MeetingsService {
         }
         if (error.message?.includes('not found')) {
           throw new Error('Meeting not found or you do not have permission to update it.');
+        }
+        if (error.message?.includes('Meeting is full')) {
+          throw new Error(error.message);
         }
         throw new Error(error.message || 'Failed to update meeting. Please try again.');
       }

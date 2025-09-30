@@ -368,7 +368,7 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
                 </Badge>
               </div>
               <CardDescription className="text-white/70">
-                with {nextMeeting.teacher_name}
+                with {nextMeeting.teacher_name} • {nextMeeting.level_code} / {nextMeeting.section_name}
               </CardDescription>
           </CardHeader>
             <CardContent className="space-y-4">
@@ -443,6 +443,12 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
                         <h4 className="font-semibold">{meeting.title}</h4>
                         <p className="text-sm text-white/80">{meeting.focus_topic}</p>
                         <p className="text-sm text-white/60">with {meeting.teacher_name}</p>
+                        <p className="text-sm text-white/60">
+                          <span className="bg-accent/20 text-accent-foreground px-2 py-1 rounded text-xs font-medium mr-2">
+                            {meeting.level_code}
+                          </span>
+                          {meeting.section_name}
+                        </p>
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-medium">

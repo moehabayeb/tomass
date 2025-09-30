@@ -153,21 +153,23 @@ export default function AppNavigation() {
         )}
       </div>
 
-      {/* Navigation Dropdown and Sound Toggle - Always visible */}
+      {/* Navigation Dropdown and Sound Toggle */}
       <div className="fixed top-4 right-4 z-20 flex items-center gap-3">
-        {/* Global Sound Toggle */}
-        <button
-          onClick={toggleSound}
-          className="bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full p-3 text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white/30 shadow-lg hover:shadow-xl min-w-[44px] min-h-[44px] flex items-center justify-center"
-          aria-label={soundEnabled ? "Mute sound" : "Enable sound"}
-          title={soundEnabled ? "Sound is ON - Click to mute" : "Sound is OFF - Click to enable"}
-        >
-          {soundEnabled ? (
-            <Volume2 className="w-5 h-5" />
-          ) : (
-            <VolumeX className="w-5 h-5" />
-          )}
-        </button>
+        {/* Global Sound Toggle - Only visible on speaking pages */}
+        {(currentMode === 'speaking' || currentMode === 'placement-test') && (
+          <button
+            onClick={toggleSound}
+            className="bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full p-3 text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white/30 shadow-lg hover:shadow-xl min-w-[44px] min-h-[44px] flex items-center justify-center"
+            aria-label={soundEnabled ? "Mute sound" : "Enable sound"}
+            title={soundEnabled ? "Sound is ON - Click to mute" : "Sound is OFF - Click to enable"}
+          >
+            {soundEnabled ? (
+              <Volume2 className="w-5 h-5" />
+            ) : (
+              <VolumeX className="w-5 h-5" />
+            )}
+          </button>
+        )}
 
         <NavigationDropdown
           currentMode={currentMode}

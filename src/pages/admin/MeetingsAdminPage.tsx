@@ -17,7 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { useMeetings, useAdminRole } from '@/hooks/useMeetings';
-import { MeetingsService, type AdminMeeting, type CreateMeetingData, type UpdateMeetingData } from '@/services/meetingsService';
+import { MeetingsService, type AdminMeeting, type CreateMeetingData, type UpdateMeetingData, LEVEL_OPTIONS, LEVEL_SECTIONS, type LevelCode } from '@/services/meetingsService';
 import { meetingNotifications } from '@/services/meetingNotifications';
 
 export default function MeetingsAdminPage() {
@@ -33,7 +33,9 @@ export default function MeetingsAdminPage() {
     description: '',
     meeting_url: '',
     scheduled_at: '',
-    duration_minutes: 60
+    duration_minutes: 60,
+    level_code: 'A1',
+    capacity: 8
   });
 
   // Redirect non-admins
@@ -67,9 +69,24 @@ export default function MeetingsAdminPage() {
       description: '',
       meeting_url: '',
       scheduled_at: '',
-      duration_minutes: 60
+      duration_minutes: 60,
+      level_code: 'A1',
+      capacity: 8
     });
     setEditingMeeting(null);
+  };
+
+  const openEditDialog = (meeting: AdminMeeting) => {
+    setEditingMeeting(meeting);
+    setFormData({
+      title: meeting.title,
+      description: meeting.description || '',
+      meeting_url: meeting.meeting_url,
+      scheduled_at: meeting.starts_at.slice(0, 16), // Convert to datetime-local format
+      duration_minutes: meeting.duration_minutes,
+      level_code: meeting.level_code as LevelCode,
+      capacity: meeting.capacity
+    });
   };
 
   const handleCreateMeeting = async (e: React.FormEvent) => {
@@ -161,16 +178,6 @@ export default function MeetingsAdminPage() {
     }
   };
 
-  const openEditDialog = (meeting: AdminMeeting) => {
-    setEditingMeeting(meeting);
-    setFormData({
-      title: meeting.title,
-      description: meeting.description || '',
-      meeting_url: meeting.meeting_url,
-      scheduled_at: meeting.scheduled_at,
-      duration_minutes: meeting.duration_minutes
-    });
-  };
 
   const formatDateTime = (isoString: string) => {
     return new Date(isoString).toLocaleString();
@@ -318,6 +325,48 @@ export default function MeetingsAdminPage() {
                   </Select>
                 </div>
 
+                <div>
+                  <Label htmlFor="level">Level</Label>
+                  <Select
+                    value={formData.level_code}
+                    onValueChange={(value) => setFormData({...formData, level_code: value as LevelCode})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {LEVEL_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label} - {option.section}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="section_display">Section</Label>
+                  <Input
+                    id="section_display"
+                    value={LEVEL_SECTIONS[formData.level_code as LevelCode]}
+                    disabled
+                    className="bg-gray-50"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="capacity">Capacity (max attendees)</Label>
+                  <Input
+                    id="capacity"
+                    type="number"
+                    min="1"
+                    max="50"
+                    value={formData.capacity}
+                    onChange={(e) => setFormData({...formData, capacity: parseInt(e.target.value) || 8})}
+                    required
+                  />
+                </div>
+
                 <div className="flex gap-2 pt-4">
                   <Button type="submit" className="flex-1">Create Meeting</Button>
                   <Button
@@ -414,6 +463,17 @@ export default function MeetingsAdminPage() {
                           <p className="flex items-center gap-2">
                             <Clock className="h-4 w-4" />
                             {meeting.duration_minutes} minutes
+                          </p>
+                          <p className="flex items-center gap-2">
+                            <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium">
+                              {meeting.level_code}
+                            </span>
+                            <span className="text-gray-500">•</span>
+                            <span>{meeting.section_name}</span>
+                          </p>
+                          <p className="flex items-center gap-2">
+                            <Users className="h-4 w-4" />
+                            Capacity: {meeting.capacity} attendees
                           </p>
                           {meeting.description && (
                             <p className="mt-2 text-gray-700">{meeting.description}</p>
@@ -536,6 +596,48 @@ export default function MeetingsAdminPage() {
                     <SelectItem value="120">2 hours</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="edit-level">Level</Label>
+                <Select
+                  value={formData.level_code}
+                  onValueChange={(value) => setFormData({...formData, level_code: value as LevelCode})}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {LEVEL_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label} - {option.section}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="edit-section_display">Section</Label>
+                <Input
+                  id="edit-section_display"
+                  value={LEVEL_SECTIONS[formData.level_code as LevelCode]}
+                  disabled
+                  className="bg-gray-50"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="edit-capacity">Capacity (max attendees)</Label>
+                <Input
+                  id="edit-capacity"
+                  type="number"
+                  min="1"
+                  max="50"
+                  value={formData.capacity}
+                  onChange={(e) => setFormData({...formData, capacity: parseInt(e.target.value) || 8})}
+                  required
+                />
               </div>
 
               <div className="flex items-center space-x-2">
