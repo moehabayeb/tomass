@@ -4,6 +4,7 @@ import { NavigationDropdown } from './NavigationDropdown';
 import { useAuthReady } from '@/hooks/useAuthReady';
 import { useGlobalSound } from '@/hooks/useGlobalSound';
 import { Volume2, VolumeX } from 'lucide-react';
+import SpeakingApp from './SpeakingApp';
 import EnglishProficiencyTest from './EnglishProficiencyTest';
 import LessonsApp from './LessonsApp';
 import { SpeakingPlacementTest } from './SpeakingPlacementTest';
@@ -97,10 +98,38 @@ export default function AppNavigation() {
   };
 
   const handleTestComplete = (result: TestResult) => {
-    // Handle test completion - could show results or navigate
-    console.log('Test completed with result:', result);
-    // For now, stay on the speaking page to show results
-    // The EnglishProficiencyTest component handles showing results internally
+    // Handle comprehensive test completion
+    console.log('English Proficiency Test completed with result:', result);
+
+    // Store the test result in localStorage for later reference
+    localStorage.setItem('lastTestResult', JSON.stringify({
+      level: result.recommended_level,
+      scores: {
+        overall: result.overall_score,
+        pronunciation: result.pronunciation_score,
+        grammar: result.grammar_score,
+        vocabulary: result.vocabulary_score,
+        fluency: result.fluency_score,
+        comprehension: result.comprehension_score
+      },
+      date: new Date().toISOString()
+    }));
+
+    // Set up for lessons navigation (same as placement test completion)
+    setHasCompletedPlacement(true);
+    localStorage.setItem('recommendedStartLevel', result.recommended_level);
+    localStorage.setItem('userPlacement', JSON.stringify({
+      level: result.recommended_level,
+      scores: result,
+      at: Date.now()
+    }));
+
+    // Enable access to the recommended level
+    const unlocks = JSON.parse(localStorage.getItem('unlocks') || '{}');
+    unlocks[result.recommended_level] = true;
+    localStorage.setItem('unlocks', JSON.stringify(unlocks));
+
+    // The test component will handle showing results and navigation to lessons
   };
 
   return (
@@ -216,9 +245,10 @@ export default function AppNavigation() {
       )}
       
       {currentMode === 'placement-test' && (
-        <SpeakingPlacementTest 
-          onBack={() => setCurrentMode('speaking')} 
-          onComplete={handlePlacementComplete}
+        <EnglishProficiencyTest
+          onComplete={handleTestComplete}
+          onBack={() => setCurrentMode('speaking')}
+          testType="placement"
         />
       )}
       
@@ -235,10 +265,9 @@ export default function AppNavigation() {
       )}
 
       {currentMode === 'speaking' && (
-        <EnglishProficiencyTest
-          onComplete={handleTestComplete}
-          onBack={() => setCurrentMode('speaking')}
-          testType="full"
+        <SpeakingApp
+          initialMessage={continuedMessage}
+          key={continuedMessage ? `continued-${Date.now()}` : 'default'} // Force re-mount when continuing
         />
       )}
 
