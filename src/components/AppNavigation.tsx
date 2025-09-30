@@ -4,7 +4,7 @@ import { NavigationDropdown } from './NavigationDropdown';
 import { useAuthReady } from '@/hooks/useAuthReady';
 import { useGlobalSound } from '@/hooks/useGlobalSound';
 import { Volume2, VolumeX } from 'lucide-react';
-import SpeakingApp from './SpeakingApp';
+import EnglishProficiencyTest from './EnglishProficiencyTest';
 import LessonsApp from './LessonsApp';
 import { SpeakingPlacementTest } from './SpeakingPlacementTest';
 import { GamesApp } from './GamesApp';
@@ -23,6 +23,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
 import MeetingsAdminPage from '@/pages/admin/MeetingsAdminPage';
 import { MeetingsWidget } from '@/components/meetings/MeetingsWidget';
+import { TestResult } from '@/services/speakingTestService';
 
 type AppMode = 'speaking' | 'lessons' | 'bookmarks' | 'badges' | 'placement-test' | 'games' | 'meetings' | 'admin';
 
@@ -93,6 +94,13 @@ export default function AppNavigation() {
     // You could store the recommended starting point in localStorage or user profile
     localStorage.setItem('recommendedStartLevel', level);
     localStorage.setItem('recommendedStartModule', recommendedModule.toString());
+  };
+
+  const handleTestComplete = (result: TestResult) => {
+    // Handle test completion - could show results or navigate
+    console.log('Test completed with result:', result);
+    // For now, stay on the speaking page to show results
+    // The EnglishProficiencyTest component handles showing results internally
   };
 
   return (
@@ -227,9 +235,10 @@ export default function AppNavigation() {
       )}
 
       {currentMode === 'speaking' && (
-        <SpeakingApp
-          initialMessage={continuedMessage}
-          key={continuedMessage ? `continued-${Date.now()}` : 'default'} // Force re-mount when continuing
+        <EnglishProficiencyTest
+          onComplete={handleTestComplete}
+          onBack={() => setCurrentMode('speaking')}
+          testType="full"
         />
       )}
 
