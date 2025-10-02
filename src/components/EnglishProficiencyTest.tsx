@@ -26,12 +26,14 @@ interface TestPhaseData {
 interface EnglishProficiencyTestProps {
   onComplete?: (result: TestResult) => void;
   onBack?: () => void;
+  onGoToLessons?: () => void;
   testType?: 'full' | 'practice' | 'placement';
 }
 
 export default function EnglishProficiencyTest({
   onComplete,
   onBack,
+  onGoToLessons,
   testType = 'full'
 }: EnglishProficiencyTestProps) {
   const [currentPhase, setCurrentPhase] = useState(0);
@@ -540,6 +542,7 @@ export default function EnglishProficiencyTest({
         result={finalResult}
         onRestart={restartTest}
         onBack={onBack}
+        onGoToLessons={onGoToLessons}
       />
     );
   }

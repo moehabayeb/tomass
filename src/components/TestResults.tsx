@@ -24,9 +24,10 @@ interface TestResultsProps {
   result: TestResult;
   onRestart?: () => void;
   onBack?: () => void;
+  onGoToLessons?: () => void;
 }
 
-export function TestResults({ result, onRestart, onBack }: TestResultsProps) {
+export function TestResults({ result, onRestart, onBack, onGoToLessons }: TestResultsProps) {
   const [activeTab, setActiveTab] = useState('overview');
 
   const getLevelColor = (level: string): string => {
@@ -414,17 +415,22 @@ export function TestResults({ result, onRestart, onBack }: TestResultsProps) {
 
           <Button
             onClick={() => {
-              // Navigate to lessons with recommended level
-              localStorage.setItem('recommendedStartLevel', result.recommended_level);
-              localStorage.setItem('currentLevel', result.recommended_level);
+              if (onGoToLessons) {
+                // Call the provided navigation callback
+                onGoToLessons();
+              } else {
+                // Fallback: Store data and attempt to navigate
+                localStorage.setItem('recommendedStartLevel', result.recommended_level);
+                localStorage.setItem('currentLevel', result.recommended_level);
 
-              // Enable access to the recommended level
-              const unlocks = JSON.parse(localStorage.getItem('unlocks') || '{}');
-              unlocks[result.recommended_level] = true;
-              localStorage.setItem('unlocks', JSON.stringify(unlocks));
+                // Enable access to the recommended level
+                const unlocks = JSON.parse(localStorage.getItem('unlocks') || '{}');
+                unlocks[result.recommended_level] = true;
+                localStorage.setItem('unlocks', JSON.stringify(unlocks));
 
-              // Navigate to lessons page
-              window.location.href = '/lessons';
+                // Alert user since navigation is broken
+                alert('Test completed! Please navigate to lessons manually.');
+              }
             }}
             className="bg-green-600 hover:bg-green-700 text-white px-8 py-3"
           >

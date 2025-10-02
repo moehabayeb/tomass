@@ -130,6 +130,77 @@ export default function AppNavigation() {
     localStorage.setItem('unlocks', JSON.stringify(unlocks));
 
     // The test component will handle showing results and navigation to lessons
+    // Note: Navigation to lessons is handled by the onGoToLessons callback
+  };
+
+  const handleGoToLessons = () => {
+    // Navigate to lessons mode with the user's recommended level
+    setCurrentMode('lessons');
+  };
+
+  // Get initial lesson parameters from test result
+  const getInitialLessonParams = () => {
+    const testResult = localStorage.getItem('lastTestResult');
+    if (testResult) {
+      const parsed = JSON.parse(testResult);
+      const level = parsed.level;
+
+      // Determine starting module based on level
+      let startingModule = 1;
+      switch (level) {
+        case 'A1':
+          startingModule = 1;
+          break;
+        case 'A2':
+          startingModule = 51;
+          break;
+        case 'B1':
+          startingModule = 101;
+          break;
+        case 'B2':
+          startingModule = 1; // B2 not implemented yet, fallback to A1
+          break;
+        case 'C1':
+          startingModule = 1; // C1 not implemented yet, fallback to A1
+          break;
+        case 'C2':
+          startingModule = 1; // C2 not implemented yet, fallback to A1
+          break;
+        default:
+          startingModule = 1;
+      }
+
+      return { level: level === 'B2' || level === 'C1' || level === 'C2' ? 'A1' : level, module: startingModule };
+    }
+
+    // Fallback to localStorage recommendedStartLevel if available
+    const recommendedLevel = localStorage.getItem('recommendedStartLevel');
+    const recommendedModule = localStorage.getItem('recommendedStartModule');
+
+    if (recommendedLevel) {
+      let module = recommendedModule ? parseInt(recommendedModule) : 1;
+      let level = recommendedLevel;
+
+      // Ensure module is in correct range for level
+      switch (level) {
+        case 'A1':
+          module = Math.max(1, Math.min(50, module));
+          break;
+        case 'A2':
+          module = Math.max(51, Math.min(100, module));
+          break;
+        case 'B1':
+          module = Math.max(101, Math.min(150, module));
+          break;
+        default:
+          level = 'A1';
+          module = 1;
+      }
+
+      return { level, module };
+    }
+
+    return null;
   };
 
   return (
@@ -227,7 +298,10 @@ export default function AppNavigation() {
 
       {/* Content based on current mode */}
       {currentMode === 'lessons' && (
-        <LessonsApp onBack={() => setCurrentMode('speaking')} />
+        <LessonsApp
+          onBack={() => setCurrentMode('speaking')}
+          {...getInitialLessonParams()}
+        />
       )}
       
       {currentMode === 'bookmarks' && (
@@ -248,6 +322,7 @@ export default function AppNavigation() {
         <EnglishProficiencyTest
           onComplete={handleTestComplete}
           onBack={() => setCurrentMode('speaking')}
+          onGoToLessons={handleGoToLessons}
           testType="placement"
         />
       )}

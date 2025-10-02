@@ -182,6 +182,8 @@ function getSpeakingPracticeItem(item: any): SpeakingPracticeItem {
 
 interface LessonsAppProps {
   onBack: () => void;
+  initialLevel?: string;
+  initialModule?: number;
 }
 
 type ViewState = 'levels' | 'modules' | 'lesson';
@@ -5839,7 +5841,7 @@ Yapı (Structure): Özne + may/might + fiil
   ]
 };
 
-export default function LessonsApp({ onBack }: LessonsAppProps) {
+export default function LessonsApp({ onBack, initialLevel, initialModule }: LessonsAppProps) {
   // ===== STATE (must be first) =====
   const [width, height] = useWindowSize();
   const [viewState, setViewState] = useState<ViewState>('levels');
@@ -5884,6 +5886,15 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
   // Keep a live ref of the phase for async flows (prevents stale closures)
   const phaseRef = useRef(currentPhase);
   useEffect(() => { phaseRef.current = currentPhase; }, [currentPhase]);
+
+  // Initialize with props from test result
+  useEffect(() => {
+    if (initialLevel && initialModule) {
+      setSelectedLevel(initialLevel);
+      setSelectedModule(initialModule);
+      setViewState('lesson');
+    }
+  }, [initialLevel, initialModule]);
 
   // ===== DERIVED VALUES (after state) =====
   // Initialize Progress Tracker Service
@@ -6444,14 +6455,29 @@ const MODULE_101_DATA = {
   description: "Learn the structure and use of the Present Perfect Continuous tense",
   intro: `Bu modülde Present Perfect Continuous Tense öğreneceğiz.
 
-Konu Anlatımı:
-Present Perfect Continuous Tense (Şimdiki Zamanın Hikâyesi), geçmişte başlamış ve hâlen devam eden ya da yeni bitmiş ve etkisi süren eylemleri anlatmak için kullanılır.
-Yapısı: have/has + been + V-ing
+📘 Konu Anlatımı (Türkçe Açıklama)
+Present Perfect Continuous Tense (Şimdiki Zamanın Hikâyesi), geçmişte başlamış ve hâlen devam eden ya da yeni bitmiş ve etkisi süren eylemleri anlatmak için kullanılır. Yapısı: have/has + been + V-ing şeklindedir.
+Örnek: I've been studying all day. (Tüm gün boyunca ders çalışıyorum / çalışıyordum.)
 
-Örnekler:
-I've been studying all day. (Tüm gün boyunca ders çalışıyorum / çalışıyordum.)
+📗 Structure
+✅ Positive: Subject + have/has + been + verb-ing
+✅ Negative: Subject + haven't/hasn't + been + verb-ing
+✅ Question: Have/Has + subject + been + verb-ing?
+
+🧩 Uses
+1. Actions that started in the past and are still happening:
+   - She has been working here since 2019.
+2. Actions that have recently stopped but have present results:
+   - I'm tired because I've been running.
+3. To emphasize the duration of an activity:
+   - They've been talking for over an hour.
+
+🧠 Example Sentences
+I've been learning English for three years.
 She has been cooking since this morning.
-They've been arguing all day.`,
+They've been arguing all day.
+Has he been working out recently?
+We haven't been sleeping well lately.`,
   tip: "Use have/has + been + verb-ing for ongoing actions",
   
   listeningExamples: [
@@ -6512,12 +6538,27 @@ const MODULE_103_DATA = {
   description: "Learn how to form Past Perfect Tense in affirmative sentences",
   intro: `Bu modülde Past Perfect Tense'in olumlu halini öğreneceğiz.
 
-Konu Anlatımı:
+📘 Konu Anlatımı (Türkçe Açıklama)
 Past Perfect Tense (had + V3), geçmişteki bir olaydan daha önce gerçekleşmiş başka bir olayı anlatmak için kullanılır.
-Yapı: Subject + had + past participle (V3)
+Yapı: Subject + had + V3 (past participle)
 
 Örnek:
-She had left before I arrived. (Ben gelmeden önce o çıkmıştı.)`,
+- She had left before I arrived. (Ben gelmeden önce o çıkmıştı.)
+
+📗 Structure & Usage
+✅ Structure: Subject + had + past participle (V3)
+→ Used to show that one action happened before another action or time in the past.
+
+Examples:
+- I had finished my homework before dinner.
+- They had already left when we arrived.
+
+🧠 Example Sentences
+She had already gone to bed when I called her.
+We had eaten dinner by the time they arrived.
+He had never seen the sea before that day.
+I had studied French before I moved to Paris.
+The train had left before we reached the station.`,
   tip: "Use had + past participle to show an action completed before another past action",
   
   listeningExamples: [
@@ -6576,119 +6617,555 @@ She had left before I arrived. (Ben gelmeden önce o çıkmıştı.)`,
 const MODULE_104_DATA = {
   title: "Module 104 - Past Perfect – Negative",
   description: "Learn how to form the negative of the Past Perfect tense",
-  intro: "Past Perfect Tense'in olumsuz hali: Subject + had not (hadn't) + V3",
+  intro: `Bu modülde Past Perfect Tense'in olumsuz halini öğreneceğiz.
+
+📘 Konu Anlatımı (Türkçe Açıklama)
+Past Perfect Tense'in olumsuz hali, geçmişteki bir olaydan önce gerçekleşmemiş bir durumu anlatmak için kullanılır.
+Yapı: Subject + had not (hadn't) + V3
+
+Örnek:
+- I hadn't eaten before the meeting started. (Toplantı başlamadan önce yemek yememiştim.)
+
+📗 Structure & Usage
+✅ Structure: Subject + had not (hadn't) + past participle (V3)
+→ Used to show that one action had *not* happened before another action in the past.
+
+Examples:
+- They hadn't arrived when we started the dinner.
+- She hadn't studied for the test, so she was nervous.
+
+🧠 Example Sentences
+•    I hadn't seen that movie before last night.
+•    She hadn't met him until the party.
+•    We hadn't finished our homework when the teacher came.
+•    They hadn't cleaned the house before the guests arrived.
+•    He hadn't heard the news before you told him.`,
   tip: "Use hadn't + past participle for negative past perfect",
   listeningExamples: [
-    "They hadn't arrived when we started the dinner.",
-    "She hadn't studied for the test, so she was nervous.",
-    "I hadn't seen that movie before last night."
+    "I hadn't seen that movie before last night.",
+    "She hadn't met him until the party.",
+    "We hadn't finished our homework when the teacher came.",
+    "They hadn't cleaned the house before the guests arrived.",
+    "He hadn't heard the news before you told him."
   ],
   speakingPractice: [
     { question: "Why was she surprised?", answer: "Because she hadn't expected them to arrive early." },
     { question: "Had you eaten before the show?", answer: "No, I hadn't eaten anything all day." },
-    { question: "Why were they late?", answer: "They hadn't checked the time." }
+    { question: "Why were they late?", answer: "They hadn't checked the time." },
+    { question: "Had the students done the homework?", answer: "No, they hadn't completed it." },
+    { question: "Why didn't he recognize her?", answer: "He hadn't seen her in years." },
+    { question: "Had she visited the museum before?", answer: "No, she hadn't been there before." },
+    { question: "Why was your phone off?", answer: "Because I hadn't charged it." },
+    { question: "Had you watched that movie before?", answer: "No, I hadn't even heard of it." },
+    { question: "Why were they arguing?", answer: "Because he hadn't told her the truth." },
+    { question: "Had she taken the medicine?", answer: "No, she hadn't remembered to take it." },
+    { question: "Why did you miss the class?", answer: "I hadn't set my alarm." },
+    { question: "Had you finished the report before the meeting?", answer: "No, I hadn't had time." },
+    { question: "Why was the floor dirty?", answer: "They hadn't cleaned it." },
+    { question: "Had the package arrived?", answer: "No, it hadn't been delivered yet." },
+    { question: "Why did the teacher get angry?", answer: "Because the students hadn't studied." },
+    { question: "Had your brother fed the cat?", answer: "No, he hadn't fed it yet." },
+    { question: "Why was she nervous?", answer: "She hadn't prepared for the presentation." },
+    { question: "Had you ever traveled alone before that trip?", answer: "No, I hadn't." },
+    { question: "Why didn't you go to the event?", answer: "I hadn't received the invitation." },
+    { question: "Had they taken the test before?", answer: "No, they hadn't taken it before." },
+    { question: "Why didn't she bring her ID?", answer: "She hadn't known it was necessary." },
+    { question: "Had the guests eaten when you arrived?", answer: "No, they hadn't started yet." },
+    { question: "Why didn't you answer the phone?", answer: "I hadn't heard it ring." },
+    { question: "Had he practiced enough?", answer: "No, he hadn't practiced at all." },
+    { question: "Why was the door still open?", answer: "They hadn't closed it properly." },
+    { question: "Had your sister told you about the plan?", answer: "No, she hadn't mentioned it." },
+    { question: "Why was he upset?", answer: "Because we hadn't invited him." },
+    { question: "Had the hotel room been cleaned?", answer: "No, it hadn't been cleaned yet." },
+    { question: "Why did the boss get angry?", answer: "We hadn't finished the project." },
+    { question: "Had the mechanic fixed the car?", answer: "No, he hadn't even looked at it." },
+    { question: "Why didn't you reply to my email?", answer: "I hadn't seen it in my inbox." },
+    { question: "Had your team played before the final?", answer: "No, we hadn't played together yet." },
+    { question: "Why didn't you pay the bill?", answer: "I hadn't received it yet." },
+    { question: "Had you known about the change?", answer: "No, I hadn't been informed." },
+    { question: "Why wasn't she ready?", answer: "She hadn't packed her suitcase." },
+    { question: "Had you booked the hotel?", answer: "No, I hadn't done it in time." },
+    { question: "Why didn't they come?", answer: "They hadn't been invited." },
+    { question: "Had the train left when you arrived?", answer: "Yes, it had. I hadn't checked the schedule." },
+    { question: "Why didn't she bring her laptop?", answer: "She hadn't thought she'd need it." },
+    { question: "Had he prepared for the interview?", answer: "No, he hadn't prepared well enough." }
   ]
 };
 
 const MODULE_105_DATA = {
   title: "Module 105 - Past Perfect – Questions",
   description: "Learn how to form questions in the Past Perfect tense",
-  intro: "Past Perfect Tense ile soru: Had + subject + V3?",
+  intro: `Bu modülde Past Perfect Tense ile soru sormayı öğreneceğiz.
+
+📘 Konu Anlatımı (Türkçe Açıklama)
+Past Perfect Tense ile soru sormak, geçmişteki iki olaydan hangisinin önce gerçekleştiğini öğrenmek için kullanılır.
+Yapı: Had + subject + V3
+
+Örnek:
+- Had she arrived before the meeting started? (Toplantı başlamadan önce o gelmiş miydi?)
+
+📗 Structure & Usage
+✅ Structure: Had + subject + past participle (V3)?
+→ Used to ask whether an action was completed before another one in the past.
+
+Examples:
+- Had they eaten before you arrived?
+- Had he finished the report before the deadline?
+
+🧠 Example Sentences
+Had she ever traveled abroad before 2020?
+Had you studied English before moving to Canada?
+Had they cleaned the house before the guests came?
+Had he told you the truth before you found out?
+Had you heard the news before I called?`,
   tip: "Use Had + subject + past participle for questions",
   listeningExamples: [
     "Had she ever traveled abroad before 2020?",
     "Had you studied English before moving to Canada?",
-    "Had they cleaned the house before the guests came?"
+    "Had they cleaned the house before the guests came?",
+    "Had he told you the truth before you found out?",
+    "Had you heard the news before I called?"
   ],
   speakingPractice: [
     { question: "Had she met your parents before the wedding?", answer: "Yes, she had met them a few months before." },
     { question: "Had you finished your homework before dinner?", answer: "Yes, I had completed everything." },
-    { question: "Had they ever seen snow before that trip?", answer: "No, they had never seen snow before." }
+    { question: "Had they ever seen snow before that trip?", answer: "No, they had never seen snow before." },
+    { question: "Had he spoken to the manager before the meeting?", answer: "Yes, he had already discussed everything." },
+    { question: "Had the team practiced before the match?", answer: "Yes, they had trained for a week." },
+    { question: "Had you packed your bags before the taxi arrived?", answer: "Yes, I was ready on time." },
+    { question: "Had she read the book before the test?", answer: "Yes, she had read it twice." },
+    { question: "Had they visited the museum before the renovation?", answer: "Yes, they had gone last year." },
+    { question: "Had you called your friend before leaving?", answer: "No, I forgot to call." },
+    { question: "Had your teacher explained the topic before the quiz?", answer: "Yes, she had explained it clearly." },
+    { question: "Had you ever eaten sushi before that night?", answer: "No, it was my first time." },
+    { question: "Had the guests left before the rain started?", answer: "Yes, they had just left." },
+    { question: "Had you been to that restaurant before?", answer: "Yes, several times." },
+    { question: "Had your parents traveled abroad before?", answer: "Yes, they had been to Italy." },
+    { question: "Had she finished her meal before the guests arrived?", answer: "Yes, she had already eaten." },
+    { question: "Had the police arrived before the fire started?", answer: "No, they arrived a few minutes later." },
+    { question: "Had the students studied enough for the exam?", answer: "Most of them had studied hard." },
+    { question: "Had you heard about the event before yesterday?", answer: "No, I learned about it this morning." },
+    { question: "Had they finished the construction before winter?", answer: "Yes, just in time." },
+    { question: "Had your boss approved the report before the deadline?", answer: "Yes, he had signed it early." },
+    { question: "Had you met her before the party?", answer: "Yes, we met at a seminar." },
+    { question: "Had they booked the table before arriving?", answer: "Yes, it was reserved for us." },
+    { question: "Had she washed the dishes before going to bed?", answer: "Yes, she always does." },
+    { question: "Had you fed the dog before you left?", answer: "No, I forgot." },
+    { question: "Had the movie started before you arrived?", answer: "Yes, I missed the beginning." },
+    { question: "Had you locked the door before leaving?", answer: "Yes, I'm sure I did." },
+    { question: "Had they completed the painting before the show?", answer: "Yes, everything was ready." },
+    { question: "Had you met the director before the interview?", answer: "Yes, once briefly." },
+    { question: "Had the sun risen when you woke up?", answer: "Yes, it was already bright." },
+    { question: "Had your friend called before you texted?", answer: "No, I messaged first." },
+    { question: "Had she been to that concert venue before?", answer: "Yes, she had gone there last summer." },
+    { question: "Had they told you the news before anyone else?", answer: "Yes, I was the first to know." },
+    { question: "Had you submitted your assignment on time?", answer: "Yes, the night before." },
+    { question: "Had she told you her secret before?", answer: "No, that was the first time." },
+    { question: "Had they warned you about the weather?", answer: "Yes, but I didn't believe them." },
+    { question: "Had you checked the email before the meeting?", answer: "No, I missed it." },
+    { question: "Had the guests eaten before the host arrived?", answer: "Yes, they had already started." },
+    { question: "Had you seen that actor in another movie?", answer: "Yes, a few years ago." },
+    { question: "Had your parents allowed you to travel alone before?", answer: "Yes, when I was 16." },
+    { question: "Had she completed her thesis before the deadline?", answer: "Yes, and submitted it early." }
   ]
 };
 
 const MODULE_106_DATA = {
   title: "Module 106 - Past Perfect Continuous",
   description: "Understand how to use the Past Perfect Continuous Tense",
-  intro: "Past Perfect Continuous: Subject + had been + verb-ing",
+  intro: `Bu modülde Past Perfect Continuous Tense öğreneceğiz.
+
+📘 Konu Anlatımı (Türkçe Açıklama)
+Past Perfect Continuous Tense (had been + V-ing), geçmişte bir noktadan önce başlamış ve bir süre devam etmiş eylemleri anlatmak için kullanılır.
+Yapı: Subject + had been + verb-ing
+
+Örnek:
+- I had been working all day before I finally took a break. (Tüm gün çalışıyordum, sonunda ara verdim.)
+
+📗 Structure & Usage
+✅ Structure: Subject + had been + verb-ing
+→ Used to show that an action was happening over a period of time before something else in the past.
+
+Examples:
+- She had been studying for hours before the exam started.
+- We had been waiting for the bus when it suddenly started raining.
+
+🧠 Example Sentences
+He had been living in Berlin before he moved to London.
+They had been playing football for two hours before it got dark.
+I had been reading that book for weeks before I finished it.
+She had been feeling sick all day before she went to the doctor.
+We had been walking for miles when we finally found a café.`,
   tip: "Use had been + verb-ing for ongoing past actions before another past point",
   listeningExamples: [
     "He had been living in Berlin before he moved to London.",
     "They had been playing football for two hours before it got dark.",
-    "I had been reading that book for weeks before I finished it."
+    "I had been reading that book for weeks before I finished it.",
+    "She had been feeling sick all day before she went to the doctor.",
+    "We had been walking for miles when we finally found a café."
   ],
   speakingPractice: [
     { question: "What had you been doing before I arrived?", answer: "I had been cleaning the house." },
     { question: "Why were you tired last night?", answer: "I had been studying for five hours." },
-    { question: "Had they been working together for a long time?", answer: "Yes, they had been working on the project for months." }
+    { question: "Had they been working together for a long time?", answer: "Yes, they had been working on the project for months." },
+    { question: "What had she been watching?", answer: "She had been watching a documentary about space." },
+    { question: "How long had you been learning Spanish before the trip?", answer: "I had been learning for over a year." },
+    { question: "Had you been waiting long when the train arrived?", answer: "Yes, I had been waiting for almost 40 minutes." },
+    { question: "Why were your hands dirty?", answer: "Because I had been gardening." },
+    { question: "What had the children been doing all afternoon?", answer: "They had been playing in the park." },
+    { question: "Where had you been working before you joined this company?", answer: "I had been working at a bank." },
+    { question: "Had he been practicing the piano regularly?", answer: "Yes, he had been playing every day." },
+    { question: "Why was she so angry?", answer: "She had been trying to fix the issue for hours." },
+    { question: "How long had it been snowing?", answer: "It had been snowing since early morning." },
+    { question: "Had they been planning the event well?", answer: "Yes, they had been preparing for weeks." },
+    { question: "Had you been feeling well before the accident?", answer: "Yes, I had been completely healthy." },
+    { question: "Why were they late?", answer: "They had been waiting for a taxi." },
+    { question: "What had she been dreaming about?", answer: "She had been dreaming about her childhood." },
+    { question: "Had you been traveling before the lockdown?", answer: "Yes, I had been traveling around Europe." },
+    { question: "Why were the roads so muddy?", answer: "It had been raining all night." },
+    { question: "Had he been writing his book for long?", answer: "Yes, he had been working on it for years." },
+    { question: "Had you been exercising regularly?", answer: "Yes, I had been going to the gym every morning." },
+    { question: "What had they been building?", answer: "They had been building a treehouse." },
+    { question: "Had you been feeling stressed before the interview?", answer: "Yes, I had been very anxious." },
+    { question: "Why was your shirt wet?", answer: "Because I had been walking in the rain." },
+    { question: "How long had they been studying?", answer: "They had been studying for six hours." },
+    { question: "Had she been preparing for the presentation?", answer: "Yes, she had been preparing all weekend." },
+    { question: "Why were you out of breath?", answer: "I had been running to catch the bus." },
+    { question: "What had you been thinking about?", answer: "I had been thinking about my future plans." },
+    { question: "Had your parents been saving money for the trip?", answer: "Yes, they had been saving for over a year." },
+    { question: "Had you been painting the house?", answer: "Yes, and I still have more to finish." },
+    { question: "Why were you so sleepy?", answer: "I had been working late every night." },
+    { question: "What had the manager been talking about?", answer: "He had been explaining the new company policy." },
+    { question: "Had she been teaching at that school long?", answer: "Yes, she had been teaching there for ten years." },
+    { question: "Had they been staying at the hotel before you arrived?", answer: "Yes, for a couple of days." },
+    { question: "Why was the kitchen messy?", answer: "They had been cooking a big meal." },
+    { question: "Had you been feeling better before the cold came back?", answer: "Yes, I had been recovering well." },
+    { question: "How long had the team been training?", answer: "They had been training since early morning." },
+    { question: "Had the kids been behaving well?", answer: "Yes, they had been calm and polite all day." },
+    { question: "What had you been writing?", answer: "I had been working on a new article." },
+    { question: "Why were the lights off?", answer: "We had been watching a movie." },
+    { question: "Had the rain been falling heavily?", answer: "Yes, it had been pouring for hours." }
   ]
 };
 
 const MODULE_107_DATA = {
   title: "Module 107 - Future Perfect (I will have done)",
   description: "Learn to use the Future Perfect tense to describe completed actions in the future",
-  intro: "Future Perfect: Subject + will have + V3",
+  intro: `Bu modülde Future Perfect Tense öğreneceğiz.
+
+📘 Konu Anlatımı (Türkçe Açıklama)
+Future Perfect Tense (will have + V3), gelecekte belirli bir zamana kadar tamamlanmış olacak eylemleri ifade etmek için kullanılır.
+Yapı: Subject + will have + V3 (past participle)
+
+Örnek:
+- By next week, I will have finished this book. (Gelecek haftaya kadar bu kitabı bitirmiş olacağım.)
+
+📗 Structure & Usage
+✅ Structure: Subject + will have + past participle (V3)
+→ Used to express that something will be completed before a time in the future.
+
+Examples:
+- She will have graduated by June.
+- They will have built the house before winter starts.
+
+🧠 Example Sentences
+By 2026, I will have completed my master's degree.
+They will have arrived by the time the movie starts.
+You will have finished your homework before dinner.
+He will have left work by 6 p.m.
+We will have cleaned the house before the guests arrive.`,
   tip: "Use will have + past participle for actions completed before a future point",
   listeningExamples: [
     "By 2026, I will have completed my master's degree.",
     "They will have arrived by the time the movie starts.",
-    "You will have finished your homework before dinner."
+    "You will have finished your homework before dinner.",
+    "He will have left work by 6 p.m.",
+    "We will have cleaned the house before the guests arrive."
   ],
   speakingPractice: [
     { question: "Will you have finished the project by Friday?", answer: "Yes, I will have completed it by then." },
     { question: "What will you have done by the end of this year?", answer: "I will have traveled to three different countries." },
-    { question: "Will she have learned enough English to pass the exam?", answer: "Yes, she will have studied very hard." }
+    { question: "Will she have learned enough English to pass the exam?", answer: "Yes, she will have studied very hard." },
+    { question: "By the time we get there, will they have left?", answer: "Yes, they will have already gone." },
+    { question: "Will the workers have built the bridge before winter?", answer: "Yes, it will be ready by November." },
+    { question: "Will you have cleaned the kitchen before your guests arrive?", answer: "Of course, it will be spotless." },
+    { question: "Will he have repaired the car by tomorrow?", answer: "Yes, he will have it ready by 10 a.m." },
+    { question: "What will you have achieved by the time you're 30?", answer: "I will have started my own business." },
+    { question: "Will she have completed her degree by next year?", answer: "Yes, she will have graduated by June." },
+    { question: "By the end of the day, what will you have done?", answer: "I will have finished my tasks and emailed the report." },
+    { question: "Will the students have taken the test before lunch?", answer: "Yes, it starts at 9 a.m." },
+    { question: "Will they have arrived at the station by 7?", answer: "Yes, their train arrives at 6:45." },
+    { question: "Will you have finished cooking by the time they come?", answer: "Yes, dinner will be ready." },
+    { question: "Will the sun have set by the time we arrive?", answer: "Probably, it sets around 8 PM." },
+    { question: "How many books will you have read by summer?", answer: "I will have read at least ten." },
+    { question: "Will he have completed the assignment before midnight?", answer: "Yes, he's almost done." },
+    { question: "Will they have moved into their new house by October?", answer: "Yes, they move in September." },
+    { question: "Will you have done all your chores by Sunday?", answer: "Yes, I plan to do them Saturday morning." },
+    { question: "Will she have saved enough money for the trip?", answer: "Yes, she's very careful with her budget." },
+    { question: "By the time the concert starts, will we have arrived?", answer: "Yes, we'll get there early." },
+    { question: "Will the meeting have ended by 5 PM?", answer: "Yes, it usually ends by 4:30." },
+    { question: "Will you have submitted the application by the deadline?", answer: "Yes, I will submit it today." },
+    { question: "Will your friend have returned from vacation by then?", answer: "Yes, she'll be back two days before." },
+    { question: "By next month, what will you have achieved?", answer: "I will have completed my training program." },
+    { question: "Will they have finished renovating the kitchen?", answer: "Yes, the work finishes next week." },
+    { question: "How long will you have worked here by December?", answer: "I will have worked here for three years." },
+    { question: "Will she have written her thesis by the summer?", answer: "Yes, it's due in June." },
+    { question: "Will we have packed everything by tonight?", answer: "Yes, we're almost done." },
+    { question: "Will the kids have done their homework?", answer: "Yes, I checked it myself." },
+    { question: "By the time I arrive, will you have left?", answer: "Probably, I have an early meeting." },
+    { question: "Will he have fixed the broken window by the weekend?", answer: "Yes, the repairman is coming Friday." },
+    { question: "By midnight, what will you have completed?", answer: "I will have finished all the reports." },
+    { question: "Will your team have prepared the presentation?", answer: "Yes, we've been working on it all week." },
+    { question: "Will you have finished painting the room by Sunday?", answer: "Yes, we started on Friday." },
+    { question: "Will she have cleaned the house before the visitors come?", answer: "Yes, everything will be tidy." },
+    { question: "Will they have installed the new system by next week?", answer: "Yes, it should be running by Monday." },
+    { question: "By next year, where will you have traveled?", answer: "Hopefully to South America and Japan." },
+    { question: "Will the train have left by the time we get to the station?", answer: "Yes, it departs at 8:15." },
+    { question: "What will you have done by this time tomorrow?", answer: "I will have arrived in Paris." }
   ]
 };
 
 const MODULE_108_DATA = {
   title: "Module 108 - Future Continuous vs Future Perfect",
   description: "Understand the difference between Future Continuous and Future Perfect tenses",
-  intro: "Future Continuous: will be + V-ing vs Future Perfect: will have + V3",
+  intro: `Bu modülde Future Continuous ve Future Perfect arasındaki farkı öğreneceğiz.
+
+📘 Konu Anlatımı (Türkçe Açıklama)
+Future Continuous (will be + V-ing) gelecekte belirli bir zamanda devam etmekte olan eylemleri ifade ederken,
+Future Perfect (will have + V3) gelecekte belirli bir zamana kadar tamamlanmış olacak eylemleri anlatır.
+
+📗 Structure & Usage
+✅ Future Continuous: Subject + will be + verb-ing
+→ Describes an action in progress at a specific time in the future.
+Example: This time tomorrow, I will be flying to New York.
+
+✅ Future Perfect: Subject + will have + past participle (V3)
+→ Describes an action that will be completed before a specific time in the future.
+Example: By tomorrow, I will have finished the project.
+
+🧠 Example Sentences
+This time next week, I will be lying on the beach. (Future Continuous)
+By next week, I will have finished all my exams. (Future Perfect)
+She will be working at 3 p.m. (Future Continuous)
+She will have completed the report by 3 p.m. (Future Perfect)
+They will be watching a movie at 9 p.m. (Future Continuous)
+They will have watched the movie by 11 p.m. (Future Perfect)`,
   tip: "Future Continuous for ongoing actions, Future Perfect for completed actions",
   listeningExamples: [
-    "This time tomorrow, I will be flying to New York.",
-    "By tomorrow, I will have finished the project.",
-    "She will be working at 3 p.m."
+    "This time next week, I will be lying on the beach.",
+    "By next week, I will have finished all my exams.",
+    "She will be working at 3 p.m.",
+    "She will have completed the report by 3 p.m.",
+    "They will be watching a movie at 9 p.m.",
+    "They will have watched the movie by 11 p.m."
   ],
   speakingPractice: [
     { question: "What will you be doing at 8 a.m. tomorrow?", answer: "I will be having breakfast." },
     { question: "What will you have done by 8 a.m. tomorrow?", answer: "I will have finished my workout." },
-    { question: "Will she be working this weekend?", answer: "Yes, she will be working on Saturday and Sunday." }
+    { question: "Will she be working this weekend?", answer: "Yes, she will be working on Saturday and Sunday." },
+    { question: "Will she have finished the project by Monday?", answer: "Yes, she will have submitted it by then." },
+    { question: "What will your parents be doing at this time next week?", answer: "They will be traveling to Antalya." },
+    { question: "Will your parents have arrived by this time next week?", answer: "Yes, they will have checked into the hotel." },
+    { question: "Will it be raining in the afternoon?", answer: "Yes, according to the forecast, it will be raining." },
+    { question: "Will the rain have stopped by evening?", answer: "Yes, it will have stopped before 6 p.m." },
+    { question: "What will you be studying at 10 a.m.?", answer: "I will be studying English grammar." },
+    { question: "What will you have completed by 10 a.m.?", answer: "I will have completed all my homework." },
+    { question: "Will you be watching the game tonight?", answer: "Yes, I will be watching it with friends." },
+    { question: "Will you have watched the game by midnight?", answer: "Yes, it will have ended by then." },
+    { question: "What will she be wearing at the party?", answer: "She will be wearing a red dress." },
+    { question: "Will she have arrived before the party starts?", answer: "Yes, she will have arrived early." },
+    { question: "What will you be doing during the meeting?", answer: "I will be taking notes." },
+    { question: "What will you have prepared before the meeting?", answer: "I will have prepared my slides." },
+    { question: "Will you be using your laptop at the café?", answer: "Yes, I will be working there." },
+    { question: "Will you have submitted the form by Friday?", answer: "Yes, I will have sent it by Thursday." },
+    { question: "Where will you be staying next month?", answer: "I will be staying at my aunt's house." },
+    { question: "Where will you have stayed by the end of the month?", answer: "I will have stayed in two different cities." },
+    { question: "Will he be working at 5 p.m.?", answer: "Yes, he will be at the office." },
+    { question: "Will he have left work by 6 p.m.?", answer: "Yes, he will have finished his shift." },
+    { question: "What will they be doing at the wedding?", answer: "They will be dancing and celebrating." },
+    { question: "Will they have gotten married by then?", answer: "Yes, the ceremony will have finished." },
+    { question: "Will she be traveling next week?", answer: "Yes, she will be visiting Rome." },
+    { question: "Will she have returned by Sunday?", answer: "Yes, she will have flown back by then." },
+    { question: "What will you be doing during the exam?", answer: "I will be writing an essay." },
+    { question: "Will you have studied enough before the exam?", answer: "Yes, I will have reviewed everything." },
+    { question: "Will the children be playing in the garden?", answer: "Yes, they will be playing all afternoon." },
+    { question: "Will the children have eaten by then?", answer: "Yes, they will have had their lunch." },
+    { question: "What will the team be doing at 2 p.m.?", answer: "They will be training on the field." },
+    { question: "What will the team have achieved by next month?", answer: "They will have won several matches." },
+    { question: "Will you be celebrating your birthday this weekend?", answer: "Yes, I will be having a party." },
+    { question: "Will you have turned 21 by then?", answer: "Yes, my birthday is on Friday." },
+    { question: "Will the movie be playing at 9?", answer: "Yes, it will be halfway through by then." },
+    { question: "Will the movie have ended by midnight?", answer: "Yes, it will have finished before that." },
+    { question: "Will you be living in Istanbul next year?", answer: "Yes, I will be moving there in June." },
+    { question: "Will you have lived there for a year by next summer?", answer: "Yes, it will be exactly one year." },
+    { question: "Will he be cooking dinner when we arrive?", answer: "Yes, he will be in the kitchen." },
+    { question: "Will he have cooked by the time we arrive?", answer: "Yes, dinner will be ready." }
   ]
 };
 
 const MODULE_109_DATA = {
   title: "Module 109 - Modals of Deduction (must, might, can't)",
   description: "Understand how to express logical conclusions about present situations",
-  intro: "must (kesin), might (ihtimal), can't (imkânsız)",
+  intro: `Bu modülde Modals of Deduction öğreneceğiz.
+
+📘 Konu Anlatımı (Türkçe Açıklama)
+Modals of Deduction, bir durumu değerlendirerek mantıksal çıkarım yapmak için kullanılır.
+- must → yüksek olasılık (olmalı)
+- might / may / could → ihtimal (olabilir)
+- can't → imkânsızlık (olamaz)
+
+Örnek:
+- He must be tired. (Kesin yorgundur.)
+- She might be at home. (Evde olabilir.)
+- That can't be true. (Bu doğru olamaz.)
+
+📗 Structure & Usage
+✅ Structure: Subject + modal (must/might/can't) + base verb (be / have / verb)
+
+Examples:
+- He must be hungry. (I'm sure he is.)
+- They might be on their way. (It's possible.)
+- She can't be the manager. (I'm sure she isn't.)
+
+🧠 Example Sentences
+He must be at work. His car is in the parking lot.
+She might be sleeping. It's still early.
+They can't be home. The lights are off.
+You must be joking!
+This can't be the right address.`,
   tip: "Use must for certainty, might for possibility, can't for impossibility",
   listeningExamples: [
     "He must be at work. His car is in the parking lot.",
     "She might be sleeping. It's still early.",
-    "They can't be home. The lights are off."
+    "They can't be home. The lights are off.",
+    "You must be joking!",
+    "This can't be the right address."
   ],
   speakingPractice: [
     { question: "Why is the room so quiet?", answer: "They must have gone out." },
     { question: "Where is your brother?", answer: "He might be in the garden." },
-    { question: "Why is the window open?", answer: "Someone must have opened it." }
+    { question: "Why is the window open?", answer: "Someone must have opened it." },
+    { question: "Where is Jane?", answer: "She can't be at home—her car is gone." },
+    { question: "Why is the kitchen a mess?", answer: "The kids must have cooked something." },
+    { question: "Who's calling me now?", answer: "It might be your manager." },
+    { question: "Why are they late?", answer: "They might have missed the train." },
+    { question: "Why is his phone off?", answer: "He must be in a meeting." },
+    { question: "Do you think she's angry?", answer: "She might be, but I'm not sure." },
+    { question: "Is this her bag?", answer: "It can't be. She always carries a red one." },
+    { question: "Why is he smiling?", answer: "He must have received good news." },
+    { question: "Where is your dog?", answer: "It might be hiding under the bed." },
+    { question: "Why is the light on?", answer: "Someone must be in the room." },
+    { question: "Is that his car?", answer: "It can't be—his is much bigger." },
+    { question: "Why are you so sure?", answer: "Because it must be true. I saw it myself." },
+    { question: "Why did the door slam?", answer: "The wind might have closed it." },
+    { question: "Why is she crying?", answer: "She must have failed the exam." },
+    { question: "Is that his handwriting?", answer: "It can't be. It's too neat." },
+    { question: "Why is she wearing a coat?", answer: "It might be cold outside." },
+    { question: "Why isn't she answering?", answer: "She might be sleeping." },
+    { question: "Why is the floor wet?", answer: "Someone must have mopped it." },
+    { question: "Why didn't they come?", answer: "They might have forgotten." },
+    { question: "Why are you whispering?", answer: "They must be sleeping upstairs." },
+    { question: "Is this your phone?", answer: "It can't be mine. Mine has a blue case." },
+    { question: "Why is he so happy?", answer: "He must have passed the test." },
+    { question: "Where is the cat?", answer: "It might be in the garden." },
+    { question: "Why didn't he call you?", answer: "He might have lost his phone." },
+    { question: "Is she the new manager?", answer: "She can't be. She just started yesterday." },
+    { question: "Why are the lights off?", answer: "They might be watching a movie." },
+    { question: "Why do you think it's broken?", answer: "Because it can't be working. It's silent." },
+    { question: "Is that his jacket?", answer: "It must be. I saw him wearing it earlier." },
+    { question: "Why are they whispering?", answer: "They might be planning a surprise." },
+    { question: "Why is she running?", answer: "She must be late for something." },
+    { question: "Why is there no milk?", answer: "They must have forgotten to buy it." },
+    { question: "Is that the answer?", answer: "It might be, but I'm not 100% sure." },
+    { question: "Why is the classroom empty?", answer: "The students must have gone to lunch." },
+    { question: "Why is he in a hurry?", answer: "He might have an appointment." },
+    { question: "Can this be a mistake?", answer: "It can't be. I double-checked it." },
+    { question: "Why does she look so sad?", answer: "She might have received bad news." },
+    { question: "Where is everyone?", answer: "They must be in the meeting room." }
   ]
 };
 
 const MODULE_110_DATA = {
   title: "Module 110 - Modals of Probability (could, may, might)",
   description: "Understand how to express possibility and probability using modal verbs",
-  intro: "could, may, might = olabilir (farklı güçte ihtimaller)",
+  intro: `Bu modülde Modals of Probability öğreneceğiz.
+
+📘 Konu Anlatımı (Türkçe Açıklama)
+'Could', 'may' ve 'might' modal fiilleri bir olayın olma ihtimali hakkında konuşurken kullanılır.
+- could → olabilir (genel olasılık)
+- may → olabilir (resmî ya da daha güçlü ihtimal)
+- might → olabilir (daha zayıf ihtimal)
+
+Bu fiiller %100 emin olmadığımız durumları ifade ederken kullanılır.
+Örnek:
+- She may be at the library.
+- It could rain this evening.
+- He might not come to the party.
+
+📗 Structure & Usage
+✅ Structure: Subject + could/may/might + base verb
+→ Used to express possibility (present or future)
+
+Examples:
+- I might go to the concert tonight.
+- She may join us later.
+- It could take a while to finish the project.
+
+🧠 Example Sentences
+He could be at the supermarket.
+It may rain later this evening.
+She might be working from home today.
+They may not know about the meeting.
+We could be wrong about the time.`,
   tip: "Use could/may/might to express different levels of possibility",
   listeningExamples: [
     "He could be at the supermarket.",
     "It may rain later this evening.",
-    "She might be working from home today."
+    "She might be working from home today.",
+    "They may not know about the meeting.",
+    "We could be wrong about the time."
   ],
   speakingPractice: [
     { question: "Where is Ali?", answer: "He could be in the library." },
     { question: "Will it rain today?", answer: "It might, but the sky looks clear now." },
-    { question: "Is she going to the party?", answer: "She may go if she finishes her work." }
+    { question: "Is she going to the party?", answer: "She may go if she finishes her work." },
+    { question: "What's that noise?", answer: "It could be the wind." },
+    { question: "Do you think they will come?", answer: "They might, but they're not sure yet." },
+    { question: "Why isn't he answering?", answer: "He could be in class." },
+    { question: "Is your friend moving away?", answer: "She might move to another city." },
+    { question: "Will they be on time?", answer: "They may be late due to traffic." },
+    { question: "Where's your phone?", answer: "It could be in my backpack." },
+    { question: "Will she get the job?", answer: "She might. She had a good interview." },
+    { question: "Is it dangerous?", answer: "It may be if you're not careful." },
+    { question: "Will you come to the picnic?", answer: "I might, if it doesn't rain." },
+    { question: "What time will the meeting end?", answer: "It could end around 4 p.m." },
+    { question: "Where are the students?", answer: "They might be in the cafeteria." },
+    { question: "Will they call us back?", answer: "They may call later this evening." },
+    { question: "Can we finish this today?", answer: "We could, if we work fast." },
+    { question: "Why hasn't she arrived yet?", answer: "She might be stuck in traffic." },
+    { question: "Is it okay to go now?", answer: "It may not be safe just yet." },
+    { question: "Will your cousin visit this summer?", answer: "He might come in August." },
+    { question: "Will we need umbrellas?", answer: "It could rain this afternoon." },
+    { question: "Where is the manager?", answer: "She might be in a meeting." },
+    { question: "Is that her car?", answer: "It could be, but I'm not sure." },
+    { question: "Is the train delayed?", answer: "It may be running late today." },
+    { question: "Will they accept your offer?", answer: "They might. It's a fair deal." },
+    { question: "Are you going to the cinema?", answer: "I might, if I'm not too tired." },
+    { question: "Where's the cat?", answer: "It could be hiding under the bed." },
+    { question: "Is the store open now?", answer: "It may be. Let's check the website." },
+    { question: "Will she reply soon?", answer: "She could. She usually responds quickly." },
+    { question: "Are you sure he's at work?", answer: "He might be at lunch." },
+    { question: "Why is the internet slow?", answer: "It could be the weather." },
+    { question: "Will they be ready by 5?", answer: "They may need a little more time." },
+    { question: "Can we get there before dark?", answer: "We might, if we hurry." },
+    { question: "Is she coming to the wedding?", answer: "She could, but she hasn't confirmed yet." },
+    { question: "Will your parents let you go?", answer: "They might, if I ask nicely." },
+    { question: "Is it expensive?", answer: "It could be, depending on the brand." },
+    { question: "Is that food still fresh?", answer: "It might not be. Better check the date." },
+    { question: "Will you be home tonight?", answer: "I may go out with friends." },
+    { question: "Do you think it's true?", answer: "It could be, but we need more info." },
+    { question: "Is this jacket yours?", answer: "It might be my brother's." },
+    { question: "Will he agree to the plan?", answer: "He may, if we explain it well." }
   ]
 };
 
@@ -6698,13 +7175,31 @@ const MODULE_102_DATA = {
   description: "Understand the difference between Present Perfect and Present Perfect Continuous tenses",
   intro: `Bu modülde Present Perfect ve Present Perfect Continuous arasındaki farkı öğreneceğiz.
 
-Konu Anlatımı:
-Present Perfect (have/has + V3), tamamlanmış eylemleri ve sonuçlarını vurgulamak için kullanılır.
-Present Perfect Continuous (have/has + been + V-ing), süregelen ya da yeni bitmiş ve etkisi devam eden eylemleri anlatmak için kullanılır.
+📘 Konu Anlatımı (Türkçe Açıklama)
+Present Perfect (have/has + V3) tamamlanmış eylemleri ve sonuçlarını vurgularken,
+Present Perfect Continuous (have/has + been + V-ing) süregelen veya yeni bitmiş ve etkisi süren eylemleri vurgular.
 
-Örnekler:
-I've read the book. (Kitabı okudum – sonuç önemli)
-I've been reading the book. (Kitabı okuyordum – süreç önemli)`,
+Örnek:
+- I've read the book. (Kitabı okudum - sonuç önemli)
+- I've been reading the book. (Kitabı okuyordum - süreç önemli)
+
+📗 Structure & Usage
+✅ Present Perfect: have/has + past participle (V3)
+→ Focuses on the result or completion.
+✅ Present Perfect Continuous: have/has + been + verb-ing
+→ Focuses on the duration or activity itself.
+
+Examples:
+- She has written three emails. (Result)
+- She has been writing emails all morning. (Duration)
+
+🧠 Example Sentences
+I've worked here for five years. (Permanent or result focus)
+I've been working here since 9 a.m. (Activity in progress)
+They've painted the house. (It's finished)
+They've been painting the house. (They may still be painting)
+He has cooked dinner. (Dinner is ready)
+He has been cooking for two hours. (Focus on the activity)`,
   tip: "Present Perfect focuses on results, Present Perfect Continuous focuses on duration",
   
   listeningExamples: [
@@ -6759,15 +7254,38 @@ I've been reading the book. (Kitabı okuyordum – süreç önemli)`,
   ]
 };
 
-// Module 111 Data: Modals of Obligation (must, have to, should)
+// Module 111: Modals of Obligation (must, have to, should)
 const MODULE_111_DATA = {
-  title: "Module 111 - Modals of Obligation (must, have to, should)",
-  description: "Understand how to express rules, duties, and advice using modal verbs",
-  intro: `'Must', 'have to' ve 'should' modal fiilleri zorunluluk, gereklilik ve tavsiye ifade etmek için kullanılır.
-  
-• must → güçlü zorunluluk (kural, yasa, kişisel mecburiyet)
-• have to → dışsal zorunluluk (kurallar, programlar)  
-• should → tavsiye (yapılması iyi olur)`,
+  title: "Module 111: Modals of Obligation (must, have to, should)",
+  description: "Students will learn to use modal verbs (must, have to, should) to express obligation, necessity, and advice.",
+  intro: `Bu modülde 'Must', 'have to' ve 'should' modal fiilleri zorunluluk, gereklilik ve tavsiye bildirmek için kullanılır.
+
+📘 Konu Anlatımı (Türkçe Açıklama)
+'Must', 'have to' ve 'should' modal fiilleri zorunluluk, gereklilik ve tavsiye bildirmek için kullanılır.
+- must → güçlü zorunluluk (kural, yasa, kişisel mecburiyet)
+- have to → dışsal zorunluluk (kurallar, programlar)
+- should → tavsiye (yapılması iyi olur)
+
+Örnek:
+- You must wear a seatbelt.
+- I have to wake up early tomorrow.
+- You should drink more water.
+
+📗 Structure & Usage
+✅ Structure:
+- Subject + must/have to/should + base verb
+
+Examples:
+- You must bring your ID to the exam. (obligation)
+- He has to finish his report by Friday. (necessity)
+- You should see a doctor. (advice)
+
+🧠 Example Sentences
+You must wear a uniform at this school.
+She has to submit the form by Monday.
+We should leave early to avoid traffic.
+They must not be late for the meeting.
+You don't have to come if you're busy.`,
   tip: "Use must for strong obligations, have to for external requirements, and should for advice",
   listeningExamples: [
     "You must wear a seatbelt.",
@@ -6818,14 +7336,34 @@ const MODULE_111_DATA = {
   ]
 };
 
-// Module 112 Data: Modals of Prohibition (mustn't, can't)
+// Module 112: Modals of Prohibition (mustn't, can't)
 const MODULE_112_DATA = {
-  title: "Module 112 - Modals of Prohibition (mustn't, can't)",
-  description: "Learn how to express prohibition and lack of permission using mustn't and can't",
-  intro: `'Mustn't' ve 'can't' modal fiilleri, yasaklama ve izin verilmediğini belirtmek için kullanılır.
+  title: "Module 112: Modals of Prohibition (mustn't, can't)",
+  description: "Students will learn to use the modals 'mustn't' and 'can't' to express prohibition or lack of permission.",
+  intro: `Bu modülde 'Mustn't' ve 'can't' modal fiilleri, yasaklama ve izin verilmediğini belirtmek için kullanılır.
 
-• mustn't → kesin yasak (yapılmaması gereken eylemler, kurallar)
-• can't → izin verilmez, mantıksal olarak mümkün değil`,
+📘 Konu Anlatımı (Türkçe Açıklama)
+'Mustn't' ve 'can't' modal fiilleri, yasaklama ve izin verilmediğini belirtmek için kullanılır.
+- mustn't → kesin yasak, yapılmaması gereken bir şey (kural)
+- can't → izin verilmez, mantıksal olarak mümkün değil
+
+Örnek:
+- You mustn't smoke here. (Burada sigara içmemelisin.)
+- You can't enter without a ticket. (Biletsiz giremezsin.)
+
+📗 Structure & Usage
+✅ Structure: Subject + mustn't/can't + base verb
+
+Examples:
+- You mustn't touch the wires. (It's dangerous.)
+- She can't speak during the exam. (It's not allowed.)
+
+🧠 Example Sentences
+You mustn't park here.
+They can't use their phones in class.
+We mustn't forget to lock the door.
+He can't bring food into the lab.
+Visitors mustn't feed the animals.`,
   tip: "Use mustn't for strict prohibitions and can't for lack of permission",
   listeningExamples: [
     "You mustn't park here.",
@@ -6878,13 +7416,40 @@ const MODULE_112_DATA = {
 
 // Module 113 Data: Reported Speech: Requests and Commands
 const MODULE_113_DATA = {
-  title: "Module 113 - Reported Speech: Requests and Commands",
-  description: "Learn how to report commands and requests using correct reporting verbs",
-  intro: `İstek ve emir cümleleri dolaylı anlatılırken genellikle aşağıdaki fiiller kullanılır:
+  title: "Module 113: Reported Speech – Requests and Commands",
+  description: "Students will learn to report requests and commands using correct structure and appropriate reporting verbs such as 'ask', 'tell', 'order', and 'request'.",
+  intro: `Bu modülde istek ve emir cümleleri dolaylı anlatılırken genellikle 'ask', 'tell', 'order' ve 'request' gibi fiiller kullanılır.
 
-• tell / ask + someone + to + verb → Emirlerde
-• tell / ask + someone + not to + verb → Olumsuz emirlerde  
-• ask / request + someone + to + verb → İsteklerde`,
+📘 Konu Anlatımı (Türkçe Açıklama)
+İstek ve emir cümleleri dolaylı anlatılırken genellikle 'ask', 'tell', 'order' ve 'request' gibi fiiller kullanılır.
+- Emir cümleleri için: tell/ask + someone + to + verb
+- Olumsuz emirlerde: tell/ask + someone + not to + verb
+- İstek cümlelerinde: ask/request + someone + to + verb
+
+Örnek:
+- "Close the window." → She told me to close the window.
+- "Don't talk." → The teacher told us not to talk.
+- "Can you help me?" → He asked me to help him.
+
+📗 Structure & Usage
+✅ Affirmative Command:
+- Direct: "Sit down."
+- Reported: He told me to sit down.
+
+✅ Negative Command:
+- Direct: "Don't open the door."
+- Reported: She told me not to open the door.
+
+✅ Request:
+- Direct: "Could you send me the file?"
+- Reported: He asked me to send him the file.
+
+🧠 Example Sentences
+"Be quiet." → She told us to be quiet.
+"Don't forget your homework." → The teacher reminded him not to forget his homework.
+"Please help me." → He asked me to help him.
+"Turn off the lights." → She told me to turn off the lights.
+"Don't go outside." → My mom told me not to go outside.`,
   tip: "Use 'tell' for commands and 'ask' for requests. Add 'not to' for negative commands.",
   listeningExamples: [
     "She told me to close the window.",
@@ -6937,14 +7502,35 @@ const MODULE_113_DATA = {
 
 // Module 114 Data: Reported Speech – Questions
 const MODULE_114_DATA = {
-  title: "Module 114 - Reported Speech – Questions",
-  description: "Learn how to report both Yes/No and WH-Questions",
-  intro: `Dolaylı anlatımda soru cümleleri çevrilirken:
+  title: "Module 114: Reported Speech – Questions",
+  description: "Students will learn how to report both yes/no and WH- questions using appropriate reporting verbs and correct word order.",
+  intro: `Bu modülde dolaylı anlatımda (reported speech) soru cümleleri aktarılırken:
 
-• Soru yapısı düz cümle yapısına çevrilir (yardımcı fiil kaldırılır).
-• Genellikle ask ve want to know gibi fiiller kullanılır.
-• Yes/No soruları için: if veya whether
-• WH soruları için: wh-question kelimesi ile devam edilir`,
+📘 Konu Anlatımı (Türkçe Açıklama)
+Dolaylı anlatımda (reported speech) soru cümleleri aktarılırken:
+- Soru yapısı düz cümle yapısına çevrilir (yardımcı fiil kaldırılır).
+- 'Asked' ve 'wanted to know' gibi fiiller kullanılır.
+- Yes/No questions için 'if/whether', WH-questions için 'wh-word' ile devam edilir.
+
+Örnek:
+- "Are you happy?" → He asked if I was happy.
+- "Where do you live?" → She asked where I lived.
+
+📗 Structure & Usage
+✅ Yes/No Questions:
+- Direct: "Do you like pizza?"
+- Reported: He asked if I liked pizza.
+
+✅ WH- Questions:
+- Direct: "Where is she going?"
+- Reported: He asked where she was going.
+
+🧠 Example Sentences
+"Do you live here?" → He asked if I lived there.
+"What time does the train leave?" → She asked what time the train left.
+"Are you tired?" → He asked if I was tired.
+"Where did you go?" → She asked where I had gone.
+"Can you help me?" → He asked if I could help him.`,
   tip: "Change question word order to statement order and use 'if' for Yes/No questions",
   listeningExamples: [
     "He asked if I lived there.",
@@ -6998,12 +7584,34 @@ const MODULE_114_DATA = {
 
 // Module 115 Data: Passive Voice – Present Perfect
 const MODULE_115_DATA = {
-  title: "Module 115 - Passive Voice – Present Perfect",
-  description: "Learn how to use the passive voice in the present perfect tense",
-  intro: `Passive Voice (edilgen yapı), eylemi yapan kişi bilinmediğinde ya da önemli olmadığında kullanılır.
+  title: "Module 115: Passive Voice – Present Perfect",
+  description: "Students will learn how to form and use the passive voice in the present perfect tense to describe actions where the doer is unknown or unimportant.",
+  intro: `Bu modülde Passive Voice (edilgen yapı), eylemi yapan kişinin önemli olmadığı veya bilinmediği durumlarda kullanılır.
 
-Present Perfect Tense'de passive yapı:
-have/has + been + V3 (past participle)`,
+📘 Konu Anlatımı (Türkçe Açıklama)
+Passive Voice (edilgen yapı), eylemi yapan kişinin önemli olmadığı veya bilinmediği durumlarda kullanılır.
+Present Perfect Tense'de edilgen yapı şu şekilde kurulur:
+✅ have/has + been + V3 (past participle)
+
+Örnek:
+- Active: They have cleaned the classroom.
+- Passive: The classroom has been cleaned.
+
+📗 Structure & Usage
+✅ Structure:
+- Subject + has/have + been + past participle
+
+Examples:
+- The documents have been sent.
+- Dinner has been prepared.
+- Many emails have been written today.
+
+🧠 Example Sentences
+The house has been sold.
+Many mistakes have been made.
+The package has been delivered.
+The invitations have been sent out.
+The report has been completed.`,
   tip: "Use passive voice when the doer is unknown or unimportant",
   listeningExamples: [
     "The house has been sold.",
