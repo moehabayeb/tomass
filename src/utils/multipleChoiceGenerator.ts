@@ -188,7 +188,7 @@ const grammarPatterns: GrammarPattern[] = [
 
   // Will Future
   {
-    pattern: /\b(I|You|We|They|He|She|It)\s+will\s+(go|come|see|eat|drink|buy|get|make|take|give|play|work|visit)\b/i,
+    pattern: /\b(I|You|We|They|He|She|It)\s+will\s+(\w+)\b/i,
     correctAnswer: "",  // Will be dynamically determined
     wrongAnswers: [],
     gapReplacer: (sentence, correct) => {
@@ -200,7 +200,7 @@ const grammarPatterns: GrammarPattern[] = [
 
   // Going to Future
   {
-    pattern: /\b(I am|You are|We are|They are)\s+going\s+to\s+(go|come|see|eat|drink|buy|get|make|take|give|play|work|visit)\b/i,
+    pattern: /\b(I am|You are|We are|They are)\s+going\s+to\s+(\w+)\b/i,
     correctAnswer: "",  // Will be dynamically determined
     wrongAnswers: [],
     gapReplacer: (sentence, correct) => {
@@ -211,7 +211,7 @@ const grammarPatterns: GrammarPattern[] = [
     }
   },
   {
-    pattern: /\b(He is|She is|It is)\s+going\s+to\s+(go|come|see|eat|drink|buy|get|make|take|give|play|work|visit)\b/i,
+    pattern: /\b(He is|She is|It is)\s+going\s+to\s+(\w+)\b/i,
     correctAnswer: "is",
     wrongAnswers: ["am", "are"],
     gapReplacer: (sentence, correct) => {
@@ -224,7 +224,7 @@ const grammarPatterns: GrammarPattern[] = [
 
   // Present Continuous
   {
-    pattern: /\b(I am|You are|We are|They are)\s+(playing|working|studying|cooking|watching|reading|writing|listening)\b/i,
+    pattern: /\b(I am|You are|We are|They are)\s+(\w+ing)\b/i,
     correctAnswer: "",  // Will be dynamically determined
     wrongAnswers: [],
     gapReplacer: (sentence, correct) => {
@@ -235,7 +235,7 @@ const grammarPatterns: GrammarPattern[] = [
     }
   },
   {
-    pattern: /\b(He is|She is|It is)\s+(playing|working|studying|cooking|watching|reading|writing|listening)\b/i,
+    pattern: /\b(He is|She is|It is)\s+(\w+ing)\b/i,
     correctAnswer: "is",
     wrongAnswers: ["am", "are"],
     gapReplacer: (sentence, correct) => {
@@ -297,7 +297,7 @@ const grammarPatterns: GrammarPattern[] = [
 
   // Present Perfect Continuous
   {
-    pattern: /\b(I have|You have|We have|They have)\s+been\s+(playing|working|studying|cooking|watching|reading|writing|listening)\b/i,
+    pattern: /\b(I have|You have|We have|They have)\s+been\s+(\w+ing)\b/i,
     correctAnswer: "have been",
     wrongAnswers: ["has been", "had been"],
     gapReplacer: (sentence, correct) => {
@@ -308,7 +308,7 @@ const grammarPatterns: GrammarPattern[] = [
     }
   },
   {
-    pattern: /\b(He has|She has|It has)\s+been\s+(playing|working|studying|cooking|watching|reading|writing|listening)\b/i,
+    pattern: /\b(He has|She has|It has)\s+been\s+(\w+ing)\b/i,
     correctAnswer: "has been",
     wrongAnswers: ["have been", "had been"],
     gapReplacer: (sentence, correct) => {
@@ -321,7 +321,7 @@ const grammarPatterns: GrammarPattern[] = [
 
   // Past Continuous
   {
-    pattern: /\b(I was|He was|She was|It was)\s+(playing|working|studying|cooking|watching|reading|writing|listening)\b/i,
+    pattern: /\b(I was|He was|She was|It was)\s+(\w+ing)\b/i,
     correctAnswer: "was",
     wrongAnswers: ["were", "am"],
     gapReplacer: (sentence, correct) => {
@@ -332,7 +332,7 @@ const grammarPatterns: GrammarPattern[] = [
     }
   },
   {
-    pattern: /\b(You were|We were|They were)\s+(playing|working|studying|cooking|watching|reading|writing|listening)\b/i,
+    pattern: /\b(You were|We were|They were)\s+(\w+ing)\b/i,
     correctAnswer: "were",
     wrongAnswers: ["was", "are"],
     gapReplacer: (sentence, correct) => {
