@@ -1540,13 +1540,13 @@ const grammarPatterns: GrammarPattern[] = [
     }
   },
 
-  // Module 141: Job action (verb + object)
+  // Module 141: Job action (verb + object) - WITH OPTIONAL ARTICLE SUPPORT
   {
-    pattern: /\b(prepares?|teaches?|helps?|drives?|takes?|answers?|writes?|serves?|fixes?|protects?|builds?|examines?|treats?|sells?|cleans?|cuts?|styles?|delivers?|greets?)\s+(food|students|patients|vehicles?|payments|phones|emails|customers|machines|people|buildings|hair|packages|calls)/i,
+    pattern: /\b(prepares?|teaches?|helps?|drives?|takes?|answers?|writes?|serves?|fixes?|protects?|builds?|examines?|treats?|sells?|cleans?|cuts?|styles?|delivers?|greets?)\s+(?:a|an|the)?\s*(food|students|patients|vehicles?|payments|phones|emails|customers|machines|people|buildings|hair|packages|calls|change|law)/i,
     correctAnswer: "",
     wrongAnswers: [],
     gapReplacer: (sentence, correct) => {
-      const match = sentence.match(/\b(prepares?|teaches?|helps?|drives?|takes?|answers?|writes?|serves?|fixes?|protects?|builds?|examines?|treats?|sells?|cleans?|cuts?|styles?|delivers?|greets?)\s+(food|students|patients|vehicles?|payments|phones|emails|customers|machines|people|buildings|hair|packages|calls)/i);
+      const match = sentence.match(/\b(prepares?|teaches?|helps?|drives?|takes?|answers?|writes?|serves?|fixes?|protects?|builds?|examines?|treats?|sells?|cleans?|cuts?|styles?|delivers?|greets?)\s+(?:a|an|the)?\s*(food|students|patients|vehicles?|payments|phones|emails|customers|machines|people|buildings|hair|packages|calls|change|law)/i);
       if (match) {
         const action = match[1];
         return sentence.replace(new RegExp(`\\b${action}\\b`, 'i'), "___");
@@ -1614,6 +1614,255 @@ const grammarPatterns: GrammarPattern[] = [
       if (match) {
         const term = match[1];
         return sentence.replace(new RegExp(`\\b${term}\\b`, 'i'), "___");
+      }
+      return sentence;
+    }
+  },
+
+  // === ENHANCED MODULE 130: Make/Do with "a big/small" modifiers ===
+  {
+    pattern: /\b(made|did)\s+(a\s+big|a\s+small)?\s*(mistake|effort|mess|difference)/i,
+    correctAnswer: "",
+    wrongAnswers: [],
+    gapReplacer: (sentence, correct) => {
+      const match = sentence.match(/\b(made|did)\s+/i);
+      if (match) {
+        return sentence.replace(/\b(made|did)\s+/i, "___ ");
+      }
+      return sentence;
+    }
+  },
+
+  // === ENHANCED MODULE 132: Opinion expressions - comprehensive ===
+  {
+    pattern: /\b(I\s+see\s+your\s+point|I'm\s+not\s+sure|I\s+disagree|That's\s+right|You're\s+right|I\s+prefer)\b/i,
+    correctAnswer: "",
+    wrongAnswers: [],
+    gapReplacer: (sentence, correct) => {
+      const match = sentence.match(/\b(I\s+see\s+your\s+point|I'm\s+not\s+sure|I\s+disagree|That's\s+right|You're\s+right|I\s+prefer)\b/i);
+      if (match) {
+        const expr = match[1];
+        return sentence.replace(new RegExp(expr.replace(/'/g, "\\'"), 'i'), "___");
+      }
+      return sentence;
+    }
+  },
+
+  // === ENHANCED MODULE 125: Gerund/Infinitive patterns ===
+  {
+    pattern: /\b(enjoy|stop|finish|avoid|mind|keep|consider)\s+(playing|watching|reading|studying|working|doing|going|eating|making|taking)/i,
+    correctAnswer: "",
+    wrongAnswers: [],
+    gapReplacer: (sentence, correct) => {
+      const match = sentence.match(/\b(enjoy|stop|finish|avoid|mind|keep|consider)\s+(playing|watching|reading|studying|working|doing|going|eating|making|taking)/i);
+      if (match) {
+        const gerund = match[2];
+        return sentence.replace(new RegExp(`\\b${gerund}\\b`, 'i'), "___");
+      }
+      return sentence;
+    }
+  },
+
+  {
+    pattern: /\b(want|need|plan|decide|hope|promise|learn|forget)\s+to\s+(go|do|be|get|make|take|study|work|eat|buy)/i,
+    correctAnswer: "",
+    wrongAnswers: [],
+    gapReplacer: (sentence, correct) => {
+      const match = sentence.match(/\b(want|need|plan|decide|hope|promise|learn|forget)\s+(to)\s+/i);
+      if (match) {
+        return sentence.replace(/\bto\s+/i, "___ ");
+      }
+      return sentence;
+    }
+  },
+
+  // === ENHANCED MODULE 127: Take expressions ===
+  {
+    pattern: /\b(take|takes|took)\s+(a\s+break|a\s+rest|a\s+shower|a\s+bath|a\s+nap|a\s+walk|a\s+seat|a\s+look|a\s+photo|notes|time)/i,
+    correctAnswer: "",
+    wrongAnswers: [],
+    gapReplacer: (sentence, correct) => {
+      const match = sentence.match(/\b(take|takes|took)\s+/i);
+      if (match) {
+        return sentence.replace(/\b(take|takes|took)\s+/i, "___ ");
+      }
+      return sentence;
+    }
+  },
+
+  // === ENHANCED MODULE 128-129: Phrasal verbs with more particles ===
+  {
+    pattern: /\b(get|gets|got|getting)\s+(up|down|on|off|in|out|over|away|back|through)/i,
+    correctAnswer: "",
+    wrongAnswers: [],
+    gapReplacer: (sentence, correct) => {
+      const match = sentence.match(/\b(get|gets|got|getting)\s+(up|down|on|off|in|out|over|away|back|through)/i);
+      if (match) {
+        const particle = match[2];
+        return sentence.replace(new RegExp(`\\b${particle}\\b`, 'i'), "___");
+      }
+      return sentence;
+    }
+  },
+
+  {
+    pattern: /\b(turn|turns|turned)\s+(on|off|up|down|into|around)/i,
+    correctAnswer: "",
+    wrongAnswers: [],
+    gapReplacer: (sentence, correct) => {
+      const match = sentence.match(/\b(turn|turns|turned)\s+(on|off|up|down|into|around)/i);
+      if (match) {
+        const particle = match[2];
+        return sentence.replace(new RegExp(`\\b${particle}\\b`, 'i'), "___");
+      }
+      return sentence;
+    }
+  },
+
+  {
+    pattern: /\b(look|looks|looked)\s+(for|after|at|up|forward to|into)/i,
+    correctAnswer: "",
+    wrongAnswers: [],
+    gapReplacer: (sentence, correct) => {
+      const match = sentence.match(/\b(look|looks|looked)\s+(for|after|at|up|forward to|into)/i);
+      if (match) {
+        const particle = match[2];
+        return sentence.replace(new RegExp(particle.replace(/\s+/g, '\\s+'), 'i'), "___");
+      }
+      return sentence;
+    }
+  },
+
+  // === ENHANCED MODULE 131: Indirect questions ===
+  {
+    pattern: /\b(I\s+wonder|I'm\s+wondering)\s+(if|whether|what|when|where|why|how)/i,
+    correctAnswer: "",
+    wrongAnswers: [],
+    gapReplacer: (sentence, correct) => {
+      const match = sentence.match(/\b(I\s+wonder|I'm\s+wondering)\s+/i);
+      if (match) {
+        return sentence.replace(/\b(I\s+wonder|I'm\s+wondering)\s+/i, "___ ");
+      }
+      return sentence;
+    }
+  },
+
+  // === ENHANCED MODULE 121: Wish + hadn't ===
+  {
+    pattern: /\b(wish|wishes|wished)\s+(I|he|she|we|they)\s+hadn't\b/i,
+    correctAnswer: "",
+    wrongAnswers: [],
+    gapReplacer: (sentence, correct) => {
+      return sentence.replace(/\bhadn't\b/i, "___");
+    }
+  },
+
+  // === ENHANCED MODULE 123: Causative - more past participles ===
+  {
+    pattern: /\b(having|getting)\s+(?:the|my|our|their)?\s*\w+\s+(decorated|translated|copied|upgraded|changed|repaired|serviced|installed|removed|replaced)/i,
+    correctAnswer: "",
+    wrongAnswers: [],
+    gapReplacer: (sentence, correct) => {
+      const match = sentence.match(/\b(decorated|translated|copied|upgraded|changed|repaired|serviced|installed|removed|replaced)\b/i);
+      if (match) {
+        return sentence.replace(new RegExp(`\\b${match[1]}\\b`, 'i'), "___");
+      }
+      return sentence;
+    }
+  },
+
+  // === ENHANCED MODULE 125: More gerund verbs ===
+  {
+    pattern: /\b(stopped|avoided|finished|remembered|regret)\s+(watching|answering|cleaning|locking|taking|buying|saying|telling)/i,
+    correctAnswer: "",
+    wrongAnswers: [],
+    gapReplacer: (sentence, correct) => {
+      const match = sentence.match(/\b(watching|answering|cleaning|locking|taking|buying|saying|telling)\b/i);
+      if (match) {
+        return sentence.replace(new RegExp(`\\b${match[1]}\\b`, 'i'), "___");
+      }
+      return sentence;
+    }
+  },
+
+  // === ENHANCED MODULE 126: Get + dressed/hungry/better/worse ===
+  {
+    pattern: /\b(getting|get|got)\s+(dressed|hungry|better|worse|sleepy|bored)/i,
+    correctAnswer: "",
+    wrongAnswers: [],
+    gapReplacer: (sentence, correct) => {
+      const match = sentence.match(/\b(dressed|hungry|better|worse|sleepy|bored)\b/i);
+      if (match) {
+        return sentence.replace(new RegExp(`\\b${match[1]}\\b`, 'i'), "___");
+      }
+      return sentence;
+    }
+  },
+
+  // === ENHANCED MODULE 127: Taking notes/break ===
+  {
+    pattern: /\b(taking|take|took)\s+(notes|a\s+break)/i,
+    correctAnswer: "",
+    wrongAnswers: [],
+    gapReplacer: (sentence, correct) => {
+      const match = sentence.match(/\b(taking|take|took)\b/i);
+      if (match) {
+        return sentence.replace(new RegExp(`\\b${match[1]}\\b`, 'i'), "___");
+      }
+      return sentence;
+    }
+  },
+
+  // === ENHANCED MODULE 128-129: More phrasal verbs ===
+  {
+    pattern: /\b(turned|gave|looks|came|found|put|takes|woke)\s+(off|back|after|back|out|on|off|up)/i,
+    correctAnswer: "",
+    wrongAnswers: [],
+    gapReplacer: (sentence, correct) => {
+      const match = sentence.match(/\b(turned|gave|looks|came|found|put|takes|woke)\s+(off|back|after|back|out|on|off|up)/i);
+      if (match) {
+        const particle = match[2];
+        return sentence.replace(new RegExp(`\\b${particle}\\b`, 'i'), "___");
+      }
+      return sentence;
+    }
+  },
+
+  // === ENHANCED MODULE 132: Absolutely/Exactly/I'm afraid ===
+  {
+    pattern: /\b(Absolutely|Exactly|I'm\s+afraid\s+I\s+don't\s+agree)\b/i,
+    correctAnswer: "",
+    wrongAnswers: [],
+    gapReplacer: (sentence, correct) => {
+      const match = sentence.match(/\b(Absolutely|Exactly|I'm\s+afraid\s+I\s+don't\s+agree)\b/i);
+      if (match) {
+        const expr = match[1];
+        return sentence.replace(new RegExp(expr.replace(/'/g, "\\'").replace(/\s+/g, '\\s+'), 'i'), "___");
+      }
+      return sentence;
+    }
+  },
+
+  // === ENHANCED MODULE 139: Short "Because..." answers ===
+  {
+    pattern: /^Because\s+/i,
+    correctAnswer: "Because",
+    wrongAnswers: ["So", "Since"],
+    gapReplacer: (sentence, correct) => {
+      return sentence.replace(/^Because\s+/i, "___ ");
+    }
+  },
+
+  // === ENHANCED MODULE 141: Complex job actions (designs, examines, treats) ===
+  {
+    pattern: /\b(designs|examines|treats|puts\s+out|saves)\s+(?:and)?\s*(?:a|an|the)?\s*(things|buildings|patients|fires|people)/i,
+    correctAnswer: "",
+    wrongAnswers: [],
+    gapReplacer: (sentence, correct) => {
+      const match = sentence.match(/\b(designs|examines|treats|puts\s+out|saves)\b/i);
+      if (match) {
+        const action = match[1];
+        return sentence.replace(new RegExp(action.replace(/\s+/g, '\\s+'), 'i'), "___");
       }
       return sentence;
     }
@@ -2002,7 +2251,126 @@ function createAdvancedFallbackQuestion(sentence: string, seed: number): Multipl
     };
   }
 
-  // If no pattern matches, return null (don't create a random question)
+  // ========================================================================
+  // UNIVERSAL FALLBACK SYSTEM - TIER 3 (Last Resort)
+  // ========================================================================
+  // If no specific pattern matches, try to create a basic MCQ from sentence structure
+
+  // Fallback 1: Extract any main verb and create tense alternatives
+  const verbMatch = lowerSentence.match(/\b(am|is|are|was|were|have|has|had|will|can|could|should|would|do|does|did|make|makes|made|take|takes|took|get|gets|got)\b/);
+  if (verbMatch) {
+    const verb = verbMatch[1];
+    const verbAlternatives: {[key: string]: string[]} = {
+      'am': ['is', 'are'],
+      'is': ['am', 'are'],
+      'are': ['is', 'am'],
+      'was': ['were', 'is'],
+      'were': ['was', 'are'],
+      'have': ['has', 'had'],
+      'has': ['have', 'had'],
+      'had': ['have', 'has'],
+      'will': ['would', 'can'],
+      'can': ['could', 'will'],
+      'could': ['can', 'would'],
+      'should': ['would', 'could'],
+      'would': ['will', 'could'],
+      'do': ['does', 'did'],
+      'does': ['do', 'did'],
+      'did': ['do', 'does'],
+      'make': ['makes', 'do'],
+      'makes': ['make', 'does'],
+      'made': ['make', 'did'],
+      'take': ['takes', 'get'],
+      'takes': ['take', 'gets'],
+      'took': ['take', 'got'],
+      'get': ['gets', 'take'],
+      'gets': ['get', 'takes'],
+      'got': ['get', 'took']
+    };
+
+    if (verbAlternatives[verb]) {
+      return {
+        prompt: sentence.replace(new RegExp(`\\b${verb}\\b`, 'i'), '___'),
+        options: seededShuffleArray([
+          { letter: 'A', text: verb, correct: true },
+          { letter: 'B', text: verbAlternatives[verb][0], correct: false },
+          { letter: 'C', text: verbAlternatives[verb][1], correct: false }
+        ], seed).map((option, index) => ({
+          ...option,
+          letter: (['A', 'B', 'C'] as const)[index]
+        }))
+      };
+    }
+  }
+
+  // Fallback 2: Extract any adjective after "be" verb
+  const adjMatch = lowerSentence.match(/\b(am|is|are|was|were)\s+(very|really|so)?\s*(\w+)/);
+  if (adjMatch && adjMatch[3] && adjMatch[3].length > 3) {
+    const adjective = adjMatch[3];
+    const adjAlternatives: {[key: string]: string[]} = {
+      'happy': ['sad', 'angry'],
+      'sad': ['happy', 'tired'],
+      'good': ['bad', 'great'],
+      'bad': ['good', 'okay'],
+      'big': ['small', 'large'],
+      'small': ['big', 'tiny'],
+      'important': ['useful', 'necessary'],
+      'difficult': ['easy', 'hard'],
+      'easy': ['difficult', 'simple'],
+      'amazing': ['great', 'wonderful'],
+      'perfect': ['good', 'excellent'],
+      'risky': ['safe', 'dangerous'],
+      'fair': ['unfair', 'just']
+    };
+
+    if (adjAlternatives[adjective]) {
+      return {
+        prompt: sentence.replace(new RegExp(`\\b${adjective}\\b`, 'i'), '___'),
+        options: seededShuffleArray([
+          { letter: 'A', text: adjective, correct: true },
+          { letter: 'B', text: adjAlternatives[adjective][0], correct: false },
+          { letter: 'C', text: adjAlternatives[adjective][1], correct: false }
+        ], seed).map((option, index) => ({
+          ...option,
+          letter: (['A', 'B', 'C'] as const)[index]
+        }))
+      };
+    }
+  }
+
+  // Fallback 3: Extract common prepositions
+  const prepMatch = lowerSentence.match(/\b(in|on|at|to|for|with|from|by|about|of)\s+/);
+  if (prepMatch) {
+    const prep = prepMatch[1];
+    const prepAlternatives: {[key: string]: string[]} = {
+      'in': ['on', 'at'],
+      'on': ['in', 'at'],
+      'at': ['in', 'on'],
+      'to': ['for', 'from'],
+      'for': ['to', 'with'],
+      'with': ['for', 'by'],
+      'from': ['to', 'by'],
+      'by': ['with', 'from'],
+      'about': ['of', 'on'],
+      'of': ['about', 'from']
+    };
+
+    if (prepAlternatives[prep]) {
+      return {
+        prompt: sentence.replace(new RegExp(`\\b${prep}\\b`, 'i'), '___'),
+        options: seededShuffleArray([
+          { letter: 'A', text: prep, correct: true },
+          { letter: 'B', text: prepAlternatives[prep][0], correct: false },
+          { letter: 'C', text: prepAlternatives[prep][1], correct: false }
+        ], seed).map((option, index) => ({
+          ...option,
+          letter: (['A', 'B', 'C'] as const)[index]
+        }))
+      };
+    }
+  }
+
+  // If absolutely nothing works, return null
   return null;
 }
 
@@ -2096,12 +2464,12 @@ function generateDynamicAnswer(match: RegExpMatchArray, sentence: string): strin
   if (fullMatch.match(/\bso\s+that\s+/i)) return 'so that';
 
   // Module 141: Work vocabulary (workplace/action)
-  if (fullMatch.match(/\b(school|hospital|restaurant|garage|office|hotel|library|salon|clinic)/i)) {
-    const workplaceMatch = fullMatch.match(/\b(school|hospital|restaurant|garage|office|hotel|library|salon|clinic)/i);
+  if (fullMatch.match(/\b(school|hospital|restaurant|garage|office|hotel|library|salon|clinic|police\s+station|fire\s+station|construction\s+site|warehouse)/i)) {
+    const workplaceMatch = fullMatch.match(/\b(school|hospital|restaurant|garage|office|hotel|library|salon|clinic|police\s+station|fire\s+station|construction\s+site|warehouse)/i);
     return workplaceMatch ? workplaceMatch[1] : '';
   }
-  if (fullMatch.match(/\b(prepares?|teaches?|helps?|drives?|serves?|answers?)/i)) {
-    const actionMatch = fullMatch.match(/\b(prepares?|teaches?|helps?|drives?|serves?|answers?)/i);
+  if (fullMatch.match(/\b(prepares?|teaches?|helps?|drives?|serves?|answers?|takes?|writes?|fixes?|protects?|builds?|examines?|treats?|sells?|cleans?|cuts?|styles?|delivers?|greets?|puts?\s+out|saves?|enforces?)/i)) {
+    const actionMatch = fullMatch.match(/\b(prepares?|teaches?|helps?|drives?|serves?|answers?|takes?|writes?|fixes?|protects?|builds?|examines?|treats?|sells?|cleans?|cuts?|styles?|delivers?|greets?|puts?\s+out|saves?|enforces?)/i);
     return actionMatch ? actionMatch[1] : '';
   }
 
@@ -2115,6 +2483,49 @@ function generateDynamicAnswer(match: RegExpMatchArray, sentence: string): strin
   if (fullMatch.match(/\b(smartphone|laptop|tablet|cloud\s+computing|Wi-Fi)/i)) {
     const techMatch = fullMatch.match(/\b(smartphone|laptop|tablet|cloud\s+computing|Wi-Fi)/i);
     return techMatch ? techMatch[1] : '';
+  }
+
+  // Enhanced Module 130: Make/Do with modifiers
+  if (fullMatch.match(/\b(made|did)\s+(a\s+big|a\s+small)?\s*(mistake|effort|mess|difference)/i)) {
+    const verbMatch = fullMatch.match(/\b(made|did)\s+/i);
+    return verbMatch ? verbMatch[1] : '';
+  }
+
+  // Enhanced Module 132: Opinion expressions
+  if (fullMatch.match(/\bI\s+see\s+your\s+point\b/i)) return 'I see your point';
+  if (fullMatch.match(/\bI'm\s+not\s+sure\b/i)) return "I'm not sure";
+  if (fullMatch.match(/\bI\s+disagree\b/i)) return 'I disagree';
+  if (fullMatch.match(/\bThat's\s+right\b/i)) return "That's right";
+  if (fullMatch.match(/\bYou're\s+right\b/i)) return "You're right";
+  if (fullMatch.match(/\bI\s+prefer\b/i)) return 'I prefer';
+
+  // Enhanced Module 125: Gerund patterns
+  if (fullMatch.match(/\b(enjoy|stop|finish|avoid|mind|keep|consider)\s+(playing|watching|reading|studying|working|doing|going|eating|making|taking)/i)) {
+    const gerundMatch = fullMatch.match(/\b(playing|watching|reading|studying|working|doing|going|eating|making|taking)\b/i);
+    return gerundMatch ? gerundMatch[1] : '';
+  }
+
+  // Enhanced Module 125: Infinitive patterns
+  if (fullMatch.match(/\b(want|need|plan|decide|hope|promise|learn|forget)\s+to\s+/i)) {
+    return 'to';
+  }
+
+  // Enhanced Module 127: Take expressions
+  if (fullMatch.match(/\b(take|takes|took)\s+(a\s+break|a\s+rest|a\s+shower|a\s+bath|a\s+nap|a\s+walk|a\s+seat|a\s+look|a\s+photo|notes|time)/i)) {
+    const verbMatch = fullMatch.match(/\b(take|takes|took)\b/i);
+    return verbMatch ? verbMatch[1] : '';
+  }
+
+  // Enhanced Module 128-129: Phrasal verb particles
+  if (fullMatch.match(/\b(get|gets|got|getting|turn|turns|turned|look|looks|looked)\s+(up|down|on|off|in|out|over|away|back|through|into|around|for|after|at|forward to)/i)) {
+    const particleMatch = fullMatch.match(/\s+(up|down|on|off|in|out|over|away|back|through|into|around|for|after|at|forward to)\b/i);
+    return particleMatch ? particleMatch[1] : '';
+  }
+
+  // Enhanced Module 131: Indirect questions
+  if (fullMatch.match(/\b(I\s+wonder|I'm\s+wondering)\s+/i)) {
+    const exprMatch = fullMatch.match(/\b(I\s+wonder|I'm\s+wondering)\b/i);
+    return exprMatch ? exprMatch[1] : '';
   }
 
   // Module 126: Get + adjective patterns
@@ -2299,7 +2710,23 @@ function generateDynamicWrongAnswers(match: RegExpMatchArray, sentence: string, 
     'helps': ['assists', 'supports'],
     'drives': ['operates', 'controls'],
     'serves': ['helps', 'assists'],
-    'answers': ['replies', 'responds']
+    'answers': ['replies', 'responds'],
+    'takes': ['accepts', 'receives'],
+    'writes': ['types', 'composes'],
+    'fixes': ['repairs', 'solves'],
+    'protects': ['guards', 'defends'],
+    'builds': ['constructs', 'creates'],
+    'examines': ['checks', 'inspects'],
+    'treats': ['helps', 'cares for'],
+    'sells': ['offers', 'provides'],
+    'cleans': ['tidies', 'washes'],
+    'cuts': ['trims', 'styles'],
+    'styles': ['cuts', 'arranges'],
+    'delivers': ['brings', 'transports'],
+    'greets': ['welcomes', 'meets'],
+    'puts out': ['extinguishes', 'stops'],
+    'saves': ['rescues', 'helps'],
+    'enforces': ['applies', 'upholds']
   };
   if (actionAlts[correctAnswer.toLowerCase()]) {
     return actionAlts[correctAnswer.toLowerCase()];
@@ -2386,6 +2813,52 @@ function generateDynamicWrongAnswers(match: RegExpMatchArray, sentence: string, 
   if (correctAnswer === 'I think') return ['I believe', 'I agree'];
   if (correctAnswer === 'I believe') return ['I think', 'I feel'];
   if (correctAnswer === 'I agree') return ['I disagree', 'I think'];
+  if (correctAnswer === 'I see your point') return ['I understand you', 'I get it'];
+  if (correctAnswer === "I'm not sure") return ["I don't know", "I'm uncertain"];
+  if (correctAnswer === 'I disagree') return ['I agree', 'I think not'];
+  if (correctAnswer === "That's right") return ["That's correct", "Exactly"];
+  if (correctAnswer === "You're right") return ["You're correct", "Absolutely"];
+  if (correctAnswer === 'I prefer') return ['I like', 'I choose'];
+
+  // Module 125: Gerund/Infinitive forms
+  const gerundAlts: {[key: string]: string[]} = {
+    'playing': ['to play', 'play'],
+    'watching': ['to watch', 'watch'],
+    'reading': ['to read', 'read'],
+    'studying': ['to study', 'study'],
+    'working': ['to work', 'work'],
+    'doing': ['to do', 'do'],
+    'going': ['to go', 'go'],
+    'eating': ['to eat', 'eat'],
+    'making': ['to make', 'make'],
+    'taking': ['to take', 'take']
+  };
+  if (gerundAlts[correctAnswer.toLowerCase()]) {
+    return gerundAlts[correctAnswer.toLowerCase()];
+  }
+  if (correctAnswer === 'to') return ['for', '-ing'];
+
+  // Module 127: Take expressions
+  if (correctAnswer === 'take') return ['get', 'have'];
+  if (correctAnswer === 'takes') return ['gets', 'has'];
+  if (correctAnswer === 'took') return ['got', 'had'];
+
+  // Module 128-129: Enhanced phrasal verb particles
+  const particleEnhanced: {[key: string]: string[]} = {
+    'over': ['through', 'across'],
+    'away': ['off', 'out'],
+    'through': ['over', 'across'],
+    'into': ['in', 'to'],
+    'around': ['about', 'round'],
+    'forward to': ['ahead to', 'on to']
+  };
+  if (particleEnhanced[correctAnswer.toLowerCase()]) {
+    return particleEnhanced[correctAnswer.toLowerCase()];
+  }
+
+  // Module 131: Indirect questions
+  if (correctAnswer === 'I wonder') return ["I'm wondering", "I ask myself"];
+  if (correctAnswer === "I'm wondering") return ['I wonder', 'I question'];
 
   // Module 125: Gerund forms - provide infinitive and base form
   if (correctAnswer.endsWith('ing')) {
