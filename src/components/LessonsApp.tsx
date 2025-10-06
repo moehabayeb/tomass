@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { ArrowLeft, Mic, MicOff, Volume2, RefreshCw, Star, CheckCircle, AlertCircle, Lock, BookOpen } from 'lucide-react';
 import {
   getProgress, setProgress, clearProgress, ModuleProgress as StoreModuleProgress
@@ -24,6 +24,7 @@ import ResumeChip from './lessons/ResumeChip';
 import { CelebrationOverlay } from './CelebrationOverlay';
 import { LessonAutoReader, type LessonContent, type ReadingProgress } from '@/utils/lessonAutoReader';
 import MobileCompactIntro from './MobileCompactIntro';
+import { useIsMobile } from '@/hooks/use-mobile';
 // Import QA test for browser console access
 import '../utils/placementQA';
 // Progress checkpointing imports
@@ -141,42 +142,29 @@ function isSpeakingPracticeItem(item: any): item is SpeakingPracticeItem {
   return typeof item === 'object' && item.question && item.answer;
 }
 
-function getSpeakingPracticeItem(item: any): SpeakingPracticeItem {
+// Helper function to get speaking practice item with cached MCQ
+// NOTE: This will be recreated as useCallback inside component to access mcqCache
+function getSpeakingPracticeItemBase(item: any, questionIndex: number, mcqFromCache: MultipleChoiceQuestion | null | undefined): SpeakingPracticeItem {
   if (typeof item === 'string') {
-    // Old format - convert to new format with generated multiple choice
+    // Old format - use cached MCQ
     return {
       question: item,
       answer: item,
-      multipleChoice: generateMultipleChoiceQuestion(item) || undefined
+      multipleChoice: mcqFromCache || undefined
     };
   }
-  
+
   const practiceItem = item as SpeakingPracticeItem;
-  if (!practiceItem.multipleChoice && practiceItem.answer) {
-    const generatedMC = generateMultipleChoiceQuestion(practiceItem.answer);
-  
-    if (generatedMC && validateMultipleChoiceQuestion(generatedMC)) {
-      practiceItem.multipleChoice = generatedMC;
-    } else if (generatedMC) {
-      console.warn("⚠️ Generated question failed validation:", generatedMC);
-    } else {
-      console.warn("⚠️ No multiple choice question generated for:", practiceItem.answer);
-      // Create a simple but functional fallback
-      practiceItem.multipleChoice = {
-        prompt: practiceItem.answer.replace(/\b(am|is|are|was|were|have|has|had|will|can|could|should|would)\b/i, "___"),
-        options: [
-          { letter: "A", text: "correct answer", correct: true },
-          { letter: "B", text: "wrong answer 1", correct: false },
-          { letter: "C", text: "wrong answer 2", correct: false }
-        ]
-      };
-    }
+  if (!practiceItem.multipleChoice) {
+    // Use cached MCQ instead of regenerating
+    practiceItem.multipleChoice = mcqFromCache || undefined;
   }
+
   // Ensure every item has multiple choice
   if (!practiceItem.multipleChoice) {
-    console.warn('🚨 No multiple choice generated for item:', practiceItem);
+    console.warn('🚨 No multiple choice in cache for item:', practiceItem, 'index:', questionIndex);
   }
-  
+
   return practiceItem;
 }
 
@@ -5882,7 +5870,7 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
   // Enhanced question state management for multiple choice
   const [questionStates, setQuestionStates] = useState<Record<number, QuestionState>>({});
   const [currentQuestionPhase, setCurrentQuestionPhase] = useState<'multiple-choice' | 'speaking'>('multiple-choice');
-  
+
   // Keep a live ref of the phase for async flows (prevents stale closures)
   const phaseRef = useRef(currentPhase);
   useEffect(() => { phaseRef.current = currentPhase; }, [currentPhase]);
@@ -7954,6 +7942,1596 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
   ]
 };
 
+
+const MODULE_121_DATA = {
+  title: "Wish / If only + Past Perfect (Past Regrets)",
+  description: "Learn wish / if only + past perfect (past regrets) - B1 level English",
+  intro: `In this module, you will learn about Wish / If only + Past Perfect for expressing regrets about the past.
+
+Grammar Rule:
+We use 'wish' or 'if only' + past perfect to express regrets about things that happened (or didn't happen) in the past.
+
+Structure:
+- I wish + subject + had + past participle
+- If only + subject + had + past participle
+
+Examples:
+- I wish I had studied harder for the exam.
+- If only I had listened to your advice.
+- She wishes she had taken that job offer.`,
+  tip: "Use 'wish/if only + had + past participle' to express regrets about past actions",
+
+  table: [],
+
+  listeningExamples: [
+    "Listen to how we use wish / if only + past perfect (past regrets) in conversation.",
+    "Pay attention to the structure and natural pronunciation.",
+    "Practice repeating these examples to improve your fluency."
+  ],
+
+  speakingPractice: [
+    { question: "You didn’t study for the exam. What do you say?", answer: "I wish I had studied for the exam." },
+    { question: "She forgot his birthday. What does she say?", answer: "She wishes she hadn’t forgotten his birthday." },
+    { question: "You didn’t go to the party. What do you say?", answer: "If only I had gone to the party." },
+    { question: "He didn’t take the job offer. What does he say?", answer: "He wishes he had taken the job offer." },
+    { question: "They didn’t book a table. What do they say?", answer: "They wish they had booked a table." },
+    { question: "You spent too much money. What do you say?", answer: "I wish I hadn’t spent so much money." },
+    { question: "She didn’t call her friend. What does she say?", answer: "If only she had called her friend." },
+    { question: "You didn’t arrive on time. What do you say?", answer: "I wish I had arrived on time." },
+    { question: "He didn’t bring his umbrella. What does he say?", answer: "He wishes he had brought his umbrella." },
+    { question: "We didn’t take any photos. What do we say?", answer: "We wish we had taken some photos." },
+    { question: "They didn’t listen to the teacher. What do they say?", answer: "If only they had listened to the teacher." },
+    { question: "You didn’t wear a coat. What do you say?", answer: "I wish I had worn a coat." },
+    { question: "She didn’t check the map. What does she say?", answer: "She wishes she had checked the map." },
+    { question: "You didn’t tell the truth. What do you say?", answer: "I wish I had told the truth." },
+    { question: "He didn’t prepare for the interview. What does he say?", answer: "If only he had prepared for the interview." },
+    { question: "You didn’t apply for the scholarship. What do you say?", answer: "I wish I had applied for the scholarship." },
+    { question: "They didn’t attend the wedding. What do they say?", answer: "They wish they had attended the wedding." },
+    { question: "She didn’t take the medicine. What does she say?", answer: "She wishes she had taken the medicine." },
+    { question: "You didn’t lock the door. What do you say?", answer: "If only I had locked the door." },
+    { question: "He didn’t save his work. What does he say?", answer: "He wishes he had saved his work." },
+    { question: "We didn’t see the announcement. What do we say?", answer: "We wish we had seen the announcement." },
+    { question: "You didn’t leave early. What do you say?", answer: "I wish I had left early." },
+    { question: "She didn’t practice the piano. What does she say?", answer: "She wishes she had practiced the piano." },
+    { question: "They didn’t water the plants. What do they say?", answer: "If only they had watered the plants." },
+    { question: "You didn’t bring your homework. What do you say?", answer: "I wish I had brought my homework." },
+    { question: "He didn’t buy the tickets. What does he say?", answer: "He wishes he had bought the tickets." },
+    { question: "She didn’t listen to her parents. What does she say?", answer: "If only she had listened to her parents." },
+    { question: "You didn’t ask for directions. What do you say?", answer: "I wish I had asked for directions." },
+    { question: "They didn’t catch the train. What do they say?", answer: "They wish they had caught the train." },
+    { question: "He didn’t read the email. What does he say?", answer: "He wishes he had read the email." },
+    { question: "You didn’t take the chance. What do you say?", answer: "If only I had taken the chance." },
+    { question: "We didn’t reserve a room. What do we say?", answer: "We wish we had reserved a room." },
+    { question: "She didn’t try harder. What does she say?", answer: "She wishes she had tried harder." },
+    { question: "You didn’t finish your project. What do you say?", answer: "I wish I had finished my project." },
+    { question: "He didn’t pay attention. What does he say?", answer: "He wishes he had paid attention." },
+    { question: "They didn’t back up the files. What do they say?", answer: "If only they had backed up the files." },
+    { question: "You didn’t visit your grandparents. What do you say?", answer: "I wish I had visited my grandparents." },
+    { question: "She didn’t bring her ID. What does she say?", answer: "She wishes she had brought her ID." },
+    { question: "We didn’t cancel the trip. What do we say?", answer: "We wish we had canceled the trip earlier." },
+    { question: "You didn’t wake up early. What do you say?", answer: "If only I had woken up earlier." }
+  ]
+};
+
+const MODULE_122_DATA = {
+  title: "Used to / Be used to / Get used to",
+  description: "Learn the differences between used to, be used to, and get used to",
+  intro: `In this module, you will learn the differences between 'used to', 'be used to', and 'get used to'.
+
+Grammar Rules:
+1. Used to + infinitive: Past habits or states (no longer true)
+   - I used to smoke, but I quit.
+2. Be used to + noun/-ing: Be accustomed to something
+   - I'm used to waking up early.
+3. Get used to + noun/-ing: Become accustomed to something
+   - I'm getting used to the cold weather.
+
+Examples:
+- I used to live in London. (past habit)
+- I'm used to living alone. (accustomed now)
+- I'm getting used to my new job. (becoming accustomed)`,
+  tip: "Remember: 'used to' is about the past, 'be used to' is about current state, 'get used to' is about transition",
+
+  table: [],
+
+  listeningExamples: [
+    "Listen to how we use used to / be used to / get used to in conversation.",
+    "Pay attention to the structure and natural pronunciation.",
+    "Practice repeating these examples to improve your fluency."
+  ],
+
+  speakingPractice: [
+    { question: "You played the guitar when you were younger. What do you say?", answer: "I used to play the guitar." },
+    { question: "She doesn’t find the noise strange anymore. What do you say?", answer: "She is used to the noise." },
+    { question: "You are in the process of adjusting to early mornings. What do you say?", answer: "I’m getting used to waking up early." },
+    { question: "He lived in the city before. What do you say?", answer: "He used to live in the city." },
+    { question: "They didn’t eat spicy food before, but now they’re adapting. What do you say?", answer: "They are getting used to spicy food." },
+    { question: "We were familiar with the cold winters. What do you say?", answer: "We were used to cold winters." },
+    { question: "You didn’t go to the gym before, but now you do. What do you say?", answer: "I’m getting used to going to the gym." },
+    { question: "She drank coffee every day before. What do you say?", answer: "She used to drink coffee every day." },
+    { question: "You don’t mind the long hours anymore. What do you say?", answer: "I am used to working long hours." },
+    { question: "He drove to work before. What do you say?", answer: "He used to drive to work." },
+    { question: "We are adjusting to the new software. What do you say?", answer: "We’re getting used to using the new software." },
+    { question: "She is accustomed to wearing high heels. What do you say?", answer: "She is used to wearing high heels." },
+    { question: "You no longer watch TV as you used to. What do you say?", answer: "I used to watch TV more often." },
+    { question: "They are still adapting to the climate. What do you say?", answer: "They are getting used to the climate." },
+    { question: "He is now okay with the food. What do you say?", answer: "He is used to the food." },
+    { question: "I used to travel a lot. What does it mean?", answer: "I traveled a lot in the past, but not anymore." },
+    { question: "She is not finding online learning strange anymore. What do you say?", answer: "She is used to online learning." },
+    { question: "We are starting to feel okay with the noise. What do you say?", answer: "We are getting used to the noise." },
+    { question: "You no longer live in your hometown. What do you say?", answer: "I used to live in my hometown." },
+    { question: "He is learning to live alone. What do you say?", answer: "He is getting used to living alone." },
+    { question: "She worked nights before. What do you say?", answer: "She used to work nights." },
+    { question: "We feel comfortable with the heat now. What do you say?", answer: "We are used to the heat." },
+    { question: "They are slowly adjusting to school routines. What do you say?", answer: "They are getting used to waking up early." },
+    { question: "You were a meat-eater in the past. What do you say?", answer: "I used to eat meat." },
+    { question: "He doesn’t mind crowded buses anymore. What do you say?", answer: "He is used to crowded buses." },
+    { question: "You are still learning to use the app. What do you say?", answer: "I’m getting used to using the app." },
+    { question: "She often walked to school as a child. What do you say?", answer: "She used to walk to school." },
+    { question: "We don’t find the traffic stressful anymore. What do you say?", answer: "We are used to the traffic." },
+    { question: "They used to live in a big city. What do you say?", answer: "They used to live in a big city." },
+    { question: "He is trying to learn to cook. What do you say?", answer: "He is getting used to cooking." },
+    { question: "You are okay with loud music now. What do you say?", answer: "I am used to loud music." },
+    { question: "She had a pet dog before. What do you say?", answer: "She used to have a dog." },
+    { question: "We’re adapting to virtual meetings. What do you say?", answer: "We are getting used to virtual meetings." },
+    { question: "He was accustomed to eating late. What do you say?", answer: "He was used to eating late." },
+    { question: "They are learning to live with less space. What do you say?", answer: "They are getting used to living in a smaller house." },
+    { question: "I no longer work at night. What do you say?", answer: "I used to work at night." },
+    { question: "She doesn’t find cold showers shocking anymore. What do you say?", answer: "She is used to cold showers." },
+    { question: "We are learning to live without TV. What do you say?", answer: "We’re getting used to living without TV." },
+    { question: "He lived with his parents before. What do you say?", answer: "He used to live with his parents." },
+    { question: "You’re adjusting to your new job. What do you say?", answer: "I’m getting used to my new job." }
+  ]
+};
+
+const MODULE_123_DATA = {
+  title: "Causative – Have/Get Something Done",
+  description: "Learn how to use causative structures with have and get",
+  intro: `In this module, you will learn the causative structures 'have something done' and 'get something done'.
+
+Grammar Rule:
+We use causative structures when someone else does something for us (we don't do it ourselves).
+
+Structure:
+- have + object + past participle
+- get + object + past participle
+
+Examples:
+- I had my hair cut yesterday. (Someone cut my hair)
+- She's getting her car repaired. (Someone is repairing it)
+- We need to have the house painted. (We'll pay someone to paint it)`,
+  tip: "Use 'have/get + object + past participle' when describing services done by others",
+
+  table: [],
+
+  listeningExamples: [
+    "Listen to how we use causative – have/get something done in conversation.",
+    "Pay attention to the structure and natural pronunciation.",
+    "Practice repeating these examples to improve your fluency."
+  ],
+
+  speakingPractice: [
+    { question: "You paid someone to fix your roof. What do you say?", answer: "I had my roof fixed." },
+    { question: "She went to the salon for a haircut. What do you say?", answer: "She got her hair cut." },
+    { question: "They are hiring painters for their house. What do you say?", answer: "They're having their house painted." },
+    { question: "You called a technician to fix your laptop. What do you say?", answer: "I got my laptop repaired." },
+    { question: "He paid someone to clean his suit. What do you say?", answer: "He had his suit cleaned." },
+    { question: "We hired a gardener to cut the grass. What do you say?", answer: "We had the grass cut." },
+    { question: "She paid a vet to check her dog. What do you say?", answer: "She got her dog checked." },
+    { question: "They arranged a mechanic to fix the brakes. What do you say?", answer: "They got the brakes fixed." },
+    { question: "You went to a tailor to alter your dress. What do you say?", answer: "I had my dress altered." },
+    { question: "He sent his car to be washed. What do you say?", answer: "He got his car washed." },
+    { question: "We are hiring someone to decorate the living room. What do you say?", answer: "We're having the living room decorated." },
+    { question: "She called someone to install the air conditioner. What do you say?", answer: "She had the air conditioner installed." },
+    { question: "They asked a specialist to paint the ceiling. What do you say?", answer: "They got the ceiling painted." },
+    { question: "You arranged for a locksmith to fix the door. What do you say?", answer: "I had the door fixed." },
+    { question: "He is paying someone to fix the plumbing. What do you say?", answer: "He is getting the plumbing fixed." },
+    { question: "We are sending the documents for translation. What do you say?", answer: "We're having the documents translated." },
+    { question: "She asked a professional to take her photo. What do you say?", answer: "She got her photo taken." },
+    { question: "You took your watch to be repaired. What do you say?", answer: "I had my watch repaired." },
+    { question: "They went to the dentist for a cleaning. What do you say?", answer: "They got their teeth cleaned." },
+    { question: "He took the suit to the dry cleaner. What do you say?", answer: "He had his suit dry-cleaned." },
+    { question: "You are arranging someone to fix the internet. What do you say?", answer: "I'm getting the internet fixed." },
+    { question: "She had her laptop upgraded. What does it mean?", answer: "Someone upgraded her laptop for her." },
+    { question: "They hired a painter for the fence. What do you say?", answer: "They had the fence painted." },
+    { question: "We asked a plumber to install a new sink. What do you say?", answer: "We got a new sink installed." },
+    { question: "He is arranging for his shoes to be polished. What do you say?", answer: "He is getting his shoes polished." },
+    { question: "You asked someone to clean your windows. What do you say?", answer: "I had my windows cleaned." },
+    { question: "She arranged someone to fix the leak. What do you say?", answer: "She had the leak fixed." },
+    { question: "They paid a specialist to clean the carpet. What do you say?", answer: "They got the carpet cleaned." },
+    { question: "He hired a photographer for portraits. What do you say?", answer: "He had his portraits taken." },
+    { question: "You called a technician to fix the TV. What do you say?", answer: "I got the TV fixed." },
+    { question: "We are asking someone to check the heating. What do you say?", answer: "We're having the heating checked." },
+    { question: "She is getting a new lock installed. What do you say?", answer: "She is getting a new lock installed." },
+    { question: "They arranged for the garage door to be replaced. What do you say?", answer: "They had the garage door replaced." },
+    { question: "You are having your documents copied. What do you say?", answer: "I'm having my documents copied." },
+    { question: "He is sending his coat for repair. What do you say?", answer: "He is getting his coat repaired." },
+    { question: "We are paying someone to fix the garden lights. What do you say?", answer: "We're having the garden lights fixed." },
+    { question: "She asked the salon to do her nails. What do you say?", answer: "She got her nails done." },
+    { question: "They hired workers to fix the roof. What do you say?", answer: "They had the roof repaired." },
+    { question: "You are paying a mechanic to change the oil. What do you say?", answer: "I'm getting the oil changed." },
+    { question: "He asked a technician to repair the fridge. What do you say?", answer: "He got the fridge repaired." }
+  ]
+};
+
+const MODULE_124_DATA = {
+  title: "Relative Clauses – Defining & Non-defining",
+  description: "Understand the difference between defining and non-defining relative clauses",
+  intro: `In this module, you will learn about defining and non-defining relative clauses.
+
+Grammar Rules:
+1. Defining relative clauses: Essential information (no commas)
+   - The book that I'm reading is fascinating.
+2. Non-defining relative clauses: Extra information (with commas)
+   - My brother, who lives in Spain, is visiting.
+
+Relative pronouns: who, which, that, whose, where, when
+
+Examples:
+- The man who called yesterday is here. (defining)
+- Paris, which is the capital of France, is beautiful. (non-defining)`,
+  tip: "Use commas for non-defining clauses that add extra (non-essential) information",
+
+  table: [],
+
+  listeningExamples: [
+    "Listen to how we use relative clauses – defining & non-defining in conversation.",
+    "Pay attention to the structure and natural pronunciation.",
+    "Practice repeating these examples to improve your fluency."
+  ],
+
+  speakingPractice: [
+    { question: "Who is the man? He is talking to your sister.", answer: "The man who is talking to your sister is my uncle." },
+    { question: "That’s the restaurant. We had dinner there.", answer: "That’s the restaurant where we had dinner." },
+    { question: "She has a friend. Her father is a pilot.", answer: "She has a friend whose father is a pilot." },
+    { question: "I met a woman. She speaks six languages.", answer: "I met a woman who speaks six languages." },
+    { question: "This is the pen. I found it in the classroom.", answer: "This is the pen that I found in the classroom." },
+    { question: "This house was built in 1880. It is very beautiful.", answer: "This house, which was built in 1880, is very beautiful." },
+    { question: "My brother lives in Germany. He’s an engineer.", answer: "My brother, who lives in Germany, is an engineer." },
+    { question: "That’s the girl. Her mother is a teacher.", answer: "That’s the girl whose mother is a teacher." },
+    { question: "The car belongs to my neighbor. It was stolen.", answer: "The car that belongs to my neighbor was stolen." },
+    { question: "We stayed at a hotel. It had a beautiful view.", answer: "We stayed at a hotel which had a beautiful view." },
+    { question: "Mr. Smith is very kind. He is our math teacher.", answer: "Mr. Smith, who is our math teacher, is very kind." },
+    { question: "This is the town. I was born there.", answer: "This is the town where I was born." },
+    { question: "The woman is an actress. She lives next door.", answer: "The woman who lives next door is an actress." },
+    { question: "The students are smart. They passed the exam.", answer: "The students who passed the exam are smart." },
+    { question: "I know a man. His daughter is a singer.", answer: "I know a man whose daughter is a singer." },
+    { question: "That’s the museum. I told you about it.", answer: "That’s the museum which I told you about." },
+    { question: "Our teacher is very patient. He helps everyone.", answer: "Our teacher, who helps everyone, is very patient." },
+    { question: "The dog barked all night. It lives next door.", answer: "The dog that lives next door barked all night." },
+    { question: "My aunt is a writer. She travels a lot.", answer: "My aunt, who travels a lot, is a writer." },
+    { question: "The dress is lovely. She is wearing it.", answer: "The dress that she is wearing is lovely." },
+    { question: "My friend invited me to his birthday. He is from Canada.", answer: "My friend, who is from Canada, invited me to his birthday." },
+    { question: "They visited a castle. It was built in the 13th century.", answer: "They visited a castle which was built in the 13th century." },
+    { question: "The man is a famous actor. We saw him at the airport.", answer: "The man whom we saw at the airport is a famous actor." },
+    { question: "I read a book. It changed my life.", answer: "I read a book that changed my life." },
+    { question: "We have a neighbor. His dog barks all day.", answer: "We have a neighbor whose dog barks all day." },
+    { question: "This is the school. I studied there.", answer: "This is the school where I studied." },
+    { question: "The children are noisy. They live upstairs.", answer: "The children who live upstairs are noisy." },
+    { question: "Emma is my cousin. She works at a hospital.", answer: "Emma, who works at a hospital, is my cousin." },
+    { question: "The film was amazing. You recommended it.", answer: "The film which you recommended was amazing." },
+    { question: "He has a company. It sells organic products.", answer: "He has a company that sells organic products." },
+    { question: "That’s the teacher. I told you about her.", answer: "That’s the teacher whom I told you about." },
+    { question: "The computer is expensive. I want to buy it.", answer: "The computer that I want to buy is expensive." },
+    { question: "Our neighbor is an artist. He paints landscapes.", answer: "Our neighbor, who paints landscapes, is an artist." },
+    { question: "There is a street. Many famous people live there.", answer: "There is a street where many famous people live." },
+    { question: "The girl is very polite. She helped me yesterday.", answer: "The girl who helped me yesterday is very polite." },
+    { question: "He lost the keys. They open the garage door.", answer: "He lost the keys that open the garage door." },
+    { question: "The book is on the table. It belongs to my sister.", answer: "The book that is on the table belongs to my sister." },
+    { question: "The phone was broken. I bought it last week.", answer: "The phone which I bought last week was broken." },
+    { question: "I saw a man. He looked exactly like your uncle.", answer: "I saw a man who looked exactly like your uncle." },
+    { question: "She lives in a house. It has a red roof.", answer: "She lives in a house which has a red roof." }
+  ]
+};
+
+const MODULE_125_DATA = {
+  title: "Gerunds and Infinitives – Review",
+  description: "Review when to use gerunds vs infinitives",
+  intro: `In this module, you will review gerunds and infinitives.
+
+Grammar Rules:
+1. Gerunds (-ing): After prepositions, certain verbs (enjoy, mind, finish)
+2. Infinitives (to + verb): After certain verbs (want, decide, hope), adjectives
+
+Examples:
+- I enjoy reading. (gerund after 'enjoy')
+- I want to travel. (infinitive after 'want')
+- I'm interested in learning Spanish. (gerund after preposition)
+- It's important to exercise. (infinitive after adjective)`,
+  tip: "Some verbs change meaning: stop doing (quit) vs stop to do (pause for purpose)",
+
+  table: [],
+
+  listeningExamples: [
+    "Listen to how we use gerunds and infinitives – review in conversation.",
+    "Pay attention to the structure and natural pronunciation.",
+    "Practice repeating these examples to improve your fluency."
+  ],
+
+  speakingPractice: [
+    { question: "You like playing chess. What do you say?", answer: "I enjoy playing chess." },
+    { question: "She plans to study abroad. What do you say?", answer: "She plans to study abroad." },
+    { question: "They stopped watching TV. What do you say?", answer: "They stopped watching TV." },
+    { question: "You forgot to call your mom. What do you say?", answer: "I forgot to call my mom." },
+    { question: "He avoided answering the question. What do you say?", answer: "He avoided answering the question." },
+    { question: "We decided to take the train. What do you say?", answer: "We decided to take the train." },
+    { question: "She can’t stand waiting in line. What do you say?", answer: "She can’t stand waiting in line." },
+    { question: "You want to learn Spanish. What do you say?", answer: "I want to learn Spanish." },
+    { question: "He tried to fix the car. What do you say?", answer: "He tried to fix the car." },
+    { question: "They finished cleaning the house. What do you say?", answer: "They finished cleaning the house." },
+    { question: "You remembered locking the door. What do you say?", answer: "I remembered locking the door." },
+    { question: "She hopes to meet him again. What do you say?", answer: "She hopes to meet him again." },
+    { question: "He promised to help us. What do you say?", answer: "He promised to help us." },
+    { question: "You enjoy cooking. What do you say?", answer: "I enjoy cooking." },
+    { question: "They agreed to join the club. What do you say?", answer: "They agreed to join the club." },
+    { question: "She avoided speaking in public. What do you say?", answer: "She avoided speaking in public." },
+    { question: "You want to improve your English. What do you say?", answer: "I want to improve my English." },
+    { question: "He began working out. What do you say?", answer: "He began working out." },
+    { question: "We stopped to buy some snacks. What do you say?", answer: "We stopped to buy some snacks." },
+    { question: "She forgot taking her medicine. What does that mean?", answer: "She took it, but she doesn’t remember." },
+    { question: "He remembered to lock the door. What does that mean?", answer: "He locked it, and he remembered to do it." },
+    { question: "You prefer staying home. What do you say?", answer: "I prefer staying home." },
+    { question: "They need to study harder. What do you say?", answer: "They need to study harder." },
+    { question: "We continued talking for hours. What do you say?", answer: "We continued talking for hours." },
+    { question: "She managed to finish on time. What do you say?", answer: "She managed to finish on time." },
+    { question: "You agreed to help your friend. What do you say?", answer: "I agreed to help my friend." },
+    { question: "He enjoys watching documentaries. What do you say?", answer: "He enjoys watching documentaries." },
+    { question: "She suggested going out for dinner. What do you say?", answer: "She suggested going out for dinner." },
+    { question: "They decided to take a break. What do you say?", answer: "They decided to take a break." },
+    { question: "You like reading novels. What do you say?", answer: "I like reading novels." },
+    { question: "He prefers to work alone. What do you say?", answer: "He prefers to work alone." },
+    { question: "She finished writing her report. What do you say?", answer: "She finished writing her report." },
+    { question: "They hope to win the match. What do you say?", answer: "They hope to win the match." },
+    { question: "We tried restarting the computer. What do you say?", answer: "We tried restarting the computer." },
+    { question: "He started to play football. What do you say?", answer: "He started to play football." },
+    { question: "You want to be successful. What do you say?", answer: "I want to be successful." },
+    { question: "She keeps talking during the movie. What do you say?", answer: "She keeps talking during the movie." },
+    { question: "They promised to return the money. What do you say?", answer: "They promised to return the money." },
+    { question: "You enjoy listening to music. What do you say?", answer: "I enjoy listening to music." },
+    { question: "He hopes to travel the world. What do you say?", answer: "He hopes to travel the world." }
+  ]
+};
+
+const MODULE_126_DATA = {
+  title: "Expressions with Get (get ready, get tired, etc.)",
+  description: "Learn common expressions using the verb 'get'",
+  intro: `In this module, you will learn common expressions with 'get'.
+
+Common 'get' expressions:
+- get ready (prepare)
+- get tired (become tired)
+- get married (marry)
+- get lost (lose your way)
+- get angry (become angry)
+- get better (improve)
+- get worse (deteriorate)
+
+Examples:
+- I need to get ready for work.
+- She got angry when she heard the news.
+- Don't get lost in the city!`,
+  tip: "'Get' is very common in spoken English and often means 'become' or 'receive'",
+
+  table: [],
+
+  listeningExamples: [
+    "Listen to how we use expressions with get (get ready, get tired, etc.) in conversation.",
+    "Pay attention to the structure and natural pronunciation.",
+    "Practice repeating these examples to improve your fluency."
+  ],
+
+  speakingPractice: [
+    { question: "You’re preparing to leave. What do you say?", answer: "I'm getting ready." },
+    { question: "After a long day, you feel exhausted. What do you say?", answer: "I get tired after work." },
+    { question: "You went to a foreign city and couldn’t find your way. What do you say?", answer: "We got lost." },
+    { question: "She became very upset. What do you say?", answer: "She got angry." },
+    { question: "You are putting on your clothes. What do you say?", answer: "I'm getting dressed." },
+    { question: "They improved after the flu. What do you say?", answer: "They got better." },
+    { question: "He reached home. What do you say?", answer: "He got home." },
+    { question: "She became ill. What do you say?", answer: "She got sick." },
+    { question: "You and your partner had a wedding last year. What do you say?", answer: "We got married last year." },
+    { question: "He began to feel cold. What do you say?", answer: "He got cold." },
+    { question: "You are becoming nervous. What do you say?", answer: "I'm getting nervous." },
+    { question: "The kids became excited. What do you say?", answer: "The kids got excited." },
+    { question: "You felt sleepy during the film. What do you say?", answer: "I got sleepy during the movie." },
+    { question: "She became famous after the movie. What do you say?", answer: "She got famous after that film." },
+    { question: "He recovered from the flu. What do you say?", answer: "He got better." },
+    { question: "You’re dressing up for a party. What do you say?", answer: "I'm getting dressed for the party." },
+    { question: "They moved to the city. What do you say?", answer: "They got to the city last week." },
+    { question: "She became scared in the dark. What do you say?", answer: "She got scared in the dark." },
+    { question: "You are going to be late. What do you say?", answer: "I need to get going." },
+    { question: "The room became noisy. What do you say?", answer: "The room got noisy." },
+    { question: "He became rich after winning the lottery. What do you say?", answer: "He got rich after the lottery." },
+    { question: "You are beginning to feel hungry. What do you say?", answer: "I'm getting hungry." },
+    { question: "She became bored during the lecture. What do you say?", answer: "She got bored during the lecture." },
+    { question: "You are recovering from an illness. What do you say?", answer: "I'm getting better." },
+    { question: "The baby became sleepy. What do you say?", answer: "The baby got sleepy." },
+    { question: "He became interested in science. What do you say?", answer: "He got interested in science." },
+    { question: "We became close friends. What do you say?", answer: "We got close." },
+    { question: "You arrived at school. What do you say?", answer: "I got to school on time." },
+    { question: "She became very happy. What do you say?", answer: "She got really happy." },
+    { question: "He put on his suit. What do you say?", answer: "He got dressed." },
+    { question: "You are excited about the trip. What do you say?", answer: "I'm getting excited about the trip." },
+    { question: "The weather became colder. What do you say?", answer: "It’s getting cold." },
+    { question: "She got confused during the test. What do you say?", answer: "She got confused." },
+    { question: "You became nervous before the presentation. What do you say?", answer: "I got nervous before the presentation." },
+    { question: "The dog became aggressive. What do you say?", answer: "The dog got aggressive." },
+    { question: "He’s preparing for the interview. What do you say?", answer: "He’s getting ready for the interview." },
+    { question: "You were surprised by the news. What do you say?", answer: "I got surprised by the news." },
+    { question: "We arrived home late. What do you say?", answer: "We got home late." },
+    { question: "She became sick after eating seafood. What do you say?", answer: "She got sick after eating seafood." },
+    { question: "He was scared by the movie. What do you say?", answer: "He got scared by the movie." },
+    { question: "You are getting impatient. What do you say?", answer: "I'm getting impatient." }
+  ]
+};
+
+const MODULE_127_DATA = {
+  title: "Expressions with Take (take a break, take time, etc.)",
+  description: "Learn common expressions using the verb 'take'",
+  intro: `In this module, you will learn common expressions with 'take'.
+
+Common 'take' expressions:
+- take a break (rest)
+- take time (require time)
+- take a photo (photograph)
+- take a shower (bathe)
+- take medicine (consume medicine)
+- take care of (look after)
+- take place (happen/occur)
+
+Examples:
+- Let's take a break for 10 minutes.
+- It takes time to learn a language.
+- Can you take a photo of us?`,
+  tip: "'Take' often combines with nouns to create common expressions in English",
+
+  table: [],
+
+  listeningExamples: [
+    "Listen to how we use expressions with take (take a break, take time, etc.) in conversation.",
+    "Pay attention to the structure and natural pronunciation.",
+    "Practice repeating these examples to improve your fluency."
+  ],
+
+  speakingPractice: [
+    { question: "You joined a project. What do you say?", answer: "I took part in the project." },
+    { question: "The concert happened last night. What do you say?", answer: "The concert took place last night." },
+    { question: "You’re helping your grandmother. What do you say?", answer: "I’m taking care of my grandmother." },
+    { question: "You’re going on a short rest. What do you say?", answer: "I’m taking a break." },
+    { question: "You want someone to look at something. What do you say?", answer: "Take a look at this." },
+    { question: "You’re benefiting from an opportunity. What do you say?", answer: "I'm taking advantage of the opportunity." },
+    { question: "You’re writing during a lecture. What do you say?", answer: "I'm taking notes." },
+    { question: "You accepted a duty at work. What do you say?", answer: "I took responsibility." },
+    { question: "The process needs a long time. What do you say?", answer: "It takes time." },
+    { question: "You’re reacting to a problem. What do you say?", answer: "We need to take action." },
+    { question: "You’re handling a child. What do you say?", answer: "I’m taking care of the child." },
+    { question: "The seminar was held yesterday. What do you say?", answer: "The seminar took place yesterday." },
+    { question: "You’re using a chance. What do you say?", answer: "I took advantage of the situation." },
+    { question: "You stopped working briefly. What do you say?", answer: "I took a break." },
+    { question: "The exam occurred this morning. What do you say?", answer: "The exam took place this morning." },
+    { question: "You joined a school activity. What do you say?", answer: "I took part in the school activity." },
+    { question: "You made some quick notes. What do you say?", answer: "I took notes." },
+    { question: "You accepted blame. What do you say?", answer: "I took responsibility." },
+    { question: "You acted immediately. What do you say?", answer: "We took action." },
+    { question: "You need to rest. What do you say?", answer: "I need to take a break." },
+    { question: "You helped organize the event. What do you say?", answer: "I took part in organizing it." },
+    { question: "You warned someone to be careful. What do you say?", answer: "Take care!" },
+    { question: "You gave attention to your health. What do you say?", answer: "I'm taking care of my health." },
+    { question: "You examined the report. What do you say?", answer: "I took a look at the report." },
+    { question: "It required patience. What do you say?", answer: "It took time and effort." },
+    { question: "The event will happen next week. What do you say?", answer: "The event will take place next week." },
+    { question: "You jotted down key points. What do you say?", answer: "I took some notes." },
+    { question: "You became responsible for a task. What do you say?", answer: "I took responsibility for it." },
+    { question: "You decided to act. What do you say?", answer: "I decided to take action." },
+    { question: "You’re checking a document. What do you say?", answer: "Let me take a look at it." },
+    { question: "You are caring for a plant. What do you say?", answer: "I'm taking care of the plant." },
+    { question: "You paused during a lesson. What do you say?", answer: "We took a short break." },
+    { question: "You joined a protest. What do you say?", answer: "I took part in the protest." },
+    { question: "You got benefit from a discount. What do you say?", answer: "I took advantage of the discount." },
+    { question: "You are writing during a lecture. What do you say?", answer: "I'm taking notes right now." },
+    { question: "You planned a meeting. What do you say?", answer: "The meeting will take place at 3 PM." },
+    { question: "You managed a responsibility. What do you say?", answer: "I took responsibility and handled it." },
+    { question: "You acted quickly. What do you say?", answer: "I took action immediately." },
+    { question: "You are reading a report. What do you say?", answer: "I'm taking a look at the report." },
+    { question: "You are caring for your dog. What do you say?", answer: "I'm taking care of my dog." }
+  ]
+};
+
+const MODULE_128_DATA = {
+  title: "Phrasal Verbs – Separable & Inseparable",
+  description: "Learn the difference between separable and inseparable phrasal verbs",
+  intro: `In this module, you will learn about separable and inseparable phrasal verbs.
+
+Grammar Rules:
+1. Separable: You can put the object between the verb and particle
+   - turn on the light / turn the light on
+2. Inseparable: The object must come after the phrasal verb
+   - look after the baby (NOT: look the baby after)
+
+Examples:
+- Pick up your phone / Pick your phone up (separable)
+- Look for my keys (inseparable)
+- Note: With pronouns, separation is required: Pick it up (NOT: Pick up it)`,
+  tip: "With pronouns, separable phrasal verbs MUST be separated: turn it on, pick it up",
+
+  table: [],
+
+  listeningExamples: [
+    "Listen to how we use phrasal verbs – separable & inseparable in conversation.",
+    "Pay attention to the structure and natural pronunciation.",
+    "Practice repeating these examples to improve your fluency."
+  ],
+
+  speakingPractice: [
+    { question: "You stop the alarm. What do you say?", answer: "I turned off the alarm." },
+    { question: "You returned the book. What do you say?", answer: "I gave the book back." },
+    { question: "She takes care of her dog. What do you say?", answer: "She looks after her dog." },
+    { question: "You picked up your pen. What do you say?", answer: "I picked the pen up." },
+    { question: "They cancelled the meeting. What do you say?", answer: "They called off the meeting." },
+    { question: "He found an old photo. What do you say?", answer: "He came across an old photo." },
+    { question: "You are wearing your jacket. What do you say?", answer: "I put on my jacket." },
+    { question: "She faced a difficult situation. What do you say?", answer: "She dealt with it well." },
+    { question: "We overcame the problem. What do you say?", answer: "We got over the problem." },
+    { question: "You answered the phone. What do you say?", answer: "I picked up the phone." },
+    { question: "He found his keys by chance. What do you say?", answer: "He came across his keys." },
+    { question: "She returned the call. What do you say?", answer: "She called him back." },
+    { question: "You removed your shoes. What do you say?", answer: "I took off my shoes." },
+    { question: "They cancelled the show. What do you say?", answer: "They called off the show." },
+    { question: "You helped your friend recover. What do you say?", answer: "I helped him get over it." },
+    { question: "He managed a tough client. What do you say?", answer: "He dealt with the client." },
+    { question: "She found her bag in the closet. What do you say?", answer: "She came across her bag." },
+    { question: "I need to remove my coat. What do you say?", answer: "I need to take off my coat." },
+    { question: "You helped the child. What do you say?", answer: "I looked after the child." },
+    { question: "He turned off the light. What do you say?", answer: "He turned the light off." },
+    { question: "You put your coat on. What do you say?", answer: "I put on my coat." },
+    { question: "They ran into trouble. What do you say?", answer: "They ran into some trouble." },
+    { question: "You returned his call. What do you say?", answer: "I called him back." },
+    { question: "You took off your glasses. What do you say?", answer: "I took off my glasses." },
+    { question: "She dealt with the issue. What do you say?", answer: "She dealt with the issue effectively." },
+    { question: "You canceled your appointment. What do you say?", answer: "I called off my appointment." },
+    { question: "He found something interesting. What do you say?", answer: "He came across something interesting." },
+    { question: "You gave the toy back. What do you say?", answer: "I gave the toy back to the child." },
+    { question: "He helped a student recover. What do you say?", answer: "He helped the student get over it." },
+    { question: "She looked after her niece. What do you say?", answer: "She looked after her niece." },
+    { question: "You put on a hat. What do you say?", answer: "I put on a hat." },
+    { question: "He turned off the heater. What do you say?", answer: "He turned the heater off." },
+    { question: "You picked up the remote. What do you say?", answer: "I picked up the remote." },
+    { question: "We came across an old letter. What do you say?", answer: "We came across an old letter." },
+    { question: "He dealt with the complaint. What do you say?", answer: "He dealt with the complaint well." },
+    { question: "She took off her jacket. What do you say?", answer: "She took her jacket off." },
+    { question: "You gave the book to the teacher. What do you say?", answer: "I gave the book back to the teacher." },
+    { question: "He ran into an old friend. What do you say?", answer: "He ran into an old friend at the mall." },
+    { question: "We put on our shoes. What do you say?", answer: "We put on our shoes." },
+    { question: "She called off the match. What do you say?", answer: "She called off the match due to rain." }
+  ]
+};
+
+const MODULE_129_DATA = {
+  title: "Phrasal Verbs – Common Everyday Verbs",
+  description: "Learn the most common phrasal verbs used in daily life",
+  intro: `In this module, you will learn common everyday phrasal verbs.
+
+Common phrasal verbs:
+- get up (rise from bed)
+- go out (leave home for entertainment)
+- come back (return)
+- sit down (take a seat)
+- stand up (rise to feet)
+- carry on (continue)
+- find out (discover)
+- work out (exercise / solve)
+
+Examples:
+- I get up early every day.
+- Let's go out for dinner tonight.
+- Please sit down and relax.`,
+  tip: "Phrasal verbs are essential for natural-sounding English conversation",
+
+  table: [],
+
+  listeningExamples: [
+    "Listen to how we use phrasal verbs – common everyday verbs in conversation.",
+    "Pay attention to the structure and natural pronunciation.",
+    "Practice repeating these examples to improve your fluency."
+  ],
+
+  speakingPractice: [
+    { question: "You stop trying to lose weight. What do you say?", answer: "I gave up losing weight." },
+    { question: "You are searching for your glasses. What do you say?", answer: "I'm looking for my glasses." },
+    { question: "She returned home late. What do you say?", answer: "She came back late." },
+    { question: "You woke up at 6. What do you say?", answer: "I woke up at 6 o'clock." },
+    { question: "He got out of bed. What do you say?", answer: "He got up at 7." },
+    { question: "They discovered the secret. What do you say?", answer: "They found out the secret." },
+    { question: "You exited the hotel. What do you say?", answer: "I checked out of the hotel." },
+    { question: "He turned on the computer. What do you say?", answer: "He turned the computer on." },
+    { question: "You took care of a child. What do you say?", answer: "I looked after a child." },
+    { question: "She quit her bad habit. What do you say?", answer: "She gave up her bad habit." },
+    { question: "You went outside. What do you say?", answer: "I went out for a walk." },
+    { question: "He came back from Spain. What do you say?", answer: "He came back yesterday." },
+    { question: "They checked in at the airport. What do you say?", answer: "They checked in at 2 PM." },
+    { question: "She’s searching for her keys. What do you say?", answer: "She’s looking for her keys." },
+    { question: "You turned off the radio. What do you say?", answer: "I turned off the radio." },
+    { question: "He is taking care of his dog. What do you say?", answer: "He is looking after his dog." },
+    { question: "You woke up early. What do you say?", answer: "I woke up early today." },
+    { question: "They got up very late. What do you say?", answer: "They got up at noon." },
+    { question: "You gave up drinking coffee. What do you say?", answer: "I gave up drinking coffee." },
+    { question: "He came back from holiday. What do you say?", answer: "He came back last week." },
+    { question: "She turned on the lights. What do you say?", answer: "She turned the lights on." },
+    { question: "You checked in at the hotel. What do you say?", answer: "I checked in yesterday." },
+    { question: "They looked after the baby. What do you say?", answer: "They looked after the baby all day." },
+    { question: "You found out the truth. What do you say?", answer: "I found out the truth yesterday." },
+    { question: "He got up early. What do you say?", answer: "He got up before sunrise." },
+    { question: "You checked out this morning. What do you say?", answer: "I checked out this morning." },
+    { question: "She looked for her notebook. What do you say?", answer: "She looked for it everywhere." },
+    { question: "You gave up trying. What do you say?", answer: "I gave up trying to fix it." },
+    { question: "He looked after his sick father. What do you say?", answer: "He looked after him for weeks." },
+    { question: "You turned off your phone. What do you say?", answer: "I turned my phone off." },
+    { question: "They went out to eat. What do you say?", answer: "They went out for dinner." },
+    { question: "You came back home. What do you say?", answer: "I came back around 8 PM." },
+    { question: "You looked for your passport. What do you say?", answer: "I looked for my passport everywhere." },
+    { question: "He woke up with a headache. What do you say?", answer: "He woke up with a headache." },
+    { question: "She gave up learning French. What do you say?", answer: "She gave up learning French." },
+    { question: "You got up at 5 a.m. What do you say?", answer: "I got up at 5 a.m." },
+    { question: "They found out the answer. What do you say?", answer: "They found out the correct answer." },
+    { question: "You turned on the heating. What do you say?", answer: "I turned on the heating." },
+    { question: "She checked out at 10. What do you say?", answer: "She checked out at 10 a.m." },
+    { question: "You looked after your little sister. What do you say?", answer: "I looked after my little sister." }
+  ]
+};
+
+const MODULE_130_DATA = {
+  title: "Collocations with Make and Do",
+  description: "Learn the difference between make and do collocations",
+  intro: `In this module, you will learn collocations with 'make' and 'do'.
+
+MAKE collocations (creating/producing):
+- make a decision, make a mistake, make money, make a phone call, make progress, make an effort
+
+DO collocations (performing/completing):
+- do homework, do the dishes, do exercise, do business, do your best, do damage
+
+Examples:
+- I need to make a decision soon.
+- I have to do my homework tonight.
+- She made a lot of progress.`,
+  tip: "Generally: 'make' = create/produce, 'do' = perform/complete. But learn fixed expressions!",
+
+  table: [],
+
+  listeningExamples: [
+    "Listen to how we use collocations with make and do in conversation.",
+    "Pay attention to the structure and natural pronunciation.",
+    "Practice repeating these examples to improve your fluency."
+  ],
+
+  speakingPractice: [
+    { question: "You completed your homework. What do you say?", answer: "I did my homework." },
+    { question: "She earned a lot last year. What do you say?", answer: "She made a lot of money." },
+    { question: "They prepared a plan. What do you say?", answer: "They made a plan." },
+    { question: "He cleaned the kitchen. What do you say?", answer: "He did the cleaning." },
+    { question: "You tried very hard. What do you say?", answer: "I did my best." },
+    { question: "She called her mother. What do you say?", answer: "She made a phone call." },
+    { question: "He made a big mistake. What do you say?", answer: "He made a big mistake." },
+    { question: "You helped with the shopping. What do you say?", answer: "I did the shopping." },
+    { question: "They cooked a cake. What do you say?", answer: "They made a cake." },
+    { question: "He completed the project. What do you say?", answer: "He did the project." },
+    { question: "She broke a rule. What do you say?", answer: "She made a mistake." },
+    { question: "I cleaned the dishes. What do you say?", answer: "I did the dishes." },
+    { question: "They created a list. What do you say?", answer: "They made a list." },
+    { question: "He worked hard. What do you say?", answer: "He did a great job." },
+    { question: "You created a good impression. What do you say?", answer: "I made a good impression." },
+    { question: "She did business with them. What do you say?", answer: "She did business with the company." },
+    { question: "We prepared a reservation. What do you say?", answer: "We made a reservation." },
+    { question: "They vacuumed the floor. What do you say?", answer: "They did the vacuuming." },
+    { question: "He said something funny. What do you say?", answer: "He made a joke." },
+    { question: "I tried hard. What do you say?", answer: "I did my best." },
+    { question: "She created a piece of art. What do you say?", answer: "She made a beautiful painting." },
+    { question: "He helped clean the windows. What do you say?", answer: "He did the windows." },
+    { question: "They made a decision. What do you say?", answer: "They made an important decision." },
+    { question: "You brushed your teeth. What do you say?", answer: "I did my teeth." },
+    { question: "He created a presentation. What do you say?", answer: "He made a presentation." },
+    { question: "She made a complaint. What do you say?", answer: "She made a complaint about the food." },
+    { question: "You organized your closet. What do you say?", answer: "I did my closet." },
+    { question: "They made a suggestion. What do you say?", answer: "They made a great suggestion." },
+    { question: "She did her nails. What do you say?", answer: "She did her nails at the salon." },
+    { question: "He made an effort. What do you say?", answer: "He made a big effort." },
+    { question: "You finished the laundry. What do you say?", answer: "I did the laundry." },
+    { question: "They made a toast. What do you say?", answer: "They made a toast at the wedding." },
+    { question: "She made an excuse. What do you say?", answer: "She made an excuse for being late." },
+    { question: "You created a schedule. What do you say?", answer: "I made a schedule for the week." },
+    { question: "He did the ironing. What do you say?", answer: "He did all the ironing." },
+    { question: "We made an agreement. What do you say?", answer: "We made an agreement yesterday." },
+    { question: "You made your bed. What do you say?", answer: "I made my bed in the morning." },
+    { question: "She did some yoga. What do you say?", answer: "She did yoga before work." },
+    { question: "They made a mess. What do you say?", answer: "They made a mess in the kitchen." },
+    { question: "He made a difference. What do you say?", answer: "He made a difference in their lives." }
+  ]
+};
+
+const MODULE_131_DATA = {
+  title: "Indirect Questions",
+  description: "Learn how to form polite indirect questions",
+  intro: `In this module, you will learn how to form indirect questions for polite communication.
+
+Grammar Rule:
+Indirect questions are more polite and formal. The word order changes to statement word order.
+
+Structure:
+- Could you tell me + question word + subject + verb
+- Do you know + question word + subject + verb
+- I wonder + question word + subject + verb
+
+Examples:
+- Direct: Where is the station?
+- Indirect: Could you tell me where the station is?
+- Direct: What time does it start?
+- Indirect: Do you know what time it starts?`,
+  tip: "In indirect questions, use statement word order (subject + verb), not question order",
+
+  table: [],
+
+  listeningExamples: [
+    "Listen to how we use indirect questions in conversation.",
+    "Pay attention to the structure and natural pronunciation.",
+    "Practice repeating these examples to improve your fluency."
+  ],
+
+  speakingPractice: [
+    { question: "Where is the nearest bus stop?", answer: "Could you tell me where the nearest bus stop is?" },
+    { question: "What time does the class start?", answer: "Do you know what time the class starts?" },
+    { question: "Why is he so upset?", answer: "I was wondering why he is so upset." },
+    { question: "When does the train arrive?", answer: "Can you tell me when the train arrives?" },
+    { question: "How much does this cost?", answer: "Could you tell me how much this costs?" },
+    { question: "Where did she go?", answer: "Do you know where she went?" },
+    { question: "Why are they late?", answer: "Could you tell me why they are late?" },
+    { question: "Who is that man?", answer: "Do you know who that man is?" },
+    { question: "What does she want?", answer: "Can you tell me what she wants?" },
+    { question: "How old is he?", answer: "I was wondering how old he is." }
+  ]
+};
+
+const MODULE_132_DATA = {
+  title: "Giving Opinions – Agreeing & Disagreeing",
+  description: "Learn how to express, agree, and disagree with opinions politely",
+  intro: `In this module, you will learn how to give opinions and respond to others' opinions.
+
+Useful expressions:
+Giving opinions:
+- In my opinion, ...
+- I think/believe that ...
+- From my perspective, ...
+
+Agreeing:
+- I completely agree.
+- That's exactly what I think.
+- I couldn't agree more.
+
+Disagreeing politely:
+- I see your point, but ...
+- I'm not sure I agree with that.
+- That's a valid point, however ...`,
+  tip: "Use softening phrases like 'I think' or 'in my opinion' to sound less direct",
+
+  table: [],
+
+  listeningExamples: [
+    "Listen to how we use giving opinions – agreeing & disagreeing in conversation.",
+    "Pay attention to the structure and natural pronunciation.",
+    "Practice repeating these examples to improve your fluency."
+  ],
+
+  speakingPractice: [
+    { question: "What do you think about this movie?", answer: "I think it’s amazing!" },
+    { question: "Do you agree with him?", answer: "Yes, I agree with him." },
+    { question: "What’s your opinion on this topic?", answer: "In my opinion, it’s very important." },
+    { question: "Do you believe it will work?", answer: "I believe it will work perfectly." },
+    { question: "Do you think it’s a good idea?", answer: "Yes, I think it’s a great idea." },
+    { question: "Do you agree or disagree?", answer: "I disagree because it’s too risky." },
+    { question: "What’s your point of view?", answer: "From my point of view, it's not fair." },
+    { question: "Do you think we should wait?", answer: "I’m not sure about that." },
+    { question: "Is this a good solution?", answer: "Absolutely! It’s perfect." },
+    { question: "Can we try something else?", answer: "I see your point, but I prefer this option." },
+    { question: "Do you think he’s right?", answer: "Yes, I think so too." },
+    { question: "What’s your opinion about fast food?", answer: "I believe it’s unhealthy." },
+    { question: "Do you think money brings happiness?", answer: "That’s not always true." },
+    { question: "Do you agree that exams are necessary?", answer: "Yes, I agree." },
+    { question: "Do you believe in ghosts?", answer: "No, I don’t believe in them." },
+    { question: "Is she correct?", answer: "You’re right, she is." },
+    { question: "Do you think it’s safe?", answer: "I’m afraid I don’t agree." },
+    { question: "Do you agree with me?", answer: "Exactly!" },
+    { question: "Is this a smart choice?", answer: "From my point of view, yes." },
+    { question: "Do you think school uniforms are good?", answer: "In my opinion, they are useful." },
+    { question: "Do you agree with the rules?", answer: "I don’t agree with you." },
+    { question: "What do you think about this law?", answer: "As far as I’m concerned, it’s necessary." },
+    { question: "Is the project ready?", answer: "I’m not sure about that." },
+    { question: "Should we cancel the trip?", answer: "I see your point, but let’s wait." },
+    { question: "Do you think it’s boring?", answer: "I think it’s fun." },
+    { question: "Do you like this design?", answer: "Absolutely!" },
+    { question: "Is this the best option?", answer: "Yes, I agree." },
+    { question: "Do you agree with her decision?", answer: "I disagree." },
+    { question: "Do you think it’s useful?", answer: "I believe it is." },
+    { question: "What’s your opinion on online education?", answer: "I think it’s very flexible." },
+    { question: "Is it good for children?", answer: "From my point of view, yes." },
+    { question: "Do you think we should leave now?", answer: "I’m afraid I don’t agree." },
+    { question: "Do you agree with the teacher?", answer: "Yes, I agree with her." },
+    { question: "What do you think about this food?", answer: "I think it tastes great." },
+    { question: "Do you think it’s cheap?", answer: "No, I think it’s expensive." },
+    { question: "Should we try it?", answer: "I see your point, but I don’t think so." },
+    { question: "Do you believe him?", answer: "Yes, I do." },
+    { question: "Do you agree that English is important?", answer: "Absolutely!" },
+    { question: "Do you think this idea will work?", answer: "I’m not sure about that." },
+    { question: "What do you think about the plan?", answer: "In my opinion, it’s risky." }
+  ]
+};
+
+const MODULE_133_DATA = {
+  title: "Speculating and Expressing Possibility",
+  description: "Learn to express different degrees of possibility and speculation",
+  intro: `In this module, you will learn how to speculate and express possibility.
+
+Modal verbs for speculation:
+- must (90% certain)
+- might/may/could (50% certain)
+- can't (99% certain negative)
+
+Examples:
+- She must be at home (I'm almost certain).
+- He might be late (It's possible).
+- They can't be serious (I'm certain they're not).`,
+  tip: "Use 'must' for strong deduction, 'might/may/could' for possibility, 'can't' for impossibility",
+
+  table: [],
+
+  listeningExamples: [
+    "Listen to how we use speculating and expressing possibility in conversation.",
+    "Pay attention to the structure and natural pronunciation.",
+    "Practice repeating these examples to improve your fluency."
+  ],
+
+  speakingPractice: [
+    { question: "Where is John?", answer: "He might be in the kitchen." },
+    { question: "Is she coming to the party?", answer: "She may come later." },
+    { question: "Do you think it will rain?", answer: "It could rain this evening." },
+    { question: "Where are your keys?", answer: "They might be in my bag." },
+    { question: "Is this information true?", answer: "Perhaps it's true." },
+    { question: "Why is she crying?", answer: "She may be sad about something." },
+    { question: "Will they be late?", answer: "It's possible that they'll be late." },
+    { question: "Is he at home?", answer: "He could be at home." },
+    { question: "Did she forget?", answer: "Maybe she forgot." },
+    { question: "Is he the manager?", answer: "He might be." },
+    { question: "Do you think he's tired?", answer: "He must be tired after work." },
+    { question: "Did they travel abroad?", answer: "It's likely that they did." },
+    { question: "Is this his phone?", answer: "It might be his." },
+    { question: "Will she call you?", answer: "She may call me tonight." },
+    { question: "Are they still at school?", answer: "They could still be there." },
+    { question: "Is she sick?", answer: "Maybe she is." },
+    { question: "Do you think it's dangerous?", answer: "It might be." },
+    { question: "Why is the light on?", answer: "He may be in the room." },
+    { question: "Is it true?", answer: "Perhaps it is." },
+    { question: "Did he break the window?", answer: "He can't have done that." },
+    { question: "Will it snow today?", answer: "It's unlikely, but possible." },
+    { question: "Where is your phone?", answer: "It might be in the car." },
+    { question: "Do you think they forgot the meeting?", answer: "They may have forgotten." },
+    { question: "Did she leave already?", answer: "It's possible she did." },
+    { question: "Are we lost?", answer: "We could be." },
+    { question: "Is she angry?", answer: "She might be a little upset." },
+    { question: "Is this your book?", answer: "It may be mine." },
+    { question: "Do you think he lied?", answer: "He can't have lied." },
+    { question: "Will they win the game?", answer: "It's likely they will." },
+    { question: "Are they at the station?", answer: "They could be there now." },
+    { question: "Is she nervous?", answer: "She might be." },
+    { question: "Why didn't he answer?", answer: "He may be busy." },
+    { question: "Is it his car?", answer: "Maybe it is." },
+    { question: "Is this the right way?", answer: "It might be." },
+    { question: "Where are they?", answer: "They could be stuck in traffic." },
+    { question: "Is she the teacher?", answer: "She may be the new teacher." },
+    { question: "Is it going to rain?", answer: "It's possible." },
+    { question: "Why is he angry?", answer: "He might be having a bad day." },
+    { question: "Do you think she's serious?", answer: "Perhaps she is." },
+    { question: "Is this place safe?", answer: "It could be dangerous at night." }
+  ]
+};
+
+const MODULE_134_DATA = {
+  title: "Talking about Hypothetical Situations",
+  description: "Learn to discuss imaginary and hypothetical scenarios",
+  intro: `In this module, you will learn how to talk about hypothetical situations.
+
+Structures:
+- Second Conditional: If + past simple, would + infinitive (unreal present/future)
+  - If I won the lottery, I would travel the world.
+- Mixed Conditional: If + past perfect, would + infinitive (past condition, present result)
+  - If I had studied medicine, I would be a doctor now.
+
+Examples:
+- If I were rich, I would buy a house.
+- What would you do if you could fly?`,
+  tip: "Use 'were' (not 'was') for all persons in formal hypothetical situations: If I were you...",
+
+  table: [],
+
+  listeningExamples: [
+    "Listen to how we use talking about hypothetical situations in conversation.",
+    "Pay attention to the structure and natural pronunciation.",
+    "Practice repeating these examples to improve your fluency."
+  ],
+
+  speakingPractice: [
+    { question: "What would you do if you won the lottery?", answer: "I would buy a house and travel." },
+    { question: "If you were a bird, where would you fly?", answer: "I would fly over the mountains." },
+    { question: "What would happen if it rained tomorrow?", answer: "We would cancel the picnic." },
+    { question: "If he had more time, what would he do?", answer: "He would learn a new language." },
+    { question: "If she were here, what would you say?", answer: "I would say hello." },
+    { question: "What would you do if you lost your phone?", answer: "I would look for it everywhere." },
+    { question: "If you met a celebrity, what would you ask?", answer: "I would ask for a photo." },
+    { question: "If you could live anywhere, where would it be?", answer: "It would be Paris." },
+    { question: "If I called you tonight, would you answer?", answer: "Yes, I would." },
+    { question: "If they offered you a job, would you take it?", answer: "Yes, I would." },
+    { question: "If you had a million dollars, what would you buy?", answer: "I would buy a new car." },
+    { question: "If she saw a ghost, what would she do?", answer: "She would scream." },
+    { question: "If you were invisible, what would you do?", answer: "I would sneak into places." },
+    { question: "What would you do if you were the president?", answer: "I would help the poor." },
+    { question: "If you could go anywhere, where would you go?", answer: "I would go to Japan." },
+    { question: "If it snowed today, what would happen?", answer: "We would stay home." },
+    { question: "If your friend needed help, what would you do?", answer: "I would help them." },
+    { question: "If I asked you for advice, would you help me?", answer: "Of course I would." },
+    { question: "If we had more money, what would we do?", answer: "We would go on vacation." },
+    { question: "If they knew the answer, would they tell us?", answer: "Yes, they would." },
+    { question: "If you didn't work, what would you do?", answer: "I would relax all day." },
+    { question: "If you found a wallet, what would you do?", answer: "I would take it to the police." },
+    { question: "If he had a car, would he drive to work?", answer: "Yes, he would." },
+    { question: "If she didn't like the movie, what would she say?", answer: "She would say it's boring." },
+    { question: "If you lived on the moon, what would you eat?", answer: "I would eat space food." },
+    { question: "If we didn't have school today, what would we do?", answer: "We would go to the park." },
+    { question: "If you could speak any language, which would it be?", answer: "It would be Spanish." },
+    { question: "If you saw a bear, what would you do?", answer: "I would run away." },
+    { question: "If it were your birthday, what would you want?", answer: "I would want a party." },
+    { question: "If you were a teacher, what subject would you teach?", answer: "I would teach English." },
+    { question: "If it were summer, what would you wear?", answer: "I would wear shorts." },
+    { question: "If he were famous, what would he do?", answer: "He would act in movies." },
+    { question: "If you had wings, where would you fly?", answer: "I would fly to the clouds." },
+    { question: "If you broke your phone, what would you do?", answer: "I would buy a new one." },
+    { question: "If we won the match, how would we celebrate?", answer: "We would have a party." },
+    { question: "If your computer stopped working, what would you do?", answer: "I would call a technician." },
+    { question: "If I gave you a gift, would you accept it?", answer: "Yes, I would." },
+    { question: "If you were a cat, what would you do all day?", answer: "I would sleep." },
+    { question: "If she missed the bus, what would happen?", answer: "She would be late." },
+    { question: "If you had a superpower, what would it be?", answer: "It would be flying." }
+  ]
+};
+
+const MODULE_135_DATA = {
+  title: "Expressing Preferences",
+  description: "Learn different ways to express preferences and choices",
+  intro: `In this module, you will learn how to express preferences.
+
+Common structures:
+- prefer + noun/-ing: I prefer coffee.
+- prefer A to B: I prefer tea to coffee.
+- would prefer to + infinitive: I'd prefer to stay home.
+- would rather + infinitive: I'd rather go out.
+- would rather... than: I'd rather walk than drive.
+
+Examples:
+- I prefer reading to watching TV.
+- I'd prefer to eat at home tonight.
+- I'd rather have tea than coffee.`,
+  tip: "Use 'would rather' + bare infinitive (without 'to'): I'd rather go, not I'd rather to go",
+
+  table: [],
+
+  listeningExamples: [
+    "Listen to how we use expressing preferences in conversation.",
+    "Pay attention to the structure and natural pronunciation.",
+    "Practice repeating these examples to improve your fluency."
+  ],
+
+  speakingPractice: [
+    { question: "Do you prefer coffee or tea?", answer: "I prefer coffee to tea." },
+    { question: "Would you rather watch a movie or read a book?", answer: "I'd rather watch a movie." },
+    { question: "Do you prefer walking or cycling?", answer: "I prefer walking to cycling." },
+    { question: "Would you rather go out or stay home?", answer: "I'd rather stay home." },
+    { question: "Do you prefer dogs or cats?", answer: "I prefer dogs to cats." },
+    { question: "Would you rather swim or run?", answer: "I'd rather swim." },
+    { question: "Do you prefer summer or winter?", answer: "I prefer summer to winter." },
+    { question: "Would you rather take the bus or drive?", answer: "I'd rather drive." },
+    { question: "Do you prefer reading or watching TV?", answer: "I prefer reading to watching TV." },
+    { question: "Would you rather eat out or cook at home?", answer: "I'd rather cook at home." },
+    { question: "Do you prefer chocolate or vanilla?", answer: "I prefer chocolate to vanilla." },
+    { question: "Would you rather travel alone or with friends?", answer: "I'd rather travel with friends." },
+    { question: "Do you prefer city life or country life?", answer: "I prefer country life to city life." },
+    { question: "Would you rather stay in a hotel or a tent?", answer: "I'd rather stay in a hotel." },
+    { question: "Do you prefer pizza or pasta?", answer: "I prefer pizza to pasta." },
+    { question: "Would you rather play football or basketball?", answer: "I'd rather play football." },
+    { question: "Do you prefer watching movies or series?", answer: "I prefer movies to series." },
+    { question: "Would you rather fly or take a train?", answer: "I'd rather fly." },
+    { question: "Do you prefer texting or calling?", answer: "I prefer texting to calling." },
+    { question: "Would you rather sleep early or stay up late?", answer: "I'd rather sleep early." },
+    { question: "Do you prefer shopping online or in stores?", answer: "I prefer shopping online to shopping in stores." },
+    { question: "Would you rather eat spicy food or sweet food?", answer: "I'd rather eat sweet food." },
+    { question: "Do you prefer football or basketball?", answer: "I prefer football to basketball." },
+    { question: "Would you rather go hiking or swimming?", answer: "I'd rather go swimming." },
+    { question: "Do you prefer staying in or going out on weekends?", answer: "I prefer staying in." },
+    { question: "Would you rather drink water or juice?", answer: "I'd rather drink water." },
+    { question: "Do you prefer writing or speaking?", answer: "I prefer speaking to writing." },
+    { question: "Would you rather live in a big city or a small town?", answer: "I'd rather live in a small town." },
+    { question: "Do you prefer apples or bananas?", answer: "I prefer apples to bananas." },
+    { question: "Would you rather listen to music or read a book?", answer: "I'd rather listen to music." },
+    { question: "Do you prefer meat or vegetables?", answer: "I prefer meat to vegetables." },
+    { question: "Would you rather eat fast food or homemade food?", answer: "I'd rather eat homemade food." },
+    { question: "Do you prefer early mornings or late nights?", answer: "I prefer early mornings." },
+    { question: "Would you rather go to the beach or the mountains?", answer: "I'd rather go to the beach." },
+    { question: "Do you prefer Coke or Pepsi?", answer: "I prefer Coke to Pepsi." },
+    { question: "Would you rather watch a horror or a comedy?", answer: "I'd rather watch a comedy." },
+    { question: "Do you prefer flying or driving?", answer: "I prefer flying to driving." },
+    { question: "Would you rather go to a concert or a play?", answer: "I'd rather go to a concert." },
+    { question: "Do you prefer hot weather or cold weather?", answer: "I prefer hot weather." },
+    { question: "Would you rather stay alone or be with people?", answer: "I'd rather be with people." }
+  ]
+};
+
+const MODULE_136_DATA = {
+  title: "Narratives – Sequencing Words",
+  description: "Learn to tell stories using appropriate sequencing words",
+  intro: `In this module, you will learn sequencing words for narratives.
+
+Sequencing words:
+Beginning: First, Initially, At first, To begin with
+Middle: Then, Next, After that, Subsequently, Meanwhile
+End: Finally, Eventually, In the end, Ultimately
+
+Time expressions:
+- as soon as, while, when, before, after, until
+
+Examples:
+- First, I woke up late. Then, I rushed to work. Finally, I arrived just in time.
+- Initially, I was nervous. However, after a while, I felt confident.`,
+  tip: "Vary your sequencing words to make stories more interesting - don't always use 'then'",
+
+  table: [],
+
+  listeningExamples: [
+    "Listen to how we use narratives – sequencing words in conversation.",
+    "Pay attention to the structure and natural pronunciation.",
+    "Practice repeating these examples to improve your fluency."
+  ],
+
+  speakingPractice: [
+    { question: "What did you do first this morning?", answer: "First, I got out of bed." },
+    { question: "What did you do then?", answer: "Then, I had a shower." },
+    { question: "What did you do after that?", answer: "After that, I got dressed." },
+    { question: "What happened next?", answer: "Next, I ate breakfast." },
+    { question: "What did you do later?", answer: "Later, I went to school." },
+    { question: "What did you do finally?", answer: "Finally, I came back home." },
+    { question: "How did your day begin?", answer: "At the beginning, I was very sleepy." },
+    { question: "What did you do after breakfast?", answer: "After breakfast, I brushed my teeth." },
+    { question: "What happened in the end?", answer: "In the end, I watched a movie." },
+    { question: "What did you do eventually?", answer: "Eventually, I went to sleep." },
+    { question: "What happened first in the story?", answer: "First, the boy found a map." },
+    { question: "What did the boy do next?", answer: "Next, he followed the trail." },
+    { question: "What happened after that?", answer: "After that, he entered a dark cave." },
+    { question: "What did he do later?", answer: "Later, he saw a treasure chest." },
+    { question: "What happened finally?", answer: "Finally, he opened it and found gold." },
+    { question: "How did your trip start?", answer: "At first, we packed our bags." },
+    { question: "What happened then?", answer: "Then, we took a taxi to the airport." },
+    { question: "What did you do next on holiday?", answer: "Next, we visited a museum." },
+    { question: "What happened after the museum?", answer: "After that, we ate at a local restaurant." },
+    { question: "How did the evening end?", answer: "In the end, we watched the sunset." },
+    { question: "What do you do in your morning routine?", answer: "First, I wake up. Then, I check my phone." },
+    { question: "What do you do before school?", answer: "After that, I get ready and leave the house." },
+    { question: "What's your school routine?", answer: "First, we have English. Next, we have Math." },
+    { question: "What do you do after lunch?", answer: "After lunch, I usually play with friends." },
+    { question: "What happens later in the day?", answer: "Later, I do my homework." },
+    { question: "How do you end your day?", answer: "Finally, I brush my teeth and sleep." },
+    { question: "How did the movie start?", answer: "At the beginning, a girl was walking alone." },
+    { question: "What happened then?", answer: "Then, she heard a strange noise." },
+    { question: "What happened next?", answer: "Next, she ran into a forest." },
+    { question: "What happened after that?", answer: "After that, she met an old man." },
+    { question: "How did the story end?", answer: "In the end, she returned home safely." },
+    { question: "What was the sequence of events?", answer: "First, he got lost. Then, he found a map." },
+    { question: "What happened after school?", answer: "After school, I played football." },
+    { question: "What happened before dinner?", answer: "Before dinner, I did my homework." },
+    { question: "What did you do on your birthday?", answer: "First, I had cake. Later, we danced." },
+    { question: "How did you travel?", answer: "First, by bus. Then, by train." },
+    { question: "What happened on your trip?", answer: "We visited many places. Finally, we went home." },
+    { question: "What was your weekend like?", answer: "First, I relaxed. Then, I met friends." },
+    { question: "What did you do last night?", answer: "After that, I read a book." },
+    { question: "How did the event end?", answer: "Eventually, everyone clapped and cheered." }
+  ]
+};
+
+const MODULE_137_DATA = {
+  title: "Linking Words – Contrast, Addition, Result",
+  description: "Learn linking words to connect ideas in speaking and writing",
+  intro: `In this module, you will learn linking words for different purposes.
+
+Contrast: but, however, although, despite, whereas
+Addition: and, also, moreover, furthermore, in addition
+Result: so, therefore, consequently, as a result, thus
+Reason: because, since, as, due to
+
+Examples:
+- I like coffee, but I prefer tea.
+- She studied hard; therefore, she passed the exam.
+- Although it was raining, we went out.`,
+  tip: "Use linking words to make your speech and writing more cohesive and professional",
+
+  table: [],
+
+  listeningExamples: [
+    "Listen to how we use linking words – contrast, addition, result in conversation.",
+    "Pay attention to the structure and natural pronunciation.",
+    "Practice repeating these examples to improve your fluency."
+  ],
+
+  speakingPractice: [
+    { question: "It was raining. What did you do?", answer: "We went hiking, although it was raining." },
+    { question: "He was tired. Did he stop working?", answer: "No, he finished the job, despite being tired." },
+    { question: "Did she come to school although she was sick?", answer: "Yes, she did. She came even though she was sick." },
+    { question: "The exam was difficult. Did you pass?", answer: "Yes, I passed. However, it was very hard." },
+    { question: "She is rich. Does she live a fancy life?", answer: "No, she lives simply, though she is rich." },
+    { question: "He was busy. Did he help you?", answer: "Yes, he helped me, in spite of being busy." },
+    { question: "It was cold. Did they go swimming?", answer: "Yes, they swam despite the cold." },
+    { question: "She studied hard. Did she fail?", answer: "Yes, although she studied hard, she failed." },
+    { question: "You were hungry. Did you eat?", answer: "No, I didn't. However, I was very hungry." },
+    { question: "He didn't sleep. Was he energetic?", answer: "Yes, despite not sleeping, he was full of energy." },
+    { question: "Was the movie good?", answer: "It was interesting. However, it was too long." },
+    { question: "Did he join the team although he was injured?", answer: "Yes, he did." },
+    { question: "Did she go outside despite the rain?", answer: "Yes, she went outside." },
+    { question: "They were late. Did they apologize?", answer: "No, they didn't, although they were late." },
+    { question: "Was it noisy?", answer: "Yes, despite the noise, we concentrated." },
+    { question: "Did he understand?", answer: "Not really, even though he tried." },
+    { question: "Was she confident?", answer: "She seemed nervous, although she was prepared." },
+    { question: "Was the trip long?", answer: "Yes, but we enjoyed it. However, we were tired." },
+    { question: "Were you cold?", answer: "Yes, in spite of wearing a jacket." },
+    { question: "Did they complain?", answer: "No, despite the bad service." },
+    { question: "He trained a lot. Did he win?", answer: "No, even though he trained hard." },
+    { question: "The car is old. Does it run well?", answer: "Yes, it runs well, although it's old." },
+    { question: "She was angry. Did she yell?", answer: "No, despite her anger." },
+    { question: "Was it expensive?", answer: "Yes, however, it was worth it." },
+    { question: "Did you like the food?", answer: "Yes, although it was a bit salty." },
+    { question: "Did he call?", answer: "No, even though he promised." },
+    { question: "Was she tired?", answer: "Yes, but she smiled. However, she was exhausted." },
+    { question: "He was rich. Was he happy?", answer: "No, despite his wealth." },
+    { question: "Did you buy the shoes?", answer: "Yes, although they were expensive." },
+    { question: "He failed the test. Did he give up?", answer: "No, in spite of failing, he kept going." },
+    { question: "She's young. Is she experienced?", answer: "Yes, even though she's young." },
+    { question: "The path was dangerous. Did they continue?", answer: "Yes, despite the danger." },
+    { question: "Did you enjoy the book?", answer: "Yes, although it was long." },
+    { question: "Was the teacher strict?", answer: "Yes, but fair. However, I liked her." },
+    { question: "Did you win the game?", answer: "Yes, in spite of the injury." },
+    { question: "He is shy. Does he perform well?", answer: "Yes, although he's shy." },
+    { question: "They had little money. Did they travel?", answer: "Yes, despite that." },
+    { question: "It was raining. Did you cancel?", answer: "No, we went anyway. However, it rained all day." },
+    { question: "Did she finish the marathon?", answer: "Yes, even though she was slow." },
+    { question: "He was nervous. Did he speak?", answer: "Yes, in spite of being nervous." }
+  ]
+};
+
+const MODULE_138_DATA = {
+  title: "Describing Experiences and Narratives",
+  description: "Learn to describe personal experiences vividly and engagingly",
+  intro: `In this module, you will learn how to describe experiences and create engaging narratives.
+
+Key elements:
+- Setting: When and where
+- Characters: Who was involved
+- Actions: What happened (past tenses)
+- Feelings: How people felt
+- Outcome: How it ended
+
+Useful language:
+- It was a + adjective + experience
+- I felt + adjective
+- The most memorable thing was...
+- What struck me most was...`,
+  tip: "Use a variety of past tenses and descriptive adjectives to make stories come alive",
+
+  table: [],
+
+  listeningExamples: [
+    "Listen to how we use describing experiences and narratives in conversation.",
+    "Pay attention to the structure and natural pronunciation.",
+    "Practice repeating these examples to improve your fluency."
+  ],
+
+  speakingPractice: [
+    { question: "Have you ever been abroad?", answer: "Yes, I went to Italy last summer." },
+    { question: "What was your best holiday?", answer: "It was in Spain. I went there with my family." },
+    { question: "Tell me about a funny memory.", answer: "One day, I fell into a pool with my clothes on!" },
+    { question: "Have you ever broken a bone?", answer: "Yes, I broke my arm when I was ten." },
+    { question: "Did you ever try something new?", answer: "Yes, I tried sushi for the first time last week." },
+    { question: "Tell me about your first day at school.", answer: "I cried a lot, but then I made friends." },
+    { question: "What did you do last weekend?", answer: "I went to the cinema and saw a great movie." },
+    { question: "Have you ever been scared?", answer: "Yes, once I got lost in a big city." },
+    { question: "Did you enjoy your last birthday?", answer: "Yes, I had a big party with my friends." },
+    { question: "Tell me about your last trip.", answer: "I went to Cappadocia. It was amazing." },
+    { question: "Have you ever met a famous person?", answer: "Yes, I met a singer at a concert." },
+    { question: "What was the most exciting day of your life?", answer: "The day I graduated from university." },
+    { question: "Tell me about a time you helped someone.", answer: "I helped a lost child find their parents." },
+    { question: "What happened yesterday?", answer: "I had a normal day. I worked and then relaxed." },
+    { question: "Have you ever lost something important?", answer: "Yes, I lost my wallet on a bus." },
+    { question: "Did anything interesting happen last week?", answer: "Yes, I saw a car accident." },
+    { question: "Have you ever ridden a horse?", answer: "Yes, when I visited a village." },
+    { question: "What did you do on your last holiday?", answer: "I went swimming and relaxed on the beach." },
+    { question: "Tell me about your first job.", answer: "I worked in a café. It was hard but fun." },
+    { question: "Have you ever tried extreme sports?", answer: "Yes, I went paragliding in Fethiye." },
+    { question: "What was your worst travel experience?", answer: "My luggage was lost at the airport." },
+    { question: "Did you have fun last weekend?", answer: "Yes, I went hiking with friends." },
+    { question: "Have you ever forgotten something important?", answer: "Yes, I forgot my exam date once." },
+    { question: "Tell me about a surprise you had.", answer: "My friends threw a party for me." },
+    { question: "Have you ever been on a boat?", answer: "Yes, we went on a boat tour in Bodrum." },
+    { question: "What was your last school project?", answer: "It was about animals. I made a poster." },
+    { question: "Have you ever been in a competition?", answer: "Yes, I joined a quiz show at school." },
+    { question: "What happened on your last birthday?", answer: "I had cake, gifts, and a lovely dinner." },
+    { question: "Did you ever get lost?", answer: "Yes, once in a big shopping mall." },
+    { question: "What's a memory from childhood?", answer: "Playing football in the street with my friends." },
+    { question: "Have you ever seen snow?", answer: "Yes, many times in winter." },
+    { question: "Tell me about your first flight.", answer: "I was nervous, but it was fun." },
+    { question: "Have you ever cooked for others?", answer: "Yes, I made dinner for my family." },
+    { question: "What was the most beautiful place you've visited?", answer: "Pamukkale. It was stunning." },
+    { question: "Tell me about a funny school memory.", answer: "My teacher's wig fell off during class!" },
+    { question: "What was your favorite day last year?", answer: "New Year's Eve. We had a big celebration." },
+    { question: "Have you ever been very late?", answer: "Yes, I missed the bus and was late to work." },
+    { question: "Tell me about a time you were proud.", answer: "When I won an English contest." },
+    { question: "Have you ever been to a concert?", answer: "Yes, I saw my favorite band live." },
+    { question: "What was the best gift you ever received?", answer: "A bicycle from my parents." }
+  ]
+};
+
+const MODULE_139_DATA = {
+  title: "Cause and Effect",
+  description: "Learn to express cause and effect relationships",
+  intro: `In this module, you will learn how to express cause and effect.
+
+Expressing cause:
+- because, since, as, due to, owing to, thanks to
+
+Expressing effect:
+- so, therefore, consequently, as a result, thus
+
+Structure:
+- Because + clause: Because it rained, we stayed home.
+- Due to + noun: Due to rain, we stayed home.
+
+Examples:
+- I was tired because I worked all day.
+- It was raining, so we canceled the picnic.`,
+  tip: "'Because' is followed by a clause; 'because of' is followed by a noun",
+
+  table: [],
+
+  listeningExamples: [
+    "Listen to how we use cause and effect in conversation.",
+    "Pay attention to the structure and natural pronunciation.",
+    "Practice repeating these examples to improve your fluency."
+  ],
+
+  speakingPractice: [
+    { question: "Why did you stay home?", answer: "Because I was sick." },
+    { question: "You were tired. What did you do?", answer: "I was tired, so I took a nap." },
+    { question: "Why are you happy?", answer: "Because I got good news." },
+    { question: "He was hungry. What happened?", answer: "He was hungry, so he made a sandwich." },
+    { question: "Why didn't she go to the party?", answer: "Because she was busy." },
+    { question: "It was raining. What did you do?", answer: "It was raining, so I stayed inside." },
+    { question: "Why is she crying?", answer: "Because she lost her phone." },
+    { question: "He failed the test. Why?", answer: "Because he didn't study." },
+    { question: "You missed the bus. What happened?", answer: "I missed the bus, so I walked to school." },
+    { question: "Why did you leave early?", answer: "Because I had another meeting." },
+    { question: "Why are they laughing?", answer: "Because the joke was funny." },
+    { question: "He was cold. What did he do?", answer: "He was cold, so he put on a jacket." },
+    { question: "Why did she run?", answer: "Because she was late." },
+    { question: "It was late. What did you do?", answer: "It was late, so I went to sleep." },
+    { question: "Why didn't he answer?", answer: "Because he was in a meeting." },
+    { question: "The food was hot. What happened?", answer: "It was hot, so I waited before eating." },
+    { question: "Why did you call her?", answer: "Because I needed help." },
+    { question: "She was excited. Why?", answer: "Because she won a prize." },
+    { question: "The road was icy. What did you do?", answer: "It was icy, so I drove slowly." },
+    { question: "Why did they leave?", answer: "Because the movie was boring." },
+    { question: "He got a gift. How did he feel?", answer: "He got a gift, so he was happy." },
+    { question: "Why was she nervous?", answer: "Because she had a test." },
+    { question: "You were thirsty. What did you do?", answer: "I was thirsty, so I drank water." },
+    { question: "Why did they cancel the trip?", answer: "Because of the storm." },
+    { question: "It was noisy. What did you do?", answer: "It was noisy, so I closed the window." },
+    { question: "Why did you smile?", answer: "Because I saw my friend." },
+    { question: "He was sleepy. What happened?", answer: "He was sleepy, so he took a nap." },
+    { question: "Why was she absent?", answer: "Because she was sick." },
+    { question: "The lights went out. What did you do?", answer: "The lights went out, so I used a flashlight." },
+    { question: "Why were they tired?", answer: "Because they worked all day." },
+    { question: "He had no umbrella. What happened?", answer: "He had no umbrella, so he got wet." },
+    { question: "Why are you angry?", answer: "Because they didn't listen." },
+    { question: "You were late. Why?", answer: "Because my alarm didn't ring." },
+    { question: "Why did you laugh?", answer: "Because the story was funny." },
+    { question: "The road was blocked. What happened?", answer: "The road was blocked, so we took another way." },
+    { question: "Why did she scream?", answer: "Because she saw a spider." },
+    { question: "He studied hard. What was the result?", answer: "He studied hard, so he passed." },
+    { question: "Why were you surprised?", answer: "Because they remembered my birthday." },
+    { question: "It was hot. What did you do?", answer: "It was hot, so I turned on the fan." },
+    { question: "Why did they celebrate?", answer: "Because they won the game." }
+  ]
+};
+
+const MODULE_140_DATA = {
+  title: "Talking about Purpose",
+  description: "Learn to express purpose and intention",
+  intro: `In this module, you will learn how to express purpose.
+
+Structures:
+- to + infinitive: I went to the store to buy milk.
+- in order to + infinitive: She studies hard in order to pass.
+- so that + clause: I left early so that I wouldn't be late.
+- for + noun/-ing: This tool is for cutting.
+
+Examples:
+- I'm learning English to improve my career.
+- We arrived early in order to get good seats.
+- I saved money so that I could buy a car.`,
+  tip: "'To + infinitive' is the most common way to express purpose in everyday English",
+
+  table: [],
+
+  listeningExamples: [
+    "Listen to how we use talking about purpose in conversation.",
+    "Pay attention to the structure and natural pronunciation.",
+    "Practice repeating these examples to improve your fluency."
+  ],
+
+  speakingPractice: [
+    { question: "Why do you study?", answer: "To get good grades." },
+    { question: "Why did she go to the gym?", answer: "In order to lose weight." },
+    { question: "Why are they saving money?", answer: "So that they can buy a house." },
+    { question: "Why did you wake up early?", answer: "To catch the bus." },
+    { question: "Why does he work two jobs?", answer: "In order to support his family." },
+    { question: "Why did they build a fence?", answer: "So that the dog wouldn't run away." },
+    { question: "Why are you learning English?", answer: "To travel easily." },
+    { question: "Why did she buy flowers?", answer: "To decorate the house." },
+    { question: "Why are you calling him?", answer: "So that we can talk about the project." },
+    { question: "Why do they walk every day?", answer: "In order to stay healthy." },
+    { question: "Why did you bring a map?", answer: "So that we don't get lost." },
+    { question: "Why is she reading that book?", answer: "To learn more about history." },
+    { question: "Why did he practice a lot?", answer: "In order to win the match." },
+    { question: "Why are you studying tonight?", answer: "So that I can pass the exam." },
+    { question: "Why did they hire a new teacher?", answer: "To improve education." },
+    { question: "Why do you eat vegetables?", answer: "To be healthy." },
+    { question: "Why did she take notes?", answer: "So that she could remember later." },
+    { question: "Why are they painting the room?", answer: "In order to make it look new." },
+    { question: "Why do you visit your grandparents?", answer: "To spend time with them." },
+    { question: "Why did he stay up late?", answer: "So that he could finish his homework." },
+    { question: "Why are you learning French?", answer: "To live in France." },
+    { question: "Why did you take a taxi?", answer: "In order to arrive on time." },
+    { question: "Why do they train every day?", answer: "So that they can win the tournament." },
+    { question: "Why did you buy this phone?", answer: "To take better pictures." },
+    { question: "Why is she wearing glasses?", answer: "So that she can see clearly." },
+    { question: "Why do you cook at home?", answer: "To save money." },
+    { question: "Why did they leave early?", answer: "In order to avoid traffic." },
+    { question: "Why is he working so hard?", answer: "So that he can get promoted." },
+    { question: "Why do you ask questions?", answer: "To understand the topic better." },
+    { question: "Why did you take the medicine?", answer: "So that I could feel better." },
+    { question: "Why do you take notes in class?", answer: "To remember the lesson." },
+    { question: "Why did she move to the city?", answer: "In order to find a job." },
+    { question: "Why are you practicing every day?", answer: "So that I can get better at piano." },
+    { question: "Why do you sleep early?", answer: "To wake up fresh." },
+    { question: "Why did they organize the event?", answer: "So that people can learn about recycling." },
+    { question: "Why is he wearing a suit?", answer: "In order to look professional." },
+    { question: "Why are you watching this video?", answer: "To improve my English." },
+    { question: "Why did she take the test again?", answer: "So that she could improve her score." },
+    { question: "Why do you listen to podcasts?", answer: "To learn new vocabulary." },
+    { question: "Why did you choose this topic?", answer: "So that I could explain it easily." }
+  ]
+};
+
+const MODULE_141_DATA = {
+  title: "Work Vocabulary – Roles, Tasks, and Workplaces",
+  description: "Learn workplace roles, tasks, and workplaces to discuss jobs clearly",
+  intro: `In this module, you will learn essential work vocabulary.
+
+Roles: manager, engineer, nurse, teacher, driver, chef, cashier, police officer, mechanic, secretary
+
+Tasks: answer phones, write emails, attend meetings, serve customers, fix machines, teach students
+
+Workplaces: office, school, hospital, restaurant, factory, supermarket, police station, garage, construction site, hotel
+
+Examples:
+- A teacher works at a school.
+- A chef prepares food in a restaurant.
+- A nurse helps patients in a hospital.`,
+  tip: "Use 'at' for specific buildings (at school, at a hospital), 'in' for general locations (in an office, in a restaurant)",
+
+  table: [],
+
+  listeningExamples: [
+    "Listen to how we use work vocabulary in conversation.",
+    "Pay attention to job roles, tasks, and workplaces.",
+    "Practice repeating these examples to improve your fluency."
+  ],
+
+  speakingPractice: [
+    { question: "Where does a teacher work?", answer: "A teacher works at a school." },
+    { question: "What does a chef do?", answer: "A chef prepares food." },
+    { question: "Where does a nurse work?", answer: "A nurse works at a hospital." },
+    { question: "What does a driver do?", answer: "A driver drives a vehicle." },
+    { question: "What does a cashier do?", answer: "A cashier takes payments and gives change." },
+    { question: "Where does a mechanic work?", answer: "A mechanic works at a garage." },
+    { question: "What does a secretary do?", answer: "A secretary answers phones and writes emails." },
+    { question: "Where does a police officer work?", answer: "At a police station." },
+    { question: "What does a teacher do?", answer: "A teacher teaches students." },
+    { question: "Where does a manager usually work?", answer: "In an office." },
+    { question: "What does an engineer do?", answer: "An engineer designs and builds things." },
+    { question: "Where does a chef work?", answer: "In a restaurant." },
+    { question: "What does a nurse do?", answer: "A nurse helps patients." },
+    { question: "Where does a cleaner work?", answer: "A cleaner can work in offices or hotels." },
+    { question: "What does a factory worker do?", answer: "A factory worker makes products." },
+    { question: "Where does a hotel receptionist work?", answer: "At a hotel reception desk." },
+    { question: "What does a police officer do?", answer: "A police officer protects people and enforces the law." },
+    { question: "What does a construction worker do?", answer: "They build buildings." },
+    { question: "Where does a construction worker work?", answer: "On a construction site." },
+    { question: "What does a waiter do?", answer: "A waiter serves food and drinks." },
+    { question: "What does a doctor do?", answer: "A doctor examines and treats patients." },
+    { question: "Where does a doctor work?", answer: "At a hospital or clinic." },
+    { question: "What does a fireman do?", answer: "A fireman puts out fires and saves people." },
+    { question: "Where does a fireman work?", answer: "At a fire station." },
+    { question: "What does a salesperson do?", answer: "A salesperson sells products to customers." },
+    { question: "Where does a salesperson work?", answer: "In a store or shop." },
+    { question: "What does a janitor do?", answer: "A janitor cleans buildings and schools." },
+    { question: "Where does a janitor work?", answer: "In a school or office building." },
+    { question: "What does an IT specialist do?", answer: "They fix computers and manage systems." },
+    { question: "Where does an IT specialist work?", answer: "Usually in an office." },
+    { question: "What does a bus driver do?", answer: "Drives a bus and takes passengers to places." },
+    { question: "Where does a bus driver work?", answer: "On the road and at bus terminals." },
+    { question: "What does a hairdresser do?", answer: "Cuts and styles hair." },
+    { question: "Where does a hairdresser work?", answer: "In a salon." },
+    { question: "What does a journalist do?", answer: "Writes news stories and reports." },
+    { question: "Where does a journalist work?", answer: "In news agencies or on the field." },
+    { question: "What does a librarian do?", answer: "Helps people find books and manage the library." },
+    { question: "Where does a librarian work?", answer: "In a library." },
+    { question: "What does a delivery person do?", answer: "Delivers packages and mail." },
+    { question: "Where does a delivery person work?", answer: "On the road or at a warehouse." },
+    { question: "What does a receptionist do?", answer: "Greets people and answers calls." },
+    { question: "Where does a receptionist work?", answer: "In an office, hotel, or clinic." }
+  ]
+};
+
+const MODULE_142_DATA = {
+  title: "Education Vocabulary – Schools and Universities (B2 Level)",
+  description: "Build B2-level school/university vocabulary in realistic Q&A contexts",
+  intro: `In this module, you will learn B2-level education vocabulary.
+
+Key Terms:
+- Academic: curriculum, assignment, lecture, seminar, thesis, faculty, degree
+- Programs: undergraduate, postgraduate, scholarship, tuition fee, graduate
+- Activities: enroll, drop out, internship, exam-oriented, distance learning
+- Campus life: campus, academic performance, extracurricular activities
+
+Examples:
+- I enrolled at the beginning of the semester.
+- Our curriculum includes science, math, and foreign languages.
+- She received a scholarship for academic performance.`,
+  tip: "Say 'tuition fees' (not tuition money), 'academic performance' (not academic results), 'graduate from' (not graduate in)",
+
+  table: [],
+
+  listeningExamples: [
+    "Listen to how we use education vocabulary in conversation.",
+    "Pay attention to academic terms and their usage.",
+    "Practice repeating these examples to improve your fluency."
+  ],
+
+  speakingPractice: [
+    { question: "What is the curriculum like at your school?", answer: "It includes science, math, and foreign languages." },
+    { question: "Do you have many assignments?", answer: "Yes, we have weekly assignments in most subjects." },
+    { question: "Have you ever attended a lecture?", answer: "Yes, I attended a psychology lecture last week." },
+    { question: "What's the difference between a lecture and a seminar?", answer: "A lecture is for large groups, while a seminar is more interactive." },
+    { question: "Which faculty are you in?", answer: "I'm in the Faculty of Engineering." },
+    { question: "What degree are you studying for?", answer: "I'm studying for a bachelor's degree in economics." },
+    { question: "Do you receive a scholarship?", answer: "Yes, I have a full scholarship for academic performance." },
+    { question: "Are tuition fees high at your university?", answer: "Yes, especially for international students." },
+    { question: "When did you graduate?", answer: "I graduated two years ago." },
+    { question: "Are you an undergraduate or a postgraduate student?", answer: "I'm a postgraduate student." },
+    { question: "Have you written your thesis yet?", answer: "Yes, I submitted it last month." },
+    { question: "Are internships mandatory in your program?", answer: "Yes, we must complete a summer internship." },
+    { question: "How is your academic performance?", answer: "It's good. I have a GPA of 3.6." },
+    { question: "Is your campus big?", answer: "Yes, the campus is large and modern." },
+    { question: "When did you enroll in this course?", answer: "I enrolled at the beginning of the semester." },
+    { question: "Did anyone drop out last year?", answer: "Yes, two students dropped out due to personal reasons." },
+    { question: "Is the system exam-oriented?", answer: "Yes, it focuses mainly on exams and grades." },
+    { question: "Have you tried distance learning?", answer: "Yes, during the pandemic we used online platforms." },
+    { question: "Do you join any extracurricular activities?", answer: "Yes, I play in the university orchestra." },
+    { question: "What is your favorite subject?", answer: "I enjoy literature because it's creative." },
+    { question: "Do you think tuition fees should be free?", answer: "Yes, to make education accessible to all." },
+    { question: "How many credits do you need to graduate?", answer: "I need 240 credits to complete my degree." },
+    { question: "Are your professors supportive?", answer: "Yes, they're very helpful and experienced." },
+    { question: "What's the hardest part of university?", answer: "Managing time between lectures and assignments." },
+    { question: "Do you live on campus?", answer: "No, I rent a flat nearby." },
+    { question: "Have you taken any online courses?", answer: "Yes, I completed a course on digital marketing." },
+    { question: "What's your major?", answer: "My major is international relations." },
+    { question: "Have you ever failed a course?", answer: "Yes, I failed statistics once but retook it." },
+    { question: "Are there many student clubs?", answer: "Yes, we have clubs for sports, music, and debate." },
+    { question: "What's your opinion on group projects?", answer: "They're useful, but sometimes hard to coordinate." },
+    { question: "Do you plan to study abroad?", answer: "Yes, I'd like to do a semester in Germany." },
+    { question: "How do you prepare for exams?", answer: "I review notes, read textbooks, and practice old exams." },
+    { question: "What is your dream university?", answer: "I'd love to study at Oxford." },
+    { question: "What's the student life like?", answer: "It's vibrant, especially on campus." },
+    { question: "Is attendance compulsory?", answer: "Yes, for most of the courses." },
+    { question: "What's your favorite place on campus?", answer: "The library. It's quiet and has all the resources." },
+    { question: "What does your internship involve?", answer: "I assist with marketing and social media tasks." },
+    { question: "Do you think education should be more practical?", answer: "Yes, especially at the university level." },
+    { question: "Do you plan to do a master's degree?", answer: "Yes, after I graduate." },
+    { question: "Is your course theoretical or practical?", answer: "It's a good mix of both." },
+    { question: "What's the most challenging subject for you?", answer: "Probably advanced mathematics." }
+  ]
+};
+
+const MODULE_143_DATA = {
+  title: "Technology Vocabulary – Gadgets and Internet (B1 Level+)",
+  description: "Discuss tech, internet use, and digital safety with B1+ vocabulary",
+  intro: `In this module, you will learn B1+ technology vocabulary.
+
+Tech Terms:
+- Devices: smartphone, tablet, laptop, charger, headphones, USB drive, wearable technology
+- Internet: Wi-Fi connection, cloud computing, search engine, social media platform, streaming
+- Safety: online privacy, cybersecurity, software update, download/upload
+- Features: touchscreen, Bluetooth, smart home device, data storage
+
+Examples:
+- I usually use my smartphone and laptop every day.
+- Cloud computing lets you store and access data online.
+- I install software updates to avoid bugs and improve security.`,
+  tip: "Say 'cloud computing' (not cloud storage), 'Wi-Fi connection' (not WiFi internet), 'software update' (not program update)",
+
+  table: [],
+
+  listeningExamples: [
+    "Listen to how we use technology vocabulary in conversation.",
+    "Pay attention to gadgets, internet terms, and digital safety.",
+    "Practice repeating these examples to improve your fluency."
+  ],
+
+  speakingPractice: [
+    { question: "What kind of gadgets do you use daily?", answer: "I usually use my smartphone, smartwatch, and wireless earbuds." },
+    { question: "How often do you update your software?", answer: "I try to install every software update as soon as it's available to avoid bugs." },
+    { question: "Do you prefer using a tablet or a laptop for studying?", answer: "I prefer using a laptop because it's more suitable for multitasking." },
+    { question: "What do you usually store on your USB drive?", answer: "Mostly documents, presentations, and sometimes backup copies of my photos." },
+    { question: "What is the most useful smart device in your home?", answer: "Probably the smart speaker. I use it for music, alarms, and even controlling the lights." },
+    { question: "Have you ever had issues with your Wi‑Fi connection?", answer: "Yes, especially when there are too many devices connected at the same time." },
+    { question: "How do you protect your online privacy?", answer: "I use strong passwords, avoid suspicious links, and regularly clear my browser history." },
+    { question: "Which search engine do you usually use?", answer: "I usually use Google because it gives the most relevant results quickly." },
+    { question: "Do you think social media platforms are addictive?", answer: "Yes, because they are designed to keep users engaged for hours." },
+    { question: "What is cloud computing used for?", answer: "It's used for storing and accessing data online instead of on local devices." },
+    { question: "Do you listen to music online or offline?", answer: "I stream music online, but I download playlists for offline use when I travel." },
+    { question: "Have you ever experienced a cyber attack?", answer: "Fortunately, no, but I've received some suspicious phishing emails before." },
+    { question: "How do you usually back up your data?", answer: "I use both an external hard drive and cloud services like Google Drive." },
+    { question: "What is the downside of constantly using gadgets?", answer: "It can affect your posture, vision, and sometimes your concentration." },
+    { question: "How important is cybersecurity in modern life?", answer: "It's absolutely essential to protect sensitive personal and financial information." },
+    { question: "Do you use any wearable technology?", answer: "Yes, I use a fitness tracker to monitor my steps and heart rate." },
+    { question: "How do you feel about smart home devices?", answer: "They're convenient, but I'm slightly concerned about data privacy." },
+    { question: "Which apps do you use the most on your phone?", answer: "Messaging apps, a calendar, and news apps are what I use daily." },
+    { question: "Do you often download large files?", answer: "Only when I need to install new software or watch offline videos." },
+    { question: "Have you ever repaired a gadget by yourself?", answer: "Yes, I once replaced the battery in my old smartphone." },
+    { question: "What is your opinion on online learning tools?", answer: "I think they're incredibly useful and flexible, especially for busy people." },
+    { question: "Do you think children use technology too much?", answer: "Yes, and it may limit their social and physical development if uncontrolled." },
+    { question: "How do you secure your home Wi‑Fi network?", answer: "By changing the default password and enabling encryption." },
+    { question: "Do you prefer using Bluetooth headphones or wired ones?", answer: "Bluetooth headphones are more convenient, especially when commuting." },
+    { question: "Have you ever used a 3D printer?", answer: "No, but I've seen demonstrations, and they are fascinating." },
+    { question: "How do you use technology in your studies?", answer: "I use online dictionaries, grammar apps, and video lessons." },
+    { question: "Do you trust online payment systems?", answer: "Yes, but I always check if the site is secure before entering my card details." },
+    { question: "Have you ever used a digital assistant like Siri or Alexa?", answer: "Yes, I use it mostly for setting reminders or checking the weather." },
+    { question: "Do you think technology makes life easier?", answer: "Yes, it helps us communicate, work, and learn more efficiently." },
+    { question: "What's the main disadvantage of being online all the time?", answer: "It's easy to lose track of time and become mentally drained." },
+    { question: "Do you use antivirus software?", answer: "Yes, I have one installed on both my laptop and smartphone." },
+    { question: "How do you feel about online shopping?", answer: "It's convenient, but sometimes I worry about getting poor-quality products." },
+    { question: "Have you ever tried learning a language through an app?", answer: "Yes, I used Duolingo and found it surprisingly effective." },
+    { question: "Do you use email more for personal or professional communication?", answer: "Mostly professional, but I still receive newsletters and personal updates." },
+    { question: "What do you think of smartwatches?", answer: "They're great for fitness tracking, notifications, and even answering calls." },
+    { question: "Would you buy a smart fridge or smart oven?", answer: "Possibly, if it helps me save time and energy." },
+    { question: "Do you worry about screen time?", answer: "Yes, I try to limit it, especially before bed." },
+    { question: "How fast is your internet connection?", answer: "It's quite fast—enough for streaming HD videos and video conferencing." },
+    { question: "Have you ever joined a virtual meeting?", answer: "Yes, we use Zoom for most of our classes and meetings." },
+    { question: "What would life be like without the internet?", answer: "It would be slower and more difficult, especially for communication and work." }
+  ]
+};
+
+
+
   // Get current module data
   const getCurrentModuleData = () => {
     // A1 Modules
@@ -8051,8 +9629,32 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     if (selectedModule === 119) return MODULE_119_DATA;
     if (selectedModule === 120) return MODULE_120_DATA;
     // B1 Modules 121-150 - Add remaining modules as needed  
-    if (selectedModule >= 121 && selectedModule <= 150) return MODULE_101_DATA; // Fallback to Module 101 structure
-    
+    if (selectedModule === 121) return MODULE_121_DATA;
+    if (selectedModule === 122) return MODULE_122_DATA;
+    if (selectedModule === 123) return MODULE_123_DATA;
+    if (selectedModule === 124) return MODULE_124_DATA;
+    if (selectedModule === 125) return MODULE_125_DATA;
+    if (selectedModule === 126) return MODULE_126_DATA;
+    if (selectedModule === 127) return MODULE_127_DATA;
+    if (selectedModule === 128) return MODULE_128_DATA;
+    if (selectedModule === 129) return MODULE_129_DATA;
+    if (selectedModule === 130) return MODULE_130_DATA;
+    if (selectedModule === 131) return MODULE_131_DATA;
+    if (selectedModule === 132) return MODULE_132_DATA;
+    if (selectedModule === 133) return MODULE_133_DATA;
+    if (selectedModule === 134) return MODULE_134_DATA;
+    if (selectedModule === 135) return MODULE_135_DATA;
+    if (selectedModule === 136) return MODULE_136_DATA;
+    if (selectedModule === 137) return MODULE_137_DATA;
+    if (selectedModule === 138) return MODULE_138_DATA;
+    if (selectedModule === 139) return MODULE_139_DATA;
+    if (selectedModule === 140) return MODULE_140_DATA;
+    if (selectedModule === 141) return MODULE_141_DATA;
+    if (selectedModule === 142) return MODULE_142_DATA;
+    if (selectedModule === 143) return MODULE_143_DATA;
+    // B1 Modules 144-150 - Add remaining modules as needed
+
+
     // Fallback to Module 1 for unknown modules
     return MODULE_1_DATA;
   };
@@ -8063,11 +9665,8 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
   const overallProgress = ((speakingIndex + (correctAnswers > 0 ? 1 : 0)) / totalQuestions) * 100;
   const lessonKey = `${selectedLevel}-${selectedModule}`;
 
-  // Mobile detection helper
-  const isMobile =
-    typeof window !== 'undefined' &&
-    window.matchMedia &&
-    window.matchMedia('(max-width: 480px)').matches;
+  // Mobile detection using proper React hook
+  const isMobile = useIsMobile();
 
   // Load progress on module change
   useEffect(() => {
@@ -8081,6 +9680,37 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
       setSpeakingIndex(0);
     }
   }, [selectedLevel, selectedModule, currentModuleData]);
+
+  // MCQ Cache - generated once per module, prevents flicker across re-renders
+  // MOVED HERE: Must come after getCurrentModuleData to avoid initialization error
+  const mcqCache = useMemo(() => {
+    const cache: Record<string, MultipleChoiceQuestion | null> = {};
+
+    const moduleData = getCurrentModuleData();
+    moduleData?.speakingPractice?.forEach((item, index) => {
+      const key = `${selectedLevel}-${selectedModule}-${index}`;
+      const practiceItem = typeof item === 'string'
+        ? { question: item, answer: item }
+        : item as SpeakingPracticeItem;
+
+      // Generate MCQ with seeded shuffle using question index for deterministic ordering
+      const mcq = generateMultipleChoiceQuestion(
+        practiceItem.answer,
+        index // Use index as seed for deterministic, stable shuffle
+      );
+
+      cache[key] = mcq;
+    });
+
+    return cache;
+  }, [selectedLevel, selectedModule]); // Only regenerate when module changes
+
+  // Wrapper function to get speaking practice item using the cache
+  const getSpeakingPracticeItem = useCallback((item: any, questionIndex: number): SpeakingPracticeItem => {
+    const cacheKey = `${selectedLevel}-${selectedModule}-${questionIndex}`;
+    const cachedMCQ = mcqCache[cacheKey];
+    return getSpeakingPracticeItemBase(item, questionIndex, cachedMCQ);
+  }, [selectedLevel, selectedModule, mcqCache]);
 
   // --- Visibility + narration guards ---
   const introRef = useRef<HTMLDivElement | null>(null);
@@ -8500,7 +10130,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
     const total = currentModuleData?.speakingPractice?.length ?? 0;
     const curr = speakingIndexRef.current;
     const rawItem = currentModuleData?.speakingPractice?.[curr];
-    const currentPracticeItem = rawItem ? getSpeakingPracticeItem(rawItem) : null;
+    const currentPracticeItem = rawItem ? getSpeakingPracticeItem(rawItem, curr) : null;
     const currentState = questionStates[curr] || { selectedChoice: undefined, choiceCorrect: false, speechCompleted: false };
 
     // Mark speech as completed for current question
@@ -9986,21 +11616,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
         )}
 
         {/* Tip Card - Hidden on mobile */}
-        {!isMobile && 'tip' in currentModuleData && currentModuleData.tip && (
-          <Card className="mb-6 bg-white/10 border-white/20">
-            <CardContent className="p-4">
-              <div className="flex items-start space-x-3">
-                <div className="bg-blue-500/20 rounded-full p-2 flex-shrink-0">
-                  <Star className="h-4 w-4 text-blue-400" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-white text-sm mb-1">Grammar Tip</h3>
-                  <p className="text-white/80 text-sm">{currentModuleData.tip}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        {/* Grammar Tip removed from here - now only shown during speaking practice (line ~11243) to avoid duplication */}
 
         {/* Removed duplicate "Tomas is Teaching" card - consolidated below */}
 
@@ -10102,7 +11718,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
               <div className="text-center">
                 {(() => {
                   const rawItem = currentModuleData?.speakingPractice?.[speakingIndex];
-                  const currentPracticeItem = rawItem ? getSpeakingPracticeItem(rawItem) : null;
+                  const currentPracticeItem = rawItem ? getSpeakingPracticeItem(rawItem, speakingIndex) : null;
                   const currentState = questionStates[speakingIndex] || { selectedChoice: undefined, choiceCorrect: false, speechCompleted: false };
                   
                   if (!currentPracticeItem) {
@@ -10235,7 +11851,7 @@ Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak iç
               {(() => {
                 const currentState = questionStates[speakingIndex] || { selectedChoice: undefined, choiceCorrect: false, speechCompleted: false };
                 const rawItem = currentModuleData?.speakingPractice?.[speakingIndex];
-                const currentPracticeItem = rawItem ? getSpeakingPracticeItem(rawItem) : null;
+                const currentPracticeItem = rawItem ? getSpeakingPracticeItem(rawItem, speakingIndex) : null;
                 
                 // STRICT: Show microphone ONLY if multiple choice is completed correctly
                 // Every question MUST have multiple choice, and it MUST be answered correctly
