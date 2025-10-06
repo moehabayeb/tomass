@@ -6842,16 +6842,16 @@ const MODULE_114_DATA = {
   tip: "Remember to use statement word order (subject + verb) after the question word or 'if/whether'.",
 
   table: [
-    { pattern: "Yes/No Questions", example: ""Do you like pizza?' → He asked if I liked pizza.' },
-    { pattern: "WH- Questions", example: ""Where is she going?' → He asked where she was going.' }
+    { pattern: "Yes/No Questions", example: "'Do you like pizza?' → He asked if I liked pizza." },
+    { pattern: "WH- Questions", example: "'Where is she going?' → He asked where she was going." }
   ],
 
   listeningExamples: [
-    'Do you live here?" → He asked if I lived there.",
-    'What time does the train leave?" → She asked what time the train left.",
-    'Are you tired?" → He asked if I was tired.",
-    'Where did you go?" → She asked where I had gone.",
-    'Can you help me?" → He asked if I could help him."
+    "'Do you live here?' → He asked if I lived there.",
+    "'What time does the train leave?' → She asked what time the train left.",
+    "'Are you tired?' → He asked if I was tired.",
+    "'Where did you go?' → She asked where I had gone.",
+    "'Can you help me?' → He asked if I could help him."
   ],
 
   speakingPractice: [
