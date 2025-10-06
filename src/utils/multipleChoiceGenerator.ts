@@ -2606,6 +2606,11 @@ function generateDynamicAnswer(match: RegExpMatchArray, sentence: string): strin
 }
 
 function generateDynamicWrongAnswers(match: RegExpMatchArray, sentence: string, correctAnswer: string): string[] {
+  // Guard against undefined/null/empty correctAnswer (for vocabulary modules 144-150)
+  if (!correctAnswer || correctAnswer.trim() === '') {
+    return ['alternative', 'option'];
+  }
+
   const pronoun = match[1]?.toLowerCase();
   const verb = match[2]?.toLowerCase();
   const fullMatch = match[0];
@@ -2627,18 +2632,18 @@ function generateDynamicWrongAnswers(match: RegExpMatchArray, sentence: string, 
   if (correctAnswer === 'that') return ['which', 'where'];
 
   // Module 125: Gerund/Infinitive patterns
-  if (correctAnswer.endsWith('ing')) {
+  if (correctAnswer?.endsWith('ing')) {
     const baseVerb = correctAnswer.replace(/ing$/, '');
     return [`to ${baseVerb}`, baseVerb];
   }
-  if (correctAnswer.startsWith('to ')) {
+  if (correctAnswer?.startsWith('to ')) {
     const baseVerb = correctAnswer.replace(/^to /, '');
     return [`${baseVerb}ing`, baseVerb];
   }
 
   // Module 133: Modal verbs for speculation
-  if (['might', 'may', 'could'].includes(correctAnswer.toLowerCase())) {
-    const alternatives = ['might', 'may', 'could', 'must', 'can\'t'].filter(m => m !== correctAnswer.toLowerCase());
+  if (['might', 'may', 'could'].includes(correctAnswer?.toLowerCase() ?? '')) {
+    const alternatives = ['might', 'may', 'could', 'must', 'can\'t'].filter(m => m !== correctAnswer?.toLowerCase());
     return [alternatives[0], alternatives[1]];
   }
   if (correctAnswer === 'must') return ['might', 'could'];
@@ -2699,8 +2704,8 @@ function generateDynamicWrongAnswers(match: RegExpMatchArray, sentence: string, 
     'salon': ['shop', 'store'],
     'clinic': ['hospital', 'office']
   };
-  if (workplaceAlts[correctAnswer.toLowerCase()]) {
-    return workplaceAlts[correctAnswer.toLowerCase()];
+  if (workplaceAlts[correctAnswer?.toLowerCase() ?? '']) {
+    return workplaceAlts[correctAnswer?.toLowerCase() ?? ''];
   }
 
   // Module 141: Work vocabulary - actions
@@ -2728,8 +2733,8 @@ function generateDynamicWrongAnswers(match: RegExpMatchArray, sentence: string, 
     'saves': ['rescues', 'helps'],
     'enforces': ['applies', 'upholds']
   };
-  if (actionAlts[correctAnswer.toLowerCase()]) {
-    return actionAlts[correctAnswer.toLowerCase()];
+  if (actionAlts[correctAnswer?.toLowerCase() ?? '']) {
+    return actionAlts[correctAnswer?.toLowerCase() ?? ''];
   }
 
   // Module 142: Education vocabulary
@@ -2741,8 +2746,8 @@ function generateDynamicWrongAnswers(match: RegExpMatchArray, sentence: string, 
     'faculty': ['department', 'school'],
     'campus': ['university', 'grounds']
   };
-  if (eduAlts[correctAnswer.toLowerCase()]) {
-    return eduAlts[correctAnswer.toLowerCase()];
+  if (eduAlts[correctAnswer?.toLowerCase() ?? '']) {
+    return eduAlts[correctAnswer?.toLowerCase() ?? ''];
   }
 
   // Module 143: Technology vocabulary
@@ -2753,8 +2758,8 @@ function generateDynamicWrongAnswers(match: RegExpMatchArray, sentence: string, 
     'cloud computing': ['cloud storage', 'online storage'],
     'wi-fi': ['internet', 'wireless']
   };
-  if (techAlts[correctAnswer.toLowerCase()]) {
-    return techAlts[correctAnswer.toLowerCase()];
+  if (techAlts[correctAnswer?.toLowerCase() ?? '']) {
+    return techAlts[correctAnswer?.toLowerCase() ?? ''];
   }
 
   // Module 126: Get + adjective patterns - return similar adjectives
@@ -2904,12 +2909,14 @@ function generateDynamicWrongAnswers(match: RegExpMatchArray, sentence: string, 
   }
 
   // For comparatives
-  if (correctAnswer.endsWith('er') || ['better', 'worse', 'more'].includes(correctAnswer)) {
+  if (correctAnswer?.endsWith('er') || ['better', 'worse', 'more'].includes(correctAnswer ?? '')) {
     return getComparativeAlternatives(correctAnswer);
   }
 
   // Default fallback
-  if (['he', 'she', 'it'].includes(pronoun)) {
+  if (!correctAnswer) return ['option', 'alternative'];
+
+  if (['he', 'she', 'it'].includes(pronoun ?? '')) {
     return [removeThirdPersonS(correctAnswer), correctAnswer + 'ed'];
   }
 

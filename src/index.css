@@ -611,6 +611,122 @@
 }
 
 /* Speaking bubble highlight */
-.bot-bubble.speaking { 
-  outline: 2px solid rgba(255,255,255,.2); 
+.bot-bubble.speaking {
+  outline: 2px solid rgba(255,255,255,.2);
+}
+
+/* Hangman game animations */
+@keyframes swing-in {
+  0% {
+    transform: rotate(0deg);
+    transform-origin: top center;
+  }
+  10% {
+    transform: rotate(10deg);
+  }
+  20% {
+    transform: rotate(-8deg);
+  }
+  30% {
+    transform: rotate(6deg);
+  }
+  40% {
+    transform: rotate(-4deg);
+  }
+  50% {
+    transform: rotate(2deg);
+  }
+  60% {
+    transform: rotate(-1deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes draw-down {
+  0% {
+    stroke-dasharray: 0 100;
+  }
+  100% {
+    stroke-dasharray: 100 0;
+  }
+}
+
+@keyframes draw-diagonal-left {
+  0% {
+    stroke-dasharray: 0 60;
+  }
+  100% {
+    stroke-dasharray: 60 0;
+  }
+}
+
+@keyframes draw-diagonal-right {
+  0% {
+    stroke-dasharray: 0 60;
+  }
+  100% {
+    stroke-dasharray: 60 0;
+  }
+}
+
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes letter-reveal {
+  0% {
+    opacity: 0;
+    transform: scale(0.5) rotateY(90deg);
+  }
+  50% {
+    transform: scale(1.2) rotateY(0deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotateY(0deg);
+  }
+}
+
+@keyframes letter-bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-swing-in {
+  animation: swing-in 0.8s ease-out;
+}
+
+.animate-draw-down {
+  animation: draw-down 0.4s ease-out;
+}
+
+.animate-draw-diagonal-left {
+  animation: draw-diagonal-left 0.4s ease-out;
+}
+
+.animate-draw-diagonal-right {
+  animation: draw-diagonal-right 0.4s ease-out;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+.animate-letter-reveal {
+  animation: letter-reveal 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.animate-letter-bounce {
+  animation: letter-bounce 0.6s ease-in-out;
 }

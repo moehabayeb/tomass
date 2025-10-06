@@ -32,47 +32,51 @@ export const useHangmanSpeechRecognition = () => {
   // Comprehensive letter mapping table - exact matches only
   const letterMap: Record<string, string> = {
     // Direct single letters
-    'a': 'a', 'b': 'b', 'c': 'c', 'd': 'd', 'e': 'e', 'f': 'f', 
-    'g': 'g', 'h': 'h', 'i': 'i', 'j': 'j', 'k': 'k', 'l': 'l', 
-    'm': 'm', 'n': 'n', 'o': 'o', 'p': 'p', 'q': 'q', 'r': 'r', 
-    's': 's', 't': 't', 'u': 'u', 'v': 'v', 'w': 'w', 'x': 'x', 
+    'a': 'a', 'b': 'b', 'c': 'c', 'd': 'd', 'e': 'e', 'f': 'f',
+    'g': 'g', 'h': 'h', 'i': 'i', 'j': 'j', 'k': 'k', 'l': 'l',
+    'm': 'm', 'n': 'n', 'o': 'o', 'p': 'p', 'q': 'q', 'r': 'r',
+    's': 's', 't': 't', 'u': 'u', 'v': 'v', 'w': 'w', 'x': 'x',
     'y': 'y', 'z': 'z',
-    
+
     // Letter names and pronunciations (comprehensive coverage)
-    'ay': 'a', 'eh': 'a', 'aye': 'a',
-    'bee': 'b', 'be': 'b', 'bea': 'b',
-    'see': 'c', 'sea': 'c', 'cee': 'c', 'si': 'c',
-    'dee': 'd', 'de': 'd',
-    'ee': 'e', 'ea': 'e',
-    'ef': 'f', 'eff': 'f', 'eph': 'f',
-    'gee': 'g', 'ghee': 'g', 'ji': 'g',
-    'aitch': 'h', 'ach': 'h', 'aych': 'h',
-    'eye': 'i', 'ai': 'i', 'iy': 'i',
-    'jay': 'j', 'jae': 'j', 'jey': 'j',
-    'kay': 'k', 'key': 'k', 'kaye': 'k', 'ca': 'k',
-    'el': 'l', 'ell': 'l', 'elle': 'l',
-    'em': 'm', 'emm': 'm',
-    'en': 'n', 'enn': 'n',
-    'oh': 'o', 'owe': 'o', 'eau': 'o',
-    'pee': 'p', 'pe': 'p', 'pea': 'p',
-    'cue': 'q', 'queue': 'q', 'que': 'q', 'kyu': 'q',
-    'ar': 'r', 'are': 'r', 'arr': 'r',
-    'ess': 's', 'es': 's',
-    'tee': 't', 'tea': 't', 'te': 't',
-    'you': 'u', 'yu': 'u', 'yuu': 'u',
-    'vee': 'v', 've': 'v', 'vea': 'v',
-    'double': 'w', 'double-u': 'w', 'double-you': 'w', 'double you': 'w', 'doubleyou': 'w',
-    'ex': 'x', 'eks': 'x',
-    'why': 'y', 'wye': 'y', 'wi': 'y',
-    'zee': 'z', 'zed': 'z', 'ze': 'z',
-    
+    'ay': 'a', 'eh': 'a', 'aye': 'a', 'hey': 'a',
+    'bee': 'b', 'be': 'b', 'bea': 'b', 'bi': 'b',
+    'see': 'c', 'sea': 'c', 'cee': 'c', 'si': 'c', 'ci': 'c',
+    'dee': 'd', 'de': 'd', 'di': 'd',
+    'ee': 'e', 'ea': 'e', 'ei': 'e',
+    'ef': 'f', 'eff': 'f', 'eph': 'f', 'aff': 'f',
+    'gee': 'g', 'ghee': 'g', 'ji': 'g', 'ge': 'g',
+    'aitch': 'h', 'ach': 'h', 'aych': 'h', 'eich': 'h', 'atch': 'h',
+    'eye': 'i', 'ai': 'i', 'iy': 'i', 'aye': 'i',
+    'jay': 'j', 'jae': 'j', 'jey': 'j', 'je': 'j',
+    'kay': 'k', 'key': 'k', 'kaye': 'k', 'ca': 'k', 'ke': 'k',
+    'el': 'l', 'ell': 'l', 'elle': 'l', 'le': 'l',
+    'em': 'm', 'emm': 'm', 'me': 'm',
+    'en': 'n', 'enn': 'n', 'ne': 'n',
+    'oh': 'o', 'owe': 'o', 'eau': 'o', 'oe': 'o',
+    'pee': 'p', 'pe': 'p', 'pea': 'p', 'pi': 'p',
+    'cue': 'q', 'queue': 'q', 'que': 'q', 'kyu': 'q', 'cu': 'q',
+    'ar': 'r', 'are': 'r', 'arr': 'r', 're': 'r',
+    'ess': 's', 'es': 's', 'ass': 's',
+    'tee': 't', 'tea': 't', 'te': 't', 'ti': 't',
+    'you': 'u', 'yu': 'u', 'yuu': 'u', 'oo': 'u',
+    'vee': 'v', 've': 'v', 'vea': 'v', 'vi': 'v',
+    'double': 'w', 'double-u': 'w', 'double-you': 'w', 'double you': 'w', 'doubleyou': 'w', 'doubleu': 'w',
+    'ex': 'x', 'eks': 'x', 'ecks': 'x',
+    'why': 'y', 'wye': 'y', 'wi': 'y', 'ye': 'y',
+    'zee': 'z', 'zed': 'z', 'ze': 'z', 'zea': 'z',
+
     // NATO phonetic alphabet
     'alpha': 'a', 'bravo': 'b', 'charlie': 'c', 'delta': 'd', 'echo': 'e',
     'foxtrot': 'f', 'golf': 'g', 'hotel': 'h', 'india': 'i', 'juliet': 'j',
     'kilo': 'k', 'lima': 'l', 'mike': 'm', 'november': 'n', 'oscar': 'o',
     'papa': 'p', 'quebec': 'q', 'romeo': 'r', 'sierra': 's', 'tango': 't',
     'uniform': 'u', 'victor': 'v', 'whiskey': 'w', 'xray': 'x', 'x-ray': 'x',
-    'yankee': 'y', 'zulu': 'z'
+    'yankee': 'y', 'zulu': 'z',
+
+    // Common misheard variations
+    'the': 't', 'for': 'f', 'too': 't', 'to': 't', 'two': 't',
+    'sea': 'c', 'letter': '', 'number': ''
   };
 
   // Problematic letter pairs that need disambiguation
@@ -259,7 +263,7 @@ public <letter> = a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p 
                 }
                 
                 // Lower confidence threshold and simplified confirmation logic
-                const needsConfirmation = alt.confidence < 0.4;
+                const needsConfirmation = alt.confidence < 0.3;
                 
                 if (needsConfirmation) {
                   setState({
