@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+﻿import { useState, useEffect, useCallback, useRef } from 'react';
 import { flushSync } from 'react-dom';
 import { ArrowLeft, Play, Pause, Mic, MicOff, Volume2, RefreshCw, Star, CheckCircle, AlertCircle, Lock, BookOpen, Trophy, FastForward } from 'lucide-react';
 import progressService from '../services/progressService';
@@ -104,7 +104,7 @@ async function loadModuleProgress(level: string, moduleId: number): Promise<{ ph
 function normalize(s: string) {
   return s
     .toLowerCase()
-    .replace(/[“”"'.!?]/g, '')
+    .replace(/["""'.!?]/g, '')
     .replace(/\s+/g, ' ')
     .trim();
 }
