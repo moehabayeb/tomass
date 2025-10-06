@@ -1,0 +1,1030 @@
+[
+  {
+    "moduleId": 1,
+    "title": "Modül 1 - Verb To Be (am, is, are) - Positive Sentences",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 2,
+    "title": "Modül 2 - Verb To Be (am, is, are) - Negative Sentences",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 3,
+    "title": "Modül 3 - Verb To Be (am, is, are) - Question Sentences",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 4,
+    "title": "Module 4 - Subject Pronouns",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 5,
+    "title": "Modül 5 - Subject Pronouns",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 6,
+    "title": "Module 6: Possessive Adjectives",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 7,
+    "title": "Modül 7 - This / That / These / Those",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 8,
+    "title": "Module 8: This / That / These / Those",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 9,
+    "title": "Modül 9 – There is / There are – Negative Sentences",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 10,
+    "title": "Modül 10 - There is / There are – Question Sentences",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 11,
+    "title": "Module 11: There is / There are – Positive Sentences",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 12,
+    "title": "Modül 12 - Plural Nouns – Regular and Irregular",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 13,
+    "title": "Modül 13 - Have got / Has got – Positive Sentences",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 14,
+    "title": "Modül 14 - Have got / Has got – Negative Sentences",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 15,
+    "title": "Modül 15 - Have got / Has got – Question Sentences",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 16,
+    "title": "Modül 16 - Simple Present – Positive Sentences (I / You / We / They)",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 17,
+    "title": "Modül 17 - Simple Present – Positive Sentences (He / She / It)",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 18,
+    "title": "Modül 18 - Simple Present – Negative Sentences (don",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 19,
+    "title": "Modül 19 - Simple Present – Yes/No Questions",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 20,
+    "title": "Modül 20 – Simple Present – Wh- Questions (What, Where, Who, etc.)",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 21,
+    "title": "Modül 21 – Adverbs of Frequency (Sıklık Zarfları)",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 22,
+    "title": "Module 22: Can / Can",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 23,
+    "title": "Tomas Hoca – A1 Module 23: Can / Can",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 24,
+    "title": "A1 – Module 24: Like/Love/Hate + -ing",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 25,
+    "title": "Module 25: How much / How many",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 26,
+    "title": "Module 26: Imperatives (Commands, Instructions)",
+    "speakingPracticeCount": 40,
+    "issues": [
+      {
+        "module": 26,
+        "severity": "warning",
+        "type": "SHORT_ANSWERS",
+        "message": "10 very short answers (may cause MCQ issues)",
+        "fix": "Review and expand short answers if needed"
+      }
+    ]
+  },
+  {
+    "moduleId": 27,
+    "title": "Module 27: Present Continuous – Affirmative",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 28,
+    "title": "Module 28: Present Continuous – Negative",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 29,
+    "title": "Module 29: Present Continuous – Questions",
+    "speakingPracticeCount": 40,
+    "issues": [
+      {
+        "module": 29,
+        "severity": "warning",
+        "type": "SHORT_ANSWERS",
+        "message": "6 very short answers (may cause MCQ issues)",
+        "fix": "Review and expand short answers if needed"
+      }
+    ]
+  },
+  {
+    "moduleId": 30,
+    "title": "Module 30: Present Simple vs Present Continuous",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 31,
+    "title": "Module 31: Like / Love / Hate + -ing",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 32,
+    "title": "Module 32: Demonstratives in Sentences",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 33,
+    "title": "Module 33: Whose / Possessive ",
+    "speakingPracticeCount": 40,
+    "issues": [
+      {
+        "module": 33,
+        "severity": "warning",
+        "type": "SHORT_ANSWERS",
+        "message": "32 very short answers (may cause MCQ issues)",
+        "fix": "Review and expand short answers if needed"
+      }
+    ]
+  },
+  {
+    "moduleId": 34,
+    "title": "Module 34: Question Words (Who, What, Where, When, Why, How)",
+    "speakingPracticeCount": 40,
+    "issues": [
+      {
+        "module": 34,
+        "severity": "warning",
+        "type": "SHORT_ANSWERS",
+        "message": "8 very short answers (may cause MCQ issues)",
+        "fix": "Review and expand short answers if needed"
+      }
+    ]
+  },
+  {
+    "moduleId": 35,
+    "title": "Module 35: Ordinal Numbers and Dates",
+    "speakingPracticeCount": 40,
+    "issues": [
+      {
+        "module": 35,
+        "severity": "warning",
+        "type": "SHORT_ANSWERS",
+        "message": "20 very short answers (may cause MCQ issues)",
+        "fix": "Review and expand short answers if needed"
+      }
+    ]
+  },
+  {
+    "moduleId": 36,
+    "title": "Module 36: Talking about Time (o",
+    "speakingPracticeCount": 40,
+    "issues": [
+      {
+        "module": 36,
+        "severity": "warning",
+        "type": "SHORT_ANSWERS",
+        "message": "11 very short answers (may cause MCQ issues)",
+        "fix": "Review and expand short answers if needed"
+      }
+    ]
+  },
+  {
+    "moduleId": 37,
+    "title": "Module 37: Comparatives (-er / more)",
+    "speakingPracticeCount": 40,
+    "issues": [
+      {
+        "module": 37,
+        "severity": "warning",
+        "type": "SHORT_ANSWERS",
+        "message": "1 very short answers (may cause MCQ issues)",
+        "fix": "Review and expand short answers if needed"
+      }
+    ]
+  },
+  {
+    "moduleId": 38,
+    "title": "Module 38: Superlatives (the most, the best)",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 39,
+    "title": "Module 39: Be Going To (Future Plans)",
+    "speakingPracticeCount": 40,
+    "issues": [
+      {
+        "module": 39,
+        "severity": "warning",
+        "type": "SHORT_ANSWERS",
+        "message": "17 very short answers (may cause MCQ issues)",
+        "fix": "Review and expand short answers if needed"
+      }
+    ]
+  },
+  {
+    "moduleId": 40,
+    "title": "Module 40: Would Like / Want",
+    "speakingPracticeCount": 40,
+    "issues": [
+      {
+        "module": 40,
+        "severity": "warning",
+        "type": "SHORT_ANSWERS",
+        "message": "2 very short answers (may cause MCQ issues)",
+        "fix": "Review and expand short answers if needed"
+      }
+    ]
+  },
+  {
+    "moduleId": 41,
+    "title": "Module 41: Must / Mustn",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 42,
+    "title": "Module 42: Have to / Don",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 43,
+    "title": "Module 43: Daily Routines Vocabulary",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 44,
+    "title": "Module 44: Jobs and Occupations Vocabulary",
+    "speakingPracticeCount": 40,
+    "issues": [
+      {
+        "module": 44,
+        "severity": "warning",
+        "type": "SHORT_ANSWERS",
+        "message": "3 very short answers (may cause MCQ issues)",
+        "fix": "Review and expand short answers if needed"
+      }
+    ]
+  },
+  {
+    "moduleId": 45,
+    "title": "Module 45: Food and Drinks Vocabulary",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 46,
+    "title": "Module 46: Family Members Vocabulary",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 47,
+    "title": "Module 47: Directions and Places Vocabulary",
+    "speakingPracticeCount": 41,
+    "issues": [
+      {
+        "module": 47,
+        "severity": "info",
+        "type": "EXTRA_QA_PAIRS",
+        "message": "Has 41 Q&A pairs (more than standard 40)",
+        "fix": "Optional: trim to 40 or keep extra for variety"
+      },
+      {
+        "module": 47,
+        "severity": "warning",
+        "type": "SHORT_ANSWERS",
+        "message": "16 very short answers (may cause MCQ issues)",
+        "fix": "Review and expand short answers if needed"
+      }
+    ]
+  },
+  {
+    "moduleId": 48,
+    "title": "Module 48: Weather Vocabulary",
+    "speakingPracticeCount": 40,
+    "issues": [
+      {
+        "module": 48,
+        "severity": "warning",
+        "type": "SHORT_ANSWERS",
+        "message": "5 very short answers (may cause MCQ issues)",
+        "fix": "Review and expand short answers if needed"
+      }
+    ]
+  },
+  {
+    "moduleId": 49,
+    "title": "Module 49: Clothes Vocabulary",
+    "speakingPracticeCount": 40,
+    "issues": [
+      {
+        "module": 49,
+        "severity": "warning",
+        "type": "SHORT_ANSWERS",
+        "message": "2 very short answers (may cause MCQ issues)",
+        "fix": "Review and expand short answers if needed"
+      }
+    ]
+  },
+  {
+    "moduleId": 50,
+    "title": "Module 50: Hobbies and Free Time Vocabulary",
+    "speakingPracticeCount": 40,
+    "issues": [
+      {
+        "module": 50,
+        "severity": "warning",
+        "type": "SHORT_ANSWERS",
+        "message": "1 very short answers (may cause MCQ issues)",
+        "fix": "Review and expand short answers if needed"
+      }
+    ]
+  },
+  {
+    "moduleId": 51,
+    "title": "Module 51: Past Simple Affirmative",
+    "speakingPracticeCount": 41,
+    "issues": [
+      {
+        "module": 51,
+        "severity": "info",
+        "type": "EXTRA_QA_PAIRS",
+        "message": "Has 41 Q&A pairs (more than standard 40)",
+        "fix": "Optional: trim to 40 or keep extra for variety"
+      }
+    ]
+  },
+  {
+    "moduleId": 52,
+    "title": "Module 52: Past Simple: Irregular Verbs (Affirmative)",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 53,
+    "title": "Module 53: Past Simple: Negative Sentences",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 54,
+    "title": "Module 54: Past Simple: Questions (Yes/No & Wh-)",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 55,
+    "title": "Module 55: Used to (Past Habits)",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 56,
+    "title": "Module 56: Would for Politeness and Offers",
+    "speakingPracticeCount": 40,
+    "issues": [
+      {
+        "module": 56,
+        "severity": "warning",
+        "type": "SHORT_ANSWERS",
+        "message": "5 very short answers (may cause MCQ issues)",
+        "fix": "Review and expand short answers if needed"
+      }
+    ]
+  },
+  {
+    "moduleId": 57,
+    "title": "Module 57: Be Going To vs Will (Future)",
+    "speakingPracticeCount": 40,
+    "issues": [
+      {
+        "module": 57,
+        "severity": "warning",
+        "type": "SHORT_ANSWERS",
+        "message": "7 very short answers (may cause MCQ issues)",
+        "fix": "Review and expand short answers if needed"
+      }
+    ]
+  },
+  {
+    "moduleId": 58,
+    "title": "Module 58: Future Continuous",
+    "speakingPracticeCount": 40,
+    "issues": [
+      {
+        "module": 58,
+        "severity": "warning",
+        "type": "SHORT_ANSWERS",
+        "message": "12 very short answers (may cause MCQ issues)",
+        "fix": "Review and expand short answers if needed"
+      }
+    ]
+  },
+  {
+    "moduleId": 59,
+    "title": "Module 59: Present Perfect (Ever / Never)",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 60,
+    "title": "Module 60: Present Perfect: just / already / yet",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 61,
+    "title": "Module 61: Present Perfect: for / since",
+    "speakingPracticeCount": 40,
+    "issues": [
+      {
+        "module": 61,
+        "severity": "warning",
+        "type": "SHORT_ANSWERS",
+        "message": "3 very short answers (may cause MCQ issues)",
+        "fix": "Review and expand short answers if needed"
+      }
+    ]
+  },
+  {
+    "moduleId": 62,
+    "title": "Module 62: Present Perfect vs Past Simple",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 63,
+    "title": "Module 63: Too / Enough",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 64,
+    "title": "Module 64: So / Such",
+    "speakingPracticeCount": 40,
+    "issues": [
+      {
+        "module": 64,
+        "severity": "warning",
+        "type": "SHORT_ANSWERS",
+        "message": "1 very short answers (may cause MCQ issues)",
+        "fix": "Review and expand short answers if needed"
+      }
+    ]
+  },
+  {
+    "moduleId": 65,
+    "title": "Module 65: Modal Verbs: Should / Ought to",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 66,
+    "title": "Module 66: Modal Verb: ",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 67,
+    "title": "Module 67: Modal Verbs: ",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 101,
+    "title": "Present Perfect Continuous (I",
+    "speakingPracticeCount": 40,
+    "issues": [
+      {
+        "module": 101,
+        "severity": "warning",
+        "type": "SHORT_ANSWERS",
+        "message": "30 very short answers (may cause MCQ issues)",
+        "fix": "Review and expand short answers if needed"
+      }
+    ]
+  },
+  {
+    "moduleId": 102,
+    "title": "Present Perfect Continuous vs Present Perfect – B1 Level",
+    "speakingPracticeCount": 40,
+    "issues": [
+      {
+        "module": 102,
+        "severity": "warning",
+        "type": "SHORT_ANSWERS",
+        "message": "12 very short answers (may cause MCQ issues)",
+        "fix": "Review and expand short answers if needed"
+      }
+    ]
+  },
+  {
+    "moduleId": 103,
+    "title": "Past Perfect – Affirmative (B1 Level)",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 104,
+    "title": "Past Perfect – Negative (B1 Level)",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 105,
+    "title": "Past Perfect – Questions (B1 Level)",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 106,
+    "title": "Past Perfect Continuous (B1)",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 107,
+    "title": "Future Perfect (B1)",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 108,
+    "title": "Future Continuous vs Future Perfect (B1)",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 109,
+    "title": "Modals of Deduction (B1)",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 110,
+    "title": "Modals of Probability (B1)",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 111,
+    "title": "Modals of Obligation (B1)",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 112,
+    "title": "Modals of Prohibition (B1)",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 113,
+    "title": "Reported Speech: Requests and Commands (B1)",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 114,
+    "title": "Reported Speech – Questions (B1)",
+    "speakingPracticeCount": 41,
+    "issues": [
+      {
+        "module": 114,
+        "severity": "info",
+        "type": "EXTRA_QA_PAIRS",
+        "message": "Has 41 Q&A pairs (more than standard 40)",
+        "fix": "Optional: trim to 40 or keep extra for variety"
+      }
+    ]
+  },
+  {
+    "moduleId": 115,
+    "title": "Passive Voice – Present Perfect (B1)",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 116,
+    "title": "Passive Voice – Future (B1)",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 117,
+    "title": "Conditionals – Review (B1)",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 118,
+    "title": "Third Conditional (B1)",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 119,
+    "title": "Mixed Conditionals (B1)",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 120,
+    "title": "Wish / If only + Past Simple (B1)",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 121,
+    "title": "Wish / If only + Past Perfect (Past Regrets) – B1 Level",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 122,
+    "title": "Used to / Be used to / Get used to – B1 Level",
+    "speakingPracticeCount": 40,
+    "issues": [
+      {
+        "module": 122,
+        "severity": "warning",
+        "type": "SHORT_ANSWERS",
+        "message": "6 very short answers (may cause MCQ issues)",
+        "fix": "Review and expand short answers if needed"
+      }
+    ]
+  },
+  {
+    "moduleId": 123,
+    "title": "Causative – Have/Get Something Done (B1)",
+    "speakingPracticeCount": 40,
+    "issues": [
+      {
+        "module": 123,
+        "severity": "warning",
+        "type": "SHORT_ANSWERS",
+        "message": "8 very short answers (may cause MCQ issues)",
+        "fix": "Review and expand short answers if needed"
+      }
+    ]
+  },
+  {
+    "moduleId": 124,
+    "title": "Relative Clauses – Defining & Non-defining (B1)",
+    "speakingPracticeCount": 40,
+    "issues": [
+      {
+        "module": 124,
+        "severity": "warning",
+        "type": "SHORT_ANSWERS",
+        "message": "4 very short answers (may cause MCQ issues)",
+        "fix": "Review and expand short answers if needed"
+      }
+    ]
+  },
+  {
+    "moduleId": 125,
+    "title": "Gerunds and Infinitives – Review (B1)",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 126,
+    "title": "Expressions with Get (B1)",
+    "speakingPracticeCount": 40,
+    "issues": [
+      {
+        "module": 126,
+        "severity": "warning",
+        "type": "SHORT_ANSWERS",
+        "message": "9 very short answers (may cause MCQ issues)",
+        "fix": "Review and expand short answers if needed"
+      }
+    ]
+  },
+  {
+    "moduleId": 127,
+    "title": "Expressions with Take (B1)",
+    "speakingPracticeCount": 40,
+    "issues": [
+      {
+        "module": 127,
+        "severity": "warning",
+        "type": "SHORT_ANSWERS",
+        "message": "10 very short answers (may cause MCQ issues)",
+        "fix": "Review and expand short answers if needed"
+      }
+    ]
+  },
+  {
+    "moduleId": 128,
+    "title": "Phrasal Verbs – Separable & Inseparable (B1)",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 129,
+    "title": "Phrasal Verbs – Common Everyday Verbs (B1)",
+    "speakingPracticeCount": 40,
+    "issues": [
+      {
+        "module": 129,
+        "severity": "warning",
+        "type": "SHORT_ANSWERS",
+        "message": "2 very short answers (may cause MCQ issues)",
+        "fix": "Review and expand short answers if needed"
+      }
+    ]
+  },
+  {
+    "moduleId": 130,
+    "title": "Collocations with Make and Do (B1)",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 131,
+    "title": "Indirect Questions (B1)",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 132,
+    "title": "Giving Opinions & Agreeing/Disagreeing (B1)",
+    "speakingPracticeCount": 40,
+    "issues": [
+      {
+        "module": 132,
+        "severity": "warning",
+        "type": "SHORT_ANSWERS",
+        "message": "7 very short answers (may cause MCQ issues)",
+        "fix": "Review and expand short answers if needed"
+      }
+    ]
+  },
+  {
+    "moduleId": 133,
+    "title": "Speculating & Expressing Possibility (B1)",
+    "speakingPracticeCount": 40,
+    "issues": [
+      {
+        "module": 133,
+        "severity": "warning",
+        "type": "SHORT_ANSWERS",
+        "message": "6 very short answers (may cause MCQ issues)",
+        "fix": "Review and expand short answers if needed"
+      }
+    ]
+  },
+  {
+    "moduleId": 134,
+    "title": "Hypothetical Situations – Second Conditional (B1)",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 135,
+    "title": "Expressing Preferences (B1)",
+    "speakingPracticeCount": 40,
+    "issues": [
+      {
+        "module": 135,
+        "severity": "warning",
+        "type": "SHORT_ANSWERS",
+        "message": "20 very short answers (may cause MCQ issues)",
+        "fix": "Review and expand short answers if needed"
+      }
+    ]
+  },
+  {
+    "moduleId": 136,
+    "title": "Narratives – Sequencing Words (B1)",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 137,
+    "title": "Linking Words – Contrast (B1)",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 138,
+    "title": "Describing Experiences (B1)",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 139,
+    "title": "Talking about Cause and Effect (B1)",
+    "speakingPracticeCount": 41,
+    "issues": [
+      {
+        "module": 139,
+        "severity": "info",
+        "type": "EXTRA_QA_PAIRS",
+        "message": "Has 41 Q&A pairs (more than standard 40)",
+        "fix": "Optional: trim to 40 or keep extra for variety"
+      }
+    ]
+  },
+  {
+    "moduleId": 140,
+    "title": "Talking about Purpose (to, in order to, so that)",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 141,
+    "title": "Work Vocabulary – Roles, Tasks, and Workplaces",
+    "speakingPracticeCount": 42,
+    "issues": [
+      {
+        "module": 141,
+        "severity": "info",
+        "type": "EXTRA_QA_PAIRS",
+        "message": "Has 42 Q&A pairs (more than standard 40)",
+        "fix": "Optional: trim to 40 or keep extra for variety"
+      }
+    ]
+  },
+  {
+    "moduleId": 142,
+    "title": "Education Vocabulary – Schools and Universities (B2 Level)",
+    "speakingPracticeCount": 41,
+    "issues": [
+      {
+        "module": 142,
+        "severity": "info",
+        "type": "EXTRA_QA_PAIRS",
+        "message": "Has 41 Q&A pairs (more than standard 40)",
+        "fix": "Optional: trim to 40 or keep extra for variety"
+      },
+      {
+        "module": 142,
+        "severity": "warning",
+        "type": "SHORT_ANSWERS",
+        "message": "8 very short answers (may cause MCQ issues)",
+        "fix": "Review and expand short answers if needed"
+      }
+    ]
+  },
+  {
+    "moduleId": 143,
+    "title": "Technology Vocabulary – Gadgets and Internet (B1 Level+)",
+    "speakingPracticeCount": 40,
+    "issues": [
+      {
+        "module": 143,
+        "severity": "warning",
+        "type": "SHORT_ANSWERS",
+        "message": "7 very short answers (may cause MCQ issues)",
+        "fix": "Review and expand short answers if needed"
+      }
+    ]
+  },
+  {
+    "moduleId": 144,
+    "title": "Environment Vocabulary – Problems and Solutions (B1+ Level)",
+    "speakingPracticeCount": 40,
+    "issues": [
+      {
+        "module": 144,
+        "severity": "warning",
+        "type": "SHORT_ANSWERS",
+        "message": "1 very short answers (may cause MCQ issues)",
+        "fix": "Review and expand short answers if needed"
+      }
+    ]
+  },
+  {
+    "moduleId": 145,
+    "title": "News and Media Vocabulary (B1+ Level)",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 146,
+    "title": "Personality and Character Vocabulary (B2)",
+    "speakingPracticeCount": 40,
+    "issues": [
+      {
+        "module": 146,
+        "severity": "warning",
+        "type": "SHORT_ANSWERS",
+        "message": "1 very short answers (may cause MCQ issues)",
+        "fix": "Review and expand short answers if needed"
+      }
+    ]
+  },
+  {
+    "moduleId": 147,
+    "title": "Crime and Law Vocabulary (B2 Level)",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 148,
+    "title": "Health and Fitness Vocabulary (B2 Level)",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 149,
+    "title": "Society and Social Issues Vocabulary (B2 Level)",
+    "speakingPracticeCount": 40,
+    "issues": []
+  },
+  {
+    "moduleId": 150,
+    "title": "Travel and Adventure Vocabulary (B2 Level)",
+    "speakingPracticeCount": 39,
+    "issues": [
+      {
+        "module": 150,
+        "severity": "warning",
+        "type": "INSUFFICIENT_QA_PAIRS",
+        "message": "Only 39/40 Q&A pairs found",
+        "fix": "Add 1 more Q&A pairs"
+      }
+    ]
+  }
+]

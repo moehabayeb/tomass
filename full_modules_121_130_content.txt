@@ -1,0 +1,9 @@
+This file contains the user's full detailed content for modules 121-130.
+Each module has:
+- Full Turkish explanations (Konu Anlatımı)
+- 40 practice questions
+- Structure & Usage sections
+- Example sentences
+
+The content will be manually processed due to its complexity and length.
+Processing approach: Extract question-answer pairs and integrate them into the existing TypeScript structure.
