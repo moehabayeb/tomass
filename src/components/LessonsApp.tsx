@@ -1,8 +1,8 @@
-﻿import { useState, useEffect, useCallback, useRef } from 'react';
-import { flushSync } from 'react-dom';
-import { ArrowLeft, Play, Pause, Mic, MicOff, Volume2, RefreshCw, Star, CheckCircle, AlertCircle, Lock, BookOpen, Trophy, FastForward } from 'lucide-react';
-import progressService from '../services/progressService';
-import { getProgress, setProgress, ModuleProgress as StoreModuleProgress } from '../utils/ProgressStore';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { ArrowLeft, Mic, MicOff, Volume2, RefreshCw, Star, CheckCircle, AlertCircle, Lock, BookOpen } from 'lucide-react';
+import {
+  getProgress, setProgress, clearProgress, ModuleProgress as StoreModuleProgress
+} from '../utils/ProgressStore';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -17,17 +17,23 @@ import { supabase } from '@/integrations/supabase/client';
 import Confetti from 'react-confetti';
 import { useWindowSize } from '@react-hook/window-size';
 import { narration } from '@/utils/narration';
+// Voice Commands Integration
+import { useLessonVoiceCommands } from '../hooks/useVoiceCommands';
+import VoiceControls from './lessons/VoiceControls';
+import ResumeChip from './lessons/ResumeChip';
 import { CelebrationOverlay } from './CelebrationOverlay';
+import { LessonAutoReader, type LessonContent, type ReadingProgress } from '@/utils/lessonAutoReader';
+import MobileCompactIntro from './MobileCompactIntro';
 // Import QA test for browser console access
 import '../utils/placementQA';
-import MultipleChoiceCard from './MultipleChoiceCard';
-import { buildClozeAndChoices } from '../lib/mcq';
-import { ErrorBoundary } from './ErrorBoundary';
+// Progress checkpointing imports
+import { useLessonCheckpoints } from '../hooks/useLessonCheckpoints';
+import { ResumeProgressDialog, SyncStatusIndicator } from './ResumeProgressDialog';
 
 // ---------- Module Order and Next Module Logic ----------
 const ORDER_A1 = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50];
 const ORDER_A2 = [51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100];
-const ORDER_B1 = [101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150];
+const ORDER_B1 = [101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140];
 
 function getOrderForLevel(level: 'A1'|'A2'|'B1'): number[] {
   if (level === 'A1') return ORDER_A1;
@@ -45,77 +51,143 @@ function getNextModuleId(level: 'A1'|'A2'|'B1', current: number): number | null 
 // Enhanced Progress Tracking with ProgressStore Integration
 type LessonPhaseType = 'intro' | 'listening' | 'speaking' | 'complete';
 
+// Import enhanced multiple choice types and generator
+import { 
+  generateMultipleChoiceQuestion, 
+  type MultipleChoiceQuestion, 
+  validateMultipleChoiceQuestion,
+  type MultipleChoiceOption 
+} from '../utils/multipleChoiceGenerator';
+
+type SpeakingPracticeItem = {
+  question: string;
+  answer: string;
+  multipleChoice?: MultipleChoiceQuestion;
+};
+
+// New phase for multiple choice selection
+type EnhancedLessonPhase = LessonPhaseType | 'multiple-choice';
+
+// Question state tracking
+type QuestionState = {
+  selectedChoice?: 'A' | 'B' | 'C';
+  choiceCorrect: boolean;
+  speechCompleted: boolean;
+};
+
 // Import robust evaluator and progress system
 import { evaluateAnswer, EvalOptions } from '../utils/evaluator';
-import { 
-  save as saveProgress, 
-  resumeLastPointer,
-  getModuleState, 
-  clearProgress as clearModuleProgress,
-  getAllCompletedModules,
-  getProgressSummary
-} from '../utils/progress';
+import { save as saveProgress, resumeLastPointer, clearProgress as clearModuleProgress } from '../utils/progress';
+import { ProgressTrackerService } from '../services/progressTrackerService';
+import { detectGrammarErrors } from '../utils/grammarErrorDetector';
 
-// Enhanced progress saving with unified progress service
-async function saveModuleProgress(level: string, moduleId: number, phase: LessonPhaseType, questionIndex: number = 0, correctAnswers: number = 0, timeSpent: number = 0) {
+// Enhanced progress saving with new progress system
+function saveModuleProgress(level: string, moduleId: number, phase: LessonPhaseType, questionIndex: number = 0) {
   try {
+    // Save to both old and new systems for compatibility
+    const progressData: StoreModuleProgress = {
+      level: level,
+      module: moduleId,
+      phase: phase as LessonPhase,
+      listeningIndex: 0,
+      speakingIndex: questionIndex,
+      completed: phase === 'complete',
+      totalListening: 0,
+      totalSpeaking: 40, // All modules have 40 questions
+      updatedAt: Date.now(),
+      v: 1
+    };
+    
+    setProgress(progressData);
+
+    // Save to new progress system for exact resume
+    const userId = 'guest'; // TODO: get from auth when available
     const total = 40; // All modules have 40 questions
+    const correct = Math.min(questionIndex + 1, total); // questions answered correctly so far
     const completed = phase === 'complete';
     
-    await progressService.saveLessonProgress({
-      level,
-      moduleId,
-      phase,
-      currentQuestionIndex: questionIndex,
-      totalQuestions: total,
-      correctAnswers,
-      timeSpent,
-      completed,
-      mcqCompleted: phase === 'listening' || phase === 'complete',
-      speakingCompleted: phase === 'complete'
-    });
+    saveProgress(userId, level, String(moduleId), questionIndex, total, correct, completed);
     
-    if (process.env.NODE_ENV === 'development') console.log(`💾 Progress saved: ${level} Module ${moduleId}, Question ${questionIndex + 1}/${total}, Phase: ${phase}`);
   } catch (error) {
-    console.error('Error saving progress:', error);
   }
 }
 
-// Load progress using unified progress service
-async function loadModuleProgress(level: string, moduleId: number): Promise<{ phase: LessonPhaseType; questionIndex: number; correctAnswers: number; timeSpent: number }> {
+// Load progress using ProgressStore
+function loadModuleProgress(level: string, moduleId: number): { phase: LessonPhaseType; questionIndex: number } {
   try {
-    const progress = await progressService.loadLessonProgress(level, moduleId);
+    const progress = getProgress(level, moduleId);
     if (progress) {
-      if (process.env.NODE_ENV === 'development') console.log(`📚 Restored progress: ${level} Module ${moduleId}, Question ${progress.currentQuestionIndex + 1}/${progress.totalQuestions}`);
       return {
-        phase: progress.completed ? 'complete' : progress.phase,
-        questionIndex: progress.currentQuestionIndex,
-        correctAnswers: progress.correctAnswers,
-        timeSpent: progress.timeSpent
+        phase: progress.completed ? 'complete' : (progress.phase as LessonPhaseType) || 'intro',
+        questionIndex: progress.speakingIndex || 0
       };
     }
   } catch (error) {
-    console.error('Error loading progress:', error);
   }
   
-  return { phase: 'intro', questionIndex: 0, correctAnswers: 0, timeSpent: 0 };
+  return { phase: 'intro', questionIndex: 0 };
 }
 
 function normalize(s: string) {
   return s
     .toLowerCase()
-    .replace(/["""'.!?]/g, '')
+    .replace(/[“”"'.!?]/g, '')
     .replace(/\s+/g, ' ')
     .trim();
 }
 
+// Helper function to handle backward compatibility with old question format
+function isSpeakingPracticeItem(item: any): item is SpeakingPracticeItem {
+  return typeof item === 'object' && item.question && item.answer;
+}
+
+function getSpeakingPracticeItem(item: any): SpeakingPracticeItem {
+  if (typeof item === 'string') {
+    // Old format - convert to new format with generated multiple choice
+    return {
+      question: item,
+      answer: item,
+      multipleChoice: generateMultipleChoiceQuestion(item) || undefined
+    };
+  }
+  
+  const practiceItem = item as SpeakingPracticeItem;
+  if (!practiceItem.multipleChoice && practiceItem.answer) {
+    const generatedMC = generateMultipleChoiceQuestion(practiceItem.answer);
+  
+    if (generatedMC && validateMultipleChoiceQuestion(generatedMC)) {
+      practiceItem.multipleChoice = generatedMC;
+    } else if (generatedMC) {
+      console.warn("⚠️ Generated question failed validation:", generatedMC);
+    } else {
+      console.warn("⚠️ No multiple choice question generated for:", practiceItem.answer);
+      // Create a simple but functional fallback
+      practiceItem.multipleChoice = {
+        prompt: practiceItem.answer.replace(/\b(am|is|are|was|were|have|has|had|will|can|could|should|would)\b/i, "___"),
+        options: [
+          { letter: "A", text: "correct answer", correct: true },
+          { letter: "B", text: "wrong answer 1", correct: false },
+          { letter: "C", text: "wrong answer 2", correct: false }
+        ]
+      };
+    }
+  }
+  // Ensure every item has multiple choice
+  if (!practiceItem.multipleChoice) {
+    console.warn('🚨 No multiple choice generated for item:', practiceItem);
+  }
+  
+  return practiceItem;
+}
 
 interface LessonsAppProps {
   onBack: () => void;
+  initialLevel?: string;
+  initialModule?: number;
 }
 
 type ViewState = 'levels' | 'modules' | 'lesson';
-type LessonPhase = 'intro' | 'teacher-reading' | 'listening' | 'speaking' | 'completed' | 'complete';
+type LessonPhase = 'intro' | 'teacher-reading' | 'listening' | 'speaking' | 'complete';
 type SpeakStatus = 'idle'|'prompting'|'recording'|'transcribing'|'evaluating'|'advancing';
 
 // Levels data - TEMPORARILY UNLOCKED FOR DEVELOPMENT
@@ -364,7 +436,7 @@ const MODULES_BY_LEVEL = {
     locked: false, // TEMPORARILY UNLOCKED FOR DEVELOPMENT
   })),
   // B1 Level modules (101-148)
-  B1: Array.from({ length: 50 }, (_, i) => ({
+  B1: Array.from({ length: 48 }, (_, i) => ({
     id: i + 101, // Starting from 101 for B1 level
     title: i === 0 ? 'Present Perfect Continuous (I\'ve been working)' :
            i === 1 ? 'Present Perfect Continuous vs Present Perfect' :
@@ -2033,23 +2105,210 @@ Yardımcı fiil varsa, sıklık zarfı yardımcı fiilden sonra gelir.
   ],
   
   speakingPractice: [
-    { question: "Do you always eat breakfast?", answer: "Yes, I always eat breakfast at home." },
-    { question: "What do you usually do on Sundays?", answer: "I usually visit my grandparents on Sundays." },
-    { question: "Does your friend sometimes call you at night?", answer: "Yes, he sometimes calls me." },
-    { question: "Do you never drink coffee?", answer: "No, I never drink coffee." },
-    { question: "Does she always smile?", answer: "Yes, she always smiles." },
-    { question: "What do you usually eat for lunch?", answer: "I usually eat salad or soup." },
-    { question: "Do you sometimes play football?", answer: "Yes, I sometimes play football with my friends." },
-    { question: "Does your teacher never give homework?", answer: "No, she never gives homework." },
-    { question: "Do they always go to school by bus?", answer: "Yes, they always go by bus." },
-    { question: "Do you usually watch TV at night?", answer: "I usually watch TV after dinner." },
-    { question: "Do you sometimes listen to music in the morning?", answer: "Yes, I sometimes listen to music." },
-    { question: "Does your brother never play computer games?", answer: "No, he never plays computer games." },
-    { question: "What do you always carry in your bag?", answer: "I always carry my phone and wallet." },
-    { question: "Do you usually wake up early?", answer: "Yes, I usually wake up at 6 am." },
-    { question: "Do you never eat chocolate?", answer: "No, I never eat chocolate." },
-    { question: "Do your parents always drink tea?", answer: "Yes, they always drink tea in the morning." },
-    { question: "Do you sometimes go to the park?", answer: "Yes, I sometimes go to the park on weekends." },
+    { 
+      question: "Do you always eat breakfast?", 
+      answer: "Yes, I always eat breakfast at home.",
+      multipleChoice: {
+        prompt: "I ___ eat breakfast at home.",
+        options: [
+          { letter: "A", text: "always", correct: true },
+          { letter: "B", text: "never", correct: false },
+          { letter: "C", text: "usually", correct: false }
+        ]
+      }
+    },
+    { 
+      question: "What do you usually do on Sundays?", 
+      answer: "I usually visit my grandparents on Sundays.",
+      multipleChoice: {
+        prompt: "I ___ visit my grandparents on Sundays.",
+        options: [
+          { letter: "A", text: "never", correct: false },
+          { letter: "B", text: "usually", correct: true },
+          { letter: "C", text: "always", correct: false }
+        ]
+      }
+    },
+    { 
+      question: "Does your friend sometimes call you at night?", 
+      answer: "Yes, he sometimes calls me.",
+      multipleChoice: {
+        prompt: "He ___ calls me at night.",
+        options: [
+          { letter: "A", text: "never", correct: false },
+          { letter: "B", text: "sometimes", correct: true },
+          { letter: "C", text: "always", correct: false }
+        ]
+      }
+    },
+    { 
+      question: "Do you never drink coffee?", 
+      answer: "No, I never drink coffee.",
+      multipleChoice: {
+        prompt: "No, I ___ drink coffee.",
+        options: [
+          { letter: "A", text: "always", correct: false },
+          { letter: "B", text: "sometimes", correct: false },
+          { letter: "C", text: "never", correct: true }
+        ]
+      }
+    },
+    { 
+      question: "Does she always smile?", 
+      answer: "Yes, she always smiles.",
+      multipleChoice: {
+        prompt: "Yes, she ___ smiles.",
+        options: [
+          { letter: "A", text: "always", correct: true },
+          { letter: "B", text: "never", correct: false },
+          { letter: "C", text: "sometimes", correct: false }
+        ]
+      }
+    },
+    { 
+      question: "What do you usually eat for lunch?", 
+      answer: "I usually eat salad or soup.",
+      multipleChoice: {
+        prompt: "I ___ eat salad or soup for lunch.",
+        options: [
+          { letter: "A", text: "always", correct: false },
+          { letter: "B", text: "usually", correct: true },
+          { letter: "C", text: "never", correct: false }
+        ]
+      }
+    },
+    { 
+      question: "Do you sometimes play football?", 
+      answer: "Yes, I sometimes play football with my friends.",
+      multipleChoice: {
+        prompt: "I ___ play football with my friends.",
+        options: [
+          { letter: "A", text: "never", correct: false },
+          { letter: "B", text: "always", correct: false },
+          { letter: "C", text: "sometimes", correct: true }
+        ]
+      }
+    },
+    { 
+      question: "Does your teacher never give homework?", 
+      answer: "No, she never gives homework.",
+      multipleChoice: {
+        prompt: "She ___ gives homework.",
+        options: [
+          { letter: "A", text: "always", correct: false },
+          { letter: "B", text: "never", correct: true },
+          { letter: "C", text: "sometimes", correct: false }
+        ]
+      }
+    },
+    { 
+      question: "Do they always go to school by bus?", 
+      answer: "Yes, they always go by bus.",
+      multipleChoice: {
+        prompt: "They ___ go by bus.",
+        options: [
+          { letter: "A", text: "always", correct: true },
+          { letter: "B", text: "never", correct: false },
+          { letter: "C", text: "sometimes", correct: false }
+        ]
+      }
+    },
+    { 
+      question: "Do you usually watch TV at night?", 
+      answer: "I usually watch TV after dinner.",
+      multipleChoice: {
+        prompt: "I ___ watch TV after dinner.",
+        options: [
+          { letter: "A", text: "never", correct: false },
+          { letter: "B", text: "usually", correct: true },
+          { letter: "C", text: "always", correct: false }
+        ]
+      }
+    },
+    { 
+      question: "Do you sometimes listen to music in the morning?", 
+      answer: "Yes, I sometimes listen to music.",
+      multipleChoice: {
+        prompt: "I ___ listen to music in the morning.",
+        options: [
+          { letter: "A", text: "sometimes", correct: true },
+          { letter: "B", text: "never", correct: false },
+          { letter: "C", text: "always", correct: false }
+        ]
+      }
+    },
+    { 
+      question: "Does your brother never play computer games?", 
+      answer: "No, he never plays computer games.",
+      multipleChoice: {
+        prompt: "He ___ plays computer games.",
+        options: [
+          { letter: "A", text: "always", correct: false },
+          { letter: "B", text: "never", correct: true },
+          { letter: "C", text: "usually", correct: false }
+        ]
+      }
+    },
+    { 
+      question: "What do you always carry in your bag?", 
+      answer: "I always carry my phone and wallet.",
+      multipleChoice: {
+        prompt: "I ___ carry my phone and wallet.",
+        options: [
+          { letter: "A", text: "always", correct: true },
+          { letter: "B", text: "sometimes", correct: false },
+          { letter: "C", text: "never", correct: false }
+        ]
+      }
+    },
+    { 
+      question: "Do you usually wake up early?", 
+      answer: "Yes, I usually wake up at 6 am.",
+      multipleChoice: {
+        prompt: "I ___ wake up at 6 am.",
+        options: [
+          { letter: "A", text: "never", correct: false },
+          { letter: "B", text: "usually", correct: true },
+          { letter: "C", text: "always", correct: false }
+        ]
+      }
+    },
+    { 
+      question: "Do you never eat chocolate?", 
+      answer: "No, I never eat chocolate.",
+      multipleChoice: {
+        prompt: "I ___ eat chocolate.",
+        options: [
+          { letter: "A", text: "always", correct: false },
+          { letter: "B", text: "never", correct: true },
+          { letter: "C", text: "sometimes", correct: false }
+        ]
+      }
+    },
+    { 
+      question: "Do your parents always drink tea?", 
+      answer: "Yes, they always drink tea in the morning.",
+      multipleChoice: {
+        prompt: "They ___ drink tea in the morning.",
+        options: [
+          { letter: "A", text: "always", correct: true },
+          { letter: "B", text: "never", correct: false },
+          { letter: "C", text: "sometimes", correct: false }
+        ]
+      }
+    },
+    { 
+      question: "Do you sometimes go to the park?", 
+      answer: "Yes, I sometimes go to the park on weekends.",
+      multipleChoice: {
+        prompt: "I ___ go to the park on weekends.",
+        options: [
+          { letter: "A", text: "never", correct: false },
+          { letter: "B", text: "sometimes", correct: true },
+          { letter: "C", text: "always", correct: false }
+        ]
+      }
+    },
     { question: "Does your dog never bark?", answer: "No, my dog never barks." },
     { question: "Do you always do your homework?", answer: "Yes, I always do my homework after school." },
     { question: "Do you usually read books before sleeping?", answer: "I usually read books before I sleep." },
@@ -2112,17 +2371,138 @@ Cevap: Yes, I can. / No, I can't.`,
   ],
   
   speakingPractice: [
-    { question: "Can you swim?", answer: "Yes, I can swim." },
-    { question: "Can your brother play the guitar?", answer: "No, he can't play the guitar." },
-    { question: "Can your parents speak English?", answer: "Yes, they can speak English." },
-    { question: "Can your best friend cook Italian food?", answer: "No, she can't cook Italian food." },
-    { question: "Can they run five kilometers?", answer: "Yes, they can run five kilometers." },
-    { question: "Can you ride a bike?", answer: "Yes, I can ride a bike." },
-    { question: "Can she sing well?", answer: "Yes, she can sing well." },
-    { question: "Can he play chess?", answer: "No, he can't play chess." },
-    { question: "Can your teacher speak Spanish?", answer: "No, he can't speak Spanish." },
-    { question: "Can we visit the museum today?", answer: "Yes, we can visit the museum." },
-    { question: "Can they play tennis?", answer: "No, they can't play tennis." },
+    { 
+      question: "Can you swim?", 
+      answer: "Yes, I can swim.",
+      multipleChoice: {
+        prompt: "Yes, I ___ swim.",
+        options: [
+          { letter: "A", text: "can", correct: true },
+          { letter: "B", text: "can't", correct: false },
+          { letter: "C", text: "could", correct: false }
+        ]
+      }
+    },
+    { 
+      question: "Can your brother play the guitar?", 
+      answer: "No, he can't play the guitar.",
+      multipleChoice: {
+        prompt: "No, he ___ play the guitar.",
+        options: [
+          { letter: "A", text: "can", correct: false },
+          { letter: "B", text: "can't", correct: true },
+          { letter: "C", text: "could", correct: false }
+        ]
+      }
+    },
+    { 
+      question: "Can your parents speak English?", 
+      answer: "Yes, they can speak English.",
+      multipleChoice: {
+        prompt: "Yes, they ___ speak English.",
+        options: [
+          { letter: "A", text: "can't", correct: false },
+          { letter: "B", text: "can", correct: true },
+          { letter: "C", text: "could", correct: false }
+        ]
+      }
+    },
+    { 
+      question: "Can your best friend cook Italian food?", 
+      answer: "No, she can't cook Italian food.",
+      multipleChoice: {
+        prompt: "No, she ___ cook Italian food.",
+        options: [
+          { letter: "A", text: "can", correct: false },
+          { letter: "B", text: "can't", correct: true },
+          { letter: "C", text: "could", correct: false }
+        ]
+      }
+    },
+    { 
+      question: "Can they run five kilometers?", 
+      answer: "Yes, they can run five kilometers.",
+      multipleChoice: {
+        prompt: "Yes, they ___ run five kilometers.",
+        options: [
+          { letter: "A", text: "can", correct: true },
+          { letter: "B", text: "can't", correct: false },
+          { letter: "C", text: "could", correct: false }
+        ]
+      }
+    },
+    { 
+      question: "Can you ride a bike?", 
+      answer: "Yes, I can ride a bike.",
+      multipleChoice: {
+        prompt: "Yes, I ___ ride a bike.",
+        options: [
+          { letter: "A", text: "can't", correct: false },
+          { letter: "B", text: "can", correct: true },
+          { letter: "C", text: "could", correct: false }
+        ]
+      }
+    },
+    { 
+      question: "Can she sing well?", 
+      answer: "Yes, she can sing well.",
+      multipleChoice: {
+        prompt: "Yes, she ___ sing well.",
+        options: [
+          { letter: "A", text: "can", correct: true },
+          { letter: "B", text: "can't", correct: false },
+          { letter: "C", text: "could", correct: false }
+        ]
+      }
+    },
+    { 
+      question: "Can he play chess?", 
+      answer: "No, he can't play chess.",
+      multipleChoice: {
+        prompt: "No, he ___ play chess.",
+        options: [
+          { letter: "A", text: "can", correct: false },
+          { letter: "B", text: "can't", correct: true },
+          { letter: "C", text: "could", correct: false }
+        ]
+      }
+    },
+    { 
+      question: "Can your teacher speak Spanish?", 
+      answer: "No, he can't speak Spanish.",
+      multipleChoice: {
+        prompt: "No, he ___ speak Spanish.",
+        options: [
+          { letter: "A", text: "can", correct: false },
+          { letter: "B", text: "can't", correct: true },
+          { letter: "C", text: "could", correct: false }
+        ]
+      }
+    },
+    { 
+      question: "Can we visit the museum today?", 
+      answer: "Yes, we can visit the museum.",
+      multipleChoice: {
+        prompt: "Yes, we ___ visit the museum.",
+        options: [
+          { letter: "A", text: "can", correct: true },
+          { letter: "B", text: "can't", correct: false },
+          { letter: "C", text: "could", correct: false }
+        ]
+      }
+    },
+    { 
+      question: "Can they play tennis?", 
+      answer: "No, they can't play tennis.",
+      multipleChoice: {
+        prompt: "No, they ___ play tennis.",
+        options: [
+          { letter: "A", text: "can", correct: false },
+          { letter: "B", text: "can't", correct: true },
+          { letter: "C", text: "could", correct: false }
+        ]
+      }
+    },
     { question: "Can you dance?", answer: "Yes, I can dance." },
     { question: "Can your father drive a truck?", answer: "Yes, he can drive a truck." },
     { question: "Can your sister play the piano?", answer: "No, she can't play the piano." },
@@ -2195,9 +2575,42 @@ Cevap: Yes, you can. / No, you can't.`,
   ],
   
   speakingPractice: [
-    { question: "Can I sit here?", answer: "Yes, you can sit here." },
-    { question: "Can we eat in this room?", answer: "No, you can't eat here." },
-    { question: "Can he borrow your book?", answer: "Yes, he can borrow my book." },
+    { 
+      question: "Can I sit here?", 
+      answer: "Yes, you can sit here.",
+      multipleChoice: {
+        prompt: "Yes, you ___ sit here.",
+        options: [
+          { letter: "A", text: "can", correct: true },
+          { letter: "B", text: "can't", correct: false },
+          { letter: "C", text: "could", correct: false }
+        ]
+      }
+    },
+    { 
+      question: "Can we eat in this room?", 
+      answer: "No, you can't eat here.",
+      multipleChoice: {
+        prompt: "No, you ___ eat here.",
+        options: [
+          { letter: "A", text: "can", correct: false },
+          { letter: "B", text: "can't", correct: true },
+          { letter: "C", text: "could", correct: false }
+        ]
+      }
+    },
+    { 
+      question: "Can he borrow your book?", 
+      answer: "Yes, he can borrow my book.",
+      multipleChoice: {
+        prompt: "Yes, he ___ borrow my book.",
+        options: [
+          { letter: "A", text: "can", correct: true },
+          { letter: "B", text: "can't", correct: false },
+          { letter: "C", text: "could", correct: false }
+        ]
+      }
+    },
     { question: "Can they park here?", answer: "No, they can't park here." },
     { question: "Can I use your phone?", answer: "Yes, you can use my phone." },
     { question: "Can she come to the party?", answer: "No, she can't come to the party." },
@@ -2270,14 +2683,102 @@ He hates running. (O koşmaktan nefret eder.)`,
   ],
   
   speakingPractice: [
-    { question: "Do you like reading books?", answer: "Yes, I like reading books." },
-    { question: "Does he love cooking?", answer: "Yes, he loves cooking." },
-    { question: "Do they hate playing football?", answer: "No, they don't hate playing football." },
-    { question: "Does she like swimming?", answer: "Yes, she likes swimming." },
-    { question: "Do you love watching movies?", answer: "Yes, I love watching movies." },
-    { question: "Does he hate dancing?", answer: "No, he doesn't hate dancing." },
-    { question: "Do we like walking in the park?", answer: "Yes, we like walking in the park." },
-    { question: "Do they love listening to music?", answer: "Yes, they love listening to music." },
+    { 
+      question: "Do you like reading books?", 
+      answer: "Yes, I like reading books.",
+      multipleChoice: {
+        prompt: "Yes, I ___ reading books.",
+        options: [
+          { letter: "A", text: "like", correct: true },
+          { letter: "B", text: "likes", correct: false },
+          { letter: "C", text: "love", correct: false }
+        ]
+      }
+    },
+    { 
+      question: "Does he love cooking?", 
+      answer: "Yes, he loves cooking.",
+      multipleChoice: {
+        prompt: "Yes, he ___ cooking.",
+        options: [
+          { letter: "A", text: "love", correct: false },
+          { letter: "B", text: "loves", correct: true },
+          { letter: "C", text: "like", correct: false }
+        ]
+      }
+    },
+    { 
+      question: "Do they hate playing football?", 
+      answer: "No, they don't hate playing football.",
+      multipleChoice: {
+        prompt: "No, they ___ hate playing football.",
+        options: [
+          { letter: "A", text: "do", correct: false },
+          { letter: "B", text: "don't", correct: true },
+          { letter: "C", text: "doesn't", correct: false }
+        ]
+      }
+    },
+    { 
+      question: "Does she like swimming?", 
+      answer: "Yes, she likes swimming.",
+      multipleChoice: {
+        prompt: "Yes, she ___ swimming.",
+        options: [
+          { letter: "A", text: "like", correct: false },
+          { letter: "B", text: "likes", correct: true },
+          { letter: "C", text: "love", correct: false }
+        ]
+      }
+    },
+    { 
+      question: "Do you love watching movies?", 
+      answer: "Yes, I love watching movies.",
+      multipleChoice: {
+        prompt: "Yes, I love ___ movies.",
+        options: [
+          { letter: "A", text: "watch", correct: false },
+          { letter: "B", text: "watching", correct: true },
+          { letter: "C", text: "to watch", correct: false }
+        ]
+      }
+    },
+    { 
+      question: "Does he hate dancing?", 
+      answer: "No, he doesn't hate dancing.",
+      multipleChoice: {
+        prompt: "No, he ___ hate dancing.",
+        options: [
+          { letter: "A", text: "don't", correct: false },
+          { letter: "B", text: "doesn't", correct: true },
+          { letter: "C", text: "does", correct: false }
+        ]
+      }
+    },
+    { 
+      question: "Do we like walking in the park?", 
+      answer: "Yes, we like walking in the park.",
+      multipleChoice: {
+        prompt: "Yes, we like ___ in the park.",
+        options: [
+          { letter: "A", text: "walk", correct: false },
+          { letter: "B", text: "walking", correct: true },
+          { letter: "C", text: "to walk", correct: false }
+        ]
+      }
+    },
+    { 
+      question: "Do they love listening to music?", 
+      answer: "Yes, they love listening to music.",
+      multipleChoice: {
+        prompt: "Yes, they ___ listening to music.",
+        options: [
+          { letter: "A", text: "loves", correct: false },
+          { letter: "B", text: "love", correct: true },
+          { letter: "C", text: "like", correct: false }
+        ]
+      }
+    },
     { question: "Does she hate cleaning the house?", answer: "Yes, she hates cleaning the house." },
     { question: "Do you like painting?", answer: "No, I don't like painting." },
     { question: "Does he love running?", answer: "Yes, he loves running." },
@@ -4633,8 +5134,8 @@ Yapı: Subject + will be + verb-ing
   
   table: [
     { tense: "Future Cont.", exampleAff: "I will be working.", exampleNeg: "I will not be working.", exampleQuestion: "Will you be working?" },
-    { tense: "Future Cont.", exampleAff: "She will be sleeping.", exampleNeg: "She will not be sleeping.", exampleQuestion: "Will she be sleeping?" },
-    { tense: "Future Cont.", exampleAff: "They will be traveling.", exampleNeg: "They will not be traveling.", exampleQuestion: "Will they be traveling?" }
+    { tense: "", exampleAff: "She will be sleeping.", exampleNeg: "She will not be sleeping.", exampleQuestion: "Will she be sleeping?" },
+    { tense: "", exampleAff: "They will be traveling.", exampleNeg: "They will not be traveling.", exampleQuestion: "Will they be traveling?" }
   ],
   
   listeningExamples: [
@@ -4704,8 +5205,8 @@ Yapı: Subject + have/has + V3 (fiilin 3. hali)
   
   table: [
     { tense: "Present Perfect", affirmative: "I have visited London.", negative: "I have never visited London.", question: "Have you ever visited London?" },
-    { tense: "Ever/Never", affirmative: "She has tried sushi.", negative: "She has never tried sushi.", question: "Has she ever tried sushi?" },
-    { tense: "Ever/Never", affirmative: "They have seen that movie.", negative: "They have never seen that movie.", question: "Have they ever seen that movie?" }
+    { tense: "", affirmative: "She has tried sushi.", negative: "She has never tried sushi.", question: "Has she ever tried sushi?" },
+    { tense: "", affirmative: "They have seen that movie.", negative: "They have never seen that movie.", question: "Have they ever seen that movie?" }
   ],
   
   listeningExamples: [
@@ -5340,69 +5841,34 @@ Yapı (Structure): Özne + may/might + fiil
   ]
 };
 
-// Function to validate module data before navigation
-function validateModuleData(moduleData: any): boolean {
-  if (!moduleData) {
-    console.error('Module data is null or undefined');
-    return false;
-  }
-
-  if (!moduleData.title || !moduleData.description || !moduleData.intro || !moduleData.tip) {
-    console.error('Module missing required fields');
-    return false;
-  }
-
-  if (!moduleData.speakingPractice || !Array.isArray(moduleData.speakingPractice)) {
-    console.error('Module missing speakingPractice array');
-    return false;
-  }
-
-  if (moduleData.speakingPractice.length < 40) {
-    console.error(`Module has only ${moduleData.speakingPractice.length} speaking questions, needs 40`);
-    return false;
-  }
-
-  return true;
-}
-
-export default function LessonsApp({ onBack }: LessonsAppProps) {
+export default function LessonsApp({ onBack, initialLevel, initialModule }: LessonsAppProps) {
+  // ===== STATE (must be first) =====
   const [width, height] = useWindowSize();
   const [viewState, setViewState] = useState<ViewState>('levels');
   const [selectedLevel, setSelectedLevel] = useState<string>('');
   const [selectedModule, setSelectedModule] = useState<number>(0);
-  const [isHydrated, setIsHydrated] = useState(false);
-
-  // Debug logging for component state
-  useEffect(() => {
-    if (process.env.NODE_ENV === 'development') console.log('🔍 [LessonsApp] Component mounted/updated:', {
-      viewState,
-      selectedLevel,
-      selectedModule,
-      isHydrated,
-      timestamp: new Date().toISOString()
-    });
-  }, [viewState, selectedLevel, selectedModule, isHydrated]);
-
-  // Fallback hydration timer - ensure component doesn't get stuck in loading
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (!isHydrated) {
-        if (process.env.NODE_ENV === 'development') console.warn('⚠️ [LessonsApp] Hydration timeout - forcing completion');
-        setIsHydrated(true);
-      }
-    }, 2000); // 2 second timeout
-
-    return () => clearTimeout(timer);
-  }, []); // Run only once on mount
-  
-  // Lesson state
   const [currentPhase, setCurrentPhase] = useState<LessonPhase>('intro');
   const [isTeacherReading, setIsTeacherReading] = useState(false);
   const [readingComplete, setReadingComplete] = useState(false);
   const [hasBeenRead, setHasBeenRead] = useState<Record<string, boolean>>({});
   const [listeningIndex, setListeningIndex] = useState(0);
   const [speakingIndex, setSpeakingIndex] = useState(0);
-  const [speakStep, setSpeakStep] = useState<'mcq' | 'speak'>('mcq');
+  const [isHydrated, setIsHydrated] = useState(false);
+  
+  // Progress tracking state
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  const [questionStartTime, setQuestionStartTime] = useState<number>(0);
+  const [currentQuestionRetries, setCurrentQuestionRetries] = useState<number>(0);
+  
+  // Auto-reader state
+  const [readingProgress, setReadingProgress] = useState<{
+    isReading: boolean;
+    currentSection: string;
+    progress: number;
+    currentText: string;
+  } | null>(null);
+  
+  // UI state
   const [showCelebration, setShowCelebration] = useState(false);
   const [correctAnswers, setCorrectAnswers] = useState(0);
   const [attempts, setAttempts] = useState(0);
@@ -5412,19 +5878,48 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
   const [showConfetti, setShowConfetti] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [lastResponseTime, setLastResponseTime] = useState(0);
-  // Reset MCQ step when question changes
-  useEffect(() => {
-    setSpeakStep('mcq');
-    // Removed automatic watchdog start - user must take action first
-  }, [speakingIndex, selectedModule]);
+  
+  // Enhanced question state management for multiple choice
+  const [questionStates, setQuestionStates] = useState<Record<number, QuestionState>>({});
+  const [currentQuestionPhase, setCurrentQuestionPhase] = useState<'multiple-choice' | 'speaking'>('multiple-choice');
+  
+  // Keep a live ref of the phase for async flows (prevents stale closures)
+  const phaseRef = useRef(currentPhase);
+  useEffect(() => { phaseRef.current = currentPhase; }, [currentPhase]);
 
+  // Initialize with props from test result
+  useEffect(() => {
+    if (initialLevel && initialModule) {
+      setSelectedLevel(initialLevel);
+      setSelectedModule(initialModule);
+      setViewState('lesson');
+    }
+  }, [initialLevel, initialModule]);
+
+  // ===== DERIVED VALUES (after state) =====
+  // Initialize Progress Tracker Service
+  const progressTracker = ProgressTrackerService.getInstance();
+
+  // ===== VOICE COMMANDS (after state) =====
+  const voiceCommands = useLessonVoiceCommands(
+    selectedModule,
+    selectedLevel,
+    currentPhase,
+    {
+      enabled: viewState === 'lesson',
+      autoStart: false,
+      onCommandExecuted: (command, result) => {
+        console.log('Voice command executed:', command.type, result);
+      },
+      onCommandFailed: (command, error) => {
+        console.warn('Voice command failed:', command.type, error);
+      }
+    }
+  );
+  
   // Guards for module-scoped timers and safe progression
   const moduleGuardRef = useRef<number | null>(null);
   const timeoutRef = useRef<number | null>(null);
-
-  // Simple in-flight guard and watchdog system
-  const inFlightRef = useRef(false);
-  const watchdogRef = useRef<number | null>(null);
   const lessonCompletedRef = useRef(false);
   
   // Track the live speaking index (no stale closures)
@@ -5482,7 +5977,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     const Ctx = (window.AudioContext || (window as any).webkitAudioContext);
     if (!Ctx) return;
     const ctx = (window as any).__appAudioCtx || ((window as any).__appAudioCtx = new Ctx());
-    if (ctx.state === 'suspended') { try { await ctx.resume(); } catch {} }
+    if (ctx.state === 'suspended') { try { await ctx.resume(); } catch (error) { /* Ignore audio context resume errors */ } }
   }
 
   // Create or reuse a SpeechRecognition with our settings
@@ -5506,10 +6001,10 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
 
     return new Promise<string>((resolve, reject) => {
       let settled = false;
-      const done = (ok: boolean, value?: any) => {
+      const done = (ok: boolean, value?: string) => {
         if (settled) return;
         settled = true;
-        try { rec.stop(); } catch {}
+        try { rec.stop(); } catch (error) { /* Recognition stop error ignored */ }
         ok ? resolve(value) : reject(value);
       };
 
@@ -5541,25 +6036,22 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
   // Cancel any live recognition on nav/module change
   useEffect(() => {
     speechRunIdRef.current = null;
-    try { recognizerRef.current?.stop?.(); } catch {}
+    try { recognizerRef.current?.stop?.(); } catch (error) { /* Ignore recognizer stop errors */ }
   }, [selectedModule, selectedLevel, viewState]);
 
   // Cancel any narration the moment we enter speaking (no TTS fighting taps)
   useEffect(() => {
     if (currentPhase === 'speaking') {
-      cancelTTSSafe();
+      narration.cancel();          // nothing else should be talking now
       setIsProcessing(false);
-      // Removed automatic watchdog start - only start after user inactivity
-    } else {
-      clearWatchdog();             // Clear when leaving speaking phase
     }
   }, [currentPhase]);
-  
-  
+
   // ---- Autosave helpers ----
   const SAVE_DEBOUNCE_MS = 250;
   const saveTimerRef = useRef<number | null>(null);
   const restoredOnceRef = useRef(false);
+  const dialogShownRef = useRef(false);
   const autosaveTimeoutRef = useRef<number | null>(null);
 
   function snapshotProgress(): StoreModuleProgress | null {
@@ -5575,7 +6067,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     return {
       level: String(selectedLevel),
       module: Number(selectedModule),
-      phase: currentPhase as any,
+      phase: currentPhase as LessonPhase,
       listeningIndex: safeListeningIndex,
       speakingIndex: safeSpeakingIndex,
       completed: currentPhase === 'complete',
@@ -5595,10 +6087,73 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     }, SAVE_DEBOUNCE_MS) as unknown as number;
   }
 
+  // --- Multiple Choice Handler ---
+  function handleMultipleChoiceSelect(selectedLetter: 'A' | 'B' | 'C', isCorrect: boolean) {
+    const currentState = questionStates[speakingIndex] || { selectedChoice: undefined, choiceCorrect: false, speechCompleted: false };
+    
+    // Don't allow selecting if already selected correctly
+    if (currentState.selectedChoice && currentState.choiceCorrect) {
+      return;
+    }
+    
+    // Update the question state
+    const newState = {
+      ...currentState,
+      selectedChoice: selectedLetter,
+      choiceCorrect: isCorrect
+    };
+    
+    setQuestionStates(prev => ({
+      ...prev,
+      [speakingIndex]: newState
+    }));
+
+    // Provide immediate feedback
+    if (isCorrect) {
+      setFeedback("✅ Correct! Now speak the complete sentence.");
+      setFeedbackType('success');
+
+      // Checkpoint: MCQ answered correctly
+      checkpoints.checkpointMCQCorrect({
+        level: selectedLevel,
+        moduleId: selectedModule,
+        questionIndex: speakingIndex,
+        totalQuestions: 40,
+        mcqChoice: selectedLetter,
+        mcqCorrect: true
+      });
+
+      // Clear feedback after showing success message
+      setTimeout(() => {
+        setFeedback('');
+      }, 2000);
+    } else {
+      setFeedback("❌ Incorrect. Try again!");
+      setFeedbackType('error');
+      
+      // Clear selection after a delay to allow retry
+      setTimeout(() => {
+        setQuestionStates(prev => ({
+          ...prev,
+          [speakingIndex]: {
+            ...prev[speakingIndex],
+            selectedChoice: undefined,
+            choiceCorrect: false
+          }
+        }));
+        setFeedback('');
+      }, 1500);
+    }
+  }
+
   // --- Module Completion Logic ---
   function completeLesson() {
     const total = currentModuleData?.speakingPractice?.length ?? 0;
-
+    
+    // Check if module meets accuracy requirement before completion
+    const accuracy = progressTracker.getModuleAccuracy(selectedLevel, selectedModule);
+    const config = progressTracker.getConfig();
+    
     // persist completion
     setProgress({
       level: selectedLevel,
@@ -5612,21 +6167,46 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
       updatedAt: Date.now(),
       v: 1
     });
+    
+    // End progress tracking session
+    if (currentSessionId) {
+      progressTracker.endLearningSession(currentSessionId, true);
+      setCurrentSessionId(null);
+    }
+    
+    // Save final progress snapshot
+    progressTracker.saveCurrentProgress(selectedLevel, selectedModule);
 
     // celebration
     setShowCelebration(true);
+    
+    // Show accuracy-based completion message
+    const completionMessage = accuracy >= config.accuracyThreshold 
+      ? `🎉 Module completed with ${accuracy.toFixed(1)}% accuracy! Next module unlocked!`
+      : `📚 Module finished with ${accuracy.toFixed(1)}% accuracy. You need ${config.accuracyThreshold}% to unlock the next module. Keep practicing!`;
+    
     setTimeout(() => {
       setShowCelebration(false);
+      setFeedback(completionMessage);
+      setFeedbackType(accuracy >= config.accuracyThreshold ? 'success' : 'warning');
 
-    // compute next module
+    // compute next module - only advance if accuracy requirement is met
     const nextId = getNextModuleId(selectedLevel as 'A1' | 'A2' | 'B1', selectedModule);
-      if (nextId) {
-        cancelTTSSafe();
-        // reset local UI state
-        setSpeakingIndex(0);
-        setCurrentPhase('intro');
-        setSelectedModule(nextId);
-      // The next module will be set, no need for separate lastVisited tracking
+      if (nextId && accuracy >= config.accuracyThreshold) {
+        setTimeout(() => {
+          narration.cancel();
+          // reset local UI state
+          setSpeakingIndex(0);
+          setCurrentPhase('intro');
+          setSelectedModule(nextId);
+          setFeedback('');
+        }, 3000);
+      } else if (nextId) {
+        // Module exists but accuracy not met - stay on current module
+        setTimeout(() => {
+          setFeedback('Review the suggested topics and try again to improve your accuracy!');
+          setFeedbackType('info');
+        }, 3000);
       } else {
         // no next module: stay on completion screen or show a CTA to change level
       }
@@ -5659,7 +6239,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
       // Unicode normalize, then strip combining marks (accents/diacritics)
       .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
       // Unify quotes/apostrophes and dashes
-      .replace(/['„«»]/g, '"')
+      .replace(/[""„«»]/g, '"')
       .replace(/[''']/g, "'")
       .replace(/[–—]/g, '-')
       // Remove punctuation that shouldn't affect correctness
@@ -5721,7 +6301,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
   }
 
   // Robust answer checking using Module 51 proven logic
-  function isAnswerCorrect(spokenRaw: string, targetRaw: string, questionItem?: any): boolean {
+  function isAnswerCorrect(spokenRaw: string, targetRaw: string, questionItem?: { question: string; answer: string }): boolean {
     // Create evaluation options
     const evalOptions: EvalOptions = {
       expected: targetRaw,
@@ -5731,13 +6311,12 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     };
     
     const result = evaluateAnswer(spokenRaw, evalOptions);
-    if (process.env.NODE_ENV === 'development') console.log(`🔍 Answer Check: "${spokenRaw}" vs "${targetRaw}" = ${result ? 'CORRECT' : 'INCORRECT'}`);
     
     return result;
   }
 
   // Use the enhanced evaluator for all answer checking
-  function isExactlyCorrect(spokenRaw: string, targetRaw: string, questionItem?: any): boolean {
+  function isExactlyCorrect(spokenRaw: string, targetRaw: string, questionItem?: { question: string; answer: string }): boolean {
     return isAnswerCorrect(spokenRaw, targetRaw, questionItem);
   }
 
@@ -5802,7 +6381,7 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     return t;
   }
 
-  function computeTargetFromItem(item: any): string {
+  function computeTargetFromItem(item: { question: string; answer: string }): string {
     // Prefer explicit answer fields; otherwise fall back to the visible "Say:" text
     const raw =
       (item && (item.answer ?? item.say ?? item.sentence ?? item.target ?? item.expected ?? item.text ?? item.question)) || '';
@@ -5835,6 +6414,21 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
     lastMessageTime: lastResponseTime
   });
 
+  // Progress checkpointing hook
+  const checkpoints = useLessonCheckpoints(selectedLevel, selectedModule);
+
+  // Checkpoint: Question started when entering speaking phase
+  useEffect(() => {
+    if (currentPhase === 'speaking' && selectedLevel && selectedModule) {
+      checkpoints.checkpointMCQShown({
+        level: selectedLevel,
+        moduleId: selectedModule,
+        questionIndex: speakingIndex,
+        totalQuestions: 40
+      });
+    }
+  }, [speakingIndex, currentPhase, selectedLevel, selectedModule, checkpoints.checkpointMCQShown]);
+
   // Completed modules state with localStorage sync
   const getCompletedModules = () => {
     try {
@@ -5842,7 +6436,6 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
       const parsed = JSON.parse(stored || '[]');
       return Array.isArray(parsed) ? parsed : [];
     } catch (error) {
-      if (process.env.NODE_ENV === 'development') console.warn('Error parsing completedModules from localStorage:', error);
       return [];
     }
   };
@@ -5851,1009 +6444,1099 @@ export default function LessonsApp({ onBack }: LessonsAppProps) {
 
   // Check if module is unlocked
   const isModuleUnlocked = (moduleId: number) => {
-    return true; // All modules unlocked for development/testing
-    // Original progression logic (commented out):
-    // if (moduleId === 1) return true; // Module 1 is always unlocked
-    // if (moduleId === 51) return true; // Module 51 (first A2 module) is unlocked for testing
-    // return completedModules.includes(`module-${moduleId - 1}`);
+    return true; // Unlock all modules for testing
   };
 
 // B1 Level Module Data (101-110)
 
-// Module 101 Data
+// Module 101 Data: Present Perfect Continuous (I've been working)
 const MODULE_101_DATA = {
-  title: "Present Perfect Continuous (I've been working) – B1 Level",
-  description: "Learn to use Present Perfect Continuous to describe ongoing actions that started in the past and continue to the present",
-  intro: `Present Perfect Continuous Tense, geçmişte başlayıp hâlen devam eden eylemleri anlatmak için kullanılır.
+  title: "Module 101 - Present Perfect Continuous (I've been working)",
+  description: "Learn the structure and use of the Present Perfect Continuous tense",
+  intro: `Bu modülde Present Perfect Continuous Tense öğreneceğiz.
 
-**Yapı:** Subject + have/has + been + verb-ing
+📘 Konu Anlatımı (Türkçe Açıklama)
+Present Perfect Continuous Tense (Şimdiki Zamanın Hikâyesi), geçmişte başlamış ve hâlen devam eden ya da yeni bitmiş ve etkisi süren eylemleri anlatmak için kullanılır. Yapısı: have/has + been + V-ing şeklindedir.
+Örnek: I've been studying all day. (Tüm gün boyunca ders çalışıyorum / çalışıyordum.)
 
-**Kullanım Alanları:**
-1. Geçmişte başlayıp hâlâ devam eden eylemler:
-   → I have been studying English for three years. (Hâlâ İngilizce çalışıyorum)
+📗 Structure
+✅ Positive: Subject + have/has + been + verb-ing
+✅ Negative: Subject + haven't/hasn't + been + verb-ing
+✅ Question: Have/Has + subject + been + verb-ing?
 
-2. Yakın zamanda bitmiş ama sonucu görünen eylemler:
-   → You look tired. Have you been running? (Koşuyordun, şimdi yorgunsun)
+🧩 Uses
+1. Actions that started in the past and are still happening:
+   - She has been working here since 2019.
+2. Actions that have recently stopped but have present results:
+   - I'm tired because I've been running.
+3. To emphasize the duration of an activity:
+   - They've been talking for over an hour.
 
-3. Süreklilik ve süre vurgusu (how long?, for, since):
-   → How long have you been waiting?
-
-Present Perfect Continuous emphasizes the duration and continuity of an action that started in the past and is still happening or has just finished with visible results.`,
-  tip: "Use Present Perfect Continuous with 'for' (duration) and 'since' (starting point) to emphasize how long an action has been happening.",
-
-  table: [
-    { form: "Affirmative", structure: "S + have/has been + V-ing", example: "I have been working for 5 hours." },
-    { form: "Negative", structure: "S + have/has not been + V-ing", example: "She hasn't been feeling well lately." },
-    { form: "Question", structure: "Have/Has + S + been + V-ing?", example: "Have you been waiting long?" },
-    { form: "Wh-Question", structure: "Wh- + have/has + S + been + V-ing?", example: "How long have you been living here?" }
-  ],
-
+🧠 Example Sentences
+I've been learning English for three years.
+She has been cooking since this morning.
+They've been arguing all day.
+Has he been working out recently?
+We haven't been sleeping well lately.`,
+  tip: "Use have/has + been + verb-ing for ongoing actions",
+  
   listeningExamples: [
-    "I've been learning Spanish for six months, and I can already have basic conversations.",
-    "She's been working at the same company since 2015.",
-    "They've been building that house for over a year now.",
-    "We've been waiting for the bus for 30 minutes.",
-    "He's been playing the guitar since he was a child.",
-    "It's been raining all day, so the streets are flooded.",
-    "You look exhausted. Have you been exercising?",
-    "She's been crying. Her eyes are red."
+    "I've been learning English for three years.",
+    "She has been cooking since this morning.",
+    "They've been arguing all day.",
+    "Has he been working out recently?",
+    "We haven't been sleeping well lately."
   ],
-
+  
   speakingPractice: [
-    { question: "How long have you been studying English?", answer: "I've been studying English for three years." },
-    { question: "What have you been doing all morning?", answer: "I've been cleaning the house all morning." },
-    { question: "How long has she been working here?", answer: "She's been working here since January." },
-    { question: "Why are your hands dirty?", answer: "Because I've been gardening." },
-    { question: "How long have they been living in London?", answer: "They've been living in London for five years." },
-    { question: "You look tired. What have you been doing?", answer: "I've been running in the park." },
-    { question: "How long has it been raining?", answer: "It's been raining since this morning." },
-    { question: "Why is the kitchen so messy?", answer: "Because I've been cooking." },
-    { question: "How long have you been waiting for me?", answer: "I've been waiting for about 20 minutes." },
-    { question: "What has your brother been doing lately?", answer: "He's been preparing for his exams." },
-    { question: "How long has your sister been learning the piano?", answer: "She's been learning it for two years." },
-    { question: "Why are you sweating?", answer: "Because I've been playing football." },
+    { question: "Why are your hands dirty?", answer: "Because I've been fixing my bike." },
+    { question: "Have you been studying for the exam?", answer: "Yes, I've been studying every evening this week." },
+    { question: "What have you been doing all day?", answer: "I've been helping my brother move into his new apartment." },
+    { question: "Why is she so tired?", answer: "She's been working two jobs lately." },
+    { question: "Has it been raining all morning?", answer: "Yes, and the streets are completely flooded." },
+    { question: "What have they been watching on TV?", answer: "They've been watching a documentary about climate change." },
+    { question: "How long have you been waiting for the bus?", answer: "I've been waiting for over 30 minutes." },
+    { question: "Have you been feeling okay?", answer: "Not really, I've been feeling a bit dizzy since yesterday." },
+    { question: "Why is he out of breath?", answer: "Because he's been running around the park." },
+    { question: "Where have you been hiding?", answer: "I've been sitting quietly in the garden." },
+    { question: "How long has she been learning French?", answer: "She's been learning it for almost five years." },
+    { question: "What has your team been working on?", answer: "We've been developing a new app for students." },
+    { question: "Why haven't you been answering your phone?", answer: "I've been in meetings all afternoon." },
+    { question: "Have they been using the new software?", answer: "Yes, they've been testing it since Monday." },
+    { question: "What have you been thinking about?", answer: "I've been thinking about changing jobs." },
+    { question: "Have you been reading anything interesting lately?", answer: "Yes, I've been reading a novel about World War II." },
+    { question: "Why are your clothes wet?", answer: "Because I've been walking in the rain." },
+    { question: "How long has he been living abroad?", answer: "He's been living in Germany since 2018." },
+    { question: "What have the children been doing?", answer: "They've been painting the walls in their room." },
+    { question: "Have you been listening to the news?", answer: "Yes, I've been following the latest updates about the election." },
+    { question: "Why is your desk so messy?", answer: "Because I've been organizing my papers." },
+    { question: "Has she been waiting long?", answer: "Yes, she's been waiting for nearly an hour." },
+    { question: "What have you been eating recently?", answer: "I've been eating more vegetables and less sugar." },
     { question: "How long have they been dating?", answer: "They've been dating for about six months." },
-    { question: "What have you been reading recently?", answer: "I've been reading a mystery novel." },
-    { question: "How long has he been sleeping?", answer: "He's been sleeping for three hours." },
-    { question: "Why is your voice hoarse?", answer: "Because I've been singing at a concert." },
-    { question: "How long have you been feeling sick?", answer: "I've been feeling sick since yesterday." },
-    { question: "What have your parents been planning?", answer: "They've been planning a trip to Italy." },
-    { question: "How long has the baby been crying?", answer: "She's been crying for half an hour." },
-    { question: "Why are your clothes wet?", answer: "Because I've been washing the car." },
-    { question: "How long have you been using this app?", answer: "I've been using it for a few weeks." },
-    { question: "What has the company been developing?", answer: "They've been developing a new software product." },
-    { question: "How long has your friend been traveling?", answer: "He's been traveling around Europe for a month." },
-    { question: "Why do you smell like smoke?", answer: "Because I've been sitting near a fireplace." },
-    { question: "How long have they been renovating their house?", answer: "They've been renovating it for six months." },
-    { question: "What have you been watching on TV?", answer: "I've been watching a documentary series." },
-    { question: "How long has she been attending yoga classes?", answer: "She's been attending them for a year." },
-    { question: "Why are you out of breath?", answer: "Because I've been climbing stairs." },
-    { question: "How long have you been following this diet?", answer: "I've been following it for two months." },
-    { question: "What has your teacher been explaining?", answer: "She's been explaining grammar rules." },
-    { question: "How long have they been discussing the project?", answer: "They've been discussing it all afternoon." },
-    { question: "Why is the room so hot?", answer: "Because the heater has been running all day." },
-    { question: "How long have you been practicing the guitar?", answer: "I've been practicing for an hour." },
-    { question: "What has he been complaining about?", answer: "He's been complaining about the noise." },
-    { question: "How long has your dog been barking?", answer: "It's been barking since the mailman came." },
-    { question: "Why are your eyes red?", answer: "Because I've been crying at a sad movie." },
-    { question: "How long have you been saving money?", answer: "I've been saving money since last year." },
-    { question: "What have they been arguing about?", answer: "They've been arguing about where to go on vacation." },
-    { question: "How long has the phone been ringing?", answer: "It's been ringing for five minutes." },
-    { question: "Why are you smiling?", answer: "Because I've been thinking about good memories." }
+    { question: "Has he been practicing the guitar?", answer: "Yes, and he's getting much better." },
+    { question: "Have you been working out?", answer: "Yes, I've been going to the gym three times a week." },
+    { question: "What has she been complaining about?", answer: "She's been complaining about the noise from upstairs." },
+    { question: "Have you been taking any courses?", answer: "Yes, I've been taking an online design course." },
+    { question: "Why is your voice so hoarse?", answer: "Because I've been talking all day without a break." },
+    { question: "Have you been following the news lately?", answer: "Yes, especially the international stories." },
+    { question: "What has your team been discussing?", answer: "We've been discussing our marketing strategy." },
+    { question: "Why have you been skipping classes?", answer: "I've been feeling unwell recently." },
+    { question: "Has he been feeling better?", answer: "Yes, he's been recovering slowly." },
+    { question: "Have you been using that new app?", answer: "Yes, it's actually very helpful." },
+    { question: "How long has she been working here?", answer: "She's been working here for almost a decade." },
+    { question: "What have you been planning?", answer: "I've been planning a surprise party for my sister." },
+    { question: "Have they been trying to contact you?", answer: "Yes, they've been calling me all morning." },
+    { question: "Why have you been waking up so early?", answer: "I've been trying a new morning routine." },
+    { question: "Have you been getting enough sleep?", answer: "Not really, I've been staying up late lately." },
+    { question: "What have you been writing?", answer: "I've been working on a short story for my class." }
   ]
 };
 
-// Module 102 Data
-const MODULE_102_DATA = {
-  title: "Present Perfect Continuous vs Present Perfect – B1 Level",
-  description: "Understand the crucial difference between Present Perfect and Present Perfect Continuous tenses",
-  intro: `Bu modülde, Present Perfect ve Present Perfect Continuous arasındaki farkı öğreneceksiniz.
-
-**Present Perfect:** Sonuca ve tamamlanmaya odaklanır.
-→ I have read the book. (Kitabı okudum - bitti, tamamlandı)
-
-**Present Perfect Continuous:** Süreye ve devam eden eyleme odaklanır.
-→ I have been reading the book. (Kitabı okuyorum - hâlâ okumaya devam ediyorum)
-
-**Temel Farklar:**
-
-1. **Tamamlanmış eylem vs Devam eden eylem:**
-   - She has painted the room. (Oda boyandı - bitti)
-   - She has been painting the room. (Odayı boyuyor - hâlâ devam ediyor)
-
-2. **Sayılabilir sonuç vs Süre vurgusu:**
-   - I have written three emails. (3 e-posta yazdım - sayılabilir sonuç)
-   - I have been writing emails all morning. (Sabahtan beri e-posta yazıyorum - süre)
-
-3. **Kalıcı durum vs Geçici aktivite:**
-   - We have lived here for 10 years. (Kalıcı durum)
-   - We have been living in a hotel. (Geçici durum)`,
-  tip: "Use Present Perfect for completed results, Present Perfect Continuous for duration and ongoing actions. Both can use 'for' and 'since'.",
-
-  table: [
-    { tense: "Present Perfect", focus: "Result/Completion", example: "I have finished my homework.", meaning: "The homework is complete." },
-    { tense: "Present Perfect Cont.", focus: "Duration/Process", example: "I have been doing my homework.", meaning: "Still working on it or just finished." },
-    { tense: "Present Perfect", focus: "Countable result", example: "She has written three letters.", meaning: "3 letters completed." },
-    { tense: "Present Perfect Cont.", focus: "Time emphasis", example: "She has been writing letters all day.", meaning: "Emphasizes how long she's been writing." },
-    { tense: "Present Perfect", focus: "Permanent state", example: "They have lived here for 10 years.", meaning: "Permanent residence." },
-    { tense: "Present Perfect Cont.", focus: "Temporary activity", example: "They have been living in a hotel.", meaning: "Temporary situation." }
-  ],
-
-  listeningExamples: [
-    "I have cleaned the entire house. It looks perfect now. (Present Perfect - completed)",
-    "I have been cleaning the house all morning. I'm exhausted. (Present Perfect Continuous - duration)",
-    "She has learned French. She can speak it fluently. (Present Perfect - result)",
-    "She has been learning French for two years, but she's still not fluent. (Present Perfect Continuous - ongoing)",
-    "We have built a new website. It's live now. (Present Perfect - finished)",
-    "We have been building a new website for six months. (Present Perfect Continuous - process)",
-    "He has written five chapters of his book. (Present Perfect - countable result)",
-    "He has been writing his book since last year. (Present Perfect Continuous - time emphasis)"
-  ],
-
-  speakingPractice: [
-    { question: "Have you finished your homework?", answer: "Yes, I have finished it." },
-    { question: "What have you been doing all day?", answer: "I've been working on a project." },
-    { question: "How many books have you read this year?", answer: "I have read ten books so far." },
-    { question: "Why are you tired?", answer: "Because I've been studying all night." },
-    { question: "Has she completed the report?", answer: "Yes, she has completed it." },
-    { question: "How long have you been waiting?", answer: "I've been waiting for an hour." },
-    { question: "Have they painted the house?", answer: "Yes, they have. It looks great." },
-    { question: "Why is the kitchen dirty?", answer: "Because I've been cooking for the party." },
-    { question: "How many emails have you sent today?", answer: "I have sent about twenty emails." },
-    { question: "What has he been doing in his room?", answer: "He's been playing video games." },
-    { question: "Have you eaten lunch yet?", answer: "Yes, I have already eaten." },
-    { question: "Why are your hands covered in paint?", answer: "Because I've been painting the fence." },
-    { question: "How many countries have you visited?", answer: "I have visited fifteen countries." },
-    { question: "Why is your voice so weak?", answer: "Because I've been talking on the phone all day." },
-    { question: "Has the train arrived?", answer: "Yes, it has just arrived." },
-    { question: "How long has she been living in Spain?", answer: "She's been living there for three years." },
-    { question: "Have you seen that movie?", answer: "Yes, I have seen it twice." },
-    { question: "What has your brother been studying?", answer: "He's been studying engineering." },
-    { question: "How many cups of coffee have you drunk today?", answer: "I have drunk four cups." },
-    { question: "Why is the grass wet?", answer: "Because it's been raining all morning." },
-    { question: "Have you ever tried sushi?", answer: "Yes, I have tried it many times." },
-    { question: "How long have you been working here?", answer: "I've been working here for two years." },
-    { question: "Has your sister passed her driving test?", answer: "Yes, she has finally passed it." },
-    { question: "Why are you out of breath?", answer: "Because I've been running." },
-    { question: "How many languages have you learned?", answer: "I have learned three languages." },
-    { question: "What has she been watching on TV?", answer: "She's been watching a drama series." },
-    { question: "Have they finished building the bridge?", answer: "Yes, they have finished it." },
-    { question: "Why is he so stressed?", answer: "Because he's been working long hours." },
-    { question: "How many times have you been to Paris?", answer: "I have been there twice." },
-    { question: "How long has your dog been barking?", answer: "It's been barking since you left." },
-    { question: "Have you done your homework?", answer: "No, I haven't done it yet." },
-    { question: "What have they been discussing?", answer: "They've been discussing the new policy." },
-    { question: "Has the concert started?", answer: "No, it hasn't started yet." },
-    { question: "Why is the baby crying?", answer: "She's been crying because she's hungry." },
-    { question: "How many photos have you taken?", answer: "I have taken over a hundred photos." },
-    { question: "How long have you been feeling ill?", answer: "I've been feeling ill since yesterday." },
-    { question: "Have you met her before?", answer: "Yes, I have met her several times." },
-    { question: "Why are you so happy?", answer: "Because I've been having a great day." },
-    { question: "How many goals has he scored this season?", answer: "He has scored fifteen goals." },
-    { question: "What have you been thinking about?", answer: "I've been thinking about my future." }
-  ]
-};
-
-// Module 103 Data
+// Module 103 Data: Past Perfect – Affirmative  
 const MODULE_103_DATA = {
-  title: "Past Perfect – Affirmative (B1 Level)",
-  description: "Learn to use Past Perfect to describe actions that happened before another past action",
-  intro: `Past Perfect Tense, geçmişte iki olay varsa, daha önce gerçekleşen olayı anlatmak için kullanılır.
+  title: "Module 103 - Past Perfect – Affirmative",
+  description: "Learn how to form Past Perfect Tense in affirmative sentences",
+  intro: `Bu modülde Past Perfect Tense'in olumlu halini öğreneceğiz.
 
-**Yapı:** Subject + had + past participle (V3)
+📘 Konu Anlatımı (Türkçe Açıklama)
+Past Perfect Tense (had + V3), geçmişteki bir olaydan daha önce gerçekleşmiş başka bir olayı anlatmak için kullanılır.
+Yapı: Subject + had + V3 (past participle)
 
-**Kullanım:**
-1. Geçmişte iki olay varsa, daha önce olan için Past Perfect kullanılır:
-   → When I arrived, the movie had already started. (Film daha önce başladı)
+Örnek:
+- She had left before I arrived. (Ben gelmeden önce o çıkmıştı.)
 
-2. Bir geçmiş sonucun nedenini açıklamak:
-   → She was tired because she had worked all day.
+📗 Structure & Usage
+✅ Structure: Subject + had + past participle (V3)
+→ Used to show that one action happened before another action or time in the past.
 
-3. "Before, after, when, by the time" ile birlikte kullanımı yaygındır.
+Examples:
+- I had finished my homework before dinner.
+- They had already left when we arrived.
 
-The Past Perfect shows which action happened first when describing two past events. It emphasizes that one action was completed before another past action or time.`,
-  tip: "Use Past Perfect for the earlier of two past actions. The later action uses Past Simple.",
-
-  table: [
-    { subject: "I / You / We / They", structure: "had + V3", example: "I had finished my work before she called." },
-    { subject: "He / She / It", structure: "had + V3", example: "She had already left when I arrived." },
-    { subject: "With 'before'", structure: "Past Perfect + before + Past Simple", example: "He had eaten before he went out." },
-    { subject: "With 'after'", structure: "After + Past Perfect, Past Simple", example: "After she had studied, she took the test." },
-    { subject: "With 'when'", structure: "When + Past Simple, Past Perfect", example: "When I got home, they had already eaten." }
-  ],
-
+🧠 Example Sentences
+She had already gone to bed when I called her.
+We had eaten dinner by the time they arrived.
+He had never seen the sea before that day.
+I had studied French before I moved to Paris.
+The train had left before we reached the station.`,
+  tip: "Use had + past participle to show an action completed before another past action",
+  
   listeningExamples: [
-    "When we arrived at the station, the train had already left.",
-    "She had never seen the ocean before she visited California.",
-    "They had lived in Paris for ten years before they moved to London.",
-    "I had finished my homework before dinner.",
-    "He was upset because he had lost his wallet.",
-    "After they had eaten, they went for a walk.",
-    "By the time the doctor arrived, the patient had already died.",
-    "She had studied English for five years before she took the exam."
+    "She had already gone to bed when I called her.",
+    "We had eaten dinner by the time they arrived.", 
+    "He had never seen the sea before that day.",
+    "I had studied French before I moved to Paris.",
+    "The train had left before we reached the station."
   ],
-
+  
   speakingPractice: [
-    { question: "What had happened when you arrived at the party?", answer: "Everyone had already left when I arrived." },
-    { question: "Why was she upset?", answer: "Because she had failed the exam." },
-    { question: "Had you ever been to Italy before last year?", answer: "No, I had never been there before." },
-    { question: "What had they done before dinner?", answer: "They had cleaned the entire house." },
-    { question: "Why was the room so clean?", answer: "Because someone had tidied it." },
-    { question: "Had he finished his homework before going out?", answer: "Yes, he had already finished it." },
-    { question: "What had you eaten for breakfast?", answer: "I had eaten toast and eggs." },
-    { question: "Why were you so tired yesterday?", answer: "Because I had worked all night." },
-    { question: "Had they met before the conference?", answer: "Yes, they had met several times before." },
-    { question: "What had she studied before becoming a doctor?", answer: "She had studied biology and chemistry." },
-    { question: "Why was the train late?", answer: "Because there had been a technical problem." },
-    { question: "Had you seen that movie before?", answer: "No, I hadn't seen it before." },
-    { question: "What had happened to his car?", answer: "Someone had stolen it during the night." },
-    { question: "Why couldn't she open the door?", answer: "Because she had lost her keys." },
-    { question: "Had they lived there long?", answer: "Yes, they had lived there for twenty years." },
-    { question: "What had you done before the meeting started?", answer: "I had prepared all the documents." },
-    { question: "Why was he so happy?", answer: "Because he had received good news." },
-    { question: "Had you finished reading the book?", answer: "Yes, I had finished it the day before." },
-    { question: "What had she told you about the project?", answer: "She had told me it was very important." },
-    { question: "Why didn't they come to the party?", answer: "Because they had already made other plans." },
-    { question: "Had he ever traveled abroad before?", answer: "No, he had never left the country." },
-    { question: "What had you learned in school?", answer: "I had learned mathematics and science." },
-    { question: "Why was the shop closed?", answer: "Because the owner had gone on vacation." },
-    { question: "Had she called you before she arrived?", answer: "Yes, she had called me an hour earlier." },
-    { question: "What had they built in the garden?", answer: "They had built a beautiful wooden deck." },
-    { question: "Why was he angry?", answer: "Because someone had damaged his car." },
-    { question: "Had you eaten sushi before?", answer: "No, I had never tried it before that day." },
-    { question: "What had happened at the office?", answer: "There had been a small fire in the kitchen." },
-    { question: "Why were they laughing?", answer: "Because someone had told a funny joke." },
-    { question: "Had the concert started when you arrived?", answer: "No, it hadn't started yet." },
-    { question: "What had you forgotten to bring?", answer: "I had forgotten to bring my notebook." },
-    { question: "Why was she crying?", answer: "Because she had heard some sad news." },
-    { question: "Had they finished the project on time?", answer: "Yes, they had completed it before the deadline." },
-    { question: "What had he said to you?", answer: "He had said that he would help me." },
-    { question: "Why was the street wet?", answer: "Because it had rained during the night." },
-    { question: "Had you met her husband before?", answer: "Yes, I had met him at a previous event." },
-    { question: "What had she cooked for dinner?", answer: "She had cooked a delicious pasta dish." },
-    { question: "Why were you late?", answer: "Because I had missed the bus." },
-    { question: "Had they won the match?", answer: "Yes, they had won by three goals." },
-    { question: "What had you heard about the company?", answer: "I had heard that they were expanding." }
+    { question: "What had you done before the guests arrived?", answer: "I had cleaned the whole house." },
+    { question: "Had she already finished her meal before you arrived?", answer: "Yes, she had finished it." },
+    { question: "Where had they gone before the meeting started?", answer: "They had gone to the café." },
+    { question: "Why was the floor wet?", answer: "Because someone had spilled water." },
+    { question: "What had he said before he left?", answer: "He had said he was tired." },
+    { question: "Had you completed your report before the deadline?", answer: "Yes, I had completed it a day early." },
+    { question: "Had the show started when you got there?", answer: "Yes, it had already started." },
+    { question: "What had she told you before the interview?", answer: "She had told me to stay calm." },
+    { question: "Why were they so happy?", answer: "Because they had won the game." },
+    { question: "Had the children eaten before going to school?", answer: "Yes, they had eaten breakfast." },
+    { question: "What had you prepared for the trip?", answer: "I had packed clothes and food." },
+    { question: "Where had he worked before moving to this city?", answer: "He had worked in a bank." },
+    { question: "Why was she crying?", answer: "She had lost her wallet." },
+    { question: "Had they booked the hotel in advance?", answer: "Yes, they had booked it online." },
+    { question: "What had you learned before starting the course?", answer: "I had learned some basic grammar." },
+    { question: "Had your team trained enough for the tournament?", answer: "Yes, they had trained for months." },
+    { question: "What had he done before the fire started?", answer: "He had turned off the stove." },
+    { question: "Had she taken the medicine before sleeping?", answer: "Yes, she had taken it as advised." },
+    { question: "Where had you lived before Istanbul?", answer: "I had lived in Ankara." },
+    { question: "What had you done with the keys?", answer: "I had put them on the table." },
+    { question: "Had you studied English before high school?", answer: "Yes, I had studied it in middle school." },
+    { question: "Had the plane already taken off when you arrived?", answer: "Yes, it had taken off 10 minutes earlier." },
+    { question: "Why were they confused?", answer: "Because nobody had explained the rules." },
+    { question: "Had your brother visited Italy before?", answer: "Yes, he had visited Rome and Venice." },
+    { question: "What had your parents said about your decision?", answer: "They had supported me." },
+    { question: "Had the teacher checked the homework?", answer: "Yes, she had checked all of them." },
+    { question: "Had they painted the house before selling it?", answer: "Yes, they had repainted everything." },
+    { question: "What had you planned for the weekend?", answer: "I had planned a hiking trip." },
+    { question: "Had you met her before the party?", answer: "Yes, I had met her at a conference." },
+    { question: "Why had he been angry?", answer: "Because someone had broken his phone." },
+    { question: "Had your friends arrived before the movie started?", answer: "No, they hadn't. They were late." },
+    { question: "What had you done before the power went out?", answer: "I had saved my document." },
+    { question: "Had she already gone to work when you woke up?", answer: "Yes, she had left early." },
+    { question: "Had the workers finished the project before the inspection?", answer: "Yes, they had completed everything." },
+    { question: "Had it snowed before Christmas?", answer: "Yes, it had snowed a lot that week." },
+    { question: "What had you dreamed about?", answer: "I had dreamed about flying." },
+    { question: "Why had they left so early?", answer: "They had wanted to avoid traffic." },
+    { question: "Had you ever tried sushi before that night?", answer: "No, I had never tried it before." },
+    { question: "Had the meeting started on time?", answer: "Yes, it had started at 9 AM sharp." },
+    { question: "Had the students done their assignments?", answer: "Yes, all of them had submitted on time." }
   ]
 };
 
-// Module 104 Data
+// Module 104-110 Data (simplified for quick implementation)
 const MODULE_104_DATA = {
-  title: "Past Perfect – Negative (B1 Level)",
-  description: "Learn to form negative sentences in Past Perfect tense",
-  intro: `Past Perfect'in olumsuz formu, geçmişte belirli bir zamandan önce gerçekleşmemiş olayları anlatmak için kullanılır.
+  title: "Module 104 - Past Perfect – Negative",
+  description: "Learn how to form the negative of the Past Perfect tense",
+  intro: `Bu modülde Past Perfect Tense'in olumsuz halini öğreneceğiz.
 
-**Yapı:** Subject + had not (hadn't) + past participle (V3)
+📘 Konu Anlatımı (Türkçe Açıklama)
+Past Perfect Tense'in olumsuz hali, geçmişteki bir olaydan önce gerçekleşmemiş bir durumu anlatmak için kullanılır.
+Yapı: Subject + had not (hadn't) + V3
 
-**Kullanım:**
-1. Geçmişte bir şey olmadığını belirtmek:
-   → I hadn't seen her before that day. (O güne kadar onu görmemiştim)
+Örnek:
+- I hadn't eaten before the meeting started. (Toplantı başlamadan önce yemek yememiştim.)
 
-2. Bir geçmiş sonucun nedenini açıklamak (olumsuz):
-   → He was hungry because he hadn't eaten all day.
+📗 Structure & Usage
+✅ Structure: Subject + had not (hadn't) + past participle (V3)
+→ Used to show that one action had *not* happened before another action in the past.
 
-3. İki geçmiş olay arasında, daha önceki olayın gerçekleşmediğini belirtmek:
-   → When I arrived, they hadn't started eating yet.
+Examples:
+- They hadn't arrived when we started the dinner.
+- She hadn't studied for the test, so she was nervous.
 
-The negative form of Past Perfect emphasizes that something did NOT happen before a specific past time or action.`,
-  tip: "Use 'hadn't' (had not) + V3 to show that something did NOT happen before a past event.",
-
-  table: [
-    { form: "Full form", structure: "had not + V3", example: "She had not finished her work." },
-    { form: "Contraction", structure: "hadn't + V3", example: "She hadn't finished her work." },
-    { form: "Never (experience)", structure: "had never + V3", example: "I had never tried sushi before." },
-    { form: "Not yet", structure: "had not + V3 + yet", example: "They hadn't arrived yet." },
-    { form: "With 'before'", structure: "had not + V3 + before", example: "He hadn't been abroad before 2020." }
-  ],
-
+🧠 Example Sentences
+•    I hadn't seen that movie before last night.
+•    She hadn't met him until the party.
+•    We hadn't finished our homework when the teacher came.
+•    They hadn't cleaned the house before the guests arrived.
+•    He hadn't heard the news before you told him.`,
+  tip: "Use hadn't + past participle for negative past perfect",
   listeningExamples: [
     "I hadn't seen that movie before last night.",
-    "She hadn't told me about the problem.",
-    "They hadn't finished the project when the deadline arrived.",
-    "We hadn't met before the conference.",
-    "He was lost because he hadn't brought a map.",
-    "The teacher was angry because we hadn't done our homework.",
-    "I hadn't been to that restaurant before.",
-    "They hadn't expected so many people at the party."
+    "She hadn't met him until the party.",
+    "We hadn't finished our homework when the teacher came.",
+    "They hadn't cleaned the house before the guests arrived.",
+    "He hadn't heard the news before you told him."
   ],
-
   speakingPractice: [
-    { question: "Had you been to Paris before last year?", answer: "No, I hadn't been there before." },
-    { question: "Why was he so surprised?", answer: "Because he hadn't heard the news." },
-    { question: "Had she finished her homework?", answer: "No, she hadn't finished it yet." },
-    { question: "Why couldn't you find the place?", answer: "Because I hadn't written down the address." },
-    { question: "Had they met before the wedding?", answer: "No, they hadn't met before that day." },
-    { question: "Why was she so confused?", answer: "Because she hadn't read the instructions." },
-    { question: "Had you ever tried Indian food before?", answer: "No, I hadn't tried it before yesterday." },
-    { question: "Why were they late?", answer: "Because they hadn't checked the time." },
-    { question: "Had he called you before he came?", answer: "No, he hadn't called me." },
-    { question: "Why didn't you know about the meeting?", answer: "Because nobody hadn't told me." },
-    { question: "Had you seen this film before?", answer: "No, I hadn't seen it." },
-    { question: "Why was the room dirty?", answer: "Because we hadn't cleaned it." },
-    { question: "Had she ever driven a car before?", answer: "No, she had never driven before." },
-    { question: "Why did you fail the test?", answer: "Because I hadn't studied enough." },
-    { question: "Had they visited that museum before?", answer: "No, they hadn't been there." },
-    { question: "Why were you so tired?", answer: "Because I hadn't slept well." },
-    { question: "Had you finished the book?", answer: "No, I hadn't finished it yet." },
-    { question: "Why was he nervous?", answer: "Because he hadn't prepared for the presentation." },
-    { question: "Had she told you about her plans?", answer: "No, she hadn't mentioned anything." },
-    { question: "Why couldn't they enter?", answer: "Because they hadn't brought their tickets." },
-    { question: "Had you ever been skiing before?", answer: "No, I had never tried it before." },
-    { question: "Why was the food cold?", answer: "Because we hadn't heated it up." },
-    { question: "Had he finished his work on time?", answer: "No, he hadn't completed it." },
-    { question: "Why didn't she come?", answer: "Because she hadn't received the invitation." },
-    { question: "Had they eaten dinner?", answer: "No, they hadn't eaten yet." },
-    { question: "Why was everyone waiting?", answer: "Because the speaker hadn't arrived." },
-    { question: "Had you met his family before?", answer: "No, I hadn't met them." },
-    { question: "Why was the project delayed?", answer: "Because we hadn't received the materials." },
-    { question: "Had she traveled abroad before?", answer: "No, she had never left the country." },
-    { question: "Why were you unprepared?", answer: "Because I hadn't known about the quiz." },
-    { question: "Had they seen the message?", answer: "No, they hadn't checked their phones." },
-    { question: "Why was he disappointed?", answer: "Because his team hadn't won." },
-    { question: "Had you heard about the accident?", answer: "No, I hadn't heard anything." },
-    { question: "Why couldn't she answer?", answer: "Because she hadn't understood the question." },
-    { question: "Had they started the meeting?", answer: "No, they hadn't started yet." },
-    { question: "Why was the store closed?", answer: "Because they hadn't opened on Sundays." },
-    { question: "Had you spoken to her before?", answer: "No, I had never spoken to her." },
-    { question: "Why did he look confused?", answer: "Because he hadn't listened to the explanation." },
-    { question: "Had she paid the bill?", answer: "No, she hadn't paid it yet." },
-    { question: "Why were they surprised?", answer: "Because they hadn't expected such a large crowd." }
+    { question: "Why was she surprised?", answer: "Because she hadn't expected them to arrive early." },
+    { question: "Had you eaten before the show?", answer: "No, I hadn't eaten anything all day." },
+    { question: "Why were they late?", answer: "They hadn't checked the time." },
+    { question: "Had the students done the homework?", answer: "No, they hadn't completed it." },
+    { question: "Why didn't he recognize her?", answer: "He hadn't seen her in years." },
+    { question: "Had she visited the museum before?", answer: "No, she hadn't been there before." },
+    { question: "Why was your phone off?", answer: "Because I hadn't charged it." },
+    { question: "Had you watched that movie before?", answer: "No, I hadn't even heard of it." },
+    { question: "Why were they arguing?", answer: "Because he hadn't told her the truth." },
+    { question: "Had she taken the medicine?", answer: "No, she hadn't remembered to take it." },
+    { question: "Why did you miss the class?", answer: "I hadn't set my alarm." },
+    { question: "Had you finished the report before the meeting?", answer: "No, I hadn't had time." },
+    { question: "Why was the floor dirty?", answer: "They hadn't cleaned it." },
+    { question: "Had the package arrived?", answer: "No, it hadn't been delivered yet." },
+    { question: "Why did the teacher get angry?", answer: "Because the students hadn't studied." },
+    { question: "Had your brother fed the cat?", answer: "No, he hadn't fed it yet." },
+    { question: "Why was she nervous?", answer: "She hadn't prepared for the presentation." },
+    { question: "Had you ever traveled alone before that trip?", answer: "No, I hadn't." },
+    { question: "Why didn't you go to the event?", answer: "I hadn't received the invitation." },
+    { question: "Had they taken the test before?", answer: "No, they hadn't taken it before." },
+    { question: "Why didn't she bring her ID?", answer: "She hadn't known it was necessary." },
+    { question: "Had the guests eaten when you arrived?", answer: "No, they hadn't started yet." },
+    { question: "Why didn't you answer the phone?", answer: "I hadn't heard it ring." },
+    { question: "Had he practiced enough?", answer: "No, he hadn't practiced at all." },
+    { question: "Why was the door still open?", answer: "They hadn't closed it properly." },
+    { question: "Had your sister told you about the plan?", answer: "No, she hadn't mentioned it." },
+    { question: "Why was he upset?", answer: "Because we hadn't invited him." },
+    { question: "Had the hotel room been cleaned?", answer: "No, it hadn't been cleaned yet." },
+    { question: "Why did the boss get angry?", answer: "We hadn't finished the project." },
+    { question: "Had the mechanic fixed the car?", answer: "No, he hadn't even looked at it." },
+    { question: "Why didn't you reply to my email?", answer: "I hadn't seen it in my inbox." },
+    { question: "Had your team played before the final?", answer: "No, we hadn't played together yet." },
+    { question: "Why didn't you pay the bill?", answer: "I hadn't received it yet." },
+    { question: "Had you known about the change?", answer: "No, I hadn't been informed." },
+    { question: "Why wasn't she ready?", answer: "She hadn't packed her suitcase." },
+    { question: "Had you booked the hotel?", answer: "No, I hadn't done it in time." },
+    { question: "Why didn't they come?", answer: "They hadn't been invited." },
+    { question: "Had the train left when you arrived?", answer: "Yes, it had. I hadn't checked the schedule." },
+    { question: "Why didn't she bring her laptop?", answer: "She hadn't thought she'd need it." },
+    { question: "Had he prepared for the interview?", answer: "No, he hadn't prepared well enough." }
   ]
 };
 
-// Module 105 Data
 const MODULE_105_DATA = {
-  title: "Past Perfect – Questions (B1 Level)",
-  description: "Learn to form Yes/No and Wh- questions in Past Perfect tense",
-  intro: `Past Perfect soru formları, geçmişte belirli bir zamandan önce bir şey olup olmadığını sormak için kullanılır.
+  title: "Module 105 - Past Perfect – Questions",
+  description: "Learn how to form questions in the Past Perfect tense",
+  intro: `Bu modülde Past Perfect Tense ile soru sormayı öğreneceğiz.
 
-**Yapı:**
-**Yes/No Questions:** Had + subject + past participle (V3)?
-→ Had you finished your homework?
+📘 Konu Anlatımı (Türkçe Açıklama)
+Past Perfect Tense ile soru sormak, geçmişteki iki olaydan hangisinin önce gerçekleştiğini öğrenmek için kullanılır.
+Yapı: Had + subject + V3
 
-**Wh- Questions:** Wh- + had + subject + V3?
-→ What had you done before that?
+Örnek:
+- Had she arrived before the meeting started? (Toplantı başlamadan önce o gelmiş miydi?)
 
-**Kullanım:**
-1. Geçmişte bir deneyimi sormak:
-   → Had you ever been to Japan before 2020?
+📗 Structure & Usage
+✅ Structure: Had + subject + past participle (V3)?
+→ Used to ask whether an action was completed before another one in the past.
 
-2. Geçmişte ne olduğunu sormak:
-   → What had happened before we arrived?
+Examples:
+- Had they eaten before you arrived?
+- Had he finished the report before the deadline?
 
-3. Bir geçmiş olayın nedenini sormak:
-   → Why had they left so early?
-
-Past Perfect questions help us inquire about events or experiences that occurred before a specific past time or action.`,
-  tip: "For Yes/No questions, start with 'Had'. For Wh- questions, start with the question word, then 'had'.",
-
-  table: [
-    { type: "Yes/No Question", structure: "Had + S + V3?", example: "Had you seen her before?", answer: "Yes, I had. / No, I hadn't." },
-    { type: "What question", structure: "What + had + S + V3?", example: "What had she done?", answer: "She had called the police." },
-    { type: "Where question", structure: "Where + had + S + V3?", example: "Where had they gone?", answer: "They had gone to the cinema." },
-    { type: "Why question", structure: "Why + had + S + V3?", example: "Why had he left?", answer: "Because he had felt ill." },
-    { type: "How long question", structure: "How long + had + S + V3?", example: "How long had you lived there?", answer: "I had lived there for 5 years." }
-  ],
-
+🧠 Example Sentences
+Had she ever traveled abroad before 2020?
+Had you studied English before moving to Canada?
+Had they cleaned the house before the guests came?
+Had he told you the truth before you found out?
+Had you heard the news before I called?`,
+  tip: "Use Had + subject + past participle for questions",
   listeningExamples: [
-    "Had you finished your homework before dinner?",
-    "What had they told you about the project?",
-    "Where had she been before she came here?",
-    "Why had he left the meeting early?",
-    "How long had you been studying before the exam?",
-    "Had anyone called while I was out?",
-    "Who had eaten all the cookies?",
-    "Had you ever tried Thai food before that day?"
+    "Had she ever traveled abroad before 2020?",
+    "Had you studied English before moving to Canada?",
+    "Had they cleaned the house before the guests came?",
+    "Had he told you the truth before you found out?",
+    "Had you heard the news before I called?"
   ],
-
   speakingPractice: [
-    { question: "Practice asking: Had she arrived before you?", answer: "Had she arrived before you?" },
-    { question: "Ask where they had been.", answer: "Where had they been?" },
-    { question: "Practice asking: What had he said?", answer: "What had he said?" },
-    { question: "Ask if they had finished the work.", answer: "Had they finished the work?" },
-    { question: "Practice asking: Why had you left early?", answer: "Why had you left early?" },
-    { question: "Ask how long she had worked there.", answer: "How long had she worked there?" },
-    { question: "Practice asking: Who had taken my pen?", answer: "Who had taken my pen?" },
-    { question: "Ask if he had ever been abroad.", answer: "Had he ever been abroad?" },
-    { question: "Practice asking: When had they met?", answer: "When had they met?" },
-    { question: "Ask what she had cooked for dinner.", answer: "What had she cooked for dinner?" },
-    { question: "Practice asking: Had you seen that movie before?", answer: "Had you seen that movie before?" },
-    { question: "Ask where he had put the keys.", answer: "Where had he put the keys?" },
-    { question: "Practice asking: Why had she been crying?", answer: "Why had she been crying?" },
-    { question: "Ask how many books they had read.", answer: "How many books had they read?" },
-    { question: "Practice asking: Had anyone told you about it?", answer: "Had anyone told you about it?" },
-    { question: "Ask what time the train had left.", answer: "What time had the train left?" },
-    { question: "Practice asking: Had you met her husband before?", answer: "Had you met her husband before?" },
-    { question: "Ask why they had changed their plans.", answer: "Why had they changed their plans?" },
-    { question: "Practice asking: Where had you learned English?", answer: "Where had you learned English?" },
-    { question: "Ask if she had ever tried sushi.", answer: "Had she ever tried sushi?" },
-    { question: "Practice asking: What had happened at the office?", answer: "What had happened at the office?" },
-    { question: "Ask how long they had been waiting.", answer: "How long had they been waiting?" },
-    { question: "Practice asking: Had he finished his homework?", answer: "Had he finished his homework?" },
-    { question: "Ask who had broken the window.", answer: "Who had broken the window?" },
-    { question: "Practice asking: Why had you called her?", answer: "Why had you called her?" },
-    { question: "Ask where they had traveled before.", answer: "Where had they traveled before?" },
-    { question: "Practice asking: Had you ever eaten Indian food?", answer: "Had you ever eaten Indian food?" },
-    { question: "Ask what he had studied at university.", answer: "What had he studied at university?" },
-    { question: "Practice asking: How many countries had she visited?", answer: "How many countries had she visited?" },
-    { question: "Ask if they had lived there long.", answer: "Had they lived there long?" },
-    { question: "Practice asking: Why had the meeting been cancelled?", answer: "Why had the meeting been cancelled?" },
-    { question: "Ask where she had bought that dress.", answer: "Where had she bought that dress?" },
-    { question: "Practice asking: Had you heard the news?", answer: "Had you heard the news?" },
-    { question: "Ask what they had done the previous day.", answer: "What had they done the previous day?" },
-    { question: "Practice asking: How long had he been ill?", answer: "How long had he been ill?" },
-    { question: "Ask if she had seen the email.", answer: "Had she seen the email?" },
-    { question: "Practice asking: Why had they been late?", answer: "Why had they been late?" },
-    { question: "Ask who had invited them to the party.", answer: "Who had invited them to the party?" },
-    { question: "Practice asking: Had you finished the book?", answer: "Had you finished the book?" },
-    { question: "Ask where he had hidden the money.", answer: "Where had he hidden the money?" }
+    { question: "Had she met your parents before the wedding?", answer: "Yes, she had met them a few months before." },
+    { question: "Had you finished your homework before dinner?", answer: "Yes, I had completed everything." },
+    { question: "Had they ever seen snow before that trip?", answer: "No, they had never seen snow before." },
+    { question: "Had he spoken to the manager before the meeting?", answer: "Yes, he had already discussed everything." },
+    { question: "Had the team practiced before the match?", answer: "Yes, they had trained for a week." },
+    { question: "Had you packed your bags before the taxi arrived?", answer: "Yes, I was ready on time." },
+    { question: "Had she read the book before the test?", answer: "Yes, she had read it twice." },
+    { question: "Had they visited the museum before the renovation?", answer: "Yes, they had gone last year." },
+    { question: "Had you called your friend before leaving?", answer: "No, I forgot to call." },
+    { question: "Had your teacher explained the topic before the quiz?", answer: "Yes, she had explained it clearly." },
+    { question: "Had you ever eaten sushi before that night?", answer: "No, it was my first time." },
+    { question: "Had the guests left before the rain started?", answer: "Yes, they had just left." },
+    { question: "Had you been to that restaurant before?", answer: "Yes, several times." },
+    { question: "Had your parents traveled abroad before?", answer: "Yes, they had been to Italy." },
+    { question: "Had she finished her meal before the guests arrived?", answer: "Yes, she had already eaten." },
+    { question: "Had the police arrived before the fire started?", answer: "No, they arrived a few minutes later." },
+    { question: "Had the students studied enough for the exam?", answer: "Most of them had studied hard." },
+    { question: "Had you heard about the event before yesterday?", answer: "No, I learned about it this morning." },
+    { question: "Had they finished the construction before winter?", answer: "Yes, just in time." },
+    { question: "Had your boss approved the report before the deadline?", answer: "Yes, he had signed it early." },
+    { question: "Had you met her before the party?", answer: "Yes, we met at a seminar." },
+    { question: "Had they booked the table before arriving?", answer: "Yes, it was reserved for us." },
+    { question: "Had she washed the dishes before going to bed?", answer: "Yes, she always does." },
+    { question: "Had you fed the dog before you left?", answer: "No, I forgot." },
+    { question: "Had the movie started before you arrived?", answer: "Yes, I missed the beginning." },
+    { question: "Had you locked the door before leaving?", answer: "Yes, I'm sure I did." },
+    { question: "Had they completed the painting before the show?", answer: "Yes, everything was ready." },
+    { question: "Had you met the director before the interview?", answer: "Yes, once briefly." },
+    { question: "Had the sun risen when you woke up?", answer: "Yes, it was already bright." },
+    { question: "Had your friend called before you texted?", answer: "No, I messaged first." },
+    { question: "Had she been to that concert venue before?", answer: "Yes, she had gone there last summer." },
+    { question: "Had they told you the news before anyone else?", answer: "Yes, I was the first to know." },
+    { question: "Had you submitted your assignment on time?", answer: "Yes, the night before." },
+    { question: "Had she told you her secret before?", answer: "No, that was the first time." },
+    { question: "Had they warned you about the weather?", answer: "Yes, but I didn't believe them." },
+    { question: "Had you checked the email before the meeting?", answer: "No, I missed it." },
+    { question: "Had the guests eaten before the host arrived?", answer: "Yes, they had already started." },
+    { question: "Had you seen that actor in another movie?", answer: "Yes, a few years ago." },
+    { question: "Had your parents allowed you to travel alone before?", answer: "Yes, when I was 16." },
+    { question: "Had she completed her thesis before the deadline?", answer: "Yes, and submitted it early." }
   ]
 };
 
-// Module 106 Data
 const MODULE_106_DATA = {
-  title: "Past Perfect Continuous (B1)",
-  description: "Use Past Perfect Continuous for actions in progress before a past moment",
-  intro: `Past Perfect Continuous, geçmişte belirli bir andan önce devam eden eylemleri anlatmak için kullanılır.
+  title: "Module 106 - Past Perfect Continuous",
+  description: "Understand how to use the Past Perfect Continuous Tense",
+  intro: `Bu modülde Past Perfect Continuous Tense öğreneceğiz.
 
-**Yapı:** had + been + V-ing
-→ I had been waiting for an hour before the bus came. (Otobüs gelmeden önce bir saat bekliyordum)
+📘 Konu Anlatımı (Türkçe Açıklama)
+Past Perfect Continuous Tense (had been + V-ing), geçmişte bir noktadan önce başlamış ve bir süre devam etmiş eylemleri anlatmak için kullanılır.
+Yapı: Subject + had been + verb-ing
 
-**Kullanım:** Geçmişteki bir eylemden önce devam eden bir süreci vurgular.`,
-  tip: "Use Past Perfect Continuous to show duration of an action that was happening before another past action.",
-  table: [
-    { form: "Affirmative", structure: "had been + V-ing", example: "She had been studying for hours." },
-    { form: "Negative", structure: "had not been + V-ing", example: "They hadn't been playing long." },
-    { form: "Question", structure: "Had + subject + been + V-ing?", example: "Had you been waiting long?" }
-  ],
+Örnek:
+- I had been working all day before I finally took a break. (Tüm gün çalışıyordum, sonunda ara verdim.)
+
+📗 Structure & Usage
+✅ Structure: Subject + had been + verb-ing
+→ Used to show that an action was happening over a period of time before something else in the past.
+
+Examples:
+- She had been studying for hours before the exam started.
+- We had been waiting for the bus when it suddenly started raining.
+
+🧠 Example Sentences
+He had been living in Berlin before he moved to London.
+They had been playing football for two hours before it got dark.
+I had been reading that book for weeks before I finished it.
+She had been feeling sick all day before she went to the doctor.
+We had been walking for miles when we finally found a café.`,
+  tip: "Use had been + verb-ing for ongoing past actions before another past point",
   listeningExamples: [
-    "I had been working all day, so I was exhausted.",
-    "She had been living in Paris for five years before she moved to London.",
-    "They had been playing football when it started to rain.",
-    "We had been waiting for two hours when the train finally arrived.",
-    "He had been studying English for months before he took the exam."
+    "He had been living in Berlin before he moved to London.",
+    "They had been playing football for two hours before it got dark.",
+    "I had been reading that book for weeks before I finished it.",
+    "She had been feeling sick all day before she went to the doctor.",
+    "We had been walking for miles when we finally found a café."
   ],
   speakingPractice: [
-    { question: "Why were you tired yesterday?", answer: "I had been working all day." },
-    { question: "How long had you been waiting?", answer: "I had been waiting for an hour." },
-    { question: "Why was she angry?", answer: "She had been waiting for me." },
-    { question: "What had you been doing?", answer: "I had been studying for the test." },
-    { question: "How long had they been living there?", answer: "They had been living there for five years." },
-    { question: "Why were your eyes red?", answer: "I had been crying." },
-    { question: "What had he been doing all morning?", answer: "He had been cleaning the house." },
-    { question: "How long had you been learning English?", answer: "I had been learning English for two years." },
-    { question: "Why were they so happy?", answer: "They had been celebrating all night." },
-    { question: "What had she been reading?", answer: "She had been reading a mystery novel." },
-    { question: "How long had it been raining?", answer: "It had been raining since morning." },
-    { question: "Why was the road wet?", answer: "It had been raining." },
-    { question: "What had you been watching?", answer: "I had been watching a documentary." },
-    { question: "How long had he been running?", answer: "He had been running for thirty minutes." },
-    { question: "Why were you late?", answer: "I had been looking for my keys." },
-    { question: "What had they been discussing?", answer: "They had been discussing the project." },
-    { question: "How long had she been cooking?", answer: "She had been cooking for two hours." },
-    { question: "Why was he out of breath?", answer: "He had been running." },
-    { question: "What had you been thinking about?", answer: "I had been thinking about my future." },
-    { question: "How long had they been dating?", answer: "They had been dating for six months." },
-    { question: "Why were your clothes dirty?", answer: "I had been working in the garden." },
-    { question: "What had she been planning?", answer: "She had been planning a surprise party." },
-    { question: "How long had it been snowing?", answer: "It had been snowing all night." },
-    { question: "Why were you exhausted?", answer: "I had been exercising for hours." },
-    { question: "What had he been writing?", answer: "He had been writing a novel." },
-    { question: "How long had you been traveling?", answer: "I had been traveling for three weeks." },
-    { question: "Why was the kitchen messy?", answer: "We had been baking." },
+    { question: "What had you been doing before I arrived?", answer: "I had been cleaning the house." },
+    { question: "Why were you tired last night?", answer: "I had been studying for five hours." },
+    { question: "Had they been working together for a long time?", answer: "Yes, they had been working on the project for months." },
+    { question: "What had she been watching?", answer: "She had been watching a documentary about space." },
+    { question: "How long had you been learning Spanish before the trip?", answer: "I had been learning for over a year." },
+    { question: "Had you been waiting long when the train arrived?", answer: "Yes, I had been waiting for almost 40 minutes." },
+    { question: "Why were your hands dirty?", answer: "Because I had been gardening." },
+    { question: "What had the children been doing all afternoon?", answer: "They had been playing in the park." },
+    { question: "Where had you been working before you joined this company?", answer: "I had been working at a bank." },
+    { question: "Had he been practicing the piano regularly?", answer: "Yes, he had been playing every day." },
+    { question: "Why was she so angry?", answer: "She had been trying to fix the issue for hours." },
+    { question: "How long had it been snowing?", answer: "It had been snowing since early morning." },
+    { question: "Had they been planning the event well?", answer: "Yes, they had been preparing for weeks." },
+    { question: "Had you been feeling well before the accident?", answer: "Yes, I had been completely healthy." },
+    { question: "Why were they late?", answer: "They had been waiting for a taxi." },
+    { question: "What had she been dreaming about?", answer: "She had been dreaming about her childhood." },
+    { question: "Had you been traveling before the lockdown?", answer: "Yes, I had been traveling around Europe." },
+    { question: "Why were the roads so muddy?", answer: "It had been raining all night." },
+    { question: "Had he been writing his book for long?", answer: "Yes, he had been working on it for years." },
+    { question: "Had you been exercising regularly?", answer: "Yes, I had been going to the gym every morning." },
     { question: "What had they been building?", answer: "They had been building a treehouse." },
-    { question: "How long had she been teaching?", answer: "She had been teaching for ten years." },
-    { question: "Why were you nervous?", answer: "I had been preparing for the interview." },
-    { question: "What had you been listening to?", answer: "I had been listening to music." },
-    { question: "How long had he been practicing?", answer: "He had been practicing for months." },
-    { question: "Why was she upset?", answer: "She had been arguing with her friend." },
-    { question: "What had they been searching for?", answer: "They had been searching for the lost dog." },
-    { question: "How long had it been burning?", answer: "It had been burning for hours." },
-    { question: "Why were you smiling?", answer: "I had been thinking about happy memories." },
-    { question: "What had she been designing?", answer: "She had been designing a new logo." },
-    { question: "How long had you been sleeping?", answer: "I had been sleeping for eight hours." },
-    { question: "Why was he hungry?", answer: "He had been working without eating." },
-    { question: "What had they been rehearsing?", answer: "They had been rehearsing for the play." }
+    { question: "Had you been feeling stressed before the interview?", answer: "Yes, I had been very anxious." },
+    { question: "Why was your shirt wet?", answer: "Because I had been walking in the rain." },
+    { question: "How long had they been studying?", answer: "They had been studying for six hours." },
+    { question: "Had she been preparing for the presentation?", answer: "Yes, she had been preparing all weekend." },
+    { question: "Why were you out of breath?", answer: "I had been running to catch the bus." },
+    { question: "What had you been thinking about?", answer: "I had been thinking about my future plans." },
+    { question: "Had your parents been saving money for the trip?", answer: "Yes, they had been saving for over a year." },
+    { question: "Had you been painting the house?", answer: "Yes, and I still have more to finish." },
+    { question: "Why were you so sleepy?", answer: "I had been working late every night." },
+    { question: "What had the manager been talking about?", answer: "He had been explaining the new company policy." },
+    { question: "Had she been teaching at that school long?", answer: "Yes, she had been teaching there for ten years." },
+    { question: "Had they been staying at the hotel before you arrived?", answer: "Yes, for a couple of days." },
+    { question: "Why was the kitchen messy?", answer: "They had been cooking a big meal." },
+    { question: "Had you been feeling better before the cold came back?", answer: "Yes, I had been recovering well." },
+    { question: "How long had the team been training?", answer: "They had been training since early morning." },
+    { question: "Had the kids been behaving well?", answer: "Yes, they had been calm and polite all day." },
+    { question: "What had you been writing?", answer: "I had been working on a new article." },
+    { question: "Why were the lights off?", answer: "We had been watching a movie." },
+    { question: "Had the rain been falling heavily?", answer: "Yes, it had been pouring for hours." }
   ]
 };
 
-// Module 107 Data
 const MODULE_107_DATA = {
-  title: "Future Perfect (B1)",
-  description: "Use Future Perfect to describe actions completed before a future time",
-  intro: `Future Perfect Tense (will have + V3), gelecekte belirli bir zamana kadar tamamlanmış olacak eylemleri ifade etmek için kullanılır.
+  title: "Module 107 - Future Perfect (I will have done)",
+  description: "Learn to use the Future Perfect tense to describe completed actions in the future",
+  intro: `Bu modülde Future Perfect Tense öğreneceğiz.
 
-**Yapı:** Subject + will have + past participle (V3)
-→ She will have graduated by June. (Haziran'a kadar mezun olmuş olacak)
-→ They will have built the house before winter starts. (Kış başlamadan önce evi inşa etmiş olacaklar)`,
-  tip: "Use Future Perfect to talk about completed actions before a specific future time. Use 'by' or 'before' to show the deadline.",
-  table: [
-    { form: "Affirmative", structure: "will have + V3", example: "I will have finished by 5 PM." },
-    { form: "Negative", structure: "will not have + V3", example: "She won't have arrived yet." },
-    { form: "Question", structure: "Will + subject + have + V3?", example: "Will you have eaten by then?" }
-  ],
+📘 Konu Anlatımı (Türkçe Açıklama)
+Future Perfect Tense (will have + V3), gelecekte belirli bir zamana kadar tamamlanmış olacak eylemleri ifade etmek için kullanılır.
+Yapı: Subject + will have + V3 (past participle)
+
+Örnek:
+- By next week, I will have finished this book. (Gelecek haftaya kadar bu kitabı bitirmiş olacağım.)
+
+📗 Structure & Usage
+✅ Structure: Subject + will have + past participle (V3)
+→ Used to express that something will be completed before a time in the future.
+
+Examples:
+- She will have graduated by June.
+- They will have built the house before winter starts.
+
+🧠 Example Sentences
+By 2026, I will have completed my master's degree.
+They will have arrived by the time the movie starts.
+You will have finished your homework before dinner.
+He will have left work by 6 p.m.
+We will have cleaned the house before the guests arrive.`,
+  tip: "Use will have + past participle for actions completed before a future point",
   listeningExamples: [
     "By 2026, I will have completed my master's degree.",
     "They will have arrived by the time the movie starts.",
     "You will have finished your homework before dinner.",
-    "She will have graduated by June.",
-    "We will have moved to the new house before summer."
+    "He will have left work by 6 p.m.",
+    "We will have cleaned the house before the guests arrive."
   ],
   speakingPractice: [
-    { question: "Will you have finished by 6 PM?", answer: "Yes, I will have finished by then." },
-    { question: "What will you have done by tomorrow?", answer: "I will have completed my homework." },
-    { question: "Will she have arrived by noon?", answer: "Yes, she will have arrived." },
-    { question: "What will they have achieved?", answer: "They will have built the house." },
-    { question: "Will we have learned everything?", answer: "We will have learned the basics." },
-    { question: "What will he have done by Monday?", answer: "He will have fixed the computer." },
-    { question: "Will you have graduated by next year?", answer: "Yes, I will have graduated." },
-    { question: "What will she have cooked?", answer: "She will have cooked dinner." },
-    { question: "Will they have moved by summer?", answer: "Yes, they will have moved." },
-    { question: "What will you have read by then?", answer: "I will have read five books." },
-    { question: "Will he have finished the report?", answer: "Yes, he will have finished it." },
-    { question: "What will we have accomplished?", answer: "We will have reached our goal." },
-    { question: "Will you have traveled by December?", answer: "Yes, I will have visited Paris." },
-    { question: "What will she have written?", answer: "She will have written a novel." },
-    { question: "Will they have completed the course?", answer: "Yes, they will have completed it." },
-    { question: "What will he have learned?", answer: "He will have learned to drive." },
-    { question: "Will you have saved enough money?", answer: "Yes, I will have saved $5000." },
-    { question: "What will we have done by Sunday?", answer: "We will have cleaned the whole house." },
-    { question: "Will she have recovered by then?", answer: "Yes, she will have recovered." },
-    { question: "What will they have painted?", answer: "They will have painted three rooms." },
-    { question: "Will you have prepared everything?", answer: "Yes, I will have prepared everything." },
-    { question: "What will he have fixed?", answer: "He will have fixed the car." },
-    { question: "Will we have eaten by 7?", answer: "Yes, we will have eaten." },
-    { question: "What will she have decided?", answer: "She will have decided on a university." },
-    { question: "Will they have returned by Friday?", answer: "Yes, they will have returned." },
-    { question: "What will you have planted?", answer: "I will have planted flowers." },
-    { question: "Will he have called by tonight?", answer: "Yes, he will have called." },
-    { question: "What will we have organized?", answer: "We will have organized the event." },
-    { question: "Will you have finished the book?", answer: "Yes, I will have finished it." },
-    { question: "What will she have packed?", answer: "She will have packed her suitcase." },
-    { question: "Will they have solved the problem?", answer: "Yes, they will have solved it." },
-    { question: "What will he have built?", answer: "He will have built a website." },
-    { question: "Will you have met everyone?", answer: "Yes, I will have met everyone." },
-    { question: "What will we have discussed?", answer: "We will have discussed the plan." },
-    { question: "Will she have left by 8 AM?", answer: "Yes, she will have left." },
-    { question: "What will they have created?", answer: "They will have created a prototype." },
-    { question: "Will you have watched the movie?", answer: "Yes, I will have watched it." },
-    { question: "What will he have repaired?", answer: "He will have repaired the roof." },
-    { question: "Will we have practiced enough?", answer: "Yes, we will have practiced." },
-    { question: "What will she have chosen?", answer: "She will have chosen a name." }
+    { question: "Will you have finished the project by Friday?", answer: "Yes, I will have completed it by then." },
+    { question: "What will you have done by the end of this year?", answer: "I will have traveled to three different countries." },
+    { question: "Will she have learned enough English to pass the exam?", answer: "Yes, she will have studied very hard." },
+    { question: "By the time we get there, will they have left?", answer: "Yes, they will have already gone." },
+    { question: "Will the workers have built the bridge before winter?", answer: "Yes, it will be ready by November." },
+    { question: "Will you have cleaned the kitchen before your guests arrive?", answer: "Of course, it will be spotless." },
+    { question: "Will he have repaired the car by tomorrow?", answer: "Yes, he will have it ready by 10 a.m." },
+    { question: "What will you have achieved by the time you're 30?", answer: "I will have started my own business." },
+    { question: "Will she have completed her degree by next year?", answer: "Yes, she will have graduated by June." },
+    { question: "By the end of the day, what will you have done?", answer: "I will have finished my tasks and emailed the report." },
+    { question: "Will the students have taken the test before lunch?", answer: "Yes, it starts at 9 a.m." },
+    { question: "Will they have arrived at the station by 7?", answer: "Yes, their train arrives at 6:45." },
+    { question: "Will you have finished cooking by the time they come?", answer: "Yes, dinner will be ready." },
+    { question: "Will the sun have set by the time we arrive?", answer: "Probably, it sets around 8 PM." },
+    { question: "How many books will you have read by summer?", answer: "I will have read at least ten." },
+    { question: "Will he have completed the assignment before midnight?", answer: "Yes, he's almost done." },
+    { question: "Will they have moved into their new house by October?", answer: "Yes, they move in September." },
+    { question: "Will you have done all your chores by Sunday?", answer: "Yes, I plan to do them Saturday morning." },
+    { question: "Will she have saved enough money for the trip?", answer: "Yes, she's very careful with her budget." },
+    { question: "By the time the concert starts, will we have arrived?", answer: "Yes, we'll get there early." },
+    { question: "Will the meeting have ended by 5 PM?", answer: "Yes, it usually ends by 4:30." },
+    { question: "Will you have submitted the application by the deadline?", answer: "Yes, I will submit it today." },
+    { question: "Will your friend have returned from vacation by then?", answer: "Yes, she'll be back two days before." },
+    { question: "By next month, what will you have achieved?", answer: "I will have completed my training program." },
+    { question: "Will they have finished renovating the kitchen?", answer: "Yes, the work finishes next week." },
+    { question: "How long will you have worked here by December?", answer: "I will have worked here for three years." },
+    { question: "Will she have written her thesis by the summer?", answer: "Yes, it's due in June." },
+    { question: "Will we have packed everything by tonight?", answer: "Yes, we're almost done." },
+    { question: "Will the kids have done their homework?", answer: "Yes, I checked it myself." },
+    { question: "By the time I arrive, will you have left?", answer: "Probably, I have an early meeting." },
+    { question: "Will he have fixed the broken window by the weekend?", answer: "Yes, the repairman is coming Friday." },
+    { question: "By midnight, what will you have completed?", answer: "I will have finished all the reports." },
+    { question: "Will your team have prepared the presentation?", answer: "Yes, we've been working on it all week." },
+    { question: "Will you have finished painting the room by Sunday?", answer: "Yes, we started on Friday." },
+    { question: "Will she have cleaned the house before the visitors come?", answer: "Yes, everything will be tidy." },
+    { question: "Will they have installed the new system by next week?", answer: "Yes, it should be running by Monday." },
+    { question: "By next year, where will you have traveled?", answer: "Hopefully to South America and Japan." },
+    { question: "Will the train have left by the time we get to the station?", answer: "Yes, it departs at 8:15." },
+    { question: "What will you have done by this time tomorrow?", answer: "I will have arrived in Paris." }
   ]
 };
 
-// Module 108 Data
 const MODULE_108_DATA = {
-  title: "Future Continuous vs Future Perfect (B1)",
+  title: "Module 108 - Future Continuous vs Future Perfect",
   description: "Understand the difference between Future Continuous and Future Perfect tenses",
-  intro: `Future Continuous (will be + V-ing) gelecekte belirli bir zamanda devam etmekte olan eylemleri ifade ederken, Future Perfect (will have + V3) gelecekte belirli bir zamana kadar tamamlanmış olacak eylemleri anlatır.
+  intro: `Bu modülde Future Continuous ve Future Perfect arasındaki farkı öğreneceğiz.
 
-**Future Continuous:** will be + V-ing → At 10 a.m., I will be driving to work.
-**Future Perfect:** will have + V3 → By 10 a.m., I will have arrived at work.`,
-  tip: "Future Continuous = action in progress AT a time. Future Perfect = action completed BY a time.",
-  table: [
-    { tense: "Future Continuous", use: "In progress at time", example: "At 3 PM, I will be working." },
-    { tense: "Future Perfect", use: "Completed by time", example: "By 3 PM, I will have finished." }
-  ],
+📘 Konu Anlatımı (Türkçe Açıklama)
+Future Continuous (will be + V-ing) gelecekte belirli bir zamanda devam etmekte olan eylemleri ifade ederken,
+Future Perfect (will have + V3) gelecekte belirli bir zamana kadar tamamlanmış olacak eylemleri anlatır.
+
+📗 Structure & Usage
+✅ Future Continuous: Subject + will be + verb-ing
+→ Describes an action in progress at a specific time in the future.
+Example: This time tomorrow, I will be flying to New York.
+
+✅ Future Perfect: Subject + will have + past participle (V3)
+→ Describes an action that will be completed before a specific time in the future.
+Example: By tomorrow, I will have finished the project.
+
+🧠 Example Sentences
+This time next week, I will be lying on the beach. (Future Continuous)
+By next week, I will have finished all my exams. (Future Perfect)
+She will be working at 3 p.m. (Future Continuous)
+She will have completed the report by 3 p.m. (Future Perfect)
+They will be watching a movie at 9 p.m. (Future Continuous)
+They will have watched the movie by 11 p.m. (Future Perfect)`,
+  tip: "Future Continuous for ongoing actions, Future Perfect for completed actions",
   listeningExamples: [
     "This time next week, I will be lying on the beach.",
     "By next week, I will have finished all my exams.",
     "She will be working at 3 p.m.",
     "She will have completed the report by 3 p.m.",
-    "Tomorrow at 8, they will be flying to Paris."
+    "They will be watching a movie at 9 p.m.",
+    "They will have watched the movie by 11 p.m."
   ],
-
   speakingPractice: [
-    { question: "What will you be doing at 8 PM?", answer: "I will be watching TV." },
-    { question: "What will you have done by 8 PM?", answer: "I will have eaten dinner." },
-    { question: "Where will she be working tomorrow?", answer: "She will be working at the office." },
-    { question: "Will they have arrived by noon?", answer: "Yes, they will have arrived." },
-    { question: "What will he be studying at 7?", answer: "He will be studying math." },
-    { question: "Will you have finished by Friday?", answer: "Yes, I will have finished." },
-    { question: "What will we be doing next week?", answer: "We will be traveling." },
-    { question: "What will she have achieved by then?", answer: "She will have graduated." },
-    { question: "Will you be sleeping at midnight?", answer: "Yes, I will be sleeping." },
-    { question: "Will he have called by tomorrow?", answer: "Yes, he will have called." },
-    { question: "What will they be planning?", answer: "They will be planning the event." },
-    { question: "What will you have learned by June?", answer: "I will have learned French." },
-    { question: "Will she be cooking at 6?", answer: "Yes, she will be cooking." },
-    { question: "Will we have moved by summer?", answer: "Yes, we will have moved." },
-    { question: "What will he be reading tonight?", answer: "He will be reading a novel." },
-    { question: "What will they have built by December?", answer: "They will have built a house." },
-    { question: "Will you be working tomorrow?", answer: "Yes, I will be working." },
-    { question: "Will she have recovered by then?", answer: "Yes, she will have recovered." },
-    { question: "What will we be celebrating?", answer: "We will be celebrating New Year." },
-    { question: "What will you have saved by next year?", answer: "I will have saved $10,000." },
-    { question: "Will he be attending the meeting?", answer: "Yes, he will be attending." },
-    { question: "Will they have decided by Monday?", answer: "Yes, they will have decided." },
-    { question: "What will she be wearing?", answer: "She will be wearing a blue dress." },
-    { question: "What will you have completed?", answer: "I will have completed the course." },
-    { question: "Will we be staying there long?", answer: "Yes, we will be staying." },
-    { question: "Will he have fixed it by tonight?", answer: "Yes, he will have fixed it." },
-    { question: "What will you be doing this weekend?", answer: "I will be relaxing at home." },
-    { question: "What will she have written by then?", answer: "She will have written a book." },
-    { question: "Will they be coming to the party?", answer: "Yes, they will be coming." },
-    { question: "Will you have met him by Friday?", answer: "Yes, I will have met him." },
-    { question: "What will he be teaching?", answer: "He will be teaching English." },
-    { question: "What will we have discussed?", answer: "We will have discussed the plan." },
-    { question: "Will she be driving there?", answer: "Yes, she will be driving." },
-    { question: "Will they have left by 8 AM?", answer: "Yes, they will have left." },
-    { question: "What will you be preparing?", answer: "I will be preparing dinner." },
-    { question: "What will he have repaired?", answer: "He will have repaired the car." },
-    { question: "Will we be meeting tomorrow?", answer: "Yes, we will be meeting." },
-    { question: "Will you have practiced enough?", answer: "Yes, I will have practiced." },
-    { question: "What will they be building?", answer: "They will be building a bridge." },
-    { question: "What will she have chosen?", answer: "She will have chosen a university." }
+    { question: "What will you be doing at 8 a.m. tomorrow?", answer: "I will be having breakfast." },
+    { question: "What will you have done by 8 a.m. tomorrow?", answer: "I will have finished my workout." },
+    { question: "Will she be working this weekend?", answer: "Yes, she will be working on Saturday and Sunday." },
+    { question: "Will she have finished the project by Monday?", answer: "Yes, she will have submitted it by then." },
+    { question: "What will your parents be doing at this time next week?", answer: "They will be traveling to Antalya." },
+    { question: "Will your parents have arrived by this time next week?", answer: "Yes, they will have checked into the hotel." },
+    { question: "Will it be raining in the afternoon?", answer: "Yes, according to the forecast, it will be raining." },
+    { question: "Will the rain have stopped by evening?", answer: "Yes, it will have stopped before 6 p.m." },
+    { question: "What will you be studying at 10 a.m.?", answer: "I will be studying English grammar." },
+    { question: "What will you have completed by 10 a.m.?", answer: "I will have completed all my homework." },
+    { question: "Will you be watching the game tonight?", answer: "Yes, I will be watching it with friends." },
+    { question: "Will you have watched the game by midnight?", answer: "Yes, it will have ended by then." },
+    { question: "What will she be wearing at the party?", answer: "She will be wearing a red dress." },
+    { question: "Will she have arrived before the party starts?", answer: "Yes, she will have arrived early." },
+    { question: "What will you be doing during the meeting?", answer: "I will be taking notes." },
+    { question: "What will you have prepared before the meeting?", answer: "I will have prepared my slides." },
+    { question: "Will you be using your laptop at the café?", answer: "Yes, I will be working there." },
+    { question: "Will you have submitted the form by Friday?", answer: "Yes, I will have sent it by Thursday." },
+    { question: "Where will you be staying next month?", answer: "I will be staying at my aunt's house." },
+    { question: "Where will you have stayed by the end of the month?", answer: "I will have stayed in two different cities." },
+    { question: "Will he be working at 5 p.m.?", answer: "Yes, he will be at the office." },
+    { question: "Will he have left work by 6 p.m.?", answer: "Yes, he will have finished his shift." },
+    { question: "What will they be doing at the wedding?", answer: "They will be dancing and celebrating." },
+    { question: "Will they have gotten married by then?", answer: "Yes, the ceremony will have finished." },
+    { question: "Will she be traveling next week?", answer: "Yes, she will be visiting Rome." },
+    { question: "Will she have returned by Sunday?", answer: "Yes, she will have flown back by then." },
+    { question: "What will you be doing during the exam?", answer: "I will be writing an essay." },
+    { question: "Will you have studied enough before the exam?", answer: "Yes, I will have reviewed everything." },
+    { question: "Will the children be playing in the garden?", answer: "Yes, they will be playing all afternoon." },
+    { question: "Will the children have eaten by then?", answer: "Yes, they will have had their lunch." },
+    { question: "What will the team be doing at 2 p.m.?", answer: "They will be training on the field." },
+    { question: "What will the team have achieved by next month?", answer: "They will have won several matches." },
+    { question: "Will you be celebrating your birthday this weekend?", answer: "Yes, I will be having a party." },
+    { question: "Will you have turned 21 by then?", answer: "Yes, my birthday is on Friday." },
+    { question: "Will the movie be playing at 9?", answer: "Yes, it will be halfway through by then." },
+    { question: "Will the movie have ended by midnight?", answer: "Yes, it will have finished before that." },
+    { question: "Will you be living in Istanbul next year?", answer: "Yes, I will be moving there in June." },
+    { question: "Will you have lived there for a year by next summer?", answer: "Yes, it will be exactly one year." },
+    { question: "Will he be cooking dinner when we arrive?", answer: "Yes, he will be in the kitchen." },
+    { question: "Will he have cooked by the time we arrive?", answer: "Yes, dinner will be ready." }
   ]
 };
 
-// Module 109 Data
 const MODULE_109_DATA = {
-  title: "Modals of Deduction (B1)",
-  description: "Express logical conclusions using must, might, and can't",
-  intro: `Modals of Deduction, bir durumu değerlendirerek mantıksal çıkarım yapmak için kullanılır.
+  title: "Module 109 - Modals of Deduction (must, might, can't)",
+  description: "Understand how to express logical conclusions about present situations",
+  intro: `Bu modülde Modals of Deduction öğreneceğiz.
 
-**must:** Kesin çıkarım (He must be hungry.)
-**might:** Olası çıkarım (They might be on their way.)
-**can't:** İmkansız çıkarım (She can't be the manager.)`,
-  tip: "Use 'must' for strong certainty, 'might' for possibility, and 'can't' for impossibility based on evidence.",
-  table: [
-    { modal: "must", meaning: "Kesin çıkarım (90%)", example: "He must be tired. (Çok uyuyor.)" },
-    { modal: "might", meaning: "Olası çıkarım (50%)", example: "She might be sleeping." },
-    { modal: "can't", meaning: "İmkansız (0%)", example: "They can't be home. (Işıklar kapalı.)" }
-  ],
+📘 Konu Anlatımı (Türkçe Açıklama)
+Modals of Deduction, bir durumu değerlendirerek mantıksal çıkarım yapmak için kullanılır.
+- must → yüksek olasılık (olmalı)
+- might / may / could → ihtimal (olabilir)
+- can't → imkânsızlık (olamaz)
+
+Örnek:
+- He must be tired. (Kesin yorgundur.)
+- She might be at home. (Evde olabilir.)
+- That can't be true. (Bu doğru olamaz.)
+
+📗 Structure & Usage
+✅ Structure: Subject + modal (must/might/can't) + base verb (be / have / verb)
+
+Examples:
+- He must be hungry. (I'm sure he is.)
+- They might be on their way. (It's possible.)
+- She can't be the manager. (I'm sure she isn't.)
+
+🧠 Example Sentences
+He must be at work. His car is in the parking lot.
+She might be sleeping. It's still early.
+They can't be home. The lights are off.
+You must be joking!
+This can't be the right address.`,
+  tip: "Use must for certainty, might for possibility, can't for impossibility",
   listeningExamples: [
     "He must be at work. His car is in the parking lot.",
     "She might be sleeping. It's still early.",
     "They can't be home. The lights are off.",
-    "It must be expensive. It looks very new.",
-    "He might know the answer. Let's ask him."
+    "You must be joking!",
+    "This can't be the right address."
   ],
-
   speakingPractice: [
-    { question: "His car is here. What do you think?", answer: "He must be at work." },
-    { question: "The lights are off. Are they home?", answer: "They can't be home." },
-    { question: "She's yawning a lot. What's wrong?", answer: "She must be tired." },
-    { question: "I heard a noise upstairs. Who is it?", answer: "It might be the cat." },
-    { question: "He's not answering. Where is he?", answer: "He might be sleeping." },
-    { question: "The door is locked. Is anyone inside?", answer: "There can't be anyone inside." },
-    { question: "She's smiling. How does she feel?", answer: "She must be happy." },
-    { question: "The phone is ringing. Who could it be?", answer: "It might be your friend." },
-    { question: "He scored 100%. Is he smart?", answer: "He must be very smart." },
-    { question: "She's only 12. Can she drive?", answer: "She can't drive yet." },
-    { question: "The store is closed. Are they open?", answer: "They can't be open." },
-    { question: "He's carrying an umbrella. What's the weather?", answer: "It might be raining." },
-    { question: "She's not in class. Where is she?", answer: "She might be sick." },
-    { question: "The food smells good. What is it?", answer: "It must be dinner." },
-    { question: "He's wearing a coat. Is it cold?", answer: "It must be cold outside." },
-    { question: "The baby is crying. What does it need?", answer: "It might be hungry." },
-    { question: "She's a doctor. Is she educated?", answer: "She must be well-educated." },
-    { question: "The door is open. Did someone leave?", answer: "Someone might have left." },
-    { question: "He's running. Is he late?", answer: "He must be late." },
-    { question: "The TV is on. Is anyone watching?", answer: "Someone might be watching." },
-    { question: "She didn't eat. Is she hungry?", answer: "She can't be hungry." },
-    { question: "He's shouting. How does he feel?", answer: "He must be angry." },
-    { question: "The window is broken. What happened?", answer: "Someone might have broken it." },
-    { question: "She's 90 years old. Is she young?", answer: "She can't be young." },
-    { question: "He studied all night. How does he feel?", answer: "He must be exhausted." },
-    { question: "The grass is wet. Did it rain?", answer: "It must have rained." },
-    { question: "She's laughing. Is she sad?", answer: "She can't be sad." },
-    { question: "He's wearing sunglasses. Is it sunny?", answer: "It must be sunny." },
-    { question: "The coffee is cold. Is it fresh?", answer: "It can't be fresh." },
-    { question: "She has a new car. Is she rich?", answer: "She might be rich." },
-    { question: "He's sneezing. What's wrong?", answer: "He might have a cold." },
-    { question: "The sky is dark. Will it rain?", answer: "It might rain soon." },
-    { question: "She passed the exam. Did she study?", answer: "She must have studied." },
-    { question: "He's limping. Is he hurt?", answer: "He must be hurt." },
-    { question: "The house is dark. Is anyone home?", answer: "There can't be anyone home." },
-    { question: "She's a child. Can she vote?", answer: "She can't vote." },
-    { question: "He's sweating. Is he hot?", answer: "He must be hot." },
-    { question: "The road is icy. Is it dangerous?", answer: "It must be dangerous." },
-    { question: "She's trembling. How does she feel?", answer: "She might be scared." },
-    { question: "He won the lottery. Is he lucky?", answer: "He must be very lucky." }
+    { question: "Why is the room so quiet?", answer: "They must have gone out." },
+    { question: "Where is your brother?", answer: "He might be in the garden." },
+    { question: "Why is the window open?", answer: "Someone must have opened it." },
+    { question: "Where is Jane?", answer: "She can't be at home—her car is gone." },
+    { question: "Why is the kitchen a mess?", answer: "The kids must have cooked something." },
+    { question: "Who's calling me now?", answer: "It might be your manager." },
+    { question: "Why are they late?", answer: "They might have missed the train." },
+    { question: "Why is his phone off?", answer: "He must be in a meeting." },
+    { question: "Do you think she's angry?", answer: "She might be, but I'm not sure." },
+    { question: "Is this her bag?", answer: "It can't be. She always carries a red one." },
+    { question: "Why is he smiling?", answer: "He must have received good news." },
+    { question: "Where is your dog?", answer: "It might be hiding under the bed." },
+    { question: "Why is the light on?", answer: "Someone must be in the room." },
+    { question: "Is that his car?", answer: "It can't be—his is much bigger." },
+    { question: "Why are you so sure?", answer: "Because it must be true. I saw it myself." },
+    { question: "Why did the door slam?", answer: "The wind might have closed it." },
+    { question: "Why is she crying?", answer: "She must have failed the exam." },
+    { question: "Is that his handwriting?", answer: "It can't be. It's too neat." },
+    { question: "Why is she wearing a coat?", answer: "It might be cold outside." },
+    { question: "Why isn't she answering?", answer: "She might be sleeping." },
+    { question: "Why is the floor wet?", answer: "Someone must have mopped it." },
+    { question: "Why didn't they come?", answer: "They might have forgotten." },
+    { question: "Why are you whispering?", answer: "They must be sleeping upstairs." },
+    { question: "Is this your phone?", answer: "It can't be mine. Mine has a blue case." },
+    { question: "Why is he so happy?", answer: "He must have passed the test." },
+    { question: "Where is the cat?", answer: "It might be in the garden." },
+    { question: "Why didn't he call you?", answer: "He might have lost his phone." },
+    { question: "Is she the new manager?", answer: "She can't be. She just started yesterday." },
+    { question: "Why are the lights off?", answer: "They might be watching a movie." },
+    { question: "Why do you think it's broken?", answer: "Because it can't be working. It's silent." },
+    { question: "Is that his jacket?", answer: "It must be. I saw him wearing it earlier." },
+    { question: "Why are they whispering?", answer: "They might be planning a surprise." },
+    { question: "Why is she running?", answer: "She must be late for something." },
+    { question: "Why is there no milk?", answer: "They must have forgotten to buy it." },
+    { question: "Is that the answer?", answer: "It might be, but I'm not 100% sure." },
+    { question: "Why is the classroom empty?", answer: "The students must have gone to lunch." },
+    { question: "Why is he in a hurry?", answer: "He might have an appointment." },
+    { question: "Can this be a mistake?", answer: "It can't be. I double-checked it." },
+    { question: "Why does she look so sad?", answer: "She might have received bad news." },
+    { question: "Where is everyone?", answer: "They must be in the meeting room." }
   ]
 };
 
-// Module 110 Data
 const MODULE_110_DATA = {
-  title: "Modals of Probability (B1)",
-  description: "Express possibility and probability using could, may, and might",
-  intro: `'Could', 'may' ve 'might' modal fiilleri bir olayın olma ihtimali hakkında konuşurken kullanılır.
+  title: "Module 110 - Modals of Probability (could, may, might)",
+  description: "Understand how to express possibility and probability using modal verbs",
+  intro: `Bu modülde Modals of Probability öğreneceğiz.
 
-**Yapı:** Subject + could/may/might + base verb
-→ I might go to the concert tonight. (Belki giderim.)
-→ She may join us later. (Belki katılır.)
-→ It could take a while. (Biraz zaman alabilir.)`,
-  tip: "Use could/may/might to talk about future possibilities. They have similar meanings but 'may' is slightly more formal.",
-  table: [
-    { modal: "might", formality: "Informal", example: "I might be late." },
-    { modal: "may", formality: "Formal", example: "It may rain tomorrow." },
-    { modal: "could", formality: "Neutral", example: "That could be expensive." }
-  ],
+📘 Konu Anlatımı (Türkçe Açıklama)
+'Could', 'may' ve 'might' modal fiilleri bir olayın olma ihtimali hakkında konuşurken kullanılır.
+- could → olabilir (genel olasılık)
+- may → olabilir (resmî ya da daha güçlü ihtimal)
+- might → olabilir (daha zayıf ihtimal)
+
+Bu fiiller %100 emin olmadığımız durumları ifade ederken kullanılır.
+Örnek:
+- She may be at the library.
+- It could rain this evening.
+- He might not come to the party.
+
+📗 Structure & Usage
+✅ Structure: Subject + could/may/might + base verb
+→ Used to express possibility (present or future)
+
+Examples:
+- I might go to the concert tonight.
+- She may join us later.
+- It could take a while to finish the project.
+
+🧠 Example Sentences
+He could be at the supermarket.
+It may rain later this evening.
+She might be working from home today.
+They may not know about the meeting.
+We could be wrong about the time.`,
+  tip: "Use could/may/might to express different levels of possibility",
   listeningExamples: [
     "He could be at the supermarket.",
     "It may rain later this evening.",
     "She might be working from home today.",
-    "I might go to the gym after work.",
-    "They could arrive any minute now."
+    "They may not know about the meeting.",
+    "We could be wrong about the time."
   ],
-
   speakingPractice: [
-    { question: "Will you come tomorrow?", answer: "I might come tomorrow." },
-    { question: "Is it going to rain?", answer: "It may rain later." },
-    { question: "Where is Tom?", answer: "He could be at the library." },
-    { question: "Will she call you?", answer: "She might call me tonight." },
-    { question: "Is the store open?", answer: "It may be closed already." },
-    { question: "Are they coming to the party?", answer: "They might not come." },
-    { question: "Will he pass the exam?", answer: "He could pass if he studies." },
-    { question: "Is this the right way?", answer: "It might be the wrong way." },
-    { question: "Will the meeting be canceled?", answer: "It may be canceled." },
-    { question: "Is she at home?", answer: "She could be at work." },
-    { question: "Will they win the game?", answer: "They might win." },
-    { question: "Is the food ready?", answer: "It may be ready soon." },
-    { question: "Will you go to the gym?", answer: "I might go after work." },
-    { question: "Is he coming?", answer: "He could arrive late." },
-    { question: "Will it snow tomorrow?", answer: "It might snow." },
-    { question: "Is she busy?", answer: "She may be in a meeting." },
-    { question: "Will they move to London?", answer: "They might move next year." },
-    { question: "Is this expensive?", answer: "It could be quite expensive." },
-    { question: "Will you buy a car?", answer: "I may buy one soon." },
-    { question: "Is he sick?", answer: "He might have a cold." },
-    { question: "Will she accept the job?", answer: "She could accept it." },
-    { question: "Is the train late?", answer: "It may be delayed." },
-    { question: "Will you travel this summer?", answer: "I might go to Spain." },
-    { question: "Is this seat taken?", answer: "It could be reserved." },
-    { question: "Will he apologize?", answer: "He might not apologize." },
-    { question: "Is the restaurant good?", answer: "It may be very good." },
-    { question: "Will you join us?", answer: "I could join you later." },
-    { question: "Is she angry?", answer: "She might be upset." },
-    { question: "Will they change the plan?", answer: "They may change it." },
-    { question: "Is this correct?", answer: "It could be wrong." },
-    { question: "Will you need help?", answer: "I might need your help." },
-    { question: "Is he available?", answer: "He may be free tomorrow." },
-    { question: "Will she like the gift?", answer: "She might love it." },
-    { question: "Is the project difficult?", answer: "It could be challenging." },
-    { question: "Will you go out tonight?", answer: "I may stay home." },
-    { question: "Is this the best option?", answer: "It might not be." },
-    { question: "Will they agree?", answer: "They could disagree." },
-    { question: "Is she ready?", answer: "She may need more time." },
-    { question: "Will you watch the movie?", answer: "I might watch it later." },
-    { question: "Is he telling the truth?", answer: "He could be lying." }
+    { question: "Where is Ali?", answer: "He could be in the library." },
+    { question: "Will it rain today?", answer: "It might, but the sky looks clear now." },
+    { question: "Is she going to the party?", answer: "She may go if she finishes her work." },
+    { question: "What's that noise?", answer: "It could be the wind." },
+    { question: "Do you think they will come?", answer: "They might, but they're not sure yet." },
+    { question: "Why isn't he answering?", answer: "He could be in class." },
+    { question: "Is your friend moving away?", answer: "She might move to another city." },
+    { question: "Will they be on time?", answer: "They may be late due to traffic." },
+    { question: "Where's your phone?", answer: "It could be in my backpack." },
+    { question: "Will she get the job?", answer: "She might. She had a good interview." },
+    { question: "Is it dangerous?", answer: "It may be if you're not careful." },
+    { question: "Will you come to the picnic?", answer: "I might, if it doesn't rain." },
+    { question: "What time will the meeting end?", answer: "It could end around 4 p.m." },
+    { question: "Where are the students?", answer: "They might be in the cafeteria." },
+    { question: "Will they call us back?", answer: "They may call later this evening." },
+    { question: "Can we finish this today?", answer: "We could, if we work fast." },
+    { question: "Why hasn't she arrived yet?", answer: "She might be stuck in traffic." },
+    { question: "Is it okay to go now?", answer: "It may not be safe just yet." },
+    { question: "Will your cousin visit this summer?", answer: "He might come in August." },
+    { question: "Will we need umbrellas?", answer: "It could rain this afternoon." },
+    { question: "Where is the manager?", answer: "She might be in a meeting." },
+    { question: "Is that her car?", answer: "It could be, but I'm not sure." },
+    { question: "Is the train delayed?", answer: "It may be running late today." },
+    { question: "Will they accept your offer?", answer: "They might. It's a fair deal." },
+    { question: "Are you going to the cinema?", answer: "I might, if I'm not too tired." },
+    { question: "Where's the cat?", answer: "It could be hiding under the bed." },
+    { question: "Is the store open now?", answer: "It may be. Let's check the website." },
+    { question: "Will she reply soon?", answer: "She could. She usually responds quickly." },
+    { question: "Are you sure he's at work?", answer: "He might be at lunch." },
+    { question: "Why is the internet slow?", answer: "It could be the weather." },
+    { question: "Will they be ready by 5?", answer: "They may need a little more time." },
+    { question: "Can we get there before dark?", answer: "We might, if we hurry." },
+    { question: "Is she coming to the wedding?", answer: "She could, but she hasn't confirmed yet." },
+    { question: "Will your parents let you go?", answer: "They might, if I ask nicely." },
+    { question: "Is it expensive?", answer: "It could be, depending on the brand." },
+    { question: "Is that food still fresh?", answer: "It might not be. Better check the date." },
+    { question: "Will you be home tonight?", answer: "I may go out with friends." },
+    { question: "Do you think it's true?", answer: "It could be, but we need more info." },
+    { question: "Is this jacket yours?", answer: "It might be my brother's." },
+    { question: "Will he agree to the plan?", answer: "He may, if we explain it well." }
   ]
 };
 
-// Module 111 Data
-const MODULE_111_DATA = {
-  title: "Modals of Obligation (B1)",
-  description: "Express obligation, necessity, and advice using must, have to, and should",
-  intro: `'Must', 'have to' ve 'should' modal fiilleri zorunluluk, gereklilik ve tavsiye bildirmek için kullanılır.
+// Module 102 Data: Present Perfect Continuous vs Present Perfect
+const MODULE_102_DATA = {
+  title: "Module 102 - Present Perfect Continuous vs Present Perfect",
+  description: "Understand the difference between Present Perfect and Present Perfect Continuous tenses",
+  intro: `Bu modülde Present Perfect ve Present Perfect Continuous arasındaki farkı öğreneceğiz.
 
-**must:** Güçlü zorunluluk (You must bring your ID.)
-**have to:** Dış zorunluluk (He has to finish by Friday.)
-**should:** Tavsiye (You should see a doctor.)`,
-  tip: "Use 'must' for strong personal obligation, 'have to' for external rules, and 'should' for advice.",
-  table: [
-    { modal: "must", meaning: "Güçlü zorunluluk", example: "You must wear a uniform." },
-    { modal: "have to", meaning: "Dış zorunluluk", example: "She has to submit the form." },
-    { modal: "should", meaning: "Tavsiye", example: "We should leave early." }
-  ],
+📘 Konu Anlatımı (Türkçe Açıklama)
+Present Perfect (have/has + V3) tamamlanmış eylemleri ve sonuçlarını vurgularken,
+Present Perfect Continuous (have/has + been + V-ing) süregelen veya yeni bitmiş ve etkisi süren eylemleri vurgular.
+
+Örnek:
+- I've read the book. (Kitabı okudum - sonuç önemli)
+- I've been reading the book. (Kitabı okuyordum - süreç önemli)
+
+📗 Structure & Usage
+✅ Present Perfect: have/has + past participle (V3)
+→ Focuses on the result or completion.
+✅ Present Perfect Continuous: have/has + been + verb-ing
+→ Focuses on the duration or activity itself.
+
+Examples:
+- She has written three emails. (Result)
+- She has been writing emails all morning. (Duration)
+
+🧠 Example Sentences
+I've worked here for five years. (Permanent or result focus)
+I've been working here since 9 a.m. (Activity in progress)
+They've painted the house. (It's finished)
+They've been painting the house. (They may still be painting)
+He has cooked dinner. (Dinner is ready)
+He has been cooking for two hours. (Focus on the activity)`,
+  tip: "Present Perfect focuses on results, Present Perfect Continuous focuses on duration",
+  
   listeningExamples: [
-    "You must wear a uniform at this school.",
-    "She has to submit the form by Monday.",
-    "We should leave early to avoid traffic.",
-    "You must bring your ID to the exam.",
-    "He has to finish his report by Friday."
+    "I've worked here for five years.",
+    "I've been working here since 9 a.m.",
+    "They've painted the house.",
+    "They've been painting the house.",
+    "He has cooked dinner."
   ],
-
+  
   speakingPractice: [
-    { question: "What must you do at school?", answer: "I must wear a uniform." },
-    { question: "What do you have to do today?", answer: "I have to finish my homework." },
-    { question: "What should I do if I'm sick?", answer: "You should see a doctor." },
-    { question: "Is it required to register?", answer: "Yes, you must register online." },
-    { question: "What does she have to bring?", answer: "She has to bring her passport." },
-    { question: "What's your advice?", answer: "You should study harder." },
-    { question: "Is attendance mandatory?", answer: "Yes, you must attend all classes." },
-    { question: "What do I have to pay?", answer: "You have to pay the fee." },
-    { question: "Should I call him?", answer: "Yes, you should call him." },
-    { question: "Is it necessary to book?", answer: "Yes, you must book in advance." },
-    { question: "What does he have to do?", answer: "He has to submit the report." },
-    { question: "What should we bring?", answer: "You should bring water." },
-    { question: "Must I come early?", answer: "Yes, you must arrive by 8." },
-    { question: "What do they have to wear?", answer: "They have to wear safety gear." },
-    { question: "Should I apologize?", answer: "Yes, you should say sorry." },
-    { question: "Is a visa required?", answer: "Yes, you must have a visa." },
-    { question: "What does she have to complete?", answer: "She has to complete the form." },
-    { question: "What should he do?", answer: "He should rest more." },
-    { question: "Must we leave now?", answer: "Yes, we must leave immediately." },
-    { question: "What do I have to sign?", answer: "You have to sign the contract." },
-    { question: "Should they wait?", answer: "Yes, they should wait here." },
-    { question: "Is it compulsory?", answer: "Yes, you must participate." },
-    { question: "What does he have to check?", answer: "He has to check his email." },
-    { question: "What should I wear?", answer: "You should wear formal clothes." },
-    { question: "Must I pay now?", answer: "Yes, you must pay today." },
-    { question: "What do we have to do?", answer: "We have to clean the room." },
-    { question: "Should I tell her?", answer: "Yes, you should be honest." },
-    { question: "Is ID required?", answer: "Yes, you must show your ID." },
-    { question: "What does she have to finish?", answer: "She has to finish her work." },
-    { question: "What should we eat?", answer: "You should eat healthy food." },
-    { question: "Must they attend?", answer: "Yes, they must be there." },
-    { question: "What do I have to do first?", answer: "You have to read the instructions." },
-    { question: "Should we go now?", answer: "Yes, we should leave soon." },
-    { question: "Is it obligatory?", answer: "Yes, you must comply." },
-    { question: "What does he have to prepare?", answer: "He has to prepare a presentation." },
-    { question: "What should I say?", answer: "You should tell the truth." },
-    { question: "Must I answer?", answer: "Yes, you must respond." },
-    { question: "What do they have to learn?", answer: "They have to learn the rules." },
-    { question: "Should I wait?", answer: "Yes, you should be patient." },
-    { question: "What must we remember?", answer: "We must remember the deadline." }
+    { question: "Have you finished your homework?", answer: "Yes, I've done all of it." },
+    { question: "Have you been doing your homework?", answer: "Yes, I've been working on it all afternoon." },
+    { question: "Why are you tired?", answer: "Because I've been cleaning the house all morning." },
+    { question: "Why is the floor so clean?", answer: "Because I've cleaned it." },
+    { question: "Has he read that book?", answer: "Yes, he has read it twice." },
+    { question: "Has he been reading that book?", answer: "Yes, he's been reading it for days." },
+    { question: "What have you done today?", answer: "I've written three reports and replied to emails." },
+    { question: "What have you been doing today?", answer: "I've been writing reports and answering emails." },
+    { question: "Has she finished the presentation?", answer: "Yes, she has just finished it." },
+    { question: "Has she been working on the presentation?", answer: "Yes, she's been working on it since this morning." },
+    { question: "How many pages have you read?", answer: "I've read 50 pages so far." },
+    { question: "How long have you been reading?", answer: "I've been reading for an hour." },
+    { question: "Why are your eyes red?", answer: "I've been staring at the screen for too long." },
+    { question: "Why is your computer off?", answer: "I've shut it down already." },
+    { question: "Have they built the new office yet?", answer: "Yes, they've already finished it." },
+    { question: "Have they been working on the new office?", answer: "Yes, they've been working on it for months." },
+    { question: "Has it stopped raining?", answer: "Yes, the rain has finally stopped." },
+    { question: "Has it been raining?", answer: "Yes, it's been raining since morning." },
+    { question: "Why are you out of breath?", answer: "I've been running in the park." },
+    { question: "Have you run today?", answer: "Yes, I've run five kilometers." },
+    { question: "Have you completed your training?", answer: "Yes, I've completed the course." },
+    { question: "Have you been training hard?", answer: "Yes, I've been training every day this week." },
+    { question: "Has she called the client?", answer: "Yes, she has already called them." },
+    { question: "Has she been calling clients all morning?", answer: "Yes, she's been on the phone non-stop." },
+    { question: "What have you achieved this month?", answer: "I've signed two big contracts." },
+    { question: "What have you been working on this month?", answer: "I've been developing a new proposal." },
+    { question: "How many emails have you sent today?", answer: "I've sent about 20 emails." },
+    { question: "What have you been doing at your desk?", answer: "I've been replying to customer messages." },
+    { question: "Have you written the report?", answer: "Yes, it's on your desk." },
+    { question: "Have you been writing the report?", answer: "Yes, but I still need more time to finish it." },
+    { question: "Have they painted the room?", answer: "Yes, it's finished and looks great." },
+    { question: "Have they been painting the room?", answer: "Yes, they've been painting all day." },
+    { question: "Have you read the new policy?", answer: "Yes, I've just read it." },
+    { question: "Have you been reading the new policy?", answer: "Yes, I've been reading it slowly." },
+    { question: "Has the team finished the project?", answer: "Yes, they've submitted everything." },
+    { question: "Has the team been working hard?", answer: "Yes, they've been staying late every night." },
+    { question: "Have you cleaned your room?", answer: "Yes, it's tidy now." },
+    { question: "Have you been cleaning your room?", answer: "Yes, I've been cleaning for hours." },
+    { question: "Have you visited London?", answer: "Yes, twice." },
+    { question: "Have you been visiting many cities?", answer: "Yes, I've been traveling for two months." }
   ]
 };
 
-// Module 112 Data
-const MODULE_112_DATA = {
-  title: "Modals of Prohibition (B1)",
-  description: "Express prohibition and lack of permission using mustn't and can't",
-  intro: `'Mustn't' ve 'can't' modal fiilleri, yasaklama ve izin verilmediğini belirtmek için kullanılır.
+// Module 111: Modals of Obligation (must, have to, should)
+const MODULE_111_DATA = {
+  title: "Module 111: Modals of Obligation (must, have to, should)",
+  description: "Students will learn to use modal verbs (must, have to, should) to express obligation, necessity, and advice.",
+  intro: `Bu modülde 'Must', 'have to' ve 'should' modal fiilleri zorunluluk, gereklilik ve tavsiye bildirmek için kullanılır.
 
-**mustn't:** Yasak (You mustn't touch the wires.)
-**can't:** İzin yok (She can't speak during the exam.)`,
-  tip: "Use 'mustn't' for prohibition (don't do it!) and 'can't' for lack of permission (not allowed).",
-  table: [
-    { modal: "mustn't", meaning: "Yasak", example: "You mustn't park here." },
-    { modal: "can't", meaning: "İzin yok", example: "They can't use phones in class." }
+📘 Konu Anlatımı (Türkçe Açıklama)
+'Must', 'have to' ve 'should' modal fiilleri zorunluluk, gereklilik ve tavsiye bildirmek için kullanılır.
+- must → güçlü zorunluluk (kural, yasa, kişisel mecburiyet)
+- have to → dışsal zorunluluk (kurallar, programlar)
+- should → tavsiye (yapılması iyi olur)
+
+Örnek:
+- You must wear a seatbelt.
+- I have to wake up early tomorrow.
+- You should drink more water.
+
+📗 Structure & Usage
+✅ Structure:
+- Subject + must/have to/should + base verb
+
+Examples:
+- You must bring your ID to the exam. (obligation)
+- He has to finish his report by Friday. (necessity)
+- You should see a doctor. (advice)
+
+🧠 Example Sentences
+You must wear a uniform at this school.
+She has to submit the form by Monday.
+We should leave early to avoid traffic.
+They must not be late for the meeting.
+You don't have to come if you're busy.`,
+  tip: "Use must for strong obligations, have to for external requirements, and should for advice",
+  listeningExamples: [
+    "You must wear a seatbelt.",
+    "I have to wake up early tomorrow.",
+    "You should drink more water."
   ],
+  speakingPractice: [
+    { question: "Do I have to finish this today?", answer: "Yes, it's the deadline." },
+    { question: "Must I pay in cash?", answer: "No, you can use a credit card too." },
+    { question: "Should I study more for the exam?", answer: "Yes, it would be a good idea." },
+    { question: "What must visitors do when they enter?", answer: "They must sign in at the front desk." },
+    { question: "Do I have to bring my passport?", answer: "Yes, you have to show ID." },
+    { question: "Should I call before visiting?", answer: "Yes, you should. It's polite." },
+    { question: "Does he have to wear a suit?", answer: "Yes, it's required for the event." },
+    { question: "Must we arrive on time?", answer: "Absolutely, the show starts exactly at 8." },
+    { question: "Should we take a break?", answer: "Yes, we've been working for hours." },
+    { question: "Do they have to clean the room?", answer: "Yes, before the inspection." },
+    { question: "Should I apply for the job?", answer: "Yes, you have the right qualifications." },
+    { question: "Must she leave early?", answer: "Yes, she has an appointment." },
+    { question: "Do you have to pay a fee?", answer: "No, entry is free." },
+    { question: "Should we bring anything to the party?", answer: "Yes, you should bring a gift." },
+    { question: "Does he have to do all the work alone?", answer: "No, we will help him." },
+    { question: "Must I be there in person?", answer: "Yes, it's mandatory." },
+    { question: "Should I talk to the manager?", answer: "Yes, if you have a complaint." },
+    { question: "Do we have to register in advance?", answer: "Yes, online registration is required." },
+    { question: "Must they follow the rules?", answer: "Of course, it's for safety." },
+    { question: "Should I wear formal clothes?", answer: "Yes, it's a formal event." },
+    { question: "Do I have to stay until the end?", answer: "No, but it's better if you do." },
+    { question: "Must you work late every day?", answer: "Yes, it's part of the job this week." },
+    { question: "Should we check the weather?", answer: "Yes, it might rain." },
+    { question: "Does she have to attend the meeting?", answer: "Yes, her presence is important." },
+    { question: "Should I tell the truth?", answer: "Yes, you always should." },
+    { question: "Must we book in advance?", answer: "Yes, especially during holidays." },
+    { question: "Do you have to leave now?", answer: "Yes, I have another appointment." },
+    { question: "Should we write this down?", answer: "Yes, it's useful for the exam." },
+    { question: "Does he have to take that course?", answer: "Yes, it's a requirement." },
+    { question: "Must I answer all the questions?", answer: "Yes, unless stated otherwise." },
+    { question: "Should I apologize?", answer: "Yes, if you made a mistake." },
+    { question: "Do we have to wait outside?", answer: "Yes, until they call us in." },
+    { question: "Must they bring their own tools?", answer: "Yes, the company doesn't provide any." },
+    { question: "Should I talk to her now?", answer: "Yes, before she leaves." },
+    { question: "Do I have to get up early?", answer: "Yes, your train leaves at 7 a.m." },
+    { question: "Must I pay now or later?", answer: "Now, please." },
+    { question: "Should we help him with the task?", answer: "Yes, it's a good idea." },
+    { question: "Do they have to wear helmets?", answer: "Yes, it's for safety reasons." },
+    { question: "Must she work on weekends?", answer: "Yes, it's part of her contract." },
+    { question: "Should we remind him again?", answer: "Yes, just to be sure." }
+  ]
+};
+
+// Module 112: Modals of Prohibition (mustn't, can't)
+const MODULE_112_DATA = {
+  title: "Module 112: Modals of Prohibition (mustn't, can't)",
+  description: "Students will learn to use the modals 'mustn't' and 'can't' to express prohibition or lack of permission.",
+  intro: `Bu modülde 'Mustn't' ve 'can't' modal fiilleri, yasaklama ve izin verilmediğini belirtmek için kullanılır.
+
+📘 Konu Anlatımı (Türkçe Açıklama)
+'Mustn't' ve 'can't' modal fiilleri, yasaklama ve izin verilmediğini belirtmek için kullanılır.
+- mustn't → kesin yasak, yapılmaması gereken bir şey (kural)
+- can't → izin verilmez, mantıksal olarak mümkün değil
+
+Örnek:
+- You mustn't smoke here. (Burada sigara içmemelisin.)
+- You can't enter without a ticket. (Biletsiz giremezsin.)
+
+📗 Structure & Usage
+✅ Structure: Subject + mustn't/can't + base verb
+
+Examples:
+- You mustn't touch the wires. (It's dangerous.)
+- She can't speak during the exam. (It's not allowed.)
+
+🧠 Example Sentences
+You mustn't park here.
+They can't use their phones in class.
+We mustn't forget to lock the door.
+He can't bring food into the lab.
+Visitors mustn't feed the animals.`,
+  tip: "Use mustn't for strict prohibitions and can't for lack of permission",
   listeningExamples: [
     "You mustn't park here.",
     "They can't use their phones in class.",
-    "We mustn't forget to lock the door.",
-    "You mustn't touch the wires.",
-    "She can't speak during the exam."
+    "We mustn't forget to lock the door."
   ],
-
   speakingPractice: [
-    { question: "Can I park here?", answer: "No, you mustn't park here." },
-    { question: "Can we use phones in class?", answer: "No, you can't use phones." },
-    { question: "Can I smoke here?", answer: "No, you mustn't smoke here." },
-    { question: "Can students leave early?", answer: "No, they can't leave early." },
-    { question: "Can I touch this?", answer: "No, you mustn't touch it." },
-    { question: "Can we eat in the library?", answer: "No, you can't eat there." },
-    { question: "Can I be late?", answer: "No, you mustn't be late." },
-    { question: "Can they take photos?", answer: "No, they can't take photos." },
-    { question: "Can I forget my ID?", answer: "No, you mustn't forget it." },
-    { question: "Can we make noise?", answer: "No, you can't make noise." },
-    { question: "Can I run in the hallway?", answer: "No, you mustn't run." },
-    { question: "Can she enter without a ticket?", answer: "No, she can't enter." },
-    { question: "Can I tell anyone?", answer: "No, you mustn't tell anyone." },
-    { question: "Can we swim here?", answer: "No, you can't swim here." },
-    { question: "Can I open the window?", answer: "No, you mustn't open it." },
-    { question: "Can they bring pets?", answer: "No, they can't bring pets." },
-    { question: "Can I cheat on the exam?", answer: "No, you mustn't cheat." },
-    { question: "Can we use the elevator?", answer: "No, you can't use it." },
-    { question: "Can I speak loudly?", answer: "No, you mustn't speak loudly." },
-    { question: "Can he go alone?", answer: "No, he can't go alone." },
-    { question: "Can I skip class?", answer: "No, you mustn't skip class." },
-    { question: "Can we park on the grass?", answer: "No, you can't park there." },
-    { question: "Can I lie to them?", answer: "No, you mustn't lie." },
-    { question: "Can they bring food?", answer: "No, they can't bring food." },
-    { question: "Can I waste time?", answer: "No, you mustn't waste time." },
-    { question: "Can we take pictures inside?", answer: "No, you can't take pictures." },
-    { question: "Can I drive without a license?", answer: "No, you mustn't drive." },
-    { question: "Can she wear jeans?", answer: "No, she can't wear jeans." },
-    { question: "Can I disturb others?", answer: "No, you mustn't disturb them." },
-    { question: "Can we drink alcohol here?", answer: "No, you can't drink alcohol." },
-    { question: "Can I ignore the rules?", answer: "No, you mustn't ignore them." },
-    { question: "Can they use the pool?", answer: "No, they can't use it." },
-    { question: "Can I be rude?", answer: "No, you mustn't be rude." },
-    { question: "Can we enter this area?", answer: "No, you can't enter." },
-    { question: "Can I copy the test?", answer: "No, you mustn't copy it." },
-    { question: "Can he walk on the grass?", answer: "No, he can't walk there." },
-    { question: "Can I shout here?", answer: "No, you mustn't shout." },
-    { question: "Can we bring bags inside?", answer: "No, you can't bring bags." },
-    { question: "Can I break the rules?", answer: "No, you mustn't break them." },
-    { question: "Can they play here?", answer: "No, they can't play here." }
+    { question: "Can I smoke in this room?", answer: "No, you mustn't. It's a non-smoking area." },
+    { question: "Can students use their phones during the test?", answer: "No, they can't. It's against the rules." },
+    { question: "May I park here?", answer: "No, you mustn't. This is a fire lane." },
+    { question: "Can we bring food into the museum?", answer: "No, you can't eat inside." },
+    { question: "Are we allowed to touch the artwork?", answer: "No, you mustn't touch anything." },
+    { question: "Can she talk during the movie?", answer: "No, she mustn't disturb others." },
+    { question: "Can I stay after closing time?", answer: "No, you can't stay past 6 p.m." },
+    { question: "Are visitors allowed to enter this room?", answer: "No, they mustn't go in without permission." },
+    { question: "Can they park in front of the entrance?", answer: "No, they can't block it." },
+    { question: "Is it okay to take photos here?", answer: "No, you mustn't use a flash camera." },
+    { question: "Can I leave my bag here?", answer: "No, you can't. It must stay with you." },
+    { question: "Can employees access the server room?", answer: "No, only IT staff. Others mustn't enter." },
+    { question: "Can I use this computer?", answer: "No, you mustn't. It's for staff only." },
+    { question: "Can kids go near the edge of the pool?", answer: "No, they mustn't. It's dangerous." },
+    { question: "Can we write on this wall?", answer: "No, you mustn't. It's prohibited." },
+    { question: "Are phones allowed in this area?", answer: "No, you can't make calls here." },
+    { question: "Can I take this document home?", answer: "No, you mustn't remove it from the office." },
+    { question: "Can they cross the street here?", answer: "No, they mustn't. It's not a pedestrian crossing." },
+    { question: "Can I feed the animals at the zoo?", answer: "No, you mustn't feed them." },
+    { question: "Can we enter the park after 9 p.m.?", answer: "No, we can't. It closes at 9." },
+    { question: "Can she skip the safety briefing?", answer: "No, she mustn't. It's mandatory." },
+    { question: "Can I bring my dog inside?", answer: "No, you can't. Pets aren't allowed." },
+    { question: "Can students leave class early?", answer: "No, they mustn't leave without permission." },
+    { question: "Can we record this conversation?", answer: "No, you can't without consent." },
+    { question: "Can I enter without a badge?", answer: "No, you mustn't. Security won't allow it." },
+    { question: "Can I park in the manager's space?", answer: "No, you can't. It's reserved." },
+    { question: "Can I use this software without a license?", answer: "No, you mustn't. That's illegal." },
+    { question: "Can they leave the hospital without discharge?", answer: "No, they can't leave until cleared." },
+    { question: "Can I stay in the classroom alone?", answer: "No, you mustn't. It's not safe." },
+    { question: "Can I skip the training session?", answer: "No, you mustn't. It's part of your onboarding." },
+    { question: "Can we block the fire exit?", answer: "No, you mustn't. It's a safety risk." },
+    { question: "Can children go into this lab?", answer: "No, they can't. It's restricted." },
+    { question: "Can we drink alcohol here?", answer: "No, you mustn't. It's a dry zone." },
+    { question: "Can we use this area for lunch?", answer: "No, you can't eat here." },
+    { question: "Can I borrow this without asking?", answer: "No, you mustn't take it without permission." },
+    { question: "Can he drive without a license?", answer: "No, he can't. That's illegal." },
+    { question: "Can we enter through this door?", answer: "No, we mustn't. It's an emergency exit." },
+    { question: "Can you talk loudly in the library?", answer: "No, you mustn't disturb others." },
+    { question: "Can students use calculators in this exam?", answer: "No, they can't for this part." },
+    { question: "Can I ignore safety instructions?", answer: "No, you mustn't. It's dangerous." }
   ]
 };
 
-// Module 113 Data
+// Module 113 Data: Reported Speech: Requests and Commands
 const MODULE_113_DATA = {
-  title: "Reported Speech: Requests and Commands (B1)",
-  description: "Report requests and commands using tell, ask, order",
-  intro: `İstek ve emir cümleleri dolaylı anlatılırken genellikle 'ask', 'tell', 'order' ve 'request' gibi fiiller kullanılır.
-• Emir: tell/ask + someone + to + verb
-• Olumsuz emir: tell/ask + someone + not to + verb
-• İstek: ask/request + someone + to + verb
+  title: "Module 113: Reported Speech – Requests and Commands",
+  description: "Students will learn to report requests and commands using correct structure and appropriate reporting verbs such as 'ask', 'tell', 'order', and 'request'.",
+  intro: `Bu modülde istek ve emir cümleleri dolaylı anlatılırken genellikle 'ask', 'tell', 'order' ve 'request' gibi fiiller kullanılır.
 
-**Örnekler:**
-"Sit down." → He told me to sit down.
-"Don't open the door." → She told me not to open the door.`,
-  tip: "Use 'told' for commands and 'asked' for requests. Change 'you' to object pronouns and adjust time references.",
+📘 Konu Anlatımı (Türkçe Açıklama)
+İstek ve emir cümleleri dolaylı anlatılırken genellikle 'ask', 'tell', 'order' ve 'request' gibi fiiller kullanılır.
+- Emir cümleleri için: tell/ask + someone + to + verb
+- Olumsuz emirlerde: tell/ask + someone + not to + verb
+- İstek cümlelerinde: ask/request + someone + to + verb
 
-  table: [
-    { pattern: "Affirmative command", example: "'Sit down.' → He told me to sit down." },
-    { pattern: "Negative command", example: "'Don't open the door.' → She told me not to open the door." },
-    { pattern: "Request", example: "'Could you send me the file?' → He asked me to send him the file." }
-  ],
+Örnek:
+- "Close the window." → She told me to close the window.
+- "Don't talk." → The teacher told us not to talk.
+- "Can you help me?" → He asked me to help him.
 
+📗 Structure & Usage
+✅ Affirmative Command:
+- Direct: "Sit down."
+- Reported: He told me to sit down.
+
+✅ Negative Command:
+- Direct: "Don't open the door."
+- Reported: She told me not to open the door.
+
+✅ Request:
+- Direct: "Could you send me the file?"
+- Reported: He asked me to send him the file.
+
+🧠 Example Sentences
+"Be quiet." → She told us to be quiet.
+"Don't forget your homework." → The teacher reminded him not to forget his homework.
+"Please help me." → He asked me to help him.
+"Turn off the lights." → She told me to turn off the lights.
+"Don't go outside." → My mom told me not to go outside.`,
+  tip: "Use 'tell' for commands and 'ask' for requests. Add 'not to' for negative commands.",
   listeningExamples: [
-    "'Be quiet.' → She told us to be quiet.",
-    "'Don't forget your homework.' → The teacher reminded him not to forget his homework.",
-    "'Please help me.' → He asked me to help him.",
-    "'Turn off the lights.' → She told me to turn off the lights.",
-    "'Don't go outside.' → My mom told me not to go outside."
+    "She told me to close the window.",
+    "The teacher told us not to talk.",
+    "He asked me to help him."
   ],
-
   speakingPractice: [
-    { question: "'Open your books.' → (teacher to students)", answer: "The teacher told the students to open their books." },
-    { question: "'Don't touch that.' → (mother to child)", answer: "The mother told the child not to touch that." },
-    { question: "'Help me with the boxes.' → (he to me)", answer: "He asked me to help him with the boxes." },
-    { question: "'Please close the window.' → (she to me)", answer: "She asked me to close the window." },
-    { question: "'Don't run in the hallway.' → (teacher to students)", answer: "The teacher told the students not to run in the hallway." },
-    { question: "'Could you call me later?' → (she to him)", answer: "She asked him to call her later." },
-    { question: "'Turn off your phones.' → (exam supervisor to candidates)", answer: "The exam supervisor told the candidates to turn off their phones." },
-    { question: "'Don't forget to feed the cat.' → (she to me)", answer: "She reminded me not to forget to feed the cat." },
-    { question: "'Wait for me here.' → (he to her)", answer: "He told her to wait for him there." },
-    { question: "'Please write your name.' → (receptionist to visitor)", answer: "The receptionist asked the visitor to write their name." },
-    { question: "'Don't be late.' → (boss to employees)", answer: "The boss told the employees not to be late." },
-    { question: "'Help your brother.' → (mother to child)", answer: "The mother told the child to help his brother." },
-    { question: "'Please send the report.' → (manager to assistant)", answer: "The manager asked the assistant to send the report." },
-    { question: "'Don't speak loudly.' → (librarian to students)", answer: "The librarian told the students not to speak loudly." },
-    { question: "'Come here.' → (he to me)", answer: "He told me to come there." },
-    { question: "'Don't go alone.' → (friend to friend)", answer: "The friend told his friend not to go alone." },
-    { question: "'Take this medicine.' → (doctor to patient)", answer: "The doctor told the patient to take the medicine." },
-    { question: "'Please don't tell anyone.' → (she to me)", answer: "She asked me not to tell anyone." },
-    { question: "'Clean your room.' → (parent to child)", answer: "The parent told the child to clean their room." },
-    { question: "'Call me tonight.' → (he to me)", answer: "He told me to call him that night." },
-    { question: "'Don't play in the street.' → (parent to children)", answer: "The parent told the children not to play in the street." },
-    { question: "'Pass me the salt.' → (he to her)", answer: "He told her to pass him the salt." },
-    { question: "'Please don't forget the keys.' → (she to me)", answer: "She asked me not to forget the keys." },
-    { question: "'Don't lie to me.' → (he to her)", answer: "He told her not to lie to him." },
-    { question: "'Please be careful.' → (she to him)", answer: "She asked him to be careful." },
-    { question: "'Don't open the door.' → (security guard to visitors)", answer: "The security guard told the visitors not to open the door." },
-    { question: "'Get some rest.' → (friend to friend)", answer: "The friend told his friend to get some rest." },
-    { question: "'Please take a seat.' → (host to guest)", answer: "The host asked the guest to take a seat." },
-    { question: "'Turn left at the corner.' → (police officer to driver)", answer: "The police officer told the driver to turn left at the corner." },
-    { question: "'Don't park here.' → (sign)", answer: "The sign told us not to park there." },
-    { question: "'Please be on time.' → (manager to team)", answer: "The manager asked the team to be on time." },
-    { question: "'Call the doctor.' → (wife to husband)", answer: "The wife told her husband to call the doctor." },
-    { question: "'Don't worry.' → (he to me)", answer: "He told me not to worry." },
-    { question: "'Take your umbrella.' → (mother to child)", answer: "The mother told the child to take their umbrella." },
-    { question: "'Please don't shout.' → (she to him)", answer: "She asked him not to shout." },
-    { question: "'Submit your homework.' → (teacher to student)", answer: "The teacher told the student to submit their homework." },
-    { question: "'Don't forget your ID.' → (officer to applicant)", answer: "The officer told the applicant not to forget their ID." },
-    { question: "'Don't disturb them.' → (manager to staff)", answer: "The manager told the staff not to disturb them." },
-    { question: "'Please stay here.' → (nurse to patient)", answer: "The nurse asked the patient to stay there." },
-    { question: "'Don't take pictures.' → (museum staff to visitor)", answer: "The museum staff told the visitor not to take pictures." }
+    { question: "Open your books.", answer: "The teacher told the students to open their books." },
+    { question: "Don't touch that.", answer: "The mother told the child not to touch that." },
+    { question: "Help me with the boxes.", answer: "He asked me to help him with the boxes." },
+    { question: "Please close the window.", answer: "She asked me to close the window." },
+    { question: "Don't run in the hallway.", answer: "The teacher told the students not to run in the hallway." },
+    { question: "Could you call me later?", answer: "She asked him to call her later." },
+    { question: "Turn off your phones.", answer: "The exam supervisor told the candidates to turn off their phones." },
+    { question: "Don't forget to feed the cat.", answer: "She reminded me not to forget to feed the cat." },
+    { question: "Wait for me here.", answer: "He told her to wait for him there." },
+    { question: "Please write your name.", answer: "The receptionist asked the visitor to write their name." },
+    { question: "Don't be late.", answer: "The boss told the employees not to be late." },
+    { question: "Help your brother.", answer: "The mother told the child to help his brother." },
+    { question: "Please send the report.", answer: "The manager asked the assistant to send the report." },
+    { question: "Don't speak loudly.", answer: "The librarian told the students not to speak loudly." },
+    { question: "Come here.", answer: "He told me to come there." },
+    { question: "Don't go alone.", answer: "The friend told his friend not to go alone." },
+    { question: "Take this medicine.", answer: "The doctor told the patient to take the medicine." },
+    { question: "Please don't tell anyone.", answer: "She asked me not to tell anyone." },
+    { question: "Clean your room.", answer: "The parent told the child to clean their room." },
+    { question: "Call me tonight.", answer: "He told me to call him that night." },
+    { question: "Don't play in the street.", answer: "The parent told the children not to play in the street." },
+    { question: "Pass me the salt.", answer: "He told her to pass him the salt." },
+    { question: "Please don't forget the keys.", answer: "She asked me not to forget the keys." },
+    { question: "Don't lie to me.", answer: "He told her not to lie to him." },
+    { question: "Please be careful.", answer: "She asked him to be careful." },
+    { question: "Don't open the door.", answer: "The security guard told the visitors not to open the door." },
+    { question: "Get some rest.", answer: "The friend told his friend to get some rest." },
+    { question: "Please take a seat.", answer: "The host asked the guest to take a seat." },
+    { question: "Turn left at the corner.", answer: "The police officer told the driver to turn left at the corner." },
+    { question: "Don't park here.", answer: "The sign told us not to park there." },
+    { question: "Please be on time.", answer: "The manager asked the team to be on time." },
+    { question: "Call the doctor.", answer: "The wife told her husband to call the doctor." },
+    { question: "Don't worry.", answer: "He told me not to worry." },
+    { question: "Take your umbrella.", answer: "The mother told the child to take their umbrella." },
+    { question: "Please don't shout.", answer: "She asked him not to shout." },
+    { question: "Submit your homework.", answer: "The teacher told the student to submit their homework." },
+    { question: "Don't forget your ID.", answer: "The officer told the applicant not to forget their ID." },
+    { question: "Don't disturb them.", answer: "The manager told the staff not to disturb them." },
+    { question: "Please stay here.", answer: "The nurse asked the patient to stay there." },
+    { question: "Don't take pictures.", answer: "The museum staff told the visitor not to take pictures." }
   ]
 };
 
-// Module 114 Data
+// Module 114 Data: Reported Speech – Questions
 const MODULE_114_DATA = {
-  title: "Reported Speech – Questions (B1)",
-  description: "Report yes/no and WH- questions with correct word order",
-  intro: `Dolaylı anlatımda soru cümleleri aktarılırken:
-• Soru yapısı düz cümleye çevrilir (yardımcı fiil kaldırılır).
-• 'asked', 'wanted to know' gibi fiiller kullanılır.
-• Yes/No questions için 'if/whether', WH-questions için 'wh-word' kullanılır.
+  title: "Module 114: Reported Speech – Questions",
+  description: "Students will learn how to report both yes/no and WH- questions using appropriate reporting verbs and correct word order.",
+  intro: `Bu modülde dolaylı anlatımda (reported speech) soru cümleleri aktarılırken:
 
-**Örnekler:**
-"Do you like pizza?" → He asked if I liked pizza.
-"Where is she going?" → He asked where she was going.`,
-  tip: "Remember to use statement word order (subject + verb) after the question word or 'if/whether'.",
+📘 Konu Anlatımı (Türkçe Açıklama)
+Dolaylı anlatımda (reported speech) soru cümleleri aktarılırken:
+- Soru yapısı düz cümle yapısına çevrilir (yardımcı fiil kaldırılır).
+- 'Asked' ve 'wanted to know' gibi fiiller kullanılır.
+- Yes/No questions için 'if/whether', WH-questions için 'wh-word' ile devam edilir.
 
-  table: [
-    { pattern: "Yes/No Questions", example: "'Do you like pizza?' → He asked if I liked pizza." },
-    { pattern: "WH- Questions", example: "'Where is she going?' → He asked where she was going." }
-  ],
+Örnek:
+- "Are you happy?" → He asked if I was happy.
+- "Where do you live?" → She asked where I lived.
 
+📗 Structure & Usage
+✅ Yes/No Questions:
+- Direct: "Do you like pizza?"
+- Reported: He asked if I liked pizza.
+
+✅ WH- Questions:
+- Direct: "Where is she going?"
+- Reported: He asked where she was going.
+
+🧠 Example Sentences
+"Do you live here?" → He asked if I lived there.
+"What time does the train leave?" → She asked what time the train left.
+"Are you tired?" → He asked if I was tired.
+"Where did you go?" → She asked where I had gone.
+"Can you help me?" → He asked if I could help him.`,
+  tip: "Change question word order to statement order and use 'if' for Yes/No questions",
   listeningExamples: [
-    "'Do you live here?' → He asked if I lived there.",
-    "'What time does the train leave?' → She asked what time the train left.",
-    "'Are you tired?' → He asked if I was tired.",
-    "'Where did you go?' → She asked where I had gone.",
-    "'Can you help me?' → He asked if I could help him."
+    "He asked if I lived there.",
+    "She asked what time the train left.",
+    "He asked if I was tired."
   ],
-
   speakingPractice: [
     { question: "Do you like coffee?", answer: "She asked if I liked coffee." },
     { question: "Where do you work?", answer: "He asked where I worked." },
@@ -6899,32 +7582,42 @@ const MODULE_114_DATA = {
   ]
 };
 
-// Module 115 Data
+// Module 115 Data: Passive Voice – Present Perfect
 const MODULE_115_DATA = {
-  title: "Passive Voice – Present Perfect (B1)",
-  description: "Form and use passive voice in present perfect tense",
-  intro: `Present Perfect Passive: have/has + been + V3 (past participle)
-Eylemi yapan kişinin önemli olmadığı durumlarda kullanılır.
+  title: "Module 115: Passive Voice – Present Perfect",
+  description: "Students will learn how to form and use the passive voice in the present perfect tense to describe actions where the doer is unknown or unimportant.",
+  intro: `Bu modülde Passive Voice (edilgen yapı), eylemi yapan kişinin önemli olmadığı veya bilinmediği durumlarda kullanılır.
 
-**Yapı:** Subject + has/have + been + past participle
-**Örnekler:**
-Active: They have cleaned the classroom. → Passive: The classroom has been cleaned.`,
-  tip: "Use the passive voice to focus on the action or result, not the doer. Perfect for formal writing and news reports.",
+📘 Konu Anlatımı (Türkçe Açıklama)
+Passive Voice (edilgen yapı), eylemi yapan kişinin önemli olmadığı veya bilinmediği durumlarda kullanılır.
+Present Perfect Tense'de edilgen yapı şu şekilde kurulur:
+✅ have/has + been + V3 (past participle)
 
-  table: [
-    { form: "Affirmative", structure: "has/have + been + V3", example: "The house has been sold." },
-    { form: "Negative", structure: "has/have + not + been + V3", example: "The email hasn't been sent." },
-    { form: "Question", structure: "Has/Have + subject + been + V3?", example: "Has the report been completed?" }
-  ],
+Örnek:
+- Active: They have cleaned the classroom.
+- Passive: The classroom has been cleaned.
 
+📗 Structure & Usage
+✅ Structure:
+- Subject + has/have + been + past participle
+
+Examples:
+- The documents have been sent.
+- Dinner has been prepared.
+- Many emails have been written today.
+
+🧠 Example Sentences
+The house has been sold.
+Many mistakes have been made.
+The package has been delivered.
+The invitations have been sent out.
+The report has been completed.`,
+  tip: "Use passive voice when the doer is unknown or unimportant",
   listeningExamples: [
     "The house has been sold.",
     "Many mistakes have been made.",
-    "The package has been delivered.",
-    "The invitations have been sent out.",
-    "The report has been completed."
+    "The package has been delivered."
   ],
-
   speakingPractice: [
     { question: "They have repaired the road.", answer: "The road has been repaired." },
     { question: "She has written three poems.", answer: "Three poems have been written." },
@@ -6969,31 +7662,19 @@ Active: They have cleaned the classroom. → Passive: The classroom has been cle
   ]
 };
 
-// Module 116 Data
+// Module 116 Data: Passive Voice – Future Simple
 const MODULE_116_DATA = {
-  title: "Passive Voice – Future (B1)",
-  description: "Use future simple passive to describe future actions",
-  intro: `Gelecekte edilgen yapı: will + be + V3 (past participle) — bir işin gelecekte yapılacağını belirtir.
+  title: "Module 116 - Passive Voice – Future Simple",
+  description: "Learn how to use the passive voice in the future simple tense",
+  intro: `Gelecekte edilgen (passive) yapı, bir işin gelecekte yapılacağını belirtmek için kullanılır.
 
-**Yapı:** Subject + will + be + past participle
-**Örnekler:**
-Active: They will deliver the package tomorrow. → Passive: The package will be delivered tomorrow.`,
-  tip: "Use future passive when the focus is on what will happen, not who will do it. Common in formal announcements.",
-
-  table: [
-    { form: "Affirmative", structure: "will + be + V3", example: "The room will be cleaned." },
-    { form: "Negative", structure: "will + not + be + V3", example: "The meeting won't be canceled." },
-    { form: "Question", structure: "Will + subject + be + V3?", example: "Will the report be finished?" }
-  ],
-
+Yapı: will + be + V3 (past participle)`,
+  tip: "Use future passive to describe actions that will be done by someone in the future",
   listeningExamples: [
-    "The homework will be submitted tomorrow.",
-    "A new product will be launched next month.",
-    "The documents will be signed by the manager.",
-    "The invitations will be sent out soon.",
-    "The decision will be announced next week."
+    "The room will be cleaned.",
+    "A new bridge will be built.",
+    "The report will be written by Friday."
   ],
-
   speakingPractice: [
     { question: "They will paint the house.", answer: "The house will be painted." },
     { question: "She will bake a cake.", answer: "A cake will be baked." },
@@ -7038,107 +7719,80 @@ Active: They will deliver the package tomorrow. → Passive: The package will be
   ]
 };
 
-// Module 117 Data
+// Module 117 Data: Conditionals – Review (Zero, First, Second, Third)
 const MODULE_117_DATA = {
-  title: "Conditionals – Review (B1)",
-  description: "Review zero, first, second, and third conditionals",
-  intro: `Koşul cümleleri (conditionals) sonuç belirtmek için kullanılır.
-• **Zero:** If + present, present (genel gerçekler)
-• **First:** If + present, will + V1 (gerçek gelecek)
-• **Second:** If + past, would + V1 (hayali şimdi/gelecek)
-• **Third:** If + past perfect, would have + V3 (hayali geçmiş)
+  title: "Module 117 - Conditionals – Review (Zero, First, Second, Third)",
+  description: "Review and compare all four main conditional sentence types",
+  intro: `Koşul cümleleri (conditionals), bir eylemin sonucunu belirtmek için kullanılır. Bu modülde dört temel conditional tipi gözden geçirilir:
 
-**Örnekler:**
-Zero: If water reaches 100°C, it boils.
-First: If he calls me, I will answer.
-Second: If I were you, I would apologize.
-Third: If we had left on time, we would have arrived earlier.`,
-  tip: "Each conditional type has a different time reference and level of reality. Master the form and meaning of each.",
-
-  table: [
-    { type: "Zero", structure: "If + present, present", example: "If water boils, it turns to steam." },
-    { type: "First", structure: "If + present, will + V1", example: "If it rains, I will stay home." },
-    { type: "Second", structure: "If + past, would + V1", example: "If I were rich, I would travel." },
-    { type: "Third", structure: "If + past perfect, would have + V3", example: "If I had known, I would have helped." }
-  ],
-
+🔹 0. Conditional – Genel gerçekler: If + present simple, present simple
+🔹 1. Conditional – Gerçek gelecek: If + present simple, will + V1  
+🔹 2. Conditional – Hayali durumlar (şimdi/gelecek): If + past simple, would + V1
+🔹 3. Conditional – Geçmişe dair hayali durumlar: If + past perfect, would have + V3`,
+  tip: "Each conditional type expresses different levels of reality and time references",
   listeningExamples: [
-    "Zero: If water reaches 100°C, it boils.",
-    "First: If he calls me, I will answer.",
-    "Second: If I were you, I would apologize.",
-    "Third: If we had left on time, we would have arrived earlier."
+    "If water reaches 100°C, it boils.", // Zero
+    "If he calls me, I will answer.", // First
+    "If I were you, I would apologize.", // Second
+    "If we had left on time, we would have arrived earlier." // Third
   ],
-
   speakingPractice: [
-    { question: "If you heat ice, what happens?", answer: "It melts. (Zero Conditional)" },
-    { question: "What will you do if it rains tomorrow?", answer: "I will stay home. (First Conditional)" },
-    { question: "If you had studied, what would have happened?", answer: "I would have passed. (Third Conditional)" },
-    { question: "If I were rich, what would I do?", answer: "You would buy a big house. (Second Conditional)" },
-    { question: "If people don't drink water, what happens?", answer: "They get dehydrated. (Zero Conditional)" },
-    { question: "If I finish early, what will I do?", answer: "You will go out. (First Conditional)" },
-    { question: "If she knew the answer, what would she do?", answer: "She would tell us. (Second Conditional)" },
-    { question: "If he had listened, what would have happened?", answer: "He would have avoided the mistake. (Third Conditional)" },
-    { question: "What happens if you mix red and yellow?", answer: "You get orange. (Zero Conditional)" },
-    { question: "If the sun shines tomorrow, what will we do?", answer: "We will go to the beach. (First Conditional)" },
-    { question: "If I were taller, what sport would I play?", answer: "You would play basketball. (Second Conditional)" },
-    { question: "If they had invited me, what would I have done?", answer: "You would have gone to the party. (Third Conditional)" },
-    { question: "If you drop this glass, what happens?", answer: "It breaks. (Zero Conditional)" },
-    { question: "If you study hard, what will happen?", answer: "You will succeed. (First Conditional)" },
-    { question: "If I had more time, what would I do?", answer: "You would read more books. (Second Conditional)" },
-    { question: "If she had worn a coat, what would have happened?", answer: "She wouldn't have gotten cold. (Third Conditional)" },
-    { question: "If I don't eat, what happens?", answer: "You feel hungry. (Zero Conditional)" },
-    { question: "If you call her, what will she do?", answer: "She will answer. (First Conditional)" },
-    { question: "If we lived in Spain, what would we do?", answer: "We would speak Spanish. (Second Conditional)" },
-    { question: "If they had studied, what would have happened?", answer: "They would have passed the exam. (Third Conditional)" },
-    { question: "If fire gets no oxygen, what happens?", answer: "It goes out. (Zero Conditional)" },
-    { question: "If I see him, what will I say?", answer: "You will say hello. (First Conditional)" },
-    { question: "If I won the lottery, what would I do?", answer: "You would buy a car. (Second Conditional)" },
-    { question: "If you had set an alarm, what would have happened?", answer: "You wouldn't have been late. (Third Conditional)" },
-    { question: "If sugar dissolves in tea, what happens?", answer: "It becomes sweet. (Zero Conditional)" },
-    { question: "If she comes, what will you do?", answer: "I will talk to her. (First Conditional)" },
-    { question: "If he spoke slower, what would happen?", answer: "We would understand him. (Second Conditional)" },
-    { question: "If we had known, what would we have done?", answer: "We would have changed our plan. (Third Conditional)" },
-    { question: "If you boil water, what happens?", answer: "It turns into steam. (Zero Conditional)" },
-    { question: "If I go shopping, what will I buy?", answer: "You will buy some bread. (First Conditional)" },
-    { question: "If I were a bird, what would I do?", answer: "You would fly away. (Second Conditional)" },
-    { question: "If she had asked for help, what would have happened?", answer: "She would have received it. (Third Conditional)" },
-    { question: "If metal is heated, what happens?", answer: "It expands. (Zero Conditional)" },
-    { question: "If you don't sleep enough, what will happen?", answer: "You will feel tired. (First Conditional)" },
-    { question: "If I lived in New York, what would I do?", answer: "You would visit Central Park. (Second Conditional)" },
-    { question: "If they had checked the weather, what would they have done?", answer: "They would have brought umbrellas. (Third Conditional)" },
-    { question: "If plants don't get light, what happens?", answer: "They die. (Zero Conditional)" },
-    { question: "If I pass the exam, what will I do?", answer: "You will celebrate. (First Conditional)" },
-    { question: "If he were a teacher, what would he do?", answer: "He would explain things well. (Second Conditional)" },
-    { question: "If she had taken notes, what would she have done?", answer: "She would have remembered the lesson. (Third Conditional)" }
+    { question: "If you heat ice, what happens?", answer: "It melts." },
+    { question: "What will you do if it rains tomorrow?", answer: "I will stay home." },
+    { question: "If you had studied, what would have happened?", answer: "I would have passed." },
+    { question: "If I were rich, what would I do?", answer: "You would buy a big house." },
+    { question: "If people don't drink water, what happens?", answer: "They get dehydrated." },
+    { question: "If I finish early, what will I do?", answer: "You will go out." },
+    { question: "If she knew the answer, what would she do?", answer: "She would tell us." },
+    { question: "If he had listened, what would have happened?", answer: "He would have avoided the mistake." },
+    { question: "What happens if you mix red and yellow?", answer: "You get orange." },
+    { question: "If the sun shines tomorrow, what will we do?", answer: "We will go to the beach." },
+    { question: "If I were taller, what sport would I play?", answer: "You would play basketball." },
+    { question: "If they had invited me, what would I have done?", answer: "You would have gone to the party." },
+    { question: "If you drop this glass, what happens?", answer: "It breaks." },
+    { question: "If you study hard, what will happen?", answer: "You will succeed." },
+    { question: "If I had more time, what would I do?", answer: "You would read more books." },
+    { question: "If she had worn a coat, what would have happened?", answer: "She wouldn't have gotten cold." },
+    { question: "If I don't eat, what happens?", answer: "You feel hungry." },
+    { question: "If you call her, what will she do?", answer: "She will answer." },
+    { question: "If we lived in Spain, what would we do?", answer: "We would speak Spanish." },
+    { question: "If they had studied, what would have happened?", answer: "They would have passed the exam." },
+    { question: "If fire gets no oxygen, what happens?", answer: "It goes out." },
+    { question: "If I see him, what will I say?", answer: "You will say hello." },
+    { question: "If I won the lottery, what would I do?", answer: "You would buy a car." },
+    { question: "If you had set an alarm, what would have happened?", answer: "You wouldn't have been late." },
+    { question: "If sugar dissolves in tea, what happens?", answer: "It becomes sweet." },
+    { question: "If she comes, what will you do?", answer: "I will talk to her." },
+    { question: "If he spoke slower, what would happen?", answer: "We would understand him." },
+    { question: "If we had known, what would we have done?", answer: "We would have changed our plan." },
+    { question: "If you boil water, what happens?", answer: "It turns into steam." },
+    { question: "If I go shopping, what will I buy?", answer: "You will buy some bread." },
+    { question: "If I were a bird, what would I do?", answer: "You would fly away." },
+    { question: "If she had asked for help, what would have happened?", answer: "She would have received it." },
+    { question: "If metal is heated, what happens?", answer: "It expands." },
+    { question: "If you don't sleep enough, what will happen?", answer: "You will feel tired." },
+    { question: "If I lived in New York, what would I do?", answer: "You would visit Central Park." },
+    { question: "If they had checked the weather, what would they have done?", answer: "They would have brought umbrellas." },
+    { question: "If plants don't get light, what happens?", answer: "They die." },
+    { question: "If I pass the exam, what will I do?", answer: "You will celebrate." },
+    { question: "If he were a teacher, what would he do?", answer: "He would explain things well." },
+    { question: "If she had taken notes, what would she have done?", answer: "She would have remembered the lesson." }
   ]
 };
 
-// Module 118 Data
+// Module 118 Data: Third Conditional
 const MODULE_118_DATA = {
-  title: "Third Conditional (B1)",
-  description: "Describe unreal past situations and imagined results",
-  intro: `3. tip koşul: If + past perfect, would have + V3 (geçmişte gerçekleşmemiş durumların hayali sonuçları).
+  title: "Module 118 - Third Conditional",
+  description: "Learn how to use the third conditional to describe unreal situations in the past",
+  intro: `3. tip koşul cümleleri (Third Conditional), geçmişte gerçekleşmemiş olaylar ve onların hayali sonuçları hakkında konuşmak için kullanılır.
 
-**Yapı:** If + past perfect, would have + past participle
-**Örnekler:**
-If I had studied, I would have passed the exam.
-If they had left earlier, they would have caught the train.`,
-  tip: "Use third conditional for regrets and imagining different past outcomes. Both clauses refer to the past.",
-
-  table: [
-    { form: "Affirmative", example: "If I had known, I would have helped you." },
-    { form: "Negative", example: "If she hadn't been late, she wouldn't have missed the bus." },
-    { form: "Question", example: "What would you have done if you had seen him?" }
-  ],
-
+✅ If + past perfect, would have + V3`,
+  tip: "Use third conditional to express regrets and hypothetical past situations",
   listeningExamples: [
     "If I had gone to bed early, I wouldn't have been tired.",
     "If they had booked the tickets, they wouldn't have missed the concert.",
-    "If you had reminded me, I wouldn't have forgotten.",
-    "If she had checked the email, she would have seen the update.",
-    "If we had studied more, we would have passed the test."
+    "If you had reminded me, I wouldn't have forgotten."
   ],
-
   speakingPractice: [
     { question: "If I had seen the sign, what would I have done?", answer: "You would have stopped." },
     { question: "If she had listened, what would have happened?", answer: "She wouldn't have made the mistake." },
@@ -7183,32 +7837,21 @@ If they had left earlier, they would have caught the train.`,
   ]
 };
 
-// Module 119 Data
+// Module 119 Data: Mixed Conditionals
 const MODULE_119_DATA = {
-  title: "Mixed Conditionals (B1)",
-  description: "Mix time references in conditional sentences",
-  intro: `Mixed Conditionals, geçmiş/şimdi zamanlarını karıştırarak hayali senaryoları ifade eder.
-**Tip 1** (geçmiş neden → şimdi sonuç): If + past perfect, would + V1
-**Tip 2** (şimdi neden → geçmiş sonuç): If + past simple, would have + V3
+  title: "Module 119 - Mixed Conditionals",
+  description: "Learn how to use mixed conditionals to talk about hypothetical situations involving different time references",
+  intro: `Mixed Conditionals (karışık koşul yapıları), geçmiş ve şimdiki zamanları bir araya getirerek, hayali senaryoları ifade etmek için kullanılır.
 
-**Örnekler:**
-If I had studied medicine, I would be a doctor now. (geçmiş → şimdi)
-If he were more responsible, he wouldn't have missed the deadline. (şimdi → geçmiş)`,
-  tip: "Mix time references when a past action affects the present, or a present situation affects a past result.",
-
-  table: [
-    { type: "Past → Present", example: "If I had taken the job, I would be rich now." },
-    { type: "Present → Past", example: "If I were taller, I would have joined the team." }
-  ],
-
+İki yaygın mixed conditional yapısı vardır:
+1. Geçmiş neden → şu anki sonuç: If + past perfect, would + V1
+2. Şimdiki neden → geçmiş sonuç: If + past simple, would have + V3`,
+  tip: "Mix different time references to show cause and effect across time periods",
   listeningExamples: [
     "If I had gone to university, I would have a better job now.",
     "If she spoke French, she would have helped us in Paris.",
-    "If they had arrived earlier, they would be sitting in the front row.",
-    "If I weren't afraid of heights, I would have climbed the mountain.",
-    "If he had trained harder, he would be playing in the national team now."
+    "If they had arrived earlier, they would be sitting in the front row."
   ],
-
   speakingPractice: [
     { question: "If she had studied more, what would she be doing now?", answer: "She would be attending university." },
     { question: "If I were more organized, what would I have done?", answer: "You would have finished on time." },
@@ -7253,33 +7896,20 @@ If he were more responsible, he wouldn't have missed the deadline. (şimdi → g
   ]
 };
 
-// Module 120 Data
+// Module 120 Data: Wish / If only + Past Simple (Present Regrets)
 const MODULE_120_DATA = {
-  title: "Wish / If only + Past Simple (B1)",
-  description: "Express present regrets and hypothetical desires",
-  intro: `Wish / If only + past simple: Şu an gerçek olmayan/istenen durumları ifade eder.
+  title: "Module 120 - Wish / If only + Past Simple (Present Regrets)",
+  description: "Learn how to express present regrets and hypothetical desires about the present",
+  intro: `"Wish" ve "If only" yapıları, şu anki durumlarla ilgili pişmanlıkları veya keşke şöyle olsaydı dediğimiz şeyleri ifade etmek için kullanılır.
 
-**Yapı:** Subject + wish / if only + past simple
-**Örnekler:**
-I wish I had a car. (Arabam yok ama keşke olsaydı)
-If only I were taller. (Uzun değilim ama keşke uzun olsaydım)
-He wishes he lived in London. (Londra'da yaşamıyor ama keşke yaşasaydı)`,
-  tip: "Use 'wish' or 'if only' + past simple to express regret about present situations you want to change.",
-
-  table: [
-    { form: "Affirmative", example: "I wish I spoke Spanish." },
-    { form: "Negative", example: "I wish I didn't live so far away." },
-    { form: "With 'be'", example: "If only I were taller. (use 'were' for all persons)" }
-  ],
-
+✅ Yapı: Wish / If only + past simple
+Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak için kullanılır.`,
+  tip: "Use wish/if only + past simple to express regrets about present situations",
   listeningExamples: [
     "I wish I spoke Spanish.",
     "If only I had more free time.",
-    "She wishes she didn't live so far away.",
-    "I wish we were on holiday.",
-    "If only he knew the answer."
+    "She wishes she didn't live so far away."
   ],
-
   speakingPractice: [
     { question: "You don't have a car. What do you say?", answer: "I wish I had a car." },
     { question: "You are not tall. What do you say?", answer: "If only I were taller." },
@@ -7324,2212 +7954,7 @@ He wishes he lived in London. (Londra'da yaşamıyor ama keşke yaşasaydı)`,
   ]
 };
 
-// Module 121 Data
-const MODULE_121_DATA = {
-  title: "Wish / If only + Past Perfect (Past Regrets) – B1 Level",
-  description: "Learn to express regrets about the past using 'wish' and 'if only' with past perfect",
-  intro: `'Wish' ve 'If only' + past perfect yapıları, geçmişte gerçekleşmeyen olaylara duyulan pişmanlıkları ifade etmek için kullanılır.
-
-**Yapı:**
-- I wish + past perfect (had + V3)
-- If only + past perfect (had + V3)
-
-**Kullanım:**
-Geçmişte yapmadığımız veya yaptığımız şeylerden pişmanlık duymak için kullanılır.
-
-**Örnekler:**
-- I wish I had taken that opportunity. (O fırsatı değerlendirseydim.)
-- If only I had set an alarm. (Keşke alarm kurmuş olsaydım.)
-- She wishes she had studied more. (Keşke daha çok çalışmış olsaydı.)
-
-This structure expresses regrets about the past - things that did not happen or things we wish had happened differently.`,
-  tip: "Use 'wish' or 'if only' + had + past participle to express regrets about past events.",
-
-  table: [
-    { structure: "wish + had + V3", example: "I wish I had studied harder.", meaning: "Regret about not studying (past)" },
-    { structure: "if only + had + V3", example: "If only I had gone to the party.", meaning: "Strong regret about not going (past)" },
-    { structure: "wish + hadn't + V3", example: "I wish I hadn't eaten so much.", meaning: "Regret about eating too much (past)" },
-    { structure: "if only + hadn't + V3", example: "If only he hadn't forgotten.", meaning: "Strong regret about forgetting (past)" }
-  ],
-
-  listeningExamples: [
-    "I wish I had taken that opportunity.",
-    "If only I had set an alarm.",
-    "She wishes she had studied more.",
-    "If only we had checked the weather forecast.",
-    "He wishes he hadn't forgotten her birthday."
-  ],
-
-  speakingPractice: [
-    { question: "You didn't study for the exam. What do you say?", answer: "I wish I had studied for the exam." },
-    { question: "She forgot his birthday. What does she say?", answer: "She wishes she hadn't forgotten his birthday." },
-    { question: "You didn't go to the party. What do you say?", answer: "If only I had gone to the party." },
-    { question: "He didn't take the job offer. What does he say?", answer: "He wishes he had taken the job offer." },
-    { question: "They didn't book a table. What do they say?", answer: "They wish they had booked a table." },
-    { question: "You spent too much money. What do you say?", answer: "I wish I hadn't spent so much money." },
-    { question: "She didn't call her friend. What does she say?", answer: "If only she had called her friend." },
-    { question: "You didn't arrive on time. What do you say?", answer: "I wish I had arrived on time." },
-    { question: "He didn't bring his umbrella. What does he say?", answer: "He wishes he had brought his umbrella." },
-    { question: "We didn't take any photos. What do we say?", answer: "We wish we had taken some photos." },
-    { question: "They didn't listen to the teacher. What do they say?", answer: "If only they had listened to the teacher." },
-    { question: "You didn't wear a coat. What do you say?", answer: "I wish I had worn a coat." },
-    { question: "She didn't check the map. What does she say?", answer: "She wishes she had checked the map." },
-    { question: "You didn't tell the truth. What do you say?", answer: "I wish I had told the truth." },
-    { question: "He didn't prepare for the interview. What does he say?", answer: "If only he had prepared for the interview." },
-    { question: "You didn't apply for the scholarship. What do you say?", answer: "I wish I had applied for the scholarship." },
-    { question: "They didn't attend the wedding. What do they say?", answer: "They wish they had attended the wedding." },
-    { question: "She didn't take the medicine. What does she say?", answer: "She wishes she had taken the medicine." },
-    { question: "You didn't lock the door. What do you say?", answer: "If only I had locked the door." },
-    { question: "He didn't save his work. What does he say?", answer: "He wishes he had saved his work." },
-    { question: "We didn't see the announcement. What do we say?", answer: "We wish we had seen the announcement." },
-    { question: "You didn't leave early. What do you say?", answer: "I wish I had left early." },
-    { question: "She didn't practice the piano. What does she say?", answer: "She wishes she had practiced the piano." },
-    { question: "They didn't water the plants. What do they say?", answer: "If only they had watered the plants." },
-    { question: "You didn't bring your homework. What do you say?", answer: "I wish I had brought my homework." },
-    { question: "He didn't buy the tickets. What does he say?", answer: "He wishes he had bought the tickets." },
-    { question: "She didn't listen to her parents. What does she say?", answer: "If only she had listened to her parents." },
-    { question: "You didn't ask for directions. What do you say?", answer: "I wish I had asked for directions." },
-    { question: "They didn't catch the train. What do they say?", answer: "They wish they had caught the train." },
-    { question: "He didn't read the email. What does he say?", answer: "He wishes he had read the email." },
-    { question: "You didn't take the chance. What do you say?", answer: "If only I had taken the chance." },
-    { question: "We didn't reserve a room. What do we say?", answer: "We wish we had reserved a room." },
-    { question: "She didn't try harder. What does she say?", answer: "She wishes she had tried harder." },
-    { question: "You didn't finish your project. What do you say?", answer: "I wish I had finished my project." },
-    { question: "He didn't pay attention. What does he say?", answer: "He wishes he had paid attention." },
-    { question: "They didn't back up the files. What do they say?", answer: "If only they had backed up the files." },
-    { question: "You didn't visit your grandparents. What do you say?", answer: "I wish I had visited my grandparents." },
-    { question: "She didn't bring her ID. What does she say?", answer: "She wishes she had brought her ID." },
-    { question: "We didn't cancel the trip. What do we say?", answer: "We wish we had canceled the trip earlier." },
-    { question: "You didn't wake up early. What do you say?", answer: "If only I had woken up earlier." }
-  ]
-};
-
-// Module 122 Data
-const MODULE_122_DATA = {
-  title: "Used to / Be used to / Get used to – B1 Level",
-  description: "Understand the differences between 'used to', 'be used to', and 'get used to'",
-  intro: `Bu üç yapı İngilizce'de birbirinden farklı anlamlara gelir:
-
-**1. USED TO + base verb** = Geçmiş alışkanlık/durum (artık yapılmıyor)
-→ I used to play football. (Eskiden futbol oynardım, artık oynamıyorum)
-
-**2. BE USED TO + noun/-ing** = Bir şeye alışık olmak (şu anda alışkın)
-→ I am used to the noise. (Gürültüye alışığım)
-
-**3. GET USED TO + noun/-ing** = Bir şeye alışma süreci (alışmaya çalışmak)
-→ I'm getting used to waking up early. (Erken kalkmaya alışıyorum)
-
-These three structures have different meanings and uses in English.`,
-  tip: "'Used to' = past habits. 'Be used to' = accustomed now. 'Get used to' = becoming accustomed.",
-
-  table: [
-    { structure: "used to + base verb", example: "I used to smoke.", meaning: "Past habit (I don't smoke now)" },
-    { structure: "be used to + noun/-ing", example: "I am used to the cold.", meaning: "Accustomed to it now" },
-    { structure: "get used to + noun/-ing", example: "I'm getting used to the food.", meaning: "Becoming accustomed (process)" },
-    { structure: "didn't use to", example: "I didn't use to like coffee.", meaning: "Past negative habit" }
-  ],
-
-  listeningExamples: [
-    "I used to ride my bike every day.",
-    "She is used to the cold weather.",
-    "We are getting used to the new system.",
-    "He used to eat meat, but now he's vegan.",
-    "They got used to living in a small town."
-  ],
-
-  speakingPractice: [
-    { question: "You played the guitar when you were younger. What do you say?", answer: "I used to play the guitar." },
-    { question: "She doesn't find the noise strange anymore. What do you say?", answer: "She is used to the noise." },
-    { question: "You are in the process of adjusting to early mornings. What do you say?", answer: "I'm getting used to waking up early." },
-    { question: "He lived in the city before. What do you say?", answer: "He used to live in the city." },
-    { question: "They didn't eat spicy food before, but now they're adapting. What do you say?", answer: "They are getting used to spicy food." },
-    { question: "We were familiar with the cold winters. What do you say?", answer: "We were used to cold winters." },
-    { question: "You didn't go to the gym before, but now you do. What do you say?", answer: "I'm getting used to going to the gym." },
-    { question: "She drank coffee every day before. What do you say?", answer: "She used to drink coffee every day." },
-    { question: "You don't mind the long hours anymore. What do you say?", answer: "I am used to working long hours." },
-    { question: "He drove to work before. What do you say?", answer: "He used to drive to work." },
-    { question: "We are adjusting to the new software. What do you say?", answer: "We're getting used to using the new software." },
-    { question: "She is accustomed to wearing high heels. What do you say?", answer: "She is used to wearing high heels." },
-    { question: "You no longer watch TV as you used to. What do you say?", answer: "I used to watch TV more often." },
-    { question: "They are still adapting to the climate. What do you say?", answer: "They are getting used to the climate." },
-    { question: "He is now okay with the food. What do you say?", answer: "He is used to the food." },
-    { question: "I used to travel a lot. What does it mean?", answer: "I traveled a lot in the past, but not anymore." },
-    { question: "She is not finding online learning strange anymore. What do you say?", answer: "She is used to online learning." },
-    { question: "We are starting to feel okay with the noise. What do you say?", answer: "We are getting used to the noise." },
-    { question: "You no longer live in your hometown. What do you say?", answer: "I used to live in my hometown." },
-    { question: "He is learning to live alone. What do you say?", answer: "He is getting used to living alone." },
-    { question: "She worked nights before. What do you say?", answer: "She used to work nights." },
-    { question: "We feel comfortable with the heat now. What do you say?", answer: "We are used to the heat." },
-    { question: "They are slowly adjusting to school routines. What do you say?", answer: "They are getting used to waking up early." },
-    { question: "You were a meat-eater in the past. What do you say?", answer: "I used to eat meat." },
-    { question: "He doesn't mind crowded buses anymore. What do you say?", answer: "He is used to crowded buses." },
-    { question: "You are still learning to use the app. What do you say?", answer: "I'm getting used to using the app." },
-    { question: "She often walked to school as a child. What do you say?", answer: "She used to walk to school." },
-    { question: "We don't find the traffic stressful anymore. What do you say?", answer: "We are used to the traffic." },
-    { question: "They used to live in a big city. What do you say?", answer: "They used to live in a big city." },
-    { question: "He is trying to learn to cook. What do you say?", answer: "He is getting used to cooking." },
-    { question: "You are okay with loud music now. What do you say?", answer: "I am used to loud music." },
-    { question: "She had a pet dog before. What do you say?", answer: "She used to have a dog." },
-    { question: "We're adapting to virtual meetings. What do you say?", answer: "We are getting used to virtual meetings." },
-    { question: "He was accustomed to eating late. What do you say?", answer: "He was used to eating late." },
-    { question: "They are learning to live with less space. What do you say?", answer: "They are getting used to living in a smaller house." },
-    { question: "I no longer work at night. What do you say?", answer: "I used to work at night." },
-    { question: "She doesn't find cold showers shocking anymore. What do you say?", answer: "She is used to cold showers." },
-    { question: "We are learning to live without TV. What do you say?", answer: "We're getting used to living without TV." },
-    { question: "He lived with his parents before. What do you say?", answer: "He used to live with his parents." },
-    { question: "You're adjusting to your new job. What do you say?", answer: "I'm getting used to my new job." }
-  ]
-};
-
-// Module 123 Data
-const MODULE_123_DATA = {
-  title: "Causative – Have/Get Something Done (B1)",
-  description: "Express that someone else does a service for you",
-  intro: `'Have/Get something done' yapısı, bir işin başkası tarafından yapıldığını ifade eder.
-
-**Yapı:** Subject + have/get + object + V3
-- I had my car washed. (Arabamı yıkattım)
-- She got her nails done. (Tırnaklarını yaptırdı)`,
-  tip: "Use have/get + object + past participle when someone does a service for you.",
-
-  table: [
-    { form: "have + object + V3", example: "I had my hair cut.", meaning: "Someone cut my hair" },
-    { form: "get + object + V3", example: "She got her car repaired.", meaning: "Someone repaired her car" }
-  ],
-
-  listeningExamples: [
-    "I had my car washed.",
-    "She got her nails done.",
-    "We're having the kitchen renovated.",
-    "He had his bike repaired.",
-    "They got the house cleaned."
-  ],
-
-  speakingPractice: [
-    { question: "You paid someone to fix your roof. What do you say?", answer: "I had my roof fixed." },
-    { question: "She went to the salon for a haircut. What do you say?", answer: "She got her hair cut." },
-    { question: "They are hiring painters for their house. What do you say?", answer: "They're having their house painted." },
-    { question: "You called a technician to fix your laptop. What do you say?", answer: "I got my laptop repaired." },
-    { question: "He paid someone to clean his suit. What do you say?", answer: "He had his suit cleaned." },
-    { question: "We hired a gardener to cut the grass. What do you say?", answer: "We had the grass cut." },
-    { question: "She paid a vet to check her dog. What do you say?", answer: "She got her dog checked." },
-    { question: "They arranged a mechanic to fix the brakes. What do you say?", answer: "They got the brakes fixed." },
-    { question: "You went to a tailor to alter your dress. What do you say?", answer: "I had my dress altered." },
-    { question: "He sent his car to be washed. What do you say?", answer: "He got his car washed." },
-    { question: "We are hiring someone to decorate the living room. What do you say?", answer: "We're having the living room decorated." },
-    { question: "She called someone to install the air conditioner. What do you say?", answer: "She had the air conditioner installed." },
-    { question: "They asked a specialist to paint the ceiling. What do you say?", answer: "They got the ceiling painted." },
-    { question: "You arranged for a locksmith to fix the door. What do you say?", answer: "I had the door fixed." },
-    { question: "He is paying someone to fix the plumbing. What do you say?", answer: "He is getting the plumbing fixed." },
-    { question: "We are sending the documents for translation. What do you say?", answer: "We're having the documents translated." },
-    { question: "She asked a professional to take her photo. What do you say?", answer: "She got her photo taken." },
-    { question: "You took your watch to be repaired. What do you say?", answer: "I had my watch repaired." },
-    { question: "They went to the dentist for a cleaning. What do you say?", answer: "They got their teeth cleaned." },
-    { question: "He took the suit to the dry cleaner. What do you say?", answer: "He had his suit dry-cleaned." },
-    { question: "You are arranging someone to fix the internet. What do you say?", answer: "I'm getting the internet fixed." },
-    { question: "She had her laptop upgraded. What does it mean?", answer: "Someone upgraded her laptop for her." },
-    { question: "They hired a painter for the fence. What do you say?", answer: "They had the fence painted." },
-    { question: "We asked a plumber to install a new sink. What do you say?", answer: "We got a new sink installed." },
-    { question: "He is arranging for his shoes to be polished. What do you say?", answer: "He is getting his shoes polished." },
-    { question: "You asked someone to clean your windows. What do you say?", answer: "I had my windows cleaned." },
-    { question: "She arranged someone to fix the leak. What do you say?", answer: "She had the leak fixed." },
-    { question: "They paid a specialist to clean the carpet. What do you say?", answer: "They got the carpet cleaned." },
-    { question: "He hired a photographer for portraits. What do you say?", answer: "He had his portraits taken." },
-    { question: "You called a technician to fix the TV. What do you say?", answer: "I got the TV fixed." },
-    { question: "We are asking someone to check the heating. What do you say?", answer: "We're having the heating checked." },
-    { question: "She is getting a new lock installed. What do you say?", answer: "She is getting a new lock installed." },
-    { question: "They arranged for the garage door to be replaced. What do you say?", answer: "They had the garage door replaced." },
-    { question: "You are having your documents copied. What do you say?", answer: "I'm having my documents copied." },
-    { question: "He is sending his coat for repair. What do you say?", answer: "He is getting his coat repaired." },
-    { question: "We are paying someone to fix the garden lights. What do you say?", answer: "We're having the garden lights fixed." },
-    { question: "She asked the salon to do her nails. What do you say?", answer: "She got her nails done." },
-    { question: "They hired workers to fix the roof. What do you say?", answer: "They had the roof repaired." },
-    { question: "You are paying a mechanic to change the oil. What do you say?", answer: "I'm getting the oil changed." },
-    { question: "He asked a technician to repair the fridge. What do you say?", answer: "He got the fridge repaired." }
-  ]
-};
-
-// Module 124 Data
-const MODULE_124_DATA = {
-  title: "Relative Clauses – Defining & Non-defining (B1)",
-  description: "Learn to use defining and non-defining relative clauses with who, which, that, whose, where, when",
-  intro: `Relative clause (ilgi cümleciği), bir isim hakkında daha fazla bilgi vermek için kullanılır.
-
-**Defining Relative Clause:** Gerekli bilgi verir, virgül kullanılmaz.
-→ The woman who helped me is a nurse. (Hangi kadın olduğu önemli)
-
-**Non-defining Relative Clause:** Ek bilgi ekler, virgül kullanılır.
-→ My friend, who is a great cook, made this. (Arkadaşımın kim olduğu belli, ek bilgi)`,
-  tip: "Use defining clauses (no commas) for essential info. Use non-defining clauses (with commas) for extra info.",
-  table: [
-    { pronoun: "who", use: "People", example: "The man who called is my uncle." },
-    { pronoun: "which", use: "Things/Animals", example: "The book which won the prize is great." },
-    { pronoun: "that", use: "People/Things (defining only)", example: "The car that I bought is red." },
-    { pronoun: "whose", use: "Possession", example: "The girl whose father is a pilot lives here." }
-  ],
-  listeningExamples: [
-    "The woman who helped me is a nurse.",
-    "That's the restaurant where we had dinner.",
-    "My friend, who is a great cook, made this dish.",
-    "I visited Istanbul, which is my favorite city.",
-    "The man whose car was stolen reported it to the police."
-  ],
-  speakingPractice: [
-    { question: "Who is the man? He is talking to your sister.", answer: "The man who is talking to your sister is my uncle." },
-    { question: "That's the restaurant. We had dinner there.", answer: "That's the restaurant where we had dinner." },
-    { question: "She has a friend. Her father is a pilot.", answer: "She has a friend whose father is a pilot." },
-    { question: "I met a woman. She speaks six languages.", answer: "I met a woman who speaks six languages." },
-    { question: "This is the pen. I found it in the classroom.", answer: "This is the pen that I found in the classroom." },
-    { question: "This house was built in 1880. It is very beautiful.", answer: "This house, which was built in 1880, is very beautiful." },
-    { question: "My brother lives in Germany. He's an engineer.", answer: "My brother, who lives in Germany, is an engineer." },
-    { question: "That's the girl. Her mother is a teacher.", answer: "That's the girl whose mother is a teacher." },
-    { question: "The car belongs to my neighbor. It was stolen.", answer: "The car that belongs to my neighbor was stolen." },
-    { question: "We stayed at a hotel. It had a beautiful view.", answer: "We stayed at a hotel which had a beautiful view." },
-    { question: "Mr. Smith is very kind. He is our math teacher.", answer: "Mr. Smith, who is our math teacher, is very kind." },
-    { question: "This is the town. I was born there.", answer: "This is the town where I was born." },
-    { question: "The woman is an actress. She lives next door.", answer: "The woman who lives next door is an actress." },
-    { question: "The students are smart. They passed the exam.", answer: "The students who passed the exam are smart." },
-    { question: "I know a man. His daughter is a singer.", answer: "I know a man whose daughter is a singer." },
-    { question: "That's the museum. I told you about it.", answer: "That's the museum which I told you about." },
-    { question: "Our teacher is very patient. He helps everyone.", answer: "Our teacher, who helps everyone, is very patient." },
-    { question: "The dog barked all night. It lives next door.", answer: "The dog that lives next door barked all night." },
-    { question: "My aunt is a writer. She travels a lot.", answer: "My aunt, who travels a lot, is a writer." },
-    { question: "The dress is lovely. She is wearing it.", answer: "The dress that she is wearing is lovely." },
-    { question: "My friend invited me to his birthday. He is from Canada.", answer: "My friend, who is from Canada, invited me to his birthday." },
-    { question: "They visited a castle. It was built in the 13th century.", answer: "They visited a castle which was built in the 13th century." },
-    { question: "The man is a famous actor. We saw him at the airport.", answer: "The man whom we saw at the airport is a famous actor." },
-    { question: "I read a book. It changed my life.", answer: "I read a book that changed my life." },
-    { question: "We have a neighbor. His dog barks all day.", answer: "We have a neighbor whose dog barks all day." },
-    { question: "This is the school. I studied there.", answer: "This is the school where I studied." },
-    { question: "The children are noisy. They live upstairs.", answer: "The children who live upstairs are noisy." },
-    { question: "Emma is my cousin. She works at a hospital.", answer: "Emma, who works at a hospital, is my cousin." },
-    { question: "The film was amazing. You recommended it.", answer: "The film which you recommended was amazing." },
-    { question: "He has a company. It sells organic products.", answer: "He has a company that sells organic products." },
-    { question: "That's the teacher. I told you about her.", answer: "That's the teacher whom I told you about." },
-    { question: "The computer is expensive. I want to buy it.", answer: "The computer that I want to buy is expensive." },
-    { question: "Our neighbor is an artist. He paints landscapes.", answer: "Our neighbor, who paints landscapes, is an artist." },
-    { question: "There is a street. Many famous people live there.", answer: "There is a street where many famous people live." },
-    { question: "The girl is very polite. She helped me yesterday.", answer: "The girl who helped me yesterday is very polite." },
-    { question: "He lost the keys. They open the garage door.", answer: "He lost the keys that open the garage door." },
-    { question: "The book is on the table. It belongs to my sister.", answer: "The book that is on the table belongs to my sister." },
-    { question: "The phone was broken. I bought it last week.", answer: "The phone which I bought last week was broken." },
-    { question: "I saw a man. He looked exactly like your uncle.", answer: "I saw a man who looked exactly like your uncle." },
-    { question: "She lives in a house. It has a red roof.", answer: "She lives in a house which has a red roof." }
-  ]
-};
-
-// Module 125 Data
-const MODULE_125_DATA = {
-  title: "Gerunds and Infinitives – Review (B1)",
-  description: "Review and consolidate gerunds and infinitives with verbs that change meaning",
-  intro: `Gerund (fiil+ing) ve infinitive (to + fiil) yapıları fiillerden sonra kullanılır ve hangi fiilin hangisini aldığı ezberlenmelidir.
-
-**Sadece Gerund alan fiiller:** enjoy, finish, avoid, can't stand, suggest
-→ I enjoy swimming.
-
-**Sadece Infinitive alan fiiller:** want, decide, hope, agree, promise
-→ She decided to leave.
-
-**Anlam değişen fiiller:** remember, forget, stop, try
-→ I forgot to call. (aramayı unuttum - aramadım)
-→ I forgot calling. (aradığımı unuttum - aradım ama hatırlamıyorum)`,
-  tip: "Some verbs take only gerunds, some only infinitives, and some both with meaning changes.",
-  table: [
-    { verb: "enjoy/finish/avoid", pattern: "+ gerund (-ing)", example: "I enjoy cooking." },
-    { verb: "want/decide/hope", pattern: "+ infinitive (to)", example: "She decided to leave." },
-    { verb: "remember/forget", pattern: "+ both (meaning change)", example: "I forgot to lock / forgot locking" }
-  ],
-  listeningExamples: [
-    "I enjoy swimming in the sea.",
-    "She decided to leave early.",
-    "He forgot to lock the door.",
-    "They stopped smoking last year.",
-    "We are planning to visit London."
-  ],
-  speakingPractice: [
-    { question: "You like playing chess. What do you say?", answer: "I enjoy playing chess." },
-    { question: "She plans to study abroad. What do you say?", answer: "She plans to study abroad." },
-    { question: "They stopped watching TV. What do you say?", answer: "They stopped watching TV." },
-    { question: "You forgot to call your mom. What do you say?", answer: "I forgot to call my mom." },
-    { question: "He avoided answering the question. What do you say?", answer: "He avoided answering the question." },
-    { question: "We decided to take the train. What do you say?", answer: "We decided to take the train." },
-    { question: "She can't stand waiting in line. What do you say?", answer: "She can't stand waiting in line." },
-    { question: "You want to learn Spanish. What do you say?", answer: "I want to learn Spanish." },
-    { question: "He tried to fix the car. What do you say?", answer: "He tried to fix the car." },
-    { question: "They finished cleaning the house. What do you say?", answer: "They finished cleaning the house." },
-    { question: "You remembered locking the door. What do you say?", answer: "I remembered locking the door." },
-    { question: "She hopes to meet him again. What do you say?", answer: "She hopes to meet him again." },
-    { question: "He promised to help us. What do you say?", answer: "He promised to help us." },
-    { question: "You enjoy cooking. What do you say?", answer: "I enjoy cooking." },
-    { question: "They agreed to join the club. What do you say?", answer: "They agreed to join the club." },
-    { question: "She avoided speaking in public. What do you say?", answer: "She avoided speaking in public." },
-    { question: "You want to improve your English. What do you say?", answer: "I want to improve my English." },
-    { question: "He began working out. What do you say?", answer: "He began working out." },
-    { question: "We stopped to buy some snacks. What do you say?", answer: "We stopped to buy some snacks." },
-    { question: "She forgot taking her medicine. What does that mean?", answer: "She took it, but she doesn't remember." },
-    { question: "He remembered to lock the door. What does that mean?", answer: "He locked it, and he remembered to do it." },
-    { question: "You prefer staying home. What do you say?", answer: "I prefer staying home." },
-    { question: "They need to study harder. What do you say?", answer: "They need to study harder." },
-    { question: "We continued talking for hours. What do you say?", answer: "We continued talking for hours." },
-    { question: "She managed to finish on time. What do you say?", answer: "She managed to finish on time." },
-    { question: "You agreed to help your friend. What do you say?", answer: "I agreed to help my friend." },
-    { question: "He enjoys watching documentaries. What do you say?", answer: "He enjoys watching documentaries." },
-    { question: "She suggested going out for dinner. What do you say?", answer: "She suggested going out for dinner." },
-    { question: "They decided to take a break. What do you say?", answer: "They decided to take a break." },
-    { question: "You like reading novels. What do you say?", answer: "I like reading novels." },
-    { question: "He prefers to work alone. What do you say?", answer: "He prefers to work alone." },
-    { question: "She finished writing her report. What do you say?", answer: "She finished writing her report." },
-    { question: "They hope to win the match. What do you say?", answer: "They hope to win the match." },
-    { question: "We tried restarting the computer. What do you say?", answer: "We tried restarting the computer." },
-    { question: "He started to play football. What do you say?", answer: "He started to play football." },
-    { question: "You want to be successful. What do you say?", answer: "I want to be successful." },
-    { question: "She keeps talking during the movie. What do you say?", answer: "She keeps talking during the movie." },
-    { question: "They promised to return the money. What do you say?", answer: "They promised to return the money." },
-    { question: "You enjoy listening to music. What do you say?", answer: "I enjoy listening to music." },
-    { question: "He hopes to travel the world. What do you say?", answer: "He hopes to travel the world." }
-  ]
-};
-
-// Module 126 Data
-const MODULE_126_DATA = {
-  title: "Expressions with Get (B1)",
-  description: "Learn common expressions and phrasal uses of 'get' in everyday English",
-  intro: `'Get' fiili İngilizce'de birçok farklı anlam ve kullanımda yer alır; özellikle deyimsel ifadelerde yaygındır.
-
-**Yapı:** Subject + get + adjective/state
-→ I get tired every evening. (Yorgunum - durum değişimi)
-→ She gets angry easily. (Kızıyor - durum değişimi)
-→ We got lost. (Kaybolduk - sonuç)`,
-  tip: "Use 'get + adjective' to describe state changes (get tired, get angry, get ready, etc.).",
-  table: [
-    { expression: "get ready/dressed", meaning: "hazırlanmak/giyinmek", example: "I'm getting ready for school." },
-    { expression: "get tired/sick/better", meaning: "yorulmak/hastalanmak/iyileşmek", example: "She got sick last week." },
-    { expression: "get lost/married/angry", meaning: "kaybolmak/evlenmek/kızmak", example: "We got lost in the city." }
-  ],
-  listeningExamples: [
-    "I usually get tired in the evening.",
-    "She gets angry when people are late.",
-    "We got lost in the forest.",
-    "He's getting ready for school.",
-    "They got married in Italy."
-  ],
-  speakingPractice: [
-    { question: "You're preparing to leave. What do you say?", answer: "I'm getting ready." },
-    { question: "After a long day, you feel exhausted. What do you say?", answer: "I get tired after work." },
-    { question: "You went to a foreign city and couldn't find your way. What do you say?", answer: "We got lost." },
-    { question: "She became very upset. What do you say?", answer: "She got angry." },
-    { question: "You are putting on your clothes. What do you say?", answer: "I'm getting dressed." },
-    { question: "They improved after the flu. What do you say?", answer: "They got better." },
-    { question: "He reached home. What do you say?", answer: "He got home." },
-    { question: "She became ill. What do you say?", answer: "She got sick." },
-    { question: "You and your partner had a wedding last year. What do you say?", answer: "We got married last year." },
-    { question: "He began to feel cold. What do you say?", answer: "He got cold." },
-    { question: "You are becoming nervous. What do you say?", answer: "I'm getting nervous." },
-    { question: "The kids became excited. What do you say?", answer: "The kids got excited." },
-    { question: "You felt sleepy during the film. What do you say?", answer: "I got sleepy during the movie." },
-    { question: "She became famous after the movie. What do you say?", answer: "She got famous after that film." },
-    { question: "He recovered from the flu. What do you say?", answer: "He got better." },
-    { question: "You're dressing up for a party. What do you say?", answer: "I'm getting dressed for the party." },
-    { question: "They moved to the city. What do you say?", answer: "They got to the city last week." },
-    { question: "She became scared in the dark. What do you say?", answer: "She got scared in the dark." },
-    { question: "You are going to be late. What do you say?", answer: "I need to get going." },
-    { question: "The room became noisy. What do you say?", answer: "The room got noisy." },
-    { question: "He became rich after winning the lottery. What do you say?", answer: "He got rich after the lottery." },
-    { question: "You are beginning to feel hungry. What do you say?", answer: "I'm getting hungry." },
-    { question: "She became bored during the lecture. What do you say?", answer: "She got bored during the lecture." },
-    { question: "You are recovering from an illness. What do you say?", answer: "I'm getting better." },
-    { question: "The baby became sleepy. What do you say?", answer: "The baby got sleepy." },
-    { question: "He became interested in science. What do you say?", answer: "He got interested in science." },
-    { question: "We became close friends. What do you say?", answer: "We got close." },
-    { question: "You arrived at school. What do you say?", answer: "I got to school on time." },
-    { question: "She became very happy. What do you say?", answer: "She got really happy." },
-    { question: "He put on his suit. What do you say?", answer: "He got dressed." },
-    { question: "You are excited about the trip. What do you say?", answer: "I'm getting excited about the trip." },
-    { question: "The weather became colder. What do you say?", answer: "It's getting cold." },
-    { question: "She got confused during the test. What do you say?", answer: "She got confused." },
-    { question: "You became nervous before the presentation. What do you say?", answer: "I got nervous before the presentation." },
-    { question: "The dog became aggressive. What do you say?", answer: "The dog got aggressive." },
-    { question: "He's preparing for the interview. What do you say?", answer: "He's getting ready for the interview." },
-    { question: "You were surprised by the news. What do you say?", answer: "I got surprised by the news." },
-    { question: "We arrived home late. What do you say?", answer: "We got home late." },
-    { question: "She became sick after eating seafood. What do you say?", answer: "She got sick after eating seafood." },
-    { question: "He was scared by the movie. What do you say?", answer: "He got scared by the movie." }
-  ]
-};
-
-// Module 127 Data
-const MODULE_127_DATA = {
-  title: "Expressions with Take (B1)",
-  description: "Learn common expressions with 'take' in everyday and professional contexts",
-  intro: `'Take' fiili İngilizce'de çok sayıda deyimsel ifadede kullanılır; anlamı bağlama göre değişir.
-
-**Yapı:** Subject + take + noun/expression
-→ take part (katılmak), take place (gerçekleşmek), take care (dikkat etmek/ilgilenmek), take a break (mola vermek)`,
-  tip: "Learn 'take' expressions as fixed phrases: take part, take place, take care, take notes, etc.",
-  table: [
-    { expression: "take part", meaning: "katılmak", example: "I took part in the competition." },
-    { expression: "take place", meaning: "gerçekleşmek/olmak", example: "The meeting took place yesterday." },
-    { expression: "take care", meaning: "dikkat etmek/ilgilenmek", example: "Take care when driving." }
-  ],
-  listeningExamples: [
-    "I took part in the competition.",
-    "The meeting took place in the main hall.",
-    "Take care when crossing the road.",
-    "He took a break after working all day.",
-    "She took responsibility for the mistake."
-  ],
-  speakingPractice: [
-    { question: "You joined a project. What do you say?", answer: "I took part in the project." },
-    { question: "The concert happened last night. What do you say?", answer: "The concert took place last night." },
-    { question: "You're helping your grandmother. What do you say?", answer: "I'm taking care of my grandmother." },
-    { question: "You're going on a short rest. What do you say?", answer: "I'm taking a break." },
-    { question: "You want someone to look at something. What do you say?", answer: "Take a look at this." },
-    { question: "You're benefiting from an opportunity. What do you say?", answer: "I'm taking advantage of the opportunity." },
-    { question: "You're writing during a lecture. What do you say?", answer: "I'm taking notes." },
-    { question: "You accepted a duty at work. What do you say?", answer: "I took responsibility." },
-    { question: "The process needs a long time. What do you say?", answer: "It takes time." },
-    { question: "You're reacting to a problem. What do you say?", answer: "We need to take action." },
-    { question: "You're handling a child. What do you say?", answer: "I'm taking care of the child." },
-    { question: "The seminar was held yesterday. What do you say?", answer: "The seminar took place yesterday." },
-    { question: "You're using a chance. What do you say?", answer: "I took advantage of the situation." },
-    { question: "You stopped working briefly. What do you say?", answer: "I took a break." },
-    { question: "The exam occurred this morning. What do you say?", answer: "The exam took place this morning." },
-    { question: "You joined a school activity. What do you say?", answer: "I took part in the school activity." },
-    { question: "You made some quick notes. What do you say?", answer: "I took notes." },
-    { question: "You accepted blame. What do you say?", answer: "I took responsibility." },
-    { question: "You acted immediately. What do you say?", answer: "We took action." },
-    { question: "You need to rest. What do you say?", answer: "I need to take a break." },
-    { question: "You helped organize the event. What do you say?", answer: "I took part in organizing it." },
-    { question: "You warned someone to be careful. What do you say?", answer: "Take care!" },
-    { question: "You gave attention to your health. What do you say?", answer: "I'm taking care of my health." },
-    { question: "You examined the report. What do you say?", answer: "I took a look at the report." },
-    { question: "It required patience. What do you say?", answer: "It took time and effort." },
-    { question: "The event will happen next week. What do you say?", answer: "The event will take place next week." },
-    { question: "You jotted down key points. What do you say?", answer: "I took some notes." },
-    { question: "You became responsible for a task. What do you say?", answer: "I took responsibility for it." },
-    { question: "You decided to act. What do you say?", answer: "I decided to take action." },
-    { question: "You're checking a document. What do you say?", answer: "Let me take a look at it." },
-    { question: "You are caring for a plant. What do you say?", answer: "I'm taking care of the plant." },
-    { question: "You paused during a lesson. What do you say?", answer: "We took a short break." },
-    { question: "You joined a protest. What do you say?", answer: "I took part in the protest." },
-    { question: "You got benefit from a discount. What do you say?", answer: "I took advantage of the discount." },
-    { question: "You are writing during a lecture. What do you say?", answer: "I'm taking notes right now." },
-    { question: "You planned a meeting. What do you say?", answer: "The meeting will take place at 3 PM." },
-    { question: "You managed a responsibility. What do you say?", answer: "I took responsibility and handled it." },
-    { question: "You acted quickly. What do you say?", answer: "I took action immediately." },
-    { question: "You are reading a report. What do you say?", answer: "I'm taking a look at the report." },
-    { question: "You are caring for your dog. What do you say?", answer: "I'm taking care of my dog." }
-  ]
-};
-
-// Module 128 Data
-const MODULE_128_DATA = {
-  title: "Phrasal Verbs – Separable & Inseparable (B1)",
-  description: "Distinguish between separable and inseparable phrasal verbs",
-  intro: `Phrasal verbs (öbek fiiller) fiil + edat/zarf birleşimidir; bazıları ayrılabilen, bazıları ayrılamaz.
-
-**Separable:** Nesne fiilin arasına girebilir → turn off the TV / turn the TV off
-**Inseparable:** Nesne fiilden sonra gelir → look after the dog (NOT: look the dog after)`,
-  tip: "Separable: turn off, pick up, give back. Inseparable: look after, get over, run into.",
-  table: [
-    { type: "Separable", examples: "turn off, pick up, put on", pattern: "V + obj + particle OR V + particle + obj" },
-    { type: "Inseparable", examples: "look after, get over, run into", pattern: "V + particle + obj (only)" }
-  ],
-  listeningExamples: [
-    "Please turn off the TV.",
-    "I gave the book back to her.",
-    "She looks after her little sister.",
-    "We came across an interesting article.",
-    "He picked the keys up from the ground."
-  ],
-  speakingPractice: [
-    { question: "You stop the alarm. What do you say?", answer: "I turned off the alarm." },
-    { question: "You returned the book. What do you say?", answer: "I gave the book back." },
-    { question: "She takes care of her dog. What do you say?", answer: "She looks after her dog." },
-    { question: "You picked up your pen. What do you say?", answer: "I picked the pen up." },
-    { question: "They cancelled the meeting. What do you say?", answer: "They called off the meeting." },
-    { question: "He found an old photo. What do you say?", answer: "He came across an old photo." },
-    { question: "You are wearing your jacket. What do you say?", answer: "I put on my jacket." },
-    { question: "She faced a difficult situation. What do you say?", answer: "She dealt with it well." },
-    { question: "We overcame the problem. What do you say?", answer: "We got over the problem." },
-    { question: "You answered the phone. What do you say?", answer: "I picked up the phone." },
-    { question: "He found his keys by chance. What do you say?", answer: "He came across his keys." },
-    { question: "She returned the call. What do you say?", answer: "She called him back." },
-    { question: "You removed your shoes. What do you say?", answer: "I took off my shoes." },
-    { question: "They cancelled the show. What do you say?", answer: "They called off the show." },
-    { question: "You helped your friend recover. What do you say?", answer: "I helped him get over it." },
-    { question: "He managed a tough client. What do you say?", answer: "He dealt with the client." },
-    { question: "She found her bag in the closet. What do you say?", answer: "She came across her bag." },
-    { question: "I need to remove my coat. What do you say?", answer: "I need to take off my coat." },
-    { question: "You helped the child. What do you say?", answer: "I looked after the child." },
-    { question: "He turned off the light. What do you say?", answer: "He turned the light off." },
-    { question: "You put your coat on. What do you say?", answer: "I put on my coat." },
-    { question: "They ran into trouble. What do you say?", answer: "They ran into some trouble." },
-    { question: "You returned his call. What do you say?", answer: "I called him back." },
-    { question: "You took off your glasses. What do you say?", answer: "I took off my glasses." },
-    { question: "She dealt with the issue. What do you say?", answer: "She dealt with the issue effectively." },
-    { question: "You canceled your appointment. What do you say?", answer: "I called off my appointment." },
-    { question: "He found something interesting. What do you say?", answer: "He came across something interesting." },
-    { question: "You gave the toy back. What do you say?", answer: "I gave the toy back to the child." },
-    { question: "He helped a student recover. What do you say?", answer: "He helped the student get over it." },
-    { question: "She looked after her niece. What do you say?", answer: "She looked after her niece." },
-    { question: "You put on a hat. What do you say?", answer: "I put on a hat." },
-    { question: "He turned off the heater. What do you say?", answer: "He turned the heater off." },
-    { question: "You picked up the remote. What do you say?", answer: "I picked up the remote." },
-    { question: "We came across an old letter. What do you say?", answer: "We came across an old letter." },
-    { question: "He dealt with the complaint. What do you say?", answer: "He dealt with the complaint well." },
-    { question: "She took off her jacket. What do you say?", answer: "She took her jacket off." },
-    { question: "You gave the book to the teacher. What do you say?", answer: "I gave the book back to the teacher." },
-    { question: "He ran into an old friend. What do you say?", answer: "He ran into an old friend at the mall." },
-    { question: "We put on our shoes. What do you say?", answer: "We put on our shoes." },
-    { question: "She called off the match. What do you say?", answer: "She called off the match due to rain." }
-  ]
-};
-
-// Module 129 Data
-const MODULE_129_DATA = {
-  title: "Phrasal Verbs – Common Everyday Verbs (B1)",
-  description: "Learn and practice phrasal verbs used in daily conversations",
-  intro: `Günlük konuşmalarda çok kullanılan phrasal verbs listesi: wake up (uyanmak), get up (kalkmak), find out (öğrenmek), give up (vazgeçmek), look for (aramak), go out (dışarı çıkmak), come back (dönmek)`,
-  tip: "Master these everyday phrasal verbs: wake up, get up, find out, give up, look for, turn on/off.",
-  table: [
-    { phrasal_verb: "wake up / get up", meaning: "uyanmak / kalkmak", example: "I wake up at 7, then get up at 7:15." },
-    { phrasal_verb: "find out / give up", meaning: "öğrenmek / vazgeçmek", example: "He found out the truth. She gave up smoking." },
-    { phrasal_verb: "look for / look after", meaning: "aramak / bakmak", example: "I'm looking for my keys. She looks after her dog." }
-  ],
-  listeningExamples: [
-    "I wake up at 7 a.m. every day.",
-    "She gave up smoking last year.",
-    "We're looking for a new apartment.",
-    "He found out the truth.",
-    "Don't forget to turn off the lights."
-  ],
-  speakingPractice: [
-    { question: "You stop trying to lose weight. What do you say?", answer: "I gave up losing weight." },
-    { question: "You are searching for your glasses. What do you say?", answer: "I'm looking for my glasses." },
-    { question: "She returned home late. What do you say?", answer: "She came back late." },
-    { question: "You woke up at 6. What do you say?", answer: "I woke up at 6 o'clock." },
-    { question: "He got out of bed. What do you say?", answer: "He got up at 7." },
-    { question: "They discovered the secret. What do you say?", answer: "They found out the secret." },
-    { question: "You exited the hotel. What do you say?", answer: "I checked out of the hotel." },
-    { question: "He turned on the computer. What do you say?", answer: "He turned the computer on." },
-    { question: "You took care of a child. What do you say?", answer: "I looked after a child." },
-    { question: "She quit her bad habit. What do you say?", answer: "She gave up her bad habit." },
-    { question: "You went outside. What do you say?", answer: "I went out for a walk." },
-    { question: "He came back from Spain. What do you say?", answer: "He came back yesterday." },
-    { question: "They checked in at the airport. What do you say?", answer: "They checked in at 2 PM." },
-    { question: "She's searching for her keys. What do you say?", answer: "She's looking for her keys." },
-    { question: "You turned off the radio. What do you say?", answer: "I turned off the radio." },
-    { question: "He is taking care of his dog. What do you say?", answer: "He is looking after his dog." },
-    { question: "You woke up early. What do you say?", answer: "I woke up early today." },
-    { question: "They got up very late. What do you say?", answer: "They got up at noon." },
-    { question: "You gave up drinking coffee. What do you say?", answer: "I gave up drinking coffee." },
-    { question: "He came back from holiday. What do you say?", answer: "He came back last week." },
-    { question: "She turned on the lights. What do you say?", answer: "She turned the lights on." },
-    { question: "You checked in at the hotel. What do you say?", answer: "I checked in yesterday." },
-    { question: "They looked after the baby. What do you say?", answer: "They looked after the baby all day." },
-    { question: "You found out the truth. What do you say?", answer: "I found out the truth yesterday." },
-    { question: "He got up early. What do you say?", answer: "He got up before sunrise." },
-    { question: "You checked out this morning. What do you say?", answer: "I checked out this morning." },
-    { question: "She looked for her notebook. What do you say?", answer: "She looked for it everywhere." },
-    { question: "You gave up trying. What do you say?", answer: "I gave up trying to fix it." },
-    { question: "He looked after his sick father. What do you say?", answer: "He looked after him for weeks." },
-    { question: "You turned off your phone. What do you say?", answer: "I turned my phone off." },
-    { question: "They went out to eat. What do you say?", answer: "They went out for dinner." },
-    { question: "You came back home. What do you say?", answer: "I came back around 8 PM." },
-    { question: "You looked for your passport. What do you say?", answer: "I looked for my passport everywhere." },
-    { question: "He woke up with a headache. What do you say?", answer: "He woke up with a headache." },
-    { question: "She gave up learning French. What do you say?", answer: "She gave up learning French." },
-    { question: "You got up at 5 a.m. What do you say?", answer: "I got up at 5 a.m." },
-    { question: "They found out the answer. What do you say?", answer: "They found out the correct answer." },
-    { question: "You turned on the heating. What do you say?", answer: "I turned on the heating." },
-    { question: "She checked out at 10. What do you say?", answer: "She checked out at 10 a.m." },
-    { question: "You looked after your little sister. What do you say?", answer: "I looked after my little sister." }
-  ]
-};
-
-// Module 130 Data
-const MODULE_130_DATA = {
-  title: "Collocations with Make and Do (B1)",
-  description: "Learn common collocations with 'make' and 'do' in various contexts",
-  intro: `'Make' üretim/sonuç; 'Do' eylem/yükümlülük/tekrar eden işler için kullanılır.
-
-**MAKE:** make a decision, make a mistake, make money, make a phone call, make an effort
-**DO:** do homework, do the dishes, do your best, do business, do the shopping`,
-  tip: "MAKE = creating/producing. DO = actions/tasks. Learn fixed collocations.",
-  table: [
-    { verb: "make", collocations: "decision, mistake, money, call, effort", example: "I made a decision." },
-    { verb: "do", collocations: "homework, dishes, best, shopping, cleaning", example: "I did the dishes." }
-  ],
-  listeningExamples: [
-    "I made a cake for her birthday.",
-    "He did the laundry last night.",
-    "They made a big mistake.",
-    "She is doing her best."
-  ],
-  speakingPractice: [
-    { question: "You completed your homework. What do you say?", answer: "I did my homework." },
-    { question: "She earned a lot last year. What do you say?", answer: "She made a lot of money." },
-    { question: "They prepared a plan. What do you say?", answer: "They made a plan." },
-    { question: "He cleaned the kitchen. What do you say?", answer: "He did the cleaning." },
-    { question: "You tried very hard. What do you say?", answer: "I did my best." },
-    { question: "She called her mother. What do you say?", answer: "She made a phone call." },
-    { question: "He made a big mistake. What do you say?", answer: "He made a big mistake." },
-    { question: "You helped with the shopping. What do you say?", answer: "I did the shopping." },
-    { question: "They cooked a cake. What do you say?", answer: "They made a cake." },
-    { question: "He completed the project. What do you say?", answer: "He did the project." },
-    { question: "She broke a rule. What do you say?", answer: "She made a mistake." },
-    { question: "I cleaned the dishes. What do you say?", answer: "I did the dishes." },
-    { question: "They created a list. What do you say?", answer: "They made a list." },
-    { question: "He worked hard. What do you say?", answer: "He did a great job." },
-    { question: "You created a good impression. What do you say?", answer: "I made a good impression." },
-    { question: "She did business with them. What do you say?", answer: "She did business with the company." },
-    { question: "We prepared a reservation. What do you say?", answer: "We made a reservation." },
-    { question: "They vacuumed the floor. What do you say?", answer: "They did the vacuuming." },
-    { question: "He said something funny. What do you say?", answer: "He made a joke." },
-    { question: "I tried hard. What do you say?", answer: "I did my best." },
-    { question: "She created a piece of art. What do you say?", answer: "She made a beautiful painting." },
-    { question: "He helped clean the windows. What do you say?", answer: "He did the windows." },
-    { question: "They made a decision. What do you say?", answer: "They made an important decision." },
-    { question: "You brushed your teeth. What do you say?", answer: "I did my teeth." },
-    { question: "He created a presentation. What do you say?", answer: "He made a presentation." },
-    { question: "She made a complaint. What do you say?", answer: "She made a complaint about the food." },
-    { question: "You organized your closet. What do you say?", answer: "I did my closet." },
-    { question: "They made a suggestion. What do you say?", answer: "They made a great suggestion." },
-    { question: "She did her nails. What do you say?", answer: "She did her nails at the salon." },
-    { question: "He made an effort. What do you say?", answer: "He made a big effort." },
-    { question: "You finished the laundry. What do you say?", answer: "I did the laundry." },
-    { question: "They made a toast. What do you say?", answer: "They made a toast at the wedding." },
-    { question: "She made an excuse. What do you say?", answer: "She made an excuse for being late." },
-    { question: "You created a schedule. What do you say?", answer: "I made a schedule for the week." },
-    { question: "He did the ironing. What do you say?", answer: "He did all the ironing." },
-    { question: "We made an agreement. What do you say?", answer: "We made an agreement yesterday." },
-    { question: "You made your bed. What do you say?", answer: "I made my bed in the morning." },
-    { question: "She did some yoga. What do you say?", answer: "She did yoga before work." },
-    { question: "They made a mess. What do you say?", answer: "They made a mess in the kitchen." },
-    { question: "He made a difference. What do you say?", answer: "He made a difference in their lives." }
-  ]
-};
-
-// Module 131 Data
-const MODULE_131_DATA = {
-  title: "Indirect Questions (B1)",
-  description: "Learn polite and formal indirect questions",
-  intro: `Indirect questions (dolaylı sorular) doğrudan sorulara göre daha kibar ve formaldır; gömülü cümlede düz cümle sırası kullanılır.
-
-**Yapı:** Could you tell me + where the bank is? (NOT: where is the bank?)
-do/does/did gömülü kısımda KULLANILMAZ.`,
-  tip: "Use statement word order after question starters: Could you tell me where it is? (not: where is it?)",
-  table: [
-    { starter: "Could you tell me...", example: "Could you tell me where the bank is?" },
-    { starter: "Do you know...", example: "Do you know what time the class starts?" },
-    { starter: "I was wondering...", example: "I was wondering why he is upset." }
-  ],
-  listeningExamples: [
-    "Could you tell me where the bank is?",
-    "Do you know what time the movie starts?",
-    "I was wondering when the train arrives.",
-    "Can you tell me how much this costs?",
-    "Would you mind telling me where she went?"
-  ],
-  speakingPractice: [
-    { question: "Where is the nearest bus stop?", answer: "Could you tell me where the nearest bus stop is?" },
-    { question: "What time does the class start?", answer: "Do you know what time the class starts?" },
-    { question: "Why is he so upset?", answer: "I was wondering why he is so upset." },
-    { question: "When does the train arrive?", answer: "Can you tell me when the train arrives?" },
-    { question: "How much does this cost?", answer: "Could you tell me how much this costs?" },
-    { question: "Where did she go?", answer: "Do you know where she went?" },
-    { question: "Why are they late?", answer: "Could you tell me why they are late?" },
-    { question: "Who is that man?", answer: "Do you know who that man is?" },
-    { question: "What does she want?", answer: "Can you tell me what she wants?" },
-    { question: "How old is he?", answer: "I was wondering how old he is?" },
-    { question: "Where is the library?", answer: "Could you tell me where the library is?" },
-    { question: "When does the shop close?", answer: "Do you know when the shop closes?" },
-    { question: "Why did he leave?", answer: "I was wondering why he left." },
-    { question: "What time is it?", answer: "Can you tell me what time it is?" },
-    { question: "How far is the station?", answer: "Could you tell me how far the station is?" },
-    { question: "Who are those people?", answer: "Do you know who those people are?" },
-    { question: "What did they say?", answer: "Can you tell me what they said?" },
-    { question: "Where can I find help?", answer: "I was wondering where I can find help." },
-    { question: "Why is this important?", answer: "Could you tell me why this is important?" },
-    { question: "When will he come back?", answer: "Do you know when he will come back?" },
-    { question: "How does it work?", answer: "Can you tell me how it works?" },
-    { question: "What happened here?", answer: "I was wondering what happened here." },
-    { question: "Where should I go?", answer: "Could you tell me where I should go?" },
-    { question: "Who wrote this?", answer: "Do you know who wrote this?" },
-    { question: "Why doesn't it work?", answer: "Can you tell me why it doesn't work?" },
-    { question: "When did they arrive?", answer: "I was wondering when they arrived." },
-    { question: "How many people came?", answer: "Could you tell me how many people came?" },
-    { question: "What is her name?", answer: "Do you know what her name is?" },
-    { question: "Where are we going?", answer: "Can you tell me where we are going?" },
-    { question: "Why was he angry?", answer: "I was wondering why he was angry." },
-    { question: "When is the meeting?", answer: "Could you tell me when the meeting is?" },
-    { question: "How long will it take?", answer: "Do you know how long it will take?" },
-    { question: "What should I bring?", answer: "Can you tell me what I should bring?" },
-    { question: "Where did you put it?", answer: "I was wondering where you put it." },
-    { question: "Who is in charge?", answer: "Could you tell me who is in charge?" },
-    { question: "Why is she crying?", answer: "Do you know why she is crying?" },
-    { question: "When does it open?", answer: "Can you tell me when it opens?" },
-    { question: "How can I help?", answer: "I was wondering how I can help." },
-    { question: "What are the rules?", answer: "Could you tell me what the rules are?" },
-    { question: "Where is the exit?", answer: "Do you know where the exit is?" }
-  ]
-};
-
-// Module 132 Data
-const MODULE_132_DATA = {
-  title: "Giving Opinions & Agreeing/Disagreeing (B1)",
-  description: "Express opinions and agree or disagree politely in discussions",
-  intro: `Fikir belirtme ve başkalarının fikirlerine katılma/karşı çıkma kalıpları; tartışma ve sohbetlerde kullanılır.
-
-**Opinions:** I think..., In my opinion..., I believe..., From my point of view...
-**Agreeing:** I agree, Exactly!, You're right, Absolutely!
-**Disagreeing:** I disagree, I'm not sure about that, I see your point, but...`,
-  tip: "Use polite phrases to agree/disagree: I see your point, but... / I'm afraid I don't agree.",
-  table: [
-    { function: "Giving opinion", examples: "I think..., In my opinion..., I believe...", sample: "I think it's a good idea." },
-    { function: "Agreeing", examples: "I agree, Exactly!, Absolutely!", sample: "I agree with you." },
-    { function: "Disagreeing", examples: "I disagree, I'm not sure, I see your point, but...", sample: "I see your point, but I prefer this." }
-  ],
-  listeningExamples: [
-    "I think it's a good idea.",
-    "In my opinion, school should start later.",
-    "Exactly!",
-    "I see your point, but I prefer this option."
-  ],
-  speakingPractice: [
-    { question: "What do you think about this movie?", answer: "I think it's amazing!" },
-    { question: "Do you agree with him?", answer: "Yes, I agree with him." },
-    { question: "What's your opinion on this topic?", answer: "In my opinion, it's very important." },
-    { question: "Do you believe it will work?", answer: "I believe it will work perfectly." },
-    { question: "Do you think it's a good idea?", answer: "Yes, I think it's a great idea." },
-    { question: "Do you agree or disagree?", answer: "I disagree because it's too risky." },
-    { question: "What's your point of view?", answer: "From my point of view, it's not fair." },
-    { question: "Do you think we should wait?", answer: "I'm not sure about that." },
-    { question: "Is this a good solution?", answer: "Absolutely! It's perfect." },
-    { question: "Can we try something else?", answer: "I see your point, but I prefer this option." },
-    { question: "Do you think he's right?", answer: "Yes, I think so too." },
-    { question: "What's your opinion about fast food?", answer: "I believe it's unhealthy." },
-    { question: "Do you think money brings happiness?", answer: "That's not always true." },
-    { question: "Do you agree that exams are necessary?", answer: "Yes, I agree." },
-    { question: "Do you believe in ghosts?", answer: "No, I don't believe in them." },
-    { question: "Is she correct?", answer: "You're right, she is." },
-    { question: "Do you think it's safe?", answer: "I'm afraid I don't agree." },
-    { question: "Do you agree with me?", answer: "Exactly!" },
-    { question: "Is this a smart choice?", answer: "From my point of view, yes." },
-    { question: "Do you think school uniforms are good?", answer: "In my opinion, they are useful." },
-    { question: "Do you agree with the rules?", answer: "I don't agree with you." },
-    { question: "What do you think about this law?", answer: "As far as I'm concerned, it's necessary." },
-    { question: "Is the project ready?", answer: "I'm not sure about that." },
-    { question: "Should we cancel the trip?", answer: "I see your point, but let's wait." },
-    { question: "Do you think it's boring?", answer: "I think it's fun." },
-    { question: "Do you like this design?", answer: "Absolutely!" },
-    { question: "Is this the best option?", answer: "Yes, I agree." },
-    { question: "Do you agree with her decision?", answer: "I disagree." },
-    { question: "Do you think it's useful?", answer: "I believe it is." },
-    { question: "What's your opinion on online education?", answer: "I think it's very flexible." },
-    { question: "Is it good for children?", answer: "From my point of view, yes." },
-    { question: "Do you think we should leave now?", answer: "I'm afraid I don't agree." },
-    { question: "Do you agree with the teacher?", answer: "Yes, I agree with her." },
-    { question: "What do you think about this food?", answer: "I think it tastes great." },
-    { question: "Do you think it's cheap?", answer: "No, I think it's expensive." },
-    { question: "Should we try it?", answer: "I see your point, but I don't think so." },
-    { question: "Do you believe him?", answer: "Yes, I do." },
-    { question: "Do you agree that English is important?", answer: "Absolutely!" },
-    { question: "Do you think this idea will work?", answer: "I'm not sure about that." },
-    { question: "What do you think about the plan?", answer: "In my opinion, it's risky." }
-  ]
-};
-
-// Module 133 Data
-const MODULE_133_DATA = {
-  title: "Speculating & Expressing Possibility (B1)",
-  description: "Express possibility, probability, and speculation using modal verbs and phrases",
-  intro: `İhtimal ve tahmin ifade eden kalıplar: might, may, could (ihtimal), must (güçlü tahmin), can't (olumsuz tahmin), maybe, perhaps, I think, It's possible/likely.`,
-  tip: "Use might/may/could for possibility, must for strong assumptions, can't for strong negatives.",
-  table: [
-    { modal: "might/may/could", meaning: "ihtimal/mümkün", example: "It might rain. / She may come." },
-    { modal: "must", meaning: "kesin (güçlü tahmin)", example: "She must be tired. (Yorgun olmalı)" },
-    { modal: "can't", meaning: "kesinlikle değil", example: "He can't be 80! (80 olamaz!)" }
-  ],
-  listeningExamples: [
-    "It might rain tomorrow.",
-    "She may come later.",
-    "He must be tired.",
-    "He can't be the thief.",
-    "Maybe they are on vacation."
-  ],
-  speakingPractice: [
-    { question: "Where is John?", answer: "He might be in the kitchen." },
-    { question: "Is she coming to the party?", answer: "She may come later." },
-    { question: "Do you think it will rain?", answer: "It could rain this evening." },
-    { question: "Where are your keys?", answer: "They might be in my bag." },
-    { question: "Is this information true?", answer: "Perhaps it's true." },
-    { question: "Why is she crying?", answer: "She may be sad about something." },
-    { question: "Will they be late?", answer: "It's possible that they'll be late." },
-    { question: "Is he at home?", answer: "He could be at home." },
-    { question: "Did she forget?", answer: "Maybe she forgot." },
-    { question: "Is he the manager?", answer: "He might be." },
-    { question: "Do you think he's tired?", answer: "He must be tired after work." },
-    { question: "Did they travel abroad?", answer: "It's likely that they did." },
-    { question: "Is this his phone?", answer: "It might be his." },
-    { question: "Will she call you?", answer: "She may call me tonight." },
-    { question: "Are they still at school?", answer: "They could still be there." },
-    { question: "Is she sick?", answer: "Maybe she is." },
-    { question: "Do you think it's dangerous?", answer: "It might be." },
-    { question: "Why is the light on?", answer: "He may be in the room." },
-    { question: "Is it true?", answer: "Perhaps it is." },
-    { question: "Did he break the window?", answer: "He can't have done that." },
-    { question: "Will it snow today?", answer: "It's unlikely, but possible." },
-    { question: "Where is your phone?", answer: "It might be in the car." },
-    { question: "Do you think they forgot the meeting?", answer: "They may have forgotten." },
-    { question: "Did she leave already?", answer: "It's possible she did." },
-    { question: "Are we lost?", answer: "We could be." },
-    { question: "Is she angry?", answer: "She might be a little upset." },
-    { question: "Is this your book?", answer: "It may be mine." },
-    { question: "Do you think he lied?", answer: "He can't have lied." },
-    { question: "Will they win the game?", answer: "It's likely they will." },
-    { question: "Are they at the station?", answer: "They could be there now." },
-    { question: "Is she nervous?", answer: "She might be." },
-    { question: "Why didn't he answer?", answer: "He may be busy." },
-    { question: "Is it his car?", answer: "Maybe it is." },
-    { question: "Is this the right way?", answer: "It might be." },
-    { question: "Where are they?", answer: "They could be stuck in traffic." },
-    { question: "Is she the teacher?", answer: "She may be the new teacher." },
-    { question: "Is it going to rain?", answer: "It's possible." },
-    { question: "Why is he angry?", answer: "He might be having a bad day." },
-    { question: "Do you think she's serious?", answer: "Perhaps she is." },
-    { question: "Is this place safe?", answer: "It could be dangerous at night." }
-  ]
-};
-
-// Module 134 Data
-const MODULE_134_DATA = {
-  title: "Hypothetical Situations – Second Conditional (B1)",
-  description: "Talk about unreal or imaginary situations using Second Conditional",
-  intro: `Varsayımsal durumlar için Second Conditional yapısı kullanılır: If + past simple, would + V.
-
-**Yapı:** If + past simple, subject + would + base verb
-→ If I had money, I would buy a car. (Param yok, ama olsaydı araba alırdım)`,
-  tip: "Use Second Conditional for unreal/imaginary situations: If + past, would + verb.",
-  table: [
-    { structure: "If + past simple", result: "would + base verb", example: "If I won, I would celebrate." },
-    { structure: "If I were you", meaning: "Tavsiye", example: "If I were you, I would study harder." }
-  ],
-  listeningExamples: [
-    "If I won the lottery, I would buy a house.",
-    "If she were here, I would say hello.",
-    "What would you do if you lost your phone?",
-    "If you could live anywhere, where would it be?",
-    "If I had more time, I would learn a new language."
-  ],
-  speakingPractice: [
-    { question: "What would you do if you won the lottery?", answer: "I would buy a house and travel." },
-    { question: "If you were a bird, where would you fly?", answer: "I would fly over the mountains." },
-    { question: "What would happen if it rained tomorrow?", answer: "We would cancel the picnic." },
-    { question: "If he had more time, what would he do?", answer: "He would learn a new language." },
-    { question: "If she were here, what would you say?", answer: "I would say hello." },
-    { question: "What would you do if you lost your phone?", answer: "I would look for it everywhere." },
-    { question: "If you met a celebrity, what would you ask?", answer: "I would ask for a photo." },
-    { question: "If you could live anywhere, where would it be?", answer: "It would be Paris." },
-    { question: "If I called you tonight, would you answer?", answer: "Yes, I would." },
-    { question: "If they offered you a job, would you take it?", answer: "Yes, I would." },
-    { question: "If you had a million dollars, what would you buy?", answer: "I would buy a new car." },
-    { question: "If she saw a ghost, what would she do?", answer: "She would scream." },
-    { question: "If you were invisible, what would you do?", answer: "I would sneak into places." },
-    { question: "What would you do if you were the president?", answer: "I would help the poor." },
-    { question: "If you could go anywhere, where would you go?", answer: "I would go to Japan." },
-    { question: "If it snowed today, what would happen?", answer: "We would stay home." },
-    { question: "If your friend needed help, what would you do?", answer: "I would help them." },
-    { question: "If I asked you for advice, would you help me?", answer: "Of course I would." },
-    { question: "If we had more money, what would we do?", answer: "We would go on vacation." },
-    { question: "If they knew the answer, would they tell us?", answer: "Yes, they would." },
-    { question: "If you didn't work, what would you do?", answer: "I would relax all day." },
-    { question: "If you found a wallet, what would you do?", answer: "I would take it to the police." },
-    { question: "If he had a car, would he drive to work?", answer: "Yes, he would." },
-    { question: "If she didn't like the movie, what would she say?", answer: "She would say it's boring." },
-    { question: "If you lived on the moon, what would you eat?", answer: "I would eat space food." },
-    { question: "If we didn't have school today, what would we do?", answer: "We would go to the park." },
-    { question: "If you could speak any language, which would it be?", answer: "It would be Spanish." },
-    { question: "If you saw a bear, what would you do?", answer: "I would run away." },
-    { question: "If it were your birthday, what would you want?", answer: "I would want a party." },
-    { question: "If you were a teacher, what subject would you teach?", answer: "I would teach English." },
-    { question: "If it were summer, what would you wear?", answer: "I would wear shorts." },
-    { question: "If he were famous, what would he do?", answer: "He would act in movies." },
-    { question: "If you had wings, where would you fly?", answer: "I would fly to the clouds." },
-    { question: "If you broke your phone, what would you do?", answer: "I would buy a new one." },
-    { question: "If we won the match, how would we celebrate?", answer: "We would have a party." },
-    { question: "If your computer stopped working, what would you do?", answer: "I would call a technician." },
-    { question: "If I gave you a gift, would you accept it?", answer: "Yes, I would." },
-    { question: "If you were a cat, what would you do all day?", answer: "I would sleep." },
-    { question: "If she missed the bus, what would happen?", answer: "She would be late." },
-    { question: "If you had a superpower, what would it be?", answer: "It would be flying." }
-  ]
-};
-
-// Module 135 Data
-const MODULE_135_DATA = {
-  title: "Expressing Preferences (B1)",
-  description: "Use 'I prefer' and 'I'd rather' to express preferences",
-  intro: `Tercih bildirmek için 'I prefer' ve 'I'd rather' kalıpları kullanılır.
-
-**I prefer X to Y:** X'i Y'ye tercih ederim → I prefer coffee to tea.
-**I'd rather + base verb:** ... yapmayı tercih ederim → I'd rather stay home.`,
-  tip: "I prefer + noun/gerund. I'd rather + base verb (without 'to').",
-  table: [
-    { pattern: "I prefer X to Y", example: "I prefer coffee to tea." },
-    { pattern: "I'd rather + verb", example: "I'd rather watch a movie." }
-  ],
-  listeningExamples: [
-    "I prefer coffee to tea.",
-    "I'd rather watch a movie than read a book.",
-    "I prefer walking to cycling.",
-    "I'd rather stay home tonight.",
-    "I prefer dogs to cats."
-  ],
-  speakingPractice: [
-    { question: "Do you prefer coffee or tea?", answer: "I prefer coffee to tea." },
-    { question: "Would you rather watch a movie or read a book?", answer: "I'd rather watch a movie." },
-    { question: "Do you prefer walking or cycling?", answer: "I prefer walking to cycling." },
-    { question: "Would you rather go out or stay home?", answer: "I'd rather stay home." },
-    { question: "Do you prefer dogs or cats?", answer: "I prefer dogs to cats." },
-    { question: "Would you rather swim or run?", answer: "I'd rather swim." },
-    { question: "Do you prefer summer or winter?", answer: "I prefer summer to winter." },
-    { question: "Would you rather take the bus or drive?", answer: "I'd rather drive." },
-    { question: "Do you prefer reading or watching TV?", answer: "I prefer reading to watching TV." },
-    { question: "Would you rather eat out or cook at home?", answer: "I'd rather cook at home." },
-    { question: "Do you prefer chocolate or vanilla?", answer: "I prefer chocolate to vanilla." },
-    { question: "Would you rather travel alone or with friends?", answer: "I'd rather travel with friends." },
-    { question: "Do you prefer city life or country life?", answer: "I prefer country life to city life." },
-    { question: "Would you rather stay in a hotel or a tent?", answer: "I'd rather stay in a hotel." },
-    { question: "Do you prefer pizza or pasta?", answer: "I prefer pizza to pasta." },
-    { question: "Would you rather play football or basketball?", answer: "I'd rather play football." },
-    { question: "Do you prefer watching movies or series?", answer: "I prefer movies to series." },
-    { question: "Would you rather fly or take a train?", answer: "I'd rather fly." },
-    { question: "Do you prefer texting or calling?", answer: "I prefer texting to calling." },
-    { question: "Would you rather sleep early or stay up late?", answer: "I'd rather sleep early." },
-    { question: "Do you prefer shopping online or in stores?", answer: "I prefer shopping online to shopping in stores." },
-    { question: "Would you rather eat spicy food or sweet food?", answer: "I'd rather eat sweet food." },
-    { question: "Do you prefer football or basketball?", answer: "I prefer football to basketball." },
-    { question: "Would you rather go hiking or swimming?", answer: "I'd rather go swimming." },
-    { question: "Do you prefer staying in or going out on weekends?", answer: "I prefer staying in." },
-    { question: "Would you rather drink water or juice?", answer: "I'd rather drink water." },
-    { question: "Do you prefer writing or speaking?", answer: "I prefer speaking to writing." },
-    { question: "Would you rather live in a big city or a small town?", answer: "I'd rather live in a small town." },
-    { question: "Do you prefer apples or bananas?", answer: "I prefer apples to bananas." },
-    { question: "Would you rather listen to music or read a book?", answer: "I'd rather listen to music." },
-    { question: "Do you prefer meat or vegetables?", answer: "I prefer meat to vegetables." },
-    { question: "Would you rather eat fast food or homemade food?", answer: "I'd rather eat homemade food." },
-    { question: "Do you prefer early mornings or late nights?", answer: "I prefer early mornings." },
-    { question: "Would you rather go to the beach or the mountains?", answer: "I'd rather go to the beach." },
-    { question: "Do you prefer Coke or Pepsi?", answer: "I prefer Coke to Pepsi." },
-    { question: "Would you rather watch a horror or a comedy?", answer: "I'd rather watch a comedy." },
-    { question: "Do you prefer flying or driving?", answer: "I prefer flying to driving." },
-    { question: "Would you rather go to a concert or a play?", answer: "I'd rather go to a concert." },
-    { question: "Do you prefer hot weather or cold weather?", answer: "I prefer hot weather." },
-    { question: "Would you rather stay alone or be with people?", answer: "I'd rather be with people." }
-  ]
-};
-
-// Module 136 Data
-const MODULE_136_DATA = {
-  title: "Narratives – Sequencing Words (B1)",
-  description: "Tell stories using sequencing words: first, then, next, after that, finally",
-  intro: `Hikaye anlatımında olayların sırasını belirtmek için sequencing words kullanılır: first (ilk), then (sonra), next (daha sonra), after that (ondan sonra), later (daha sonra), finally (sonunda), in the end (sonuçta).`,
-  tip: "Use sequencing words to organize events: First... Then... After that... Finally...",
-  table: [
-    { word: "First / At first", meaning: "İlk olarak", example: "First, I woke up." },
-    { word: "Then / Next / After that", meaning: "Sonra", example: "Then, I had breakfast." },
-    { word: "Finally / In the end", meaning: "Sonunda", example: "Finally, I went to bed." }
-  ],
-  listeningExamples: [
-    "First, I got out of bed. Then, I had a shower.",
-    "After that, I got dressed. Next, I ate breakfast.",
-    "Later, I went to school. Finally, I came back home.",
-    "At the beginning, I was nervous. In the end, everything was fine.",
-    "First, the boy found a map. Then, he followed the trail."
-  ],
-  speakingPractice: [
-    { question: "What did you do first this morning?", answer: "First, I got out of bed." },
-    { question: "What did you do then?", answer: "Then, I had a shower." },
-    { question: "What did you do after that?", answer: "After that, I got dressed." },
-    { question: "What happened next?", answer: "Next, I ate breakfast." },
-    { question: "What did you do later?", answer: "Later, I went to school." },
-    { question: "What did you do finally?", answer: "Finally, I came back home." },
-    { question: "How did your day begin?", answer: "At the beginning, I was very sleepy." },
-    { question: "What did you do after breakfast?", answer: "After breakfast, I brushed my teeth." },
-    { question: "What happened in the end?", answer: "In the end, I watched a movie." },
-    { question: "What did you do eventually?", answer: "Eventually, I went to sleep." },
-    { question: "What happened first in the story?", answer: "First, the boy found a map." },
-    { question: "What did the boy do next?", answer: "Next, he followed the trail." },
-    { question: "What happened after that?", answer: "After that, he entered a dark cave." },
-    { question: "What did he do later?", answer: "Later, he saw a treasure chest." },
-    { question: "What happened finally?", answer: "Finally, he opened it and found gold." },
-    { question: "How did your trip start?", answer: "At first, we packed our bags." },
-    { question: "What happened then?", answer: "Then, we took a taxi to the airport." },
-    { question: "What did you do next on holiday?", answer: "Next, we visited a museum." },
-    { question: "What happened after the museum?", answer: "After that, we ate at a local restaurant." },
-    { question: "How did the evening end?", answer: "In the end, we watched the sunset." },
-    { question: "What do you do in your morning routine?", answer: "First, I wake up. Then, I check my phone." },
-    { question: "What do you do before school?", answer: "After that, I get ready and leave the house." },
-    { question: "What's your school routine?", answer: "First, we have English. Next, we have Math." },
-    { question: "What do you do after lunch?", answer: "After lunch, I usually play with friends." },
-    { question: "What happens later in the day?", answer: "Later, I do my homework." },
-    { question: "How do you end your day?", answer: "Finally, I brush my teeth and sleep." },
-    { question: "How did the movie start?", answer: "At the beginning, a girl was walking alone." },
-    { question: "What happened then?", answer: "Then, she heard a strange noise." },
-    { question: "What happened next?", answer: "Next, she ran into a forest." },
-    { question: "What happened after that?", answer: "After that, she met an old man." },
-    { question: "How did the story end?", answer: "In the end, she returned home safely." },
-    { question: "What was the sequence of events?", answer: "First, he got lost. Then, he found a map." },
-    { question: "What happened after school?", answer: "After school, I played football." },
-    { question: "What happened before dinner?", answer: "Before dinner, I did my homework." },
-    { question: "What did you do on your birthday?", answer: "First, I had cake. Later, we danced." },
-    { question: "How did you travel?", answer: "First, by bus. Then, by train." },
-    { question: "What happened on your trip?", answer: "We visited many places. Finally, we went home." },
-    { question: "What was your weekend like?", answer: "First, I relaxed. Then, I met friends." },
-    { question: "What did you do last night?", answer: "After that, I read a book." },
-    { question: "How did the event end?", answer: "Eventually, everyone clapped and cheered." }
-  ]
-};
-
-// Module 137 Data
-const MODULE_137_DATA = {
-  title: "Linking Words – Contrast (B1)",
-  description: "Express contrast using however, although, despite, in spite of",
-  intro: `Zıtlık ifade eden bağlaçlar: however (ancak), although/though/even though (rağmen - cümle), despite/in spite of (rağmen - isim).
-
-**however:** Sentence. However, sentence. → I studied. However, I failed.
-**although:** Although + clause → Although it rained, we went out.
-**despite/in spite of:** despite + noun/gerund → Despite the rain, we went out.`,
-  tip: "Although + clause. Despite/In spite of + noun/gerund. However = separate sentence.",
-  table: [
-    { linking_word: "although/though", usage: "+ clause", example: "Although it was raining, we hiked." },
-    { linking_word: "despite/in spite of", usage: "+ noun/gerund", example: "Despite the rain, we hiked." },
-    { linking_word: "however", usage: "sentence connector", example: "It rained. However, we hiked." }
-  ],
-  listeningExamples: [
-    "We went hiking, although it was raining.",
-    "He finished the job, despite being tired.",
-    "The exam was difficult. However, I passed.",
-    "She lives simply, though she is rich.",
-    "They swam despite the cold."
-  ],
-  speakingPractice: [
-    { question: "It was raining. What did you do?", answer: "We went hiking, although it was raining." },
-    { question: "He was tired. Did he stop working?", answer: "No, he finished the job, despite being tired." },
-    { question: "Did she come to school although she was sick?", answer: "Yes, she did. She came even though she was sick." },
-    { question: "The exam was difficult. Did you pass?", answer: "Yes, I passed. However, it was very hard." },
-    { question: "She is rich. Does she live a fancy life?", answer: "No, she lives simply, though she is rich." },
-    { question: "He was busy. Did he help you?", answer: "Yes, he helped me, in spite of being busy." },
-    { question: "It was cold. Did they go swimming?", answer: "Yes, they swam despite the cold." },
-    { question: "She studied hard. Did she fail?", answer: "Yes, although she studied hard, she failed." },
-    { question: "You were hungry. Did you eat?", answer: "No, I didn't. However, I was very hungry." },
-    { question: "He didn't sleep. Was he energetic?", answer: "Yes, despite not sleeping, he was full of energy." },
-    { question: "Was the movie good?", answer: "It was interesting. However, it was too long." },
-    { question: "Did he join the team although he was injured?", answer: "Yes, he did." },
-    { question: "Did she go outside despite the rain?", answer: "Yes, she went outside." },
-    { question: "They were late. Did they apologize?", answer: "No, they didn't, although they were late." },
-    { question: "Was it noisy?", answer: "Yes, despite the noise, we concentrated." },
-    { question: "Did he understand?", answer: "Not really, even though he tried." },
-    { question: "Was she confident?", answer: "She seemed nervous, although she was prepared." },
-    { question: "Was the trip long?", answer: "Yes, but we enjoyed it. However, we were tired." },
-    { question: "Were you cold?", answer: "Yes, in spite of wearing a jacket." },
-    { question: "Did they complain?", answer: "No, despite the bad service." },
-    { question: "He trained a lot. Did he win?", answer: "No, even though he trained hard." },
-    { question: "The car is old. Does it run well?", answer: "Yes, it runs well, although it's old." },
-    { question: "She was angry. Did she yell?", answer: "No, despite her anger." },
-    { question: "Was it expensive?", answer: "Yes, however, it was worth it." },
-    { question: "Did you like the food?", answer: "Yes, although it was a bit salty." },
-    { question: "Did he call?", answer: "No, even though he promised." },
-    { question: "Was she tired?", answer: "Yes, but she smiled. However, she was exhausted." },
-    { question: "He was rich. Was he happy?", answer: "No, despite his wealth." },
-    { question: "Did you buy the shoes?", answer: "Yes, although they were expensive." },
-    { question: "He failed the test. Did he give up?", answer: "No, in spite of failing, he kept going." },
-    { question: "She's young. Is she experienced?", answer: "Yes, even though she's young." },
-    { question: "The path was dangerous. Did they continue?", answer: "Yes, despite the danger." },
-    { question: "Did you enjoy the book?", answer: "Yes, although it was long." },
-    { question: "Was the teacher strict?", answer: "Yes, but fair. However, I liked her." },
-    { question: "Did you win the game?", answer: "Yes, in spite of the injury." },
-    { question: "He is shy. Does he perform well?", answer: "Yes, although he's shy." },
-    { question: "They had little money. Did they travel?", answer: "Yes, despite that." },
-    { question: "It was raining. Did you cancel?", answer: "No, we went anyway. However, it rained all day." },
-    { question: "Did she finish the marathon?", answer: "Yes, even though she was slow." },
-    { question: "He was nervous. Did he speak?", answer: "Yes, in spite of being nervous." }
-  ]
-};
-
-// Module 138 Data
-const MODULE_138_DATA = {
-  title: "Describing Experiences (B1)",
-  description: "Tell past experiences using Past Simple and narrative language",
-  intro: `Geçmiş deneyimleri Past Simple ve sıralama ifadeleriyle anlatma pratiği. Have you ever...? Did you...? Tell me about... kalıplarıyla sorular sorup deneyimler anlatılır.`,
-  tip: "Use Past Simple to describe experiences. Answer with full stories using sequencing words.",
-  table: [
-    { question_type: "Have you ever...?", tense: "Present Perfect", answer: "Yes, I have. / No, I haven't." },
-    { question_type: "Tell me about...", tense: "Past Simple", answer: "I went... It was..." },
-    { question_type: "What happened?", tense: "Past Simple", answer: "First... Then... Finally..." }
-  ],
-  listeningExamples: [
-    "Have you ever been abroad? Yes, I went to Italy last summer.",
-    "What was your best holiday? It was in Spain. I went there with my family.",
-    "Tell me about a funny memory. One day, I fell into a pool with my clothes on!",
-    "Have you ever broken a bone? Yes, I broke my arm when I was ten.",
-    "What did you do last weekend? I went to the cinema and saw a great movie."
-  ],
-  speakingPractice: [
-    { question: "Have you ever been abroad?", answer: "Yes, I went to Italy last summer." },
-    { question: "What was your best holiday?", answer: "It was in Spain. I went there with my family." },
-    { question: "Tell me about a funny memory.", answer: "One day, I fell into a pool with my clothes on!" },
-    { question: "Have you ever broken a bone?", answer: "Yes, I broke my arm when I was ten." },
-    { question: "Did you ever try something new?", answer: "Yes, I tried sushi for the first time last week." },
-    { question: "Tell me about your first day at school.", answer: "I cried a lot, but then I made friends." },
-    { question: "What did you do last weekend?", answer: "I went to the cinema and saw a great movie." },
-    { question: "Have you ever been scared?", answer: "Yes, once I got lost in a big city." },
-    { question: "Did you enjoy your last birthday?", answer: "Yes, I had a big party with my friends." },
-    { question: "Tell me about your last trip.", answer: "I went to Cappadocia. It was amazing." },
-    { question: "Have you ever met a famous person?", answer: "Yes, I met a singer at a concert." },
-    { question: "What was the most exciting day of your life?", answer: "The day I graduated from university." },
-    { question: "Tell me about a time you helped someone.", answer: "I helped a lost child find their parents." },
-    { question: "What happened yesterday?", answer: "I had a normal day. I worked and then relaxed." },
-    { question: "Have you ever lost something important?", answer: "Yes, I lost my wallet on a bus." },
-    { question: "Did anything interesting happen last week?", answer: "Yes, I saw a car accident." },
-    { question: "Have you ever ridden a horse?", answer: "Yes, when I visited a village." },
-    { question: "What did you do on your last holiday?", answer: "I went swimming and relaxed on the beach." },
-    { question: "Tell me about your first job.", answer: "I worked in a café. It was hard but fun." },
-    { question: "Have you ever tried extreme sports?", answer: "Yes, I went paragliding in Fethiye." },
-    { question: "What was your worst travel experience?", answer: "My luggage was lost at the airport." },
-    { question: "Did you have fun last weekend?", answer: "Yes, I went hiking with friends." },
-    { question: "Have you ever forgotten something important?", answer: "Yes, I forgot my exam date once." },
-    { question: "Tell me about a surprise you had.", answer: "My friends threw a party for me." },
-    { question: "Have you ever been on a boat?", answer: "Yes, we went on a boat tour in Bodrum." },
-    { question: "What was your last school project?", answer: "It was about animals. I made a poster." },
-    { question: "Have you ever been in a competition?", answer: "Yes, I joined a quiz show at school." },
-    { question: "What happened on your last birthday?", answer: "I had cake, gifts, and a lovely dinner." },
-    { question: "Did you ever get lost?", answer: "Yes, once in a big shopping mall." },
-    { question: "What's a memory from childhood?", answer: "Playing football in the street with my friends." },
-    { question: "Have you ever seen snow?", answer: "Yes, many times in winter." },
-    { question: "Tell me about your first flight.", answer: "I was nervous, but it was fun." },
-    { question: "Have you ever cooked for others?", answer: "Yes, I made dinner for my family." },
-    { question: "What was the most beautiful place you've visited?", answer: "Pamukkale. It was stunning." },
-    { question: "Tell me about a funny school memory.", answer: "My teacher's wig fell off during class!" },
-    { question: "What was your favorite day last year?", answer: "New Year's Eve. We had a big celebration." },
-    { question: "Have you ever been very late?", answer: "Yes, I missed the bus and was late to work." },
-    { question: "Tell me about a time you were proud.", answer: "When I won an English contest." },
-    { question: "Have you ever been to a concert?", answer: "Yes, I saw my favorite band live." },
-    { question: "What was the best gift you ever received?", answer: "A bicycle from my parents." }
-  ]
-};
-
-// Module 139 Data
-const MODULE_139_DATA = {
-  title: "Talking about Cause and Effect (B1)",
-  description: "Express cause and effect with 'so', 'because', and 'because of'",
-  intro: `Neden-sonuç ilişkisi kurma: 'so' sonuç belirtir, 'because' neden belirtir, 'because of' isim veya -ing ile kullanılır.
-
-**Yapı:** X, so Y (sonuç) | Y because X (neden) | Because of + noun/-ing, Y`,
-  tip: "Use 'so' for result, 'because' for reason. 'Because of' takes a noun or -ing form.",
-  table: [
-    { connector: "so", use: "Result", example: "I was tired, so I went to bed early." },
-    { connector: "because", use: "Reason", example: "I went to bed early because I was tired." },
-    { connector: "because of", use: "Reason (noun/-ing)", example: "Because of the rain, we stayed inside." }
-  ],
-  listeningExamples: [
-    "I was tired, so I went to bed early.",
-    "She is happy because she passed the exam.",
-    "It was raining, so we stayed inside.",
-    "He didn't come because he was sick.",
-    "Because of the storm, they canceled the trip."
-  ],
-  speakingPractice: [
-    { question: "Why did you stay home?", answer: "Because I was sick." },
-    { question: "You were tired. What did you do?", answer: "I was tired, so I took a nap." },
-    { question: "Why are you happy?", answer: "Because I got good news." },
-    { question: "He was hungry. What happened?", answer: "He was hungry, so he made a sandwich." },
-    { question: "Why didn't she go to the party?", answer: "Because she was busy." },
-    { question: "It was raining. What did you do?", answer: "It was raining, so I stayed inside." },
-    { question: "Why is she crying?", answer: "Because she lost her phone." },
-    { question: "He failed the test. Why?", answer: "Because he didn't study." },
-    { question: "You missed the bus. What happened?", answer: "I missed the bus, so I walked to school." },
-    { question: "Why did you leave early?", answer: "Because I had another meeting." },
-    { question: "Why are they laughing?", answer: "Because the joke was funny." },
-    { question: "He was cold. What did he do?", answer: "He was cold, so he put on a jacket." },
-    { question: "Why did she run?", answer: "Because she was late." },
-    { question: "It was late. What did you do?", answer: "It was late, so I went to sleep." },
-    { question: "Why didn't he answer?", answer: "Because he was in a meeting." },
-    { question: "The food was hot. What happened?", answer: "It was hot, so I waited before eating." },
-    { question: "Why did you call her?", answer: "Because I needed help." },
-    { question: "She was excited. Why?", answer: "Because she won a prize." },
-    { question: "The road was icy. What did you do?", answer: "It was icy, so I drove slowly." },
-    { question: "Why did they leave?", answer: "Because the movie was boring." },
-    { question: "He got a gift. How did he feel?", answer: "He got a gift, so he was happy." },
-    { question: "Why was she nervous?", answer: "Because she had a test." },
-    { question: "You were thirsty. What did you do?", answer: "I was thirsty, so I drank water." },
-    { question: "Why did they cancel the trip?", answer: "Because of the storm." },
-    { question: "It was noisy. What did you do?", answer: "It was noisy, so I closed the window." },
-    { question: "Why did you smile?", answer: "Because I saw my friend." },
-    { question: "He was sleepy. What happened?", answer: "He was sleepy, so he took a nap." },
-    { question: "Why was she absent?", answer: "Because she was sick." },
-    { question: "The lights went out. What did you do?", answer: "The lights went out, so I used a flashlight." },
-    { question: "Why were they tired?", answer: "Because they worked all day." },
-    { question: "He had no umbrella. What happened?", answer: "He had no umbrella, so he got wet." },
-    { question: "Why are you angry?", answer: "Because they didn't listen." },
-    { question: "You were late. Why?", answer: "Because my alarm didn't ring." },
-    { question: "Why did you laugh?", answer: "Because the story was funny." },
-    { question: "The road was blocked. What happened?", answer: "The road was blocked, so we took another way." },
-    { question: "Why did she scream?", answer: "Because she saw a spider." },
-    { question: "He studied hard. What was the result?", answer: "He studied hard, so he passed." },
-    { question: "Why were you surprised?", answer: "Because they remembered my birthday." },
-    { question: "It was hot. What did you do?", answer: "It was hot, so I turned on the fan." },
-    { question: "Why did they celebrate?", answer: "Because they won the game." },
-    { question: "What advice would you give?", answer: "I would advise practicing a little every day." }
-  ]
-};
-
-// Module 140 Data
-const MODULE_140_DATA = {
-  title: "Talking about Purpose (to, in order to, so that)",
-  description: "Express purpose and reasons clearly with infinitives and clauses",
-  intro: `Why do we do things? This module teaches you how to express purpose using 'to', 'in order to', and 'so that'. Learn to explain your reasons, goals, and intentions clearly in everyday conversations and formal contexts.`,
-  tip: "Use 'to + verb' for informal purposes, 'in order to' for formal writing, and 'so that + clause' when mentioning a subject.",
-
-  table: [
-    { term: "Purpose Structure", definition: "Usage & Example" },
-    { term: "to + verb", definition: "informal purpose: 'I study to pass the exam'" },
-    { term: "in order to + verb", definition: "formal purpose: 'He works hard in order to succeed'" },
-    { term: "so that + subject + verb", definition: "purpose with subject: 'I left early so that I could arrive on time'" }
-  ],
-
-  listeningExamples: [
-    "I wake up early to exercise.",
-    "She studies hard in order to pass the exam.",
-    "They saved money so that they could buy a house.",
-    "He called her to check if she was okay.",
-    "We brought umbrellas in order to stay dry."
-  ],
-
-  speakingPractice: [
-    { question: "Why do you study?", answer: "To get good grades." },
-    { question: "Why did she go to the gym?", answer: "In order to lose weight." },
-    { question: "Why are they saving money?", answer: "So that they can buy a house." },
-    { question: "Why did you wake up early?", answer: "To catch the bus." },
-    { question: "Why does he work two jobs?", answer: "In order to support his family." },
-    { question: "Why did they build a fence?", answer: "So that the dog wouldn't run away." },
-    { question: "Why are you learning English?", answer: "To travel easily." },
-    { question: "Why did she buy flowers?", answer: "To decorate the house." },
-    { question: "Why are you calling him?", answer: "So that we can talk about the project." },
-    { question: "Why do they walk every day?", answer: "In order to stay healthy." },
-    { question: "Why did you bring a map?", answer: "So that we don't get lost." },
-    { question: "Why is she reading that book?", answer: "To learn more about history." },
-    { question: "Why did he practice a lot?", answer: "In order to win the match." },
-    { question: "Why are you studying tonight?", answer: "So that I can pass the exam." },
-    { question: "Why did they hire a new teacher?", answer: "To improve education." },
-    { question: "Why do you eat vegetables?", answer: "To be healthy." },
-    { question: "Why did she take notes?", answer: "So that she could remember later." },
-    { question: "Why are they painting the room?", answer: "In order to make it look new." },
-    { question: "Why do you visit your grandparents?", answer: "To spend time with them." },
-    { question: "Why did he stay up late?", answer: "So that he could finish his homework." },
-    { question: "Why are you running?", answer: "To catch the train." },
-    { question: "Why did she set an alarm?", answer: "So that she wouldn't be late." },
-    { question: "Why do you drink water?", answer: "To stay hydrated." },
-    { question: "Why did they turn on the lights?", answer: "In order to see better." },
-    { question: "Why does she wear glasses?", answer: "So that she can see clearly." },
-    { question: "Why do you cook at home?", answer: "To save money." },
-    { question: "Why did they leave early?", answer: "In order to avoid traffic." },
-    { question: "Why is he working so hard?", answer: "So that he can get promoted." },
-    { question: "Why do you ask questions?", answer: "To understand the topic better." },
-    { question: "Why did you take the medicine?", answer: "So that I could feel better." },
-    { question: "Why do you take notes in class?", answer: "To remember the lesson." },
-    { question: "Why did she move to the city?", answer: "In order to find a job." },
-    { question: "Why are you practicing every day?", answer: "So that I can get better at piano." },
-    { question: "Why do you sleep early?", answer: "To wake up fresh." },
-    { question: "Why did they organize the event?", answer: "So that people can learn about recycling." },
-    { question: "Why is he wearing a suit?", answer: "In order to look professional." },
-    { question: "Why are you watching this video?", answer: "To improve my English." },
-    { question: "Why did she take the test again?", answer: "So that she could improve her score." },
-    { question: "Why do you listen to podcasts?", answer: "To learn new vocabulary." },
-    { question: "Why did you choose this topic?", answer: "So that I could explain it easily." }
-  ]
-};
-
-// Module 141 Data
-const MODULE_141_DATA = {
-  title: "Work Vocabulary – Roles, Tasks, and Workplaces",
-  description: "Discuss jobs, workplace tasks, and professional environments using B1 vocabulary",
-  intro: `The world of work is full of diverse roles and workplaces. This module teaches you essential vocabulary to talk about different jobs, what people do at work, and where they work. Learn to describe professions, tasks, and work environments confidently.`,
-  tip: "Use this vocabulary to discuss careers, describe your job, or talk about what different professionals do every day.",
-
-  table: [
-    { term: "👷 ROLES & PROFESSIONS", definition: '' },
-    { term: "manager", definition: "person who organizes and leads a team" },
-    { term: "engineer", definition: "designs and builds technical things" },
-    { term: "nurse", definition: "provides medical care to patients" },
-    { term: "teacher", definition: "educates students" },
-    { term: "chef", definition: "prepares and cooks food professionally" },
-    { term: "mechanic", definition: "repairs vehicles and machinery" },
-    { term: "police officer", definition: "maintains law and protects people" },
-    { term: "secretary", definition: "handles office admin and communication" },
-    { term: "🏢 WORKPLACES", definition: '' },
-    { term: "office", definition: "place for business/administrative work" },
-    { term: "hospital", definition: "medical care facility" },
-    { term: "school", definition: "educational institution" },
-    { term: "restaurant", definition: "food service establishment" },
-    { term: "factory", definition: "manufacturing facility" },
-    { term: "garage", definition: "vehicle repair shop" },
-    { term: "police station", definition: "law enforcement headquarters" },
-    { term: "construction site", definition: "building work location" },
-    { term: "💼 TASKS & ACTIVITIES", definition: '' },
-    { term: "answer phones", definition: "respond to telephone calls" },
-    { term: "write emails", definition: "compose electronic messages" },
-    { term: "attend meetings", definition: "participate in work discussions" },
-    { term: "serve customers", definition: "help and assist clients" },
-    { term: "fix machines", definition: "repair equipment" },
-    { term: "prepare food", definition: "cook and make meals" }
-  ],
-
-  listeningExamples: [
-    "A teacher works at a school.",
-    "A chef prepares food in a restaurant.",
-    "A nurse helps patients in a hospital.",
-    "A driver drives a vehicle.",
-    "A manager usually works in an office."
-  ],
-
-  speakingPractice: [
-    { question: "Where does a teacher work?", answer: "A teacher works at a school." },
-    { question: "What does a chef do?", answer: "A chef prepares food." },
-    { question: "Where does a nurse work?", answer: "A nurse works at a hospital." },
-    { question: "What does a driver do?", answer: "A driver drives a vehicle." },
-    { question: "What does a cashier do?", answer: "A cashier takes payments and gives change." },
-    { question: "Where does a mechanic work?", answer: "A mechanic works at a garage." },
-    { question: "What does a secretary do?", answer: "A secretary answers phones and writes emails." },
-    { question: "Where does a police officer work?", answer: "At a police station." },
-    { question: "What does a teacher do?", answer: "A teacher teaches students." },
-    { question: "Where does a manager usually work?", answer: "In an office." },
-    { question: "What does an engineer do?", answer: "An engineer designs and builds things." },
-    { question: "Where does a chef work?", answer: "In a restaurant." },
-    { question: "What does a nurse do?", answer: "A nurse helps patients." },
-    { question: "Where does a cleaner work?", answer: "A cleaner can work in offices or hotels." },
-    { question: "What does a factory worker do?", answer: "A factory worker makes products." },
-    { question: "Where does a hotel receptionist work?", answer: "At a hotel reception desk." },
-    { question: "What does a police officer do?", answer: "A police officer protects people and enforces the law." },
-    { question: "What does a construction worker do?", answer: "They build buildings." },
-    { question: "Where does a construction worker work?", answer: "On a construction site." },
-    { question: "What does a waiter do?", answer: "A waiter serves food and drinks." },
-    { question: "What does a doctor do?", answer: "A doctor examines and treats patients." },
-    { question: "Where does a doctor work?", answer: "At a hospital or clinic." },
-    { question: "What does a fireman do?", answer: "A fireman puts out fires and saves people." },
-    { question: "Where does a fireman work?", answer: "At a fire station." },
-    { question: "What does a salesperson do?", answer: "A salesperson sells products to customers." },
-    { question: "Where does a salesperson work?", answer: "In a store or shop." },
-    { question: "What does a janitor do?", answer: "A janitor cleans buildings and schools." },
-    { question: "Where does a janitor work?", answer: "In a school or office building." },
-    { question: "What does an IT specialist do?", answer: "They fix computers and manage systems." },
-    { question: "Where does an IT specialist work?", answer: "Usually in an office." },
-    { question: "What does a bus driver do?", answer: "Drives a bus and takes passengers to places." },
-    { question: "Where does a bus driver work?", answer: "On the road and at bus terminals." },
-    { question: "What does a hairdresser do?", answer: "Cuts and styles hair." },
-    { question: "Where does a hairdresser work?", answer: "In a salon." },
-    { question: "What does a journalist do?", answer: "Writes news stories and reports." },
-    { question: "Where does a journalist work?", answer: "In news agencies or on the field." },
-    { question: "What does a librarian do?", answer: "Helps people find books and manage the library." },
-    { question: "Where does a librarian work?", answer: "In a library." },
-    { question: "What does a delivery person do?", answer: "Delivers packages and mail." },
-    { question: "Where does a delivery person work?", answer: "On the road or at a warehouse." },
-    { question: "What does a receptionist do?", answer: "Greets people and answers calls." },
-    { question: "Where does a receptionist work?", answer: "In an office, hotel, or clinic." }
-  ]
-};
-
-// Module 142 Data
-const MODULE_142_DATA = {
-  title: "Education Vocabulary – Schools and Universities (B2 Level)",
-  description: "Build B2-level vocabulary to discuss schools, universities, and academic life",
-  intro: `In this module, you will build strong B2-level vocabulary to discuss educational institutions, academic life, and higher education. From curriculum design to tuition fees, from lectures to scholarships, this module equips you with the essential terms needed for discussing education at an advanced level. Whether you're a student, teacher, or simply interested in academic topics, this vocabulary is crucial for engaging in meaningful conversations about education.`,
-  tip: "Education vocabulary is particularly important if you plan to study abroad or work in academic environments. These terms frequently appear in IELTS and other English proficiency exams.",
-
-  table: [
-    { term: "🎓 ACADEMIC INSTITUTIONS", definition: '' },
-    { term: "curriculum", definition: "the subjects and content taught at a school or university" },
-    { term: "faculty", definition: "a department or group of related subjects, or the teaching staff" },
-    { term: "campus", definition: "the grounds and buildings of a university or college" },
-    { term: "📚 COURSES & STUDY", definition: '' },
-    { term: "assignment", definition: "a task or piece of work given to students" },
-    { term: "lecture", definition: "a formal presentation to a large group of students" },
-    { term: "seminar", definition: "a small interactive class focused on discussion" },
-    { term: "thesis", definition: "a long research paper written by postgraduate students" },
-    { term: "internship", definition: "practical work experience for students" },
-    { term: "💰 FEES & SCHOLARSHIPS", definition: '' },
-    { term: "tuition fee", definition: "money paid for instruction at a school or university" },
-    { term: "scholarship", definition: "financial aid awarded for academic excellence or need" },
-    { term: "🎯 STUDENT STATUS", definition: '' },
-    { term: "undergraduate", definition: "a student studying for their first degree (bachelor's)" },
-    { term: "postgraduate", definition: "a student studying for a master's or doctoral degree" },
-    { term: "graduate", definition: "to successfully complete a degree program" },
-    { term: "enroll", definition: "to officially register for a course or institution" },
-    { term: "drop out", definition: "to leave school or university before completing" },
-    { term: "📊 PERFORMANCE & METHODS", definition: '' },
-    { term: "academic performance", definition: "how well a student performs in their studies" },
-    { term: "exam-oriented", definition: "focused mainly on passing exams rather than deep learning" },
-    { term: "distance learning", definition: "education delivered remotely (online or by correspondence)" },
-    { term: "extracurricular activities", definition: "activities outside regular classes (sports, clubs, music)" }
-  ],
-
-  listeningExamples: [
-    "I enrolled at the beginning of the semester to start my undergraduate program.",
-    "Our curriculum includes science, mathematics, and foreign languages at an advanced level.",
-    "Tuition fees are particularly high for international students at most universities.",
-    "She received a full scholarship based on her outstanding academic performance.",
-    "He is currently writing his thesis as a postgraduate student in molecular biology.",
-    "The campus has modern facilities including laboratories, libraries, and sports centers.",
-    "I attend lectures in the morning and seminars in the afternoon for more interactive learning.",
-    "Distance learning became essential during the pandemic and remains popular today."
-  ],
-
-  speakingPractice: [
-    { question: "What is the curriculum like at your school?", answer: "It includes science, math, and foreign languages." },
-    { question: "Do you have many assignments?", answer: "Yes, we have weekly assignments in most subjects." },
-    { question: "Have you ever attended a lecture?", answer: "Yes, I attended a psychology lecture last week." },
-    { question: "What's the difference between a lecture and a seminar?", answer: "A lecture is for large groups, while a seminar is more interactive." },
-    { question: "Which faculty are you in?", answer: "I'm in the Faculty of Engineering." },
-    { question: "What degree are you studying for?", answer: "I'm studying for a bachelor's degree in economics." },
-    { question: "Do you receive a scholarship?", answer: "Yes, I have a full scholarship for academic performance." },
-    { question: "Are tuition fees high at your university?", answer: "Yes, especially for international students." },
-    { question: "When did you graduate?", answer: "I graduated two years ago." },
-    { question: "Are you an undergraduate or a postgraduate student?", answer: "I'm a postgraduate student." },
-    { question: "Have you written your thesis yet?", answer: "Yes, I submitted it last month." },
-    { question: "Are internships mandatory in your program?", answer: "Yes, we must complete a summer internship." },
-    { question: "How is your academic performance?", answer: "It's good. I have a GPA of 3.6." },
-    { question: "Is your campus big?", answer: "Yes, the campus is large and modern." },
-    { question: "When did you enroll in this course?", answer: "I enrolled at the beginning of the semester." },
-    { question: "Did anyone drop out last year?", answer: "Yes, two students dropped out due to personal reasons." },
-    { question: "Is the system exam-oriented?", answer: "Yes, it focuses mainly on exams and grades." },
-    { question: "Have you tried distance learning?", answer: "Yes, during the pandemic we used online platforms." },
-    { question: "Do you join any extracurricular activities?", answer: "Yes, I play in the university orchestra." },
-    { question: "What is your favorite subject?", answer: "I enjoy literature because it's creative." },
-    { question: "Do you think tuition fees should be free?", answer: "Yes, to make education accessible to all." },
-    { question: "How many credits do you need to graduate?", answer: "I need 240 credits to complete my degree." },
-    { question: "Are your professors supportive?", answer: "Yes, they're very helpful and experienced." },
-    { question: "What's the hardest part of university?", answer: "Managing time between lectures and assignments." },
-    { question: "Do you live on campus?", answer: "No, I rent a flat nearby." },
-    { question: "Have you taken any online courses?", answer: "Yes, I completed a course on digital marketing." },
-    { question: "What's your major?", answer: "My major is international relations." },
-    { question: "Have you ever failed a course?", answer: "Yes, I failed statistics once but retook it." },
-    { question: "Are there many student clubs?", answer: "Yes, we have clubs for sports, music, and debate." },
-    { question: "What's your opinion on group projects?", answer: "They're useful, but sometimes hard to coordinate." },
-    { question: "Do you plan to study abroad?", answer: "Yes, I'd like to do a semester in Germany." },
-    { question: "How do you prepare for exams?", answer: "I review notes, read textbooks, and practice old exams." },
-    { question: "What is your dream university?", answer: "I'd love to study at Oxford." },
-    { question: "What's the student life like?", answer: "It's vibrant, especially on campus." },
-    { question: "Is attendance compulsory?", answer: "Yes, for most of the courses." },
-    { question: "What's your favorite place on campus?", answer: "The library. It's quiet and has all the resources." },
-    { question: "What does your internship involve?", answer: "I assist with marketing and social media tasks." },
-    { question: "Do you think education should be more practical?", answer: "Yes, especially at the university level." },
-    { question: "Do you plan to do a master's degree?", answer: "Yes, after I graduate." },
-    { question: "Is your course theoretical or practical?", answer: "It's a good mix of both." },
-    { question: "What's the most challenging subject for you?", answer: "Probably advanced mathematics." }
-  ]
-};
-
-// Module 143 Data
-const MODULE_143_DATA = {
-  title: "Technology Vocabulary – Gadgets and Internet (B1 Level+)",
-  description: "Discuss technology, gadgets, internet use, and digital safety with B1+ vocabulary",
-  intro: `In today's digital world, technology vocabulary is essential. In this B1+ module, you'll learn to discuss gadgets, internet use, cloud computing, cybersecurity, and smart devices. Whether you're talking about your smartphone, protecting your online privacy, or describing the latest tech trends, this module will give you the language skills you need to engage confidently in technology-related conversations.`,
-  tip: "Technology changes rapidly, but core vocabulary remains essential. These terms will help you understand tech news, use digital services, and discuss modern life with confidence.",
-
-  table: [
-    { term: "📱 GADGETS & DEVICES", definition: '' },
-    { term: "smartphone", definition: "mobile phone with advanced features and internet access" },
-    { term: "tablet", definition: "portable touchscreen computer larger than a phone" },
-    { term: "laptop", definition: "portable personal computer" },
-    { term: "charger", definition: "device for recharging batteries" },
-    { term: "headphones", definition: "audio device worn over or in the ears" },
-    { term: "USB drive", definition: "portable data storage device" },
-    { term: "wearable technology", definition: "electronic devices worn on the body (smartwatches, fitness trackers)" },
-    { term: "touchscreen", definition: "display that responds to touch" },
-    { term: "smart home device", definition: "internet-connected device for home automation" },
-    { term: "🌐 INTERNET & CONNECTIVITY", definition: '' },
-    { term: "Wi‑Fi connection", definition: "wireless internet network" },
-    { term: "Bluetooth", definition: "short-range wireless technology for connecting devices" },
-    { term: "search engine", definition: "tool for finding information online (Google, Bing)" },
-    { term: "social media platform", definition: "online service for sharing content and connecting (Facebook, Instagram)" },
-    { term: "streaming", definition: "watching or listening to content online in real-time" },
-    { term: "download/upload", definition: "transfer data from/to the internet" },
-    { term: "💾 DATA & SECURITY", definition: '' },
-    { term: "data storage", definition: "keeping digital information on devices or services" },
-    { term: "cloud computing", definition: "storing and accessing data via the internet instead of locally" },
-    { term: "online privacy", definition: "protection of personal information on the internet" },
-    { term: "cybersecurity", definition: "protection against digital attacks and threats" },
-    { term: "software update", definition: "newer version of a program fixing bugs or adding features" }
-  ],
-
-  listeningExamples: [
-    "I usually use my smartphone and laptop every day for work and entertainment.",
-    "Cloud computing lets you store and access data online from any device.",
-    "I install software updates to avoid bugs and improve security on all my devices.",
-    "A fast Wi‑Fi connection helps with streaming videos and making video calls.",
-    "Wearable technology like smartwatches can track your fitness data and heart rate.",
-    "Online privacy is important, so I use strong passwords and avoid suspicious links.",
-    "Smart home devices make life convenient, but raise concerns about data security.",
-    "Cybersecurity protects your personal and financial information from digital attacks."
-  ],
-
-  speakingPractice: [
-    { question: "What kind of gadgets do you use daily?", answer: "I usually use my smartphone, smartwatch, and wireless earbuds." },
-    { question: "How often do you update your software?", answer: "I try to install every software update as soon as it's available to avoid bugs." },
-    { question: "Do you prefer using a tablet or a laptop for studying?", answer: "I prefer using a laptop because it's more suitable for multitasking." },
-    { question: "What do you usually store on your USB drive?", answer: "Mostly documents, presentations, and sometimes backup copies of my photos." },
-    { question: "What is the most useful smart device in your home?", answer: "Probably the smart speaker. I use it for music, alarms, and even controlling the lights." },
-    { question: "Have you ever had issues with your Wi‑Fi connection?", answer: "Yes, especially when there are too many devices connected at the same time." },
-    { question: "How do you protect your online privacy?", answer: "I use strong passwords, avoid suspicious links, and regularly clear my browser history." },
-    { question: "Which search engine do you usually use?", answer: "I usually use Google because it gives the most relevant results quickly." },
-    { question: "Do you think social media platforms are addictive?", answer: "Yes, because they are designed to keep users engaged for hours." },
-    { question: "What is cloud computing used for?", answer: "It's used for storing and accessing data online instead of on local devices." },
-    { question: "Do you listen to music online or offline?", answer: "I stream music online, but I download playlists for offline use when I travel." },
-    { question: "Have you ever experienced a cyber attack?", answer: "Fortunately, no, but I've received some suspicious phishing emails before." },
-    { question: "How do you usually back up your data?", answer: "I use both an external hard drive and cloud services like Google Drive." },
-    { question: "What is the downside of constantly using gadgets?", answer: "It can affect your posture, vision, and sometimes your concentration." },
-    { question: "How important is cybersecurity in modern life?", answer: "It's absolutely essential to protect sensitive personal and financial information." },
-    { question: "Do you use any wearable technology?", answer: "Yes, I use a fitness tracker to monitor my steps and heart rate." },
-    { question: "How do you feel about smart home devices?", answer: "They're convenient, but I'm slightly concerned about data privacy." },
-    { question: "Which apps do you use the most on your phone?", answer: "Messaging apps, a calendar, and news apps are what I use daily." },
-    { question: "Do you often download large files?", answer: "Only when I need to install new software or watch offline videos." },
-    { question: "Have you ever repaired a gadget by yourself?", answer: "Yes, I once replaced the battery in my old smartphone." },
-    { question: "What is your opinion on online learning tools?", answer: "I think they're incredibly useful and flexible, especially for busy people." },
-    { question: "Do you think children use technology too much?", answer: "Yes, and it may limit their social and physical development if uncontrolled." },
-    { question: "How do you secure your home Wi‑Fi network?", answer: "By changing the default password and enabling encryption." },
-    { question: "Do you prefer using Bluetooth headphones or wired ones?", answer: "Bluetooth headphones are more convenient, especially when commuting." },
-    { question: "Have you ever used a 3D printer?", answer: "No, but I've seen demonstrations, and they are fascinating." },
-    { question: "How do you use technology in your studies?", answer: "I use online dictionaries, grammar apps, and video lessons." },
-    { question: "Do you trust online payment systems?", answer: "Yes, but I always check if the site is secure before entering my card details." },
-    { question: "Have you ever used a digital assistant like Siri or Alexa?", answer: "Yes, I use it mostly for setting reminders or checking the weather." },
-    { question: "Do you think technology makes life easier?", answer: "Yes, it helps us communicate, work, and learn more efficiently." },
-    { question: "What's the main disadvantage of being online all the time?", answer: "It's easy to lose track of time and become mentally drained." },
-    { question: "Do you use antivirus software?", answer: "Yes, I have one installed on both my laptop and smartphone." },
-    { question: "How do you feel about online shopping?", answer: "It's convenient, but sometimes I worry about getting poor-quality products." },
-    { question: "Have you ever tried learning a language through an app?", answer: "Yes, I used Duolingo and found it surprisingly effective." },
-    { question: "Do you use email more for personal or professional communication?", answer: "Mostly professional, but I still receive newsletters and personal updates." },
-    { question: "What do you think of smartwatches?", answer: "They're great for fitness tracking, notifications, and even answering calls." },
-    { question: "Would you buy a smart fridge or smart oven?", answer: "Possibly, if it helps me save time and energy." },
-    { question: "Do you worry about screen time?", answer: "Yes, I try to limit it, especially before bed." },
-    { question: "How fast is your internet connection?", answer: "It's quite fast—enough for streaming HD videos and video conferencing." },
-    { question: "Have you ever joined a virtual meeting?", answer: "Yes, we use Zoom for most of our classes and meetings." },
-    { question: "What would life be like without the internet?", answer: "It would be slower and more difficult, especially for communication and work." }
-  ]
-};
-
-// Module 144 Data
-const MODULE_144_DATA = {
-  title: "Environment Vocabulary – Problems and Solutions (B1+ Level)",
-  description: "Build B1+ vocabulary to discuss environmental problems and solutions",
-  intro: `Our planet faces serious environmental challenges. In this module, you'll learn essential B1+ vocabulary to discuss climate change, pollution, conservation, and sustainable living. Master the language needed to talk about environmental problems and their solutions confidently.`,
-  tip: "Environmental issues affect everyone. Learning this vocabulary helps you participate in important conversations about our planet's future.",
-
-  table: [
-    { term: "🔴 ENVIRONMENTAL PROBLEMS", definition: '' },
-    { term: "climate change", definition: "long-term changes in temperature and weather patterns" },
-    { term: "global warming", definition: "the gradual increase in Earth's temperature" },
-    { term: "pollution", definition: "harmful substances contaminating air, water, or land" },
-    { term: "deforestation", definition: "cutting down forests on a large scale" },
-    { term: "overconsumption", definition: "using more resources than necessary" },
-    { term: "water scarcity", definition: "lack of sufficient available clean water" },
-    { term: "extinction", definition: "when a species completely disappears" },
-    { term: "landfill", definition: "site for disposing of waste by burying it" },
-    { term: "🟢 SOLUTIONS & ACTIONS", definition: '' },
-    { term: "renewable energy", definition: "power from sources that don't run out (solar, wind)" },
-    { term: "recycling", definition: "converting waste into reusable material" },
-    { term: "conservation", definition: "protection of natural resources and wildlife" },
-    { term: "waste management", definition: "handling, processing, and disposal of trash" },
-    { term: "eco-friendly products", definition: "items that don't harm the environment" },
-    { term: "energy-efficient devices", definition: "appliances that use less electricity" },
-    { term: "public transport", definition: "buses, trains shared by many people" },
-    { term: "reforestation", definition: "planting trees to restore forests" },
-    { term: "sustainable living", definition: "lifestyle that reduces environmental impact" }
-  ],
-
-  listeningExamples: [
-    "Plastic pollution harms wildlife and takes centuries to decompose.",
-    "Switching to renewable energy reduces greenhouse gas emissions.",
-    "Recycling conserves natural resources and saves energy.",
-    "Using energy-efficient appliances lowers electricity use and emissions.",
-    "Protecting forests helps conserve biodiversity.",
-    "Reducing our carbon footprint means using less electricity and driving less.",
-    "Landfills release methane and can pollute land and water.",
-    "Sustainable development meets present needs without harming future generations."
-  ],
-
-  speakingPractice: [
-    { question: "What are the main causes of climate change?", answer: "Mainly greenhouse gas emissions from burning fossil fuels." },
-    { question: "How can we reduce air pollution?", answer: "By promoting public transport and using cleaner energy sources." },
-    { question: "What is the impact of deforestation?", answer: "It destroys habitats, reduces biodiversity, and contributes to global warming." },
-    { question: "What does 'carbon footprint' mean?", answer: "The total amount of greenhouse gases we produce through our actions." },
-    { question: "What are some renewable energy sources?", answer: "Solar, wind, hydroelectric, and geothermal energy." },
-    { question: "How does recycling help the environment?", answer: "It reduces waste, saves energy, and conserves natural resources." },
-    { question: "Why is biodiversity important?", answer: "It keeps ecosystems balanced and supports human life." },
-    { question: "What can individuals do to live more sustainably?", answer: "Reduce waste, save energy, and choose eco-friendly products." },
-    { question: "What is an environmentally friendly lifestyle?", answer: "One that minimizes harm to the planet using sustainable practices." },
-    { question: "Why is plastic pollution a major problem?", answer: "Plastic takes hundreds of years to decompose and harms wildlife." },
-    { question: "How can we save water in daily life?", answer: "Fix leaks, use water-efficient appliances, and turn off taps." },
-    { question: "What are the dangers of overconsumption?", answer: "Resource depletion, more waste, and environmental damage." },
-    { question: "Why should we switch to energy-efficient devices?", answer: "They reduce electricity use and lower carbon emissions." },
-    { question: "What does 'waste management' include?", answer: "Collection, transport, recycling, and disposal of waste." },
-    { question: "What are eco-friendly products?", answer: "Items made with sustainable materials that cause less harm to nature." },
-    { question: "How can we protect endangered species?", answer: "Preserve habitats and implement conservation programs." },
-    { question: "What is the role of governments in environmental protection?", answer: "Make laws, support green projects, and raise public awareness." },
-    { question: "How does global warming affect sea levels?", answer: "It melts ice and raises oceans, threatening coasts." },
-    { question: "What can schools do to promote environmental awareness?", answer: "Organize projects, campaigns, and eco-education programs." },
-    { question: "How is climate change affecting agriculture?", answer: "It changes rainfall patterns and raises drought/flood risks." },
-    { question: "Why are forests essential for the planet?", answer: "They absorb CO₂ and provide oxygen and habitats." },
-    { question: "How can we reduce our carbon footprint?", answer: "Use less electricity, drive less, and eat local food." },
-    { question: "What happens when biodiversity decreases?", answer: "Ecosystems become less resilient and may collapse." },
-    { question: "How can technology help the environment?", answer: "By creating clean energy and improving efficiency." },
-    { question: "What is meant by 'sustainable development'?", answer: "Meeting present needs without harming future generations." },
-    { question: "Why are landfills problematic?", answer: "They release methane and can pollute land and water." },
-    { question: "How can urban areas become greener?", answer: "Add parks, plant trees, and improve public transport." },
-    { question: "What is water scarcity?", answer: "Not enough clean water for people's needs." },
-    { question: "How can we reduce food waste?", answer: "Plan meals, store food properly, and donate excess." },
-    { question: "What are the benefits of green buildings?", answer: "They use less energy and water and are healthier." },
-    { question: "What role do students play in environmental protection?", answer: "Join eco-clubs and lead awareness campaigns." },
-    { question: "What is the connection between consumption and pollution?", answer: "More consumption means more waste and pollution." },
-    { question: "How can businesses be more eco-conscious?", answer: "Reduce packaging, recycle, and use renewable energy." },
-    { question: "Why should we reduce single-use plastics?", answer: "They pollute land and oceans and harm marine life." },
-    { question: "What is extinction and why is it serious?", answer: "A species disappears forever, upsetting ecological balance." },
-    { question: "How does overfishing affect marine life?", answer: "It reduces fish populations and disrupts the food chain." },
-    { question: "What are climate-friendly habits?", answer: "Use reusable bags, bike, and conserve water and energy." },
-    { question: "How can governments encourage green energy?", answer: "Offer subsidies and invest in solar and wind power." },
-    { question: "Why is environmental education important?", answer: "It teaches people to care for the planet and act responsibly." },
-    { question: "What's your opinion on banning plastic bags?", answer: "It's a strong step to reduce plastic waste." }
-  ]
-};
-
-// Module 145 Data
-const MODULE_145_DATA = {
-  title: "News and Media Vocabulary (B1+ Level)",
-  description: "Use B1+ media vocabulary to discuss how news is produced and consumed",
-  intro: `In today's digital age, understanding news and media is crucial. This module teaches you essential B1+ vocabulary to discuss journalism, breaking news, social media, and critical thinking about information. Learn to talk confidently about how we receive and evaluate news in the modern world.`,
-  tip: "Media literacy is a vital skill. This vocabulary helps you discuss news sources, identify reliable information, and express opinions about media coverage.",
-
-  table: [
-    { term: "📰 NEWS PRODUCTION", definition: '' },
-    { term: "headline", definition: "the title of a news article" },
-    { term: "breaking news", definition: "urgent, just-reported information" },
-    { term: "reporter", definition: "person who gathers news stories" },
-    { term: "journalist", definition: "professional who investigates and writes news" },
-    { term: "editor", definition: "person who reviews and prepares content" },
-    { term: "news anchor", definition: "TV/radio presenter of news programs" },
-    { term: "article", definition: "written news story" },
-    { term: "interview", definition: "conversation to gather information" },
-    { term: "📡 MEDIA & FORMATS", definition: '' },
-    { term: "broadcast", definition: "transmission of programs on TV/radio" },
-    { term: "live coverage", definition: "real-time reporting of events" },
-    { term: "press", definition: "news media and journalists collectively" },
-    { term: "media outlet", definition: "organization that publishes news" },
-    { term: "tabloid", definition: "newspaper focused on sensational stories" },
-    { term: "mainstream media", definition: "major, established news sources" },
-    { term: "💻 DIGITAL & CRITICAL THINKING", definition: '' },
-    { term: "social media", definition: "online platforms for sharing content" },
-    { term: "go viral", definition: "spread rapidly online" },
-    { term: "fake news", definition: "false information presented as news" },
-    { term: "source", definition: "origin of information" },
-    { term: "subscribe", definition: "sign up for regular content" },
-    { term: "objective reporting", definition: "presenting facts without bias" }
-  ],
-
-  listeningExamples: [
-    "I checked the headline before reading the full article.",
-    "The reporter interviewed witnesses during the live coverage.",
-    "Always verify the source to avoid fake news.",
-    "The editor reviewed the story for accuracy and clarity.",
-    "The video went viral on social media.",
-    "Mainstream media covers international events extensively.",
-    "Objective reporting presents facts without personal bias."
-  ],
-
-  speakingPractice: [
-    { question: "Do you read the news every day?", answer: "Yes, I usually check news apps or websites every morning." },
-    { question: "What type of news do you follow the most?", answer: "International news and current affairs." },
-    { question: "Have you ever read a fake news story?", answer: "Yes, it seemed real at first." },
-    { question: "What does a journalist do?", answer: "Investigates and writes news stories." },
-    { question: "Do you prefer watching or reading the news?", answer: "Reading—I can choose the topics that interest me." },
-    { question: "What's your favorite news outlet?", answer: "BBC—detailed and balanced reporting." },
-    { question: "What does a headline usually tell you?", answer: "A brief summary of the main topic." },
-    { question: "Have you ever watched a live news broadcast?", answer: "Yes, during elections and major events." },
-    { question: "What's the role of a news anchor?", answer: "Presents news on TV or radio." },
-    { question: "Do you trust mainstream media?", answer: "Mostly, but I cross-check with other sources." },
-    { question: "What's the danger of fake news?", answer: "It spreads misinformation and causes confusion." },
-    { question: "Do you follow news on social media?", answer: "Yes, but I verify content before believing it." },
-    { question: "What is an interview in journalism?", answer: "A conversation to gather information or opinions." },
-    { question: "Have you ever been interviewed?", answer: "Yes, once for a school magazine." },
-    { question: "Reporter vs editor—difference?", answer: "Reporter gathers news; editor reviews and prepares it." },
-    { question: "Do you like reading tabloids?", answer: "Not really; I prefer fact-based journalism." },
-    { question: "What does 'go viral' mean?", answer: "A story or video spreads rapidly online." },
-    { question: "Do you subscribe to any outlets?", answer: "Yes, a digital subscription to a weekly magazine." },
-    { question: "How to identify reliable sources?", answer: "Check credibility and evidence." },
-    { question: "What is objective reporting?", answer: "Facts without personal bias." },
-    { question: "Does news influence public opinion?", answer: "Yes—framing affects how people view issues." },
-    { question: "What is breaking news?", answer: "Urgent information reported immediately." },
-    { question: "What are press conferences for?", answer: "Officials answer questions from the media." },
-    { question: "Have you shared a news article online?", answer: "Yes, when it's important." },
-    { question: "Role of editors?", answer: "Ensure accuracy, grammar, and clarity." },
-    { question: "How has social media changed news?", answer: "More accessible, but more misinformation." },
-    { question: "Opinion on citizen journalism?", answer: "Useful for speed, not always accurate." },
-    { question: "Printed or digital newspapers?", answer: "Digital for convenience and updates." },
-    { question: "Opinion on news apps?", answer: "Helpful with customizable topics and alerts." },
-    { question: "Have you seen biased reporting?", answer: "Yes, especially in politics." },
-    { question: "Are young people interested in news?", answer: "Some are—engaging formats help." },
-    { question: "News vs opinion?", answer: "News = facts; opinion = views." },
-    { question: "Benefits of live coverage?", answer: "Real-time updates." },
-    { question: "Teach media literacy at schools?", answer: "Yes—critical thinking is essential." },
-    { question: "Role of the press in democracy?", answer: "Inform, hold power accountable, ensure transparency." },
-    { question: "How do you stay updated?", answer: "Apps and push notifications." },
-    { question: "Do you turn off the news sometimes?", answer: "Yes, to avoid negativity overload." },
-    { question: "View on sensational headlines?", answer: "Attention-grabbing but sometimes misleading." },
-    { question: "International or local news?", answer: "Mostly international; I check local too." },
-    { question: "Watched a documentary about journalism?", answer: "Yes—it showed newsroom pressures." }
-  ]
-};
-
-// Module 146 Data
-const MODULE_146_DATA = {
-  title: "Personality and Character Vocabulary (B2)",
-  description: "Use B2 adjectives to describe character precisely and answer complex questions",
-  intro: `Understanding personality helps us connect with others and express ourselves better. This B2 module teaches you sophisticated vocabulary to describe character traits with precision. Learn to discuss positive, negative, and neutral personality characteristics, and explore how personality shapes our relationships and choices.`,
-  tip: "Rich personality vocabulary allows you to describe people accurately and discuss human behavior with nuance. These words are essential for B2-level conversations.",
-
-  table: [
-    { term: "✨ POSITIVE TRAITS", definition: '' },
-    { term: "empathetic", definition: "able to understand others' feelings" },
-    { term: "reliable", definition: "can be trusted to do what they promise" },
-    { term: "charismatic", definition: "naturally charming and inspiring" },
-    { term: "witty", definition: "clever and amusing in conversation" },
-    { term: "open-minded", definition: "willing to consider new ideas" },
-    { term: "honest", definition: "truthful and sincere" },
-    { term: "disciplined", definition: "able to control behavior and stay focused" },
-    { term: "patient", definition: "able to wait calmly without frustration" },
-    { term: "⚠️ NEGATIVE TRAITS", definition: '' },
-    { term: "arrogant", definition: "exaggerating one's own importance" },
-    { term: "manipulative", definition: "controlling others for selfish reasons" },
-    { term: "impulsive", definition: "acting without thinking" },
-    { term: "moody", definition: "frequently changing emotions" },
-    { term: "stubborn", definition: "refusing to change one's mind" },
-    { term: "⚖️ NEUTRAL/CONTEXT-DEPENDENT", definition: '' },
-    { term: "ambitious", definition: "having strong desire for success" },
-    { term: "introverted", definition: "preferring solitary activities" },
-    { term: "extroverted", definition: "outgoing and energized by others" },
-    { term: "cautious", definition: "careful to avoid risks" },
-    { term: "perfectionist", definition: "wanting everything to be perfect" },
-    { term: "adaptable", definition: "able to adjust to new conditions" },
-    { term: "assertive", definition: "confident in expressing opinions" }
-  ],
-
-  listeningExamples: [
-    "She's reliable and always keeps her promises.",
-    "He can be impulsive and make quick decisions.",
-    "A witty remark can lighten the mood.",
-    "Open-minded people consider new ideas.",
-    "Ambitious students set long-term goals.",
-    "Empathetic leaders build strong teams.",
-    "Being adaptable helps in changing situations."
-  ],
-
-  speakingPractice: [
-    { question: "How would your best friend describe your personality?", answer: "Reliable, honest, and a good listener." },
-    { question: "What is your strongest personality trait?", answer: "Dependability in every situation." },
-    { question: "Which trait do you want to improve?", answer: "Patience under stress." },
-    { question: "Are you more introverted or extroverted?", answer: "Introverted—I recharge alone." },
-    { question: "Have you become more open-minded?", answer: "Yes, by listening to different views." },
-    { question: "Are you a perfectionist?", answer: "Yes, I want things to be exactly right." },
-    { question: "What makes someone charismatic?", answer: "Confidence, clear speech, and empathy." },
-    { question: "Can a moody person be a good leader?", answer: "Yes, if they manage emotions." },
-    { question: "Are you cautious when deciding?", answer: "Yes, to avoid mistakes." },
-    { question: "What is emotional intelligence?", answer: "Understanding feelings and reacting calmly." },
-    { question: "Prefer ambitious or relaxed coworkers?", answer: "Ambitious—they're focused and driven." },
-    { question: "Is stubbornness always bad?", answer: "No, it helps defend values." },
-    { question: "How do you deal with manipulative people?", answer: "Set boundaries and stay objective." },
-    { question: "Can you trust impulsive people?", answer: "Only to a point—they act too fast." },
-    { question: "Most reliable person you know?", answer: "My mother—she keeps her word." },
-    { question: "Do you like witty people?", answer: "Yes, they make chats lively." },
-    { question: "Met someone very arrogant?", answer: "Yes, he ignored others' opinions." },
-    { question: "Can people change personality?", answer: "Yes, with reflection and practice." },
-    { question: "Important traits in a partner?", answer: "Kindness, honesty, stability." },
-    { question: "Do opposites attract?", answer: "Often—they complement each other." },
-    { question: "Are people where you live extroverted?", answer: "Mostly, they enjoy socializing." },
-    { question: "Traits admired in your culture?", answer: "Respect and hospitality." },
-    { question: "Social media effects on personality?", answer: "More self-consciousness and comparison." },
-    { question: "Teach emotional intelligence at school?", answer: "Yes, for empathy and self-control." },
-    { question: "Traits for politicians?", answer: "Empathy, clarity, and resilience." },
-    { question: "Are charismatic people always honest?", answer: "No, charisma can manipulate." },
-    { question: "Why do people pretend?", answer: "To gain acceptance or hide insecurity." },
-    { question: "Which personalities become famous easily?", answer: "Confident and entertaining ones." },
-    { question: "Do leaders need empathy?", answer: "Yes, to build trust." },
-    { question: "Cultural values and personality?", answer: "They shape expression and behavior." },
-    { question: "What would you change?", answer: "Be calmer under pressure." },
-    { question: "Intelligence or charisma?", answer: "Charisma for relationships." },
-    { question: "Handling a stubborn child?", answer: "Stay calm and encourage flexibility." },
-    { question: "Can open-mindedness be risky?", answer: "Yes, without limits it is." },
-    { question: "Both introvert and extrovert?", answer: "Yes—depends on context." },
-    { question: "Meeting your personality twin?", answer: "I'd be curious and learn." },
-    { question: "Honest or kind feedback?", answer: "Both—honest yet respectful." },
-    { question: "Hire for personality or skills?", answer: "Both—fit and competence." },
-    { question: "Does personality affect success?", answer: "Yes—confidence and adaptability help." },
-    { question: "Has work changed you?", answer: "Yes—more disciplined and organized." }
-  ]
-};
-
-// Module 147 Data
-const MODULE_147_DATA = {
-  title: "Crime and Law Vocabulary (B2 Level)",
-  description: "Discuss crime, legal procedures, and enforcement using B2 vocabulary",
-  intro: `Understanding crime and law vocabulary is essential for discussing justice, safety, and legal processes. This B2 module covers criminal justice terminology, from crimes and investigations to trials and verdicts. Learn to talk about legal systems, rights, and the rule of law with confidence and precision.`,
-  tip: "Legal vocabulary appears frequently in news, movies, and serious conversations. Mastering these terms helps you understand the justice system and discuss important social issues.",
-
-  table: [
-    { term: "⚖️ LEGAL PROCESS", definition: '' },
-    { term: "investigation", definition: "systematic examination of a crime" },
-    { term: "evidence", definition: "facts or information used in court" },
-    { term: "witness", definition: "person who saw or knows about a crime" },
-    { term: "suspect", definition: "person believed to have committed a crime" },
-    { term: "arrest", definition: "taking someone into police custody" },
-    { term: "charges", definition: "formal accusations of crime" },
-    { term: "trial", definition: "legal examination of evidence in court" },
-    { term: "verdict", definition: "jury's decision: guilty or innocent" },
-    { term: "sentence", definition: "punishment decided by a judge" },
-    { term: "👥 PEOPLE IN THE SYSTEM", definition: '' },
-    { term: "judge", definition: "official who presides over a trial" },
-    { term: "jury", definition: "group of citizens who decide guilt" },
-    { term: "lawyer", definition: "legal professional representing clients" },
-    { term: "prosecution", definition: "lawyers presenting the case against accused" },
-    { term: "defense", definition: "lawyers representing the accused" },
-    { term: "victim", definition: "person harmed by a crime" },
-    { term: "criminal", definition: "person who committed a crime" },
-    { term: "🚨 CRIMES & TERMS", definition: '' },
-    { term: "crime", definition: "illegal action punishable by law" },
-    { term: "robbery", definition: "stealing using force or threats" },
-    { term: "burglary", definition: "illegal entry to steal" },
-    { term: "murder", definition: "unlawful killing of a person" },
-    { term: "fraud", definition: "deception for financial gain" },
-    { term: "bail", definition: "money paid to release accused before trial" },
-    { term: "appeal", definition: "request to review a court decision" },
-    { term: "probation", definition: "supervised release instead of prison" },
-    { term: "parole", definition: "early release under supervision" }
-  ],
-
-  listeningExamples: [
-    "The witness described the suspect.",
-    "The jury reached a guilty verdict.",
-    "He received a suspended sentence.",
-    "She was released on bail.",
-    "The lawyer appealed the decision.",
-    "Evidence must prove guilt beyond reasonable doubt.",
-    "The defense argued for probation instead of prison."
-  ],
-
-  speakingPractice: [
-    { question: "Have you ever witnessed a crime?", answer: "Yes, I saw shoplifting and reported it." },
-    { question: "Most common crimes where you live?", answer: "Theft, online fraud, and vandalism." },
-    { question: "Do you feel safe in your area?", answer: "Yes, because of police patrols." },
-    { question: "How to prevent burglary?", answer: "Cameras, alarms, and community watch." },
-    { question: "Should all crimes lead to prison?", answer: "Serious crimes yes; minor ones can use alternatives." },
-    { question: "How does the legal system work?", answer: "Investigation, charges, trial, verdict, sentence." },
-    { question: "View on death penalty?", answer: "Controversial and risks wrongful convictions." },
-    { question: "Robbery vs burglary?", answer: "Robbery uses force; burglary is illegal entry." },
-    { question: "Do you trust the police?", answer: "Generally, when they act transparently." },
-    { question: "What to do if you witness a crime?", answer: "Call police, stay safe, give a statement." },
-    { question: "What is strong evidence?", answer: "CCTV, forensics, and reliable witnesses." },
-    { question: "Why are fair trials vital?", answer: "To protect rights and prevent injustice." },
-    { question: "Presumption of innocence—meaning?", answer: "Innocent until proven guilty." },
-    { question: "How to reduce crime locally?", answer: "Youth programs and better lighting." },
-    { question: "What is cybercrime?", answer: "Hacking, phishing, and identity theft." },
-    { question: "What are white-collar crimes?", answer: "Fraud, embezzlement, insider trading." },
-    { question: "How does bail work?", answer: "Money/conditions to ensure court appearance." },
-    { question: "Role of a defense lawyer?", answer: "Protect the accused's rights." },
-    { question: "Treat juveniles differently?", answer: "Yes—focus on rehabilitation." },
-    { question: "How can tech help police?", answer: "Body cams and databases." },
-    { question: "Is CCTV effective?", answer: "It deters and provides evidence." },
-    { question: "Why do people commit crimes?", answer: "Poverty, addiction, and opportunity." },
-    { question: "What is community service?", answer: "Unpaid work instead of prison." },
-    { question: "How does an appeal work?", answer: "Higher court reviews the case." },
-    { question: "Rights of suspects?", answer: "Silence, counsel, and fair trial." },
-    { question: "What is plea bargaining?", answer: "Pleading to a lesser charge." },
-    { question: "How to cut reoffending?", answer: "Education and job support." },
-    { question: "Effect of media on trials?", answer: "It informs but can bias the public." },
-    { question: "Victim's role in court?", answer: "Testify and give impact statements." },
-    { question: "Fraud vs theft?", answer: "Fraud uses deception; theft takes property." },
-    { question: "Decriminalize minor drug offenses?", answer: "Treatment may work better than prison." },
-    { question: "How do juries decide?", answer: "Deliberate on evidence and law." },
-    { question: "Meaning of 'beyond reasonable doubt'?", answer: "Evidence leaves no reasonable alternative." },
-    { question: "What is probation?", answer: "Supervised freedom instead of prison." },
-    { question: "What is parole?", answer: "Early release under supervision." },
-    { question: "Role of forensics?", answer: "DNA and fingerprints link suspects." },
-    { question: "What is burden of proof?", answer: "Prosecution must prove the case." },
-    { question: "How can citizens reduce crime?", answer: "Report issues and support programs." },
-    { question: "What is organized crime?", answer: "Coordinated illegal activity by groups." },
-    { question: "How do laws change?", answer: "Parliament updates them over time." }
-  ]
-};
-
-// Module 148 Data
-const MODULE_148_DATA = {
-  title: "Health and Fitness Vocabulary (B2 Level)",
-  description: "Discuss health, nutrition, and training choices using B2 vocabulary",
-  intro: `A healthy lifestyle combines nutrition, exercise, and rest. This B2 module teaches you comprehensive vocabulary to discuss fitness routines, balanced diets, recovery, and wellness. Learn to talk about cardio, strength training, nutrition, and how to maintain both physical and mental health.`,
-  tip: "Health and fitness vocabulary is essential for gym conversations, doctor visits, and discussing wellness. Use these terms to describe your routine and goals confidently.",
-
-  table: [
-    { term: "🍎 NUTRITION", definition: '' },
-    { term: "diet", definition: "food and drink regularly consumed" },
-    { term: "nutrition", definition: "process of providing food for health" },
-    { term: "calorie", definition: "unit measuring energy in food" },
-    { term: "protein", definition: "nutrient that builds/repairs tissue" },
-    { term: "vitamin", definition: "organic compound essential for health" },
-    { term: "fat", definition: "nutrient providing energy and insulation" },
-    { term: "carbohydrate", definition: "main energy source from food" },
-    { term: "hydration", definition: "maintaining body fluid levels" },
-    { term: "💪 EXERCISE & FITNESS", definition: '' },
-    { term: "workout", definition: "session of physical exercise" },
-    { term: "cardio", definition: "aerobic exercise for heart and lungs" },
-    { term: "strength training", definition: "exercise to build muscle" },
-    { term: "heart rate", definition: "number of heartbeats per minute" },
-    { term: "recovery", definition: "rest period after exercise" },
-    { term: "injury", definition: "physical harm or damage" },
-    { term: "sleep", definition: "rest state essential for recovery" },
-    { term: "🏥 HEALTH TERMS", definition: '' },
-    { term: "obesity", definition: "condition of being very overweight" },
-    { term: "cholesterol", definition: "fatty substance in blood" },
-    { term: "blood pressure", definition: "force of blood against artery walls" },
-    { term: "immune system", definition: "body's defense against disease" },
-    { term: "lifestyle", definition: "way of living affecting health" }
-  ],
-
-  listeningExamples: [
-    "Exercise improves body and mind.",
-    "A balanced diet provides key nutrients.",
-    "Hydration and sleep aid recovery.",
-    "Cardio raises heart rate; strength builds muscle.",
-    "High cholesterol and blood pressure increase risk.",
-    "A healthy lifestyle includes regular exercise and good nutrition.",
-    "Your immune system protects you from illness."
-  ],
-
-  speakingPractice: [
-    { question: "How do you keep fit?", answer: "I exercise and follow a balanced diet." },
-    { question: "Describe your workout routine.", answer: "Cardio and strength, about 45 minutes." },
-    { question: "How important is sleep?", answer: "Crucial for recovery and focus." },
-    { question: "How do you track nutrition?", answer: "Meal planning and reading labels." },
-    { question: "Healthy way to lose weight?", answer: "Whole foods, portions, and activity." },
-    { question: "How to stay motivated?", answer: "Set small goals and track progress." },
-    { question: "Cardio or strength?", answer: "Both—for heart health and muscle." },
-    { question: "How to prevent injuries?", answer: "Warm up and use proper form." },
-    { question: "What to eat pre-workout?", answer: "Light carbs plus protein." },
-    { question: "Post-workout recovery?", answer: "Stretching, hydration, and sleep." },
-    { question: "Risks of obesity?", answer: "Diabetes and heart disease." },
-    { question: "Lower cholesterol how?", answer: "Less trans fat, more fiber, exercise." },
-    { question: "What raises blood pressure?", answer: "Salt, stress, inactivity." },
-    { question: "Boost immune system how?", answer: "Sleep, manage stress, nutrient-dense foods." },
-    { question: "Do you count calories?", answer: "Sometimes, to learn portions." },
-    { question: "View on supplements?", answer: "Food first; use if needed." },
-    { question: "Daily water intake?", answer: "Around two liters." },
-    { question: "Home or gym?", answer: "Home for convenience, gym for gear." },
-    { question: "How often to exercise?", answer: "At least 150 minutes weekly." },
-    { question: "What is a balanced diet?", answer: "Veggies, lean protein, whole grains, healthy fats." },
-    { question: "How do you manage stress?", answer: "Breathing, walking, less screen time." },
-    { question: "Favorite cardio?", answer: "Running or cycling." },
-    { question: "Improve flexibility how?", answer: "Stretching or yoga." },
-    { question: "Opinion on fad diets?", answer: "Unsustainable—habits matter more." },
-    { question: "Avoid late-night snacking?", answer: "Plan meals and keep healthy options." },
-    { question: "Rest day routine?", answer: "Walk, mobility, and extra sleep." },
-    { question: "Measure progress how?", answer: "Strength, endurance, and mood." },
-    { question: "Pre-sleep routine?", answer: "No caffeine late and dim lights." },
-    { question: "Healthy with a busy schedule?", answer: "Short workouts and meal prep." },
-    { question: "Foods for recovery?", answer: "Protein and fruit." },
-    { question: "Handle an injury?", answer: "Rest and follow medical advice." },
-    { question: "Is breakfast necessary?", answer: "Helpful for many; overall diet matters." },
-    { question: "What is mindful eating?", answer: "Listening to hunger and fullness." },
-    { question: "Limit sugar how?", answer: "Choose water and whole foods." },
-    { question: "Track steps?", answer: "Yes, aiming for ~10k." },
-    { question: "Opinion on wearables?", answer: "Useful feedback without obsession." },
-    { question: "Make workouts fun?", answer: "Music, partners, and new classes." },
-    { question: "Weekly plan?", answer: "Alternate muscle groups; include rest." },
-    { question: "Tip for beginners?", answer: "Start small and be consistent." },
-    { question: "Stay healthy in winter?", answer: "Wash hands, eat well, and keep active." }
-  ]
-};
-
-// Module 149 Data
-const MODULE_149_DATA = {
-  title: "Society and Social Issues Vocabulary (B2 Level)",
-  description: "Discuss social challenges and fairness using B2 vocabulary and arguments",
-  intro: `Society faces many challenges: inequality, discrimination, poverty, and injustice. This B2 module equips you with the vocabulary to discuss complex social issues, community needs, and solutions. Learn to express opinions on fairness, diversity, human rights, and social change with sophistication and empathy.`,
-  tip: "Social issues vocabulary is crucial for meaningful conversations about the world around us. These terms help you participate in important discussions and express your values clearly.",
-
-  table: [
-    { term: "🌍 SOCIAL CHALLENGES", definition: '' },
-    { term: "society", definition: "organized community of people" },
-    { term: "community", definition: "group sharing common interests or location" },
-    { term: "inequality", definition: "unfair difference in status or opportunity" },
-    { term: "discrimination", definition: "unfair treatment based on characteristics" },
-    { term: "poverty", definition: "state of being extremely poor" },
-    { term: "homelessness", definition: "condition of having no permanent home" },
-    { term: "unemployment", definition: "lack of paid work" },
-    { term: "racism", definition: "prejudice based on race" },
-    { term: "gender equality", definition: "equal rights for all genders" },
-    { term: "⚖️ RIGHTS & SYSTEMS", definition: '' },
-    { term: "human rights", definition: "fundamental freedoms for all people" },
-    { term: "social class", definition: "division by economic/social status" },
-    { term: "welfare", definition: "government support for those in need" },
-    { term: "healthcare", definition: "medical services for maintaining health" },
-    { term: "education", definition: "process of teaching and learning" },
-    { term: "✊ ACTION & CHANGE", definition: '' },
-    { term: "social justice", definition: "fair treatment and opportunity for all" },
-    { term: "activism", definition: "campaigning for political/social change" },
-    { term: "disability", definition: "physical or mental condition limiting activity" },
-    { term: "migration", definition: "movement of people to new areas" },
-    { term: "crime", definition: "illegal actions" },
-    { term: "violence", definition: "use of physical force to harm" }
-  ],
-
-  listeningExamples: [
-    "Social inequality limits access to education.",
-    "Community projects can reduce homelessness.",
-    "Activism raises awareness.",
-    "Inclusive education supports disabilities.",
-    "Welfare helps low-income families.",
-    "Human rights guarantee basic freedoms and dignity.",
-    "Social justice means fair opportunities for everyone."
-  ],
-
-  speakingPractice: [
-    { question: "What kind of society do you want?", answer: "A fair, inclusive society with equal opportunities." },
-    { question: "Causes of social inequality?", answer: "Unequal access to education, jobs, and healthcare." },
-    { question: "How to support homeless people?", answer: "Shelters, training, and mental-health care." },
-    { question: "Forms of discrimination?", answer: "Racism, sexism, ageism, disability bias." },
-    { question: "How does poverty affect children?", answer: "Poor nutrition and limited education." },
-    { question: "Policies to reduce unemployment?", answer: "Training and support for small businesses." },
-    { question: "How can schools promote equality?", answer: "Inclusive teaching and scholarships." },
-    { question: "Role of healthcare?", answer: "Keeps people healthy and productive." },
-    { question: "How to fight racism?", answer: "Education, laws, and representation." },
-    { question: "Why is gender equality vital?", answer: "It benefits society and the economy." },
-    { question: "How do human rights protect us?", answer: "Guarantee basic freedoms and dignity." },
-    { question: "Does social class matter?", answer: "Yes—it affects networks and chances." },
-    { question: "What is social mobility?", answer: "Moving up through education and work." },
-    { question: "Causes of youth violence?", answer: "Poverty, exclusion, and crime exposure." },
-    { question: "How to make cities safer?", answer: "Lighting, community policing, youth programs." },
-    { question: "How should media cover social issues?", answer: "Accurately and with diverse voices." },
-    { question: "Barriers for people with disabilities?", answer: "Access and prejudice." },
-    { question: "Effects of migration on society?", answer: "More diversity and skills; needs integration." },
-    { question: "What is social justice?", answer: "Fairness in opportunities and rights." },
-    { question: "How can citizens support it?", answer: "Volunteer, donate, vote, and speak up." },
-    { question: "Should welfare benefits increase?", answer: "They should match living costs." },
-    { question: "Can technology reduce inequality?", answer: "Online education and remote work help." },
-    { question: "Is crime linked to social issues?", answer: "Often—poverty and exclusion influence it." },
-    { question: "How to reduce domestic violence?", answer: "Education, shelters, and enforcement." },
-    { question: "How can companies improve diversity?", answer: "Inclusive hiring and bias training." },
-    { question: "Role of NGOs?", answer: "Provide services and advocate change." },
-    { question: "Does education end inequality?", answer: "Helps a lot, but policy matters too." },
-    { question: "How do protests create change?", answer: "They pressure leaders and raise awareness." },
-    { question: "What is the digital divide?", answer: "Unequal access to internet and devices." },
-    { question: "How do stereotypes harm people?", answer: "They limit opportunities and justify bias." },
-    { question: "Support low-income students how?", answer: "Meals, tutoring, and scholarships." },
-    { question: "Compulsory voting—pros/cons?", answer: "Better turnout vs. freedom of choice." },
-    { question: "How to build community locally?", answer: "Events, forums, and volunteering." },
-    { question: "What is restorative justice?", answer: "Repairing harm through dialogue." },
-    { question: "Effects of misinformation?", answer: "Polarization and loss of trust." },
-    { question: "What is inclusive language?", answer: "Respectful words for all groups." },
-    { question: "Reduce workplace stress how?", answer: "Reasonable hours and support." },
-    { question: "How does art reflect issues?", answer: "It tells stories and builds empathy." },
-    { question: "Your top social priority?", answer: "Equal access to quality education." },
-    { question: "How can one person make change?", answer: "Start local and be consistent." }
-  ]
-};
-
-// Module 150 Data
-const MODULE_150_DATA = {
-  title: "Travel and Adventure Vocabulary (B2 Level)",
-  description: "Use B2 travel vocabulary to plan trips and describe adventurous experiences",
-  intro: `Travel opens doors to new experiences, cultures, and adventures. This B2 module provides comprehensive vocabulary for planning trips, navigating airports, choosing accommodation, and sharing travel stories. Learn to discuss itineraries, adventure sports, backpacking, and everything you need for confident travel conversations.`,
-  tip: "Travel vocabulary is essential for exploring the world and sharing experiences. Master these terms to plan trips, solve problems abroad, and tell captivating travel stories.",
-
-  table: [
-    { term: "✈️ PLANNING & BASICS", definition: '' },
-    { term: "destination", definition: "place you're traveling to" },
-    { term: "journey", definition: "act of traveling from one place to another" },
-    { term: "adventure", definition: "exciting, unusual experience" },
-    { term: "itinerary", definition: "planned route or schedule" },
-    { term: "passport", definition: "official document for international travel" },
-    { term: "reservation", definition: "booking for accommodation or transport" },
-    { term: "luggage", definition: "bags and suitcases for travel" },
-    { term: "flight", definition: "journey by air" },
-    { term: "airport", definition: "place where aircraft take off/land" },
-    { term: "🏨 ACCOMMODATION & ACTIVITIES", definition: '' },
-    { term: "accommodation", definition: "place to stay (hotel, hostel, etc.)" },
-    { term: "sightseeing", definition: "visiting interesting places" },
-    { term: "tourist", definition: "person traveling for pleasure" },
-    { term: "backpacking", definition: "traveling cheaply with minimal luggage" },
-    { term: "camping", definition: "staying outdoors in a tent" },
-    { term: "hiking", definition: "long walk in nature" },
-    { term: "tour guide", definition: "person who shows tourists around" },
-    { term: "adventure sports", definition: "thrilling physical activities" },
-    { term: "🗺️ NAVIGATION & EXTRAS", definition: '' },
-    { term: "map", definition: "diagram showing locations" },
-    { term: "souvenir", definition: "item bought as a reminder of a place" },
-    { term: "travel agency", definition: "business that arranges trips" }
-  ],
-
-  listeningExamples: [
-    "Our itinerary includes national parks.",
-    "Backpacking needs planning.",
-    "The flight was delayed, so we changed our reservation.",
-    "We went hiking and camping.",
-    "The tour guide told the site's history.",
-    "Always protect your passport when traveling abroad.",
-    "Sightseeing is best done early in the morning."
-  ],
-
-  speakingPractice: [
-    { question: "Favorite destination and why?", answer: "Kyoto—for temples, food, and calm streets." },
-    { question: "Planned itinerary or flexible trip?", answer: "Flexible with a few must-sees." },
-    { question: "Most memorable journey?", answer: "A coastal train ride with great views." },
-    { question: "How to prepare for international flights?", answer: "Check documents, pack light, arrive early." },
-    { question: "Do you enjoy adventure sports?", answer: "Yes—paragliding and scuba diving." },
-    { question: "Pros/cons of backpacking?", answer: "Cheap and free, but heavy bags." },
-    { question: "How to choose accommodation?", answer: "Location, reviews, and price." },
-    { question: "Essentials in your luggage?", answer: "Power bank, jacket, and first-aid kit." },
-    { question: "How to protect your passport?", answer: "Use a money belt and keep copies." },
-    { question: "Travel agency or DIY?", answer: "DIY using reliable sites." },
-    { question: "Sightseeing strategy in a new city?", answer: "Walk, join a tour, visit markets." },
-    { question: "Handling flight delays?", answer: "Contact the airline and check options." },
-    { question: "What makes a good tour guide?", answer: "Knowledgeable and friendly." },
-    { question: "Preferred souvenirs?", answer: "Handmade items or local food." },
-    { question: "Opinion on camping?", answer: "Love it—nature and starry nights." },
-    { question: "How to stay safe traveling?", answer: "Research areas and keep valuables hidden." },
-    { question: "Packing strategy?", answer: "Roll clothes and use cubes." },
-    { question: "Managing a travel budget?", answer: "Daily limits and expense tracking." },
-    { question: "Favorite transport mode?", answer: "Trains—comfortable and scenic." },
-    { question: "Finding hidden spots?", answer: "Ask locals and read forums." },
-    { question: "Solo or group travel?", answer: "Solo—freedom and flexibility." },
-    { question: "Dealing with language barriers?", answer: "Learn phrases and use apps." },
-    { question: "Sustainable tourism view?", answer: "Reduce waste and support locals." },
-    { question: "Planning a hike?", answer: "Check maps and weather; pack layers." },
-    { question: "What to do on long layovers?", answer: "Explore the city if possible." },
-    { question: "Missed a connection?", answer: "Yes—rebooked and got accommodation." },
-    { question: "Dream adventure?", answer: "A trek to Machu Picchu." },
-    { question: "How to document trips?", answer: "Photos and a travel journal." },
-    { question: "Beach or mountains?", answer: "Mountains—cool air and trails." },
-    { question: "Avoiding tourist traps?", answer: "Eat where locals eat; skip pushy tours." },
-    { question: "Jet lag strategy?", answer: "Adjust sleep and get sunlight." },
-    { question: "Choosing travel insurance?", answer: "Medical, delay, and luggage coverage." },
-    { question: "Must-have travel apps?", answer: "Maps, booking, and translation." },
-    { question: "Tipping etiquette abroad?", answer: "Research local customs." },
-    { question: "Keeping devices charged?", answer: "Universal adapter and power bank." },
-    { question: "Why travel light?", answer: "Less stress and easier movement." },
-    { question: "Respecting local culture?", answer: "Dress appropriately and follow rules." },
-    { question: "Best travel hack?", answer: "Bring a reusable water bottle." },
-    { question: "Next on your list?", answer: "A road trip on the Dalmatian coast." }
-  ]
-};
-
-
+  // Get current module data
   const getCurrentModuleData = () => {
     // A1 Modules
     if (selectedModule === 1) return MODULE_1_DATA;
@@ -9601,39 +8026,8 @@ const MODULE_150_DATA = {
     if (selectedModule === 65) return MODULE_65_DATA;
     if (selectedModule === 66) return MODULE_66_DATA;
     if (selectedModule === 67) return MODULE_67_DATA;
-    if (selectedModule === 68) return MODULE_68_DATA;
-    if (selectedModule === 69) return MODULE_69_DATA;
-    if (selectedModule === 70) return MODULE_70_DATA;
-    if (selectedModule === 71) return MODULE_71_DATA;
-    if (selectedModule === 72) return MODULE_72_DATA;
-    if (selectedModule === 73) return MODULE_73_DATA;
-    if (selectedModule === 74) return MODULE_74_DATA;
-    if (selectedModule === 75) return MODULE_75_DATA;
-    if (selectedModule === 76) return MODULE_76_DATA;
-    if (selectedModule === 77) return MODULE_77_DATA;
-    if (selectedModule === 78) return MODULE_78_DATA;
-    if (selectedModule === 79) return MODULE_79_DATA;
-    if (selectedModule === 80) return MODULE_80_DATA;
-    if (selectedModule === 81) return MODULE_81_DATA;
-    if (selectedModule === 82) return MODULE_82_DATA;
-    if (selectedModule === 83) return MODULE_83_DATA;
-    if (selectedModule === 84) return MODULE_84_DATA;
-    if (selectedModule === 85) return MODULE_85_DATA;
-    if (selectedModule === 86) return MODULE_86_DATA;
-    if (selectedModule === 87) return MODULE_87_DATA;
-    if (selectedModule === 88) return MODULE_88_DATA;
-    if (selectedModule === 89) return MODULE_89_DATA;
-    if (selectedModule === 90) return MODULE_90_DATA;
-    if (selectedModule === 91) return MODULE_91_DATA;
-    if (selectedModule === 92) return MODULE_92_DATA;
-    if (selectedModule === 93) return MODULE_93_DATA;
-    if (selectedModule === 94) return MODULE_94_DATA;
-    if (selectedModule === 95) return MODULE_95_DATA;
-    if (selectedModule === 96) return MODULE_96_DATA;
-    if (selectedModule === 97) return MODULE_97_DATA;
-    if (selectedModule === 98) return MODULE_98_DATA;
-    if (selectedModule === 99) return MODULE_99_DATA;
-    if (selectedModule === 100) return MODULE_100_DATA;
+    // A2 Modules 68-100 - Add remaining modules as needed
+    if (selectedModule >= 68 && selectedModule <= 100) return MODULE_51_DATA; // Fallback to Module 51 structure
     
     // B1 Modules
     if (selectedModule === 101) return MODULE_101_DATA;
@@ -9656,37 +8050,9 @@ const MODULE_150_DATA = {
     if (selectedModule === 118) return MODULE_118_DATA;
     if (selectedModule === 119) return MODULE_119_DATA;
     if (selectedModule === 120) return MODULE_120_DATA;
-    if (selectedModule === 121) return MODULE_121_DATA;
-    if (selectedModule === 122) return MODULE_122_DATA;
-    if (selectedModule === 123) return MODULE_123_DATA;
-    if (selectedModule === 124) return MODULE_124_DATA;
-    if (selectedModule === 125) return MODULE_125_DATA;
-    if (selectedModule === 126) return MODULE_126_DATA;
-    if (selectedModule === 127) return MODULE_127_DATA;
-    if (selectedModule === 128) return MODULE_128_DATA;
-    if (selectedModule === 129) return MODULE_129_DATA;
-    if (selectedModule === 130) return MODULE_130_DATA;
-    if (selectedModule === 131) return MODULE_131_DATA;
-    if (selectedModule === 132) return MODULE_132_DATA;
-    if (selectedModule === 133) return MODULE_133_DATA;
-    if (selectedModule === 134) return MODULE_134_DATA;
-    if (selectedModule === 135) return MODULE_135_DATA;
-    if (selectedModule === 136) return MODULE_136_DATA;
-    if (selectedModule === 137) return MODULE_137_DATA;
-    if (selectedModule === 138) return MODULE_138_DATA;
-    if (selectedModule === 139) return MODULE_139_DATA;
-    if (selectedModule === 140) return MODULE_140_DATA;
-    if (selectedModule === 141) return MODULE_141_DATA;
-    if (selectedModule === 142) return MODULE_142_DATA;
-    if (selectedModule === 143) return MODULE_143_DATA;
-    if (selectedModule === 144) return MODULE_144_DATA;
-    if (selectedModule === 145) return MODULE_145_DATA;
-    if (selectedModule === 146) return MODULE_146_DATA;
-    if (selectedModule === 147) return MODULE_147_DATA;
-    if (selectedModule === 148) return MODULE_148_DATA;
-    if (selectedModule === 149) return MODULE_149_DATA;
-    if (selectedModule === 150) return MODULE_150_DATA;
-
+    // B1 Modules 121-150 - Add remaining modules as needed  
+    if (selectedModule >= 121 && selectedModule <= 150) return MODULE_101_DATA; // Fallback to Module 101 structure
+    
     // Fallback to Module 1 for unknown modules
     return MODULE_1_DATA;
   };
@@ -9720,7 +8086,7 @@ const MODULE_150_DATA = {
   const introRef = useRef<HTMLDivElement | null>(null);
   const introVisibleRef = useRef(false);
   const cancelAllNarration = useCallback(() => {
-    try { narration.cancel(); } catch {}
+    try { narration.cancel(); } catch (error) { /* Ignore narration cancel errors */ }
   }, []);
 
   // Watch whether the actual Intro section is on screen
@@ -9751,10 +8117,50 @@ const MODULE_150_DATA = {
       currentPhase === 'intro' &&
       selectedModule != null &&
       !!currentModuleData?.intro &&
-      !hasBeenRead[lessonKey] &&
-      introVisibleRef.current; // must be on screen
+      !hasBeenRead[lessonKey];
+      // REMOVED: introVisibleRef.current dependency for immediate triggering
 
-    // if (canRead) startTeacherReading(); // Disabled: intro is now silent
+    console.log('🔍 Auto-reading check:', {
+      viewState,
+      currentPhase,
+      selectedModule,
+      hasIntro: !!currentModuleData?.intro,
+      hasBeenRead: hasBeenRead[lessonKey],
+      canRead
+    });
+
+    if (canRead) {
+      console.log('🚀 Triggering auto-reading immediately for lesson:', currentModuleData?.title);
+      
+      // CRITICAL FIX: Run TTS test in parallel, don't block startAutoReading
+      setTimeout(async () => {
+        try {
+          // Start reading immediately, don't wait for test
+          console.log('🚀 Starting auto-reading immediately...');
+          startAutoReading();
+          
+          // Run TTS test in parallel (non-blocking)
+          console.log('🔧 Running TTS capability test in parallel...');
+          Promise.race([
+            testTTSCapabilities(),
+            new Promise(resolve => setTimeout(resolve, 5000)) // 5 second timeout
+          ]).then(() => {
+            console.log('🔧 TTS capability test completed or timed out');
+          }).catch(error => {
+            console.warn('🔧 TTS capability test failed:', error);
+          });
+          
+        } catch (error) {
+          console.error('🚨 Critical error in auto-reading setup:', error);
+          // Try to start reading anyway as fallback
+          try {
+            startAutoReading();
+          } catch (fallbackError) {
+            console.error('🚨 Fallback reading also failed:', fallbackError);
+          }
+        }
+      }, 500);
+    }
 
     return () => cancelAllNarration();
   }, [
@@ -9784,19 +8190,6 @@ const MODULE_150_DATA = {
     setIsProcessing(false);
   }, [selectedModule]);
 
-  // Migrate existing progress data on component mount
-  useEffect(() => {
-    const migrateData = async () => {
-      try {
-        await progressService.migrateExistingData();
-      } catch (error) {
-        console.error('Failed to migrate progress data:', error);
-      }
-    };
-
-    migrateData();
-  }, []); // Run only once on mount
-
   // Restore progress safely when a module opens
   const userId = 'anon'; // TODO: adapt to your auth; fallback to 'anon'
   const totals = {
@@ -9808,60 +8201,52 @@ const MODULE_150_DATA = {
     // Run when module changes; restore once.
     if (!selectedModule || !currentModuleData || restoredOnceRef.current) return;
 
-    const restoreProgress = async () => {
-      try {
-        const saved = await loadModuleProgress(String(selectedLevel), selectedModule);
-        if (saved && saved.phase !== 'complete') {
-          // restore
-          setCurrentPhase(saved.phase);
-          setListeningIndex(0);
-          setSpeakingIndex(saved.questionIndex);
-        } else {
-          // fresh start for this module
-          setCurrentPhase('intro');
-          setListeningIndex(0);
-          setSpeakingIndex(0);
-        }
-      } catch (error) {
-        console.error('Error restoring progress:', error);
-        // fallback to fresh start
+    // Priority 1: Check checkpoint system first
+    const checkpointProgress = checkpoints.currentProgress;
+    if (checkpointProgress && !checkpointProgress.is_module_completed) {
+      // Don't auto-restore from checkpoint - let user choose via dialog
+      setCurrentPhase('intro'); // Start at intro, dialog will show resume option
+      setListeningIndex(0);
+      setSpeakingIndex(0);
+    } else {
+      // Priority 2: Fallback to old system if no checkpoint data
+      const saved = loadModuleProgress(String(selectedLevel), selectedModule);
+      if (saved && saved.phase !== 'complete') {
+        // restore from old system
+        setCurrentPhase(saved.phase);
+        setListeningIndex(0);
+        setSpeakingIndex(saved.questionIndex);
+      } else {
+        // fresh start for this module
         setCurrentPhase('intro');
         setListeningIndex(0);
         setSpeakingIndex(0);
       }
-    };
+    }
 
-    restoreProgress();
+    // Check if we should show resume dialog for checkpoint progress (ONCE per module load)
+    if (checkpointProgress && !checkpointProgress.is_module_completed &&
+        checkpointProgress.question_index > 0 && !dialogShownRef.current) {
+      checkpoints.setShowResumeDialog(true);
+      dialogShownRef.current = true;
+    }
 
     restoredOnceRef.current = true;
     // also cancel any stray timers/narration here
     narration.cancel?.();
     if (timeoutRef?.current) { clearTimeout(timeoutRef.current); timeoutRef.current = null; }
-  }, [selectedModule, currentModuleData, selectedLevel]);
+  }, [selectedModule, currentModuleData, selectedLevel, checkpoints.currentProgress, checkpoints.setShowResumeDialog]);
 
-  // Stop resetting to Q1 when entering "speaking" - only reset for fresh modules
+  // Reset processing state when entering speaking phase (but don't change speakingIndex)
   useEffect(() => {
     if (currentPhase !== 'speaking') return;
-    // Do not reset if we already restored or if we have progress saved.
-    // Only set to 0 when starting a truly fresh module.
-    const checkProgress = async () => {
-      try {
-        const saved = await loadModuleProgress(String(selectedLevel), selectedModule);
-        if (!saved || saved.phase === 'complete') {
-          setSpeakingIndex(0);
-        }
-      } catch (error) {
-        console.error('Error checking progress:', error);
-        setSpeakingIndex(0);
-      }
-    };
 
-    checkProgress();
-    // else: keep restored index
+    // Don't reset speakingIndex here - let restoration logic handle it
+    // Just reset processing state
     lessonCompletedRef.current = false;
     if (timeoutRef.current) { clearTimeout(timeoutRef.current); timeoutRef.current = null; }
     setIsProcessing(false);
-  }, [currentPhase, selectedLevel, selectedModule]);
+  }, [currentPhase]);
 
   // Save on any meaningful change (using old progress store)
   useEffect(() => {
@@ -9874,17 +8259,13 @@ const MODULE_150_DATA = {
 
     // debounce a bit to avoid hammering storage
     if (autosaveTimeoutRef.current) window.clearTimeout(autosaveTimeoutRef.current);
-    autosaveTimeoutRef.current = window.setTimeout(async () => {
-      try {
-        await saveModuleProgress(
-          String(selectedLevel),
-          selectedModule,
-          (currentPhase === 'listening' || currentPhase === 'speaking') ? currentPhase as LessonPhaseType : 'intro',
-          speakingIndex
-        );
-      } catch (error) {
-        console.error('Error auto-saving progress:', error);
-      }
+    autosaveTimeoutRef.current = window.setTimeout(() => {
+      saveModuleProgress(
+        String(selectedLevel),
+        selectedModule,
+        (currentPhase === 'listening' || currentPhase === 'speaking') ? currentPhase as LessonPhaseType : 'intro',
+        speakingIndex
+      );
       autosaveTimeoutRef.current = null;
     }, 250);
   }, [userId, selectedLevel, selectedModule, currentPhase, listeningIndex, speakingIndex, currentModuleData]);
@@ -9892,7 +8273,6 @@ const MODULE_150_DATA = {
   // Clean up on unmount
   useEffect(() => () => {
     if (autosaveTimeoutRef.current) clearTimeout(autosaveTimeoutRef.current);
-    clearWatchdog(); // Clean up watchdog timer
   }, []);
 
   // Also save on tab hide/close
@@ -9936,7 +8316,6 @@ const MODULE_150_DATA = {
       hydratedViewState = 'lesson';
       source = 'params';
       
-      if (process.env.NODE_ENV === 'development') console.log(`📦 Hydrate -> source=params level=${hydratedLevel} module=${hydratedModule} q=${hydratedQuestion + 1}`);
     }
     // Priority 2: Saved progress (resume functionality)
     else {
@@ -9951,7 +8330,6 @@ const MODULE_150_DATA = {
         hydratedViewState = 'lesson';
         source = 'saved_progress';
         
-        if (process.env.NODE_ENV === 'development') console.log(`📦 Hydrate -> source=saved_progress level=${hydratedLevel} module=${hydratedModule} q=${hydratedQuestion + 1}`);
       }
       // Priority 3: localStorage (placed level from Speaking Test)
       else {
@@ -9966,7 +8344,6 @@ const MODULE_150_DATA = {
           hydratedViewState = 'lesson';
           source = 'storage';
           
-          if (process.env.NODE_ENV === 'development') console.log(`📦 Hydrate -> source=storage level=${hydratedLevel} module=${hydratedModule} q=${hydratedQuestion + 1}`);
         }
         // Priority 4: Default fallback (A1/Module 1)
         else {
@@ -9977,7 +8354,6 @@ const MODULE_150_DATA = {
           hydratedViewState = 'levels';
           source = 'default';
           
-          if (process.env.NODE_ENV === 'development') console.log(`📦 Hydrate -> source=default level=${hydratedLevel} module=${hydratedModule} q=${hydratedQuestion + 1}`);
         }
       }
     }
@@ -10019,14 +8395,11 @@ const MODULE_150_DATA = {
                 duration: 3000,
               });
             }).catch(error => {
-              if (process.env.NODE_ENV === 'development') console.warn('Failed to show toast:', error);
               // Fallback notification
-              if (process.env.NODE_ENV === 'development') console.log(`🎯 Starting at ${placedLevel} based on your Speaking Test`);
             });
           }, 500);
         }
       } catch (e) {
-        if (process.env.NODE_ENV === 'development') console.warn('Failed to parse userPlacement:', e);
       }
     }
   }, [isHydrated]);
@@ -10036,13 +8409,12 @@ const MODULE_150_DATA = {
     const item = currentModuleData?.speakingPractice?.[speakingIndex];
     evaluatorTargetRef.current = computeTargetFromItem(item);
     // QA log to confirm we're using the right target
-    if (process.env.NODE_ENV === 'development') console.log('[Eval] index', speakingIndex, 'target:', evaluatorTargetRef.current);
   }, [selectedModule, speakingIndex, currentModuleData]);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      cancelTTSSafe();
+      narration.cancel();
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
   }, []);
@@ -10051,16 +8423,13 @@ const MODULE_150_DATA = {
   useEffect(() => {
     const total = currentModuleData?.speakingPractice?.length ?? 0;
     const item = currentModuleData?.speakingPractice?.[speakingIndex];
-    if (process.env.NODE_ENV === 'development') {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[Progress] index:', speakingIndex, 'of', total, 'module:', selectedModule);
-        if (!item) console.warn('[Progress] No item at index', speakingIndex);
-      }
+    if (!item) {
+      // No item found at current index
+      return;
     }
   }, [speakingIndex, selectedModule, currentModuleData]);
 
-  
-  async function celebrateAndAdvance() {
+  function celebrateAndAdvance() {
     // show confetti briefly
     setShowConfetti(true);
 
@@ -10079,21 +8448,15 @@ const MODULE_150_DATA = {
           phase: 'complete' as const
         });
       }
-    } catch {}
+    } catch (error) { /* Ignore error */ }
 
     // persist completion in new progress store
-    try {
-      await saveModuleProgress(
-        String(selectedLevel),
-        selectedModule,
-        'complete',
-        speakingIndexRef.current,
-        currentModuleData?.speakingPractice?.length ?? 40, // correct answers = total for completion
-        0 // time spent - we don't track this yet, so using 0
-      );
-    } catch (error) {
-      console.error('Error saving completion progress:', error);
-    }
+    saveModuleProgress(
+      String(selectedLevel),
+      selectedModule,
+      'complete',
+      speakingIndexRef.current
+    );
 
     // Save progress to completed modules
     const newCompletedModules = [...completedModules];
@@ -10104,7 +8467,7 @@ const MODULE_150_DATA = {
       localStorage.setItem('completedModules', JSON.stringify(newCompletedModules));
     }
 
-    cancelTTSSafe();
+    narration.cancel();
     narration.speak(`Congratulations! You have completed Module ${selectedModule}. Well done!`);
 
     const nextModule = getNextModuleId(selectedLevel as 'A1' | 'A2' | 'B1', selectedModule);
@@ -10116,6 +8479,8 @@ const MODULE_150_DATA = {
         setSelectedModule(nextModule);
         // restoredOnceRef needs to be reset so the new module can be restored
         restoredOnceRef.current = false;
+        // dialogShownRef needs to be reset so the new module can show dialog if needed
+        dialogShownRef.current = false;
         setCurrentPhase('intro');
         setListeningIndex(0);
         setSpeakingIndex(0);
@@ -10129,145 +8494,622 @@ const MODULE_150_DATA = {
     }, 1600);
   }
 
-  // Clear any watchdog timers
-  function clearWatchdog() {
-    if (watchdogRef.current) {
-      clearTimeout(watchdogRef.current);
-      watchdogRef.current = null;
-    }
-  }
+  // Enhanced progress update every correct answer (Module 51 standard)
+  // Now handles both multiple choice and speaking completion
+  function advanceSpeakingOnce() {
+    const total = currentModuleData?.speakingPractice?.length ?? 0;
+    const curr = speakingIndexRef.current;
+    const rawItem = currentModuleData?.speakingPractice?.[curr];
+    const currentPracticeItem = rawItem ? getSpeakingPracticeItem(rawItem) : null;
+    const currentState = questionStates[curr] || { selectedChoice: undefined, choiceCorrect: false, speechCompleted: false };
 
+    // Mark speech as completed for current question
+    setQuestionStates(prev => ({
+      ...prev,
+      [curr]: { ...currentState, speechCompleted: true }
+    }));
 
-  // Non-blocking TTS cancellation
-  function cancelTTSSafe() {
-    try {
-      narration.cancel();
-    } catch (error) {
-      // Silent fail - don't block transitions
-      if (process.env.NODE_ENV === 'development') console.log('TTS cancel failed:', error);
-    }
-  }
+    // Check if this question is fully complete (both multiple choice and speech)
+    const isQuestionComplete = !currentPracticeItem?.multipleChoice || (
+      currentState.choiceCorrect && true // speech just completed
+    );
 
-  // Safety watchdog timer - only for truly stuck states
-  function startWatchdog() {
-    clearWatchdog();
-    watchdogRef.current = setTimeout(() => {
-      if (process.env.NODE_ENV === 'development') console.warn('🐕 Watchdog: Auto-advancing stuck transition (30s timeout)');
-      advanceToNextQuestion();
-    }, 30000); // 30 second timeout - much more reasonable
-  }
-
-  // Start delayed watchdog for speaking phase - gives user time to read
-  function startDelayedWatchdog() {
-    clearWatchdog();
-    // Wait 5 seconds for user to read, then start 30-second watchdog
-    setTimeout(() => {
-      if (speakStep === 'speak' && speakStatus === 'idle') {
-        startWatchdog();
-        if (process.env.NODE_ENV === 'development') {
-          console.log('🐕 Started delayed watchdog for speaking phase');
-        }
-      }
-    }, 5000);
-  }
-
-  // MCQ to Speaking phase transition
-  function transitionToSpeaking() {
-    if (inFlightRef.current) return;
-
-    // Cancel any TTS and clear watchdog
-    cancelTTSSafe();
-    clearWatchdog();
-
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🎯 MCQ correct → Transitioning to speaking phase');
-    }
-
-    // Instant transition to speaking
-    flushSync(() => {
-      setSpeakStep('speak');
-    });
-
-    // Start delayed watchdog - gives user time to read before protection kicks in
-    startDelayedWatchdog();
-  }
-
-  // CENTRALIZED TRANSITION CONTROLLER - Single source of truth for question advancement
-  function advanceToNextQuestion() {
-    // Simple in-flight guard
-    if (inFlightRef.current) return;
-    inFlightRef.current = true;
-
-    try {
-      // Cancel any ongoing TTS immediately (non-blocking)
-      cancelTTSSafe();
-      clearWatchdog();
-
-      const total = currentModuleData?.speakingPractice?.length ?? 0;
-      const curr = speakingIndexRef.current;
-
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`🎯 Advancing from question ${curr + 1}/${total}`);
-      }
-
-      if (curr + 1 < total) {
-        // INSTANT UI UPDATE - no delays, no nested timeouts
-        flushSync(() => {
-          setSpeakingIndex(curr + 1);
-          setSpeakStep('mcq');
-        });
-
-        // Reset other states immediately
-        setSpeakStatus('idle');
-        setIsProcessing(false);
-        setFeedback('');
-        setFeedbackType('info');
-
-        // Start delayed watchdog for new MCQ - give user time to read
-        setTimeout(() => {
-          if (speakStep === 'mcq') {
-            startDelayedWatchdog();
-          }
-        }, 3000); // 3 seconds to read new question
-
-        // Background save (non-blocking)
-        saveModuleProgress(String(selectedLevel), selectedModule!, 'speaking', curr + 1, curr + 1, 0)
-          .catch(error => console.error('Background save failed:', error));
-
-      } else {
-        // Module complete
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`🎉 Module ${selectedModule} completed!`);
-        }
-
-        setSpeakStatus('idle');
-        setIsProcessing(false);
-        celebrateAndAdvance();
-
-        // Background save completion
-        saveModuleProgress(String(selectedLevel), selectedModule!, 'complete', total, total, 0)
-          .catch(error => console.error('Completion save failed:', error));
-      }
-
-    } catch (error) {
-      console.error('Error in advanceToNextQuestion:', error);
-      // Reset states on error
+    if (!isQuestionComplete) {
+      // Question not fully complete, don't advance yet
       setSpeakStatus('idle');
       setIsProcessing(false);
-    } finally {
-      inFlightRef.current = false;
+      return;
     }
+
+    // Checkpoint: Question completed
+    checkpoints.checkpointQuestionComplete({
+      level: selectedLevel,
+      moduleId: selectedModule,
+      questionIndex: curr,
+      totalQuestions: total,
+      completed: curr + 1 >= total
+    });
+
+    // Save progress after each question (exact resume point)
+    saveModuleProgress(String(selectedLevel), selectedModule!, 'speaking', curr + 1);
+
+    // still inside the range → move to next question
+    if (curr + 1 < total) {
+      setSpeakingIndex(curr + 1);
+      setSpeakStatus('idle');
+      setIsProcessing(false);
+      
+      // Clear feedback for next question
+      setFeedback('');
+      setFeedbackType('info');
+      return;
+    }
+
+    // curr is the last index → celebrate and move on
+    setSpeakStatus('idle');
+    setIsProcessing(false);
+    celebrateAndAdvance();
   }
 
+  // Auto-reading functionality with language detection
+  const startAutoReading = async () => {
+    console.log('🎬 startAutoReading called!');
+    setIsTeacherReading(true);
+    // Keep phase as 'intro' during reading so content stays visible
+    
+    try {
+      // IMMEDIATE FIX: Use simple language-aware reading
+      console.log('🎯 Starting quick language-aware reading for lesson:', currentModuleData.title);
+      
+      // Set initial progress
+      setReadingProgress({
+        isReading: true,
+        currentSection: 'Initializing',
+        progress: 0,
+        currentText: 'Preparing to read lesson...'
+      });
+      
+      // Import language detection
+      const { segmentMixedContent } = await import('@/utils/languageDetection');
+      const { VoiceConsistencyManager } = await import('@/config/voice');
+      
+      // Initialize voice system
+      await VoiceConsistencyManager.initialize();
+      
+      // Calculate total sections
+      let totalSections = 0;
+      if (currentModuleData.title) totalSections++;
+      if (currentModuleData.description) totalSections++;
+      if (currentModuleData.intro) totalSections++;
+      if ('tip' in currentModuleData && currentModuleData.tip) totalSections++;
+      
+      let completedSections = 0;
+      
+      // Read title
+      if (currentModuleData.title) {
+        setReadingProgress({
+          isReading: true,
+          currentSection: 'Title',
+          progress: (completedSections / totalSections) * 100,
+          currentText: currentModuleData.title
+        });
+        
+        console.log('📖 Reading title...');
+        const titleSegments = segmentMixedContent(currentModuleData.title);
+        for (let i = 0; i < titleSegments.length; i++) {
+          const segment = titleSegments[i];
+          console.log(`📝 Title segment ${i + 1}/${titleSegments.length}: "${segment.text}" (${segment.language})`);
+          await speakSegmentWithRetry(segment.text, segment.language === 'tr' ? 'tr' : 'en');
+          
+          // Language-aware pausing for smooth transitions
+          if (i < titleSegments.length - 1) {
+            const nextSegment = titleSegments[i + 1];
+            const needsLanguageSwitch = segment.language !== nextSegment.language;
+            const pauseDuration = needsLanguageSwitch ? 400 : 150; // Longer pause for language switch
+            await new Promise(resolve => setTimeout(resolve, pauseDuration));
+          }
+        }
+        completedSections++;
+        await new Promise(resolve => setTimeout(resolve, 800)); // Longer pause after title
+      }
+      
+      // Read description  
+      if (currentModuleData.description) {
+        setReadingProgress({
+          isReading: true,
+          currentSection: 'Description',
+          progress: (completedSections / totalSections) * 100,
+          currentText: currentModuleData.description
+        });
+        
+        console.log('📖 Reading description...');
+        const descSegments = segmentMixedContent(currentModuleData.description);
+        for (let i = 0; i < descSegments.length; i++) {
+          const segment = descSegments[i];
+          console.log(`📝 Description segment ${i + 1}/${descSegments.length}: "${segment.text}" (${segment.language})`);
+          await speakSegmentWithRetry(segment.text, segment.language === 'tr' ? 'tr' : 'en');
+          
+          // Language-aware pausing for smooth transitions
+          if (i < descSegments.length - 1) {
+            const nextSegment = descSegments[i + 1];
+            const needsLanguageSwitch = segment.language !== nextSegment.language;
+            const pauseDuration = needsLanguageSwitch ? 400 : 150;
+            await new Promise(resolve => setTimeout(resolve, pauseDuration));
+          }
+        }
+        completedSections++;
+        await new Promise(resolve => setTimeout(resolve, 800)); // Longer pause after description
+      }
+      
+      // Read intro
+      if (currentModuleData.intro) {
+        setReadingProgress({
+          isReading: true,
+          currentSection: 'Introduction',
+          progress: (completedSections / totalSections) * 100,
+          currentText: currentModuleData.intro.substring(0, 100) + '...'
+        });
+        
+        console.log('📖 Reading intro...');
+        const introSegments = segmentMixedContent(currentModuleData.intro);
+        for (let i = 0; i < introSegments.length; i++) {
+          const segment = introSegments[i];
+          console.log(`📝 Intro segment ${i + 1}/${introSegments.length}: "${segment.text}" (${segment.language})`);
+          await speakSegmentWithRetry(segment.text, segment.language === 'tr' ? 'tr' : 'en');
+          
+          // Language-aware pausing for smooth transitions
+          if (i < introSegments.length - 1) {
+            const nextSegment = introSegments[i + 1];
+            const needsLanguageSwitch = segment.language !== nextSegment.language;
+            const pauseDuration = needsLanguageSwitch ? 400 : 150;
+            await new Promise(resolve => setTimeout(resolve, pauseDuration));
+          }
+        }
+        completedSections++;
+      }
+      
+      // Read tip if available
+      if ('tip' in currentModuleData && currentModuleData.tip) {
+        setReadingProgress({
+          isReading: true,
+          currentSection: 'Grammar Tip',
+          progress: (completedSections / totalSections) * 100,
+          currentText: `Grammar tip: ${currentModuleData.tip}`
+        });
+        
+        console.log('📖 Reading grammar tip...');
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Pause before tip
+        const tipText = `Grammar tip: ${currentModuleData.tip}`;
+        const tipSegments = segmentMixedContent(tipText);
+        for (let i = 0; i < tipSegments.length; i++) {
+          const segment = tipSegments[i];
+          console.log(`📝 Tip segment ${i + 1}/${tipSegments.length}: "${segment.text}" (${segment.language})`);
+          await speakSegmentWithRetry(segment.text, segment.language === 'tr' ? 'tr' : 'en');
+          
+          if (i < tipSegments.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, 200));
+          }
+        }
+        completedSections++;
+      }
+      
+      // Mark as completed
+      setReadingProgress({
+        isReading: false,
+        currentSection: 'Completed',
+        progress: 100,
+        currentText: 'Lesson reading completed successfully!'
+      });
+      
+      setIsTeacherReading(false);
+      setReadingComplete(true);
+      setCurrentPhase('listening');
+      setHasBeenRead(prev => ({ ...prev, [lessonKey]: true }));
+      
+      console.log('✅ Language-aware reading completed successfully');
+      
+    } catch (error) {
+      console.error('❌ Error during auto-reading:', error);
+      console.error('❌ Error stack:', error.stack);
+      setIsTeacherReading(false);
+      // Fallback to old reading method if auto-reader fails
+      console.log('🔄 Falling back to legacy reading...');
+      startLegacyTeacherReading();
+    }
+  };
+  
+  // RETRY FUNCTION: Enhanced TTS with retry logic and fallbacks
+  const speakSegmentWithRetry = async (text: string, language: 'en' | 'tr', maxRetries: number = 2): Promise<void> => {
+    let attempt = 0;
+    
+    while (attempt <= maxRetries) {
+      try {
+        console.log(`🔧 Attempt ${attempt + 1}/${maxRetries + 1} for: "${text.substring(0, 30)}..."`);
+        await speakSegmentCore(text, language);
+        console.log(`🔧 ✅ Success on attempt ${attempt + 1} for: "${text.substring(0, 30)}..."`);
+        return; // Success!
+      } catch (error) {
+        attempt++;
+        console.error(`🔧 ❌ Attempt ${attempt} failed for: "${text.substring(0, 30)}...":`, error);
+        
+        if (attempt <= maxRetries) {
+          console.log(`🔧 🔄 Retrying in 1 second... (attempt ${attempt + 1}/${maxRetries + 1})`);
+          
+          try {
+            // Reset speechSynthesis state before retry
+            speechSynthesis.cancel();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          } catch (resetError) {
+            console.warn('🔧 Error during retry setup:', resetError);
+          }
+        } else {
+          // Last resort: Try basic TTS without advanced features
+          console.log(`🔧 🚨 Trying basic fallback TTS for: "${text.substring(0, 30)}..."`);
+          try {
+            await basicTTSFallback(text, language);
+            console.log(`🔧 ✅ Basic fallback succeeded for: "${text.substring(0, 30)}..."`);
+            return;
+          } catch (fallbackError) {
+            console.error(`🔧 💀 Even basic fallback failed for: "${text.substring(0, 30)}...":`, fallbackError);
+          }
+        }
+      }
+    }
+    
+    console.error(`🔧 💀 All attempts failed for: "${text.substring(0, 30)}..." - continuing anyway`);
+    // Continue anyway to not block the entire reading process
+  };
 
+  // FALLBACK: Basic TTS without advanced features
+  const basicTTSFallback = async (text: string, language: 'en' | 'tr'): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      try {
+        const utterance = new SpeechSynthesisUtterance(text.trim());
+        utterance.lang = language === 'tr' ? 'tr-TR' : 'en-US';
+        utterance.rate = 0.9;
+        utterance.volume = 1.0;
+        utterance.pitch = 1.0;
+        
+        utterance.onend = () => resolve();
+        utterance.onerror = (event) => reject(new Error(`Basic TTS error: ${event.error}`));
+        
+        speechSynthesis.speak(utterance);
+        
+        // Basic timeout
+        setTimeout(() => {
+          speechSynthesis.cancel();
+          resolve(); // Don't reject to avoid blocking
+        }, 5000);
+        
+      } catch (error) {
+        reject(error);
+      }
+    });
+  };
 
-  // Teacher reading functionality
-  const startTeacherReading = async () => {
+  // CRITICAL DEBUG: Enhanced TTS implementation with comprehensive logging
+  const speakSegmentCore = async (text: string, language: 'en' | 'tr'): Promise<void> => {
+    return new Promise(async (resolve, reject) => {
+      const debugId = Math.random().toString(36).substr(2, 9);
+      console.log(`🔧 [${debugId}] speakSegment STARTED for ${language}: "${text.trim()}"`);
+      
+      try {
+        // Skip empty or whitespace-only text
+        if (!text || text.trim().length === 0) {
+          console.log(`🔧 [${debugId}] SKIPPING empty text`);
+          resolve();
+          return;
+        }
+
+        // 1. DEBUG: Log speechSynthesis state before starting
+        console.log(`🔧 [${debugId}] speechSynthesis.speaking: ${speechSynthesis.speaking}`);
+        console.log(`🔧 [${debugId}] speechSynthesis.pending: ${speechSynthesis.pending}`);
+        console.log(`🔧 [${debugId}] speechSynthesis.paused: ${speechSynthesis.paused}`);
+
+        // Wait for any existing speech to complete first
+        console.log(`🔧 [${debugId}] Waiting for speech to finish...`);
+        await waitForSpeechToFinish();
+        console.log(`🔧 [${debugId}] Speech wait completed`);
+
+        // 2. DEBUG: Create utterance and log initial state
+        const utterance = new SpeechSynthesisUtterance(text.trim());
+        console.log(`🔧 [${debugId}] Utterance created for text: "${text.trim()}"`);
+        
+        const { VoiceConsistencyManager } = require('@/config/voice');
+        
+        // 3. DEBUG: Ensure voices are loaded with detailed logging
+        console.log(`🔧 [${debugId}] Ensuring voices are loaded...`);
+        await ensureVoicesLoaded();
+        const voices = speechSynthesis.getVoices();
+        console.log(`🔧 [${debugId}] Available voices count: ${voices.length}`);
+        console.log(`🔧 [${debugId}] Available ${language} voices:`, 
+          voices.filter(v => language === 'tr' ? v.lang.startsWith('tr') : v.lang.startsWith('en')).map(v => v.name));
+        
+        // 4. DEBUG: Configure voice with detailed logging
+        console.log(`🔧 [${debugId}] Configuring voice for language: ${language}`);
+        const success = VoiceConsistencyManager.configureUtterance(utterance, text, language);
+        console.log(`🔧 [${debugId}] VoiceConsistencyManager.configureUtterance success: ${success}`);
+        
+        if (!success) {
+          console.warn(`🔧 [${debugId}] Failed to configure ${language} voice, attempting fallback`);
+          const fallbackVoice = language === 'tr' 
+            ? voices.find(v => v.lang.startsWith('tr'))
+            : voices.find(v => v.lang.startsWith('en'));
+          if (fallbackVoice) {
+            utterance.voice = fallbackVoice;
+            console.log(`🔧 [${debugId}] Using fallback ${language} voice: ${fallbackVoice.name}`);
+          } else {
+            console.error(`🔧 [${debugId}] NO FALLBACK VOICE FOUND for language: ${language}`);
+          }
+        }
+
+        // 5. DEBUG: Log final voice selection
+        console.log(`🔧 [${debugId}] Final selected voice:`, utterance.voice ? utterance.voice.name : 'NULL');
+        console.log(`🔧 [${debugId}] Final voice lang:`, utterance.voice ? utterance.voice.lang : 'N/A');
+
+        // 6. DEBUG: Configure speech parameters with logging
+        utterance.rate = language === 'tr' ? 0.85 : 0.9;
+        utterance.volume = 1.0;
+        utterance.pitch = language === 'tr' ? 1.0 : 0.95;
+        console.log(`🔧 [${debugId}] Speech params - rate: ${utterance.rate}, volume: ${utterance.volume}, pitch: ${utterance.pitch}`);
+        
+        let completed = false;
+        let startTriggered = false;
+
+        // 7. DEBUG: Enhanced event handling with detailed logging
+        utterance.onstart = () => {
+          startTriggered = true;
+          console.log(`🔧 [${debugId}] ✅ ONSTART triggered - Audio playback started!`);
+          console.log(`🔧 [${debugId}] speechSynthesis.speaking during onstart: ${speechSynthesis.speaking}`);
+        };
+
+        utterance.onend = () => {
+          if (!completed) {
+            completed = true;
+            clearInterval(monitor); // Stop monitoring
+            console.log(`🔧 [${debugId}] ✅ ONEND triggered - Audio playback finished`);
+            console.log(`🔧 [${debugId}] startTriggered was: ${startTriggered}`);
+            resolve();
+          }
+        };
+
+        utterance.onerror = (event) => {
+          if (!completed) {
+            completed = true;
+            clearInterval(monitor); // Stop monitoring
+            console.error(`🔧 [${debugId}] ❌ ONERROR triggered:`, event.error, event);
+            console.log(`🔧 [${debugId}] startTriggered was: ${startTriggered}`);
+            reject(new Error(`TTS Error: ${event.error}`)); // Properly throw error for retry
+          }
+        };
+
+        utterance.onpause = () => {
+          console.log(`🔧 [${debugId}] ⏸️ ONPAUSE triggered`);
+        };
+
+        utterance.onresume = () => {
+          console.log(`🔧 [${debugId}] ▶️ ONRESUME triggered`);
+        };
+
+        utterance.onboundary = (event) => {
+          console.log(`🔧 [${debugId}] 🏁 ONBOUNDARY triggered:`, event.name);
+        };
+
+        // 8. DEBUG: Log speechSynthesis state right before speak
+        console.log(`🔧 [${debugId}] About to call speechSynthesis.speak()`);
+        console.log(`🔧 [${debugId}] speechSynthesis state before speak:`, {
+          speaking: speechSynthesis.speaking,
+          pending: speechSynthesis.pending,
+          paused: speechSynthesis.paused
+        });
+
+        // 9. DEBUG: Start monitoring and call speak with error handling
+        const monitor = monitorSpeechSynthesis(debugId, 500); // Monitor every 500ms
+        
+        try {
+          speechSynthesis.speak(utterance);
+          console.log(`🔧 [${debugId}] ✅ speechSynthesis.speak() called successfully`);
+        } catch (speakError) {
+          console.error(`🔧 [${debugId}] ❌ speechSynthesis.speak() threw error:`, speakError);
+          clearInterval(monitor);
+          completed = true;
+          resolve();
+          return;
+        }
+
+        // 10. DEBUG: Log state immediately after speak call
+        setTimeout(() => {
+          console.log(`🔧 [${debugId}] speechSynthesis state after speak (100ms delay):`, {
+            speaking: speechSynthesis.speaking,
+            pending: speechSynthesis.pending,
+            paused: speechSynthesis.paused
+          });
+          console.log(`🔧 [${debugId}] startTriggered so far: ${startTriggered}`);
+        }, 100);
+
+        // 11. DEBUG: Enhanced timeout with diagnostic info
+        setTimeout(() => {
+          if (!completed) {
+            completed = true;
+            clearInterval(monitor); // Stop monitoring
+            console.error(`🔧 [${debugId}] ⏰ TIMEOUT REACHED (10s)`);
+            console.log(`🔧 [${debugId}] Final diagnostic:`, {
+              startTriggered,
+              speechSynthesis_speaking: speechSynthesis.speaking,
+              speechSynthesis_pending: speechSynthesis.pending,
+              voice_name: utterance.voice?.name || 'NULL',
+              voice_lang: utterance.voice?.lang || 'N/A',
+              text_length: text.trim().length
+            });
+            speechSynthesis.cancel();
+            
+            // If onstart never triggered, this might be a voice/audio issue - retry
+            if (!startTriggered) {
+              reject(new Error('TTS Timeout - onstart never triggered (possible voice/audio issue)'));
+            } else {
+              // If onstart was triggered but onend didn't fire, continue without retry
+              resolve();
+            }
+          }
+        }, 10000);
+        
+      } catch (error) {
+        console.error(`🔧 [${debugId}] ❌ speakSegment EXCEPTION:`, error);
+        reject(error); // Propagate error for retry
+      }
+    });
+  };
+
+  // Helper: Wait for any existing speech to finish
+  const waitForSpeechToFinish = (): Promise<void> => {
+    return new Promise((resolve) => {
+      if (!speechSynthesis.speaking) {
+        resolve();
+        return;
+      }
+
+      const checkSpeech = () => {
+        if (!speechSynthesis.speaking) {
+          resolve();
+        } else {
+          setTimeout(checkSpeech, 50);
+        }
+      };
+      
+      checkSpeech();
+    });
+  };
+
+  // DIAGNOSTIC FUNCTION: Test TTS capabilities and voice selection (NON-BLOCKING)
+  const testTTSCapabilities = async () => {
+    try {
+      console.log('🔧 ===== TTS CAPABILITY TEST =====');
+      
+      // 1. Test speechSynthesis availability
+      console.log('🔧 speechSynthesis available:', 'speechSynthesis' in window);
+      if (!('speechSynthesis' in window)) {
+        throw new Error('speechSynthesis not available in this browser');
+      }
+      
+      console.log('🔧 speechSynthesis state:', {
+        speaking: speechSynthesis.speaking,
+        pending: speechSynthesis.pending,
+        paused: speechSynthesis.paused
+      });
+      
+      // 2. Test voice loading with timeout
+      console.log('🔧 Loading voices...');
+      try {
+        await Promise.race([
+          ensureVoicesLoaded(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Voice loading timeout')), 2000))
+        ]);
+      } catch (error) {
+        console.warn('🔧 Voice loading failed:', error.message);
+      }
+      
+      const voices = speechSynthesis.getVoices();
+      console.log('🔧 Total voices available:', voices.length);
+      
+      // 3. Test English voices
+      const englishVoices = voices.filter(v => v.lang.startsWith('en'));
+      console.log('🔧 English voices:', englishVoices.map(v => `${v.name} (${v.lang})`));
+      
+      // 4. Test Turkish voices
+      const turkishVoices = voices.filter(v => v.lang.startsWith('tr'));
+      console.log('🔧 Turkish voices:', turkishVoices.map(v => `${v.name} (${v.lang})`));
+      
+      // 5. Test VoiceConsistencyManager (with error handling)
+      try {
+        const { VoiceConsistencyManager } = require('@/config/voice');
+        const testUtterance = new SpeechSynthesisUtterance('test');
+        const success = VoiceConsistencyManager.configureUtterance(testUtterance, 'test', 'en');
+        console.log('🔧 VoiceConsistencyManager configure success:', success);
+        console.log('🔧 Selected voice after configure:', testUtterance.voice?.name || 'NULL');
+      } catch (error) {
+        console.warn('🔧 VoiceConsistencyManager test failed:', error.message);
+      }
+      
+      // 6. Test simple TTS (quick, non-blocking)
+      console.log('🔧 Testing simple TTS...');
+      try {
+        const simpleUtterance = new SpeechSynthesisUtterance('Test');
+        simpleUtterance.volume = 0.1; // Very quiet for testing
+        simpleUtterance.rate = 2.0;   // Very fast for testing
+        simpleUtterance.pitch = 1.0;
+        
+        simpleUtterance.onstart = () => console.log('🔧 Simple TTS started successfully');
+        simpleUtterance.onend = () => console.log('🔧 Simple TTS ended successfully');
+        simpleUtterance.onerror = (e) => console.warn('🔧 Simple TTS error:', e.error);
+        
+        speechSynthesis.speak(simpleUtterance);
+        console.log('🔧 Simple TTS speak() called without error');
+      } catch (error) {
+        console.warn('🔧 Simple TTS speak() threw error:', error.message);
+      }
+      
+      console.log('🔧 ===== END TTS CAPABILITY TEST =====');
+    } catch (error) {
+      console.error('🔧 TTS Capability test failed:', error.message);
+      throw error; // Re-throw for Promise.race timeout handling
+    }
+  };
+
+  // DIAGNOSTIC FUNCTION: Monitor speechSynthesis state continuously
+  const monitorSpeechSynthesis = (debugId: string, intervalMs: number = 1000) => {
+    console.log(`🔧 [${debugId}] Starting speechSynthesis monitoring...`);
+    
+    const monitor = setInterval(() => {
+      console.log(`🔧 [${debugId}] Monitor:`, {
+        speaking: speechSynthesis.speaking,
+        pending: speechSynthesis.pending,
+        paused: speechSynthesis.paused,
+        voicesLength: speechSynthesis.getVoices().length
+      });
+    }, intervalMs);
+    
+    // Auto-stop monitoring after 30 seconds
+    setTimeout(() => {
+      clearInterval(monitor);
+      console.log(`🔧 [${debugId}] Stopped speechSynthesis monitoring`);
+    }, 30000);
+    
+    return monitor;
+  };
+
+  // Helper: Ensure voices are loaded
+  const ensureVoicesLoaded = (): Promise<void> => {
+    return new Promise((resolve) => {
+      const voices = speechSynthesis.getVoices();
+      if (voices.length > 0) {
+        resolve();
+        return;
+      }
+
+      const voicesChangedHandler = () => {
+        const voices = speechSynthesis.getVoices();
+        if (voices.length > 0) {
+          speechSynthesis.removeEventListener('voiceschanged', voicesChangedHandler);
+          resolve();
+        }
+      };
+
+      speechSynthesis.addEventListener('voiceschanged', voicesChangedHandler);
+      
+      // Timeout fallback
+      setTimeout(() => {
+        speechSynthesis.removeEventListener('voiceschanged', voicesChangedHandler);
+        resolve();
+      }, 3000);
+    });
+  };
+
+  // Legacy teacher reading (fallback)
+  const startLegacyTeacherReading = async () => {
     setIsTeacherReading(true);
     setCurrentPhase('teacher-reading');
-    cancelTTSSafe();
+    narration.cancel();
     
-    // Read full lesson content line by line
     const introLines = currentModuleData.intro.split('\n');
     
     for (const line of introLines) {
@@ -10280,42 +9122,19 @@ const MODULE_150_DATA = {
       }
     }
     
-    // Check if there's a table and announce it
     if ('table' in currentModuleData && currentModuleData.table) {
       await new Promise<void>((resolve) => {
         narration.speak("Şimdi lütfen aşağıdaki tabloya göz atın.");
         setTimeout(resolve, 2000);
       });
-      
-      // Wait for user to explore table (3 seconds)
       await new Promise(resolve => setTimeout(resolve, 3000));
     }
     
     setIsTeacherReading(false);
     setReadingComplete(true);
     setCurrentPhase('listening');
-    // Mark this lesson as read
     setHasBeenRead(prev => ({ ...prev, [lessonKey]: true }));
   };
-
-  // Skip to questions handler
-  const skipToQuestions = useCallback(() => {
-    // Cancel any ongoing narration
-    cancelTTSSafe();
-
-    // Stop teacher reading state
-    setIsTeacherReading(false);
-    setReadingComplete(true);
-
-    // Move directly to listening phase
-    setCurrentPhase('listening');
-
-    // Mark lesson as read to prevent re-reading
-    const lessonKey = `${selectedLevel}-${selectedModule}`;
-    setHasBeenRead(prev => ({ ...prev, [lessonKey]: true }));
-
-    console.log('⏭️ Skipped to questions phase');
-  }, [selectedLevel, selectedModule]);
 
   // Audio recording setup
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
@@ -10328,9 +9147,7 @@ const MODULE_150_DATA = {
       setMicrophoneError(null);
       
       if (isRetry) {
-        if (process.env.NODE_ENV === 'development') console.log('🔄 Retrying microphone initialization...');
       } else {
-        if (process.env.NODE_ENV === 'development') console.log('🎤 Requesting microphone access...');
       }
       
       // Check if getUserMedia is supported
@@ -10352,11 +9169,7 @@ const MODULE_150_DATA = {
       
       const stream = await navigator.mediaDevices.getUserMedia(audioConstraints);
       
-      if (process.env.NODE_ENV === 'development') console.log('✅ Microphone access granted!', {
-        streamId: stream.id,
-        audioTracks: stream.getAudioTracks().length,
-        trackSettings: stream.getAudioTracks()[0]?.getSettings()
-      });
+      // Stream info: streamId=${stream.id}, audioTracks=${stream.getAudioTracks().length}, trackSettings=${JSON.stringify(stream.getAudioTracks()[0]?.getSettings())}
       
       // Check MediaRecorder support with fallback mimeTypes
       let mimeType = 'audio/webm;codecs=opus';
@@ -10370,9 +9183,7 @@ const MODULE_150_DATA = {
       const supportedType = supportedTypes.find(type => MediaRecorder.isTypeSupported(type));
       if (supportedType) {
         mimeType = supportedType;
-        if (process.env.NODE_ENV === 'development') console.log('📱 Using MIME type:', mimeType);
       } else {
-        if (process.env.NODE_ENV === 'development') console.warn('⚠️ No supported MIME types found, using default');
       }
       
       const recorder = new MediaRecorder(stream, { mimeType });
@@ -10380,38 +9191,29 @@ const MODULE_150_DATA = {
       let currentAudioChunks: Blob[] = [];
       
       recorder.ondataavailable = (event) => {
-        if (process.env.NODE_ENV === 'development') console.log('📊 Audio chunk received:', event.data.size, 'bytes');
         if (event.data.size > 0) {
           currentAudioChunks.push(event.data);
         }
       };
       
       recorder.onstart = () => {
-        if (process.env.NODE_ENV === 'development') console.log('🎙️ Recording started successfully');
         currentAudioChunks = [];
         setRetryAttempts(0); // Reset retry count on successful start
       };
       
       recorder.onstop = async () => {
-        if (process.env.NODE_ENV === 'development') console.log('⏹️ Recording stopped. Chunks:', currentAudioChunks.length);
         
         if (currentAudioChunks.length > 0) {
           const totalSize = currentAudioChunks.reduce((sum, chunk) => sum + chunk.size, 0);
-          if (process.env.NODE_ENV === 'development') console.log('📦 Total audio size:', totalSize, 'bytes');
           
           if (totalSize > 1000) { // Minimum 1KB for meaningful audio
             const audioBlob = new Blob(currentAudioChunks, { type: mimeType });
-            if (process.env.NODE_ENV === 'development') console.log('🎵 Final blob created:', {
-              size: audioBlob.size,
-              type: audioBlob.type,
-              chunks: currentAudioChunks.length
-            });
+            // Audio blob created - size: ${audioBlob.size}, type: ${audioBlob.type}, chunks: ${currentAudioChunks.length}
             
             // Additional validation: check if blob is actually audio data
             if (audioBlob.size > 0 && audioBlob.type.includes('audio')) {
               await processAudioRecording(audioBlob);
             } else {
-              console.error('❌ Invalid audio blob created');
               setFeedback('Invalid audio format. Please try again.');
               setFeedbackType('error');
               setTimeout(() => {
@@ -10420,7 +9222,6 @@ const MODULE_150_DATA = {
               }, 3000);
             }
           } else {
-            if (process.env.NODE_ENV === 'development') console.warn('⚠️ Audio recording too small:', totalSize, 'bytes');
             setFeedback('Recording too short. Please speak for at least 2 seconds.');
             setFeedbackType('error');
             setTimeout(() => {
@@ -10430,7 +9231,6 @@ const MODULE_150_DATA = {
           }
           currentAudioChunks = [];
         } else {
-          if (process.env.NODE_ENV === 'development') console.warn('⚠️ No audio chunks recorded');
           setFeedback('No audio was captured. Please check your microphone and try again.');
           setFeedbackType('error');
           setTimeout(() => {
@@ -10441,17 +9241,14 @@ const MODULE_150_DATA = {
       };
       
       recorder.onerror = (event: any) => {
-        console.error('❌ MediaRecorder error:', event.error || event);
         // No generic error feedback - let the flow auto-retry
         setIsRecording(false);
         setIsProcessing(false);
       };
       
       setMediaRecorder(recorder);
-      if (process.env.NODE_ENV === 'development') console.log('🎤 MediaRecorder initialized successfully');
       
     } catch (error: any) {
-      console.error('❌ Error accessing microphone:', error);
       
       let errorMessage = 'Unable to access microphone. ';
       let shouldRetry = false;
@@ -10508,23 +9305,22 @@ const MODULE_150_DATA = {
   useEffect(() => {
     if (currentPhase === 'intro' && viewState === 'lesson') {
       // Don't auto-advance from intro phase, let user read and proceed manually
+      
+      // Start progress tracking session when entering a lesson
+      if (selectedLevel && selectedModule && !currentSessionId) {
+        const sessionId = progressTracker.startLearningSession(selectedModule, selectedLevel);
+        setCurrentSessionId(sessionId);
+      }
     }
-  }, [currentPhase, viewState]);
+  }, [currentPhase, viewState, selectedLevel, selectedModule, currentSessionId]);
 
   // Debug speakingIndex changes
   useEffect(() => {
     const total = currentModuleData?.speakingPractice?.length ?? 0;
     const item = currentModuleData?.speakingPractice?.[speakingIndex];
-    if (process.env.NODE_ENV === 'development') console.log('✅ speakingIndex changed to:', speakingIndex);
-    if (process.env.NODE_ENV === 'development') console.log('✅ Current module data total questions:', total);
-    if (process.env.NODE_ENV === 'development') {
-      console.log('✅ Current question:', item);
-      console.log('✅ Moved to question:', speakingIndex + 1);
-    }
     
     // Safety: Ensure isProcessing is reset when moving to new question
     if (isProcessing) {
-      if (process.env.NODE_ENV === 'development') console.log('⚠️ isProcessing was still true when question changed - resetting it');
       setIsProcessing(false);
     }
   }, [speakingIndex, currentModuleData, isProcessing]);
@@ -10532,33 +9328,42 @@ const MODULE_150_DATA = {
   const processAudioRecording = useCallback(async (audioBlob: Blob) => {
     // 🔒 CRITICAL: Prevent concurrent processing and lock current state
     if (isProcessing) {
-      if (process.env.NODE_ENV === 'development') console.log('⚠️ Audio processing already in progress, ignoring duplicate request');
       return;
     }
 
-    
     setIsProcessing(true);
     setAttempts(prev => prev + 1);
-    
-    if (process.env.NODE_ENV === 'development') console.log('🔒 PROCESSING STARTED - isProcessing set to TRUE');
-    
+    setCurrentQuestionRetries(prev => prev + 1);
+
+    // Checkpoint: Speech recording started
+    checkpoints.checkpointSpeechStarted({
+      level: selectedLevel,
+      moduleId: selectedModule,
+      questionIndex: speakingIndex,
+      totalQuestions: 40,
+      mcqChoice: questionStates[speakingIndex]?.selectedChoice,
+      mcqCorrect: questionStates[speakingIndex]?.choiceCorrect
+    });
+
+    // Start question timing if this is the first attempt
+    if (currentQuestionRetries === 0) {
+      setQuestionStartTime(Date.now());
+      const currentQuestion = currentModuleData?.speakingPractice?.[speakingIndex];
+      if (currentQuestion) {
+        const questionId = `${selectedLevel}_${selectedModule}_${speakingIndex}`;
+        progressTracker.startQuestion(questionId);
+      }
+    }
+
     // Clear any previous feedback to prevent confusion
     setFeedback('');
     setFeedbackType('info');
     
     try {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('🎵 Processing audio recording...');
-        console.log('📊 Blob details:', {
-          size: audioBlob.size,
-          type: audioBlob.type,
-          isEmpty: audioBlob.size === 0
-        });
-      }
+      // Processing audio blob - size: ${audioBlob.size}, type: ${audioBlob.type}, isEmpty: ${audioBlob.size === 0}
       
       // Validate audio blob
       if (!audioBlob || audioBlob.size === 0) {
-        console.error('❌ Empty or invalid audio blob');
         setFeedback('No audio captured. Please speak louder and try again.');
         setFeedbackType('error');
         setTimeout(() => {
@@ -10570,7 +9375,6 @@ const MODULE_150_DATA = {
       
       // Check minimum audio size (should be at least a few KB for meaningful audio)
       if (audioBlob.size < 1000) {
-        if (process.env.NODE_ENV === 'development') console.warn('⚠️ Audio blob is very small:', audioBlob.size, 'bytes');
         setFeedback('Audio recording too short. Please speak for at least 2 seconds.');
         setFeedbackType('error');
         setTimeout(() => {
@@ -10588,20 +9392,13 @@ const MODULE_150_DATA = {
       const filename = `recording_${timestamp}.webm`;
       formData.append('audio', audioBlob, filename);
       
-      if (process.env.NODE_ENV === 'development') console.log('📤 Sending audio to transcribe endpoint...', {
-        blobSize: audioBlob.size,
-        filename: filename,
-        type: audioBlob.type
-      });
+      // Uploading audio - blobSize: ${audioBlob.size}, filename: ${filename}, type: ${audioBlob.type}
       
       const transcribeResponse = await supabase.functions.invoke('transcribe', {
         body: formData
       });
 
-      if (process.env.NODE_ENV === 'development') console.log('📥 Transcribe response:', transcribeResponse);
-
       if (transcribeResponse.error) {
-        console.error('❌ Transcribe error:', transcribeResponse.error);
         setFeedback('Failed to process audio. Please try again.');
         setFeedbackType('error');
         setTimeout(() => {
@@ -10613,12 +9410,8 @@ const MODULE_150_DATA = {
 
       const { transcript, text } = transcribeResponse.data || {};
       const finalTranscript = transcript || text || '';
-      
-      
-      if (process.env.NODE_ENV === 'development') console.log('📝 Raw transcribed text (verbatim):', finalTranscript);
-      
+
       if (!finalTranscript || finalTranscript.trim() === '') {
-        if (process.env.NODE_ENV === 'development') console.warn('⚠️ Empty transcript received');
         setFeedback('I couldn\'t understand what you said. Please speak clearly and try again.');
         setFeedbackType('error');
         setTimeout(() => {
@@ -10633,21 +9426,17 @@ const MODULE_150_DATA = {
       setFeedbackType('info');
 
       // Step 2: Get feedback on the transcribed text
-      console.log('Sending to feedback endpoint:', finalTranscript);
       const feedbackResponse = await supabase.functions.invoke('feedback', {
         body: { text: finalTranscript }
       });
 
-      console.log('Feedback response:', feedbackResponse);
-
       if (feedbackResponse.error) {
-        console.error('Feedback error:', feedbackResponse.error);
         throw new Error('Feedback analysis failed');
       }
 
       const { corrected } = feedbackResponse.data;
 
-      // Use expectedRef for current question evaluation
+      // Use expectedRef for current question evaluation with Progress Tracker integration
       function evaluateSpoken(transcript: string) {
         const userRaw = transcript?.trim() || '';
         let target = evaluatorTargetRef.current;
@@ -10659,6 +9448,21 @@ const MODULE_150_DATA = {
         }
 
         const ok = isExactlyCorrect(userRaw, target); // uses the normalization that ignores diacritics and punctuation
+        
+        // Record the attempt with Progress Tracker
+        const questionId = `${selectedLevel}_${selectedModule}_${speakingIndex}`;
+        const currentQuestion = currentModuleData?.speakingPractice?.[speakingIndex];
+        const questionContext = currentQuestion?.question || '';
+        
+        const attempt = progressTracker.recordQuestionAttempt(
+          questionId,
+          selectedModule,
+          selectedLevel,
+          userRaw,
+          target,
+          ok,
+          questionContext
+        );
 
         if (ok) {
           setCorrectAnswers(prev => prev + 1);
@@ -10666,9 +9470,18 @@ const MODULE_150_DATA = {
           setFeedbackType('success');
           earnXPForGrammarLesson(true);
           incrementTotalExercises();
-          advanceQuestion();         // Use the instant, non-blocking advance
+          
+          // Reset retry counter for next question
+          setCurrentQuestionRetries(0);
+          
+          advanceSpeakingOnce();     // Use the centralized, guarded advance
         } else {
-          setFeedback(`❌ Not quite right. The correct answer is: "${target}"`);
+          // Show grammar error feedback if detected
+          const grammarFeedback = attempt.grammarErrors && attempt.grammarErrors.length > 0 
+            ? `\n\nTip: ${attempt.grammarErrors[0].description}` 
+            : '';
+            
+          setFeedback(`❌ Not quite right. The correct answer is: "${target}"${grammarFeedback}`);
           setFeedbackType('error');
           setTimeout(() => {
             setFeedback('');
@@ -10677,26 +9490,18 @@ const MODULE_150_DATA = {
         }
       }
 
-      console.log('VALIDATION PHASE');
-      console.log('Expected:', expectedRef.current);
-      console.log('User said (RAW):', finalTranscript);
-      console.log('Index:', speakingIndex);
-      console.log('Module:', currentModuleData.title);
-
       evaluateSpoken(finalTranscript);
     } catch (error) {
-      console.error('Error processing audio for current index:', error);
       // No generic error feedback - let the flow auto-retry
     }
     
     setLastResponseTime(Date.now());
   }, [speakingIndex, earnXPForGrammarLesson, incrementTotalExercises]);
 
-
   // Optional: Reset progress for current module
   function resetThisModuleProgress() {
     if (selectedLevel && selectedModule != null) {
-      clearModuleProgress(selectedLevel, selectedModule.toString());
+      clearProgress(selectedLevel, selectedModule);
       setCurrentPhase('intro');
       setListeningIndex(0);
       setSpeakingIndex(0);
@@ -10707,9 +9512,6 @@ const MODULE_150_DATA = {
   async function startSpeakingFlow() {
     // block parallel runs here (not via disabled button)
     if (speakStatus !== 'idle' || currentPhase !== 'speaking' || viewState !== 'lesson') return;
-
-    // User is interacting - clear any watchdog timers
-    clearWatchdog();
 
     try {
       setSpeakStatus('recording');
@@ -10729,9 +9531,8 @@ const MODULE_150_DATA = {
         setFeedbackType('success');
         earnXPForGrammarLesson(true);
         incrementTotalExercises();
-
-        // Immediate advancement to next question
-        advanceToNextQuestion();
+        setSpeakStatus('advancing');
+        advanceSpeakingOnce();              // centralized progression
       } else {
         setFeedback(`❌ Not quite right. The correct answer is: "${target}"`);
         setFeedbackType('error');
@@ -10744,12 +9545,9 @@ const MODULE_150_DATA = {
   }
 
   const startRecording = async () => {
-    console.log('🎯 Start recording clicked');
-    console.log('MediaRecorder state:', mediaRecorder?.state);
     
     // If there's a microphone error, try to reinitialize
     if (microphoneError || !mediaRecorder) {
-      console.log('🔄 Microphone error detected or no recorder, attempting to reinitialize...');
       setFeedback('Reconnecting microphone...');
       setFeedbackType('info');
       await initializeRecorder(false);
@@ -10768,7 +9566,6 @@ const MODULE_150_DATA = {
         setIsRecording(true);
         setFeedback('');
         setMicrophoneError(null);
-        if (process.env.NODE_ENV === 'development') console.log('🎙️ Starting MediaRecorder...');
         
         // Record minimum of 2 seconds, maximum of 10 seconds
         const startTime = Date.now();
@@ -10780,13 +9577,11 @@ const MODULE_150_DATA = {
         // Auto-stop after 10 seconds
         setTimeout(() => {
           if (mediaRecorder.state === 'recording') {
-            console.log('⏰ Auto-stopping recording after 10 seconds');
             stopRecording();
           }
         }, 10000);
         
       } catch (error: any) {
-        console.error('❌ Error starting recording:', error);
         setIsRecording(false);
         
         // More specific error handling
@@ -10809,7 +9604,6 @@ const MODULE_150_DATA = {
         }, 2000);
       }
     } else {
-      console.warn('⚠️ MediaRecorder not ready. State:', mediaRecorder?.state);
       setFeedback('Microphone not ready. Trying to reconnect...');
       setFeedbackType('info');
       
@@ -10819,8 +9613,6 @@ const MODULE_150_DATA = {
   };
 
   const stopRecording = () => {
-    console.log('🛑 Stop recording called');
-    console.log('MediaRecorder state:', mediaRecorder?.state);
     
     if (mediaRecorder && mediaRecorder.state === 'recording') {
       // Check minimum recording duration (2 seconds)
@@ -10829,17 +9621,14 @@ const MODULE_150_DATA = {
       const recordingDuration = currentTime - startTime;
       
       if (recordingDuration < 2000) { // Less than 2 seconds
-        console.warn('⚠️ Recording too short:', recordingDuration, 'ms');
         setFeedback('Please speak for at least 2 seconds. Keep recording...');
         setFeedbackType('info');
         return; // Don't stop recording yet
       }
       
-      console.log('⏹️ Stopping MediaRecorder... Duration:', recordingDuration, 'ms');
       mediaRecorder.stop();
       setIsRecording(false);
     } else {
-      console.warn('⚠️ MediaRecorder not recording. Current state:', mediaRecorder?.state);
       setIsRecording(false);
     }
   };
@@ -10849,26 +9638,58 @@ const MODULE_150_DATA = {
       setListeningIndex(prev => prev + 1);
     } else {
       setCurrentPhase('speaking');
-      cancelTTSSafe();
+      narration.cancel();
       narration.speak('Now let\'s practice speaking! Say each sentence clearly.');
     }
   };
 
   const repeatExample = () => {
     const currentExample = currentModuleData.listeningExamples[listeningIndex];
-    cancelTTSSafe();
+    narration.cancel();
     narration.speak(currentExample);
   };
 
   const speakCurrentSentence = () => {
     const { prompt } = getCurrentPromptAndTarget();
-    cancelTTSSafe();
+    narration.cancel();
     narration.speak(prompt);
   };
 
+  // Set up lesson-specific voice command handlers (must be after handler functions are defined)
+  useEffect(() => {
+    const currentData = getCurrentModuleData();
+    const totalQ = currentData?.speakingPractice?.length ?? 0;
+    
+    voiceCommands.setLessonHandlers({
+      onNext: () => {
+        if (currentPhase === 'listening' && listeningIndex < (currentData?.listeningExamples?.length ?? 0) - 1) {
+          nextListeningExample();
+        } else if (currentPhase === 'speaking' && speakingIndex < totalQ - 1) {
+          advanceSpeakingOnce(); // Use the existing function instead of non-existent nextSpeakingQuestion
+        }
+      },
+      onPrevious: () => {
+        if (currentPhase === 'speaking' && speakingIndex > 0) {
+          setSpeakingIndex(prev => prev - 1);
+        }
+      },
+      onSkip: () => {
+        if (currentPhase === 'speaking') {
+          advanceSpeakingOnce(); // Use the existing function instead of non-existent nextSpeakingQuestion
+        }
+      },
+      onRepeat: () => {
+        if (currentPhase === 'listening') {
+          repeatExample();
+        } else if (currentPhase === 'speaking') {
+          speakCurrentSentence();
+        }
+      }
+    });
+  }, [currentPhase, listeningIndex, speakingIndex, selectedModule, selectedLevel]);
+
   // Render levels view
   if (!isHydrated) {
-    console.log('🔍 [LessonsApp] Rendering: Not hydrated yet, showing loading...');
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700">
         <div className="p-4 max-w-4xl mx-auto">
@@ -10882,7 +9703,6 @@ const MODULE_150_DATA = {
   }
 
   if (viewState === 'levels') {
-    console.log('🔍 [LessonsApp] Rendering: Levels view');
     return (
       <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: 'hsl(var(--app-bg))' }}>
         <div className="relative z-10 p-4 max-w-sm mx-auto">
@@ -10910,7 +9730,7 @@ const MODULE_150_DATA = {
                 key={level.id} 
                 className="bg-white/10 border-white/20 cursor-pointer transition-all hover:bg-white/15"
                 onClick={() => {
-                  cancelTTSSafe();
+                  narration.cancel();
                   setSelectedLevel(level.id);
                   setViewState('modules');
                 }}
@@ -10938,16 +9758,6 @@ const MODULE_150_DATA = {
 
   // Render modules view
   if (viewState === 'modules') {
-    console.log('🔍 [LessonsApp] Rendering: Modules view for level:', selectedLevel);
-    
-    // Safety check: if no level selected, redirect to levels view
-    if (!selectedLevel || !MODULES_BY_LEVEL[selectedLevel as keyof typeof MODULES_BY_LEVEL]) {
-      console.warn('⚠️ [LessonsApp] Invalid selectedLevel, redirecting to levels view:', selectedLevel);
-      setViewState('levels');
-      setSelectedLevel('');
-      return null; // Prevent rendering during state transition
-    }
-    
     return (
       <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: 'hsl(var(--app-bg))' }}>
         <div className="relative z-10 p-4 max-w-sm mx-auto">
@@ -10973,30 +9783,20 @@ const MODULE_150_DATA = {
 
           {/* Modules Grid */}
           <div className="space-y-3">
-            {(() => {
-              // Safety guard: get modules array or empty array if level doesn't exist
-              const modules = MODULES_BY_LEVEL[selectedLevel as keyof typeof MODULES_BY_LEVEL] || [];
-              
-              return modules.length === 0 ? (
-                <Card className="bg-white/10 border-white/20">
-                  <CardContent className="p-8 text-center">
-                    <div className="text-white/70 space-y-2">
-                      <BookOpen className="h-12 w-12 mx-auto mb-4 text-white/50" />
-                      <h3 className="text-lg font-semibold text-white">Content Coming Soon</h3>
-                      <p className="text-sm">
-                        {selectedLevel} modules are currently being developed. Please check back later or try A1 level.
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              ) : (
-                modules.map((module) => {
-                // Null safety check for module
-                if (!module || !module.id || !module.title) {
-                  console.warn('⚠️ [LessonsApp] Invalid module data:', module);
-                  return null;
-                }
-                
+            {MODULES_BY_LEVEL[selectedLevel as keyof typeof MODULES_BY_LEVEL].length === 0 ? (
+              <Card className="bg-white/10 border-white/20">
+                <CardContent className="p-8 text-center">
+                  <div className="text-white/70 space-y-2">
+                    <BookOpen className="h-12 w-12 mx-auto mb-4 text-white/50" />
+                    <h3 className="text-lg font-semibold text-white">Content Coming Soon</h3>
+                    <p className="text-sm">
+                      {selectedLevel} modules are currently being developed. Please check back later or try A1 level.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              MODULES_BY_LEVEL[selectedLevel as keyof typeof MODULES_BY_LEVEL].map((module) => {
                 const isUnlocked = isModuleUnlocked(module.id);
                 const isCompleted = completedModules.includes(`module-${module.id}`);
               
@@ -11006,177 +9806,7 @@ const MODULE_150_DATA = {
                   className={`bg-white/10 border-white/20 cursor-pointer transition-all hover:bg-white/15 ${!isUnlocked ? 'opacity-50' : ''}`}
                   onClick={() => {
                     if (isUnlocked && ((module.id >= 1 && module.id <= 50) || (module.id >= 51 && module.id <= 100) || (module.id >= 101 && module.id <= 150))) { // All A1, A2, B1 modules are implemented
-                      cancelTTSSafe();
-                      
-                      // Get the module data for validation (before setting state)
-                      const getModuleDataForValidation = (moduleId: number) => {
-                        // A1 Modules
-                        if (moduleId === 1) return MODULE_1_DATA;
-                        if (moduleId === 2) return MODULE_2_DATA;
-                        if (moduleId === 3) return MODULE_3_DATA;
-                        if (moduleId === 4) return MODULE_4_DATA;
-                        if (moduleId === 5) return MODULE_5_DATA;
-                        if (moduleId === 6) return MODULE_6_DATA;
-                        if (moduleId === 7) return MODULE_7_DATA;
-                        if (moduleId === 8) return MODULE_8_DATA;
-                        if (moduleId === 9) return MODULE_9_DATA;
-                        if (moduleId === 10) return MODULE_10_DATA;
-                        if (moduleId === 11) return MODULE_11_DATA;
-                        if (moduleId === 12) return MODULE_12_DATA;
-                        if (moduleId === 13) return MODULE_13_DATA;
-                        if (moduleId === 14) return MODULE_14_DATA;
-                        if (moduleId === 15) return MODULE_15_DATA;
-                        if (moduleId === 16) return MODULE_16_DATA;
-                        if (moduleId === 17) return MODULE_17_DATA;
-                        if (moduleId === 18) return MODULE_18_DATA;
-                        if (moduleId === 19) return MODULE_19_DATA;
-                        if (moduleId === 20) return MODULE_20_DATA;
-                        if (moduleId === 21) return MODULE_21_DATA;
-                        if (moduleId === 22) return MODULE_22_DATA;
-                        if (moduleId === 23) return MODULE_23_DATA;
-                        if (moduleId === 24) return MODULE_24_DATA;
-                        if (moduleId === 25) return MODULE_25_DATA;
-                        if (moduleId === 26) return MODULE_26_DATA;
-                        if (moduleId === 27) return MODULE_27_DATA;
-                        if (moduleId === 28) return MODULE_28_DATA;
-                        if (moduleId === 29) return MODULE_29_DATA;
-                        if (moduleId === 30) return MODULE_30_DATA;
-                        if (moduleId === 31) return MODULE_31_DATA;
-                        if (moduleId === 32) return MODULE_32_DATA;
-                        if (moduleId === 33) return MODULE_33_DATA;
-                        if (moduleId === 34) return MODULE_34_DATA;
-                        if (moduleId === 35) return MODULE_35_DATA;
-                        if (moduleId === 36) return MODULE_36_DATA;
-                        if (moduleId === 37) return MODULE_37_DATA;
-                        if (moduleId === 38) return MODULE_38_DATA;
-                        if (moduleId === 39) return MODULE_39_DATA;
-                        if (moduleId === 40) return MODULE_40_DATA;
-                        if (moduleId === 41) return MODULE_41_DATA;
-                        if (moduleId === 42) return MODULE_42_DATA;
-                        if (moduleId === 43) return MODULE_43_DATA;
-                        if (moduleId === 44) return MODULE_44_DATA;
-                        if (moduleId === 45) return MODULE_45_DATA;
-                        if (moduleId === 46) return MODULE_46_DATA;
-                        if (moduleId === 47) return MODULE_47_DATA;
-                        if (moduleId === 48) return MODULE_48_DATA;
-                        if (moduleId === 49) return MODULE_49_DATA;
-                        if (moduleId === 50) return MODULE_50_DATA;
-                        
-                        // A2 Modules
-                        if (moduleId === 51) return MODULE_51_DATA;
-                        if (moduleId === 52) return MODULE_52_DATA;
-                        if (moduleId === 53) return MODULE_53_DATA;
-                        if (moduleId === 54) return MODULE_54_DATA;
-                        if (moduleId === 55) return MODULE_55_DATA;
-                        if (moduleId === 56) return MODULE_56_DATA;
-                        if (moduleId === 57) return MODULE_57_DATA;
-                        if (moduleId === 58) return MODULE_58_DATA;
-                        if (moduleId === 59) return MODULE_59_DATA;
-                        if (moduleId === 60) return MODULE_60_DATA;
-                        if (moduleId === 61) return MODULE_61_DATA;
-                        if (moduleId === 62) return MODULE_62_DATA;
-                        if (moduleId === 63) return MODULE_63_DATA;
-                        if (moduleId === 64) return MODULE_64_DATA;
-                        if (moduleId === 65) return MODULE_65_DATA;
-                        if (moduleId === 66) return MODULE_66_DATA;
-                        if (moduleId === 67) return MODULE_67_DATA;
-                        if (moduleId === 68) return MODULE_68_DATA;
-                        if (moduleId === 69) return MODULE_69_DATA;
-                        if (moduleId === 70) return MODULE_70_DATA;
-                        if (moduleId === 71) return MODULE_71_DATA;
-                        if (moduleId === 72) return MODULE_72_DATA;
-                        if (moduleId === 73) return MODULE_73_DATA;
-                        if (moduleId === 74) return MODULE_74_DATA;
-                        if (moduleId === 75) return MODULE_75_DATA;
-                        if (moduleId === 76) return MODULE_76_DATA;
-                        if (moduleId === 77) return MODULE_77_DATA;
-                        if (moduleId === 78) return MODULE_78_DATA;
-                        if (moduleId === 79) return MODULE_79_DATA;
-                        if (moduleId === 80) return MODULE_80_DATA;
-                        if (moduleId === 81) return MODULE_81_DATA;
-                        if (moduleId === 82) return MODULE_82_DATA;
-                        if (moduleId === 83) return MODULE_83_DATA;
-                        if (moduleId === 84) return MODULE_84_DATA;
-                        if (moduleId === 85) return MODULE_85_DATA;
-                        if (moduleId === 86) return MODULE_86_DATA;
-                        if (moduleId === 87) return MODULE_87_DATA;
-                        if (moduleId === 88) return MODULE_88_DATA;
-                        if (moduleId === 89) return MODULE_89_DATA;
-                        if (moduleId === 90) return MODULE_90_DATA;
-                        if (moduleId === 91) return MODULE_91_DATA;
-                        if (moduleId === 92) return MODULE_92_DATA;
-                        if (moduleId === 93) return MODULE_93_DATA;
-                        if (moduleId === 94) return MODULE_94_DATA;
-                        if (moduleId === 95) return MODULE_95_DATA;
-                        if (moduleId === 96) return MODULE_96_DATA;
-                        if (moduleId === 97) return MODULE_97_DATA;
-                        if (moduleId === 98) return MODULE_98_DATA;
-                        if (moduleId === 99) return MODULE_99_DATA;
-                        if (moduleId === 100) return MODULE_100_DATA;
-                        
-                        // B1 Modules
-                        if (moduleId === 101) return MODULE_101_DATA;
-                        if (moduleId === 102) return MODULE_102_DATA;
-                        if (moduleId === 103) return MODULE_103_DATA;
-                        if (moduleId === 104) return MODULE_104_DATA;
-                        if (moduleId === 105) return MODULE_105_DATA;
-                        if (moduleId === 106) return MODULE_106_DATA;
-                        if (moduleId === 107) return MODULE_107_DATA;
-                        if (moduleId === 108) return MODULE_108_DATA;
-                        if (moduleId === 109) return MODULE_109_DATA;
-                        if (moduleId === 110) return MODULE_110_DATA;
-                        if (moduleId === 111) return MODULE_111_DATA;
-                        if (moduleId === 112) return MODULE_112_DATA;
-                        if (moduleId === 113) return MODULE_113_DATA;
-                        if (moduleId === 114) return MODULE_114_DATA;
-                        if (moduleId === 115) return MODULE_115_DATA;
-                        if (moduleId === 116) return MODULE_116_DATA;
-                        if (moduleId === 117) return MODULE_117_DATA;
-                        if (moduleId === 118) return MODULE_118_DATA;
-                        if (moduleId === 119) return MODULE_119_DATA;
-                        if (moduleId === 120) return MODULE_120_DATA;
-                        if (moduleId === 121) return MODULE_121_DATA;
-                        if (moduleId === 122) return MODULE_122_DATA;
-                        if (moduleId === 123) return MODULE_123_DATA;
-                        if (moduleId === 124) return MODULE_124_DATA;
-                        if (moduleId === 125) return MODULE_125_DATA;
-                        if (moduleId === 126) return MODULE_126_DATA;
-                        if (moduleId === 127) return MODULE_127_DATA;
-                        if (moduleId === 128) return MODULE_128_DATA;
-                        if (moduleId === 129) return MODULE_129_DATA;
-                        if (moduleId === 130) return MODULE_130_DATA;
-                        if (moduleId === 131) return MODULE_131_DATA;
-                        if (moduleId === 132) return MODULE_132_DATA;
-                        if (moduleId === 133) return MODULE_133_DATA;
-                        if (moduleId === 134) return MODULE_134_DATA;
-                        if (moduleId === 135) return MODULE_135_DATA;
-                        if (moduleId === 136) return MODULE_136_DATA;
-                        if (moduleId === 137) return MODULE_137_DATA;
-                        if (moduleId === 138) return MODULE_138_DATA;
-                        if (moduleId === 139) return MODULE_139_DATA;
-                        if (moduleId === 140) return MODULE_140_DATA;
-                        if (moduleId === 141) return MODULE_141_DATA;
-                        if (moduleId === 142) return MODULE_142_DATA;
-                        if (moduleId === 143) return MODULE_143_DATA;
-                        if (moduleId === 144) return MODULE_144_DATA;
-                        if (moduleId === 145) return MODULE_145_DATA;
-                        if (moduleId === 146) return MODULE_146_DATA;
-                        if (moduleId === 147) return MODULE_147_DATA;
-                        if (moduleId === 148) return MODULE_148_DATA;
-                        if (moduleId === 149) return MODULE_149_DATA;
-                        if (moduleId === 150) return MODULE_150_DATA;
-
-                        // Fallback to Module 1 for unknown modules
-                        return MODULE_1_DATA;
-                      };
-                      
-                      // Validate module data before navigation
-                      const moduleData = getModuleDataForValidation(module.id);
-                      if (!validateModuleData(moduleData)) {
-                        console.error(`Module ${module.id} failed validation. Navigation blocked.`);
-                        return;
-                      }
-                      
+                      narration.cancel();
                       setSelectedModule(module.id);
                       setViewState('lesson');
                       setCurrentPhase('intro');
@@ -11224,7 +9854,6 @@ const MODULE_150_DATA = {
                                  const newCompleted = completedModules.filter(m => m !== `module-${module.id}`);
                                  setCompletedModules(newCompleted);
                                  localStorage.setItem('completedModules', JSON.stringify(newCompleted));
-                                 console.log(`🗑️ Reset progress for Module ${module.id}`);
                                }}
                                title="Reset progress"
                              >
@@ -11238,8 +9867,7 @@ const MODULE_150_DATA = {
                 </Card>
                 );
               })
-              );
-            })()}
+            )}
           </div>
         </div>
       </div>
@@ -11248,7 +9876,6 @@ const MODULE_150_DATA = {
 
   // Lesson completion view
   if (currentPhase === 'completed') {
-    console.log('🔍 [LessonsApp] Rendering: Lesson completed view');
     return (
       <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: 'hsl(var(--app-bg))' }}>
         {showConfetti && <Confetti width={width} height={height} />}
@@ -11290,48 +9917,73 @@ const MODULE_150_DATA = {
   // Render lesson content
   return (
     <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: 'hsl(var(--app-bg))' }}>
-      <div className="relative z-10 p-4 max-w-sm mx-auto">
-        {/* Header */}
-        <div className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-3xl p-6 mb-6 mt-safe-area-inset-top">
-          <div className="flex items-center justify-between mb-4">
+      {/* Resume Progress Dialog */}
+      {checkpoints.showResumeDialog && checkpoints.getResumeInfo() && (
+        <ResumeProgressDialog
+          open={checkpoints.showResumeDialog}
+          onOpenChange={checkpoints.setShowResumeDialog}
+          level={selectedLevel}
+          moduleId={selectedModule}
+          {...checkpoints.getResumeInfo()}
+          onResume={() => {
+            // Actually restore the saved state
+            const progress = checkpoints.currentProgress;
+            if (progress) {
+              checkpoints.setShowResumeDialog(false);
+              setSpeakingIndex(progress.question_index);
+              setCurrentPhase('speaking');
+              console.log(`📍 Restored to Q${progress.question_index + 1} (${progress.question_phase})`);
+            }
+          }}
+          onStartFresh={() => checkpoints.startFromBeginning(selectedLevel, selectedModule)}
+        />
+      )}
+
+      <div className="relative z-10 p-3 max-w-sm mx-auto">
+        {/* Compact Header - iPhone Optimized */}
+        <div className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-2xl p-4 mb-4 mt-safe-area-inset-top shadow-lg shadow-black/20">
+          <div className="flex items-center justify-between mb-3">
             <Button
               onClick={() => { narration.cancel(); setViewState('modules'); }}
               variant="ghost"
               size="icon"
-              className="text-white hover:bg-white/10 rounded-full"
+              className="text-white hover:bg-white/10 rounded-full w-10 h-10"
             >
-              <ArrowLeft className="h-5 w-5" />
+              <ArrowLeft className="h-4 w-4" />
             </Button>
             
-            <div className="text-center">
-              <h1 className="text-lg font-bold text-white">{currentModuleData.title}</h1>
-              <p className="text-sm text-white/70">{currentModuleData.description}</p>
+            <div className="text-center flex-1 mx-3">
+              <h1 className="text-base font-bold text-white truncate">Module {selectedModule}</h1>
+              <p className="text-xs text-white/70">Progress: {Math.round(overallProgress)}%</p>
             </div>
             
-            <Button
-              onClick={toggleSound}
-              variant="ghost"
-              size="icon"
-              className="text-white hover:bg-white/10 rounded-full"
-            >
-              <Volume2 className={`h-5 w-5 ${!soundEnabled ? 'opacity-50' : ''}`} />
-            </Button>
-          </div>
-
-          {/* Progress Bar */}
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm text-white/80">
-              <span>Progress</span>
-              <span>{Math.round(overallProgress)}%</span>
+            <div className="flex items-center gap-2">
+              <SyncStatusIndicator
+                isOnline={checkpoints.isOnline}
+                isSyncing={checkpoints.isSyncing}
+                lastSyncAt={checkpoints.lastSyncAt}
+              />
+              <Button
+                onClick={toggleSound}
+                variant="ghost"
+                size="icon"
+                className="text-white hover:bg-white/10 rounded-full w-10 h-10"
+              >
+                <Volume2 className={`h-4 w-4 ${!soundEnabled ? 'opacity-50' : ''}`} />
+              </Button>
             </div>
-            <Progress value={overallProgress} className="h-2" />
           </div>
+
+          {/* Compact Progress Bar */}
+          <Progress value={overallProgress} className="h-1.5" />
         </div>
 
-        {/* Avatar */}
-        <div className="flex justify-center mb-6">
-          <CanvasAvatar state={avatarState} size="lg" />
-        </div>
+        {/* Avatar - Hidden on mobile for space saving */}
+        {!isMobile && (
+          <div className="flex justify-center mb-4">
+            <CanvasAvatar state={avatarState} size="md" />
+          </div>
+        )}
 
         {/* Tip Card - Hidden on mobile */}
         {!isMobile && 'tip' in currentModuleData && currentModuleData.tip && (
@@ -11350,233 +10002,24 @@ const MODULE_150_DATA = {
           </Card>
         )}
 
-        {/* INTRO ONLY */}
-        {currentPhase === 'intro' && (
-          <Card className="bg-white/10 border-white/20 mb-6">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center">
-                <BookOpen className="h-5 w-5 mr-2" />
-                Tomas is Teaching 👨‍🏫
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="text-center">
-                <div className="mb-6">
-                  {!isMobile && (
-                    <AnimatedAvatar 
-                      size="lg" 
-                      state={avatarState}
-                      className="mx-auto mb-4"
-                    />
-                  )}
-                </div>
-                <div className="text-white/90 text-base">
-                  <p className="mb-4">🎧 Listen carefully as Tomas reads through this lesson...</p>
-                  <div className="flex items-center justify-center space-x-2 mb-4">
-                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
-                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
-                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
-                  </div>
-                  <Button
-                    onClick={skipToQuestions}
-                    variant="outline"
-                    size="sm"
-                    className="bg-white/10 border-white/30 text-white hover:bg-white/20 hover:border-white/40 transition-all duration-200"
-                  >
-                    <FastForward className="h-4 w-4 mr-2" />
-                    Skip to Questions
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        {/* Removed duplicate "Tomas is Teaching" card - consolidated below */}
 
-        {/* INTRO SECTION */}
-        {currentPhase === 'intro' && (
-          <ErrorBoundary fallback={
-            <Card className="bg-red-500/10 border-red-400/20 mb-6">
-              <CardContent className="p-4 text-center">
-                <p className="text-red-400">Error loading introduction. Please try refreshing.</p>
-              </CardContent>
-            </Card>
-          }>
-            <div ref={introRef}>
-              <Card className="bg-white/10 border-white/20 mb-6">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center">
-                  <BookOpen className="h-5 w-5 mr-2" />
-                  {currentModuleData.title}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="text-white/90 whitespace-pre-line text-sm leading-relaxed">
-                  {currentModuleData.intro}
-                </div>
-              
-              {(('table' in currentModuleData && currentModuleData.table) && (
-                <div className="bg-white/5 rounded-xl p-4">
-                  <h4 className="text-white font-semibold mb-3 text-center">
-                    {selectedModule === 1 ? '📊 Verb To Be Tablosu:' : 
-                     selectedModule === 2 ? '🧩 Verb To Be Negatif Tablosu:' : 
-                     selectedModule === 3 ? '❓ Verb To Be Soru Tablosu:' :
-                     selectedModule === 4 ? '💬 Verb To Be Short Answers Tablosu:' :
-                     selectedModule === 5 ? '👥 Subject Pronouns Tablosu:' :
-                     selectedModule === 6 ? '🏠 Possessive Adjectives Tablosu:' :
-                     selectedModule === 8 ? '📍 There is / There are Tablosu:' :
-                     selectedModule === 9 ? '🚫 There isn\'t / There aren\'t Tablosu:' :
-                     selectedModule === 10 ? '❓ There is / There are Soru Tablosu:' :
-                     selectedModule === 11 ? '📰 Articles Tablosu:' :
-                     selectedModule === 19 ? '❓ Simple Present Yes/No Questions Tablosu:' :
-                     '📊 Grammar Tablosu:'}
-                  </h4>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-white/90 text-sm">
-                      <thead>
-                        <tr className="border-b border-white/20">
-                          {selectedModule === 3 ? (
-                            <>
-                              <th className="text-left py-2 px-1">Verb To Be</th>
-                              <th className="text-left py-2 px-1">Subject</th>
-                              <th className="text-left py-2 px-1">Complement</th>
-                              <th className="text-left py-2 px-1">Example</th>
-                            </>
-                          ) : selectedModule === 4 ? (
-                            <>
-                              <th className="text-left py-2 px-1">Subject Pronoun</th>
-                              <th className="text-left py-2 px-1">Example</th>
-                            </>
-                          ) : selectedModule === 5 ? (
-                            <>
-                              <th className="text-left py-2 px-1">Subject Pronoun</th>
-                              <th className="text-left py-2 px-1">Example</th>
-                            </>
-                          ) : selectedModule === 6 ? (
-                            <>
-                              <th className="text-left py-2 px-1">Subject Pronoun</th>
-                              <th className="text-left py-2 px-1">Possessive Adjective</th>
-                              <th className="text-left py-2 px-1">Example</th>
-                            </>
-                          ) : selectedModule === 8 || selectedModule === 9 || selectedModule === 10 ? (
-                            <>
-                              <th className="text-left py-2 px-1">Structure</th>
-                              <th className="text-left py-2 px-1">Example</th>
-                            </>
-                           ) : selectedModule === 11 ? (
-                             <>
-                               <th className="text-left py-2 px-1">Article</th>
-                               <th className="text-left py-2 px-1">Usage</th>
-                               <th className="text-left py-2 px-1">Example</th>
-                             </>
-                           ) : selectedModule === 19 ? (
-                             <>
-                               <th className="text-left py-2 px-1">Structure</th>
-                               <th className="text-left py-2 px-1">Example</th>
-                             </>
-                           ) : (
-                            <>
-                              <th className="text-left py-2 px-1">Subject</th>
-                              <th className="text-left py-2 px-1">Verb To Be</th>
-                              {selectedModule === 2 && <th className="text-left py-2 px-1">Not</th>}
-                              <th className="text-left py-2 px-1">Complement</th>
-                              <th className="text-left py-2 px-1">Example</th>
-                            </>
-                          )}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {'table' in currentModuleData && currentModuleData.table && Array.isArray(currentModuleData.table) && currentModuleData.table.map((row, index) => (
-                          <tr key={index} className="border-b border-white/10">
-                            {selectedModule === 3 ? (
-                              <>
-                                <td className="py-2 px-1 text-blue-300 font-medium">{(row as any).verb}</td>
-                                <td className="py-2 px-1">{(row as any).subject}</td>
-                                <td className="py-2 px-1">{(row as any).complement}</td>
-                                <td className="py-2 px-1 italic">{(row as any).example}</td>
-                              </>
-                            ) : selectedModule === 4 ? (
-                              <>
-                                <td className="py-2 px-1 text-purple-300 font-medium">{(row as any).pronoun}</td>
-                                <td className="py-2 px-1 italic">{(row as any).example}</td>
-                              </>
-                            ) : selectedModule === 5 ? (
-                              <>
-                                <td className="py-2 px-1 text-purple-300 font-medium">{(row as any).pronoun}</td>
-                                <td className="py-2 px-1 italic">{(row as any).example}</td>
-                              </>
-                            ) : selectedModule === 6 ? (
-                              <>
-                                <td className="py-2 px-1 text-purple-300 font-medium">{(row as any).pronoun}</td>
-                                <td className="py-2 px-1 text-orange-300 font-medium">{(row as any).possessive}</td>
-                                <td className="py-2 px-1 italic">{(row as any).example}</td>
-                              </>
-                            ) : selectedModule === 8 || selectedModule === 9 || selectedModule === 10 ? (
-                              <>
-                                <td className="py-2 px-1 text-green-300 font-medium">{(row as any).structure}</td>
-                                <td className="py-2 px-1 italic">{(row as any).example}</td>
-                              </>
-                             ) : selectedModule === 11 ? (
-                               <>
-                                 <td className="py-2 px-1 text-blue-300 font-medium">{(row as any).article}</td>
-                                 <td className="py-2 px-1">{(row as any).usage}</td>
-                                 <td className="py-2 px-1 italic">{(row as any).example}</td>
-                               </>
-                             ) : selectedModule === 19 ? (
-                               <>
-                                 <td className="py-2 px-1 text-green-300 font-medium">{(row as any).structure}</td>
-                                 <td className="py-2 px-1 italic">{(row as any).example}</td>
-                               </>
-                             ) : (
-                              <>
-                                <td className="py-2 px-1 font-medium">{(row as any).subject}</td>
-                                <td className="py-2 px-1 text-blue-300">{(row as any).verb}</td>
-                                {selectedModule === 2 && 'not' in row && <td className="py-2 px-1 text-red-300">{(row as any).not}</td>}
-                                <td className="py-2 px-1">{(row as any).complement}</td>
-                                <td className="py-2 px-1 italic">{(row as any).example}</td>
-                              </>
-                            )}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )) as React.ReactNode}
-
-              {/* Manual read button disabled - intro is now silent
-              {!hasBeenRead[lessonKey] && (
-                <div className="text-center pt-4">
-                  <Button
-                    onClick={startTeacherReading}
-                    className="bg-white/20 text-white hover:bg-white/30"
-                    disabled={isSpeaking}
-                  >
-                    {isSpeaking ? "Tomas is Reading..." : "▶️ Let Tomas Read This Lesson"}
-                  </Button>
-                </div>
-              )}
-              */}
-              {/* Replay button disabled - intro is now silent
-              {hasBeenRead[lessonKey] && (
-                <div className="text-center pt-4">
-                  <Button
-                    onClick={startTeacherReading}
-                    variant="outline"
-                    size="sm"
-                    className="bg-white/10 text-white hover:bg-white/20"
-                    disabled={isSpeaking}
-                  >
-                    🔁 Replay Tomas
-                  </Button>
-                </div>
-              )}
-              */}
-            </CardContent>
-          </Card>
+        {/* MOBILE COMPACT INTRO */}
+        {(currentPhase === 'intro' || currentPhase === 'teacher-reading') && (
+          <div ref={introRef}>
+            <MobileCompactIntro
+              title={currentModuleData.title}
+              preview={currentModuleData.intro?.split('\n')[0] || ''}
+              fullContent={currentModuleData.intro || ''}
+              table={('table' in currentModuleData && currentModuleData.table) ? currentModuleData.table : []}
+              tip={('tip' in currentModuleData && currentModuleData.tip) ? currentModuleData.tip : undefined}
+              listeningExamples={currentModuleData.listeningExamples || []}
+              moduleId={selectedModule}
+              level={selectedLevel}
+              onGoToQuestions={() => setCurrentPhase('listening')}
+            />
           </div>
-          </ErrorBoundary>
         )}
-
         {/* Listening Phase */}
         {currentPhase === 'listening' && (
           <Card className="bg-white/10 border-white/20">
@@ -11619,16 +10062,31 @@ const MODULE_150_DATA = {
           </Card>
         )}
 
-        {/* Speaking Phase */}
+        {/* Grammar Tip - Always Visible During Speaking Practice */}
+        {currentPhase === 'speaking' && 'tip' in currentModuleData && currentModuleData.tip && (
+          <Card className="mb-4 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border-blue-500/30 shadow-lg">
+            <CardContent className="p-4">
+              <div className="flex items-start space-x-3">
+                <div className="bg-blue-500/20 rounded-full p-2 flex-shrink-0 animate-pulse">
+                  <Star className="h-4 w-4 text-blue-400" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-blue-300 text-base mb-2 flex items-center">
+                    💡 Grammar Tip
+                    <Badge variant="outline" className="ml-2 text-xs text-blue-300 border-blue-300/30">
+                      Module {selectedModule}
+                    </Badge>
+                  </h3>
+                  <p className="text-blue-100 text-sm leading-relaxed">{currentModuleData.tip}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Enhanced Speaking Phase with Multiple Choice */}
         {currentPhase === 'speaking' && (
-          <ErrorBoundary fallback={
-            <Card className="bg-red-500/10 border-red-400/20">
-              <CardContent className="p-4 text-center">
-                <p className="text-red-400">Error loading speaking practice. Please try refreshing.</p>
-              </CardContent>
-            </Card>
-          }>
-            <Card key={speakingIndex} className="bg-white/10 border-white/20">
+          <Card key={speakingIndex} className="bg-white/10 border-white/20">
             <CardHeader>
               <CardTitle className="text-white flex items-center justify-between">
                 <div className="flex items-center">
@@ -11641,81 +10099,30 @@ const MODULE_150_DATA = {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {(() => {
-                // Define mcq and currentPracticeItem at CardContent scope so they can be accessed throughout
-                const currentPracticeItem = currentModuleData?.speakingPractice?.[speakingIndex];
-
-                // Build MCQ with enhanced error handling (buildClozeAndChoices now ALWAYS returns valid MCQ)
-                let mcq = null;
-                try {
-                  if (currentPracticeItem && typeof currentPracticeItem === 'object') {
-                    mcq = buildClozeAndChoices(
-                      currentPracticeItem?.question || '',
-                      currentPracticeItem?.answer || ''
+              <div className="text-center">
+                {(() => {
+                  const rawItem = currentModuleData?.speakingPractice?.[speakingIndex];
+                  const currentPracticeItem = rawItem ? getSpeakingPracticeItem(rawItem) : null;
+                  const currentState = questionStates[speakingIndex] || { selectedChoice: undefined, choiceCorrect: false, speechCompleted: false };
+                  
+                  if (!currentPracticeItem) {
+                    return (
+                      <p className="text-white/70 text-sm">Preparing next question...</p>
                     );
                   }
-                } catch (error) {
-                  if (process.env.NODE_ENV === 'development') {
-                    console.error(`[MCQ] Unexpected error building MCQ for module ${selectedModule}, question ${speakingIndex}:`, error);
-                  }
-                  // Even on error, try to continue - mcq.ts should handle this gracefully
-                  mcq = null;
-                }
-                
-                return (
-                  <>
-                    <div className="text-center">
-                      <div className="bg-white/5 rounded-xl p-4 mb-4">
-                        {(() => {
-                          if (!currentPracticeItem) {
-                            return (
-                              <p className="text-white/70 text-sm">Preparing next question...</p>
-                            );
-                          }
-                          if (typeof currentPracticeItem === 'string') {
-                            return (
-                              <p className="text-white text-lg font-medium mb-2">
-                                "{currentPracticeItem}"
-                              </p>
-                            );
-                          } else {
-                            return (
-                              <>
-                                <p className="text-white/70 text-sm mb-2">Soru:</p>
-                                <h3 className="text-3xl md:text-4xl font-semibold tracking-tight mb-4">
-                                  {currentPracticeItem?.question || "No question available"}
-                                </h3>
-                                
-                                {(() => {
-                                  return (
-                                      <>
-                                        {/* STEP 1 — Multiple Choice */}
-                                        {mcq && speakStep === 'mcq' && (
-                                          <MultipleChoiceCard
-                                            cloze={mcq.cloze}
-                                            options={mcq.options}
-                                            correct={mcq.correct}
-                                            questionIndex={speakingIndex}
-                                            onCorrect={transitionToSpeaking}
-                                          />
-                                        )}
-                                        
-                                        {/* STEP 2 — Speaking */}
-                                        {(!mcq || speakStep === 'speak') && (
-                                          <>
-                                            <p className="text-base md:text-lg text-white/80 mb-2">Cevap (Answer):</p>
-                                            <p className="text-xl md:text-2xl mb-2">
-                                              Say: "{currentPracticeItem?.answer || "No answer available"}"
-                                            </p>
-                                          </>
-                                        )}
-                                      </>
-                                  );
-                                })()}
-                              </>
-                            );
-                          }
-                        })()}
+
+                  // Enhanced Question Display with Better Typography
+                  return (
+                    <>
+                      {/* Question Header - Made Larger and More Prominent */}
+                      <div className="bg-white/5 rounded-xl p-6 mb-6">
+                        <p className="text-white/80 text-lg font-medium mb-3">
+                          Soru (Question):
+                        </p>
+                        <p className="text-white text-3xl font-bold mb-4 leading-relaxed">
+                          {currentPracticeItem.question}
+                        </p>
+                        
                         <Button
                           onClick={speakCurrentSentence}
                           variant="ghost"
@@ -11723,95 +10130,212 @@ const MODULE_150_DATA = {
                           className="text-white/70 hover:text-white hover:bg-white/10"
                           disabled={isSpeaking}
                         >
-                          <Volume2 className="h-4 w-4 mr-1" />
-                          Listen
+                          <Volume2 className="h-4 w-4 mr-2" />
+                          Listen to Question
                         </Button>
                       </div>
-                    </div>
-                {/* STEP 2 — Speaking: Gate mic behind MCQ */}
-                {(!mcq || speakStep === 'speak') && (
-                  <>
 
-                {/* Recording Button */}
-                <div className="mb-4">
-                  <Button
-                    id="micButton"
-                    key={`mic-${speakingIndex}`}
-                    onClick={() => {
-                      const canSpeak = viewState === 'lesson' && currentPhase === 'speaking';
-                      if (!canSpeak) return;
-                      // single-source speaking entry; safe-guard inside
-                      startSpeakingFlow();
-                    }}
-                    // DO NOT disable the button; we guard internally
-                    disabled={false}
-                    aria-disabled={false}
-                    style={{
-                      pointerEvents: 'auto',
-                      zIndex: 5,                  // sit above any card overlays
-                      touchAction: 'manipulation' // iOS tap reliability
-                    }}
-                    size="lg"
-                    className={`mic-button rounded-full w-20 h-20 ${
-                      speakStatus === 'recording' 
-                        ? 'bg-red-500 hover:bg-red-600 animate-pulse' 
-                        : 'bg-white/20 hover:bg-white/30'
-                    }`}
-                  >
-                    {speakStatus === 'recording' ? (
-                      <MicOff className="h-8 w-8" />
-                    ) : (
-                      <Mic className="h-8 w-8" />
-                    )}
-                  </Button>
-                </div>
-                  </>
-                )}
+                      {/* Multiple Choice Section - Show first if not completed */}
+                      {currentPracticeItem.multipleChoice && !currentState.choiceCorrect && (
+                        <div className="bg-blue-500/10 rounded-xl p-6 mb-6 border border-blue-500/20 relative">
+                          {/* Step Indicator */}
+                          <div className="absolute -top-3 left-4 bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-semibold flex items-center">
+                            <span className="mr-1">1</span>
+                            <div className="w-2 h-2 bg-white rounded-full ml-1"></div>
+                            <div className="w-2 h-2 bg-blue-300 rounded-full ml-1"></div>
+                          </div>
+                          <h3 className="text-blue-300 text-lg font-semibold mb-4 text-center mt-2">
+                            🎯 Multiple Choice Quiz
+                          </h3>
+                          <p className="text-white text-xl font-medium mb-6 text-center">
+                            {currentPracticeItem.multipleChoice.prompt}
+                          </p>
+                          
+                          <div className="grid grid-cols-1 gap-3 max-w-md mx-auto">
+                            {currentPracticeItem.multipleChoice.options.map((option) => (
+                              <Button
+                                key={option.letter}
+                                onClick={() => handleMultipleChoiceSelect(option.letter, option.correct)}
+                                variant="outline"
+                                size="lg"
+                                className={`text-left justify-start p-4 h-auto ${
+                                  currentState.selectedChoice === option.letter
+                                    ? option.correct
+                                      ? 'bg-green-500/20 border-green-500 text-green-300'
+                                      : 'bg-red-500/20 border-red-500 text-red-300'
+                                    : 'bg-white/10 text-white border-white/30 hover:bg-white/20'
+                                }`}
+                                disabled={!!currentState.selectedChoice}
+                              >
+                                <span className="font-bold mr-3 text-lg">
+                                  {option.letter}.
+                                </span>
+                                <span className="text-lg">
+                                  {option.text}
+                                </span>
+                              </Button>
+                            ))}
+                          </div>
+                          
+                          {currentState.selectedChoice && (
+                            <div className="mt-4 text-center">
+                              {currentState.choiceCorrect ? (
+                                <p className="text-green-300 font-medium">
+                                  ✅ Correct! Now speak the full sentence.
+                                </p>
+                              ) : (
+                                <p className="text-red-300 font-medium">
+                                  ❌ Try again! Choose the correct option.
+                                </p>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
 
-                <div style={{ pointerEvents: 'none' }}>
-                  <p className="text-white/70 text-sm mb-4">
-                    {speakStatus === 'recording' ? 'Listening...' : 'Tap to speak the sentence'}
-                  </p>
-                </div>
+                      {/* Speaking Section - Show after correct multiple choice */}
+                      {currentState.choiceCorrect && (
+                        <div className="bg-green-500/10 rounded-xl p-6 border border-green-500/20 relative">
+                          {/* Step Indicator */}
+                          <div className="absolute -top-3 left-4 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-semibold flex items-center">
+                            <div className="w-2 h-2 bg-green-300 rounded-full mr-1"></div>
+                            <span className="mx-1">2</span>
+                            <div className="w-2 h-2 bg-white rounded-full ml-1 animate-pulse"></div>
+                          </div>
+                          <h3 className="text-green-300 text-lg font-semibold mb-4 text-center mt-2">
+                            🎤 Speaking Practice
+                          </h3>
+                          <p className="text-white/80 text-base font-medium mb-2 text-center">
+                            Cevap (Answer):
+                          </p>
+                          <p className="text-white text-lg font-medium mb-6 text-center leading-relaxed">
+                            "{currentPracticeItem.answer}"
+                          </p>
+                          
+                          <div className="text-center">
+                            <Button
+                              onClick={speakCurrentSentence}
+                              variant="ghost"
+                              size="sm"
+                              className="text-white/70 hover:text-white hover:bg-white/10 mb-4"
+                              disabled={isSpeaking}
+                            >
+                              <Volume2 className="h-4 w-4 mr-2" />
+                              Listen to Answer
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
+              </div>
 
-                {/* Feedback */}
-                {feedback && (
-                  <div className={`p-3 rounded-lg ${
-                    feedbackType === 'success' ? 'bg-green-500/20 text-green-400' :
-                    feedbackType === 'error' ? 'bg-red-500/20 text-red-400' :
-                    'bg-blue-500/20 text-blue-400'
-                  }`}>
-                    <div className="flex items-center justify-center space-x-2">
-                      {feedbackType === 'success' ? (
-                        <CheckCircle className="h-4 w-4" />
-                      ) : feedbackType === 'error' ? (
-                        <AlertCircle className="h-4 w-4" />
-                      ) : null}
-                      <span className="text-sm">{feedback}</span>
-                    </div>
+              {/* Recording Button - Only show after correct multiple choice */}
+              {(() => {
+                const currentState = questionStates[speakingIndex] || { selectedChoice: undefined, choiceCorrect: false, speechCompleted: false };
+                const rawItem = currentModuleData?.speakingPractice?.[speakingIndex];
+                const currentPracticeItem = rawItem ? getSpeakingPracticeItem(rawItem) : null;
+                
+                // STRICT: Show microphone ONLY if multiple choice is completed correctly
+                // Every question MUST have multiple choice, and it MUST be answered correctly
+                const canProceedToSpeaking = currentPracticeItem?.multipleChoice 
+                  ? currentState.choiceCorrect === true
+                  : false; // If no multiple choice generated, something is wrong
+                
+                if (canProceedToSpeaking) {
+                  return (
+                    <>
+                      <div className="mb-4 text-center">
+                        <Button
+                          id="micButton"
+                          key={`mic-${speakingIndex}`}
+                          onClick={() => {
+                            const canSpeak = viewState === 'lesson' && currentPhase === 'speaking';
+                            if (!canSpeak) return;
+                            // single-source speaking entry; safe-guard inside
+                            startSpeakingFlow();
+                          }}
+                          disabled={false}
+                          aria-disabled={false}
+                          style={{
+                            pointerEvents: 'auto',
+                            zIndex: 5,                  // sit above any card overlays
+                            touchAction: 'manipulation' // iOS tap reliability
+                          }}
+                          size="lg"
+                          className={`mic-button rounded-full w-20 h-20 ${
+                            speakStatus === 'recording' 
+                              ? 'bg-red-500 hover:bg-red-600 animate-pulse' 
+                              : 'bg-white/20 hover:bg-white/30'
+                          }`}
+                        >
+                          {speakStatus === 'recording' ? (
+                            <MicOff className="h-8 w-8" />
+                          ) : (
+                            <Mic className="h-8 w-8" />
+                          )}
+                        </Button>
+                      </div>
+
+                      <div style={{ pointerEvents: 'none' }}>
+                        <p className="text-white/70 text-sm mb-4">
+                          {speakStatus === 'recording' ? 'Listening...' : 'Tap to speak the sentence'}
+                        </p>
+                      </div>
+                    </>
+                  );
+                }
+                return null;
+              })()}
+
+              {/* Feedback */}
+              {feedback && (
+                <div className={`p-3 rounded-lg ${
+                  feedbackType === 'success' ? 'bg-green-500/20 text-green-400' :
+                  feedbackType === 'error' ? 'bg-red-500/20 text-red-400' :
+                  'bg-blue-500/20 text-blue-400'
+                }`}>
+                  <div className="flex items-center justify-center space-x-2">
+                    {feedbackType === 'success' ? (
+                      <CheckCircle className="h-4 w-4" />
+                    ) : feedbackType === 'error' ? (
+                      <AlertCircle className="h-4 w-4" />
+                    ) : null}
+                    <span className="text-sm">{feedback}</span>
                   </div>
-                )}
-              </>
-            );
-          })()}
+                </div>
+              )}
             </CardContent>
           </Card>
-          </ErrorBoundary>
         )}
       </div>
 
-      {/* Debug Overlay - Only in development */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="fixed top-4 right-4 z-50 bg-black/80 text-white text-xs p-3 rounded-lg font-mono max-w-xs">
-          <div className="font-semibold mb-2">🔍 Debug Info</div>
-          <div>View: {viewState}</div>
-          <div>Level: {selectedLevel || 'none'}</div>
-          <div>Module: {selectedModule || 'none'}</div>
-          <div>Phase: {currentPhase}</div>
-          <div>Hydrated: {isHydrated ? '✅' : '❌'}</div>
-          <div>Speaking: {speakingIndex}/{currentModuleData?.speakingPractice?.length || 0}</div>
-          <div>MCQ Step: {speakStep}</div>
-        </div>
+      {/* Voice Controls */}
+      {viewState === 'lesson' && voiceCommands.isSupported && (
+        <>
+          <VoiceControls
+            visible={true}
+            position="bottom-right"
+            autoHide={true}
+            autoHideDelay={5000}
+            showHelp={true}
+            compact={false}
+            onVisibilityChange={(visible) => {
+              console.log('Voice controls visibility:', visible);
+            }}
+          />
+          
+          <ResumeChip
+            visible={voiceCommands.speechState.isPaused}
+            pausedSince={Date.now() - 1000} // Approximate pause time
+            onResume={voiceCommands.resumeSpeech}
+            onCancel={voiceCommands.stopSpeech}
+            position="center"
+            animated={true}
+            showTimer={true}
+          />
+        </>
       )}
 
       {/* Celebration Overlay */}
