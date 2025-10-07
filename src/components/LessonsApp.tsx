@@ -13872,11 +13872,11 @@ const MODULE_150_DATA = {
                 const rawItem = currentModuleData?.speakingPractice?.[speakingIndex];
                 const currentPracticeItem = rawItem ? getSpeakingPracticeItem(rawItem, speakingIndex) : null;
                 
-                // STRICT: Show microphone ONLY if multiple choice is completed correctly
-                // Every question MUST have multiple choice, and it MUST be answered correctly
-                const canProceedToSpeaking = currentPracticeItem?.multipleChoice 
+                // Show microphone after multiple choice is correct, OR if no multiple choice exists
+                // Questions without multiple choice can go directly to speaking
+                const canProceedToSpeaking = currentPracticeItem?.multipleChoice
                   ? currentState.choiceCorrect === true
-                  : false; // If no multiple choice generated, something is wrong
+                  : true; // If no multiple choice, allow speaking immediately
                 
                 if (canProceedToSpeaking) {
                   return (
