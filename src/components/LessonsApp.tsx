@@ -9530,6 +9530,702 @@ Examples:
   ]
 };
 
+const MODULE_144_DATA = {
+  title: "Environment Vocabulary – Problems and Solutions (B1+ Level)",
+  description: "Learn B1+ environment vocabulary and practice discussing problems and solutions.",
+  intro: `Bu modülde çevreyle ilgili sorunları ve çözümleri B1+ düzeyinde öğreneceksiniz. İklim değişikliği, kirlilik, sürdürülebilirlik ve çevre koruma gibi temalara odaklanır.
+
+📚 VOCABULARY:
+• climate change - iklim değişikliği
+• global warming - küresel ısınma
+• pollution - kirlilik
+• deforestation - ormansızlaşma
+• greenhouse gases - sera gazları
+• carbon footprint - karbon ayak izi
+• renewable energy - yenilenebilir enerji
+• sustainable - sürdürülebilir
+• recycling - geri dönüşüm
+• biodiversity - biyolojik çeşitlilik
+• environmentally friendly - çevre dostu
+• overconsumption - aşırı tüketim
+• eco-friendly products - çevre dostu ürünler
+• waste management - atık yönetimi
+• conservation - koruma
+• natural resources - doğal kaynaklar
+• energy-efficient - enerji verimli
+• landfill - çöp alanı
+• water scarcity - su kıtlığı
+• extinction - yok olma`,
+  tip: "Use environmental vocabulary to discuss global issues and propose solutions. Remember: 'renewable energy' not 'renewable power', 'carbon footprint' not 'carbon trace'",
+
+  table: [
+    { en: "climate change", tr: "iklim değişikliği" },
+    { en: "global warming", tr: "küresel ısınma" },
+    { en: "pollution", tr: "kirlilik" },
+    { en: "deforestation", tr: "ormansızlaşma" },
+    { en: "greenhouse gases", tr: "sera gazları" },
+    { en: "carbon footprint", tr: "karbon ayak izi" },
+    { en: "renewable energy", tr: "yenilenebilir enerji" },
+    { en: "sustainable", tr: "sürdürülebilir" },
+    { en: "recycling", tr: "geri dönüşüm" },
+    { en: "biodiversity", tr: "biyolojik çeşitlilik" },
+    { en: "environmentally friendly", tr: "çevre dostu" },
+    { en: "overconsumption", tr: "aşırı tüketim" },
+    { en: "eco-friendly products", tr: "çevre dostu ürünler" },
+    { en: "waste management", tr: "atık yönetimi" },
+    { en: "conservation", tr: "koruma" },
+    { en: "natural resources", tr: "doğal kaynaklar" },
+    { en: "energy-efficient", tr: "enerji verimli" },
+    { en: "landfill", tr: "çöp alanı" },
+    { en: "water scarcity", tr: "su kıtlığı" },
+    { en: "extinction", tr: "yok olma" }
+  ],
+
+  listeningExamples: [
+    "Climate change affects everyone.",
+    "Recycling reduces waste.",
+    "Renewable energy is the future."
+  ],
+
+  speakingPractice: [
+    { question: "What are the main causes of climate change?", answer: "Mainly greenhouse gas emissions from burning fossil fuels." },
+    { question: "How can we reduce air pollution?", answer: "By promoting public transport and using cleaner energy sources." },
+    { question: "What is the impact of deforestation?", answer: "It destroys habitats, reduces biodiversity, and contributes to global warming." },
+    { question: "What does 'carbon footprint' mean?", answer: "It is the total amount of greenhouse gases we produce through our actions." },
+    { question: "What are some renewable energy sources?", answer: "Solar, wind, hydroelectric, and geothermal energy." },
+    { question: "How does recycling help the environment?", answer: "It reduces waste, saves energy, and conserves natural resources." },
+    { question: "Why is biodiversity important?", answer: "It keeps ecosystems balanced and supports human life." },
+    { question: "What can individuals do to live more sustainably?", answer: "Reduce waste, save energy, and choose eco‑friendly products." },
+    { question: "What is an environmentally friendly lifestyle?", answer: "A lifestyle that minimizes harm to the planet using sustainable practices." },
+    { question: "Why is plastic pollution a major problem?", answer: "It takes centuries to decompose and harms wildlife." },
+    { question: "How can we save water in daily life?", answer: "Fix leaks, use water‑efficient appliances, and turn off taps." },
+    { question: "What are the dangers of overconsumption?", answer: "Resource depletion, more waste, and environmental damage." },
+    { question: "Why should we switch to energy‑efficient devices?", answer: "They use less electricity and lower emissions." },
+    { question: "What does 'waste management' include?", answer: "Collection, transport, recycling, and disposal of waste." },
+    { question: "What are eco‑friendly products?", answer: "Items made with sustainable materials that harm nature less." },
+    { question: "How can we protect endangered species?", answer: "Preserve habitats and support conservation programs." },
+    { question: "What is the role of governments in environmental protection?", answer: "Make laws, support green projects, and raise awareness." },
+    { question: "How does global warming affect sea levels?", answer: "It melts ice and raises oceans, threatening coasts." },
+    { question: "What can schools do to promote environmental awareness?", answer: "Organize projects, campaigns, and eco‑education programs." },
+    { question: "How is climate change affecting agriculture?", answer: "It changes rainfall and increases droughts and floods." },
+    { question: "Why are forests essential for the planet?", answer: "They absorb CO₂ and provide oxygen, food, and shelter." },
+    { question: "How can we reduce our carbon footprint?", answer: "Use less electricity, drive less, and eat local food." },
+    { question: "What happens when biodiversity decreases?", answer: "Ecosystems become weaker and more likely to collapse." },
+    { question: "How can technology help the environment?", answer: "By creating clean energy and improving efficiency." },
+    { question: "What is 'sustainable development'?", answer: "Development meeting today's needs without harming the future." },
+    { question: "Why are landfills problematic?", answer: "They release methane and can pollute land and water." },
+    { question: "How can urban areas become greener?", answer: "Add parks, plant trees, and improve public transport." },
+    { question: "What is water scarcity?", answer: "Not enough clean water for people's needs." },
+    { question: "How can we reduce food waste?", answer: "Plan meals, store food properly, and donate extras." },
+    { question: "What are the benefits of green buildings?", answer: "They use less energy and water and are healthier." },
+    { question: "What role do students play in environmental protection?", answer: "Join eco‑clubs and lead awareness campaigns." },
+    { question: "What is the connection between consumption and pollution?", answer: "More consumption creates more waste and pollution." },
+    { question: "How can businesses be more eco‑conscious?", answer: "Reduce packaging, recycle, and use renewable energy." },
+    { question: "Why should we reduce single‑use plastics?", answer: "They pollute land and oceans and harm marine life." },
+    { question: "What is extinction and why is it serious?", answer: "A species disappears forever, upsetting ecological balance." },
+    { question: "How does overfishing affect marine life?", answer: "It reduces fish populations and breaks the food chain." },
+    { question: "What are climate‑friendly habits?", answer: "Use reusable bags, bike or walk, and conserve water." },
+    { question: "How can governments encourage green energy?", answer: "Offer subsidies and invest in solar and wind." },
+    { question: "Why is environmental education important?", answer: "It teaches people to care for the planet." },
+    { question: "What's your opinion on banning plastic bags?", answer: "It's a strong step to reduce plastic waste." }
+  ]
+};
+
+const MODULE_145_DATA = {
+  title: "News and Media Vocabulary (B1+ Level)",
+  description: "Learn B1+ news and media vocabulary and practice discussing how news works.",
+  intro: `Bu modülde haber ve medya dünyasındaki temel kavramları öğrenecek ve konuşma pratiği yapacaksınız.
+
+📚 VOCABULARY:
+• headline - manşet
+• breaking news - son dakika haberi
+• reporter - muhabir
+• journalist - gazeteci
+• editor - editör
+• news anchor - haber sunucusu
+• article - makale
+• interview - röportaj
+• broadcast - yayın
+• live coverage - canlı yayın
+• press - basın
+• media outlet - medya kuruluşu
+• fake news - sahte haber
+• source - kaynak
+• tabloid - magazin gazetesi
+• mainstream media - ana akım medya
+• social media - sosyal medya
+• go viral - hızla yayılmak
+• subscribe - abone olmak
+• objective reporting - tarafsız haber yapma`,
+  tip: "Use 'breaking news' for urgent stories, 'headline' for the main title, and 'go viral' when content spreads rapidly online",
+
+  table: [
+    { en: "headline", tr: "manşet" },
+    { en: "breaking news", tr: "son dakika haberi" },
+    { en: "reporter", tr: "muhabir" },
+    { en: "journalist", tr: "gazeteci" },
+    { en: "editor", tr: "editör" },
+    { en: "news anchor", tr: "haber sunucusu" },
+    { en: "article", tr: "makale" },
+    { en: "interview", tr: "röportaj" },
+    { en: "broadcast", tr: "yayın" },
+    { en: "live coverage", tr: "canlı yayın" },
+    { en: "press", tr: "basın" },
+    { en: "media outlet", tr: "medya kuruluşu" },
+    { en: "fake news", tr: "sahte haber" },
+    { en: "source", tr: "kaynak" },
+    { en: "tabloid", tr: "magazin gazetesi" },
+    { en: "mainstream media", tr: "ana akım medya" },
+    { en: "social media", tr: "sosyal medya" },
+    { en: "go viral", tr: "hızla yayılmak" },
+    { en: "subscribe", tr: "abone olmak" },
+    { en: "objective reporting", tr: "tarafsız haber yapma" }
+  ],
+
+  listeningExamples: [
+    "The headline caught everyone's attention.",
+    "Breaking news: The election results are in.",
+    "This video went viral overnight."
+  ],
+
+  speakingPractice: [
+    { question: "Do you read the news every day?", answer: "Yes, I usually check news apps every morning." },
+    { question: "What type of news do you follow the most?", answer: "Mostly international news and current affairs." },
+    { question: "Have you ever read a fake news story?", answer: "Yes, and it was convincing at first." },
+    { question: "What does a journalist do?", answer: "Investigates and writes news stories." },
+    { question: "Do you prefer watching or reading the news?", answer: "Reading, because I can choose topics easily." },
+    { question: "What's your favorite news outlet?", answer: "BBC, for detailed and balanced reporting." },
+    { question: "What does a headline usually tell you?", answer: "A brief summary of the main topic." },
+    { question: "Have you ever watched a live news broadcast?", answer: "Yes, during elections and big events." },
+    { question: "What's the role of a news anchor?", answer: "To present news on TV or radio." },
+    { question: "Do you trust mainstream media?", answer: "I do, but I cross‑check with other sources." },
+    { question: "What's the danger of fake news?", answer: "It spreads misinformation and causes panic." },
+    { question: "Do you follow news on social media?", answer: "Yes, but I verify before believing." },
+    { question: "What is an interview in journalism?", answer: "A conversation to gather information or opinions." },
+    { question: "Have you ever been interviewed?", answer: "Yes, once for a school magazine." },
+    { question: "What's the difference between a reporter and an editor?", answer: "Reporters gather news; editors prepare it for publication." },
+    { question: "Do you like reading tabloids?", answer: "Not really; I prefer fact‑based journalism." },
+    { question: "What does 'go viral' mean?", answer: "A story or video spreads rapidly online." },
+    { question: "Do you subscribe to any newspapers?", answer: "Yes, a digital subscription to The Economist." },
+    { question: "How can you identify reliable news sources?", answer: "Check credibility and reporting quality." },
+    { question: "What is objective reporting?", answer: "Reporting facts without personal bias." },
+    { question: "Does news influence public opinion?", answer: "Definitely; framing shapes views." },
+    { question: "What is breaking news?", answer: "Urgent, unexpected information reported immediately." },
+    { question: "What are press conferences for?", answer: "Officials answer questions from the media." },
+    { question: "Do you share news online?", answer: "Yes, when it's important or inspiring." },
+    { question: "What do editors do?", answer: "Ensure accuracy, grammar, and clarity." },
+    { question: "How has social media changed news?", answer: "It's more accessible, but misinformation increased." },
+    { question: "What about citizen journalism?", answer: "Useful for fast updates, but not always accurate." },
+    { question: "Printed newspapers or digital?", answer: "Digital—more convenient and up‑to‑date." },
+    { question: "Opinion on news apps?", answer: "Helpful if topics and notifications are customizable." },
+    { question: "Have you ever seen biased reporting?", answer: "Yes, especially during campaigns." },
+    { question: "Are young people interested in news?", answer: "Some are, especially via engaging formats." },
+    { question: "Difference between news and opinion?", answer: "News = facts; opinion = personal views." },
+    { question: "Benefits of live coverage?", answer: "Real‑time updates for breaking events." },
+    { question: "Should schools teach media literacy?", answer: "Yes, to analyze news critically." },
+    { question: "Role of the press in a democracy?", answer: "Inform the public and hold power accountable." },
+    { question: "How do you stay updated?", answer: "Mobile apps and push notifications." },
+    { question: "Do you ever turn off the news?", answer: "Sometimes, to avoid overload." },
+    { question: "View on sensational headlines?", answer: "Attention‑grabbing but sometimes misleading." },
+    { question: "International or local news more?", answer: "Mostly international, but I check local too." },
+    { question: "Documentary about journalism?", answer: "Yes, it showed how newsrooms work." }
+  ]
+};
+
+const MODULE_146_DATA = {
+  title: "Personality and Character Vocabulary (B1)",
+  description: "Build B1 personality/character vocabulary and answer speaking questions using new adjectives.",
+  intro: `Kişilik ve karakter sıfatlarını B1 düzeyinde kullanma ve konuşma pratiği.
+
+📚 VOCABULARY:
+• empathetic - empatik
+• reliable - güvenilir
+• charismatic - karizmatik
+• witty - nüktedan
+• open-minded - açık fikirli
+• arrogant - kibirli
+• manipulative - manipülatif
+• impulsive - fevri
+• moody - huysuz/ruh hali değişken
+• stubborn - inatçı
+• ambitious - hırslı
+• introverted - içe dönük
+• extroverted - dışa dönük
+• cautious - tedbirli
+• perfectionist - mükemmeliyetçi`,
+  tip: "Use 'empathetic' (not sympathetic), 'introverted/extroverted' (not introvert/extrovert as adjectives), and 'open-minded' with a hyphen",
+
+  table: [
+    { en: "empathetic", tr: "empatik" },
+    { en: "reliable", tr: "güvenilir" },
+    { en: "charismatic", tr: "karizmatik" },
+    { en: "witty", tr: "nüktedan" },
+    { en: "open-minded", tr: "açık fikirli" },
+    { en: "arrogant", tr: "kibirli" },
+    { en: "manipulative", tr: "manipülatif" },
+    { en: "impulsive", tr: "fevri" },
+    { en: "moody", tr: "huysuz/ruh hali değişken" },
+    { en: "stubborn", tr: "inatçı" },
+    { en: "ambitious", tr: "hırslı" },
+    { en: "introverted", tr: "içe dönük" },
+    { en: "extroverted", tr: "dışa dönük" },
+    { en: "cautious", tr: "tedbirli" },
+    { en: "perfectionist", tr: "mükemmeliyetçi" }
+  ],
+
+  listeningExamples: [
+    "She is very reliable; you can always count on her.",
+    "He's quite witty and makes everyone laugh.",
+    "Being open-minded helps you understand different perspectives."
+  ],
+
+  speakingPractice: [
+    { question: "How would your best friend describe your personality?", answer: "She would describe me as reliable, honest, and a good listener." },
+    { question: "What is your strongest personality trait?", answer: "Being dependable in every situation." },
+    { question: "Which of your traits do you want to improve?", answer: "My patience, especially under stress." },
+    { question: "Are you more introverted or extroverted? Why?", answer: "More introverted; I need alone time to recharge." },
+    { question: "Have you become more open‑minded over the years?", answer: "Yes, by listening to different perspectives." },
+    { question: "Do you consider yourself a perfectionist? Why?", answer: "Yes, I want everything exactly right." },
+    { question: "What makes someone charismatic?", answer: "Confidence, clear speech, and easy connection." },
+    { question: "Can a moody person be a good leader?", answer: "Yes, if they manage emotions well." },
+    { question: "Are you cautious when making decisions?", answer: "Yes, I think carefully to avoid mistakes." },
+    { question: "What is emotional intelligence?", answer: "Understanding your feelings and reacting calmly to others." },
+    { question: "Ambitious or relaxed coworkers?", answer: "Ambitious—they're focused and driven." },
+    { question: "Is being stubborn always bad?", answer: "No, it helps you stand up for beliefs." },
+    { question: "How do you deal with manipulative people?", answer: "Set clear boundaries and avoid influence." },
+    { question: "Can you trust someone very impulsive?", answer: "Not fully; they act without thinking." },
+    { question: "Most reliable person in your life?", answer: "My mother—she always keeps her word." },
+    { question: "Do you enjoy witty people?", answer: "Yes, they make conversations fun." },
+    { question: "Met someone extremely arrogant? What happened?", answer: "Yes, he ignored others and showed off." },
+    { question: "Can people change their personalities?", answer: "Yes, with reflection and effort." },
+    { question: "Traits for a romantic partner?", answer: "Kindness, honesty, stability." },
+    { question: "Do opposites attract?", answer: "Yes—different personalities can complement." },
+    { question: "People in your country: introverted or extroverted?", answer: "Mostly extroverted and social." },
+    { question: "Traits admired in your culture?", answer: "Respect for elders is highly valued." },
+    { question: "How does social media affect personality?", answer: "It increases self‑consciousness and shapes behavior." },
+    { question: "Should schools teach emotional intelligence?", answer: "Yes, students must learn emotion management." },
+    { question: "Traits important for politicians?", answer: "Empathy, confidence, clear communication." },
+    { question: "Are charismatic people always honest?", answer: "No, charisma can also manipulate." },
+    { question: "Why do people pretend to be someone else?", answer: "For acceptance or to hide insecurity." },
+    { question: "Which personalities become famous easily?", answer: "Confident, entertaining ones." },
+    { question: "Do leaders need to be empathetic?", answer: "Yes, it helps them connect and guide." },
+    { question: "How do cultural values affect personality?", answer: "They set norms for expression." },
+    { question: "If you could change one trait?", answer: "I'd reduce how fast I get frustrated." },
+    { question: "Intelligence or charisma?", answer: "Charisma—helps build relationships." },
+    { question: "Handling a very stubborn child?", answer: "Stay calm and encourage flexibility." },
+    { question: "Can being too open‑minded be risky?", answer: "Yes, lack of limits leads to poor choices." },
+    { question: "Can someone be introverted and extroverted?", answer: "Yes, depending on the situation." },
+    { question: "Meeting your personality twin—feelings?", answer: "Curious; I'd learn from similarities." },
+    { question: "Honest or kind in feedback?", answer: "Both—honest and respectful." },
+    { question: "Hire for personality or skills?", answer: "Both matter; personality aids teamwork." },
+    { question: "Can personality affect success?", answer: "Yes, confidence and adaptability help." },
+    { question: "Did your job change your personality?", answer: "Yes, I'm more disciplined and timely." }
+  ]
+};
+
+const MODULE_147_DATA = {
+  title: "Crime and Law Vocabulary (B1 Level)",
+  description: "Learn B1 crime/law vocabulary and practice speaking about legal topics.",
+  intro: `Suç, polislik ve mahkeme süreçleriyle ilgili temel kelimeleri B1 düzeyinde öğrenip konuşma pratiği yapma.
+
+📚 VOCABULARY:
+• crime - suç
+• criminal - suçlu
+• evidence - delil
+• witness - tanık
+• trial - duruşma
+• verdict - hüküm/karar
+• sentence - ceza
+• innocent - suçsuz
+• guilty - suçlu
+• victim - mağdur
+• judge - yargıç
+• jury - jüri
+• suspect - şüpheli
+• arrest - tutuklamak
+• robbery - soygun
+• burglary - hırsızlık (eve girerek)
+• murder - cinayet
+• fraud - dolandırıcılık
+• lawyer - avukat
+• bail - kefalet`,
+  tip: "Remember: 'robbery' involves force, 'burglary' is breaking in to steal, 'theft' is general stealing. Use 'verdict' for the decision, 'sentence' for the punishment",
+
+  table: [
+    { en: "crime", tr: "suç" },
+    { en: "criminal", tr: "suçlu" },
+    { en: "evidence", tr: "delil" },
+    { en: "witness", tr: "tanık" },
+    { en: "trial", tr: "duruşma" },
+    { en: "verdict", tr: "hüküm/karar" },
+    { en: "sentence", tr: "ceza" },
+    { en: "innocent", tr: "suçsuz" },
+    { en: "guilty", tr: "suçlu" },
+    { en: "victim", tr: "mağdur" },
+    { en: "judge", tr: "yargıç" },
+    { en: "jury", tr: "jüri" },
+    { en: "suspect", tr: "şüpheli" },
+    { en: "arrest", tr: "tutuklamak" },
+    { en: "robbery", tr: "soygun" },
+    { en: "burglary", tr: "hırsızlık (eve girerek)" },
+    { en: "murder", tr: "cinayet" },
+    { en: "fraud", tr: "dolandırıcılık" },
+    { en: "lawyer", tr: "avukat" },
+    { en: "bail", tr: "kefalet" }
+  ],
+
+  listeningExamples: [
+    "The witness gave evidence at the trial.",
+    "The jury reached a verdict of guilty.",
+    "The lawyer defended the suspect in court."
+  ],
+
+  speakingPractice: [
+    { question: "Have you ever witnessed a crime? What happened?", answer: "Yes, a theft in a supermarket; a man stole a bottle and ran." },
+    { question: "What kind of crimes are most common in your country?", answer: "Theft, pickpocketing, and fraud." },
+    { question: "Do you feel safe in your neighborhood? Why?", answer: "Yes—regular police patrols and low crime rates." },
+    { question: "What can people do to prevent burglary?", answer: "Install cameras, use alarms, and lock doors." },
+    { question: "Should criminals always go to prison?", answer: "Only for serious crimes proven in court." },
+    { question: "How does the legal system work in your country?", answer: "Police investigate, courts hold trials, judges sentence." },
+    { question: "What do you think about the death penalty?", answer: "Used in some countries for murder; it's controversial." },
+    { question: "Difference between robbery and burglary?", answer: "Robbery uses force; burglary is illegal entry to steal." },
+    { question: "Do you trust the police?", answer: "Yes, they respond quickly and act professionally." },
+    { question: "What should you do if you witness a crime?", answer: "Call the police, stay calm, and describe what you saw." },
+    { question: "What is the role of evidence in a trial?", answer: "Evidence proves what happened and supports the verdict." },
+    { question: "Who is a witness?", answer: "Someone who saw the crime and can describe it." },
+    { question: "What happens at a trial?", answer: "Lawyers argue, witnesses testify, and the jury decides." },
+    { question: "What is a verdict?", answer: "The decision: guilty or not guilty." },
+    { question: "What does 'sentence' mean in law?", answer: "The punishment given by a judge." },
+    { question: "What rights does a suspect have?", answer: "The right to a lawyer and a fair trial." },
+    { question: "Is bail always possible?", answer: "No, it depends on the crime and risk." },
+    { question: "What is fraud?", answer: "Deception for personal gain." },
+    { question: "How can people protect themselves from fraud?", answer: "Check sources, protect data, and avoid sharing passwords." },
+    { question: "What should you do if you are a victim?", answer: "Report to the police and keep evidence." },
+    { question: "What is cybercrime?", answer: "Crimes committed online, like hacking or phishing." },
+    { question: "How can we reduce cybercrime?", answer: "Use strong passwords and two‑factor authentication." },
+    { question: "What is community policing?", answer: "Police working closely with local residents." },
+    { question: "Should young offenders go to jail?", answer: "Prefer rehabilitation for minor crimes." },
+    { question: "Why is a lawyer important?", answer: "They defend your rights in court." },
+    { question: "What is self‑defense?", answer: "Protecting yourself from immediate danger." },
+    { question: "How can cities reduce crime rates?", answer: "Better lighting, youth programs, and jobs." },
+    { question: "Why do some people commit crimes?", answer: "Poverty, peer pressure, or opportunity." },
+    { question: "Is CCTV useful?", answer: "Yes, it helps identify suspects." },
+    { question: "What is domestic violence?", answer: "Abuse within a household; it must be reported." },
+    { question: "How do judges stay objective?", answer: "They follow the law and consider evidence only." },
+    { question: "What is shoplifting?", answer: "Stealing items from a store." },
+    { question: "How can schools teach legal awareness?", answer: "Workshops on rights, laws, and online safety." },
+    { question: "What is a criminal record?", answer: "Official history of someone's offenses." },
+    { question: "Can the media affect a trial?", answer: "Yes, strong publicity may influence opinions." },
+    { question: "What is parole?", answer: "Early release with conditions and supervision." },
+    { question: "How does a jury work?", answer: "Citizens evaluate evidence and decide the verdict." },
+    { question: "What is presumption of innocence?", answer: "Everyone is innocent until proven guilty." },
+    { question: "Is plea bargaining fair?", answer: "It saves time but can pressure suspects." },
+    { question: "How can neighborhoods stay safe?", answer: "Know neighbors, report issues, and join watch groups." }
+  ]
+};
+
+const MODULE_148_DATA = {
+  title: "Health and Fitness Vocabulary (B1 Level)",
+  description: "Learn B1 health/fitness vocabulary and answer practical wellness questions.",
+  intro: `Sağlık, beslenme ve egzersiz ile ilgili kelimelerle konuşma pratiği.
+
+📚 VOCABULARY:
+• exercise - egzersiz
+• diet - beslenme/diyet
+• nutrition - beslenme
+• calorie - kalori
+• protein - protein
+• vitamin - vitamin
+• fat - yağ
+• carbohydrate - karbonhidrat
+• workout - antrenman
+• cardio - kardiyo
+• strength training - kuvvet antrenmanı
+• obesity - obezite
+• cholesterol - kolesterol
+• blood pressure - tansiyon
+• heart rate - kalp atış hızı
+• hydration - hidrasyon
+• sleep - uyku
+• immune system - bağışıklık sistemi
+• injury - sakatlık
+• recovery - iyileşme`,
+  tip: "Use 'workout' for a training session, 'exercise' for physical activity in general. Say 'cardio' (not cardiovascular), 'hydration' (not water intake)",
+
+  table: [
+    { en: "exercise", tr: "egzersiz" },
+    { en: "diet", tr: "beslenme/diyet" },
+    { en: "nutrition", tr: "beslenme" },
+    { en: "calorie", tr: "kalori" },
+    { en: "protein", tr: "protein" },
+    { en: "vitamin", tr: "vitamin" },
+    { en: "fat", tr: "yağ" },
+    { en: "carbohydrate", tr: "karbonhidrat" },
+    { en: "workout", tr: "antrenman" },
+    { en: "cardio", tr: "kardiyo" },
+    { en: "strength training", tr: "kuvvet antrenmanı" },
+    { en: "obesity", tr: "obezite" },
+    { en: "cholesterol", tr: "kolesterol" },
+    { en: "blood pressure", tr: "tansiyon" },
+    { en: "heart rate", tr: "kalp atış hızı" },
+    { en: "hydration", tr: "hidrasyon" },
+    { en: "sleep", tr: "uyku" },
+    { en: "immune system", tr: "bağışıklık sistemi" },
+    { en: "injury", tr: "sakatlık" },
+    { en: "recovery", tr: "iyileşme" }
+  ],
+
+  listeningExamples: [
+    "Regular exercise improves your health.",
+    "A balanced diet includes protein, carbs, and healthy fats.",
+    "Good hydration is essential for performance."
+  ],
+
+  speakingPractice: [
+    { question: "How many days a week do you exercise?", answer: "I try to work out at least three days a week." },
+    { question: "What kind of workout do you prefer?", answer: "I prefer cardio like running and cycling." },
+    { question: "Do you track your calories?", answer: "Roughly, to make sure I don't overeat." },
+    { question: "What is a balanced diet to you?", answer: "Plenty of vegetables, lean protein, and whole grains." },
+    { question: "How much water do you drink daily?", answer: "About two liters to stay hydrated." },
+    { question: "Do you take vitamins?", answer: "Yes, I take vitamin D in winter." },
+    { question: "How do you increase your protein intake?", answer: "I eat eggs, yogurt, and legumes." },
+    { question: "What's your go‑to healthy snack?", answer: "A handful of nuts or a banana." },
+    { question: "How do you reduce fat in meals?", answer: "I bake or grill instead of frying." },
+    { question: "Do you count steps?", answer: "Yes, I aim for 10,000 steps a day." },
+    { question: "How do you improve sleep quality?", answer: "I avoid screens before bed and keep a routine." },
+    { question: "What raises your heart rate quickly?", answer: "Climbing stairs or skipping rope." },
+    { question: "How do you manage stress?", answer: "Deep breathing and short walks." },
+    { question: "Do you prefer home workouts or gym?", answer: "Home workouts—they save time." },
+    { question: "How often do you check blood pressure?", answer: "Twice a year during checkups." },
+    { question: "Do you monitor your heart rate?", answer: "Yes, with a smartwatch during exercise." },
+    { question: "What's your favorite cardio activity?", answer: "Swimming—it's easy on the joints." },
+    { question: "How do you prevent injuries?", answer: "Warm up, stretch, and use proper form." },
+    { question: "What do you do after an injury?", answer: "Rest, ice, and follow doctor's advice." },
+    { question: "How do you recover after workouts?", answer: "Light stretching and enough sleep." },
+    { question: "Do you follow any diet plan?", answer: "Not strict—just mindful eating." },
+    { question: "What's your view on carbs?", answer: "They're essential; I choose complex carbs." },
+    { question: "How do you cut sugar?", answer: "I avoid soda and sweet snacks." },
+    { question: "Do you read nutrition labels?", answer: "Yes, I check sugar and salt first." },
+    { question: "How do you boost your immune system?", answer: "Balanced diet, sleep, and regular exercise." },
+    { question: "What motivates you to exercise?", answer: "Feeling energetic and healthy." },
+    { question: "Do you set fitness goals?", answer: "Yes, monthly goals keep me focused." },
+    { question: "How do you stay active at work?", answer: "I take walking breaks every hour." },
+    { question: "What's a good beginner workout?", answer: "Brisk walking plus bodyweight exercises." },
+    { question: "How long should a workout be?", answer: "30–45 minutes is enough for me." },
+    { question: "Do you stretch every day?", answer: "Yes, especially after sitting for long." },
+    { question: "How do you handle cravings?", answer: "I eat fruit or drink water first." },
+    { question: "Do you meal‑prep?", answer: "Sometimes—on Sundays for the week." },
+    { question: "What's a sign of dehydration?", answer: "Headache and dark urine." },
+    { question: "How many hours do you sleep?", answer: "Usually seven to eight hours." },
+    { question: "Do you prefer morning or evening workouts?", answer: "Morning—it sets a positive tone." },
+    { question: "How do you stay consistent?", answer: "I schedule workouts like appointments." },
+    { question: "What's your opinion on cheat meals?", answer: "They're fine if you return to routine." },
+    { question: "How do you choose running shoes?", answer: "Comfort, support, and proper size." },
+    { question: "What health habit are you building now?", answer: "Daily stretching and better posture." }
+  ]
+};
+
+const MODULE_149_DATA = {
+  title: "Society and Social Issues Vocabulary (B1 Level)",
+  description: "Use B1 vocabulary to discuss society, inequality, and social issues.",
+  intro: `Toplum, eşitsizlik ve sosyal sorunlar hakkında B1 seviyesinde konuşma pratiği.
+
+📚 VOCABULARY:
+• society - toplum
+• community - topluluk
+• inequality - eşitsizlik
+• discrimination - ayrımcılık
+• poverty - yoksulluk
+• homelessness - evsizlik
+• unemployment - işsizlik
+• racism - ırkçılık
+• gender equality - toplumsal cinsiyet eşitliği
+• human rights - insan hakları
+• social class - sosyal sınıf
+• welfare - sosyal yardım
+• healthcare - sağlık hizmetleri
+• education - eğitim
+• crime - suç
+• violence - şiddet
+• disability - engellilik
+• migration - göç
+• social justice - sosyal adalet
+• activism - aktivizm`,
+  tip: "Use 'inequality' (not unequality), 'discrimination' (not discriminate as a noun), 'gender equality' (not sex equality)",
+
+  table: [
+    { en: "society", tr: "toplum" },
+    { en: "community", tr: "topluluk" },
+    { en: "inequality", tr: "eşitsizlik" },
+    { en: "discrimination", tr: "ayrımcılık" },
+    { en: "poverty", tr: "yoksulluk" },
+    { en: "homelessness", tr: "evsizlik" },
+    { en: "unemployment", tr: "işsizlik" },
+    { en: "racism", tr: "ırkçılık" },
+    { en: "gender equality", tr: "toplumsal cinsiyet eşitliği" },
+    { en: "human rights", tr: "insan hakları" },
+    { en: "social class", tr: "sosyal sınıf" },
+    { en: "welfare", tr: "sosyal yardım" },
+    { en: "healthcare", tr: "sağlık hizmetleri" },
+    { en: "education", tr: "eğitim" },
+    { en: "crime", tr: "suç" },
+    { en: "violence", tr: "şiddet" },
+    { en: "disability", tr: "engellilik" },
+    { en: "migration", tr: "göç" },
+    { en: "social justice", tr: "sosyal adalet" },
+    { en: "activism", tr: "aktivizm" }
+  ],
+
+  listeningExamples: [
+    "Society must address inequality through education.",
+    "Human rights protect everyone's dignity.",
+    "Communities can support those facing poverty."
+  ],
+
+  speakingPractice: [
+    { question: "What makes a society strong?", answer: "Fair laws, good education, and active communities." },
+    { question: "How can communities support the poor?", answer: "Food banks, job training, and counseling." },
+    { question: "What causes inequality?", answer: "Unequal access to education and opportunities." },
+    { question: "How can discrimination be reduced?", answer: "Education, strict laws, and awareness campaigns." },
+    { question: "What are the effects of poverty?", answer: "Poor health, limited education, and stress." },
+    { question: "How can homelessness be addressed?", answer: "Affordable housing and mental‑health services." },
+    { question: "What can reduce unemployment?", answer: "Skills training and support for small businesses." },
+    { question: "How can racism be challenged?", answer: "Speak up, educate, and protect equal rights." },
+    { question: "Why is gender equality important?", answer: "It benefits the whole economy and society." },
+    { question: "Why are human rights essential?", answer: "They protect freedom and dignity for all." },
+    { question: "How does social class affect life?", answer: "It influences education, health, and networks." },
+    { question: "What is the role of welfare?", answer: "To support people in tough times." },
+    { question: "Why is healthcare access vital?", answer: "Everyone needs treatment regardless of income." },
+    { question: "How does education change society?", answer: "It creates opportunity and reduces inequality." },
+    { question: "Why does crime increase in some areas?", answer: "Lack of jobs, poor housing, and weak services." },
+    { question: "How can violence be reduced?", answer: "Community programs and conflict resolution." },
+    { question: "How can cities be safer for people with disabilities?", answer: "Accessible transport and buildings." },
+    { question: "What are the effects of migration?", answer: "Cultural diversity and economic change." },
+    { question: "What is social justice?", answer: "Fair treatment and equal opportunities." },
+    { question: "How does activism help?", answer: "It raises awareness and pushes for change." },
+    { question: "Should the rich pay more taxes?", answer: "Possibly, to fund services and reduce gaps." },
+    { question: "How can we improve public transport?", answer: "Invest in routes, safety, and affordability." },
+    { question: "Do social media help communities?", answer: "Yes, but they can also spread hate." },
+    { question: "How can we support elderly people?", answer: "Home care, social clubs, and health services." },
+    { question: "What role do NGOs play?", answer: "They fill gaps and support vulnerable groups." },
+    { question: "How can schools teach tolerance?", answer: "Projects, mixed teams, and open discussion." },
+    { question: "How to reduce youth unemployment?", answer: "Internships, apprenticeships, and career guidance." },
+    { question: "Should education be free?", answer: "At least basic and essential levels should be." },
+    { question: "How to make housing affordable?", answer: "Build more and control unfair rents." },
+    { question: "What's the impact of fake news on society?", answer: "Misinformation divides people." },
+    { question: "How do cultural festivals help society?", answer: "They build unity and celebrate diversity." },
+    { question: "What is the role of local government?", answer: "Provide services and listen to residents." },
+    { question: "How can volunteer work help?", answer: "It supports services and builds skills." },
+    { question: "What creates community spirit?", answer: "Shared goals and regular events." },
+    { question: "How can bullying be reduced?", answer: "Clear rules, support lines, and education." },
+    { question: "Why is freedom of speech important?", answer: "It allows debate and exposes problems." },
+    { question: "Should voting be compulsory?", answer: "It could improve representation." },
+    { question: "How can we support mental health?", answer: "Affordable counseling and awareness at work and school." },
+    { question: "What is the effect of long‑term unemployment?", answer: "Lower confidence and social isolation." },
+    { question: "How can neighborhoods welcome immigrants?", answer: "Language classes and cultural exchange programs." }
+  ]
+};
+
+const MODULE_150_DATA = {
+  title: "Travel and Adventure Vocabulary (B1 Level)",
+  description: "Use B1 travel/adventure vocabulary to discuss trips, plans, and outdoor activities.",
+  intro: `Seyahat ve macera ile ilgili kelimelerle planlama ve deneyimler hakkında konuşma.
+
+📚 VOCABULARY:
+• destination - varış noktası
+• journey - yolculuk
+• adventure - macera
+• backpacking - sırt çantalı seyahat
+• tourist - turist
+• itinerary - gezi planı
+• sightseeing - turistik gezi
+• passport - pasaport
+• luggage - bagaj
+• accommodation - konaklama
+• reservation - rezervasyon
+• flight - uçuş
+• airport - havaalanı
+• adventure sports - macera sporları
+• travel agency - seyahat acentesi
+• hiking - doğa yürüyüşü
+• camping - kamp yapma
+• tour guide - rehber
+• souvenir - hediyelik eşya
+• map - harita`,
+  tip: "Use 'destination' for where you're going, 'journey' for the trip itself. Say 'accommodation' (not accommodations), 'luggage' (not luggages)",
+
+  table: [
+    { en: "destination", tr: "varış noktası" },
+    { en: "journey", tr: "yolculuk" },
+    { en: "adventure", tr: "macera" },
+    { en: "backpacking", tr: "sırt çantalı seyahat" },
+    { en: "tourist", tr: "turist" },
+    { en: "itinerary", tr: "gezi planı" },
+    { en: "sightseeing", tr: "turistik gezi" },
+    { en: "passport", tr: "pasaport" },
+    { en: "luggage", tr: "bagaj" },
+    { en: "accommodation", tr: "konaklama" },
+    { en: "reservation", tr: "rezervasyon" },
+    { en: "flight", tr: "uçuş" },
+    { en: "airport", tr: "havaalanı" },
+    { en: "adventure sports", tr: "macera sporları" },
+    { en: "travel agency", tr: "seyahat acentesi" },
+    { en: "hiking", tr: "doğa yürüyüşü" },
+    { en: "camping", tr: "kamp yapma" },
+    { en: "tour guide", tr: "rehber" },
+    { en: "souvenir", tr: "hediyelik eşya" },
+    { en: "map", tr: "harita" }
+  ],
+
+  listeningExamples: [
+    "What's your dream destination?",
+    "I love backpacking through Europe.",
+    "Make sure to book your accommodation in advance."
+  ],
+
+  speakingPractice: [
+    { question: "What is your dream travel destination?", answer: "Japan—I want to see Kyoto and Tokyo." },
+    { question: "Do you prefer a short trip or a long journey?", answer: "A long journey to explore deeply." },
+    { question: "What do you pack first in your luggage?", answer: "Passport, wallet, and charger." },
+    { question: "How do you plan your itinerary?", answer: "I list must‑see places and group them by area." },
+    { question: "Do you book accommodation in advance?", answer: "Yes, to get better prices and locations." },
+    { question: "Window or aisle seat on a flight?", answer: "Window—for views and sleeping." },
+    { question: "How early do you arrive at the airport?", answer: "About two hours before the flight." },
+    { question: "What's your favorite kind of accommodation?", answer: "Small guesthouses with local charm." },
+    { question: "Do you like adventure sports?", answer: "Yes, I'd try rafting and zip‑lining." },
+    { question: "What's the best souvenir to buy?", answer: "Something handmade by local artisans." },
+    { question: "Do you use a travel agency?", answer: "Sometimes, for complex trips." },
+    { question: "How do you avoid losing luggage?", answer: "I use a tracker and a unique tag." },
+    { question: "What apps help you when traveling?", answer: "Maps, translation, and booking apps." },
+    { question: "Do you prefer city trips or nature trips?", answer: "Nature—hiking and lakes relax me." },
+    { question: "How do you budget for travel?", answer: "I set a daily limit for food and transport." },
+    { question: "What's your favorite sightseeing activity?", answer: "Walking tours to learn history." },
+    { question: "How do you stay safe while backpacking?", answer: "Keep valuables hidden and share my location." },
+    { question: "Best way to meet locals?", answer: "Join small tours or cooking classes." },
+    { question: "How do you handle jet lag?", answer: "I adapt to local time immediately." },
+    { question: "What's your travel photography tip?", answer: "Shoot early morning for fewer crowds." },
+    { question: "Do you like camping?", answer: "Yes, especially in summer by a lake." },
+    { question: "How do you choose a tour guide?", answer: "Check reviews and group size." },
+    { question: "What do you do when flights are delayed?", answer: "I contact the airline and check alternatives." },
+    { question: "Beach or mountains?", answer: "Mountains—I enjoy hiking." },
+    { question: "What's your must‑have map skill?", answer: "Download offline maps before leaving." },
+    { question: "Do you travel light or heavy?", answer: "Light—carry‑on only if possible." },
+    { question: "Best time to buy flight tickets?", answer: "Several weeks in advance, mid‑week." },
+    { question: "How do you keep documents safe?", answer: "Use a money belt and cloud copies." },
+    { question: "Do you try local food?", answer: "Always—that's part of the adventure." },
+    { question: "How do you reduce travel costs?", answer: "Use public transport and cook sometimes." },
+    { question: "Have you ever gotten lost while sightseeing?", answer: "Yes, but it led to a great café." },
+    { question: "What's your favorite travel memory?", answer: "Sunrise over a mountain campsite." },
+    { question: "Group travel or solo travel?", answer: "Solo—flexible and freeing." },
+    { question: "How do you stay healthy on trips?", answer: "Walk a lot and keep water with me." },
+    { question: "What's your strategy for reservations?", answer: "Free‑cancellation options when possible." },
+    { question: "Do you send postcards?", answer: "Yes, to family and close friends." },
+    { question: "How do you plan for bad weather?", answer: "Add indoor museums to the itinerary." },
+    { question: "What's your hiking essential?", answer: "Comfortable boots and a small first‑aid kit." },
+    { question: "Would you try skydiving on vacation?", answer: "Yes, if the place is reputable." }
+  ]
+};
+
 
 
   // Get current module data
@@ -9652,8 +10348,13 @@ Examples:
     if (selectedModule === 141) return MODULE_141_DATA;
     if (selectedModule === 142) return MODULE_142_DATA;
     if (selectedModule === 143) return MODULE_143_DATA;
-    // B1 Modules 144-150 - Add remaining modules as needed
-
+    if (selectedModule === 144) return MODULE_144_DATA;
+    if (selectedModule === 145) return MODULE_145_DATA;
+    if (selectedModule === 146) return MODULE_146_DATA;
+    if (selectedModule === 147) return MODULE_147_DATA;
+    if (selectedModule === 148) return MODULE_148_DATA;
+    if (selectedModule === 149) return MODULE_149_DATA;
+    if (selectedModule === 150) return MODULE_150_DATA;
 
     // Fallback to Module 1 for unknown modules
     return MODULE_1_DATA;
