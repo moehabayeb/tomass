@@ -21,6 +21,7 @@ type Difficulty = 'easy' | 'medium' | 'hard';
 
 export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
   const [width, height] = useWindowSize();
+  const isMobile = width < 768;
   const [word, setWord] = useState<string>('');
   const [currentWordData, setCurrentWordData] = useState<GameWord | null>(null);
   const [revealed, setRevealed] = useState<string[]>([]);
@@ -273,23 +274,36 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4 overflow-x-hidden">
+    <div
+      className="h-screen overflow-hidden bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900"
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        touchAction: 'pan-y'
+      }}
+    >
       {/* Confetti on win */}
       {status === 'won' && (
-        <Confetti
-          width={width}
-          height={height}
-          recycle={false}
-          numberOfPieces={500}
-          gravity={0.3}
-        />
+        <div className="fixed inset-0 pointer-events-none z-50">
+          <Confetti
+            width={width}
+            height={height}
+            recycle={false}
+            numberOfPieces={isMobile ? 300 : 500}
+            gravity={0.3}
+          />
+        </div>
       )}
 
       <div className="absolute inset-0 w-full h-full background-stars pointer-events-none"
            style={{ backgroundImage: 'radial-gradient(2px 2px at 20px 30px, #fff, transparent), radial-gradient(2px 2px at 40px 70px, #fff, transparent), radial-gradient(1px 1px at 90px 40px, #fff, transparent)', backgroundSize: '100px 100px' }}
       />
 
-      <div className="relative max-w-5xl mx-auto pt-4 sm:pt-8 pb-8">
+      <div className="relative h-full overflow-y-auto overflow-x-hidden">
+        <div className="max-w-5xl mx-auto px-4 py-2 sm:py-4">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <Button
@@ -375,14 +389,14 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-6">
+        <div className={`flex flex-col ${isMobile ? 'gap-3' : 'lg:grid lg:grid-cols-2 gap-6'}`}>
           {/* Left Column - Hangman Visual */}
           <Card className="bg-gradient-to-br from-violet-500/30 to-purple-500/20 backdrop-blur-xl border border-purple-300/50 text-white shadow-2xl">
-            <CardContent className="p-6 sm:p-8">
+            <CardContent className={isMobile ? 'p-4' : 'p-6 sm:p-8'}>
               <HangmanSVG wrongCount={wrong} maxWrong={maxWrong} />
 
               {/* Lives Indicator */}
-              <div className="mt-6 text-center">
+              <div className={isMobile ? 'mt-3 text-center' : 'mt-6 text-center'}>
                 <div className="flex justify-center gap-2 mb-2">
                   {Array.from({ length: maxWrong }, (_, i) => (
                     <div
@@ -403,20 +417,20 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
           </Card>
 
           {/* Right Column - Game Interface */}
-          <div className="space-y-6">
+          <div className={isMobile ? 'space-y-3' : 'space-y-6'}>
             {/* Word Display */}
             <Card className="bg-gradient-to-br from-blue-500/30 to-purple-500/20 backdrop-blur-xl border border-blue-300/50 text-white shadow-2xl">
-              <CardContent className="p-6 sm:p-8">
-                <div className="text-center space-y-6">
+              <CardContent className={isMobile ? 'p-4' : 'p-6 sm:p-8'}>
+                <div className={`text-center ${isMobile ? 'space-y-3' : 'space-y-6'}`}>
                   {/* Word letters */}
-                  <div className="flex flex-wrap justify-center gap-2 sm:gap-3 min-h-[80px] items-center">
+                  <div className={`flex flex-wrap justify-center gap-2 sm:gap-3 items-center ${isMobile ? 'min-h-[60px]' : 'min-h-[80px]'}`}>
                     {word.split('').map((char, index) => (
                       <div
                         key={index}
                         className={`
-                          w-10 h-12 sm:w-14 sm:h-16
+                          ${isMobile ? 'w-8 h-10 text-xl' : 'w-10 h-12 sm:w-14 sm:h-16 text-2xl sm:text-4xl'}
                           flex items-center justify-center
-                          text-2xl sm:text-4xl font-bold
+                          font-bold
                           border-b-4 border-white/50
                           ${revealed[index] !== '_' ? 'animate-letter-reveal' : ''}
                         `}
@@ -461,7 +475,7 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
             {/* Main Game Interface */}
             {status === 'playing' && (
               <Card className="bg-gradient-to-br from-violet-500/30 to-purple-500/20 backdrop-blur-xl border border-purple-300/50 text-white shadow-2xl">
-                <CardContent className="p-4 sm:p-6 space-y-4">
+                <CardContent className={`${isMobile ? 'p-3 space-y-3' : 'p-4 sm:p-6 space-y-4'}`}>
                   {/* Speech Recognition Interface */}
                   <div className="space-y-4">
                     {/* Waveform Animation */}
@@ -544,8 +558,8 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
             {/* Game Over States */}
             {status !== 'playing' && (
               <Card className="bg-gradient-to-br from-violet-500/30 to-purple-500/20 backdrop-blur-xl border border-purple-300/50 text-white shadow-2xl animate-fade-in">
-                <CardContent className="p-6 sm:p-8">
-                  <div className="text-center space-y-6">
+                <CardContent className={isMobile ? 'p-4' : 'p-6 sm:p-8'}>
+                  <div className={`text-center ${isMobile ? 'space-y-3' : 'space-y-6'}`}>
                     {status === 'won' ? (
                       <div>
                         <div className="text-6xl sm:text-8xl mb-4 animate-bounce">🎉</div>
@@ -596,6 +610,7 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
               </Card>
             )}
           </div>
+        </div>
         </div>
       </div>
     </div>
