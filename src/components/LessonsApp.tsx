@@ -4113,9 +4113,9 @@ Mesleklerle ilgili sorular:
   tip: "Use 'What do you do?' to ask about someone's job and 'Where do you work?' for workplace",
   
   table: [
-    { question: "What do you do?", answer: "I'm a (job).", example: \"I'm a teacher." },
-    { question: "What does he/she do?", answer: "He/She is a (job).", example: \"She's a nurse." },
-    { question: "Where does he/she work?", answer: "He/She works in/at (place).", example: \"He works in a hospital." }
+    { question: "What do you do?", answer: "I'm a (job).", example: "I'm a teacher." },
+    { question: "What does he/she do?", answer: "He/She is a (job).", example: "She's a nurse." },
+    { question: "Where does he/she work?", answer: "He/She works in/at (place).", example: "He works in a hospital." }
   ],
   
   listeningExamples: [
@@ -4182,9 +4182,9 @@ Kullanışlı sorular:
   tip: "Use 'like' with food and drinks to express preferences and 'usually' for habits",
   
   table: [
-    { question: "What's your favorite food?", answer: "My favorite food is pizza.", usage: \"For preferences" },
-    { question: "Do you like + food/drink?", answer: "Yes, I do. / No, I don't.", usage: \"Yes/No questions" },
-    { question: "What do you usually eat/drink?", answer: "I usually eat eggs. / I usually drink water.", usage: \"For habits" }
+    { question: "What's your favorite food?", answer: "My favorite food is pizza.", usage: "For preferences" },
+    { question: "Do you like + food/drink?", answer: "Yes, I do. / No, I don't.", usage: "Yes/No questions" },
+    { question: "What do you usually eat/drink?", answer: "I usually eat eggs. / I usually drink water.", usage: "For habits" }
   ],
   
   listeningExamples: [
@@ -4254,9 +4254,9 @@ Kullanışlı Sorular:
   tip: "Use possessive forms to show relationships: 'my father', 'her sister', 'his brother'",
   
   table: [
-    { question: "Who is your mother's mother?", answer: "She is my grandmother.", usage: \"Family relationships" },
-    { question: "Do you have any cousins?", answer: "Yes, I do.", usage: \"Yes/No questions" },
-    { question: "How many people are there in your family?", answer: "There are five people.", usage: \"Counting family" }
+    { question: "Who is your mother's mother?", answer: "She is my grandmother.", usage: "Family relationships" },
+    { question: "Do you have any cousins?", answer: "Yes, I do.", usage: "Yes/No questions" },
+    { question: "How many people are there in your family?", answer: "There are five people.", usage: "Counting family" }
   ],
   
   listeningExamples: [
@@ -4398,8 +4398,8 @@ Kullanışlı ifadeler:
   tip: "Use 'What's the weather like?' to ask about weather and 'It's...' to describe it",
   
   table: [
-    { question: "What's the weather like?", answer: "It's sunny today.", usage: \"Asking about weather" },
-    { question: "Is it raining?", answer: "Yes, it is. / No, it isn't.", usage: \"Yes/No questions" },
+    { question: "What's the weather like?", answer: "It's sunny today.", usage: "Asking about weather" },
+    { question: "Is it raining?", answer: "Yes, it is. / No, it isn't.", usage: "Yes/No questions" },
     { structure: "It's going to + weather word", example: "It's going to snow tomorrow.", usage: "Future weather" }
   ],
   
@@ -4466,9 +4466,9 @@ Kullanışlı sorular:
   tip: "Use 'What are you wearing?' for current clothes and 'What do you wear?' for general habits",
   
   table: [
-    { question: "What are you wearing?", answer: "I'm wearing jeans.", usage: \"Current clothing" },
+    { question: "What are you wearing?", answer: "I'm wearing jeans.", usage: "Current clothing" },
     { structure: "He/She is wearing + clothing item", example: "She is wearing a red dress.", usage: "Describing others" },
-    { question: "Do you wear + clothing item?", answer: "Do you wear a jacket in winter?", usage: \"General habits" }
+    { question: "Do you wear + clothing item?", answer: "Do you wear a jacket in winter?", usage: "General habits" }
   ],
   
   listeningExamples: [
@@ -4538,8 +4538,8 @@ Kullanışlı Sorular:
   table: [
     { structure: "I like + verb-ing", example: "I like reading.", usage: "Expressing likes" },
     { structure: "I enjoy + verb-ing", example: "I enjoy cooking.", usage: "Expressing enjoyment" },
-    { question: "Do you + verb …?", answer: "Do you play video games?", usage: \"Yes/No questions" },
-    { question: "What's your favorite hobby?", answer: "My favorite hobby is painting.", usage: \"Asking about preferences" }
+    { question: "Do you + verb …?", answer: "Do you play video games?", usage: "Yes/No questions" },
+    { question: "What's your favorite hobby?", answer: "My favorite hobby is painting.", usage: "Asking about preferences" }
   ],
   
   listeningExamples: [
