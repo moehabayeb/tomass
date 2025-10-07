@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { memo } from 'react';
 
 interface SpeechWaveformProps {
   isListening: boolean;
 }
 
-export const SpeechWaveform: React.FC<SpeechWaveformProps> = ({ isListening }) => {
+export const SpeechWaveform = memo<SpeechWaveformProps>(({ isListening }) => {
   if (!isListening) return null;
 
   return (
@@ -32,4 +32,4 @@ export const SpeechWaveform: React.FC<SpeechWaveformProps> = ({ isListening }) =
       `}</style>
     </div>
   );
-};
+});

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import Confetti from 'react-confetti';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -12,6 +12,7 @@ import { HangmanSVG } from './HangmanSVG';
 import { HangmanKeyboard } from './HangmanKeyboard';
 import { SpeechWaveform } from './SpeechWaveform';
 import { useWindowSize } from '@react-hook/window-size';
+import { audioManager } from '@/utils/audioContext';
 
 interface HangmanGameProps {
   onBack: () => void;
@@ -34,7 +35,10 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
   const [showHint, setShowHint] = useState(false);
   const [difficulty, setDifficulty] = useState<Difficulty>('medium');
   const [showSettings, setShowSettings] = useState(false);
-  const [revealedIndices, setRevealedIndices] = useState<Set<number>>(new Set());
+
+  // Refs for preventing race conditions and memory leaks
+  const isInitialMount = useRef(true);
+  const gameInitialized = useRef(false);
 
   const difficultySettings = {
     easy: { maxWrong: 10, label: 'Easy', color: 'from-green-500 to-emerald-600' },
@@ -49,7 +53,7 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
   const { getWordsForHangman, isLoading: vocabLoading } = useGameVocabulary();
   const { state: speechState, startListening, stopListening, confirmLetter, rejectConfirmation } = useHangmanSpeechRecognition();
 
-  // Start new game
+  // Start new game - memoized to prevent recreations
   const startNewGame = useCallback(() => {
     const availableWords = getWordsForHangman();
     if (availableWords.length === 0) return;
@@ -57,6 +61,7 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
     const randomWord = availableWords[Math.floor(Math.random() * availableWords.length)];
     const gameWord = randomWord.english.toUpperCase();
 
+    // Batch all state updates together to prevent multiple renders
     setWord(gameWord);
     setCurrentWordData(randomWord);
     setRevealed(gameWord.split('').map(() => '_'));
@@ -65,15 +70,15 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
     setWrong(0);
     setStatus('playing');
     setShowHint(false);
-    setRevealedIndices(new Set());
   }, [getWordsForHangman]);
 
-  // Initialize game
+  // Initialize game ONCE on mount - prevent circular dependency
   useEffect(() => {
-    if (!vocabLoading) {
+    if (!vocabLoading && !gameInitialized.current) {
+      gameInitialized.current = true;
       startNewGame();
     }
-  }, [vocabLoading, startNewGame]);
+  }, [vocabLoading]); // Removed startNewGame from deps to prevent infinite loop
 
   // Check win/loss conditions
   useEffect(() => {
@@ -89,143 +94,100 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
         setStreak(prev => prev + 1);
         addXP(xpEarned, `Hangman victory! 🎉 Streak: ${streak + 1}`);
 
-        // Play success sound
-        playSuccessSound();
+        // Play success sound using singleton
+        audioManager.playSuccessSound();
       } else if (wrong >= maxWrong) {
         setStatus('lost');
         setStreak(0);
 
-        // Play failure sound
-        playFailureSound();
+        // Play failure sound using singleton
+        audioManager.playFailureSound();
       }
     }
   }, [revealed, wrong, status, word, addXP, difficulty, streak, maxWrong]);
 
-  // Simple sound effects using Web Audio API
-  const playSuccessSound = () => {
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
+  // Cleanup audio context on unmount
+  useEffect(() => {
+    return () => {
+      audioManager.cleanup();
+    };
+  }, []);
 
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-
-    oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
-    oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1); // E5
-    oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2); // G5
-
-    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 0.3);
-  };
-
-  const playFailureSound = () => {
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-
-    oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
-    oscillator.frequency.setValueAtTime(200, audioContext.currentTime + 0.2);
-
-    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 0.3);
-  };
-
-  const playClickSound = () => {
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-
-    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
-
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 0.1);
-  };
-
-  // Process a letter guess
-  const processGuess = (letter: string) => {
+  // Process a letter guess - optimized with batched state updates and case normalization
+  const processGuess = useCallback((letter: string) => {
     if (!word || status !== 'playing') return;
 
-    const upperLetter = letter.toUpperCase();
+    // Normalize to lowercase for all internal operations
     const lowerLetter = letter.toLowerCase();
+    const upperLetter = letter.toUpperCase();
 
     // Check if already guessed
     if (guessed.has(lowerLetter)) {
+      // Light vibration for already guessed
+      if ('vibrate' in navigator) {
+        navigator.vibrate(50);
+      }
       return;
     }
 
-    // Add to guessed letters
-    setGuessed(prev => new Set([...prev, lowerLetter]));
+    // Light vibration on any click
+    if ('vibrate' in navigator) {
+      navigator.vibrate(10);
+    }
 
     // Check if letter is in word
-    if (word.includes(upperLetter)) {
+    const isCorrect = word.includes(upperLetter);
+
+    if (isCorrect) {
       // Correct guess - play success sound
-      playClickSound();
+      audioManager.playClickSound();
 
-      // Mark as correct
+      // Reveal all instances of the letter
+      const newRevealed = revealed.map((char, index) =>
+        word[index] === upperLetter ? upperLetter : char
+      );
+
+      // Batch state updates to prevent multiple renders
+      setGuessed(prev => new Set([...prev, lowerLetter]));
       setCorrectLetters(prev => new Set([...prev, lowerLetter]));
-
-      // Reveal all instances of the letter with animation
-      const newRevealed = [...revealed];
-      const newRevealedIndices = new Set(revealedIndices);
-
-      word.split('').forEach((char, index) => {
-        if (char === upperLetter) {
-          newRevealed[index] = char;
-          newRevealedIndices.add(index);
-        }
-      });
-
       setRevealed(newRevealed);
-      setRevealedIndices(newRevealedIndices);
     } else {
       // Wrong guess - increment wrong guesses
+      // Batch state updates
+      setGuessed(prev => new Set([...prev, lowerLetter]));
       setWrong(prev => prev + 1);
 
-      // Vibration feedback on wrong guess
+      // Stronger vibration feedback on wrong guess
       if ('vibrate' in navigator) {
-        navigator.vibrate(100);
+        navigator.vibrate([100, 50, 100]);
       }
     }
-  };
+  }, [word, status, guessed, revealed]);
 
-  // Handle speech recognition
-  const handleSpeechRecognition = async () => {
+  // Handle speech recognition - memoized
+  const handleSpeechRecognition = useCallback(async () => {
     const letter = await startListening(guessed);
     if (letter) {
       processGuess(letter);
     }
-  };
+  }, [startListening, guessed, processGuess]);
 
-  // Handle confirmation
-  const handleConfirmYes = () => {
+  // Handle confirmation - memoized
+  const handleConfirmYes = useCallback(() => {
     const letter = confirmLetter();
     if (letter) {
       processGuess(letter);
     }
-  };
+  }, [confirmLetter, processGuess]);
 
-  // Handle word pronunciation
-  const playWordPronunciation = () => {
+  // Handle word pronunciation - memoized
+  const playWordPronunciation = useCallback(() => {
     if (!word) return;
     speak(word);
-  };
+  }, [word, speak]);
 
-  // Handle hint
-  const handleHint = () => {
+  // Handle hint - memoized
+  const handleHint = useCallback(() => {
     if (showHint) {
       setShowHint(false);
       return;
@@ -236,12 +198,10 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
       setWrong(prev => prev + 1);
       setShowHint(true);
     }
-  };
+  }, [showHint, wrong, maxWrong]);
 
-  // Handle keyboard letter click
-  const handleLetterClick = (letter: string) => {
-    processGuess(letter);
-  };
+  // Handle keyboard letter click - already using processGuess which is memoized
+  const handleLetterClick = processGuess;
 
   // Get button content based on state
   const getButtonContent = () => {
@@ -274,17 +234,7 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
   };
 
   return (
-    <div
-      className="h-screen overflow-hidden bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900"
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        touchAction: 'pan-y'
-      }}
-    >
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 overflow-x-hidden">
       {/* Confetti on win */}
       {status === 'won' && (
         <div className="fixed inset-0 pointer-events-none z-50">
@@ -292,44 +242,50 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
             width={width}
             height={height}
             recycle={false}
-            numberOfPieces={isMobile ? 300 : 500}
+            numberOfPieces={isMobile ? 100 : 300}
             gravity={0.3}
           />
         </div>
       )}
 
-      <div className="absolute inset-0 w-full h-full background-stars pointer-events-none"
+      <div className="fixed inset-0 w-full h-full background-stars pointer-events-none -z-10"
            style={{ backgroundImage: 'radial-gradient(2px 2px at 20px 30px, #fff, transparent), radial-gradient(2px 2px at 40px 70px, #fff, transparent), radial-gradient(1px 1px at 90px 40px, #fff, transparent)', backgroundSize: '100px 100px' }}
       />
 
-      <div className="relative h-full overflow-y-auto overflow-x-hidden">
-        <div className="max-w-5xl mx-auto px-4 py-2 sm:py-4">
+      <div className="relative container max-w-md mx-auto px-3 py-2"
+           style={{
+             paddingTop: 'max(0.5rem, env(safe-area-inset-top))',
+             paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))',
+             userSelect: 'none',
+             WebkitUserSelect: 'none'
+           }}
+      >
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-3">
           <Button
             onClick={onBack}
             variant="ghost"
             size="sm"
-            className="text-white/70 hover:text-white hover:bg-white/10 transition-all duration-300"
+            className="text-white/70 hover:text-white hover:bg-white/10 transition-all duration-300 min-h-[44px]"
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="h-4 w-4 mr-1" />
             Back
           </Button>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             {/* Streak */}
             {streak > 0 && (
-              <div className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-400/50 rounded-full px-4 py-2 backdrop-blur-xl">
-                <div className="text-white text-sm flex items-center gap-2">
-                  🔥 Streak: <span className="font-bold text-yellow-400">{streak}</span>
+              <div className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-400/50 rounded-full px-2 py-1 backdrop-blur-xl">
+                <div className="text-white text-xs flex items-center gap-1">
+                  🔥 <span className="font-bold text-yellow-400">{streak}</span>
                 </div>
               </div>
             )}
 
             {/* Score */}
-            <div className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-white/20 rounded-full px-4 py-2 backdrop-blur-xl">
-              <div className="text-white text-sm flex items-center gap-2">
-                <Trophy className="h-4 w-4 text-yellow-400" />
+            <div className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-white/20 rounded-full px-2 py-1 backdrop-blur-xl">
+              <div className="text-white text-xs flex items-center gap-1">
+                <Trophy className="h-3 w-3 text-yellow-400" />
                 <span className="font-bold text-yellow-400">{score}</span>
               </div>
             </div>
@@ -339,19 +295,19 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
               onClick={() => setShowSettings(!showSettings)}
               variant="ghost"
               size="sm"
-              className="text-white/70 hover:text-white hover:bg-white/10 rounded-full"
+              className="text-white/70 hover:text-white hover:bg-white/10 rounded-full p-2 min-h-[44px] min-w-[44px]"
             >
-              <Settings className="h-5 w-5" />
+              <Settings className="h-4 w-4" />
             </Button>
           </div>
         </div>
 
         {/* Settings Panel */}
         {showSettings && (
-          <Card className="mb-6 bg-gradient-to-br from-violet-500/20 to-purple-500/20 backdrop-blur-xl border border-purple-300/50 animate-fade-in">
-            <CardContent className="p-6">
-              <h3 className="text-white font-bold text-lg mb-4">Difficulty Level</h3>
-              <div className="grid grid-cols-3 gap-3">
+          <Card className="mb-3 bg-gradient-to-br from-violet-500/20 to-purple-500/20 backdrop-blur-xl border border-purple-300/50 animate-fade-in">
+            <CardContent className="p-3">
+              <h3 className="text-white font-bold text-base mb-3">Difficulty Level</h3>
+              <div className="grid grid-cols-3 gap-2">
                 {(Object.keys(difficultySettings) as Difficulty[]).map((diff) => (
                   <Button
                     key={diff}
@@ -377,31 +333,31 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
         )}
 
         {/* Game Header */}
-        <div className="text-center mb-6">
-          <div className="flex items-center justify-center gap-3 mb-2">
-            <h2 className="text-3xl sm:text-4xl font-bold text-white">Word Hangman</h2>
-            <Badge className={`bg-gradient-to-r ${difficultySettings[difficulty].color} text-white px-3 py-1`}>
+        <div className="text-center mb-3">
+          <div className="flex items-center justify-center gap-2 mb-1">
+            <h2 className="text-2xl font-bold text-white">Hangman</h2>
+            <Badge className={`bg-gradient-to-r ${difficultySettings[difficulty].color} text-white px-2 py-0.5 text-xs`}>
               {difficultySettings[difficulty].label}
             </Badge>
           </div>
-          <p className="text-white/70 text-base sm:text-lg">
-            {status === 'playing' ? 'Speak or tap letters to guess the word!' : 'Game Over'}
+          <p className="text-white/70 text-sm">
+            {status === 'playing' ? 'Tap letters to guess!' : 'Game Over'}
           </p>
         </div>
 
-        <div className={`flex flex-col ${isMobile ? 'gap-3' : 'lg:grid lg:grid-cols-2 gap-6'}`}>
-          {/* Left Column - Hangman Visual */}
-          <Card className="bg-gradient-to-br from-violet-500/30 to-purple-500/20 backdrop-blur-xl border border-purple-300/50 text-white shadow-2xl">
-            <CardContent className={isMobile ? 'p-4' : 'p-6 sm:p-8'}>
+        <div className="flex flex-col gap-2 space-y-2">
+          {/* Hangman Visual */}
+          <Card className="bg-gradient-to-br from-violet-500/30 to-purple-500/20 backdrop-blur-xl border border-purple-300/50 text-white shadow-lg">
+            <CardContent className="p-3">
               <HangmanSVG wrongCount={wrong} maxWrong={maxWrong} />
 
               {/* Lives Indicator */}
-              <div className={isMobile ? 'mt-3 text-center' : 'mt-6 text-center'}>
-                <div className="flex justify-center gap-2 mb-2">
+              <div className="mt-2 text-center">
+                <div className="flex justify-center gap-1.5 mb-1">
                   {Array.from({ length: maxWrong }, (_, i) => (
                     <div
                       key={i}
-                      className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                      className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
                         i < wrong
                           ? 'bg-red-500 shadow-lg shadow-red-500/50'
                           : 'bg-white/30'
@@ -409,26 +365,26 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
                     />
                   ))}
                 </div>
-                <p className="text-white/60 text-sm">
-                  {maxWrong - wrong} {maxWrong - wrong === 1 ? 'life' : 'lives'} remaining
+                <p className="text-white/60 text-xs">
+                  {maxWrong - wrong} {maxWrong - wrong === 1 ? 'life' : 'lives'} left
                 </p>
               </div>
             </CardContent>
           </Card>
 
-          {/* Right Column - Game Interface */}
-          <div className={isMobile ? 'space-y-3' : 'space-y-6'}>
+          {/* Word Display & Game Interface */}
+          <div className="space-y-2">
             {/* Word Display */}
-            <Card className="bg-gradient-to-br from-blue-500/30 to-purple-500/20 backdrop-blur-xl border border-blue-300/50 text-white shadow-2xl">
-              <CardContent className={isMobile ? 'p-4' : 'p-6 sm:p-8'}>
-                <div className={`text-center ${isMobile ? 'space-y-3' : 'space-y-6'}`}>
+            <Card className="bg-gradient-to-br from-blue-500/30 to-purple-500/20 backdrop-blur-xl border border-blue-300/50 text-white shadow-lg">
+              <CardContent className="p-3">
+                <div className="text-center space-y-2">
                   {/* Word letters */}
-                  <div className={`flex flex-wrap justify-center gap-2 sm:gap-3 items-center ${isMobile ? 'min-h-[60px]' : 'min-h-[80px]'}`}>
+                  <div className="flex flex-wrap justify-center gap-1.5 items-center min-h-[50px]">
                     {word.split('').map((char, index) => (
                       <div
                         key={index}
                         className={`
-                          ${isMobile ? 'w-8 h-10 text-xl' : 'w-10 h-12 sm:w-14 sm:h-16 text-2xl sm:text-4xl'}
+                          w-9 h-11 text-xl
                           flex items-center justify-center
                           font-bold
                           border-b-4 border-white/50
@@ -474,10 +430,10 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
 
             {/* Main Game Interface */}
             {status === 'playing' && (
-              <Card className="bg-gradient-to-br from-violet-500/30 to-purple-500/20 backdrop-blur-xl border border-purple-300/50 text-white shadow-2xl">
-                <CardContent className={`${isMobile ? 'p-3 space-y-3' : 'p-4 sm:p-6 space-y-4'}`}>
+              <Card className="bg-gradient-to-br from-violet-500/30 to-purple-500/20 backdrop-blur-xl border border-purple-300/50 text-white shadow-lg">
+                <CardContent className="p-3 space-y-2">
                   {/* Speech Recognition Interface */}
-                  <div className="space-y-4">
+                  <div className="space-y-2">
                     {/* Waveform Animation */}
                     {speechState.isListening && (
                       <SpeechWaveform isListening={speechState.isListening} />
@@ -610,7 +566,6 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
               </Card>
             )}
           </div>
-        </div>
         </div>
       </div>
     </div>

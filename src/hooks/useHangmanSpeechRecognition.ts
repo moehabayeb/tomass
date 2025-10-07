@@ -28,6 +28,7 @@ export const useHangmanSpeechRecognition = () => {
 
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hasResultRef = useRef(false);
 
   // Comprehensive letter mapping table - exact matches only
   const letterMap: Record<string, string> = {
@@ -171,13 +172,36 @@ public <letter> = a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p 
     }
   }, []);
 
+  // Cleanup function to prevent memory leaks
+  const cleanup = useCallback(() => {
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.abort();
+        recognitionRef.current = null;
+      } catch (e) {
+        // Ignore errors during cleanup
+      }
+    }
+
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+
+    hasResultRef.current = false;
+  }, []);
+
   // Start speech recognition
   const startListening = useCallback((alreadyGuessed: Set<string>): Promise<string | null> => {
     return new Promise((resolve) => {
+      // Prevent multiple concurrent listeners
       if (state.isListening || state.isProcessing) {
         resolve(null);
         return;
       }
+
+      // Clean up any existing recognition
+      cleanup();
 
       // Check for speech recognition support
       if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
@@ -203,10 +227,10 @@ public <letter> = a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p 
           recognition.continuous = false;
           recognition.interimResults = false;
           recognition.maxAlternatives = 10;
-          
+
           setupSpeechGrammar(recognition);
-          
-          let hasResult = false;
+
+          hasResultRef.current = false;
 
           setState({
             isListening: true,
@@ -218,8 +242,8 @@ public <letter> = a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p 
           });
 
           recognition.onresult = (event) => {
-            if (hasResult) return;
-            hasResult = true;
+            if (hasResultRef.current) return;
+            hasResultRef.current = true;
 
             // Get all alternatives from the speech recognition result
             const results = event.results[0];
@@ -306,8 +330,10 @@ public <letter> = a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p 
             resolve(null);
           };
 
-          recognition.onerror = () => {
-            if (!hasResult) {
+          recognition.onerror = (event) => {
+            if (!hasResultRef.current) {
+              hasResultRef.current = true;
+              cleanup(); // Clean up on error
               setState({
                 isListening: false,
                 isProcessing: false,
@@ -322,7 +348,9 @@ public <letter> = a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p 
           };
 
           recognition.onend = () => {
-            if (!hasResult) {
+            cleanup(); // Always cleanup on end
+            if (!hasResultRef.current) {
+              hasResultRef.current = true;
               setState({
                 isListening: false,
                 isProcessing: false,
@@ -341,8 +369,12 @@ public <letter> = a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p 
 
           // Auto-timeout after 4 seconds
           timeoutRef.current = setTimeout(() => {
-            if (recognition && !hasResult) {
-              recognition.stop();
+            if (recognition && !hasResultRef.current) {
+              try {
+                recognition.stop();
+              } catch (e) {
+                // Ignore errors if already stopped
+              }
             }
           }, 4000);
         })
@@ -358,7 +390,7 @@ public <letter> = a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p 
           resolve(null);
         });
     });
-  }, [state.isListening, state.isProcessing, extractLetter, setupSpeechGrammar]);
+  }, [state.isListening, state.isProcessing, extractLetter, setupSpeechGrammar, cleanup]);
 
   // Confirm suggested letter
   const confirmLetter = useCallback((): string | null => {
@@ -390,18 +422,9 @@ public <letter> = a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p 
     });
   }, []);
 
-  // Stop listening
+  // Stop listening - now uses cleanup
   const stopListening = useCallback(() => {
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
-      recognitionRef.current = null;
-    }
-    
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
-
+    cleanup();
     setState({
       isListening: false,
       isProcessing: false,
@@ -410,7 +433,7 @@ public <letter> = a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p 
       needsConfirmation: false,
       suggestedLetter: null
     });
-  }, []);
+  }, [cleanup]);
 
   return {
     state,

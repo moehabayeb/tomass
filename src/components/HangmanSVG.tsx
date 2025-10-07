@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { memo } from 'react';
 
 interface HangmanSVGProps {
   wrongCount: number;
   maxWrong: number;
 }
 
-export const HangmanSVG: React.FC<HangmanSVGProps> = ({ wrongCount, maxWrong }) => {
+export const HangmanSVG = memo<HangmanSVGProps>(({ wrongCount, maxWrong }) => {
   const stages = [
     // Stage 0: Empty gallows
     [],
@@ -214,4 +214,4 @@ export const HangmanSVG: React.FC<HangmanSVGProps> = ({ wrongCount, maxWrong }) 
       )}
     </svg>
   );
-};
+});

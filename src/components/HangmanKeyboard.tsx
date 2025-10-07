@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Button } from '@/components/ui/button';
 
 interface HangmanKeyboardProps {
@@ -8,7 +8,7 @@ interface HangmanKeyboardProps {
   disabled: boolean;
 }
 
-export const HangmanKeyboard: React.FC<HangmanKeyboardProps> = ({
+export const HangmanKeyboard = memo<HangmanKeyboardProps>(({
   guessedLetters,
   correctLetters,
   onLetterClick,
@@ -43,13 +43,13 @@ export const HangmanKeyboard: React.FC<HangmanKeyboardProps> = ({
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto space-y-2 px-2">
+    <div className="w-full max-w-md mx-auto space-y-2 px-1">
       {rows.map((row, rowIndex) => (
         <div
           key={rowIndex}
-          className="flex justify-center gap-1 sm:gap-2"
+          className="flex justify-center gap-1.5"
           style={{
-            paddingLeft: rowIndex === 1 ? '1.5rem' : rowIndex === 2 ? '3rem' : '0'
+            paddingLeft: rowIndex === 1 ? '1rem' : rowIndex === 2 ? '2rem' : '0'
           }}
         >
           {row.map((letter) => {
@@ -62,18 +62,20 @@ export const HangmanKeyboard: React.FC<HangmanKeyboardProps> = ({
                 onClick={() => !isDisabled && onLetterClick(letter)}
                 disabled={isDisabled}
                 className={`
-                  w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12
+                  w-10 h-10 sm:w-11 sm:h-11
                   p-0
-                  text-sm sm:text-base md:text-lg
+                  text-base sm:text-lg
                   font-bold
                   rounded-lg
                   border-2
                   ${getLetterStyle(state)}
-                  ${isDisabled ? '' : 'active:scale-95'}
+                  ${isDisabled ? '' : 'active:scale-90 transition-transform duration-75'}
                 `}
                 style={{
-                  minWidth: '2rem',
-                  touchAction: 'manipulation'
+                  minWidth: '2.5rem',
+                  minHeight: '2.5rem',
+                  touchAction: 'manipulation',
+                  WebkitTapHighlightColor: 'transparent'
                 }}
               >
                 {letter}
@@ -83,11 +85,25 @@ export const HangmanKeyboard: React.FC<HangmanKeyboardProps> = ({
         </div>
       ))}
 
-      <div className="text-center mt-4">
-        <p className="text-white/60 text-xs sm:text-sm">
-          💡 Tap letters or speak them out loud
+      <div className="text-center mt-3">
+        <p className="text-white/60 text-xs">
+          💡 Tap letters to guess
         </p>
       </div>
     </div>
   );
-};
+}, (prevProps, nextProps) => {
+  // Custom equality check for Sets to prevent unnecessary rerenders
+  const setsEqual = (a: Set<string>, b: Set<string>) => {
+    if (a.size !== b.size) return false;
+    for (const item of a) if (!b.has(item)) return false;
+    return true;
+  };
+
+  return (
+    prevProps.disabled === nextProps.disabled &&
+    prevProps.onLetterClick === nextProps.onLetterClick &&
+    setsEqual(prevProps.guessedLetters, nextProps.guessedLetters) &&
+    setsEqual(prevProps.correctLetters, nextProps.correctLetters)
+  );
+});

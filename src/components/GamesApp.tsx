@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Gamepad2, BookOpen, Target } from 'lucide-react';
 import { HangmanGame } from './HangmanGame';
+import { HangmanErrorBoundary } from './HangmanErrorBoundary';
 import { FlashcardsGame } from './FlashcardsGame';
 
 interface GamesAppProps {
@@ -13,7 +14,11 @@ export const GamesApp: React.FC<GamesAppProps> = ({ onBack }) => {
   const [selectedGame, setSelectedGame] = useState<'menu' | 'hangman' | 'flashcards'>('menu');
 
   if (selectedGame === 'hangman') {
-    return <HangmanGame onBack={() => setSelectedGame('menu')} />;
+    return (
+      <HangmanErrorBoundary onReset={() => setSelectedGame('menu')}>
+        <HangmanGame onBack={() => setSelectedGame('menu')} />
+      </HangmanErrorBoundary>
+    );
   }
 
   if (selectedGame === 'flashcards') {
