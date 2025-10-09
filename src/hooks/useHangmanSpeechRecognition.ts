@@ -29,6 +29,37 @@ export const useHangmanSpeechRecognition = () => {
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hasResultRef = useRef(false);
+  const messageTimeoutsRef = useRef<NodeJS.Timeout[]>([]); // Track all message timeouts
+
+  // Helper function to set message timeout and track it
+  const setMessageTimeout = useCallback((callback: () => void, delay: number) => {
+    const timeoutId = setTimeout(callback, delay);
+    messageTimeoutsRef.current.push(timeoutId);
+    return timeoutId;
+  }, []);
+
+  // Helper function to clear all message timeouts
+  const clearAllMessageTimeouts = useCallback(() => {
+    messageTimeoutsRef.current.forEach(id => clearTimeout(id));
+    messageTimeoutsRef.current = [];
+  }, []);
+
+  // Cleanup all resources on unmount
+  useEffect(() => {
+    return () => {
+      clearAllMessageTimeouts();
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop();
+        } catch (e) {
+          // Ignore
+        }
+      }
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [clearAllMessageTimeouts]);
 
   // Comprehensive letter mapping table - exact matches only
   const letterMap: Record<string, string> = {
@@ -172,20 +203,23 @@ public <letter> = a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p 
     }
   }, []);
 
-  // Cleanup function to prevent memory leaks
+  // Cleanup function to prevent memory leaks - uses stop() not abort()
   const cleanup = useCallback(() => {
-    if (recognitionRef.current) {
-      try {
-        recognitionRef.current.abort();
-        recognitionRef.current = null;
-      } catch (e) {
-        // Ignore errors during cleanup
-      }
-    }
-
+    // Clear timeout first
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
+    }
+
+    // Stop recognition gracefully (not abort - abort is too aggressive)
+    if (recognitionRef.current) {
+      try {
+        // Use stop() for graceful shutdown - triggers onend event
+        recognitionRef.current.stop();
+      } catch (e) {
+        // Ignore errors during cleanup (might already be stopped)
+      }
+      recognitionRef.current = null;
     }
 
     hasResultRef.current = false;
@@ -200,8 +234,14 @@ public <letter> = a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p 
         return;
       }
 
-      // Clean up any existing recognition
-      cleanup();
+      // Stop any existing recognition (but don't abort the new one we're about to create!)
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop();
+        } catch (e) {
+          // Already stopped
+        }
+      }
 
       // Check for speech recognition support
       if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
@@ -281,13 +321,13 @@ public <letter> = a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p 
                     needsConfirmation: false,
                     suggestedLetter: null
                   });
-                  setTimeout(() => setState(prev => ({ ...prev, message: '' })), 2000);
+                  setMessageTimeout(() => setState(prev => ({ ...prev, message: '' })), 2000);
                   resolve(null);
                   return;
                 }
                 
-                // Lower confidence threshold and simplified confirmation logic
-                const needsConfirmation = alt.confidence < 0.3;
+                // Lower confidence threshold for better UX (0.2 instead of 0.3)
+                const needsConfirmation = alt.confidence < 0.2;
                 
                 if (needsConfirmation) {
                   setState({
@@ -302,7 +342,12 @@ public <letter> = a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p 
                   return;
                 }
                 
-                // Success - show brief "Heard: X" message
+                // Success - clear timeout and show brief "Heard: X" message
+                if (timeoutRef.current) {
+                  clearTimeout(timeoutRef.current);
+                  timeoutRef.current = null;
+                }
+
                 setState({
                   isListening: false,
                   isProcessing: false,
@@ -311,7 +356,7 @@ public <letter> = a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p 
                   needsConfirmation: false,
                   suggestedLetter: null
                 });
-                setTimeout(() => setState(prev => ({ ...prev, message: '' })), 800);
+                setMessageTimeout(() => setState(prev => ({ ...prev, message: '' })), 800);
                 resolve(letter);
                 return;
               }
@@ -326,29 +371,47 @@ public <letter> = a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p 
               needsConfirmation: false,
               suggestedLetter: null
             });
-            setTimeout(() => setState(prev => ({ ...prev, message: '' })), 2000);
+            setMessageTimeout(() => setState(prev => ({ ...prev, message: '' })), 2000);
             resolve(null);
           };
 
           recognition.onerror = (event) => {
             if (!hasResultRef.current) {
               hasResultRef.current = true;
-              cleanup(); // Clean up on error
+
+              // Log error details for debugging
+              console.error('[Hangman Speech] Error:', event.error, event.message);
+
+              // User-friendly error messages based on error type
+              let errorMessage = "Didn't catch that—try again";
+              if (event.error === 'not-allowed' || event.error === 'permission-denied') {
+                errorMessage = 'Enable microphone to play. Settings → Microphone.';
+              } else if (event.error === 'no-speech') {
+                errorMessage = 'No speech detected—try speaking louder';
+              } else if (event.error === 'audio-capture') {
+                errorMessage = 'Microphone not working—check your device';
+              } else if (event.error === 'network') {
+                errorMessage = 'Network error—check your connection';
+              }
+
               setState({
                 isListening: false,
                 isProcessing: false,
-                message: "Didn't catch that—try again",
+                message: errorMessage,
                 error: true,
                 needsConfirmation: false,
                 suggestedLetter: null
               });
-              setTimeout(() => setState(prev => ({ ...prev, message: '' })), 2000);
+              setMessageTimeout(() => setState(prev => ({ ...prev, message: '' })), 3000);
               resolve(null);
             }
           };
 
           recognition.onend = () => {
-            cleanup(); // Always cleanup on end
+            // DON'T call cleanup() here - causes recursive loop!
+            // Just clear the ref since recognition ended naturally
+            recognitionRef.current = null;
+
             if (!hasResultRef.current) {
               hasResultRef.current = true;
               setState({
@@ -359,15 +422,32 @@ public <letter> = a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p 
                 needsConfirmation: false,
                 suggestedLetter: null
               });
-              setTimeout(() => setState(prev => ({ ...prev, message: '' })), 2000);
+              setMessageTimeout(() => setState(prev => ({ ...prev, message: '' })), 2000);
               resolve(null);
             }
           };
 
           recognitionRef.current = recognition;
-          recognition.start();
 
-          // Auto-timeout after 4 seconds
+          // Try to start recognition with error handling
+          try {
+            recognition.start();
+            console.log('[Hangman Speech] Recognition started successfully');
+          } catch (error) {
+            console.error('[Hangman Speech] Failed to start recognition:', error);
+            setState({
+              isListening: false,
+              isProcessing: false,
+              message: 'Failed to start microphone—try again',
+              error: true,
+              needsConfirmation: false,
+              suggestedLetter: null
+            });
+            resolve(null);
+            return;
+          }
+
+          // Auto-timeout after 5 seconds (increased from 4 for better UX)
           timeoutRef.current = setTimeout(() => {
             if (recognition && !hasResultRef.current) {
               try {
@@ -376,7 +456,7 @@ public <letter> = a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p 
                 // Ignore errors if already stopped
               }
             }
-          }, 4000);
+          }, 5000);
         })
         .catch(() => {
           setState({
@@ -390,7 +470,7 @@ public <letter> = a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p 
           resolve(null);
         });
     });
-  }, [state.isListening, state.isProcessing, extractLetter, setupSpeechGrammar, cleanup]);
+  }, [state.isListening, state.isProcessing, extractLetter, setupSpeechGrammar, setMessageTimeout]);
 
   // Confirm suggested letter
   const confirmLetter = useCallback((): string | null => {
@@ -406,9 +486,9 @@ public <letter> = a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p 
       suggestedLetter: null
     });
     
-    setTimeout(() => setState(prev => ({ ...prev, message: '' })), 800);
+    setMessageTimeout(() => setState(prev => ({ ...prev, message: '' })), 800);
     return letter;
-  }, [state.suggestedLetter]);
+  }, [state.suggestedLetter, setMessageTimeout]);
 
   // Reject confirmation
   const rejectConfirmation = useCallback(() => {
