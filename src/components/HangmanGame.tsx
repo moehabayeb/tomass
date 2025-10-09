@@ -3,14 +3,12 @@ import Confetti from 'react-confetti';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Mic, Volume2, RotateCcw, Trophy, Lightbulb, Settings } from 'lucide-react';
+import { ArrowLeft, Volume2, RotateCcw, Trophy, Lightbulb, Settings } from 'lucide-react';
 import { useTextToSpeech } from '@/hooks/useTextToSpeech';
 import { useGamification } from '@/hooks/useGamification';
 import { useGameVocabulary, type GameWord } from '@/hooks/useGameVocabulary';
-import { useHangmanSpeechRecognition } from '@/hooks/useHangmanSpeechRecognition';
 import { HangmanSVG } from './HangmanSVG';
 import { HangmanKeyboard } from './HangmanKeyboard';
-import { SpeechWaveform } from './SpeechWaveform';
 import { useWindowSize } from '@react-hook/window-size';
 import { audioManager } from '@/utils/audioContext';
 
@@ -33,6 +31,7 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
   const [showHint, setShowHint] = useState(false);
+  const [hintLetter, setHintLetter] = useState<string | null>(null);
   const [difficulty, setDifficulty] = useState<Difficulty>('medium');
   const [showSettings, setShowSettings] = useState(false);
 
@@ -51,7 +50,6 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
   const { speak } = useTextToSpeech();
   const { addXP } = useGamification();
   const { getWordsForHangman, isLoading: vocabLoading } = useGameVocabulary();
-  const { state: speechState, startListening, stopListening, confirmLetter, rejectConfirmation } = useHangmanSpeechRecognition();
 
   // Start new game - memoized to prevent recreations
   const startNewGame = useCallback(() => {
@@ -70,6 +68,7 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
     setWrong(0);
     setStatus('playing');
     setShowHint(false);
+    setHintLetter(null);
   }, [getWordsForHangman]);
 
   // Initialize game ONCE on mount - prevent circular dependency
@@ -164,74 +163,37 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
     }
   }, [word, status, guessed, revealed]);
 
-  // Handle speech recognition - memoized
-  const handleSpeechRecognition = useCallback(async () => {
-    const letter = await startListening(guessed);
-    if (letter) {
-      processGuess(letter);
-    }
-  }, [startListening, guessed, processGuess]);
-
-  // Handle confirmation - memoized
-  const handleConfirmYes = useCallback(() => {
-    const letter = confirmLetter();
-    if (letter) {
-      processGuess(letter);
-    }
-  }, [confirmLetter, processGuess]);
-
   // Handle word pronunciation - memoized
   const playWordPronunciation = useCallback(() => {
     if (!word) return;
     speak(word);
   }, [word, speak]);
 
-  // Handle hint - memoized
+  // Handle hint - reveals a random unrevealed letter
   const handleHint = useCallback(() => {
     if (showHint) {
       setShowHint(false);
+      setHintLetter(null);
       return;
     }
 
-    // Cost: 1 wrong guess
-    if (wrong + 1 < maxWrong) {
+    // Get unrevealed letters from the word
+    const unrevealedLetters = word
+      .split('')
+      .filter(letter => !guessed.has(letter.toLowerCase()));
+
+    if (unrevealedLetters.length > 0 && wrong + 1 < maxWrong) {
+      // Pick a random unrevealed letter
+      const randomLetter = unrevealedLetters[Math.floor(Math.random() * unrevealedLetters.length)];
+
       setWrong(prev => prev + 1);
       setShowHint(true);
+      setHintLetter(randomLetter);
     }
-  }, [showHint, wrong, maxWrong]);
+  }, [showHint, wrong, maxWrong, word, guessed]);
 
   // Handle keyboard letter click - already using processGuess which is memoized
   const handleLetterClick = processGuess;
-
-  // Get button content based on state
-  const getButtonContent = () => {
-    if (speechState.isProcessing) {
-      return (
-        <>
-          <div className="animate-spin h-6 w-6 border-3 border-white border-t-transparent rounded-full mr-3" />
-          Processing...
-        </>
-      );
-    }
-
-    if (speechState.isListening) {
-      return (
-        <>
-          <div className="animate-pulse bg-white/20 rounded-full p-2 mr-3">
-            <Mic className="h-6 w-6" />
-          </div>
-          Listening...
-        </>
-      );
-    }
-
-    return (
-      <>
-        <Mic className="h-6 w-6 mr-2" />
-        Speak a Letter
-      </>
-    );
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 overflow-x-hidden">
@@ -405,10 +367,10 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
                   </div>
 
                   {/* Hint Display */}
-                  {showHint && currentWordData && (
+                  {showHint && hintLetter && (
                     <div className="bg-gradient-to-r from-yellow-500/30 to-orange-500/30 border border-yellow-300/50 rounded-xl p-4 animate-fade-in">
-                      <p className="text-yellow-100 text-sm mb-1">💡 Turkish Translation:</p>
-                      <p className="text-white font-bold text-lg">{currentWordData.turkish}</p>
+                      <p className="text-yellow-100 text-sm mb-1">💡 Hint - Try this letter:</p>
+                      <p className="text-white font-bold text-4xl tracking-wider">{hintLetter}</p>
                     </div>
                   )}
 
@@ -432,72 +394,6 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
             {status === 'playing' && (
               <Card className="bg-gradient-to-br from-violet-500/30 to-purple-500/20 backdrop-blur-xl border border-purple-300/50 text-white shadow-lg">
                 <CardContent className="p-3 space-y-2">
-                  {/* Speech Recognition Interface */}
-                  <div className="space-y-2">
-                    {/* Waveform Animation */}
-                    {speechState.isListening && (
-                      <SpeechWaveform isListening={speechState.isListening} />
-                    )}
-
-                    {/* Confirmation Dialog */}
-                    {speechState.needsConfirmation && (
-                      <div className="bg-gradient-to-r from-blue-500/30 to-purple-500/30 border border-blue-300/50 rounded-xl p-4 animate-fade-in">
-                        <p className="text-white text-base sm:text-lg mb-4">{speechState.message}</p>
-                        <div className="flex gap-3 justify-center">
-                          <Button
-                            onClick={handleConfirmYes}
-                            className="bg-green-500 hover:bg-green-600 px-6 py-2"
-                          >
-                            Yes ✓
-                          </Button>
-                          <Button
-                            onClick={rejectConfirmation}
-                            variant="outline"
-                            className="border-white/30 text-white hover:bg-white/20 px-6 py-2"
-                          >
-                            No, try again
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Speech Result Display */}
-                    {speechState.message && !speechState.needsConfirmation && (
-                      <div className={`border rounded-xl p-3 transition-all duration-300 ${
-                        speechState.error
-                          ? 'bg-gradient-to-r from-red-500/30 to-orange-500/30 border-red-300/50'
-                          : speechState.message.includes('Already tried')
-                          ? 'bg-gradient-to-r from-yellow-500/30 to-orange-500/30 border-yellow-300/50'
-                          : speechState.message.startsWith('Heard:')
-                          ? 'bg-gradient-to-r from-green-500/30 to-emerald-500/30 border-green-300/50'
-                          : 'bg-gradient-to-r from-blue-500/30 to-purple-500/30 border-blue-300/50'
-                      }`}>
-                        <p className={`text-sm sm:text-base font-medium ${
-                          speechState.error
-                            ? 'text-red-100'
-                            : speechState.message.includes('Already tried')
-                            ? 'text-yellow-100'
-                            : 'text-white'
-                        }`}>
-                          {speechState.message}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Main Speech Button */}
-                    <Button
-                      onClick={speechState.isListening ? stopListening : handleSpeechRecognition}
-                      disabled={speechState.isProcessing || speechState.needsConfirmation}
-                      className={`w-full py-6 text-lg font-bold rounded-xl transition-all duration-300 hover:scale-105 disabled:opacity-50 shadow-2xl ${
-                        speechState.isListening
-                          ? 'animate-pulse bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700'
-                          : 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700'
-                      }`}
-                    >
-                      {getButtonContent()}
-                    </Button>
-                  </div>
-
                   {/* Keyboard */}
                   <div className="pt-4">
                     <HangmanKeyboard
