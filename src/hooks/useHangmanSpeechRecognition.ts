@@ -125,58 +125,71 @@ export const useHangmanSpeechRecognition = () => {
   // Simplified letter extraction - direct and reliable
   const extractLetter = useCallback((transcript: string, confidence?: number): SpeechResult => {
     const normalized = transcript.toLowerCase().trim().replace(/[^\w\s-]/g, '');
-    
-    // Debug logging
-    const debugEnabled = window.location.search.includes('debug=1');
-    if (debugEnabled) {
-      // Processing speech - raw: ${transcript}, normalized: ${normalized}, confidence: ${confidence}
-    }
+
+    // Always log in development for debugging
+    console.log('[Hangman Speech] Processing:', {
+      raw: transcript,
+      normalized,
+      confidence: confidence?.toFixed(2)
+    });
 
     // Handle "as in" patterns (e.g., "B as in boy")
     const asInMatch = normalized.match(/([a-z])\s+as\s+in/);
     if (asInMatch) {
       const letter = asInMatch[1];
-      if (debugEnabled) {
-      }
+      console.log('[Hangman Speech] ✓ Matched "as in" pattern:', letter);
       return { letter, confidence, transcript };
     }
 
     // Handle multi-word phrases like "double you"
     if (normalized.includes('double you') || normalized.includes('double-you') || normalized.includes('double u')) {
+      console.log('[Hangman Speech] ✓ Matched multi-word: W');
       return { letter: 'w', confidence, transcript };
     }
     if (normalized.includes('x-ray') || normalized.includes('xray')) {
+      console.log('[Hangman Speech] ✓ Matched multi-word: X');
       return { letter: 'x', confidence, transcript };
     }
 
-    // Split into tokens and check each one
-    const tokens = normalized.split(/\s+/);
-    
-    for (const token of tokens) {
+    // PRIORITY 1: Check if the ENTIRE normalized string is a letter name
+    if (letterMap[normalized]) {
+      const letter = letterMap[normalized];
+      console.log('[Hangman Speech] ✓ Full phrase match:', { phrase: normalized, letter });
+      return { letter, confidence, transcript };
+    }
+
+    // PRIORITY 2: Filter out common non-letter words
+    const SKIP_WORDS = ['the', 'a', 'an', 'is', 'it', 'letter', 'i', 'say', 'choose', 'pick', 'want'];
+    const tokens = normalized.split(/\s+/).filter(t => !SKIP_WORDS.includes(t));
+
+    console.log('[Hangman Speech] Tokens after filtering:', tokens);
+
+    // PRIORITY 3: Sort tokens by length (longest first) to prioritize specific letter names
+    const sortedTokens = [...tokens].sort((a, b) => b.length - a.length);
+
+    for (const token of sortedTokens) {
       // Direct letter mapping
       if (letterMap[token]) {
         const letter = letterMap[token];
-        if (debugEnabled) {
-        }
+        console.log('[Hangman Speech] ✓ Token match:', { token, letter });
         return { letter, confidence, transcript };
       }
-      
+
       // Single alphabetic character
       if (/^[a-z]$/.test(token)) {
-        if (debugEnabled) {
-        }
+        console.log('[Hangman Speech] ✓ Single char match:', token);
         return { letter: token, confidence, transcript };
       }
     }
 
-    // Check if the whole transcript is just a single letter
+    // PRIORITY 4: Check if the whole transcript is just a single letter
     if (/^[a-z]$/.test(normalized)) {
+      console.log('[Hangman Speech] ✓ Single letter:', normalized);
       return { letter: normalized, confidence, transcript };
     }
 
     // No letter found
-    if (debugEnabled) {
-    }
+    console.warn('[Hangman Speech] ✗ Could not extract letter from:', { transcript, normalized, tokens });
     return { letter: null, confidence, transcript };
   }, []);
 
@@ -299,70 +312,96 @@ public <letter> = a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p 
             
             // Sort by confidence (highest first)
             alternatives.sort((a, b) => b.confidence - a.confidence);
-            
-            const debugEnabled = window.location.search.includes('debug=1');
-            if (debugEnabled) {
-            }
-            
-            // Try each alternative
+
+            // Log all alternatives for debugging
+            console.log('[Hangman Speech] All alternatives received:', alternatives.map((a, i) => ({
+              rank: i + 1,
+              transcript: a.transcript,
+              confidence: a.confidence.toFixed(2)
+            })));
+
+            // Try to extract letter from ALL alternatives and pick best
+            const candidates: Array<{letter: string, confidence: number, transcript: string}> = [];
+
             for (const alt of alternatives) {
               const extractResult = extractLetter(alt.transcript, alt.confidence);
-              
+
               if (extractResult.letter) {
                 const letter = extractResult.letter.toLowerCase();
-                
-                // Check if already guessed
-                if (alreadyGuessed.has(letter)) {
-                  setState({
-                    isListening: false,
-                    isProcessing: false,
-                    message: `Already tried ${letter.toUpperCase()}`,
-                    error: false,
-                    needsConfirmation: false,
-                    suggestedLetter: null
-                  });
-                  setMessageTimeout(() => setState(prev => ({ ...prev, message: '' })), 2000);
-                  resolve(null);
-                  return;
-                }
-                
-                // Lower confidence threshold for better UX (0.2 instead of 0.3)
-                const needsConfirmation = alt.confidence < 0.2;
-                
-                if (needsConfirmation) {
-                  setState({
-                    isListening: false,
-                    isProcessing: false,
-                    message: `Did you say ${letter.toUpperCase()}?`,
-                    error: false,
-                    needsConfirmation: true,
-                    suggestedLetter: letter
-                  });
-                  resolve(null);
-                  return;
-                }
-                
-                // Success - clear timeout and show brief "Heard: X" message
-                if (timeoutRef.current) {
-                  clearTimeout(timeoutRef.current);
-                  timeoutRef.current = null;
-                }
+                candidates.push({ letter, confidence: alt.confidence, transcript: alt.transcript });
+              }
+            }
 
+            console.log('[Hangman Speech] Extracted candidates:', candidates);
+
+            // If we have candidates, pick the best one
+            if (candidates.length > 0) {
+              // Sort by confidence
+              candidates.sort((a, b) => b.confidence - a.confidence);
+              const best = candidates[0];
+              const letter = best.letter;
+
+              console.log('[Hangman Speech] 🎯 Best candidate selected:', {
+                letter: letter.toUpperCase(),
+                confidence: best.confidence.toFixed(2),
+                transcript: best.transcript
+              });
+
+              // Check if already guessed
+              if (alreadyGuessed.has(letter)) {
+                console.log('[Hangman Speech] ⚠️ Letter already guessed:', letter.toUpperCase());
                 setState({
                   isListening: false,
                   isProcessing: false,
-                  message: `Heard: ${letter.toUpperCase()}`,
+                  message: `Already tried ${letter.toUpperCase()}`,
                   error: false,
                   needsConfirmation: false,
                   suggestedLetter: null
                 });
-                setMessageTimeout(() => setState(prev => ({ ...prev, message: '' })), 800);
-                resolve(letter);
+                setMessageTimeout(() => setState(prev => ({ ...prev, message: '' })), 2000);
+                resolve(null);
                 return;
               }
+
+              // Lower confidence threshold for better UX (0.2 instead of 0.3)
+              const needsConfirmation = best.confidence < 0.2;
+
+              if (needsConfirmation) {
+                console.log('[Hangman Speech] ❓ Low confidence, asking for confirmation:', best.confidence.toFixed(2));
+                setState({
+                  isListening: false,
+                  isProcessing: false,
+                  message: `Did you say ${letter.toUpperCase()}?`,
+                  error: false,
+                  needsConfirmation: true,
+                  suggestedLetter: letter
+                });
+                resolve(null);
+                return;
+              }
+
+              // Success - clear timeout and show brief "Heard: X" message
+              if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+                timeoutRef.current = null;
+              }
+
+              console.log('[Hangman Speech] ✅ SUCCESS! Letter accepted:', letter.toUpperCase());
+              setState({
+                isListening: false,
+                isProcessing: false,
+                message: `Heard: "${best.transcript}" → ${letter.toUpperCase()}`,
+                error: false,
+                needsConfirmation: false,
+                suggestedLetter: null
+              });
+              setMessageTimeout(() => setState(prev => ({ ...prev, message: '' })), 1500);
+              resolve(letter);
+              return;
             }
-            
+
             // No letter found in any alternative
+            console.warn('[Hangman Speech] ❌ No letter extracted from any alternative');
             setState({
               isListening: false,
               isProcessing: false,
