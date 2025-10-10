@@ -4,11 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Volume2, RotateCcw, Star, ChevronRight, Trophy, BookOpen, Sparkles, Mic } from 'lucide-react';
+import { ArrowLeft, Volume2, RotateCcw, Star, ChevronRight, Trophy, BookOpen, Sparkles, Mic, Lock, Unlock } from 'lucide-react';
 import { useTextToSpeech } from '@/hooks/useTextToSpeech';
 import { useGamification } from '@/hooks/useGamification';
 import { useGameVocabulary, type GameWord } from '@/hooks/useGameVocabulary';
 import { useFlashcardSpeechRecognition } from '@/hooks/useFlashcardSpeechRecognition';
+import { useFlashcardProgress } from '@/hooks/useFlashcardProgress';
 
 interface FlashcardsGameProps {
   onBack: () => void;
@@ -127,6 +128,9 @@ const getWordDefinition = (word: string): string => {
 };
 
 export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
+  // Game screens: 'tierSelection' | 'playing' | 'results'
+  const [screen, setScreen] = useState<'tierSelection' | 'playing' | 'results'>('tierSelection');
+  const [selectedTier, setSelectedTier] = useState<number | null>(null);
   const [flashcardWords, setFlashcardWords] = useState<GameWord[]>([]);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [gamePhase, setGamePhase] = useState<'question' | 'answer'>('question');
@@ -137,26 +141,41 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
     correct: boolean;
     xpEarned: number;
   }>>([]);
-  const [roundComplete, setRoundComplete] = useState(false);
   const [totalXPEarned, setTotalXPEarned] = useState(0);
   const [hasPlayedPronunciation, setHasPlayedPronunciation] = useState(false);
 
   const { speak } = useTextToSpeech();
   const { addXP } = useGamification();
-  const { getWordsForFlashcards, isLoading: vocabLoading } = useGameVocabulary();
+  const { getWordsByTier, getTierInfo, isLoading: vocabLoading } = useGameVocabulary();
   const { state: speechState, startListening, stopListening, confirmWord, rejectConfirmation } = useFlashcardSpeechRecognition();
+  const {
+    progress,
+    isLoading: progressLoading,
+    completeTier,
+    isTierUnlocked,
+    getTierBestScore,
+    getTierAttempts,
+    getOverallAccuracy
+  } = useFlashcardProgress();
 
-  // Initialize vocabulary when loaded
-  useEffect(() => {
-    if (!vocabLoading) {
-      const words = getWordsForFlashcards();
-      const selectedWords = words.slice(0, 10); // 10 cards for good practice
-      setFlashcardWords(selectedWords);
-    }
-  }, [vocabLoading, getWordsForFlashcards]);
+  // Start a tier
+  const startTier = useCallback((tier: number) => {
+    if (!isTierUnlocked(tier)) return;
+
+    const words = getWordsByTier(tier);
+    setSelectedTier(tier);
+    setFlashcardWords(words);
+    setCurrentCardIndex(0);
+    setGamePhase('question');
+    setUserAnswer('');
+    setCardResults([]);
+    setTotalXPEarned(0);
+    setHasPlayedPronunciation(false);
+    setScreen('playing');
+  }, [isTierUnlocked, getWordsByTier]);
 
   const currentCard = flashcardWords[currentCardIndex];
-  const progress = flashcardWords.length > 0 ? ((currentCardIndex + 1) / flashcardWords.length) * 100 : 0;
+  const gameProgress = flashcardWords.length > 0 ? ((currentCardIndex + 1) / flashcardWords.length) * 100 : 0;
 
   const playCardPronunciation = useCallback(() => {
     if (!currentCard) return;
@@ -165,8 +184,10 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
   }, [currentCard, speak]);
 
   // Check if answer is correct (with fuzzy matching for typos)
-  const checkAnswer = useCallback(() => {
-    const cleanedUserAnswer = userAnswer.toLowerCase().trim();
+  const checkAnswer = useCallback((answerOverride?: string) => {
+    // Use override if provided (for voice input), otherwise use state
+    const answerToCheck = answerOverride !== undefined ? answerOverride : userAnswer;
+    const cleanedUserAnswer = answerToCheck.toLowerCase().trim();
     const cleanedExpected = currentCard.english.toLowerCase().trim();
 
     // Exact match
@@ -178,7 +199,7 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
     // Store result
     setCardResults(prev => [...prev, {
       word: currentCard,
-      userAnswer: userAnswer,
+      userAnswer: answerToCheck,
       correct: isExactMatch,
       xpEarned
     }]);
@@ -204,7 +225,7 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
     if (word) {
       // Voice recognition succeeded with high confidence
       setUserAnswer(word);
-      checkAnswer();
+      checkAnswer(word); // Pass word directly to avoid state timing issue
     }
     // If word is null, it means:
     // 1. Low confidence → will show confirmation dialog
@@ -217,7 +238,7 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
     const word = confirmWord();
     if (word) {
       setUserAnswer(word);
-      checkAnswer();
+      checkAnswer(word); // Pass word directly to avoid state timing issue
     }
   }, [confirmWord, checkAnswer]);
 
@@ -228,9 +249,16 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
       setUserAnswer('');
       setHasPlayedPronunciation(false);
     } else {
-      setRoundComplete(true);
+      // Tier complete - save results and show results screen
+      if (selectedTier) {
+        completeTier(
+          selectedTier,
+          cardResults.map(r => ({ word: r.word.english, correct: r.correct }))
+        );
+      }
+      setScreen('results');
     }
-  }, [currentCardIndex, flashcardWords.length]);
+  }, [currentCardIndex, flashcardWords.length, selectedTier, cardResults, completeTier]);
 
   const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && gamePhase === 'question' && userAnswer.trim()) {
@@ -240,20 +268,16 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
     }
   }, [gamePhase, userAnswer, checkAnswer, nextCard]);
 
-  const restartGame = () => {
-    setCurrentCardIndex(0);
-    setGamePhase('question');
-    setUserAnswer('');
-    setCardResults([]);
-    setRoundComplete(false);
-    setTotalXPEarned(0);
-    setHasPlayedPronunciation(false);
+  const retryTier = useCallback(() => {
+    if (!selectedTier) return;
+    startTier(selectedTier);
+  }, [selectedTier, startTier]);
 
-    // Reload fresh vocabulary
-    const words = getWordsForFlashcards();
-    const selectedWords = words.slice(0, 10);
-    setFlashcardWords(selectedWords);
-  };
+  const backToTierSelection = useCallback(() => {
+    setScreen('tierSelection');
+    setSelectedTier(null);
+    setCardResults([]);
+  }, []);
 
   const getStarRating = () => {
     const correctCount = cardResults.filter(result => result.correct).length;
@@ -266,10 +290,161 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
     return { stars: 0, label: 'Keep Practicing!', color: 'text-gray-500' };
   };
 
-  // Results screen
-  if (roundComplete) {
+  // TIER SELECTION SCREEN
+  if (screen === 'tierSelection') {
+    const masteredWordsCount = progress.masteredWords.length;
+    const overallAccuracy = getOverallAccuracy();
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4">
+        <div className="absolute inset-0 w-full h-full background-stars pointer-events-none"
+             style={{ backgroundImage: 'radial-gradient(2px 2px at 20px 30px, #fff, transparent), radial-gradient(2px 2px at 40px 70px, #fff, transparent), radial-gradient(1px 1px at 90px 40px, #fff, transparent)', backgroundSize: '100px 100px' }}
+        />
+
+        <div className="relative max-w-4xl mx-auto pt-8">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-8">
+            <Button
+              onClick={onBack}
+              variant="ghost"
+              size="sm"
+              className="text-white/70 hover:text-white hover:bg-white/10"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back
+            </Button>
+          </div>
+
+          {/* Title */}
+          <div className="text-center mb-8">
+            <h2 className="text-5xl font-bold text-white mb-3 flex items-center justify-center gap-3">
+              🎯 Smart Flashcards
+              <Sparkles className="h-10 w-10 text-yellow-400 animate-pulse" />
+            </h2>
+            <p className="text-white/80 text-xl">Choose your level and master 75 words!</p>
+          </div>
+
+          {/* Overall Progress */}
+          {progress.totalAttempts > 0 && (
+            <Card className="bg-gradient-to-r from-indigo-500/30 to-purple-500/30 backdrop-blur-xl border border-purple-300/50 text-white mb-8">
+              <CardContent className="p-6">
+                <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                  <Trophy className="h-6 w-6 text-yellow-400" />
+                  Your Progress
+                </h3>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-green-400">{masteredWordsCount}/75</div>
+                    <div className="text-sm text-white/70">Mastered Words</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-blue-400">{Math.round(overallAccuracy)}%</div>
+                    <div className="text-sm text-white/70">Overall Accuracy</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-purple-400">{progress.tiersUnlocked.length}/5</div>
+                    <div className="text-sm text-white/70">Tiers Unlocked</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Tier Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {[1, 2, 3, 4, 5].map((tier) => {
+              const tierInfo = getTierInfo(tier);
+              const isUnlocked = isTierUnlocked(tier);
+              const bestScore = getTierBestScore(tier);
+              const attempts = getTierAttempts(tier);
+              const isPassed = bestScore >= tierInfo.passThreshold;
+
+              return (
+                <Card
+                  key={tier}
+                  className={`backdrop-blur-xl border-2 transition-all duration-300 ${
+                    isUnlocked
+                      ? 'cursor-pointer hover:scale-105 hover:shadow-2xl border-white/50 bg-gradient-to-br from-white/10 to-white/5'
+                      : 'opacity-60 border-gray-600/50 bg-gradient-to-br from-gray-800/50 to-gray-900/50'
+                  }`}
+                  onClick={() => isUnlocked && startTier(tier)}
+                >
+                  <CardContent className="p-6 text-white">
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="text-2xl font-bold">Tier {tier}</h3>
+                          {isUnlocked ? (
+                            <Unlock className="h-5 w-5 text-green-400" />
+                          ) : (
+                            <Lock className="h-5 w-5 text-gray-500" />
+                          )}
+                        </div>
+                        <p className="text-xl font-semibold text-cyan-300">{tierInfo.name}</p>
+                      </div>
+                      {isPassed && (
+                        <Badge className="bg-green-500/80 text-white font-bold">
+                          ✓ PASSED
+                        </Badge>
+                      )}
+                    </div>
+
+                    <p className="text-white/70 mb-4">{tierInfo.description}</p>
+
+                    <div className="space-y-2 mb-4">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-white/60">Words:</span>
+                        <span className="font-bold">{tierInfo.wordCount}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-white/60">Pass Requirement:</span>
+                        <span className="font-bold text-yellow-400">{tierInfo.passThreshold}%</span>
+                      </div>
+                      {bestScore > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-white/60">Best Score:</span>
+                          <span className={`font-bold ${isPassed ? 'text-green-400' : 'text-orange-400'}`}>
+                            {Math.round(bestScore)}%
+                          </span>
+                        </div>
+                      )}
+                      {attempts > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-white/60">Attempts:</span>
+                          <span className="font-bold">{attempts}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {isUnlocked ? (
+                      <div className={`bg-gradient-to-r ${tierInfo.gradient} rounded-lg p-3 text-center font-bold text-white`}>
+                        {bestScore > 0 ? '🔄 Practice Again' : '▶️ Start Tier'}
+                      </div>
+                    ) : (
+                      <div className="bg-gray-700/50 rounded-lg p-3 text-center text-gray-400 text-sm">
+                        🔒 Complete Tier {tier - 1} to unlock
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // RESULTS SCREEN
+  if (screen === 'results' && selectedTier) {
     const rating = getStarRating();
     const correctCount = cardResults.filter(result => result.correct).length;
+    const totalCount = cardResults.length;
+    const percentage = (correctCount / totalCount) * 100;
+    const tierInfo = getTierInfo(selectedTier);
+    const passed = percentage >= tierInfo.passThreshold;
+    const isPerfect = percentage === 100;
+    const unlockedNextTier = passed && selectedTier < 5;
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4">
@@ -278,14 +453,64 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
         />
 
         <div className="relative max-w-2xl mx-auto pt-8">
-          <Card className="bg-gradient-to-b from-indigo-500/30 to-purple-500/20 backdrop-blur-xl border border-purple-300/50 text-white">
+          <Card className={`backdrop-blur-xl border-2 text-white ${
+            passed
+              ? 'bg-gradient-to-b from-green-500/30 to-emerald-500/20 border-green-300/50'
+              : 'bg-gradient-to-b from-orange-500/30 to-red-500/20 border-orange-300/50'
+          }`}>
             <CardHeader className="text-center">
-              <CardTitle className="text-3xl font-bold flex items-center justify-center gap-2">
-                <Trophy className="h-8 w-8 text-yellow-400" />
-                Round Complete!
+              <CardTitle className="text-4xl font-bold flex items-center justify-center gap-3">
+                {isPerfect ? (
+                  <>
+                    <Trophy className="h-10 w-10 text-yellow-400 animate-bounce" />
+                    ⭐ PERFECT SCORE! ⭐
+                  </>
+                ) : passed ? (
+                  <>
+                    <Trophy className="h-10 w-10 text-green-400" />
+                    🎉 TIER PASSED!
+                  </>
+                ) : (
+                  <>
+                    💪 Not Quite!
+                  </>
+                )}
               </CardTitle>
+              <p className="text-xl text-white/80 mt-2">
+                Tier {selectedTier}: {tierInfo.name}
+              </p>
             </CardHeader>
             <CardContent className="space-y-6 text-center">
+              {/* Pass/Fail Message */}
+              <div className={`rounded-xl p-6 border-2 ${
+                passed
+                  ? 'bg-green-500/20 border-green-400/50'
+                  : 'bg-orange-500/20 border-orange-400/50'
+              }`}>
+                <div className="text-5xl font-bold mb-2">
+                  {Math.round(percentage)}%
+                </div>
+                <div className="text-lg">
+                  {passed ? (
+                    <span className="text-green-300 font-bold">
+                      ✓ You passed! (Required: {tierInfo.passThreshold}%)
+                    </span>
+                  ) : (
+                    <span className="text-orange-300 font-bold">
+                      Keep trying! (Required: {tierInfo.passThreshold}%)
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Unlock Notification */}
+              {unlockedNextTier && (
+                <div className="bg-gradient-to-r from-purple-500/30 to-pink-500/30 border-2 border-purple-300/50 rounded-xl p-6 animate-pulse">
+                  <div className="text-3xl font-bold mb-2">🔓 TIER {selectedTier + 1} UNLOCKED!</div>
+                  <p className="text-white/80">You can now play the next tier!</p>
+                </div>
+              )}
+
               {/* Star Rating */}
               <div className="space-y-4">
                 <div className="flex justify-center gap-1">
@@ -302,11 +527,11 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
               </div>
 
               {/* Stats */}
-              <div className="bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-white/20 rounded-lg p-6 space-y-4 backdrop-blur-sm">
+              <div className="bg-gradient-to-r from-slate-500/20 to-gray-500/20 border border-white/20 rounded-lg p-6 space-y-4 backdrop-blur-sm">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="text-center">
                     <h3 className="text-lg font-bold mb-2">✅ Correct</h3>
-                    <p className="text-3xl font-bold text-green-400">{correctCount}/{cardResults.length}</p>
+                    <p className="text-3xl font-bold text-green-400">{correctCount}/{totalCount}</p>
                   </div>
                   <div className="text-center">
                     <h3 className="text-lg font-bold mb-2">⭐ XP Earned</h3>
@@ -328,7 +553,7 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
                     >
                       <div className="flex-1 text-left">
                         <div className="font-medium">{result.word.english}</div>
-                        <div className="text-sm text-white/70">You typed: "{result.userAnswer}"</div>
+                        <div className="text-sm text-white/70">You said: "{result.userAnswer}"</div>
                       </div>
                       <div className="text-right">
                         <div className="text-2xl">{result.correct ? '✅' : '❌'}</div>
@@ -341,12 +566,22 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
 
               {/* Action Buttons */}
               <div className="space-y-3">
+                {!passed && (
+                  <Button
+                    onClick={retryTier}
+                    className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 py-4 text-lg font-bold"
+                  >
+                    <RotateCcw className="h-5 w-5 mr-2" />
+                    Try Again
+                  </Button>
+                )}
+
                 <Button
-                  onClick={restartGame}
-                  className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 py-4 text-lg font-bold"
+                  onClick={backToTierSelection}
+                  className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 py-4 text-lg font-bold"
                 >
-                  <RotateCcw className="h-5 w-5 mr-2" />
-                  Play Again
+                  <BookOpen className="h-5 w-5 mr-2" />
+                  Back to Tiers
                 </Button>
 
                 <Button
@@ -365,49 +600,53 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
     );
   }
 
-  // Main game screen
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4">
-      <div className="absolute inset-0 w-full h-full background-stars pointer-events-none"
-           style={{ backgroundImage: 'radial-gradient(2px 2px at 20px 30px, #fff, transparent), radial-gradient(2px 2px at 40px 70px, #fff, transparent), radial-gradient(1px 1px at 90px 40px, #fff, transparent)', backgroundSize: '100px 100px' }}
-      />
+  // PLAYING SCREEN
+  if (screen === 'playing' && selectedTier) {
+    const tierInfo = getTierInfo(selectedTier);
 
-      <div className="relative max-w-2xl mx-auto pt-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <Button
-            onClick={onBack}
-            variant="ghost"
-            size="sm"
-            className="text-white/70 hover:text-white hover:bg-white/10"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
-          </Button>
-          <div className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-white/20 rounded-full px-4 py-2 backdrop-blur-xl">
-            <div className="text-white text-sm font-medium">
-              Card {currentCardIndex + 1} of {flashcardWords.length}
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4">
+        <div className="absolute inset-0 w-full h-full background-stars pointer-events-none"
+             style={{ backgroundImage: 'radial-gradient(2px 2px at 20px 30px, #fff, transparent), radial-gradient(2px 2px at 40px 70px, #fff, transparent), radial-gradient(1px 1px at 90px 40px, #fff, transparent)', backgroundSize: '100px 100px' }}
+        />
+
+        <div className="relative max-w-2xl mx-auto pt-8">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-8">
+            <Button
+              onClick={backToTierSelection}
+              variant="ghost"
+              size="sm"
+              className="text-white/70 hover:text-white hover:bg-white/10"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Tiers
+            </Button>
+            <div className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-white/20 rounded-full px-4 py-2 backdrop-blur-xl">
+              <div className="text-white text-sm font-medium">
+                Word {currentCardIndex + 1} of {flashcardWords.length}
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Title */}
-        <div className="text-center mb-8">
-          <h2 className="text-4xl font-bold text-white mb-2 flex items-center justify-center gap-3">
-            🃏 Smart Flashcards
-            <Sparkles className="h-8 w-8 text-green-400 animate-pulse" />
-          </h2>
-          <p className="text-white/70 text-lg">Type the word, learn faster!</p>
-        </div>
+          {/* Title */}
+          <div className="text-center mb-8">
+            <h2 className="text-4xl font-bold text-white mb-2 flex items-center justify-center gap-3">
+              🎯 Tier {selectedTier}: {tierInfo.name}
+              <Sparkles className="h-8 w-8 text-yellow-400 animate-pulse" />
+            </h2>
+            <p className="text-white/70 text-lg">🎤 Say the word or type it!</p>
+          </div>
 
-        {/* Progress */}
-        <div className="mb-8">
-          <div className="bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-xl p-4 backdrop-blur-sm border border-purple-300/30">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-white/80 text-sm font-medium">Progress</span>
-              <span className="text-white font-bold">{Math.round(progress)}%</span>
+          {/* Progress */}
+          <div className="mb-8">
+            <div className="bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-xl p-4 backdrop-blur-sm border border-purple-300/30">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-white/80 text-sm font-medium">Progress</span>
+                <span className="text-white font-bold">{Math.round(gameProgress)}%</span>
+              </div>
+              <Progress value={gameProgress} className="h-3 bg-white/20" />
             </div>
-            <Progress value={progress} className="h-3 bg-white/20" />
           </div>
         </div>
 
@@ -606,7 +845,11 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
             </CardContent>
           </Card>
         )}
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  // Fallback (should never reach here)
+  return null;
 };
