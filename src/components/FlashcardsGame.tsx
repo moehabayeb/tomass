@@ -433,10 +433,8 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
         </div>
       </div>
     );
-  }
-
-  // RESULTS SCREEN
-  if (screen === 'results' && selectedTier) {
+  } else if (screen === 'results' && selectedTier) {
+    // RESULTS SCREEN
     const rating = getStarRating();
     const correctCount = cardResults.filter(result => result.correct).length;
     const totalCount = cardResults.length;
@@ -598,10 +596,8 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
         </div>
       </div>
     );
-  }
-
-  // PLAYING SCREEN
-  if (screen === 'playing' && selectedTier) {
+  } else if (screen === 'playing' && selectedTier) {
+    // PLAYING SCREEN
     const tierInfo = getTierInfo(selectedTier);
 
     return (
