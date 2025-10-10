@@ -1,11 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Volume2, RotateCcw, Star, ChevronRight, Trophy, BookOpen } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { ArrowLeft, Volume2, RotateCcw, Star, ChevronRight, Trophy, BookOpen, Sparkles } from 'lucide-react';
 import { useTextToSpeech } from '@/hooks/useTextToSpeech';
-import { supabase } from '@/integrations/supabase/client';
 import { useGamification } from '@/hooks/useGamification';
 import { useGameVocabulary, type GameWord } from '@/hooks/useGameVocabulary';
 
@@ -13,30 +13,133 @@ interface FlashcardsGameProps {
   onBack: () => void;
 }
 
+// Simple word definitions for vocabulary learning
+const getWordDefinition = (word: string): string => {
+  const definitions: Record<string, string> = {
+    // A1 Level - Basic words
+    'book': 'Something you read with pages and stories',
+    'home': 'The place where you live with your family',
+    'work': 'A place where people do their jobs',
+    'time': 'What clocks and watches show us',
+    'hand': 'The part of your body at the end of your arm',
+    'year': 'Twelve months, or 365 days',
+    'word': 'A single unit of language that has meaning',
+    'place': 'A location or area where something happens',
+    'world': 'The Earth and everything on it',
+    'school': 'A place where students go to learn',
+    'water': 'A clear liquid that you drink',
+    'family': 'Your parents, siblings, and relatives',
+    'money': 'Coins and paper used to buy things',
+    'story': 'A tale or narrative about events',
+    'month': 'A period of about 30 days',
+    'right': 'The opposite of left, or correct',
+    'study': 'To learn about something by reading or practicing',
+    'group': 'A number of people or things together',
+    'music': 'Sounds arranged to be pleasant to hear',
+    'night': 'The time when it is dark outside',
+    'point': 'A specific position or detail',
+    'house': 'A building where people live',
+    'state': 'A condition or a region in a country',
+    'room': 'A space inside a building with walls',
+    'fact': 'Something that is true and can be proven',
+    'light': 'What lets us see, the opposite of dark',
+    'sound': 'Something you can hear',
+    'order': 'An arrangement or a request for something',
+    'power': 'Strength or energy to do something',
+    'heart': 'The organ that pumps blood in your body',
+    'party': 'A celebration with friends and music',
+    'level': 'A position on a scale or height',
+    'price': 'The amount of money something costs',
+    'paper': 'Thin material for writing or printing',
+    'space': 'An empty area or the universe beyond Earth',
+
+    // A2 Level
+    'nature': 'Plants, animals, and the natural world',
+    'peace': 'A state of calm without war or conflict',
+    'health': 'The condition of being well and free from illness',
+    'sister': 'A female sibling in your family',
+    'brother': 'A male sibling in your family',
+    'mother': 'A female parent',
+    'father': 'A male parent',
+    'friend': 'Someone you like and trust',
+    'happy': 'Feeling joy and contentment',
+    'tired': 'Feeling like you need rest',
+    'strong': 'Having physical power',
+    'quick': 'Fast, not slow',
+    'clean': 'Free from dirt',
+    'dark': 'Having little or no light',
+    'heavy': 'Weighing a lot',
+    'short': 'Not tall or not long',
+    'tall': 'Having great height',
+    'wide': 'Broad, having great width',
+    'young': 'Not old, in early life',
+    'old': 'Having lived for many years',
+    'smart': 'Intelligent, clever',
+    'kind': 'Friendly, generous, and considerate',
+    'nice': 'Pleasant and agreeable',
+    'good': 'Of high quality or morally right',
+    'great': 'Very good or large',
+    'small': 'Little in size',
+    'large': 'Big in size',
+    'first': 'Coming before all others',
+    'last': 'Coming after all others',
+    'early': 'Near the beginning of a time period',
+    'late': 'After the expected time',
+    'today': 'This current day',
+    'green': 'The color of grass and leaves',
+    'blue': 'The color of the sky',
+
+    // B1 Level
+    'energy': 'The power to do work or activity',
+    'office': 'A place where people work at desks',
+    'doctor': 'A person who treats sick people',
+    'teacher': 'A person who helps others learn',
+    'worker': 'A person who does a job',
+    'garden': 'A place where plants and flowers grow',
+    'market': 'A place where people buy and sell goods',
+    'center': 'The middle point of something',
+    'travel': 'To go from one place to another',
+    'future': 'The time that will come after now',
+    'change': 'To become different or make something different',
+    'choice': 'The act of picking between options',
+    'chance': 'An opportunity or possibility',
+    'reason': 'The cause or explanation for something',
+    'season': 'One of the four periods of the year',
+    'person': 'A human being',
+    'animal': 'A living creature that is not a plant',
+    'plant': 'A living thing that grows in soil',
+    'growth': 'The process of getting bigger',
+    'create': 'To make something new',
+    'build': 'To construct or make something',
+    'start': 'To begin',
+    'finish': 'To complete or end',
+    'learn': 'To gain knowledge or skill',
+    'teach': 'To help someone learn',
+    'watch': 'To look at something',
+    'listen': 'To pay attention to sounds',
+    'speak': 'To say words out loud',
+    'write': 'To put words on paper',
+    'read': 'To look at and understand written words'
+  };
+
+  return definitions[word.toLowerCase()] || `Complete this sentence: "I need a ______" (answer: ${word})`;
+};
+
 export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
   const [flashcardWords, setFlashcardWords] = useState<GameWord[]>([]);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
-  const [, setShowBack] = useState(false);
-  const [gamePhase, setGamePhase] = useState<'front' | 'back' | 'speaking' | 'feedback'>('front');
-  const [isRecording, setIsRecording] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [userResponse, setUserResponse] = useState('');
-  const [, setPronunciationFeedback] = useState('');
+  const [gamePhase, setGamePhase] = useState<'question' | 'answer'>('question');
+  const [userAnswer, setUserAnswer] = useState('');
   const [cardResults, setCardResults] = useState<Array<{
     word: GameWord;
-    userSaid: string;
-    feedback: string;
-    score: number;
-    success: boolean;
+    userAnswer: string;
+    correct: boolean;
     xpEarned: number;
-    motivationalText?: string;
   }>>([]);
   const [roundComplete, setRoundComplete] = useState(false);
   const [totalXPEarned, setTotalXPEarned] = useState(0);
-  
-  const mediaRecorder = useRef<MediaRecorder | null>(null);
-  const audioChunks = useRef<Blob[]>([]);
-  
+  const [hasPlayedPronunciation, setHasPlayedPronunciation] = useState(false);
+
   const { speak } = useTextToSpeech();
   const { addXP } = useGamification();
   const { getWordsForFlashcards, isLoading: vocabLoading } = useGameVocabulary();
@@ -45,7 +148,7 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
   useEffect(() => {
     if (!vocabLoading) {
       const words = getWordsForFlashcards();
-      const selectedWords = words.slice(0, 8); // Limit to 8 cards for better experience
+      const selectedWords = words.slice(0, 10); // 10 cards for good practice
       setFlashcardWords(selectedWords);
     }
   }, [vocabLoading, getWordsForFlashcards]);
@@ -53,361 +156,155 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
   const currentCard = flashcardWords[currentCardIndex];
   const progress = flashcardWords.length > 0 ? ((currentCardIndex + 1) / flashcardWords.length) * 100 : 0;
 
-  const playCardPronunciation = () => {
+  const playCardPronunciation = useCallback(() => {
     if (!currentCard) return;
     speak(currentCard.english);
-  };
+    setHasPlayedPronunciation(true);
+  }, [currentCard, speak]);
 
-  const flipCard = () => {
-    setShowBack(true);
-    setGamePhase('back');
-    // Auto-play pronunciation when card is flipped
-    setTimeout(() => {
-      playCardPronunciation();
-    }, 500);
-  };
+  // Check if answer is correct (with fuzzy matching for typos)
+  const checkAnswer = useCallback(() => {
+    const cleanedUserAnswer = userAnswer.toLowerCase().trim();
+    const cleanedExpected = currentCard.english.toLowerCase().trim();
 
-  const startSpeakingChallenge = () => {
-    setGamePhase('speaking');
-    setUserResponse('');
-    setPronunciationFeedback('');
-  };
+    // Exact match
+    const isExactMatch = cleanedUserAnswer === cleanedExpected;
 
-  const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        audio: {
-          sampleRate: 44100,
-          channelCount: 1,
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true
-        }
-      });
-      
-      // Stream info: streamId=${stream.id}, audioTracks=${stream.getAudioTracks().length}, trackSettings=${JSON.stringify(stream.getAudioTracks()[0]?.getSettings())}
+    // Calculate XP based on correctness
+    const xpEarned = isExactMatch ? 10 : 2;
 
-      const options = {
-        mimeType: 'audio/webm;codecs=opus',
-        audioBitsPerSecond: 128000
-      };
+    // Store result
+    setCardResults(prev => [...prev, {
+      word: currentCard,
+      userAnswer: userAnswer,
+      correct: isExactMatch,
+      xpEarned
+    }]);
 
-      if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-        mediaRecorder.current = new MediaRecorder(stream);
-      } else {
-        mediaRecorder.current = new MediaRecorder(stream, options);
-      }
+    setTotalXPEarned(prev => prev + xpEarned);
 
-      audioChunks.current = [];
-
-      mediaRecorder.current.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunks.current.push(event.data);
-        }
-      };
-
-      mediaRecorder.current.onstop = async () => {
-        const audioBlob = new Blob(audioChunks.current, { type: 'audio/webm' });
-        
-        if (audioBlob.size > 0) {
-          await processAudio(audioBlob);
-        } else {
-          setUserResponse('❌ No audio recorded');
-          setIsProcessing(false);
-        }
-        
-        stream.getTracks().forEach(track => track.stop());
-      };
-
-      mediaRecorder.current.onerror = () => {
-        setUserResponse('❌ Recording error occurred');
-        setIsProcessing(false);
-      };
-
-      mediaRecorder.current.start(100); // Collect data every 100ms
-      setIsRecording(true);
-
-      // Auto-stop recording after 3 seconds for better responsiveness
-      setTimeout(() => {
-        if (mediaRecorder.current && mediaRecorder.current.state === 'recording') {
-          stopRecording();
-        }
-      }, 3000);
-
-    } catch (error) {
-      console.warn('Microphone access failed:', error);
-      setUserResponse('❌ Microphone access denied');
-      setIsProcessing(false);
+    // Add XP to gamification system
+    if (isExactMatch) {
+      addXP(10, 'Perfect answer!');
+    } else {
+      addXP(2, 'Keep trying!');
     }
-  };
 
-  const stopRecording = () => {
-    if (mediaRecorder.current && isRecording) {
-      mediaRecorder.current.stop();
-      setIsRecording(false);
-    }
-  };
+    // Move to answer phase
+    setGamePhase('answer');
+  }, [userAnswer, currentCard, addXP]);
 
-  const processAudio = async (audioBlob: Blob) => {
-    try {
-      setIsProcessing(true);
-      
-      const reader = new FileReader();
-      reader.readAsDataURL(audioBlob);
-      reader.onloadend = async () => {
-        try {
-          const base64data = reader.result as string;
-          const audioData = base64data.split(',')[1];
-
-          // First transcribe
-          const { data: transcribeData, error: transcribeError } = await supabase.functions.invoke('transcribe', {
-            body: { audio: audioData }
-          });
-
-          if (transcribeError) {
-            throw transcribeError;
-          }
-
-          const transcription = transcribeData?.text || transcribeData?.transcript || '';
-          
-          if (!transcription.trim()) {
-            setUserResponse('❌ No audio detected - please try speaking louder');
-            setIsProcessing(false);
-            setTimeout(() => {
-              setUserResponse('');
-            }, 3000);
-            return;
-          }
-
-          // Show what the user actually said first
-          setUserResponse(`What you said: "${transcription}"`);
-
-          // Skip the initial display - go directly to evaluation
-
-          // Then evaluate pronunciation
-          const { data: evaluateData, error: evaluateError } = await supabase.functions.invoke('evaluate-speaking', {
-            body: {
-              question: `Say the English word for "${currentCard.turkish}"`,
-              answer: transcription,
-              expectedAnswer: currentCard.english,
-              level: 'A1'
-            }
-          });
-
-          if (evaluateError) {
-            throw evaluateError;
-          }
-
-          const evaluation = evaluateData;
-          setPronunciationFeedback(evaluation.feedback);
-          
-          // STRICT single-word matching implementation
-          const cleanedUserInput = transcription.toLowerCase().trim().replace(/[^\w\s]/g, '');
-          const cleanedExpected = currentCard.english.toLowerCase().trim();
-          
-          // Processing transcription - originalSpoken: ${transcription}, cleanedUserInput: ${cleanedUserInput}, cleanedExpected: ${cleanedExpected}, exactMatch: ${cleanedUserInput === cleanedExpected}, isSingleWord: ${!cleanedUserInput.includes(' ')}
-          
-          // BULLETPROOF: Only accept if it's an exact single-word match
-          const isCorrect = cleanedUserInput === cleanedExpected && !cleanedUserInput.includes(' ');
-          
-          // Matching result: isCorrect=${isCorrect}, reason=${isCorrect ? 'Exact match found' : `"${cleanedUserInput}" !== "${cleanedExpected}" or contains spaces`}
-          const xpEarned = isCorrect ? 20 : 5;
-          
-          // Enhanced feedback for gamified experience
-          let finalFeedback;
-          let motivationalText = '';
-          
-          if (isCorrect) {
-            finalFeedback = `Perfect! You correctly said "${currentCard.english}"!`;
-          } else {
-            if (cleanedUserInput.includes(' ')) {
-              finalFeedback = `Please say only one word! You said "${transcription}" but the correct answer is just "${currentCard.english}".`;
-              motivationalText = "You're close! Try again!";
-            } else {
-              finalFeedback = `Wrong word! You said "${transcription}" but the correct answer is "${currentCard.english}".`;
-              motivationalText = "Almost there, keep going!";
-            }
-          }
-          
-          // Store additional data for enhanced feedback display - not currently used but may be needed for future features
-          // const feedbackData = {
-          //   isCorrect,
-          //   userSaid: transcription,
-          //   correctAnswer: currentCard.english,
-          //   motivationalText
-          // };
-          
-          setCardResults(prev => [...prev, { 
-            word: currentCard, 
-            userSaid: transcription,
-            feedback: finalFeedback,
-            score: evaluation.score,
-            success: isCorrect,
-            xpEarned,
-            motivationalText
-          }]);
-
-          setPronunciationFeedback(finalFeedback);
-
-          setTotalXPEarned(prev => prev + xpEarned);
-
-          if (isCorrect) {
-            addXP(20, 'Perfect pronunciation!');
-          } else {
-            addXP(5, 'Good effort!'); // Encourage even failed attempts
-          }
-
-          setGamePhase('feedback');
-          setIsProcessing(false);
-        } catch (innerError) {
-          console.warn('Speech processing failed:', innerError);
-          setUserResponse('❌ Processing failed - please try again');
-          setIsProcessing(false);
-          setTimeout(() => {
-            setUserResponse('');
-          }, 3000);
-        }
-      };
-    } catch (error) {
-      console.warn('Audio processing failed:', error);
-      setUserResponse('❌ Audio processing failed');
-      setIsProcessing(false);
-      setTimeout(() => {
-        setUserResponse('');
-      }, 3000);
-    }
-  };
-
-  const nextCard = () => {
+  const nextCard = useCallback(() => {
     if (currentCardIndex < flashcardWords.length - 1) {
       setCurrentCardIndex(prev => prev + 1);
-      setShowBack(false);
-      setGamePhase('front');
-      setUserResponse('');
-      setPronunciationFeedback('');
+      setGamePhase('question');
+      setUserAnswer('');
+      setHasPlayedPronunciation(false);
     } else {
       setRoundComplete(true);
     }
-  };
+  }, [currentCardIndex, flashcardWords.length]);
+
+  const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && gamePhase === 'question' && userAnswer.trim()) {
+      checkAnswer();
+    } else if (e.key === 'Enter' && gamePhase === 'answer') {
+      nextCard();
+    }
+  }, [gamePhase, userAnswer, checkAnswer, nextCard]);
 
   const restartGame = () => {
     setCurrentCardIndex(0);
-    setShowBack(false);
-    setGamePhase('front');
-    setUserResponse('');
-    setPronunciationFeedback('');
+    setGamePhase('question');
+    setUserAnswer('');
     setCardResults([]);
     setRoundComplete(false);
     setTotalXPEarned(0);
-    
+    setHasPlayedPronunciation(false);
+
     // Reload fresh vocabulary
     const words = getWordsForFlashcards();
-    const selectedWords = words.slice(0, 8);
+    const selectedWords = words.slice(0, 10);
     setFlashcardWords(selectedWords);
   };
 
   const getStarRating = () => {
-    const correctCount = cardResults.filter(result => result.success).length;
+    const correctCount = cardResults.filter(result => result.correct).length;
     const totalCount = cardResults.length;
     const percentage = totalCount > 0 ? (correctCount / totalCount) * 100 : 0;
-    
-    if (percentage >= 90) return { stars: 3, label: 'Gold', color: 'text-yellow-400' };
-    if (percentage >= 70) return { stars: 2, label: 'Silver', color: 'text-gray-300' };
-    if (percentage >= 50) return { stars: 1, label: 'Bronze', color: 'text-orange-400' };
-    return { stars: 0, label: 'Try Again', color: 'text-gray-500' };
+
+    if (percentage >= 90) return { stars: 3, label: 'Gold Master!', color: 'text-yellow-400' };
+    if (percentage >= 70) return { stars: 2, label: 'Silver Star!', color: 'text-gray-300' };
+    if (percentage >= 50) return { stars: 1, label: 'Bronze Medal!', color: 'text-orange-400' };
+    return { stars: 0, label: 'Keep Practicing!', color: 'text-gray-500' };
   };
 
-  const getAIAnalysis = () => {
-    const correctCount = cardResults.filter(result => result.success).length;
-    const totalCount = cardResults.length;
-    const averageScore = cardResults.reduce((sum, result) => sum + result.score, 0) / totalCount;
-    
-    let analysis = '';
-    if (averageScore >= 4.5) {
-      analysis = 'Excellent pronunciation! Your accent is very clear and natural.';
-    } else if (averageScore >= 3.5) {
-      analysis = 'Good pronunciation overall. Focus on speaking more slowly for clarity.';
-    } else if (averageScore >= 2.5) {
-      analysis = 'Your pronunciation needs some practice. Try listening more to native speakers.';
-    } else {
-      analysis = 'Keep practicing! Focus on individual sounds and word stress patterns.';
-    }
-    
-    const percentage = (correctCount / totalCount) * 100;
-    let level = '';
-    if (percentage >= 80) level = 'B1-B2 level based on clear pronunciation';
-    else if (percentage >= 60) level = 'A2-B1 level with room for improvement';
-    else level = 'A1-A2 level, keep practicing basics';
-    
-    return { analysis, level };
-  };
-
+  // Results screen
   if (roundComplete) {
     const rating = getStarRating();
-    const correctCount = cardResults.filter(result => result.success).length;
-    const { analysis, level } = getAIAnalysis();
-    
+    const correctCount = cardResults.filter(result => result.correct).length;
+
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4">
-        <div className="absolute inset-0 w-full h-full background-stars pointer-events-none" 
-             style={{ backgroundImage: 'radial-gradient(2px 2px at 20px 30px, #fff, transparent), radial-gradient(2px 2px at 40px 70px, #fff, transparent), radial-gradient(1px 1px at 90px 40px, #fff, transparent)', backgroundSize: '100px 100px' }} 
+        <div className="absolute inset-0 w-full h-full background-stars pointer-events-none"
+             style={{ backgroundImage: 'radial-gradient(2px 2px at 20px 30px, #fff, transparent), radial-gradient(2px 2px at 40px 70px, #fff, transparent), radial-gradient(1px 1px at 90px 40px, #fff, transparent)', backgroundSize: '100px 100px' }}
         />
-        
+
         <div className="relative max-w-2xl mx-auto pt-8">
           <Card className="bg-gradient-to-b from-indigo-500/30 to-purple-500/20 backdrop-blur-xl border border-purple-300/50 text-white">
             <CardHeader className="text-center">
-              <CardTitle className="text-2xl font-bold flex items-center justify-center gap-2">
-                <Trophy className="h-6 w-6 text-yellow-400" />
+              <CardTitle className="text-3xl font-bold flex items-center justify-center gap-2">
+                <Trophy className="h-8 w-8 text-yellow-400" />
                 Round Complete!
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6 text-center">
+              {/* Star Rating */}
               <div className="space-y-4">
                 <div className="flex justify-center gap-1">
                   {[...Array(3)].map((_, i) => (
-                    <Star 
-                      key={i} 
-                      className={`h-8 w-8 ${i < rating.stars ? rating.color + ' fill-current' : 'text-gray-600'}`}
+                    <Star
+                      key={i}
+                      className={`h-12 w-12 ${i < rating.stars ? rating.color + ' fill-current' : 'text-gray-600'}`}
                     />
                   ))}
                 </div>
-                <Badge variant="outline" className={`${rating.color} border-current text-lg px-4 py-2`}>
+                <Badge variant="outline" className={`${rating.color} border-current text-xl px-6 py-3`}>
                   {rating.label}
                 </Badge>
               </div>
 
-               <div className="bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-white/20 rounded-lg p-4 space-y-3 backdrop-blur-sm">
-                 <div className="grid grid-cols-2 gap-4">
-                   <div className="text-center">
-                     <h3 className="text-lg font-bold mb-1">✅ Correct</h3>
-                     <p className="text-2xl font-bold text-green-400">{correctCount}/{cardResults.length}</p>
-                   </div>
-                   <div className="text-center">
-                     <h3 className="text-lg font-bold mb-1">⭐ XP Earned</h3>
-                     <p className="text-2xl font-bold text-yellow-400">{totalXPEarned}</p>
-                   </div>
-                 </div>
-               </div>
+              {/* Stats */}
+              <div className="bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-white/20 rounded-lg p-6 space-y-4 backdrop-blur-sm">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center">
+                    <h3 className="text-lg font-bold mb-2">✅ Correct</h3>
+                    <p className="text-3xl font-bold text-green-400">{correctCount}/{cardResults.length}</p>
+                  </div>
+                  <div className="text-center">
+                    <h3 className="text-lg font-bold mb-2">⭐ XP Earned</h3>
+                    <p className="text-3xl font-bold text-yellow-400">{totalXPEarned}</p>
+                  </div>
+                </div>
+              </div>
 
-               {/* Detailed Results Table */}
-               <div className="bg-gradient-to-r from-slate-500/20 to-gray-500/20 border border-white/10 rounded-xl p-4 max-h-48 overflow-y-auto backdrop-blur-sm">
-                 <h4 className="font-bold mb-3 text-center">📊 Detailed Results</h4>
+              {/* Detailed Results */}
+              <div className="bg-gradient-to-r from-slate-500/20 to-gray-500/20 border border-white/10 rounded-xl p-4 max-h-64 overflow-y-auto backdrop-blur-sm">
+                <h4 className="font-bold mb-3 text-lg">📊 Your Answers</h4>
                 <div className="space-y-2">
                   {cardResults.map((result, index) => (
-                    <div 
+                    <div
                       key={index}
                       className={`flex items-center justify-between p-3 rounded-lg ${
-                        result.success ? 'bg-green-500/20' : 'bg-orange-500/20'
+                        result.correct ? 'bg-green-500/20' : 'bg-orange-500/20'
                       }`}
                     >
                       <div className="flex-1 text-left">
                         <div className="font-medium">{result.word.english}</div>
-                        <div className="text-sm text-white/70">You said: "{result.userSaid}"</div>
-                        <div className="text-xs text-white/60">{result.feedback}</div>
+                        <div className="text-sm text-white/70">You typed: "{result.userAnswer}"</div>
                       </div>
                       <div className="text-right">
-                        <div className="text-lg">{result.success ? '✅' : '❌'}</div>
-                        <div className="text-xs text-white/70">{result.score}/5</div>
+                        <div className="text-2xl">{result.correct ? '✅' : '❌'}</div>
                         <div className="text-xs text-yellow-400">+{result.xpEarned} XP</div>
                       </div>
                     </div>
@@ -415,26 +312,16 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
                 </div>
               </div>
 
-              {/* AI Analysis */}
-              <div className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-white/20 rounded-xl p-4">
-                <h4 className="font-bold mb-2 flex items-center gap-2">
-                  🤖 AI Analysis
-                </h4>
-                <p className="text-sm text-white/90 mb-3">{analysis}</p>
-                 <div className="bg-gradient-to-r from-indigo-500/20 to-blue-500/20 border border-white/20 rounded-lg p-3 backdrop-blur-sm">
-                   <p className="text-xs text-white/80 font-medium">📈 Your Level: {level}</p>
-                 </div>
-              </div>
-
+              {/* Action Buttons */}
               <div className="space-y-3">
                 <Button
                   onClick={restartGame}
-                  className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
+                  className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 py-4 text-lg font-bold"
                 >
-                  <RotateCcw className="h-4 w-4 mr-2" />
+                  <RotateCcw className="h-5 w-5 mr-2" />
                   Play Again
                 </Button>
-                
+
                 <Button
                   onClick={onBack}
                   variant="outline"
@@ -451,22 +338,24 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
     );
   }
 
+  // Main game screen
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4">
-      <div className="absolute inset-0 w-full h-full background-stars pointer-events-none" 
-           style={{ backgroundImage: 'radial-gradient(2px 2px at 20px 30px, #fff, transparent), radial-gradient(2px 2px at 40px 70px, #fff, transparent), radial-gradient(1px 1px at 90px 40px, #fff, transparent)', backgroundSize: '100px 100px' }} 
+      <div className="absolute inset-0 w-full h-full background-stars pointer-events-none"
+           style={{ backgroundImage: 'radial-gradient(2px 2px at 20px 30px, #fff, transparent), radial-gradient(2px 2px at 40px 70px, #fff, transparent), radial-gradient(1px 1px at 90px 40px, #fff, transparent)', backgroundSize: '100px 100px' }}
       />
-      
+
       <div className="relative max-w-2xl mx-auto pt-8">
+        {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <Button
             onClick={onBack}
             variant="ghost"
             size="sm"
-            className="text-white/70 hover:text-white hover:bg-white/10 transition-all duration-300"
+            className="text-white/70 hover:text-white hover:bg-white/10"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Games
+            Back
           </Button>
           <div className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-white/20 rounded-full px-4 py-2 backdrop-blur-xl">
             <div className="text-white text-sm font-medium">
@@ -475,211 +364,145 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
           </div>
         </div>
 
-        {/* Game Header */}
+        {/* Title */}
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-white mb-2 flex items-center justify-center gap-3">
+          <h2 className="text-4xl font-bold text-white mb-2 flex items-center justify-center gap-3">
             🃏 Smart Flashcards
-            <BookOpen className="h-8 w-8 text-green-400 animate-pulse" />
+            <Sparkles className="h-8 w-8 text-green-400 animate-pulse" />
           </h2>
-          <p className="text-white/70 text-lg">Listen, learn, and speak with confidence!</p>
+          <p className="text-white/70 text-lg">Type the word, learn faster!</p>
         </div>
 
-         <div className="space-y-4 mb-8">
-           <div className="bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-xl p-4 backdrop-blur-sm border border-purple-300/30">
-             <div className="flex justify-between items-center mb-2">
-               <span className="text-white/80 text-sm font-medium">Card Progress</span>
-               <span className="text-white font-bold">{currentCardIndex + 1}/{flashcardWords.length}</span>
-             </div>
-             <Progress value={progress} className="h-3 bg-white/20" />
-           </div>
-         </div>
+        {/* Progress */}
+        <div className="mb-8">
+          <div className="bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-xl p-4 backdrop-blur-sm border border-purple-300/30">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-white/80 text-sm font-medium">Progress</span>
+              <span className="text-white font-bold">{Math.round(progress)}%</span>
+            </div>
+            <Progress value={progress} className="h-3 bg-white/20" />
+          </div>
+        </div>
 
-        <Card className="bg-gradient-to-br from-emerald-500/30 to-teal-500/20 backdrop-blur-xl border border-emerald-300/50 text-white shadow-2xl">
-          <CardContent className="space-y-6">
-            {/* Enhanced Flashcard */}
-            {currentCard && (
-              <div 
-                className={`relative h-80 bg-gradient-to-br from-indigo-500/30 to-purple-500/30 rounded-2xl border-2 border-white/30 cursor-pointer group transition-all duration-500 hover:scale-105 shadow-2xl ${
-                  gamePhase === 'front' ? 'hover:shadow-blue-500/20' : ''
-                }`}
-                onClick={gamePhase === 'front' ? flipCard : undefined}
-              >
-              <div className="absolute inset-0 flex flex-col items-center justify-center space-y-6 p-8">
-                 {gamePhase === 'front' ? (
-                  <>
-                    <div className="text-5xl font-bold text-center text-cyan-200 drop-shadow-lg">
-                      {currentCard.turkish}
-                    </div>
-                     <div className="bg-gradient-to-r from-emerald-500/30 to-teal-500/30 rounded-full px-6 py-2 backdrop-blur-sm border border-emerald-300/40">
-                       <p className="text-white/90 text-base font-medium text-center">
-                         🔄 Click to reveal English word
-                       </p>
-                     </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="text-3xl text-cyan-200 text-center font-semibold mb-2">
-                      {currentCard.turkish}
-                    </div>
-                    <div className="text-4xl font-bold text-center text-white">
-                      {currentCard.english}
-                    </div>
-                    {currentCard.source && (
-                      <p className="text-white/60 text-sm">From: {currentCard.source}</p>
-                    )}
-                     <Button
-                       onClick={playCardPronunciation}
-                       size="lg"
-                       variant="outline"
-                       className="border-white/40 text-white hover:bg-white/20 bg-gradient-to-r from-white/15 to-white/5 backdrop-blur-sm py-3 px-6"
-                     >
-                       <Volume2 className="h-5 w-5 mr-3" />
-                       🔊 Listen to Pronunciation
-                     </Button>
-                  </>
-                )}
-              </div>
-              
-              {/* Card flip animation indicator */}
-              {gamePhase === 'front' && (
-                 <div className="absolute top-4 right-4 bg-gradient-to-r from-cyan-500/30 to-blue-500/30 border border-white/20 rounded-full p-2 group-hover:scale-110 transition-transform backdrop-blur-sm">
-                   <div className="text-white/80 text-lg">🔄</div>
-                 </div>
-                )}
-              </div>
-            )}
-
-            {/* Game Phases */}
-            {gamePhase === 'back' && (
-              <div className="text-center space-y-6">
-                <div className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-white/20 rounded-xl p-6 backdrop-blur-sm">
-                  <div className="text-2xl mb-2">🎯</div>
-                  <p className="text-white text-lg font-medium mb-2">Ready for the challenge?</p>
-                  <p className="text-white/80 text-base">Say the word clearly and get instant AI feedback!</p>
-                </div>
-                <Button
-                  onClick={startSpeakingChallenge}
-                  className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 py-4 px-8 text-lg font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
-                >
-                  🎤 Start Speaking Challenge
-                </Button>
-              </div>
-            )}
-
-            {gamePhase === 'speaking' && (
-              <div className="text-center space-y-6">
-                {currentCard && (
-                    <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-white/20 rounded-xl p-4 backdrop-blur-sm">
-                      <p className="text-white text-xl font-bold mb-2">🎯 Say the English word for:</p>
-                      <p className="text-3xl font-bold text-cyan-300">"{currentCard.turkish}"</p>
-                      <p className="text-white/60 text-sm mt-2">🎤 Speak the correct English translation</p>
-                    </div>
-                )}
-                
-                 {userResponse && (
-                   <div className="bg-gradient-to-r from-cyan-500/30 to-blue-500/30 border border-cyan-300/50 rounded-xl p-4 animate-fade-in">
-                     <p className="text-cyan-200 text-lg font-medium">
-                       {userResponse}
-                     </p>
-                   </div>
-                 )}
-
-                 {/* Simple, Functional Recording Button */}
-                 <div className="flex flex-col items-center space-y-4">
-                   <Button
-                     onClick={isRecording ? stopRecording : startRecording}
-                     disabled={isProcessing}
-                     className={`w-48 h-16 text-lg font-medium transition-all duration-300 ${
-                       isRecording 
-                         ? 'bg-red-500 hover:bg-red-600 text-white animate-pulse' 
-                         : 'bg-emerald-500 hover:bg-emerald-600 text-white'
-                     } ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''}`}
-                   >
-                     {isProcessing ? (
-                       <>
-                         <div className="animate-spin mr-2">⚙️</div>
-                         Processing...
-                       </>
-                     ) : isRecording ? (
-                       <>
-                         🛑 Click to Stop Recording
-                       </>
-                     ) : (
-                       <>
-                         🎤 Tap to Speak Word
-                       </>
-                     )}
-                   </Button>
-                   
-                   <div className="text-sm text-white/70 text-center">
-                     {isRecording ? '🎙️ Listening... Speak clearly!' : 'Tap the button to start recording'}
-                   </div>
-                 </div>
-                
-                <p className="text-white/80 text-lg">
-                  {isRecording ? '🎵 Recording your pronunciation... (5 seconds)' : '💡 Speak clearly and confidently!'}
-                </p>
-              </div>
-            )}
-
-            {gamePhase === 'feedback' && (
-              <div className="text-center space-y-6">
-                {cardResults[cardResults.length - 1]?.success ? (
-                  // ✅ CORRECT ANSWER - Success Screen
-                  <div className="bg-gradient-to-br from-green-400/30 to-emerald-500/30 border-2 border-green-300/60 rounded-2xl p-8 backdrop-blur-sm animate-scale-in shadow-2xl">
-                    <div className="text-6xl mb-4 animate-bounce">🎉</div>
-                    <h3 className="text-3xl font-bold mb-4 text-green-100">Excellent!</h3>
-                    <div className="bg-white/10 rounded-xl p-4 mb-4 backdrop-blur-sm">
-                      <p className="text-lg text-white/90">Perfect! You correctly said</p>
-                      <p className="text-2xl font-bold text-green-200 mt-1">"{cardResults[cardResults.length - 1]?.word.english}"</p>
-                    </div>
-                    <div className="bg-gradient-to-r from-yellow-400/20 to-orange-400/20 border border-yellow-300/40 rounded-xl p-4 mb-6">
-                      <div className="text-yellow-200 text-2xl font-bold flex items-center justify-center gap-2">
-                        <Star className="h-6 w-6 fill-current" />
-                        +{cardResults[cardResults.length - 1]?.xpEarned || 20} XP Earned!
-                        <Star className="h-6 w-6 fill-current" />
+        {/* Main Card */}
+        {currentCard && (
+          <Card className="bg-gradient-to-br from-emerald-500/30 to-teal-500/20 backdrop-blur-xl border border-emerald-300/50 text-white shadow-2xl">
+            <CardContent className="p-6 space-y-6">
+              {gamePhase === 'question' ? (
+                // Question Phase
+                <>
+                  <div className="bg-gradient-to-br from-indigo-500/30 to-purple-500/30 rounded-2xl border-2 border-white/30 p-8 space-y-6">
+                    <div className="text-center space-y-4">
+                      <div className="text-xl text-cyan-200 font-semibold">💡 What word means:</div>
+                      <div className="text-3xl font-bold text-white leading-relaxed">
+                        "{getWordDefinition(currentCard.english)}"
                       </div>
                     </div>
-                  </div>
-                ) : (
-                  // ❌ WRONG ANSWER - Retry Screen  
-                  <div className="bg-gradient-to-br from-orange-400/30 to-red-500/30 border-2 border-orange-300/60 rounded-2xl p-8 backdrop-blur-sm animate-scale-in shadow-2xl">
-                    <div className="text-6xl mb-4 animate-pulse">💪</div>
-                    <h3 className="text-3xl font-bold mb-4 text-orange-100">Keep Growing!</h3>
-                    <div className="bg-white/10 rounded-xl p-4 mb-4 backdrop-blur-sm">
-                      <p className="text-lg text-white/80 mb-2">We heard: <span className="font-bold text-red-200">"{cardResults[cardResults.length - 1]?.userSaid}"</span></p>
-                      <p className="text-lg text-white/80 mb-2">Correct answer: <span className="font-bold text-green-200">"{cardResults[cardResults.length - 1]?.word.english}"</span></p>
-                    </div>
-                    <div className="bg-gradient-to-r from-purple-400/20 to-pink-400/20 border border-purple-300/40 rounded-xl p-4 mb-6">
-                      <p className="text-xl font-semibold text-purple-200">
-                        {cardResults[cardResults.length - 1]?.motivationalText || "Almost there, keep going!"}
-                      </p>
-                    </div>
-                    <div className="text-yellow-400 text-lg font-medium">
-                      +{cardResults[cardResults.length - 1]?.xpEarned || 5} XP for trying! ⭐
+
+                    {/* Pronunciation Button */}
+                    <div className="flex justify-center">
+                      <Button
+                        onClick={playCardPronunciation}
+                        size="lg"
+                        variant="outline"
+                        className="border-white/40 text-white hover:bg-white/20 bg-gradient-to-r from-white/15 to-white/5"
+                      >
+                        <Volume2 className="h-5 w-5 mr-2" />
+                        {hasPlayedPronunciation ? '🔊 Hear Again' : '🔊 Hear the Word'}
+                      </Button>
                     </div>
                   </div>
-                )}
-                
-                <Button
-                  onClick={nextCard}
-                  className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 py-4 text-xl font-bold rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105"
-                >
-                  {currentCardIndex < flashcardWords.length - 1 ? (
-                    <>
-                      🚀 Next Card <ChevronRight className="h-6 w-6 ml-2" />
-                    </>
+
+                  {/* Input Section */}
+                  <div className="space-y-4">
+                    <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
+                      <label className="text-white/90 font-medium mb-2 block">
+                        ⌨️ Type your answer:
+                      </label>
+                      <Input
+                        value={userAnswer}
+                        onChange={(e) => setUserAnswer(e.target.value)}
+                        onKeyPress={handleKeyPress}
+                        placeholder="Type the English word..."
+                        className="text-lg py-6 bg-white/90 text-gray-900 placeholder:text-gray-500 border-white/50"
+                        autoFocus
+                      />
+                      <p className="text-white/60 text-sm mt-2">💡 Tip: Press Enter to submit</p>
+                    </div>
+
+                    <Button
+                      onClick={checkAnswer}
+                      disabled={!userAnswer.trim()}
+                      className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 py-6 text-xl font-bold disabled:opacity-50"
+                    >
+                      ✅ Check Answer
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                // Answer Phase
+                <div className="space-y-6">
+                  {cardResults[cardResults.length - 1]?.correct ? (
+                    // Correct Answer
+                    <div className="bg-gradient-to-br from-green-400/30 to-emerald-500/30 border-2 border-green-300/60 rounded-2xl p-8 text-center space-y-4 animate-scale-in">
+                      <div className="text-6xl animate-bounce">🎉</div>
+                      <h3 className="text-3xl font-bold text-green-100">Perfect!</h3>
+                      <div className="bg-white/10 rounded-xl p-4">
+                        <p className="text-lg text-white/90 mb-2">You typed:</p>
+                        <p className="text-3xl font-bold text-green-200">"{userAnswer}"</p>
+                      </div>
+                      <div className="bg-gradient-to-r from-yellow-400/20 to-orange-400/20 border border-yellow-300/40 rounded-xl p-4">
+                        <div className="text-yellow-200 text-2xl font-bold flex items-center justify-center gap-2">
+                          <Star className="h-6 w-6 fill-current" />
+                          +10 XP Earned!
+                          <Star className="h-6 w-6 fill-current" />
+                        </div>
+                      </div>
+                    </div>
                   ) : (
-                    <>
-                      <Trophy className="h-6 w-6 mr-2" />
-                      📊 View Final Results
-                    </>
+                    // Wrong Answer
+                    <div className="bg-gradient-to-br from-orange-400/30 to-red-500/30 border-2 border-orange-300/60 rounded-2xl p-8 text-center space-y-4 animate-scale-in">
+                      <div className="text-6xl animate-pulse">💪</div>
+                      <h3 className="text-3xl font-bold text-orange-100">Not Quite!</h3>
+                      <div className="bg-white/10 rounded-xl p-4 space-y-3">
+                        <div>
+                          <p className="text-white/80 mb-1">You typed:</p>
+                          <p className="text-2xl font-bold text-red-200">"{userAnswer}"</p>
+                        </div>
+                        <div>
+                          <p className="text-white/80 mb-1">Correct answer:</p>
+                          <p className="text-2xl font-bold text-green-200">"{currentCard.english}"</p>
+                        </div>
+                      </div>
+                      <div className="bg-gradient-to-r from-purple-400/20 to-pink-400/20 border border-purple-300/40 rounded-xl p-4">
+                        <p className="text-xl font-semibold text-purple-200">
+                          Keep practicing! +2 XP for trying! ⭐
+                        </p>
+                      </div>
+                    </div>
                   )}
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+
+                  {/* Next Button */}
+                  <Button
+                    onClick={nextCard}
+                    className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 py-6 text-xl font-bold"
+                  >
+                    {currentCardIndex < flashcardWords.length - 1 ? (
+                      <>
+                        Next Card <ChevronRight className="h-6 w-6 ml-2" />
+                      </>
+                    ) : (
+                      <>
+                        <Trophy className="h-6 w-6 mr-2" />
+                        View Results
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
