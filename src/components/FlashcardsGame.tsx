@@ -4,10 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Volume2, RotateCcw, Star, ChevronRight, Trophy, BookOpen, Sparkles } from 'lucide-react';
+import { ArrowLeft, Volume2, RotateCcw, Star, ChevronRight, Trophy, BookOpen, Sparkles, Mic } from 'lucide-react';
 import { useTextToSpeech } from '@/hooks/useTextToSpeech';
 import { useGamification } from '@/hooks/useGamification';
 import { useGameVocabulary, type GameWord } from '@/hooks/useGameVocabulary';
+import { useFlashcardSpeechRecognition } from '@/hooks/useFlashcardSpeechRecognition';
 
 interface FlashcardsGameProps {
   onBack: () => void;
@@ -143,6 +144,7 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
   const { speak } = useTextToSpeech();
   const { addXP } = useGamification();
   const { getWordsForFlashcards, isLoading: vocabLoading } = useGameVocabulary();
+  const { state: speechState, startListening, stopListening, confirmWord, rejectConfirmation } = useFlashcardSpeechRecognition();
 
   // Initialize vocabulary when loaded
   useEffect(() => {
@@ -193,6 +195,31 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
     // Move to answer phase
     setGamePhase('answer');
   }, [userAnswer, currentCard, addXP]);
+
+  // Handle voice input
+  const handleVoiceInput = useCallback(async () => {
+    if (!currentCard) return;
+
+    const word = await startListening(currentCard.english);
+    if (word) {
+      // Voice recognition succeeded with high confidence
+      setUserAnswer(word);
+      checkAnswer();
+    }
+    // If word is null, it means:
+    // 1. Low confidence → will show confirmation dialog
+    // 2. Error → user can try again or type
+    // 3. No match → user can try again or type
+  }, [currentCard, startListening, checkAnswer]);
+
+  // Handle voice confirmation (when confidence is medium)
+  const handleConfirmYes = useCallback(() => {
+    const word = confirmWord();
+    if (word) {
+      setUserAnswer(word);
+      checkAnswer();
+    }
+  }, [confirmWord, checkAnswer]);
 
   const nextCard = useCallback(() => {
     if (currentCardIndex < flashcardWords.length - 1) {
@@ -413,21 +440,97 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
                     </div>
                   </div>
 
-                  {/* Input Section */}
+                  {/* Voice Input Section (Primary) */}
                   <div className="space-y-4">
+                    {/* Voice Confirmation Dialog */}
+                    {speechState.needsConfirmation && (
+                      <div className="bg-gradient-to-r from-blue-500/30 to-purple-500/30 border border-blue-300/50 rounded-xl p-4 animate-fade-in">
+                        <p className="text-white text-lg mb-4">{speechState.message}</p>
+                        <div className="flex gap-3 justify-center">
+                          <Button
+                            onClick={handleConfirmYes}
+                            className="bg-green-500 hover:bg-green-600 px-8 py-3 text-lg font-bold"
+                          >
+                            Yes ✓
+                          </Button>
+                          <Button
+                            onClick={rejectConfirmation}
+                            variant="outline"
+                            className="border-white/30 text-white hover:bg-white/20 px-8 py-3 text-lg font-bold"
+                          >
+                            No, try again
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Voice Status Message */}
+                    {speechState.message && !speechState.needsConfirmation && (
+                      <div className={`border rounded-xl p-4 animate-fade-in ${
+                        speechState.error
+                          ? 'bg-gradient-to-r from-red-500/30 to-orange-500/30 border-red-300/50'
+                          : 'bg-gradient-to-r from-green-500/30 to-emerald-500/30 border-green-300/50'
+                      }`}>
+                        <p className={`text-base font-medium ${
+                          speechState.error ? 'text-red-100' : 'text-white'
+                        }`}>
+                          {speechState.message}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Voice Button */}
+                    <div className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-xl p-6 backdrop-blur-sm border border-blue-300/30">
+                      <h3 className="text-white text-lg font-bold mb-4 text-center">
+                        🎤 Say the word out loud:
+                      </h3>
+                      <Button
+                        onClick={speechState.isListening ? stopListening : handleVoiceInput}
+                        disabled={speechState.needsConfirmation}
+                        className={`w-full py-8 text-xl font-bold rounded-xl transition-all duration-300 ${
+                          speechState.isListening
+                            ? 'animate-pulse bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700'
+                            : 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 hover:scale-105'
+                        } ${speechState.needsConfirmation ? 'opacity-50' : ''}`}
+                      >
+                        {speechState.isListening ? (
+                          <>
+                            <Mic className="h-7 w-7 mr-3 animate-pulse" />
+                            Listening... Speak now!
+                          </>
+                        ) : (
+                          <>
+                            <Mic className="h-7 w-7 mr-3" />
+                            Tap to Speak Word
+                          </>
+                        )}
+                      </Button>
+                      <p className="text-white/70 text-sm mt-3 text-center">
+                        {speechState.isListening ? '🎙️ Say the word clearly!' : '💡 Click the button and say the word'}
+                      </p>
+                    </div>
+
+                    {/* Typing Fallback */}
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center">
+                        <div className="w-full border-t border-white/20"></div>
+                      </div>
+                      <div className="relative flex justify-center text-sm">
+                        <span className="bg-gradient-to-r from-emerald-500/30 to-teal-500/20 px-4 py-1 text-white/70 rounded-full">
+                          Or type if you prefer
+                        </span>
+                      </div>
+                    </div>
+
                     <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
-                      <label className="text-white/90 font-medium mb-2 block">
-                        ⌨️ Type your answer:
-                      </label>
                       <Input
                         value={userAnswer}
                         onChange={(e) => setUserAnswer(e.target.value)}
                         onKeyPress={handleKeyPress}
                         placeholder="Type the English word..."
                         className="text-lg py-6 bg-white/90 text-gray-900 placeholder:text-gray-500 border-white/50"
-                        autoFocus
                       />
-                      <p className="text-white/60 text-sm mt-2">💡 Tip: Press Enter to submit</p>
+                      <p className="text-white/60 text-sm mt-2">⌨️ Press Enter to submit</p>
                     </div>
 
                     <Button
