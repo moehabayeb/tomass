@@ -546,30 +546,38 @@ export class MeetingsService {
     isLive: boolean;
     isUpcoming: boolean;
     isPast: boolean;
+    canJoin: boolean; // New: Indicates if join button should be enabled
     timeString: string;
+    minutesUntil: number; // New: Actual minutes until meeting for precise checks
   } {
     const meetingTime = new Date(isoTimestamp);
     const now = new Date();
     const diff = meetingTime.getTime() - now.getTime();
+    const minutesUntil = Math.floor(diff / (1000 * 60));
 
-    // Meeting is in the past
-    if (diff < 0) {
+    // Meeting is in the past (or currently running - up to 2 hours after start)
+    const twoHoursInMs = 2 * 60 * 60 * 1000;
+    if (diff < -twoHoursInMs) {
       return {
         isLive: false,
         isUpcoming: false,
         isPast: true,
-        timeString: 'Meeting ended'
+        canJoin: false,
+        timeString: 'Meeting ended',
+        minutesUntil
       };
     }
 
-    // Meeting is starting soon (within 5 minutes)
-    const fiveMinutes = 5 * 60 * 1000;
-    if (diff <= fiveMinutes) {
+    // Meeting is live (started up to 2 hours ago, or starting within 15 minutes)
+    const fifteenMinutes = 15 * 60 * 1000;
+    if (diff <= fifteenMinutes && diff >= -twoHoursInMs) {
       return {
         isLive: true,
         isUpcoming: false,
         isPast: false,
-        timeString: 'Join now'
+        canJoin: true,
+        timeString: diff < 0 ? 'Live now' : 'Join now',
+        minutesUntil
       };
     }
 
@@ -591,7 +599,9 @@ export class MeetingsService {
       isLive: false,
       isUpcoming: true,
       isPast: false,
-      timeString: `in ${timeString}`
+      canJoin: false,
+      timeString: `in ${timeString}`,
+      minutesUntil
     };
   }
 }

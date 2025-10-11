@@ -120,33 +120,17 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
     }
   };
 
-  // Update countdown timer
+  // Update countdown timer using unified service logic
   useEffect(() => {
     if (!nextMeeting) return;
-    
+
     const updateCountdown = () => {
-      const now = new Date();
-      const classTime = new Date(nextMeeting.scheduled_at);
-      const timeDiff = classTime.getTime() - now.getTime();
-      
-      if (timeDiff <= 0) {
-        setTimeUntilClass('Class has started!');
-        setCanJoin(true);
-        return;
-      }
+      // Use the unified MeetingsService logic
+      const { MeetingsService } = require('@/services/meetingsService');
+      const timeInfo = MeetingsService.getTimeUntilMeeting(nextMeeting.scheduled_at);
 
-      // Enable join button 15 minutes before class
-      const fifteenMinutes = 15 * 60 * 1000;
-      setCanJoin(timeDiff <= fifteenMinutes);
-
-      const hours = Math.floor(timeDiff / (1000 * 60 * 60));
-      const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
-      
-      if (hours > 0) {
-        setTimeUntilClass(`Starts in ${hours}h ${minutes}m`);
-      } else {
-        setTimeUntilClass(`Starts in ${minutes}m`);
-      }
+      setTimeUntilClass(timeInfo.timeString);
+      setCanJoin(timeInfo.canJoin);
     };
 
     updateCountdown();
@@ -192,26 +176,19 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
     }
 
     try {
-      // Try to use browser notifications first
-      if ('Notification' in window) {
-        const permission = await Notification.requestPermission();
-        
-        if (permission === 'granted') {
-          // Schedule browser notification
-          const classTime = new Date(nextMeeting.scheduled_at);
-          const reminderTime = new Date(classTime.getTime() - 15 * 60 * 1000); // 15 minutes before
-          const now = new Date();
-          
-          if (reminderTime > now) {
-            setTimeout(() => {
-              new Notification('English Class Starting Soon!', {
-                body: `${nextMeeting.title} starts in 15 minutes. Click to join!`,
-                icon: '/favicon.ico',
-                tag: nextMeeting.id
-              });
-            }, reminderTime.getTime() - now.getTime());
-          }
-        }
+      // Use the meetingNotifications service for proper notification handling
+      const { meetingNotifications } = await import('@/services/meetingNotifications');
+
+      // Request notification permission if not granted
+      const hasPermission = await meetingNotifications.requestPermission();
+
+      if (!hasPermission) {
+        toast({
+          title: "Notifications blocked",
+          description: "Please enable notifications in your browser settings.",
+          variant: "destructive"
+        });
+        return;
       }
 
       // Save reminder to database
@@ -226,7 +203,7 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
       if (error) {
         toast({
           title: "Error setting reminder",
-          description: "Please try again.",
+          description: error.message || "Please try again.",
           variant: "destructive"
         });
         return;
@@ -239,11 +216,15 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
         reminder_type: 'browser'
       }]);
 
+      // Start notification service if not already running
+      await meetingNotifications.startNotificationService();
+
       toast({
         title: "Reminder set!",
         description: "We'll notify you 15 minutes before class starts.",
       });
     } catch (error) {
+      console.error('Error setting reminder:', error);
       toast({
         title: "Reminder saved!",
         description: "We'll remind you 15 minutes before class starts.",

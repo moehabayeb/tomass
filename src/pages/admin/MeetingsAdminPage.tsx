@@ -28,6 +28,7 @@ export default function MeetingsAdminPage() {
 
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [editingMeeting, setEditingMeeting] = useState<AdminMeeting | null>(null);
+  const [rsvpCounts, setRsvpCounts] = useState<Record<string, { yes: number; no: number; maybe: number; total: number }>>({});
   const [formData, setFormData] = useState<CreateMeetingData>({
     title: '',
     description: '',
@@ -49,6 +50,29 @@ export default function MeetingsAdminPage() {
       });
     }
   }, [isAdmin, adminLoading, navigate, toast]);
+
+  // Load RSVP counts for all meetings
+  useEffect(() => {
+    const loadRSVPCounts = async () => {
+      if (meetings.length === 0) return;
+
+      const counts: Record<string, { yes: number; no: number; maybe: number; total: number }> = {};
+
+      for (const meeting of meetings) {
+        try {
+          const rsvpData = await MeetingsService.getMeetingRSVPs(meeting.id);
+          counts[meeting.id] = rsvpData;
+        } catch (error) {
+          console.error(`Failed to load RSVPs for meeting ${meeting.id}:`, error);
+          counts[meeting.id] = { yes: 0, no: 0, maybe: 0, total: 0 };
+        }
+      }
+
+      setRsvpCounts(counts);
+    };
+
+    loadRSVPCounts();
+  }, [meetings]);
 
   // Don't render anything while checking admin status
   if (adminLoading) {
@@ -398,42 +422,72 @@ export default function MeetingsAdminPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <Card>
           <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <Calendar className="h-8 w-8 text-blue-600" />
-              <div>
-                <p className="text-2xl font-bold">{meetings.length}</p>
-                <p className="text-sm text-gray-600">Total Meetings</p>
+            {isLoading ? (
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-8 bg-gray-200 rounded animate-pulse" />
+                <div className="flex-1">
+                  <div className="h-8 w-16 bg-gray-200 rounded animate-pulse mb-1" />
+                  <div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="flex items-center gap-3">
+                <Calendar className="h-8 w-8 text-blue-600" />
+                <div>
+                  <p className="text-2xl font-bold">{meetings.length}</p>
+                  <p className="text-sm text-gray-600">Total Meetings</p>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <Clock className="h-8 w-8 text-green-600" />
-              <div>
-                <p className="text-2xl font-bold">
-                  {meetings.filter(m => {
-                    const timeInfo = MeetingsService.getTimeUntilMeeting(m.scheduled_at);
-                    return timeInfo.isUpcoming && m.is_active;
-                  }).length}
-                </p>
-                <p className="text-sm text-gray-600">Upcoming</p>
+            {isLoading ? (
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-8 bg-gray-200 rounded animate-pulse" />
+                <div className="flex-1">
+                  <div className="h-8 w-16 bg-gray-200 rounded animate-pulse mb-1" />
+                  <div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="flex items-center gap-3">
+                <Clock className="h-8 w-8 text-green-600" />
+                <div>
+                  <p className="text-2xl font-bold">
+                    {meetings.filter(m => {
+                      const timeInfo = MeetingsService.getTimeUntilMeeting(m.scheduled_at);
+                      return timeInfo.isUpcoming && m.is_active;
+                    }).length}
+                  </p>
+                  <p className="text-sm text-gray-600">Upcoming</p>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <Users className="h-8 w-8 text-purple-600" />
-              <div>
-                <p className="text-2xl font-bold">{meetings.filter(m => m.is_active).length}</p>
-                <p className="text-sm text-gray-600">Active</p>
+            {isLoading ? (
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-8 bg-gray-200 rounded animate-pulse" />
+                <div className="flex-1">
+                  <div className="h-8 w-16 bg-gray-200 rounded animate-pulse mb-1" />
+                  <div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="flex items-center gap-3">
+                <Users className="h-8 w-8 text-purple-600" />
+                <div>
+                  <p className="text-2xl font-bold">{meetings.filter(m => m.is_active).length}</p>
+                  <p className="text-sm text-gray-600">Active</p>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -486,6 +540,27 @@ export default function MeetingsAdminPage() {
                             <Users className="h-4 w-4" />
                             Capacity: {meeting.capacity} attendees
                           </p>
+                          {rsvpCounts[meeting.id] && (
+                            <p className="flex items-center gap-2">
+                              <span className="font-medium">RSVPs:</span>
+                              <span className="inline-flex gap-2">
+                                <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs">
+                                  ✓ {rsvpCounts[meeting.id].yes}
+                                </span>
+                                <span className="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded text-xs">
+                                  ? {rsvpCounts[meeting.id].maybe}
+                                </span>
+                                <span className="bg-red-100 text-red-800 px-2 py-0.5 rounded text-xs">
+                                  ✗ {rsvpCounts[meeting.id].no}
+                                </span>
+                              </span>
+                              {rsvpCounts[meeting.id].yes >= meeting.capacity * 0.8 && (
+                                <Badge className="bg-orange-500">
+                                  {Math.round((rsvpCounts[meeting.id].yes / meeting.capacity) * 100)}% Full
+                                </Badge>
+                              )}
+                            </p>
+                          )}
                           {meeting.description && (
                             <p className="mt-2 text-gray-700">{meeting.description}</p>
                           )}
