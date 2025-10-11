@@ -8,6 +8,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthReady } from '@/hooks/useAuthReady';
+import { MeetingsService } from '@/services/meetingsService';
 
 interface MeetingsAppProps {
   onBack: () => void;
@@ -75,9 +76,9 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
     try {
       setLoading(true);
 
-      // Get all upcoming meetings using the public meetings v2 view (includes capacity, level_code, section_name)
+      // Get all upcoming meetings (includes capacity, level_code, section_name if available)
       const { data: meetings, error } = await supabase
-        .from('public_meetings_v2')
+        .from('public_meetings')
         .select('*')
         .order('scheduled_at', { ascending: true });
 
@@ -127,7 +128,6 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
 
     const updateCountdown = () => {
       // Use the unified MeetingsService logic
-      const { MeetingsService } = require('@/services/meetingsService');
       const timeInfo = MeetingsService.getTimeUntilMeeting(nextMeeting.scheduled_at);
 
       setTimeUntilClass(timeInfo.timeString);

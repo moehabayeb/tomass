@@ -116,12 +116,12 @@ export class MeetingsService {
   }
 
   /**
-   * Get all meetings for admin (admin view v2 with capacity, level_code, section_name)
+   * Get all meetings for admin (includes capacity, level_code, section_name if available)
    */
   static async getMeetings(): Promise<AdminMeeting[]> {
     try {
       const { data, error } = await supabase
-        .from('admin_meetings_v2')
+        .from('admin_meetings')
         .select('*')
         .order('starts_at', { ascending: false });
 
@@ -138,13 +138,13 @@ export class MeetingsService {
   }
 
   /**
-   * Get public meetings (active & upcoming for public page with v2 fields)
+   * Get public meetings (active & upcoming, includes capacity, level_code, section_name if available)
    */
   static async getPublicMeetings(): Promise<PublicMeeting[]> {
     try {
       const { data, error } = await supabase
-        .from('public_meetings_v2')
-        .select('id, title, description, meeting_url, scheduled_at, duration_minutes, capacity, level_code, section_name')
+        .from('public_meetings')
+        .select('*')
         .order('scheduled_at', { ascending: true })
         .limit(10);
 
