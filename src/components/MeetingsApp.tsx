@@ -19,9 +19,11 @@ interface Meeting {
   description?: string;
   teacher_name: string;
   focus_topic: string;
-  scheduled_at: string;
-  zoom_link: string;
-  duration_minutes?: number;
+  scheduled_at: string; // Computed field from starts_at
+  starts_at: string; // Raw timestamp
+  zoom_link: string; // Alias for meeting_url
+  meeting_url: string; // Actual field from database
+  duration_minutes: number;
   max_participants?: number;
   level_code: string; // A1, A2, B1, B2, C1, C2
   section_name: string; // Apples, Avocado, Banana, etc.
@@ -79,9 +81,10 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
         .select('*');
 
       if (error) {
+        console.error('Error loading meetings:', error);
         toast({
           title: "Error loading meetings",
-          description: "Please try again later.",
+          description: error.message || "Please try again later.",
           variant: "destructive"
         });
         return;
@@ -94,16 +97,24 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
 
       // Load user reminders if user is logged in
       if (user) {
-        const { data: reminders } = await supabase
+        const { data: reminders, error: remindersError } = await supabase
           .from('user_reminders')
           .select('*')
           .eq('user_id', user.id);
-        
-        if (reminders) {
+
+        if (remindersError) {
+          console.error('Error loading reminders:', remindersError);
+        } else if (reminders) {
           setUserReminders(reminders);
         }
       }
     } catch (error) {
+      console.error('Unexpected error loading meetings:', error);
+      toast({
+        title: "Unexpected error",
+        description: "Failed to load meetings. Please refresh the page.",
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }
@@ -146,10 +157,11 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
 
   const handleJoinClass = () => {
     if (canJoin && nextMeeting) {
-      window.open(nextMeeting.zoom_link, '_blank');
+      const meetingUrl = nextMeeting.meeting_url || nextMeeting.zoom_link;
+      window.open(meetingUrl, '_blank');
       toast({
         title: "Joining class...",
-        description: "Opening Zoom in a new window. See you in class!",
+        description: "Opening meeting in a new window. See you in class!",
       });
     }
   };

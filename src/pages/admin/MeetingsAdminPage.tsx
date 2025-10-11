@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Calendar, Clock, Users, ExternalLink, Edit2, Trash2, Eye, EyeOff } from 'lucide-react';
+import { Plus, Calendar, Clock, Users, ExternalLink, Edit2, Trash2, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -237,12 +237,22 @@ export default function MeetingsAdminPage() {
   return (
     <div className="p-6 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">Admin: Meetings Management</h1>
-          <p className="text-gray-600 mt-1">Create and manage scheduled meetings</p>
-        </div>
-        <div className="flex gap-2">
+      <div className="mb-6">
+        <Button
+          onClick={() => navigate('/')}
+          variant="ghost"
+          size="sm"
+          className="mb-4 text-gray-600 hover:text-gray-900"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Home
+        </Button>
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold">Admin: Meetings Management</h1>
+            <p className="text-gray-600 mt-1">Create and manage scheduled meetings</p>
+          </div>
+          <div className="flex gap-2">
           <Button
             variant="outline"
             onClick={testNotifications}
@@ -380,6 +390,7 @@ export default function MeetingsAdminPage() {
               </form>
             </DialogContent>
           </Dialog>
+          </div>
         </div>
       </div>
 

@@ -290,7 +290,7 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
     return { stars: 0, label: 'Keep Practicing!', color: 'text-gray-500' };
   };
 
-  // TIER SELECTION SCREEN
+  // TIER SELECTION SCREEN - Early return
   if (screen === 'tierSelection') {
     const masteredWordsCount = progress.masteredWords.length;
     const overallAccuracy = getOverallAccuracy();
@@ -433,8 +433,10 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
         </div>
       </div>
     );
-  } else if (screen === 'results' && selectedTier) {
-    // RESULTS SCREEN
+  }
+
+  // RESULTS SCREEN - Early return
+  if (screen === 'results' && selectedTier) {
     const rating = getStarRating();
     const correctCount = cardResults.filter(result => result.correct).length;
     const totalCount = cardResults.length;
@@ -596,8 +598,10 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
         </div>
       </div>
     );
-  } else if (screen === 'playing' && selectedTier) {
-    // PLAYING SCREEN
+  }
+
+  // PLAYING SCREEN - Early return
+  if (screen === 'playing' && selectedTier) {
     const tierInfo = getTierInfo(selectedTier);
 
     return (
@@ -841,7 +845,6 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
             </CardContent>
           </Card>
         )}
-        </div>
       </div>
     );
   }
