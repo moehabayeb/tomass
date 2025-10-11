@@ -89,33 +89,44 @@ export default function Profile() {
   useEffect(() => {
     const loadReminders = async () => {
       if (!user) return;
-      
+
       try {
+        // Query reminders with meeting details, filtering for future meetings only
         const { data, error } = await supabase
           .from('user_reminders')
           .select(`
             id,
             reminder_type,
+            meeting_id,
             meetings!inner(
+              id,
               title,
-              scheduled_at
+              scheduled_at,
+              starts_at
             )
           `)
           .eq('user_id', user.id)
           .eq('is_sent', false)
-          .order('meetings(scheduled_at)', { ascending: true });
+          .gte('meetings.starts_at', new Date().toISOString()); // Only future meetings
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error loading reminders:', error);
+          throw error;
+        }
 
-        const formattedReminders = data?.map(reminder => ({
+        // Format and sort reminders by meeting time
+        const formattedReminders = (data?.map(reminder => ({
           id: reminder.id,
           meeting_title: reminder.meetings.title,
-          scheduled_at: reminder.meetings.scheduled_at,
+          scheduled_at: reminder.meetings.scheduled_at || reminder.meetings.starts_at,
           reminder_type: reminder.reminder_type
-        })) || [];
+        })) || []).sort((a, b) =>
+          new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime()
+        );
 
         setReminders(formattedReminders);
       } catch (error) {
+        console.error('Failed to load reminders:', error);
       } finally {
         setIsLoadingReminders(false);
       }
