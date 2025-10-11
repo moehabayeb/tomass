@@ -20,6 +20,27 @@ set capacity = 20, level_code = 'general'
 where capacity is null or level_code is null;
 
 -- =====================================================
+-- HELPER FUNCTION: Get section name from level code
+-- =====================================================
+
+-- Function to convert level_code to display format: "A1 / Apples"
+create or replace function public.get_section_name(p_level_code text)
+returns text
+language sql
+immutable
+as $$
+  select case p_level_code
+    when 'A1' then 'A1 / Apples'
+    when 'A2' then 'A2 / Avocado'
+    when 'B1' then 'B1 / Banana'
+    when 'B2' then 'B2 / Blueberry'
+    when 'C1' then 'C1 / Cherry'
+    when 'C2' then 'C2 / Coconut'
+    else 'General'
+  end;
+$$;
+
+-- =====================================================
 -- UPDATE VIEWS TO INCLUDE NEW FIELDS
 -- =====================================================
 
@@ -41,16 +62,8 @@ select
   -- Add computed fields for compatibility
   starts_at as scheduled_at,
   extract(epoch from (coalesce(ends_at, starts_at + interval '1 hour') - starts_at)) / 60 as duration_minutes,
-  -- Add section_name computed field based on level_code
-  case level_code
-    when 'A1' then 'Beginner I'
-    when 'A2' then 'Beginner II'
-    when 'B1' then 'Intermediate I'
-    when 'B2' then 'Intermediate II'
-    when 'C1' then 'Advanced I'
-    when 'C2' then 'Advanced II'
-    else 'General'
-  end as section_name
+  -- Add section_name computed field using helper function
+  public.get_section_name(level_code) as section_name
 from public.meetings
 order by starts_at desc;
 
@@ -73,16 +86,8 @@ select
   title as teacher_name,
   coalesce(description, 'General English Practice') as focus_topic,
   meeting_url as zoom_link,
-  -- Add section_name
-  case level_code
-    when 'A1' then 'Beginner I'
-    when 'A2' then 'Beginner II'
-    when 'B1' then 'Intermediate I'
-    when 'B2' then 'Intermediate II'
-    when 'C1' then 'Advanced I'
-    when 'C2' then 'Advanced II'
-    else 'General'
-  end as section_name
+  -- Add section_name using helper function
+  public.get_section_name(level_code) as section_name
 from public.meetings
 where is_active = true
   and starts_at >= now()
@@ -245,3 +250,15 @@ grant select on public.public_meetings to authenticated, anon;
 -- Grant execute on updated functions
 grant execute on function public.create_meeting(integer, text, integer, text, text, timestamptz, text) to authenticated;
 grant execute on function public.update_meeting(integer, text, integer, text, uuid, text, timestamptz, text) to authenticated;
+grant execute on function public.get_section_name(text) to authenticated, anon;
+
+-- =====================================================
+-- MIGRATION COMPLETE
+-- =====================================================
+-- This migration adds:
+-- ✅ capacity column (1-100 validation)
+-- ✅ level_code column (A1-C2 CEFR levels)
+-- ✅ get_section_name() helper function for "A1 / Apples" format
+-- ✅ Updated create_meeting() and update_meeting() functions
+-- ✅ Updated admin_meetings and public_meetings views
+-- ✅ Safe to rerun - uses IF NOT EXISTS and CREATE OR REPLACE

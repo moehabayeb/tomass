@@ -4,25 +4,25 @@
 
 ### Steps to Apply Migration
 
-1. **Open Supabase Dashboard**
-   - Go to [https://supabase.com/dashboard](https://supabase.com/dashboard)
-   - Navigate to your project: `sgzhbiknaiqsuknwgvjr`
+1. **Open Supabase SQL Editor**
+   - **Direct link:** [https://supabase.com/dashboard/project/sgzhbiknaiqsuknwgvjr/sql/new](https://supabase.com/dashboard/project/sgzhbiknaiqsuknwgvjr/sql/new)
+   - Or manually: Go to [Supabase Dashboard](https://supabase.com/dashboard) → Your Project → SQL Editor → New Query
 
-2. **Navigate to SQL Editor**
-   - Click on "SQL Editor" in the left sidebar
-   - Click "New query" button
-
-3. **Copy Migration SQL**
+2. **Copy Migration SQL**
    - Open file: `supabase/migrations/20251231_add_capacity_level_code.sql`
-   - Copy the entire contents
+   - Select all (Ctrl+A / Cmd+A) and copy (Ctrl+C / Cmd+C)
 
-4. **Execute Migration**
+3. **Execute Migration**
    - Paste the SQL into the Supabase SQL Editor
-   - Click "Run" button
-   - Wait for success confirmation
+   - Click the green "Run" button (or press Ctrl+Enter / Cmd+Enter)
+   - Wait for "Success. No rows returned" message
 
-5. **Verify Migration**
-   - Run this verification query:
+4. **Test immediately**
+   - Go back to your app and try creating a meeting
+   - The error should be gone!
+
+5. **Verify Migration (Optional)**
+   - Run this verification query in SQL Editor:
    ```sql
    -- Check if columns exist
    SELECT column_name, data_type, column_default
@@ -30,16 +30,22 @@
    WHERE table_name = 'meetings'
    AND column_name IN ('capacity', 'level_code');
 
-   -- Check if functions are updated
-   SELECT routine_name, routine_type
-   FROM information_schema.routines
-   WHERE routine_schema = 'public'
-   AND routine_name IN ('create_meeting', 'update_meeting');
+   -- Test the helper function
+   SELECT public.get_section_name('A1') as section_a1,
+          public.get_section_name('B2') as section_b2,
+          public.get_section_name('C2') as section_c2;
+
+   -- Check if views include new fields
+   SELECT column_name
+   FROM information_schema.columns
+   WHERE table_name = 'admin_meetings'
+   AND column_name IN ('capacity', 'level_code', 'section_name');
    ```
 
 6. **Expected Results**
-   - You should see `capacity` and `level_code` columns in the meetings table
-   - Functions should be present and callable
+   - You should see `capacity` (integer, default 20) and `level_code` (text, default 'general')
+   - Helper function should return: "A1 / Apples", "B2 / Blueberry", "C2 / Coconut"
+   - All three columns should appear in admin_meetings view
 
 ### What This Migration Does
 
@@ -47,16 +53,28 @@
 - `capacity` (integer, 1-100, default 20) - Max number of attendees
 - `level_code` (text, A1-C2 or 'general', default 'general') - CEFR proficiency level
 
+✅ **Adds helper function:**
+- `get_section_name(level_code)` - Converts level codes to display format (e.g., "A1 / Apples", "B2 / Blueberry")
+
 ✅ **Updates database functions:**
-- `create_meeting()` - Now accepts capacity and level_code parameters
-- `update_meeting()` - Now accepts capacity and level_code parameters
+- `create_meeting()` - Now accepts capacity and level_code parameters (alphabetical order)
+- `update_meeting()` - Now accepts capacity and level_code parameters (alphabetical order)
 
 ✅ **Updates views:**
-- `admin_meetings` - Includes capacity, level_code, and computed section_name
-- `public_meetings` - Includes capacity, level_code, and computed section_name
+- `admin_meetings` - Includes capacity, level_code, and computed section_name field
+- `public_meetings` - Includes capacity, level_code, and computed section_name field
 
 ✅ **Sets default values:**
 - All existing meetings get capacity=20 and level_code='general'
+
+✅ **Section name mapping:**
+- A1 → "A1 / Apples"
+- A2 → "A2 / Avocado"
+- B1 → "B1 / Banana"
+- B2 → "B2 / Blueberry"
+- C1 → "C1 / Cherry"
+- C2 → "C2 / Coconut"
+- general → "General"
 
 ### Troubleshooting
 
