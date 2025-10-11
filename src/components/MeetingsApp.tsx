@@ -75,10 +75,11 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
     try {
       setLoading(true);
 
-      // Get all upcoming meetings using the public meetings view
+      // Get all upcoming meetings using the public meetings v2 view (includes capacity, level_code, section_name)
       const { data: meetings, error } = await supabase
-        .from('public_meetings')
-        .select('*');
+        .from('public_meetings_v2')
+        .select('*')
+        .order('scheduled_at', { ascending: true });
 
       if (error) {
         console.error('Error loading meetings:', error);

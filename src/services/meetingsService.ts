@@ -13,9 +13,9 @@ export interface AdminMeeting {
   meeting_url: string;
   starts_at: string; // ISO timestamp
   ends_at: string | null; // ISO timestamp
-  level_code: string; // A1, A2, B1, B2, C1, C2
-  section_name: string; // Apples, Avocado, Banana, etc.
-  capacity: number; // Max attendees (1-50)
+  level_code: 'general' | 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2'; // CEFR levels
+  section_name: string; // Computed: "A1 / Apples", "B2 / Blueberry", etc.
+  capacity: number; // Max attendees (1-100, default 20)
   scheduled_at: string; // Computed field for backward compatibility
   duration_minutes: number; // Computed field for backward compatibility
   created_by: string | null;
@@ -31,9 +31,9 @@ export interface PublicMeeting {
   meeting_url: string;
   starts_at: string; // ISO timestamp
   ends_at: string | null; // ISO timestamp
-  level_code: string; // A1, A2, B1, B2, C1, C2
-  section_name: string; // Apples, Avocado, Banana, etc.
-  capacity: number; // Max attendees (1-50)
+  level_code: 'general' | 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2'; // CEFR levels
+  section_name: string; // Computed: "A1 / Apples", "B2 / Blueberry", etc.
+  capacity: number; // Max attendees (1-100, default 20)
   scheduled_at: string; // Computed field for backward compatibility
   duration_minutes: number; // Computed field for backward compatibility
   teacher_name: string; // Computed field
@@ -57,8 +57,8 @@ export interface CreateMeetingData {
   meeting_url: string;
   scheduled_at: string; // ISO timestamp
   duration_minutes: number;
-  level_code: string; // A1, A2, B1, B2, C1, C2
-  capacity: number; // Max attendees (1-50), default 8
+  level_code: 'general' | 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2'; // CEFR levels
+  capacity: number; // Max attendees (1-100), default 20
 }
 
 export interface UpdateMeetingData {
@@ -67,29 +67,31 @@ export interface UpdateMeetingData {
   meeting_url: string;
   scheduled_at: string; // ISO timestamp
   duration_minutes: number;
-  level_code: string; // A1, A2, B1, B2, C1, C2
-  capacity: number; // Max attendees (1-50)
+  level_code: 'general' | 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2'; // CEFR levels
+  capacity: number; // Max attendees (1-100)
 }
 
 // Level to section mapping
 export const LEVEL_SECTIONS = {
-  'A1': 'Apples',
-  'A2': 'Avocado',
-  'B1': 'Banana',
-  'B2': 'Blueberry',
-  'C1': 'Cherry',
-  'C2': 'Coconut'
+  'general': 'General',
+  'A1': 'A1 / Apples',
+  'A2': 'A2 / Avocado',
+  'B1': 'B1 / Banana',
+  'B2': 'B2 / Blueberry',
+  'C1': 'C1 / Cherry',
+  'C2': 'C2 / Coconut'
 } as const;
 
-export type LevelCode = keyof typeof LEVEL_SECTIONS;
+export type LevelCode = 'general' | 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
 
 export const LEVEL_OPTIONS = [
-  { value: 'A1' as LevelCode, label: 'A1', section: 'Apples' },
-  { value: 'A2' as LevelCode, label: 'A2', section: 'Avocado' },
-  { value: 'B1' as LevelCode, label: 'B1', section: 'Banana' },
-  { value: 'B2' as LevelCode, label: 'B2', section: 'Blueberry' },
-  { value: 'C1' as LevelCode, label: 'C1', section: 'Cherry' },
-  { value: 'C2' as LevelCode, label: 'C2', section: 'Coconut' }
+  { value: 'general' as LevelCode, label: 'General', section: 'General' },
+  { value: 'A1' as LevelCode, label: 'A1 (Beginner I)', section: 'A1 / Apples' },
+  { value: 'A2' as LevelCode, label: 'A2 (Beginner II)', section: 'A2 / Avocado' },
+  { value: 'B1' as LevelCode, label: 'B1 (Intermediate I)', section: 'B1 / Banana' },
+  { value: 'B2' as LevelCode, label: 'B2 (Intermediate II)', section: 'B2 / Blueberry' },
+  { value: 'C1' as LevelCode, label: 'C1 (Advanced I)', section: 'C1 / Cherry' },
+  { value: 'C2' as LevelCode, label: 'C2 (Advanced II)', section: 'C2 / Coconut' }
 ];
 
 export class MeetingsService {
@@ -114,12 +116,12 @@ export class MeetingsService {
   }
 
   /**
-   * Get all meetings for admin (admin view)
+   * Get all meetings for admin (admin view v2 with capacity, level_code, section_name)
    */
   static async getMeetings(): Promise<AdminMeeting[]> {
     try {
       const { data, error } = await supabase
-        .from('admin_meetings')
+        .from('admin_meetings_v2')
         .select('*')
         .order('starts_at', { ascending: false });
 
@@ -136,13 +138,14 @@ export class MeetingsService {
   }
 
   /**
-   * Get public meetings (active & upcoming for public page)
+   * Get public meetings (active & upcoming for public page with v2 fields)
    */
   static async getPublicMeetings(): Promise<PublicMeeting[]> {
     try {
       const { data, error } = await supabase
-        .from('public_meetings')
-        .select('*')
+        .from('public_meetings_v2')
+        .select('id, title, description, meeting_url, scheduled_at, duration_minutes, capacity, level_code, section_name')
+        .order('scheduled_at', { ascending: true })
         .limit(10);
 
       if (error) {
@@ -217,23 +220,23 @@ export class MeetingsService {
         throw new Error('Meeting duration must be between 1 and 480 minutes (8 hours)');
       }
 
-      if (!meetingData.level_code || !['A1', 'A2', 'B1', 'B2', 'C1', 'C2'].includes(meetingData.level_code)) {
-        throw new Error('Please select a valid level (A1, A2, B1, B2, C1, or C2)');
+      if (!meetingData.level_code || !['general', 'A1', 'A2', 'B1', 'B2', 'C1', 'C2'].includes(meetingData.level_code)) {
+        throw new Error('Please select a valid level (general, A1, A2, B1, B2, C1, or C2)');
       }
 
-      if (!meetingData.capacity || meetingData.capacity < 1 || meetingData.capacity > 50) {
-        throw new Error('Meeting capacity must be between 1 and 50 attendees');
+      if (!meetingData.capacity || meetingData.capacity < 1 || meetingData.capacity > 100) {
+        throw new Error('Meeting capacity must be between 1 and 100 attendees');
       }
 
-      // CRITICAL: Parameters in ALPHABETICAL order to match Supabase function signature!
-      const { data, error } = await supabase.rpc('create_meeting', {
-        p_capacity: meetingData.capacity,
+      // RPC call with parameters matching database function signature
+      const { data, error} = await supabase.rpc('create_meeting', {
         p_description: meetingData.description?.trim() || null,
         p_duration_minutes: meetingData.duration_minutes,
-        p_level_code: meetingData.level_code,
         p_meeting_url: meetingData.meeting_url.trim(),
         p_scheduled_at: meetingData.scheduled_at,
-        p_title: meetingData.title.trim()
+        p_title: meetingData.title.trim(),
+        p_capacity: meetingData.capacity,
+        p_level_code: meetingData.level_code
       });
 
       if (error) {
@@ -285,24 +288,24 @@ export class MeetingsService {
         throw new Error('Meeting duration must be between 1 and 480 minutes (8 hours)');
       }
 
-      if (!meetingData.level_code || !['A1', 'A2', 'B1', 'B2', 'C1', 'C2'].includes(meetingData.level_code)) {
-        throw new Error('Please select a valid level (A1, A2, B1, B2, C1, or C2)');
+      if (!meetingData.level_code || !['general', 'A1', 'A2', 'B1', 'B2', 'C1', 'C2'].includes(meetingData.level_code)) {
+        throw new Error('Please select a valid level (general, A1, A2, B1, B2, C1, or C2)');
       }
 
-      if (!meetingData.capacity || meetingData.capacity < 1 || meetingData.capacity > 50) {
-        throw new Error('Meeting capacity must be between 1 and 50 attendees');
+      if (!meetingData.capacity || meetingData.capacity < 1 || meetingData.capacity > 100) {
+        throw new Error('Meeting capacity must be between 1 and 100 attendees');
       }
 
-      // CRITICAL: Parameters in ALPHABETICAL order to match Supabase function signature!
+      // RPC call with parameters matching database function signature
       const { data, error } = await supabase.rpc('update_meeting', {
-        p_capacity: meetingData.capacity,
         p_description: meetingData.description?.trim() || null,
         p_duration_minutes: meetingData.duration_minutes,
-        p_level_code: meetingData.level_code,
-        p_meeting_id: meetingId,
         p_meeting_url: meetingData.meeting_url.trim(),
         p_scheduled_at: meetingData.scheduled_at,
-        p_title: meetingData.title.trim()
+        p_title: meetingData.title.trim(),
+        p_capacity: meetingData.capacity,
+        p_level_code: meetingData.level_code,
+        p_meeting_id: meetingId
       });
 
       if (error) {

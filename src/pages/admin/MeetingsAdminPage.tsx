@@ -35,8 +35,8 @@ export default function MeetingsAdminPage() {
     meeting_url: '',
     scheduled_at: '',
     duration_minutes: 60,
-    level_code: 'A1',
-    capacity: 8
+    level_code: 'general',
+    capacity: 20
   });
 
   // Redirect non-admins
@@ -94,8 +94,8 @@ export default function MeetingsAdminPage() {
       meeting_url: '',
       scheduled_at: '',
       duration_minutes: 60,
-      level_code: 'A1',
-      capacity: 8
+      level_code: 'general',
+      capacity: 20
     });
     setEditingMeeting(null);
   };
@@ -389,14 +389,14 @@ export default function MeetingsAdminPage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="capacity">Capacity (max attendees)</Label>
+                  <Label htmlFor="capacity">Capacity (max attendees, 1-100)</Label>
                   <Input
                     id="capacity"
                     type="number"
                     min="1"
-                    max="50"
+                    max="100"
                     value={formData.capacity}
-                    onChange={(e) => setFormData({...formData, capacity: parseInt(e.target.value) || 8})}
+                    onChange={(e) => setFormData({...formData, capacity: Math.max(1, Math.min(100, parseInt(e.target.value) || 20))})}
                     required
                   />
                 </div>
@@ -714,14 +714,14 @@ export default function MeetingsAdminPage() {
               </div>
 
               <div>
-                <Label htmlFor="edit-capacity">Capacity (max attendees)</Label>
+                <Label htmlFor="edit-capacity">Capacity (max attendees, 1-100)</Label>
                 <Input
                   id="edit-capacity"
                   type="number"
                   min="1"
-                  max="50"
+                  max="100"
                   value={formData.capacity}
-                  onChange={(e) => setFormData({...formData, capacity: parseInt(e.target.value) || 8})}
+                  onChange={(e) => setFormData({...formData, capacity: Math.max(1, Math.min(100, parseInt(e.target.value) || 20))})}
                   required
                 />
               </div>
