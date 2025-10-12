@@ -5664,21 +5664,19 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
   function snapshotProgress(): StoreModuleProgress | null {
     if (!currentModuleData || !selectedLevel || selectedModule == null) return null;
 
-    const totalListening = currentModuleData?.listeningExamples?.length ?? 0;
     const totalSpeaking  = currentModuleData?.speakingPractice?.length ?? 0;
 
-    // Clamp indexes in case content changed between sessions
-    const safeListeningIndex = Math.min(Math.max(listeningIndex ?? 0, 0), Math.max(totalListening - 1, 0));
+    // Clamp speaking index in case content changed between sessions
     const safeSpeakingIndex  = Math.min(Math.max(speakingIndex ?? 0, 0), Math.max(totalSpeaking - 1, 0));
 
     return {
       level: String(selectedLevel),
       module: Number(selectedModule),
       phase: currentPhase as LessonPhase,
-      listeningIndex: safeListeningIndex,
+      listeningIndex: 0, // Legacy field for compatibility
       speakingIndex: safeSpeakingIndex,
       completed: currentPhase === 'complete',
-      totalListening,
+      totalListening: 0, // No longer used
       totalSpeaking,
       updatedAt: Date.now(),
       v: 1,
@@ -11133,7 +11131,7 @@ const MODULE_150_DATA = {
   // Save on any meaningful change (using old progress store)
   useEffect(() => {
     saveProgressDebounced();
-  }, [selectedLevel, selectedModule, currentPhase, listeningIndex, speakingIndex]);
+  }, [selectedLevel, selectedModule, currentPhase, speakingIndex]);
 
   // Autosave on every meaningful change (debounced & guarded) - new progress store
   useEffect(() => {
@@ -11145,12 +11143,12 @@ const MODULE_150_DATA = {
       saveModuleProgress(
         String(selectedLevel),
         selectedModule,
-        (currentPhase === 'listening' || currentPhase === 'speaking') ? currentPhase as LessonPhaseType : 'intro',
+        currentPhase === 'speaking' ? 'speaking' as LessonPhaseType : 'intro',
         speakingIndex
       );
       autosaveTimeoutRef.current = null;
     }, 250);
-  }, [userId, selectedLevel, selectedModule, currentPhase, listeningIndex, speakingIndex, currentModuleData]);
+  }, [userId, selectedLevel, selectedModule, currentPhase, speakingIndex, currentModuleData]);
 
   // Clean up on unmount
   useEffect(() => () => {
