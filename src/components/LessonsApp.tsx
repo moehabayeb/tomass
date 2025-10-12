@@ -30,19 +30,23 @@ import '../utils/placementQA';
 // Progress checkpointing imports
 import { useLessonCheckpoints } from '../hooks/useLessonCheckpoints';
 import { ResumeProgressDialog, SyncStatusIndicator } from './ResumeProgressDialog';
+// B2 Modules Data (151-160)
+import { MODULE_151_DATA, MODULE_152_DATA, MODULE_153_DATA, MODULE_154_DATA, MODULE_155_DATA, MODULE_156_DATA, MODULE_157_DATA, MODULE_158_DATA, MODULE_159_DATA, MODULE_160_DATA } from './B2ModulesData';
 
 // ---------- Module Order and Next Module Logic ----------
 const ORDER_A1 = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50];
 const ORDER_A2 = [51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100];
 const ORDER_B1 = [101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140];
+const ORDER_B2 = [151,152,153,154,155,156,157,158,159,160];
 
-function getOrderForLevel(level: 'A1'|'A2'|'B1'): number[] {
+function getOrderForLevel(level: 'A1'|'A2'|'B1'|'B2'): number[] {
   if (level === 'A1') return ORDER_A1;
   if (level === 'A2') return ORDER_A2;
+  if (level === 'B2') return ORDER_B2;
   return ORDER_B1;
 }
 
-function getNextModuleId(level: 'A1'|'A2'|'B1', current: number): number | null {
+function getNextModuleId(level: 'A1'|'A2'|'B1'|'B2', current: number): number | null {
   const order = getOrderForLevel(level);
   const idx = order.indexOf(current);
   if (idx === -1) return null;
@@ -50,7 +54,7 @@ function getNextModuleId(level: 'A1'|'A2'|'B1', current: number): number | null 
 }
 
 // Enhanced Progress Tracking with ProgressStore Integration
-type LessonPhaseType = 'intro' | 'listening' | 'speaking' | 'complete';
+type LessonPhaseType = 'intro' | 'speaking' | 'complete';
 
 // Import enhanced multiple choice types and generator
 import { 
@@ -175,7 +179,7 @@ interface LessonsAppProps {
 }
 
 type ViewState = 'levels' | 'modules' | 'lesson';
-type LessonPhase = 'intro' | 'teacher-reading' | 'listening' | 'speaking' | 'complete';
+type LessonPhase = 'intro' | 'teacher-reading' | 'speaking' | 'complete';
 type SpeakStatus = 'idle'|'prompting'|'recording'|'transcribing'|'evaluating'|'advancing';
 
 // Levels data - TEMPORARILY UNLOCKED FOR DEVELOPMENT
@@ -527,7 +531,33 @@ const MODULES_BY_LEVEL = {
     completed: false,
     locked: false, // TEMPORARILY UNLOCKED FOR DEVELOPMENT
   })),
-  B2: [],
+  B2: Array.from({ length: 10 }, (_, i) => ({
+    id: i + 151,
+    title: i === 0 ? 'Future Perfect Continuous (will have been doing)' :
+           i === 1 ? 'Passive Voice – Past Perfect and Future Perfect' :
+           i === 2 ? 'Reported Speech – Mixed Tenses' :
+           i === 3 ? 'Inversion for Emphasis (Never have I…)' :
+           i === 4 ? 'Ellipsis and Substitution (so, do, one)' :
+           i === 5 ? 'Nominalisation (changing verbs to nouns)' :
+           i === 6 ? 'Advanced Linking Words (nonetheless, furthermore)' :
+           i === 7 ? 'Complex Conditionals (if…were to, if…should)' :
+           i === 8 ? 'Unreal Past for Present (I wish I knew)' :
+           i === 9 ? 'Unreal Past for Past (I wish I had known)' :
+           'B2 Module',
+    description: i === 0 ? 'Understand and form sentences using the Future Perfect Continuous tense' :
+                 i === 1 ? 'Recognize and form passive structures in the Past Perfect and Future Perfect tenses' :
+                 i === 2 ? 'Understand how to convert direct speech to reported speech using different tenses' :
+                 i === 3 ? 'Understand how and when to use inversion for emphasis in English' :
+                 i === 4 ? 'Learn ellipsis and substitution to avoid repetition' :
+                 i === 5 ? 'Learn how to change verbs into nouns for more formal English' :
+                 i === 6 ? 'Master advanced linking words for sophisticated expression' :
+                 i === 7 ? 'Use complex conditional structures for hypothetical situations' :
+                 i === 8 ? 'Express present regrets using unreal past structures' :
+                 i === 9 ? 'Express past regrets using unreal past perfect structures' :
+                 'Advanced B2 grammar module',
+    completed: false,
+    locked: false,
+  })),
   C1: [],
   C2: []
 };
@@ -558,16 +588,6 @@ They are students.`,
     { subject: "We", verb: "are", complement: "happy", example: "We are happy." },
     { subject: "You", verb: "are", complement: "teachers", example: "You are teachers." },
     { subject: "They", verb: "are", complement: "friends", example: "They are friends." }
-  ],
-  
-  listeningExamples: [
-    "I am a student.",
-    "He is a teacher.",
-    "She is a doctor.",
-    "It is a dog.",
-    "We are happy.",
-    "You are friends.",
-    "They are engineers."
   ],
   
   speakingPractice: [
@@ -642,12 +662,6 @@ They aren't teachers.`,
     { subject: "They", verb: "are", not: "not", complement: "friends", example: "They aren't friends." }
   ],
   
-  listeningExamples: [
-    "I am not a student.",
-    "She isn't happy.",
-    "They aren't teachers."
-  ],
-  
   speakingPractice: [
     { question: "Are you a teacher?", answer: "No, I am not a teacher." },
     { question: "Is she your friend?", answer: "No, she isn't my friend." },
@@ -720,12 +734,6 @@ Are they students?`,
     { verb: "Are", subject: "they", complement: "friends?", example: "Are they friends?" }
   ],
   
-  listeningExamples: [
-    "Am I late?",
-    "Is she happy?",
-    "Are they students?"
-  ],
-  
   speakingPractice: [
     { question: "Am I a teacher?", answer: "Yes, you are a teacher." },
     { question: "Am I a teacher?", answer: "No, you are not a teacher." },
@@ -793,16 +801,6 @@ They are friends.`,
     { pronoun: "It", example: "It is a book." },
     { pronoun: "We", example: "We are teachers." },
     { pronoun: "They", example: "They are at school." }
-  ],
-  
-  listeningExamples: [
-    "I am a student.",
-    "You are my friend.",
-    "He is a doctor.",
-    "She is happy.",
-    "It is a book.",
-    "We are teachers.",
-    "They are at school."
   ],
   
   speakingPractice: [
@@ -874,12 +872,6 @@ I, You, He, She, It, We, They
     { pronoun: "They", example: "They are at school." }
   ],
   
-  listeningExamples: [
-    "I am a student.",
-    "You are my friend.",
-    "He is a doctor."
-  ],
-  
   speakingPractice: [
     { question: "Who am I?", answer: "You are my teacher." },
     { question: "Who is he?", answer: "He is my brother." },
@@ -949,12 +941,6 @@ Example Sentences:
     { pronoun: "They", possessive: "their", example: "Their children are playing." }
   ],
   
-  listeningExamples: [
-    "This is my book.",
-    "That is her car.",
-    "These are their friends."
-  ],
-  
   speakingPractice: [
     { question: "Whose book is this?", answer: "It is my book." },
     { question: "Is this your pen?", answer: "Yes, it is my pen." },
@@ -1017,12 +1003,6 @@ Konu Anlatımı:
 - These are our friends.
 - Those are their houses.`,
   tip: "Use 'This' and 'These' for things that are near you. Use 'That' and 'Those' for things that are far from you. 'This/That' are singular, 'These/Those' are plural.",
-  
-  listeningExamples: [
-    "This is my book.",
-    "That is her car.",
-    "These are our friends."
-  ],
   
   speakingPractice: [
     { question: "What is this?", answer: "This is my phone." },
@@ -1093,12 +1073,6 @@ Example Sentences:
     { word: "Those", usage: "Far, plural", example: "Those are birds." }
   ],
   
-  listeningExamples: [
-    "This is my book.",
-    "That is her car.",
-    "These are our friends."
-  ],
-  
   speakingPractice: [
     { question: "What is this?", answer: "This is my phone." },
     { question: "What is that?", answer: "That is her house." },
@@ -1166,12 +1140,6 @@ Konu Anlatımı:
     { structure: "There isn't + uncountable noun", example: "There isn't milk in the fridge." }
   ],
   
-  listeningExamples: [
-    "There isn't a book on the table.",
-    "There aren't any cars in the garage.",
-    "There isn't water in the glass."
-  ],
-  
   speakingPractice: [
     { question: "Is there a book on the table?", answer: "No, there isn't a book on the table." },
     { question: "Is there a cat in the garden?", answer: "No, there isn't a cat in the garden." },
@@ -1235,12 +1203,6 @@ Are there any books in your bag? (Çantanda kitap var mı?)`,
     { structure: "Is there a + singular noun?", example: "Is there a pen on the desk?" },
     { structure: "Are there any + plural noun?", example: "Are there any books in your bag?" },
     { structure: "Is there + uncountable noun?", example: "Is there water in the glass?" }
-  ],
-  
-  listeningExamples: [
-    "Is there a pen on the desk?",
-    "Are there any books in your bag?",
-    "Is there water in the glass?"
   ],
   
   speakingPractice: [
@@ -1308,12 +1270,6 @@ Example Sentences:
     { structure: "There is + singular", example: "There is a dog in the garden." },
     { structure: "There are + plural", example: "There are flowers in the vase." },
     { structure: "There is + uncountable", example: "There is water in the glass." }
-  ],
-  
-  listeningExamples: [
-    "There is a book on the table.",
-    "There are two cars in the garage.",
-    "There is water in the glass."
   ],
   
   speakingPractice: [
@@ -1394,12 +1350,6 @@ Brush your teeth every day.`,
     { singular: "tooth", plural: "teeth", type: "Irregular", example: "I brush my teeth every day." }
   ],
   
-  listeningExamples: [
-    "There are cats on the roof.",
-    "The buses are in the city.",
-    "The babies are sleeping."
-  ],
-  
   speakingPractice: [
     { question: "What are on the roof?", answer: "There are cats on the roof." },
     { question: "What are in the city?", answer: "There are buses in the city." },
@@ -1475,12 +1425,6 @@ We have got a big house.`,
     { subject: "They", verb: "have got", example: "They have got a dog." }
   ],
   
-  listeningExamples: [
-    "I have got a new phone.",
-    "She has got two sisters.",
-    "We have got a big house."
-  ],
-  
   speakingPractice: [
     { question: "What do you have?", answer: "I have got a new car." },
     { question: "What has she got?", answer: "She has got a lovely dress." },
@@ -1553,12 +1497,6 @@ They haven't got any money.`,
     { subject: "They", verb: "haven't got", example: "They haven't got a house." }
   ],
   
-  listeningExamples: [
-    "I haven't got a car.",
-    "She hasn't got a sister.",
-    "They haven't got any money."
-  ],
-  
   speakingPractice: [
     { question: "Do you have a car?", answer: "No, I haven't got a car." },
     { question: "Has she got any brothers?", answer: "No, she hasn't got any brothers." },
@@ -1623,12 +1561,6 @@ Have they got any money?`,
   table: [
     { subject: "I/you/we/they", questionForm: "Have + subject + got?", example: "Have you got a pen?" },
     { subject: "He/she/it", questionForm: "Has + subject + got?", example: "Has she got a car?" }
-  ],
-  
-  listeningExamples: [
-    "Have you got a car?",
-    "Has she got a brother?",
-    "Have they got any money?"
   ],
   
   speakingPractice: [
@@ -1699,12 +1631,6 @@ They go to school by bus.`,
     { subject: "They", verb: "go", example: "They go to the park every morning." }
   ],
   
-  listeningExamples: [
-    "I play football on Sundays.",
-    "You like coffee.",
-    "We watch TV at night."
-  ],
-  
   speakingPractice: [
     { question: "What do you do on Sundays?", answer: "I play football on Sundays." },
     { question: "Do you like tea?", answer: "Yes, I like tea." },
@@ -1772,12 +1698,6 @@ He / She / It özneleriyle fiile -s veya -es eklenir.
     { subject: "He", verb: "watches", example: "He watches TV at night." }
   ],
   
-  listeningExamples: [
-    "He plays football on Sundays.",
-    "She likes coffee.",
-    "It works very well."
-  ],
-  
   speakingPractice: [
     { question: "What does he do on Sundays?", answer: "He plays football on Sundays." },
     { question: "Does she like tea?", answer: "Yes, she likes tea." },
@@ -1841,12 +1761,6 @@ They don't watch TV at night.`,
   table: [
     { subject: "I / You / We / They", negativeForm: "don't + verb", example: "We don't eat meat." },
     { subject: "He / She / It", negativeForm: "doesn't + verb", example: "She doesn't go to school on Sundays." }
-  ],
-  
-  listeningExamples: [
-    "I don't like coffee.",
-    "She doesn't play tennis.",
-    "They don't watch TV at night."
   ],
   
   speakingPractice: [
@@ -1923,12 +1837,6 @@ Do they work on Mondays? → Yes, they do. / No, they don't.`,
     { structure: "Answer: No, he/she/it doesn't.", example: "No, it doesn't." }
   ],
   
-  listeningExamples: [
-    "Do you play football?",
-    "Does she like coffee?",
-    "Do they watch TV at night?"
-  ],
-  
   speakingPractice: [
     { question: "Do you play football?", answer: "Yes, I do." },
     { question: "Does she like coffee?", answer: "Yes, she does." },
@@ -2000,12 +1908,6 @@ When do they study?`,
     { whWord: "Where", questionForm: "Where do/does + subject + verb?", example: "Where does she work?" },
     { whWord: "Who", questionForm: "Who + verb (+s)?", example: "Who cooks dinner?" },
     { whWord: "When", questionForm: "When do/does + subject + verb?", example: "When do they visit their grandparents?" }
-  ],
-  
-  listeningExamples: [
-    "What do you eat for breakfast?",
-    "Where does she live?",
-    "Who plays football in your team?"
   ],
   
   speakingPractice: [
@@ -2084,12 +1986,6 @@ Yardımcı fiil varsa, sıklık zarfı yardımcı fiilden sonra gelir.
     { adverb: "Usually", meaning: "Genellikle", example: "She usually drinks tea in the morning." },
     { adverb: "Sometimes", meaning: "Bazen", example: "We sometimes go to the cinema." },
     { adverb: "Never", meaning: "Asla", example: "He never eats fast food." }
-  ],
-  
-  listeningExamples: [
-    "I always eat breakfast at home.",
-    "She usually drinks tea in the morning.",
-    "We sometimes go to the cinema."
   ],
   
   speakingPractice: [
@@ -2352,12 +2248,6 @@ Cevap: Yes, I can. / No, I can't.`,
     { type: "Cevap", form: "Yes, I can. / No, I can't.", example: "Yes, I can play the piano." }
   ],
   
-  listeningExamples: [
-    "I can swim very well.",
-    "She can't drive a car.",
-    "Can you speak English?"
-  ],
-  
   speakingPractice: [
     { 
       question: "Can you swim?", 
@@ -2556,12 +2446,6 @@ Cevap: Yes, you can. / No, you can't.`,
     { subject: "They", affirmative: "They can use the computer.", negative: "They can't use the computer.", question: "Can they use the computer?", answer: "Yes, they can. / No, they can't." }
   ],
   
-  listeningExamples: [
-    "Can I sit here?",
-    "You can use my phone.",
-    "No, you can't park here."
-  ],
-  
   speakingPractice: [
     { 
       question: "Can I sit here?", 
@@ -2662,12 +2546,6 @@ He hates running. (O koşmaktan nefret eder.)`,
     { verb: "Love", usage: "Subject + love + verb-ing", example: "She loves cooking." },
     { verb: "Hate", usage: "Subject + hate + verb-ing", example: "He hates running." },
     { verb: "Don't like", usage: "Subject + don't/doesn't like + verb-ing", example: "They don't like swimming." }
-  ],
-  
-  listeningExamples: [
-    "I like reading books.",
-    "She loves cooking.",
-    "He hates running."
   ],
   
   speakingPractice: [
@@ -2817,12 +2695,6 @@ How many apples do you want? → "Kaç tane elma istersin?"`,
     { type: "How many", use: "Countable nouns", example: "How many books are on the table?" }
   ],
   
-  listeningExamples: [
-    "How much water do you drink?",
-    "How many brothers do you have?",
-    "How much sugar do you take in your tea?"
-  ],
-  
   speakingPractice: [
     { question: "How much water do you drink every day?", answer: "I drink about two liters of water every day." },
     { question: "How many brothers do you have?", answer: "I have two brothers." },
@@ -2883,12 +2755,6 @@ const MODULE_26_DATA = {
     { type: "Polite", form: "Please + base verb", example: "Please sit down." }
   ],
   
-  listeningExamples: [
-    "Turn off the lights.",
-    "Don't run in the hallway.",
-    "Please sit down."
-  ],
-  
   speakingPractice: [
     { question: "What's an imperative for opening a door?", answer: "Open the door." },
     { question: "How do you tell someone to close their book?", answer: "Close your book." },
@@ -2946,12 +2812,6 @@ const MODULE_27_DATA = {
     { subject: "I", form: "am + verb-ing", example: "I am studying." },
     { subject: "He/She/It", form: "is + verb-ing", example: "She is watching TV." },
     { subject: "We/You/They", form: "are + verb-ing", example: "They are playing football." }
-  ],
-  
-  listeningExamples: [
-    "I am reading a book.",
-    "She is cooking dinner.",
-    "They are playing football."
   ],
   
   speakingPractice: [
@@ -3018,12 +2878,6 @@ They aren't playing football. (Onlar futbol oynamıyor.)
     { subject: "We/You/They", form: "are not/aren't + verb-ing", example: "They aren't sleeping." }
   ],
   
-  listeningExamples: [
-    "I'm not playing football.",
-    "She isn't cooking dinner.",
-    "They aren't studying now."
-  ],
-  
   speakingPractice: [
     { question: "Are you watching TV?", answer: "No, I'm not watching TV." },
     { question: "Is she eating lunch?", answer: "No, she isn't eating lunch." },
@@ -3087,12 +2941,6 @@ Yes, they are. / No, they aren't.`,
     { question: "What + be + subject + verb-ing?", example: "What are they doing?" }
   ],
   
-  listeningExamples: [
-    "Are you watching TV?",
-    "Is she working?",
-    "What are they doing?"
-  ],
-  
   speakingPractice: [
     { question: "Are you studying now?", answer: "Yes, I am." },
     { question: "Is she cooking dinner?", answer: "Yes, she is." },
@@ -3153,12 +3001,6 @@ Present Continuous → Özne + am/is/are + fiil-ing`,
   table: [
     { tense: "Present Simple", use: "Habits/Facts", example: "I go to school every day." },
     { tense: "Present Continuous", use: "Now/Temporary", example: "I am studying now." }
-  ],
-  
-  listeningExamples: [
-    "I go to school every day.",
-    "She plays the piano.",
-    "I am studying now."
   ],
   
   speakingPractice: [
@@ -3225,12 +3067,6 @@ Olumsuz:
     { verb: "hate", structure: "Subject + hate + verb-ing", example: "They hate waking up early." }
   ],
   
-  listeningExamples: [
-    "I like reading books.",
-    "She loves cooking.",
-    "They hate waking up early."
-  ],
-  
   speakingPractice: [
     { question: "Do you like reading books?", answer: "Yes, I like reading books." },
     { question: "Do you love watching movies?", answer: "Yes, I love watching movies." },
@@ -3295,12 +3131,6 @@ Uzak için → that / those`,
     { demonstrative: "Those", use: "Plural, far", example: "Those are my books." }
   ],
   
-  listeningExamples: [
-    "This is my bag.",
-    "That is your house.",
-    "These are my classmates."
-  ],
-  
   speakingPractice: [
     { question: "What is this?", answer: "This is my phone." },
     { question: "What is that?", answer: "That is a mountain." },
@@ -3358,12 +3188,6 @@ That is the teacher's pen. → Bu öğretmenin kalemi.`,
   table: [
     { form: "Whose + noun", use: "Ask about possession", example: "Whose car is this?" },
     { form: "Noun + 's", use: "Show possession", example: "This is my friend's house." }
-  ],
-  
-  listeningExamples: [
-    "Whose shoes are these?",
-    "This is my sister's bag.",
-    "That's Jenny's hat."
   ],
   
   speakingPractice: [
@@ -3432,12 +3256,6 @@ const MODULE_34_DATA = {
     { word: "How", asks: "Manner/Way", example: "How are you?" }
   ],
   
-  listeningExamples: [
-    "Who is your best friend?",
-    "What is your favorite color?",
-    "Where do you live?"
-  ],
-  
   speakingPractice: [
     { question: "Who is your best friend?", answer: "My best friend is Ayşe." },
     { question: "What is your favorite color?", answer: "My favorite color is blue." },
@@ -3498,12 +3316,6 @@ Soru yapıları:
     { number: "2nd", ordinal: "second", example: "Monday is the second day." },
     { number: "3rd", ordinal: "third", example: "March is the third month." },
     { number: "4th", ordinal: "fourth", example: "Thursday is the fourth day." }
-  ],
-  
-  listeningExamples: [
-    "Today is the first of September.",
-    "My birthday is on the twenty-second of July.",
-    "October is the tenth month of the year."
   ],
   
   speakingPractice: [
@@ -3571,12 +3383,6 @@ Soru örnekleri:
     { time: "8:45", expression: "quarter to nine", example: "It's quarter to 9." }
   ],
   
-  listeningExamples: [
-    "It's 3 o'clock.",
-    "It's half past 4.",
-    "It's quarter past 7."
-  ],
-  
   speakingPractice: [
     { question: "What time is it?", answer: "It's 3 o'clock." },
     { question: "What time is it now?", answer: "It's half past 4." },
@@ -3634,12 +3440,6 @@ const MODULE_37_DATA = {
   table: [
     { type: "Short adjectives", rule: "adjective + -er + than", example: "She is taller than me." },
     { type: "Long adjectives", rule: "more + adjective + than", example: "This book is more interesting." }
-  ],
-  
-  listeningExamples: [
-    "My house is bigger than yours.",
-    "English is easier than Chinese.",
-    "A car is more expensive than a bicycle."
   ],
   
   speakingPractice: [
@@ -3701,12 +3501,6 @@ const MODULE_38_DATA = {
     { type: "Short adjectives", rule: "the + adjective + -est", example: "She is the tallest girl in class." },
     { type: "Long adjectives", rule: "the + most + adjective", example: "This is the most beautiful place." },
     { type: "Irregular adjectives", rule: "Special forms", example: "He is the best player on the team." }
-  ],
-  
-  listeningExamples: [
-    "This is the biggest house in the neighborhood.",
-    "She is the most talented singer in the competition.",
-    "Mount Everest is the highest mountain in the world."
   ],
   
   speakingPractice: [
@@ -3772,12 +3566,6 @@ const MODULE_39_DATA = {
     { form: "Question", structure: "Am/Is/Are + subject + going to + verb?", example: "Are you going to eat? / What are they going to do?" }
   ],
   
-  listeningExamples: [
-    "I am going to visit my cousin.",
-    "She is going to watch a movie.",
-    "They are going to travel to Italy."
-  ],
-  
   speakingPractice: [
     { question: "What are you going to do tomorrow?", answer: "I'm going to visit my cousin." },
     { question: "Are you going to watch a movie tonight?", answer: "Yes, I'm going to watch a comedy." },
@@ -3838,12 +3626,6 @@ Yapı:
     { form: "Positive", structure: "I would like some tea. / She wants to watch a movie.", example: "I would like some water, please." },
     { form: "Negative", structure: "I wouldn't like fish. / I don't want pizza.", example: "I wouldn't like fish for dinner." },
     { form: "Question", structure: "Would you like a coffee? / What do you want to eat?", example: "Would you like to come with us?" }
-  ],
-  
-  listeningExamples: [
-    "I would like some water, please.",
-    "She wants to watch a movie.",
-    "Would you like to come with us?"
   ],
   
   speakingPractice: [
@@ -3910,12 +3692,6 @@ Mustn't → yasak veya yapılmaması gereken bir şeyi gösterir.
     { form: "Question", structure: "Must + subject + base verb?", example: "Must we leave now?" }
   ],
   
-  listeningExamples: [
-    "You must do your homework.",
-    "Students must listen to the teacher.",
-    "You mustn't use your phone in class."
-  ],
-  
   speakingPractice: [
     { question: "What must you do every day?", answer: "I must brush my teeth." },
     { question: "What mustn't you do in the library?", answer: "I mustn't speak loudly." },
@@ -3978,12 +3754,6 @@ const MODULE_42_DATA = {
     { form: "Positive", structure: "Subject + have/has to + verb", example: "I have to finish my homework." },
     { form: "Negative", structure: "Subject + don't/doesn't have to + verb", example: "You don't have to come." },
     { form: "Question", structure: "Do/Does + subject + have to + verb?", example: "Do you have to wake up early?" }
-  ],
-  
-  listeningExamples: [
-    "I have to study for my exam.",
-    "You don't have to wear a tie.",
-    "She has to help her mom."
   ],
   
   speakingPractice: [
@@ -4050,12 +3820,6 @@ Sıklık zarfları (frequency adverbs):
     { structure: "For he/she/it: verb + -s", example: "She gets up at 7.", note: "Third person singular" }
   ],
   
-  listeningExamples: [
-    "I wake up at 7 o'clock.",
-    "She brushes her teeth every morning.",
-    "They go to school at 8."
-  ],
-  
   speakingPractice: [
     { question: "What time do you wake up?", answer: "I wake up at 7 o'clock." },
     { question: "Do you brush your teeth every morning?", answer: "Yes, I brush my teeth every morning." },
@@ -4116,12 +3880,6 @@ Mesleklerle ilgili sorular:
     { question: "What do you do?", answer: "I'm a (job).", example: "I'm a teacher." },
     { question: "What does he/she do?", answer: "He/She is a (job).", example: "She's a nurse." },
     { question: "Where does he/she work?", answer: "He/She works in/at (place).", example: "He works in a hospital." }
-  ],
-  
-  listeningExamples: [
-    "I'm a doctor.",
-    "She's a nurse.",
-    "He's a firefighter."
   ],
   
   speakingPractice: [
@@ -4185,12 +3943,6 @@ Kullanışlı sorular:
     { question: "What's your favorite food?", answer: "My favorite food is pizza.", usage: "For preferences" },
     { question: "Do you like + food/drink?", answer: "Yes, I do. / No, I don't.", usage: "Yes/No questions" },
     { question: "What do you usually eat/drink?", answer: "I usually eat eggs. / I usually drink water.", usage: "For habits" }
-  ],
-  
-  listeningExamples: [
-    "My favorite food is pizza.",
-    "I usually eat eggs and bread for breakfast.",
-    "I like vegetables."
   ],
   
   speakingPractice: [
@@ -4257,12 +4009,6 @@ Kullanışlı Sorular:
     { question: "Who is your mother's mother?", answer: "She is my grandmother.", usage: "Family relationships" },
     { question: "Do you have any cousins?", answer: "Yes, I do.", usage: "Yes/No questions" },
     { question: "How many people are there in your family?", answer: "There are five people.", usage: "Counting family" }
-  ],
-  
-  listeningExamples: [
-    "My father is a doctor.",
-    "She is my grandmother.",
-    "I have three cousins."
   ],
   
   speakingPractice: [
@@ -4333,12 +4079,6 @@ bank (banka), supermarket (market), hospital (hastane), school (okul), post offi
     { answer: "It's next to … / It's opposite … / It's between …", example: "It's next to the supermarket.", usage: "Giving location" }
   ],
   
-  listeningExamples: [
-    "Where is the nearest bank? → It's next to the supermarket.",
-    "How can I get to the police station? → Turn right at the traffic lights.",
-    "The restaurant is opposite the bank."
-  ],
-  
   speakingPractice: [
     { question: "Where is the nearest bank?", answer: "It's next to the supermarket." },
     { question: "How do I get to the post office?", answer: "Go straight and turn left." },
@@ -4403,12 +4143,6 @@ Kullanışlı ifadeler:
     { structure: "It's going to + weather word", example: "It's going to snow tomorrow.", usage: "Future weather" }
   ],
   
-  listeningExamples: [
-    "What's the weather like today? → It's sunny and warm.",
-    "It's cold in winter.",
-    "It's going to rain tomorrow."
-  ],
-  
   speakingPractice: [
     { question: "What's the weather like today?", answer: "It's sunny and warm." },
     { question: "Do you like rainy weather?", answer: "No, I don't like the rain." },
@@ -4469,12 +4203,6 @@ Kullanışlı sorular:
     { question: "What are you wearing?", answer: "I'm wearing jeans.", usage: "Current clothing" },
     { structure: "He/She is wearing + clothing item", example: "She is wearing a red dress.", usage: "Describing others" },
     { question: "Do you wear + clothing item?", answer: "Do you wear a jacket in winter?", usage: "General habits" }
-  ],
-  
-  listeningExamples: [
-    "I'm wearing a white T-shirt.",
-    "She is wearing a red dress.",
-    "I wear a coat in winter."
   ],
   
   speakingPractice: [
@@ -4542,12 +4270,6 @@ Kullanışlı Sorular:
     { question: "What's your favorite hobby?", answer: "My favorite hobby is painting.", usage: "Asking about preferences" }
   ],
   
-  listeningExamples: [
-    "I like reading books.",
-    "She enjoys cooking in her free time.",
-    "We play football every weekend."
-  ],
-  
   speakingPractice: [
     { question: "What do you do in your free time?", answer: "I read books or listen to music." },
     { question: "Do you have any hobbies?", answer: "Yes, I enjoy painting." },
@@ -4613,12 +4335,6 @@ Use the past simple affirmative to describe actions that happened at a specific 
     { subject: "She", verb: "went", rest: "to school.", example: "She went to school." },
     { subject: "They", verb: "cooked", rest: "pasta.", example: "They cooked pasta." },
     { subject: "We", verb: "cleaned", rest: "the room.", example: "We cleaned the room." }
-  ],
-  
-  listeningExamples: [
-    "I visited my grandparents.",
-    "She went to the supermarket.",
-    "They watched a comedy."
   ],
   
   speakingPractice: [
@@ -4690,12 +4406,6 @@ Past Simple affirmative is used to describe completed past actions. Irregular ve
     { baseForm: "run", pastSimple: "ran", turkish: "koşmak", example: "He ran in the park." }
   ],
   
-  listeningExamples: [
-    "I wrote a book two days ago.",
-    "She gave a gift an hour ago.",
-    "We read the book last Monday."
-  ],
-  
   speakingPractice: [
     { question: "What did I write two days ago?", answer: "I wrote a book two days ago." },
     { question: "What did she give an hour ago?", answer: "She gave a gift an hour ago." },
@@ -4759,12 +4469,6 @@ Never use V2 in negative sentences.`,
     { subject: "He", auxiliary: "didn't", verb: "write", object: "a letter", example: "He didn't write a letter." },
     { subject: "She", auxiliary: "didn't", verb: "go", object: "to the park", example: "She didn't go to the park." },
     { subject: "They", auxiliary: "didn't", verb: "take", object: "the test", example: "They didn't take the test." }
-  ],
-  
-  listeningExamples: [
-    "I didn't go to school yesterday.",
-    "She didn't eat breakfast.",
-    "They didn't see the movie."
   ],
   
   speakingPractice: [
@@ -4837,12 +4541,6 @@ Yapı: Wh- kelimesi + did + özne + fiil (V1)?
     { questionType: "Wh-", structure: "Wh- + did + subject + V1 + ...?", example: "What did they eat?", answer: "They ate lunch." }
   ],
   
-  listeningExamples: [
-    "Did he see a friend a minute ago?",
-    "What did we speak about last week?",
-    "Where did we find the gift last night?"
-  ],
-  
   speakingPractice: [
     { question: "Did he see a friend a minute ago?", answer: "Yes, he did. He saw a friend a minute ago." },
     { question: "Did he leave a letter two days ago?", answer: "Yes, he did. He left a letter two days ago." },
@@ -4906,12 +4604,6 @@ Question: Did you use to watch cartoons?`,
     { sentenceType: "Affirmative", structure: "Subject + used to + V1", example: "I used to smoke." },
     { sentenceType: "Negative", structure: "Subject + didn't use to + V1", example: "I didn't use to smoke." },
     { sentenceType: "Question", structure: "Did + subject + use to + V1?", example: "Did you use to smoke?" }
-  ],
-  
-  listeningExamples: [
-    "I used to play with toys all the time.",
-    "She used to go to ballet every Saturday.",
-    "They used to live in a big house near the park."
   ],
   
   speakingPractice: [
@@ -4979,12 +4671,6 @@ Responses: Yes, please. That would be great. / No, thank you. I'm fine.`,
     { sentenceType: "Response", structure: "Yes/No + polite reply", example: "Yes, please. / No, thank you." }
   ],
   
-  listeningExamples: [
-    "Would you like some coffee?",
-    "Would you help me with this box?",
-    "Would you close the window, please?"
-  ],
-  
   speakingPractice: [
     { question: "Would you like some coffee?", answer: "Yes, please. I'd love some." },
     { question: "Would you like a glass of water?", answer: "No, thank you. I'm not thirsty." },
@@ -5050,12 +4736,6 @@ Be going to (plans / evidence-based predictions): I am going to visit my aunt. /
     { tense: "Be Going To (Aff.)", structure: "Subject + be + going to + verb", example: "I'm going to study." },
     { tense: "Be Going To (Neg.)", structure: "Subject + be + not + going to + V", example: "We're not going to travel." },
     { tense: "Be Going To (Ques.)", structure: "Be + subject + going to + verb?", example: "Are you going to eat?" }
-  ],
-  
-  listeningExamples: [
-    "I'm going to visit my grandparents.",
-    "I'll help you.",
-    "Are you going to study tonight?"
   ],
   
   speakingPractice: [
@@ -5126,12 +4806,6 @@ Yapı: Subject + will be + verb-ing
     { tense: "", exampleAff: "They will be traveling.", exampleNeg: "They will not be traveling.", exampleQuestion: "Will they be traveling?" }
   ],
   
-  listeningExamples: [
-    "I will be watching a documentary.",
-    "They will be going to the countryside.",
-    "He will be arriving at 6 PM."
-  ],
-  
   speakingPractice: [
     { question: "What will you be doing at 10 PM tonight?", answer: "I will be watching a documentary." },
     { question: "Will she be attending the meeting tomorrow?", answer: "Yes, she will be attending the meeting." },
@@ -5195,12 +4869,6 @@ Yapı: Subject + have/has + V3 (fiilin 3. hali)
     { tense: "Present Perfect", affirmative: "I have visited London.", negative: "I have never visited London.", question: "Have you ever visited London?" },
     { tense: "", affirmative: "She has tried sushi.", negative: "She has never tried sushi.", question: "Has she ever tried sushi?" },
     { tense: "", affirmative: "They have seen that movie.", negative: "They have never seen that movie.", question: "Have they ever seen that movie?" }
-  ],
-  
-  listeningExamples: [
-    "I have climbed Mount Erciyes.",
-    "She has never eaten octopus.",
-    "Have you ever met a celebrity?"
   ],
   
   speakingPractice: [
@@ -5270,12 +4938,6 @@ Yapı:
     { type: "yet (negative)", structure: "haven't/hasn't + V3 + yet", example: "I haven't seen it yet." }
   ],
   
-  listeningExamples: [
-    "I have already finished my homework.",
-    "Have you called your friend yet?",
-    "I have just arrived home."
-  ],
-  
   speakingPractice: [
     { question: "Have you already finished your homework?", answer: "Yes, I have already finished my homework." },
     { question: "Have you called your friend yet?", answer: "No, I haven't called my friend yet." },
@@ -5340,12 +5002,6 @@ Yapı:
     { timeWord: "since", usage: "+ starting point", example: "She has worked here since 2015." },
     { timeWord: "for", usage: "+ duration", example: "They have been married for 5 years." },
     { timeWord: "since", usage: "+ specific time", example: "We have known each other since childhood." }
-  ],
-  
-  listeningExamples: [
-    "I have known my best friend since 2010.",
-    "I have lived in this city for 5 years.",
-    "She has worked here since June."
   ],
   
   speakingPractice: [
@@ -5414,12 +5070,6 @@ Past Simple için zaman ifadeleri: yesterday, last year, in 2020, two days ago, 
     { tense: "Past Simple", example: "She worked here in 2010.", explanation: "Geçmişte tamamlanmış" }
   ],
   
-  listeningExamples: [
-    "I have visited London before.",
-    "I visited London in 2023.",
-    "Have you ever eaten sushi?"
-  ],
-  
   speakingPractice: [
     { question: "Have you ever visited London?", answer: "Yes, I have visited London before." },
     { question: "Did you visit London last year?", answer: "Yes, I visited London in 2023." },
@@ -5486,12 +5136,6 @@ Enough → Yeterli miktarda anlamına gelir. Olumlu veya olumsuz olabilir.
     { structure: "too + adjective + to", example: "The bag is too heavy to carry.", turkish: "Çanta taşımak için çok ağır." }
   ],
   
-  listeningExamples: [
-    "The soup was too salty.",
-    "It's too heavy for him.",
-    "We have enough space for everyone."
-  ],
-  
   speakingPractice: [
     { question: "Why didn't she eat the soup?", answer: "Because it was too salty." },
     { question: "Can he lift that box?", answer: "No, it's too heavy for him." },
@@ -5554,12 +5198,6 @@ Such → Bir isimle birlikte kullanılır, genellikle önünde sıfat olur.
     { structure: "so + adverb", example: "They arrived so early.", turkish: "Çok erken geldiler." },
     { structure: "such + adj + noun", example: "It was such a cold night.", turkish: "O kadar soğuk bir geceydi ki." },
     { structure: "such + adj + noun", example: "She has such nice friends.", turkish: "Çok hoş arkadaşları var." }
-  ],
-  
-  listeningExamples: [
-    "She is such a good teacher.",
-    "The concert was so exciting!",
-    "It was such an amazing movie."
   ],
   
   speakingPractice: [
@@ -5631,12 +5269,6 @@ Yapı:
     { type: "Ought to", structure: "S + ought to + base verb", example: "You ought to apologize." }
   ],
   
-  listeningExamples: [
-    "You should see a doctor.",
-    "He should be more responsible.",
-    "Should we leave now?"
-  ],
-  
   speakingPractice: [
     { question: "What should I do if I'm sick?", answer: "You should see a doctor." },
     { question: "Should he be more responsible?", answer: "Yes, he should be more responsible." },
@@ -5701,12 +5333,6 @@ Yapı (Structure): Özne + could + fiil
     { subject: "She", could: "could", baseVerb: "be", exampleSentence: "She could be late." },
     { subject: "We", could: "could", baseVerb: "go", exampleSentence: "We could go to the cinema." },
     { subject: "They", could: "could", baseVerb: "arrive", exampleSentence: "They could arrive early." }
-  ],
-  
-  listeningExamples: [
-    "It could rain tomorrow.",
-    "She could be at the office now.",
-    "We could visit them next week."
   ],
   
   speakingPractice: [
@@ -5779,12 +5405,6 @@ Yapı (Structure): Özne + may/might + fiil
     { subject: "He", modal: "might", baseVerb: "call", exampleSentence: "He might call you." }
   ],
   
-  listeningExamples: [
-    "May I use your phone?",
-    "It might rain later.",
-    "They may visit us tomorrow."
-  ],
-  
   speakingPractice: [
     { question: "May I use your phone?", answer: "Yes, you may." },
     { question: "What might happen if it rains?", answer: "We might cancel the picnic." },
@@ -5839,7 +5459,6 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
   const [isTeacherReading, setIsTeacherReading] = useState(false);
   const [readingComplete, setReadingComplete] = useState(false);
   const [hasBeenRead, setHasBeenRead] = useState<Record<string, boolean>>({});
-  const [listeningIndex, setListeningIndex] = useState(0);
   const [speakingIndex, setSpeakingIndex] = useState(0);
   const [isHydrated, setIsHydrated] = useState(false);
   
@@ -6479,14 +6098,6 @@ Can I get a refund? - Para iadesi alabilir miyim?`,
     { en: "Can I get a refund?", tr: "Para iadesi alabilir miyim?" },
   ],
 
-  listeningExamples: [
-    "Customer: How much does this cost?",
-    "Shop assistant: It's $25.",
-    "Customer: Can I pay by card?",
-    "Shop assistant: Sure. The cashier is over there.",
-    "Customer: Do you have this in a different color?",
-  ],
-
   speakingPractice: [
     { question: "Ask the price of a jacket.", answer: "How much is this?" },
     { question: "Ask if you can try on a dress.", answer: "Can I try this on?" },
@@ -6571,14 +6182,6 @@ stay in bed - yatakta kal`,
     { en: "get some rest", tr: "biraz dinlen" },
     { en: "go to the doctor", tr: "doktora git" },
     { en: "stay in bed", tr: "yatakta kal" },
-  ],
-
-  listeningExamples: [
-    "I have a headache.",
-    "You should take an aspirin.",
-    "He has a sore throat.",
-    "She should drink warm tea.",
-    "I feel terrible.",
   ],
 
   speakingPractice: [
@@ -6671,14 +6274,6 @@ boarding pass - biniş kartı`,
     { en: "luggage / baggage", tr: "bagaj" },
     { en: "check-in", tr: "giriş işlemi" },
     { en: "boarding pass", tr: "biniş kartı" },
-  ],
-
-  listeningExamples: [
-    "I'm going to the airport by taxi.",
-    "What time does the train leave?",
-    "I bought a plane ticket to Paris.",
-    "The bus is delayed.",
-    "Where is platform 5?",
   ],
 
   speakingPractice: [
@@ -6777,14 +6372,6 @@ washing machine - çamaşır makinesi`,
     { en: "washing machine", tr: "çamaşır makinesi" },
   ],
 
-  listeningExamples: [
-    "My bed is in the bedroom.",
-    "We eat in the dining room.",
-    "There is a sofa and a TV in the living room.",
-    "The fridge is in the kitchen.",
-    "I have a big mirror in my room.",
-  ],
-
   speakingPractice: [
     { question: "What does \"living room\" mean in Turkish?", answer: "It means \"oturma odası\"." },
     { question: "Can you use \"bedroom\" in a sentence?", answer: "Yes, for example: I saw a bedroom yesterday." },
@@ -6869,14 +6456,6 @@ send / receive a message - mesaj göndermek / almak`,
     { en: "download / upload", tr: "indirmek / yüklemek" },
     { en: "connect to Wi-Fi", tr: "Wi-Fi'ye bağlanmak" },
     { en: "send / receive a message", tr: "mesaj göndermek / almak" },
-  ],
-
-  listeningExamples: [
-    "I use my laptop for online classes.",
-    "Can you turn off the computer?",
-    "I forgot my charger.",
-    "She is downloading a new app.",
-    "I can't connect to the internet.",
   ],
 
   speakingPractice: [
@@ -6969,14 +6548,6 @@ fail / pass - kalmak / geçmek`,
     { en: "give a presentation", tr: "sunum yapmak" },
     { en: "get good grades", tr: "iyi notlar almak" },
     { en: "fail / pass", tr: "kalmak / geçmek" },
-  ],
-
-  listeningExamples: [
-    "I study English every day.",
-    "She is doing her homework now.",
-    "We have a math exam tomorrow.",
-    "He asked a question in class.",
-    "I got a good grade in science.",
   ],
 
   speakingPractice: [
@@ -7075,12 +6646,6 @@ Decoration - Süsleme`,
     { en: "Decoration", tr: "Süsleme" },
   ],
 
-  listeningExamples: [
-    "This is a Festival.",
-    "This is a Celebration.",
-    "This is a Parade.",
-  ],
-
   speakingPractice: [
     { question: "What does \"Festival\" mean in Turkish?", answer: "It means \"Festival\"." },
     { question: "Can you use \"Celebration\" in a sentence?", answer: "Yes, for example: I saw a Celebration yesterday." },
@@ -7175,12 +6740,6 @@ Disappointed - Hayal kırıklığına uğramış`,
     { en: "Grateful", tr: "Minnettar" },
     { en: "Hopeful", tr: "Umutlu" },
     { en: "Disappointed", tr: "Hayal kırıklığına uğramış" },
-  ],
-
-  listeningExamples: [
-    "This is a Happy.",
-    "This is a Sad.",
-    "This is a Angry.",
   ],
 
   speakingPractice: [
@@ -7279,12 +6838,6 @@ Sunshine - Güneş ışığı`,
     { en: "Sunshine", tr: "Güneş ışığı" },
   ],
 
-  listeningExamples: [
-    "This is a Nature.",
-    "This is a Environment.",
-    "This is a Forest.",
-  ],
-
   speakingPractice: [
     { question: "What does \"Nature\" mean in Turkish?", answer: "It means \"Doğa\"." },
     { question: "Can you use \"Environment\" in a sentence?", answer: "Yes, for example: I saw a Environment yesterday." },
@@ -7379,12 +6932,6 @@ Piano - Piyano`,
     { en: "Instrument", tr: "Enstrüman" },
     { en: "Guitar", tr: "Gitar" },
     { en: "Piano", tr: "Piyano" },
-  ],
-
-  listeningExamples: [
-    "This is a Movie.",
-    "This is a Film.",
-    "This is a Actor.",
   ],
 
   speakingPractice: [
@@ -7483,12 +7030,6 @@ Creative - Yaratıcı`,
     { en: "Creative", tr: "Yaratıcı" },
   ],
 
-  listeningExamples: [
-    "This is a Tall.",
-    "This is a Short.",
-    "This is a Slim.",
-  ],
-
   speakingPractice: [
     { question: "What does \"Tall\" mean in Turkish?", answer: "It means \"Uzun boylu\"." },
     { question: "Can you use \"Short\" in a sentence?", answer: "Yes, for example: I saw a Short yesterday." },
@@ -7583,12 +7124,6 @@ Lake - Göl`,
     { en: "River", tr: "Nehir" },
     { en: "Beach", tr: "Sahil" },
     { en: "Lake", tr: "Göl" },
-  ],
-
-  listeningExamples: [
-    "This is a City.",
-    "This is a Town.",
-    "This is a Village.",
   ],
 
   speakingPractice: [
@@ -7687,12 +7222,6 @@ Instructions - Talimatlar`,
     { en: "Instructions", tr: "Talimatlar" },
   ],
 
-  listeningExamples: [
-    "This is a Turn left.",
-    "This is a Turn right.",
-    "This is a Go straight.",
-  ],
-
   speakingPractice: [
     { question: "What does \"Turn left\" mean in Turkish?", answer: "It means \"Sola dön\"." },
     { question: "Can you use \"Turn right\" in a sentence?", answer: "Yes, for example: I saw a Turn right yesterday." },
@@ -7771,14 +7300,6 @@ Has he been working out recently?
 We haven't been sleeping well lately.`,
   tip: "Use have/has + been + verb-ing for ongoing actions",
   
-  listeningExamples: [
-    "I've been learning English for three years.",
-    "She has been cooking since this morning.",
-    "They've been arguing all day.",
-    "Has he been working out recently?",
-    "We haven't been sleeping well lately."
-  ],
-  
   speakingPractice: [
     { question: "Why are your hands dirty?", answer: "Because I've been fixing my bike." },
     { question: "Have you been studying for the exam?", answer: "Yes, I've been studying every evening this week." },
@@ -7852,14 +7373,6 @@ I had studied French before I moved to Paris.
 The train had left before we reached the station.`,
   tip: "Use had + past participle to show an action completed before another past action",
   
-  listeningExamples: [
-    "She had already gone to bed when I called her.",
-    "We had eaten dinner by the time they arrived.", 
-    "He had never seen the sea before that day.",
-    "I had studied French before I moved to Paris.",
-    "The train had left before we reached the station."
-  ],
-  
   speakingPractice: [
     { question: "What had you done before the guests arrived?", answer: "I had cleaned the whole house." },
     { question: "Had she already finished her meal before you arrived?", answer: "Yes, she had finished it." },
@@ -7932,13 +7445,6 @@ Examples:
 •    They hadn't cleaned the house before the guests arrived.
 •    He hadn't heard the news before you told him.`,
   tip: "Use hadn't + past participle for negative past perfect",
-  listeningExamples: [
-    "I hadn't seen that movie before last night.",
-    "She hadn't met him until the party.",
-    "We hadn't finished our homework when the teacher came.",
-    "They hadn't cleaned the house before the guests arrived.",
-    "He hadn't heard the news before you told him."
-  ],
   speakingPractice: [
     { question: "Why was she surprised?", answer: "Because she hadn't expected them to arrive early." },
     { question: "Had you eaten before the show?", answer: "No, I hadn't eaten anything all day." },
@@ -8010,13 +7516,6 @@ Had they cleaned the house before the guests came?
 Had he told you the truth before you found out?
 Had you heard the news before I called?`,
   tip: "Use Had + subject + past participle for questions",
-  listeningExamples: [
-    "Had she ever traveled abroad before 2020?",
-    "Had you studied English before moving to Canada?",
-    "Had they cleaned the house before the guests came?",
-    "Had he told you the truth before you found out?",
-    "Had you heard the news before I called?"
-  ],
   speakingPractice: [
     { question: "Had she met your parents before the wedding?", answer: "Yes, she had met them a few months before." },
     { question: "Had you finished your homework before dinner?", answer: "Yes, I had completed everything." },
@@ -8088,13 +7587,6 @@ I had been reading that book for weeks before I finished it.
 She had been feeling sick all day before she went to the doctor.
 We had been walking for miles when we finally found a café.`,
   tip: "Use had been + verb-ing for ongoing past actions before another past point",
-  listeningExamples: [
-    "He had been living in Berlin before he moved to London.",
-    "They had been playing football for two hours before it got dark.",
-    "I had been reading that book for weeks before I finished it.",
-    "She had been feeling sick all day before she went to the doctor.",
-    "We had been walking for miles when we finally found a café."
-  ],
   speakingPractice: [
     { question: "What had you been doing before I arrived?", answer: "I had been cleaning the house." },
     { question: "Why were you tired last night?", answer: "I had been studying for five hours." },
@@ -8166,13 +7658,6 @@ You will have finished your homework before dinner.
 He will have left work by 6 p.m.
 We will have cleaned the house before the guests arrive.`,
   tip: "Use will have + past participle for actions completed before a future point",
-  listeningExamples: [
-    "By 2026, I will have completed my master's degree.",
-    "They will have arrived by the time the movie starts.",
-    "You will have finished your homework before dinner.",
-    "He will have left work by 6 p.m.",
-    "We will have cleaned the house before the guests arrive."
-  ],
   speakingPractice: [
     { question: "Will you have finished the project by Friday?", answer: "Yes, I will have completed it by then." },
     { question: "What will you have done by the end of this year?", answer: "I will have traveled to three different countries." },
@@ -8242,14 +7727,6 @@ She will have completed the report by 3 p.m. (Future Perfect)
 They will be watching a movie at 9 p.m. (Future Continuous)
 They will have watched the movie by 11 p.m. (Future Perfect)`,
   tip: "Future Continuous for ongoing actions, Future Perfect for completed actions",
-  listeningExamples: [
-    "This time next week, I will be lying on the beach.",
-    "By next week, I will have finished all my exams.",
-    "She will be working at 3 p.m.",
-    "She will have completed the report by 3 p.m.",
-    "They will be watching a movie at 9 p.m.",
-    "They will have watched the movie by 11 p.m."
-  ],
   speakingPractice: [
     { question: "What will you be doing at 8 a.m. tomorrow?", answer: "I will be having breakfast." },
     { question: "What will you have done by 8 a.m. tomorrow?", answer: "I will have finished my workout." },
@@ -8325,13 +7802,6 @@ They can't be home. The lights are off.
 You must be joking!
 This can't be the right address.`,
   tip: "Use must for certainty, might for possibility, can't for impossibility",
-  listeningExamples: [
-    "He must be at work. His car is in the parking lot.",
-    "She might be sleeping. It's still early.",
-    "They can't be home. The lights are off.",
-    "You must be joking!",
-    "This can't be the right address."
-  ],
   speakingPractice: [
     { question: "Why is the room so quiet?", answer: "They must have gone out." },
     { question: "Where is your brother?", answer: "He might be in the garden." },
@@ -8409,13 +7879,6 @@ She might be working from home today.
 They may not know about the meeting.
 We could be wrong about the time.`,
   tip: "Use could/may/might to express different levels of possibility",
-  listeningExamples: [
-    "He could be at the supermarket.",
-    "It may rain later this evening.",
-    "She might be working from home today.",
-    "They may not know about the meeting.",
-    "We could be wrong about the time."
-  ],
   speakingPractice: [
     { question: "Where is Ali?", answer: "He could be in the library." },
     { question: "Will it rain today?", answer: "It might, but the sky looks clear now." },
@@ -8492,14 +7955,6 @@ They've been painting the house. (They may still be painting)
 He has cooked dinner. (Dinner is ready)
 He has been cooking for two hours. (Focus on the activity)`,
   tip: "Present Perfect focuses on results, Present Perfect Continuous focuses on duration",
-  
-  listeningExamples: [
-    "I've worked here for five years.",
-    "I've been working here since 9 a.m.",
-    "They've painted the house.",
-    "They've been painting the house.",
-    "He has cooked dinner."
-  ],
   
   speakingPractice: [
     { question: "Have you finished your homework?", answer: "Yes, I've done all of it." },
@@ -8578,11 +8033,6 @@ We should leave early to avoid traffic.
 They must not be late for the meeting.
 You don't have to come if you're busy.`,
   tip: "Use must for strong obligations, have to for external requirements, and should for advice",
-  listeningExamples: [
-    "You must wear a seatbelt.",
-    "I have to wake up early tomorrow.",
-    "You should drink more water."
-  ],
   speakingPractice: [
     { question: "Do I have to finish this today?", answer: "Yes, it's the deadline." },
     { question: "Must I pay in cash?", answer: "No, you can use a credit card too." },
@@ -8656,11 +8106,6 @@ We mustn't forget to lock the door.
 He can't bring food into the lab.
 Visitors mustn't feed the animals.`,
   tip: "Use mustn't for strict prohibitions and can't for lack of permission",
-  listeningExamples: [
-    "You mustn't park here.",
-    "They can't use their phones in class.",
-    "We mustn't forget to lock the door."
-  ],
   speakingPractice: [
     { question: "Can I smoke in this room?", answer: "No, you mustn't. It's a non-smoking area." },
     { question: "Can students use their phones during the test?", answer: "No, they can't. It's against the rules." },
@@ -8742,11 +8187,6 @@ const MODULE_113_DATA = {
 "Turn off the lights." → She told me to turn off the lights.
 "Don't go outside." → My mom told me not to go outside.`,
   tip: "Use 'tell' for commands and 'ask' for requests. Add 'not to' for negative commands.",
-  listeningExamples: [
-    "She told me to close the window.",
-    "The teacher told us not to talk.",
-    "He asked me to help him."
-  ],
   speakingPractice: [
     { question: "Open your books.", answer: "The teacher told the students to open their books." },
     { question: "Don't touch that.", answer: "The mother told the child not to touch that." },
@@ -8823,11 +8263,6 @@ Dolaylı anlatımda (reported speech) soru cümleleri aktarılırken:
 "Where did you go?" → She asked where I had gone.
 "Can you help me?" → He asked if I could help him.`,
   tip: "Change question word order to statement order and use 'if' for Yes/No questions",
-  listeningExamples: [
-    "He asked if I lived there.",
-    "She asked what time the train left.",
-    "He asked if I was tired."
-  ],
   speakingPractice: [
     { question: "Do you like coffee?", answer: "She asked if I liked coffee." },
     { question: "Where do you work?", answer: "He asked where I worked." },
@@ -8904,11 +8339,6 @@ The package has been delivered.
 The invitations have been sent out.
 The report has been completed.`,
   tip: "Use passive voice when the doer is unknown or unimportant",
-  listeningExamples: [
-    "The house has been sold.",
-    "Many mistakes have been made.",
-    "The package has been delivered."
-  ],
   speakingPractice: [
     { question: "They have repaired the road.", answer: "The road has been repaired." },
     { question: "She has written three poems.", answer: "Three poems have been written." },
@@ -8961,11 +8391,6 @@ const MODULE_116_DATA = {
 
 Yapı: will + be + V3 (past participle)`,
   tip: "Use future passive to describe actions that will be done by someone in the future",
-  listeningExamples: [
-    "The room will be cleaned.",
-    "A new bridge will be built.",
-    "The report will be written by Friday."
-  ],
   speakingPractice: [
     { question: "They will paint the house.", answer: "The house will be painted." },
     { question: "She will bake a cake.", answer: "A cake will be baked." },
@@ -9021,12 +8446,6 @@ const MODULE_117_DATA = {
 🔹 2. Conditional – Hayali durumlar (şimdi/gelecek): If + past simple, would + V1
 🔹 3. Conditional – Geçmişe dair hayali durumlar: If + past perfect, would have + V3`,
   tip: "Each conditional type expresses different levels of reality and time references",
-  listeningExamples: [
-    "If water reaches 100°C, it boils.", // Zero
-    "If he calls me, I will answer.", // First
-    "If I were you, I would apologize.", // Second
-    "If we had left on time, we would have arrived earlier." // Third
-  ],
   speakingPractice: [
     { question: "If you heat ice, what happens?", answer: "It melts." },
     { question: "What will you do if it rains tomorrow?", answer: "I will stay home." },
@@ -9079,11 +8498,6 @@ const MODULE_118_DATA = {
 
 ✅ If + past perfect, would have + V3`,
   tip: "Use third conditional to express regrets and hypothetical past situations",
-  listeningExamples: [
-    "If I had gone to bed early, I wouldn't have been tired.",
-    "If they had booked the tickets, they wouldn't have missed the concert.",
-    "If you had reminded me, I wouldn't have forgotten."
-  ],
   speakingPractice: [
     { question: "If I had seen the sign, what would I have done?", answer: "You would have stopped." },
     { question: "If she had listened, what would have happened?", answer: "She wouldn't have made the mistake." },
@@ -9138,11 +8552,6 @@ const MODULE_119_DATA = {
 1. Geçmiş neden → şu anki sonuç: If + past perfect, would + V1
 2. Şimdiki neden → geçmiş sonuç: If + past simple, would have + V3`,
   tip: "Mix different time references to show cause and effect across time periods",
-  listeningExamples: [
-    "If I had gone to university, I would have a better job now.",
-    "If she spoke French, she would have helped us in Paris.",
-    "If they had arrived earlier, they would be sitting in the front row."
-  ],
   speakingPractice: [
     { question: "If she had studied more, what would she be doing now?", answer: "She would be attending university." },
     { question: "If I were more organized, what would I have done?", answer: "You would have finished on time." },
@@ -9196,11 +8605,6 @@ const MODULE_120_DATA = {
 ✅ Yapı: Wish / If only + past simple
 Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak için kullanılır.`,
   tip: "Use wish/if only + past simple to express regrets about present situations",
-  listeningExamples: [
-    "I wish I spoke Spanish.",
-    "If only I had more free time.",
-    "She wishes she didn't live so far away."
-  ],
   speakingPractice: [
     { question: "You don't have a car. What do you say?", answer: "I wish I had a car." },
     { question: "You are not tall. What do you say?", answer: "If only I were taller." },
@@ -9265,12 +8669,6 @@ Examples:
   tip: "Use 'wish/if only + had + past participle' to express regrets about past actions",
 
   table: [],
-
-  listeningExamples: [
-    "Listen to how we use wish / if only + past perfect (past regrets) in conversation.",
-    "Pay attention to the structure and natural pronunciation.",
-    "Practice repeating these examples to improve your fluency."
-  ],
 
   speakingPractice: [
     { question: "You didn't study for the exam. What do you say?", answer: "I wish I had studied for the exam." },
@@ -9337,12 +8735,6 @@ Examples:
 
   table: [],
 
-  listeningExamples: [
-    "Listen to how we use used to / be used to / get used to in conversation.",
-    "Pay attention to the structure and natural pronunciation.",
-    "Practice repeating these examples to improve your fluency."
-  ],
-
   speakingPractice: [
     { question: "You played the guitar when you were younger. What do you say?", answer: "I used to play the guitar." },
     { question: "She doesn't find the noise strange anymore. What do you say?", answer: "She is used to the noise." },
@@ -9406,12 +8798,6 @@ Examples:
   tip: "Use 'have/get + object + past participle' when describing services done by others",
 
   table: [],
-
-  listeningExamples: [
-    "Listen to how we use causative – have/get something done in conversation.",
-    "Pay attention to the structure and natural pronunciation.",
-    "Practice repeating these examples to improve your fluency."
-  ],
 
   speakingPractice: [
     { question: "You paid someone to fix your roof. What do you say?", answer: "I had my roof fixed." },
@@ -9477,12 +8863,6 @@ Examples:
 
   table: [],
 
-  listeningExamples: [
-    "Listen to how we use relative clauses – defining & non-defining in conversation.",
-    "Pay attention to the structure and natural pronunciation.",
-    "Practice repeating these examples to improve your fluency."
-  ],
-
   speakingPractice: [
     { question: "Who is the man? He is talking to your sister.", answer: "The man who is talking to your sister is my uncle." },
     { question: "That's the restaurant. We had dinner there.", answer: "That's the restaurant where we had dinner." },
@@ -9544,12 +8924,6 @@ Examples:
   tip: "Some verbs change meaning: stop doing (quit) vs stop to do (pause for purpose)",
 
   table: [],
-
-  listeningExamples: [
-    "Listen to how we use gerunds and infinitives – review in conversation.",
-    "Pay attention to the structure and natural pronunciation.",
-    "Practice repeating these examples to improve your fluency."
-  ],
 
   speakingPractice: [
     { question: "You like playing chess. What do you say?", answer: "I enjoy playing chess." },
@@ -9616,12 +8990,6 @@ Examples:
   tip: "'Get' is very common in spoken English and often means 'become' or 'receive'",
 
   table: [],
-
-  listeningExamples: [
-    "Listen to how we use expressions with get (get ready, get tired, etc.) in conversation.",
-    "Pay attention to the structure and natural pronunciation.",
-    "Practice repeating these examples to improve your fluency."
-  ],
 
   speakingPractice: [
     { question: "You're preparing to leave. What do you say?", answer: "I'm getting ready." },
@@ -9690,12 +9058,6 @@ Examples:
 
   table: [],
 
-  listeningExamples: [
-    "Listen to how we use expressions with take (take a break, take time, etc.) in conversation.",
-    "Pay attention to the structure and natural pronunciation.",
-    "Practice repeating these examples to improve your fluency."
-  ],
-
   speakingPractice: [
     { question: "You joined a project. What do you say?", answer: "I took part in the project." },
     { question: "The concert happened last night. What do you say?", answer: "The concert took place last night." },
@@ -9758,12 +9120,6 @@ Examples:
   tip: "With pronouns, separable phrasal verbs MUST be separated: turn it on, pick it up",
 
   table: [],
-
-  listeningExamples: [
-    "Listen to how we use phrasal verbs – separable & inseparable in conversation.",
-    "Pay attention to the structure and natural pronunciation.",
-    "Practice repeating these examples to improve your fluency."
-  ],
 
   speakingPractice: [
     { question: "You stop the alarm. What do you say?", answer: "I turned off the alarm." },
@@ -9832,12 +9188,6 @@ Examples:
 
   table: [],
 
-  listeningExamples: [
-    "Listen to how we use phrasal verbs – common everyday verbs in conversation.",
-    "Pay attention to the structure and natural pronunciation.",
-    "Practice repeating these examples to improve your fluency."
-  ],
-
   speakingPractice: [
     { question: "You stop trying to lose weight. What do you say?", answer: "I gave up losing weight." },
     { question: "You are searching for your glasses. What do you say?", answer: "I'm looking for my glasses." },
@@ -9900,12 +9250,6 @@ Examples:
   tip: "Generally: 'make' = create/produce, 'do' = perform/complete. But learn fixed expressions!",
 
   table: [],
-
-  listeningExamples: [
-    "Listen to how we use collocations with make and do in conversation.",
-    "Pay attention to the structure and natural pronunciation.",
-    "Practice repeating these examples to improve your fluency."
-  ],
 
   speakingPractice: [
     { question: "You completed your homework. What do you say?", answer: "I did my homework." },
@@ -9973,12 +9317,6 @@ Examples:
 
   table: [],
 
-  listeningExamples: [
-    "Listen to how we use indirect questions in conversation.",
-    "Pay attention to the structure and natural pronunciation.",
-    "Practice repeating these examples to improve your fluency."
-  ],
-
   speakingPractice: [
     { question: "Where is the nearest bus stop?", answer: "Could you tell me where the nearest bus stop is?" },
     { question: "What time does the class start?", answer: "Do you know what time the class starts?" },
@@ -10016,12 +9354,6 @@ Disagreeing politely:
   tip: "Use softening phrases like 'I think' or 'in my opinion' to sound less direct",
 
   table: [],
-
-  listeningExamples: [
-    "Listen to how we use giving opinions – agreeing & disagreeing in conversation.",
-    "Pay attention to the structure and natural pronunciation.",
-    "Practice repeating these examples to improve your fluency."
-  ],
 
   speakingPractice: [
     { question: "What do you think about this movie?", answer: "I think it's amazing!" },
@@ -10085,12 +9417,6 @@ Examples:
 
   table: [],
 
-  listeningExamples: [
-    "Listen to how we use speculating and expressing possibility in conversation.",
-    "Pay attention to the structure and natural pronunciation.",
-    "Practice repeating these examples to improve your fluency."
-  ],
-
   speakingPractice: [
     { question: "Where is John?", answer: "He might be in the kitchen." },
     { question: "Is she coming to the party?", answer: "She may come later." },
@@ -10152,12 +9478,6 @@ Examples:
   tip: "Use 'were' (not 'was') for all persons in formal hypothetical situations: If I were you...",
 
   table: [],
-
-  listeningExamples: [
-    "Listen to how we use talking about hypothetical situations in conversation.",
-    "Pay attention to the structure and natural pronunciation.",
-    "Practice repeating these examples to improve your fluency."
-  ],
 
   speakingPractice: [
     { question: "What would you do if you won the lottery?", answer: "I would buy a house and travel." },
@@ -10223,12 +9543,6 @@ Examples:
 
   table: [],
 
-  listeningExamples: [
-    "Listen to how we use expressing preferences in conversation.",
-    "Pay attention to the structure and natural pronunciation.",
-    "Practice repeating these examples to improve your fluency."
-  ],
-
   speakingPractice: [
     { question: "Do you prefer coffee or tea?", answer: "I prefer coffee to tea." },
     { question: "Would you rather watch a movie or read a book?", answer: "I'd rather watch a movie." },
@@ -10293,12 +9607,6 @@ Examples:
 
   table: [],
 
-  listeningExamples: [
-    "Listen to how we use narratives – sequencing words in conversation.",
-    "Pay attention to the structure and natural pronunciation.",
-    "Practice repeating these examples to improve your fluency."
-  ],
-
   speakingPractice: [
     { question: "What did you do first this morning?", answer: "First, I got out of bed." },
     { question: "What did you do then?", answer: "Then, I had a shower." },
@@ -10360,12 +9668,6 @@ Examples:
   tip: "Use linking words to make your speech and writing more cohesive and professional",
 
   table: [],
-
-  listeningExamples: [
-    "Listen to how we use linking words – contrast, addition, result in conversation.",
-    "Pay attention to the structure and natural pronunciation.",
-    "Practice repeating these examples to improve your fluency."
-  ],
 
   speakingPractice: [
     { question: "It was raining. What did you do?", answer: "We went hiking, although it was raining." },
@@ -10431,12 +9733,6 @@ Useful language:
   tip: "Use a variety of past tenses and descriptive adjectives to make stories come alive",
 
   table: [],
-
-  listeningExamples: [
-    "Listen to how we use describing experiences and narratives in conversation.",
-    "Pay attention to the structure and natural pronunciation.",
-    "Practice repeating these examples to improve your fluency."
-  ],
 
   speakingPractice: [
     { question: "Have you ever been abroad?", answer: "Yes, I went to Italy last summer." },
@@ -10504,12 +9800,6 @@ Examples:
 
   table: [],
 
-  listeningExamples: [
-    "Listen to how we use cause and effect in conversation.",
-    "Pay attention to the structure and natural pronunciation.",
-    "Practice repeating these examples to improve your fluency."
-  ],
-
   speakingPractice: [
     { question: "Why did you stay home?", answer: "Because I was sick." },
     { question: "You were tired. What did you do?", answer: "I was tired, so I took a nap." },
@@ -10573,12 +9863,6 @@ Examples:
 
   table: [],
 
-  listeningExamples: [
-    "Listen to how we use talking about purpose in conversation.",
-    "Pay attention to the structure and natural pronunciation.",
-    "Practice repeating these examples to improve your fluency."
-  ],
-
   speakingPractice: [
     { question: "Why do you study?", answer: "To get good grades." },
     { question: "Why did she go to the gym?", answer: "In order to lose weight." },
@@ -10641,12 +9925,6 @@ Examples:
   tip: "Use 'at' for specific buildings (at school, at a hospital), 'in' for general locations (in an office, in a restaurant)",
 
   table: [],
-
-  listeningExamples: [
-    "Listen to how we use work vocabulary in conversation.",
-    "Pay attention to job roles, tasks, and workplaces.",
-    "Practice repeating these examples to improve your fluency."
-  ],
 
   speakingPractice: [
     { question: "Where does a teacher work?", answer: "A teacher works at a school." },
@@ -10713,12 +9991,6 @@ Examples:
 
   table: [],
 
-  listeningExamples: [
-    "Listen to how we use education vocabulary in conversation.",
-    "Pay attention to academic terms and their usage.",
-    "Practice repeating these examples to improve your fluency."
-  ],
-
   speakingPractice: [
     { question: "What is the curriculum like at your school?", answer: "It includes science, math, and foreign languages." },
     { question: "Do you have many assignments?", answer: "Yes, we have weekly assignments in most subjects." },
@@ -10782,12 +10054,6 @@ Examples:
   tip: "Say 'cloud computing' (not cloud storage), 'Wi-Fi connection' (not WiFi internet), 'software update' (not program update)",
 
   table: [],
-
-  listeningExamples: [
-    "Listen to how we use technology vocabulary in conversation.",
-    "Pay attention to gadgets, internet terms, and digital safety.",
-    "Practice repeating these examples to improve your fluency."
-  ],
 
   speakingPractice: [
     { question: "What kind of gadgets do you use daily?", answer: "I usually use my smartphone, smartwatch, and wireless earbuds." },
@@ -10882,12 +10148,6 @@ const MODULE_144_DATA = {
     { en: "landfill", tr: "çöp alanı" },
     { en: "water scarcity", tr: "su kıtlığı" },
     { en: "extinction", tr: "yok olma" }
-  ],
-
-  listeningExamples: [
-    "Climate change affects everyone.",
-    "Recycling reduces waste.",
-    "Renewable energy is the future."
   ],
 
   speakingPractice: [
@@ -10985,12 +10245,6 @@ const MODULE_145_DATA = {
     { en: "objective reporting", tr: "tarafsız haber yapma" }
   ],
 
-  listeningExamples: [
-    "The headline caught everyone's attention.",
-    "Breaking news: The election results are in.",
-    "This video went viral overnight."
-  ],
-
   speakingPractice: [
     { question: "Do you read the news every day?", answer: "Yes, I usually check news apps every morning." },
     { question: "What type of news do you follow the most?", answer: "Mostly international news and current affairs." },
@@ -11074,12 +10328,6 @@ const MODULE_146_DATA = {
     { en: "extroverted", tr: "dışa dönük" },
     { en: "cautious", tr: "tedbirli" },
     { en: "perfectionist", tr: "mükemmeliyetçi" }
-  ],
-
-  listeningExamples: [
-    "She is very reliable; you can always count on her.",
-    "He's quite witty and makes everyone laugh.",
-    "Being open-minded helps you understand different perspectives."
   ],
 
   speakingPractice: [
@@ -11177,12 +10425,6 @@ const MODULE_147_DATA = {
     { en: "bail", tr: "kefalet" }
   ],
 
-  listeningExamples: [
-    "The witness gave evidence at the trial.",
-    "The jury reached a verdict of guilty.",
-    "The lawyer defended the suspect in court."
-  ],
-
   speakingPractice: [
     { question: "Have you ever witnessed a crime? What happened?", answer: "Yes, a theft in a supermarket; a man stole a bottle and ran." },
     { question: "What kind of crimes are most common in your country?", answer: "Theft, pickpocketing, and fraud." },
@@ -11276,12 +10518,6 @@ const MODULE_148_DATA = {
     { en: "immune system", tr: "bağışıklık sistemi" },
     { en: "injury", tr: "sakatlık" },
     { en: "recovery", tr: "iyileşme" }
-  ],
-
-  listeningExamples: [
-    "Regular exercise improves your health.",
-    "A balanced diet includes protein, carbs, and healthy fats.",
-    "Good hydration is essential for performance."
   ],
 
   speakingPractice: [
@@ -11379,12 +10615,6 @@ const MODULE_149_DATA = {
     { en: "activism", tr: "aktivizm" }
   ],
 
-  listeningExamples: [
-    "Society must address inequality through education.",
-    "Human rights protect everyone's dignity.",
-    "Communities can support those facing poverty."
-  ],
-
   speakingPractice: [
     { question: "What makes a society strong?", answer: "Fair laws, good education, and active communities." },
     { question: "How can communities support the poor?", answer: "Food banks, job training, and counseling." },
@@ -11478,12 +10708,6 @@ const MODULE_150_DATA = {
     { en: "tour guide", tr: "rehber" },
     { en: "souvenir", tr: "hediyelik eşya" },
     { en: "map", tr: "harita" }
-  ],
-
-  listeningExamples: [
-    "What's your dream destination?",
-    "I love backpacking through Europe.",
-    "Make sure to book your accommodation in advance."
   ],
 
   speakingPractice: [
@@ -11674,6 +10898,18 @@ const MODULE_150_DATA = {
     if (selectedModule === 149) return MODULE_149_DATA;
     if (selectedModule === 150) return MODULE_150_DATA;
 
+    // B2 Modules (151-160)
+    if (selectedModule === 151) return MODULE_151_DATA;
+    if (selectedModule === 152) return MODULE_152_DATA;
+    if (selectedModule === 153) return MODULE_153_DATA;
+    if (selectedModule === 154) return MODULE_154_DATA;
+    if (selectedModule === 155) return MODULE_155_DATA;
+    if (selectedModule === 156) return MODULE_156_DATA;
+    if (selectedModule === 157) return MODULE_157_DATA;
+    if (selectedModule === 158) return MODULE_158_DATA;
+    if (selectedModule === 159) return MODULE_159_DATA;
+    if (selectedModule === 160) return MODULE_160_DATA;
+
     // Fallback to Module 1 for unknown modules
     return MODULE_1_DATA;
   };
@@ -11855,7 +11091,6 @@ const MODULE_150_DATA = {
     if (checkpointProgress && !checkpointProgress.is_module_completed) {
       // Don't auto-restore from checkpoint - let user choose via dialog
       setCurrentPhase('intro'); // Start at intro, dialog will show resume option
-      setListeningIndex(0);
       setSpeakingIndex(0);
     } else {
       // Priority 2: Fallback to old system if no checkpoint data
@@ -11863,12 +11098,10 @@ const MODULE_150_DATA = {
       if (saved && saved.phase !== 'complete') {
         // restore from old system
         setCurrentPhase(saved.phase);
-        setListeningIndex(0);
         setSpeakingIndex(saved.questionIndex);
       } else {
         // fresh start for this module
         setCurrentPhase('intro');
-        setListeningIndex(0);
         setSpeakingIndex(0);
       }
     }
@@ -12131,7 +11364,6 @@ const MODULE_150_DATA = {
         // dialogShownRef needs to be reset so the new module can show dialog if needed
         dialogShownRef.current = false;
         setCurrentPhase('intro');
-        setListeningIndex(0);
         setSpeakingIndex(0);
         setFeedback('');
         setFeedbackType('info');
@@ -13152,7 +12384,6 @@ const MODULE_150_DATA = {
     if (selectedLevel && selectedModule != null) {
       clearProgress(selectedLevel, selectedModule);
       setCurrentPhase('intro');
-      setListeningIndex(0);
       setSpeakingIndex(0);
     }
   }
@@ -13282,21 +12513,6 @@ const MODULE_150_DATA = {
     }
   };
 
-  const nextListeningExample = () => {
-    if (listeningIndex < currentModuleData.listeningExamples.length - 1) {
-      setListeningIndex(prev => prev + 1);
-    } else {
-      setCurrentPhase('speaking');
-      narration.cancel();
-      narration.speak('Now let\'s practice speaking! Say each sentence clearly.');
-    }
-  };
-
-  const repeatExample = () => {
-    const currentExample = currentModuleData.listeningExamples[listeningIndex];
-    narration.cancel();
-    narration.speak(currentExample);
-  };
 
   const speakCurrentSentence = () => {
     const { prompt } = getCurrentPromptAndTarget();
@@ -13308,13 +12524,11 @@ const MODULE_150_DATA = {
   useEffect(() => {
     const currentData = getCurrentModuleData();
     const totalQ = currentData?.speakingPractice?.length ?? 0;
-    
+
     voiceCommands.setLessonHandlers({
       onNext: () => {
-        if (currentPhase === 'listening' && listeningIndex < (currentData?.listeningExamples?.length ?? 0) - 1) {
-          nextListeningExample();
-        } else if (currentPhase === 'speaking' && speakingIndex < totalQ - 1) {
-          advanceSpeakingOnce(); // Use the existing function instead of non-existent nextSpeakingQuestion
+        if (currentPhase === 'speaking' && speakingIndex < totalQ - 1) {
+          advanceSpeakingOnce();
         }
       },
       onPrevious: () => {
@@ -13324,18 +12538,16 @@ const MODULE_150_DATA = {
       },
       onSkip: () => {
         if (currentPhase === 'speaking') {
-          advanceSpeakingOnce(); // Use the existing function instead of non-existent nextSpeakingQuestion
+          advanceSpeakingOnce();
         }
       },
       onRepeat: () => {
-        if (currentPhase === 'listening') {
-          repeatExample();
-        } else if (currentPhase === 'speaking') {
+        if (currentPhase === 'speaking') {
           speakCurrentSentence();
         }
       }
     });
-  }, [currentPhase, listeningIndex, speakingIndex, selectedModule, selectedLevel]);
+  }, [currentPhase, speakingIndex, selectedModule, selectedLevel]);
 
   // Render levels view
   if (!isHydrated) {
@@ -13454,12 +12666,11 @@ const MODULE_150_DATA = {
                   key={module.id} 
                   className={`bg-white/10 border-white/20 cursor-pointer transition-all hover:bg-white/15 ${!isUnlocked ? 'opacity-50' : ''}`}
                   onClick={() => {
-                    if (isUnlocked && ((module.id >= 1 && module.id <= 50) || (module.id >= 51 && module.id <= 100) || (module.id >= 101 && module.id <= 150))) { // All A1, A2, B1 modules are implemented
+                    if (isUnlocked && ((module.id >= 1 && module.id <= 50) || (module.id >= 51 && module.id <= 100) || (module.id >= 101 && module.id <= 150) || (module.id >= 151 && module.id <= 160))) { // All A1, A2, B1, B2 modules are implemented
                       narration.cancel();
                       setSelectedModule(module.id);
                       setViewState('lesson');
                       setCurrentPhase('intro');
-                      setListeningIndex(0);
                       setSpeakingIndex(0);
                       setCorrectAnswers(0);
                       setAttempts(0);
@@ -13651,50 +12862,9 @@ const MODULE_150_DATA = {
               listeningExamples={currentModuleData.listeningExamples || []}
               moduleId={selectedModule}
               level={selectedLevel}
-              onGoToQuestions={() => setCurrentPhase('listening')}
+              onGoToQuestions={() => setCurrentPhase('speaking')}
             />
           </div>
-        )}
-        {/* Listening Phase */}
-        {currentPhase === 'listening' && (
-          <Card className="bg-white/10 border-white/20">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center">
-                <Volume2 className="h-5 w-5 mr-2" />
-                Listening Practice
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="text-center">
-                <div className="bg-white/5 rounded-xl p-4 mb-4">
-                  <p className="text-white text-lg font-medium">
-                    "{currentModuleData.listeningExamples[listeningIndex]}"
-                  </p>
-                </div>
-                
-                <div className="flex justify-center space-x-3">
-                  <Button
-                    onClick={repeatExample}
-                    variant="outline"
-                    size="sm"
-                    className="bg-white/10 text-white border-white/30 hover:bg-white/20"
-                    disabled={isSpeaking}
-                  >
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    Repeat
-                  </Button>
-                  
-                  <Button
-                    onClick={nextListeningExample}
-                    className="bg-white/20 text-white hover:bg-white/30"
-                    disabled={isSpeaking}
-                  >
-                    {listeningIndex < currentModuleData.listeningExamples.length - 1 ? 'Next' : 'Start Speaking'}
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         )}
 
         {/* Grammar Tip - Always Visible During Speaking Practice */}

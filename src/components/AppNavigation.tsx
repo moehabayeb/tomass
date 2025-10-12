@@ -158,7 +158,7 @@ export default function AppNavigation() {
           startingModule = 101;
           break;
         case 'B2':
-          startingModule = 1; // B2 not implemented yet, fallback to A1
+          startingModule = 151;
           break;
         case 'C1':
           startingModule = 1; // C1 not implemented yet, fallback to A1
@@ -170,7 +170,7 @@ export default function AppNavigation() {
           startingModule = 1;
       }
 
-      return { level: level === 'B2' || level === 'C1' || level === 'C2' ? 'A1' : level, module: startingModule };
+      return { level: level === 'C1' || level === 'C2' ? 'A1' : level, module: startingModule };
     }
 
     // Fallback to localStorage recommendedStartLevel if available
@@ -190,7 +190,10 @@ export default function AppNavigation() {
           module = Math.max(51, Math.min(100, module));
           break;
         case 'B1':
-          module = Math.max(101, Math.min(150, module));
+          module = Math.max(101, Math.min(140, module));
+          break;
+        case 'B2':
+          module = Math.max(151, Math.min(160, module));
           break;
         default:
           level = 'A1';
