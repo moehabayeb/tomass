@@ -328,12 +328,63 @@ function generateB1Modules(): Module[] {
   }));
 }
 
+function generateB2Modules(): Module[] {
+  const modules = Array.from({ length: 18 }, (_, i) => ({
+    id: i + 151, // Starting from 151 for B2 level
+    title: i === 0 ? 'Future Perfect Continuous (will have been doing)' :
+           i === 1 ? 'Passive Voice – Past Perfect and Future Perfect' :
+           i === 2 ? 'Reported Speech – Mixed Tenses' :
+           i === 3 ? 'Inversion for Emphasis (Never have I…)' :
+           i === 4 ? 'Ellipsis and Substitution (so, do, one)' :
+           i === 5 ? 'Nominalisation (changing verbs to nouns)' :
+           i === 6 ? 'Advanced Linking Words (nonetheless, furthermore)' :
+           i === 7 ? 'Complex Conditionals (if…were to, if…should)' :
+           i === 8 ? 'Unreal Past for Present (I wish I knew)' :
+           i === 9 ? 'Unreal Past for Past (I wish I had known)' :
+           i === 10 ? 'Gerunds after Prepositions' :
+           i === 11 ? 'Advanced Collocations (make an effort, heavy rain)' :
+           i === 12 ? 'Advanced Phrasal Verbs (bring up, cut down on)' :
+           i === 13 ? 'Idioms and Expressions (hit the nail on the head)' :
+           i === 14 ? 'Expressing Certainty and Doubt' :
+           i === 15 ? 'Hedging Language (Seems to / Appears to)' :
+           i === 16 ? 'Modals in the Past (might have done, should have been)' :
+           i === 17 ? 'Discursive Essays – Opinion Language' :
+           `B2 Module ${i + 151}`,
+    description: i === 0 ? 'Master the Future Perfect Continuous tense' :
+                 i === 1 ? 'Learn passive voice in advanced tenses' :
+                 i === 2 ? 'Report speech across different tenses' :
+                 i === 3 ? 'Use inversion for formal emphasis' :
+                 i === 4 ? 'Avoid repetition with ellipsis and substitution' :
+                 i === 5 ? 'Transform verbs into nouns for formal writing' :
+                 i === 6 ? 'Connect ideas with advanced linking words' :
+                 i === 7 ? 'Express hypothetical situations formally' :
+                 i === 8 ? 'Express present regrets and wishes' :
+                 i === 9 ? 'Express past regrets with wish and if only' :
+                 i === 10 ? 'Use gerunds correctly after prepositions' :
+                 i === 11 ? 'Master natural word combinations' :
+                 i === 12 ? 'Learn advanced phrasal verbs for fluency' :
+                 i === 13 ? 'Understand and use common English idioms' :
+                 i === 14 ? 'Express different levels of certainty' :
+                 i === 15 ? 'Use hedging language for politeness' :
+                 i === 16 ? 'Speculate about past events using modals' :
+                 i === 17 ? 'Master formal opinion language for essays' :
+                 'Coming soon',
+    completed: false,
+    locked: false,
+  }));
+
+  console.log('✅ generateB2Modules() called - Generated', modules.length, 'modules');
+  console.log('Module IDs generated:', modules.map(m => m.id));
+
+  return modules;
+}
+
 // Modules data for each level - TEMPORARILY UNLOCKED FOR DEVELOPMENT
 export const MODULES_BY_LEVEL: Record<LevelType, Module[]> = {
   A1: generateA1Modules(),
   A2: generateA2Modules(),
   B1: generateB1Modules(),
-  B2: [],
+  B2: generateB2Modules(),
   C1: [],
   C2: []
 };

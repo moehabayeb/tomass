@@ -30,14 +30,14 @@ import '../utils/placementQA';
 // Progress checkpointing imports
 import { useLessonCheckpoints } from '../hooks/useLessonCheckpoints';
 import { ResumeProgressDialog, SyncStatusIndicator } from './ResumeProgressDialog';
-// B2 Modules Data (151-160)
-import { MODULE_151_DATA, MODULE_152_DATA, MODULE_153_DATA, MODULE_154_DATA, MODULE_155_DATA, MODULE_156_DATA, MODULE_157_DATA, MODULE_158_DATA, MODULE_159_DATA, MODULE_160_DATA } from './B2ModulesData';
+// B2 Modules Data (151-168)
+import { MODULE_151_DATA, MODULE_152_DATA, MODULE_153_DATA, MODULE_154_DATA, MODULE_155_DATA, MODULE_156_DATA, MODULE_157_DATA, MODULE_158_DATA, MODULE_159_DATA, MODULE_160_DATA, MODULE_161_DATA, MODULE_162_DATA, MODULE_163_DATA, MODULE_164_DATA, MODULE_165_DATA, MODULE_166_DATA, MODULE_167_DATA, MODULE_168_DATA } from './B2ModulesData';
 
 // ---------- Module Order and Next Module Logic ----------
 const ORDER_A1 = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50];
 const ORDER_A2 = [51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100];
 const ORDER_B1 = [101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140];
-const ORDER_B2 = [151,152,153,154,155,156,157,158,159,160];
+const ORDER_B2 = [151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168];
 
 function getOrderForLevel(level: 'A1'|'A2'|'B1'|'B2'): number[] {
   if (level === 'A1') return ORDER_A1;
@@ -187,7 +187,7 @@ const LEVELS = [
   { id: 'A1', name: 'A1 - Beginner', description: 'Start your English journey', moduleCount: 50, color: 'bg-blue-500' },
   { id: 'A2', name: 'A2 - Elementary', description: 'Build basic skills', moduleCount: 50, color: 'bg-green-500' },
   { id: 'B1', name: 'B1 - Intermediate', description: 'Expand your knowledge', moduleCount: 50, color: 'bg-orange-500' },
-  { id: 'B2', name: 'B2 - Upper Intermediate', description: 'Advanced concepts', moduleCount: 50, color: 'bg-purple-500' },
+  { id: 'B2', name: 'B2 - Upper Intermediate', description: 'Advanced concepts', moduleCount: 18, color: 'bg-purple-500' },
   { id: 'C1', name: 'C1 - Advanced', description: 'Master complex concepts', moduleCount: 50, color: 'bg-red-500' },
   { id: 'C2', name: 'C2 - Proficiency', description: 'Near-native fluency', moduleCount: 50, color: 'bg-indigo-500' },
 ];
@@ -531,7 +531,7 @@ const MODULES_BY_LEVEL = {
     completed: false,
     locked: false, // TEMPORARILY UNLOCKED FOR DEVELOPMENT
   })),
-  B2: Array.from({ length: 10 }, (_, i) => ({
+  B2: Array.from({ length: 18 }, (_, i) => ({
     id: i + 151,
     title: i === 0 ? 'Future Perfect Continuous (will have been doing)' :
            i === 1 ? 'Passive Voice – Past Perfect and Future Perfect' :
@@ -543,6 +543,14 @@ const MODULES_BY_LEVEL = {
            i === 7 ? 'Complex Conditionals (if…were to, if…should)' :
            i === 8 ? 'Unreal Past for Present (I wish I knew)' :
            i === 9 ? 'Unreal Past for Past (I wish I had known)' :
+           i === 10 ? 'Gerunds after Prepositions' :
+           i === 11 ? 'Advanced Collocations (make an effort, heavy rain)' :
+           i === 12 ? 'Advanced Phrasal Verbs (bring up, cut down on)' :
+           i === 13 ? 'Idioms and Expressions (hit the nail on the head)' :
+           i === 14 ? 'Expressing Certainty and Doubt' :
+           i === 15 ? 'Hedging Language (Seems to / Appears to)' :
+           i === 16 ? 'Modals in the Past (might have done, should have been)' :
+           i === 17 ? 'Discursive Essays – Opinion Language' :
            'B2 Module',
     description: i === 0 ? 'Understand and form sentences using the Future Perfect Continuous tense' :
                  i === 1 ? 'Recognize and form passive structures in the Past Perfect and Future Perfect tenses' :
@@ -554,6 +562,14 @@ const MODULES_BY_LEVEL = {
                  i === 7 ? 'Use complex conditional structures for hypothetical situations' :
                  i === 8 ? 'Express present regrets using unreal past structures' :
                  i === 9 ? 'Express past regrets using unreal past perfect structures' :
+                 i === 10 ? 'Use gerunds correctly after prepositions' :
+                 i === 11 ? 'Master natural word combinations' :
+                 i === 12 ? 'Learn advanced phrasal verbs for fluency' :
+                 i === 13 ? 'Understand and use common English idioms' :
+                 i === 14 ? 'Express different levels of certainty' :
+                 i === 15 ? 'Use hedging language for politeness' :
+                 i === 16 ? 'Speculate about past events using modals' :
+                 i === 17 ? 'Master formal opinion language for essays' :
                  'Advanced B2 grammar module',
     completed: false,
     locked: false,
@@ -10907,6 +10923,14 @@ const MODULE_150_DATA = {
     if (selectedModule === 158) return MODULE_158_DATA;
     if (selectedModule === 159) return MODULE_159_DATA;
     if (selectedModule === 160) return MODULE_160_DATA;
+    if (selectedModule === 161) return MODULE_161_DATA;
+    if (selectedModule === 162) return MODULE_162_DATA;
+    if (selectedModule === 163) return MODULE_163_DATA;
+    if (selectedModule === 164) return MODULE_164_DATA;
+    if (selectedModule === 165) return MODULE_165_DATA;
+    if (selectedModule === 166) return MODULE_166_DATA;
+    if (selectedModule === 167) return MODULE_167_DATA;
+    if (selectedModule === 168) return MODULE_168_DATA;
 
     // Fallback to Module 1 for unknown modules
     return MODULE_1_DATA;
@@ -12664,7 +12688,7 @@ const MODULE_150_DATA = {
                   key={module.id} 
                   className={`bg-white/10 border-white/20 cursor-pointer transition-all hover:bg-white/15 ${!isUnlocked ? 'opacity-50' : ''}`}
                   onClick={() => {
-                    if (isUnlocked && ((module.id >= 1 && module.id <= 50) || (module.id >= 51 && module.id <= 100) || (module.id >= 101 && module.id <= 150) || (module.id >= 151 && module.id <= 160))) { // All A1, A2, B1, B2 modules are implemented
+                    if (isUnlocked && ((module.id >= 1 && module.id <= 50) || (module.id >= 51 && module.id <= 100) || (module.id >= 101 && module.id <= 150) || (module.id >= 151 && module.id <= 168))) { // All A1, A2, B1, B2 modules are implemented
                       narration.cancel();
                       setSelectedModule(module.id);
                       setViewState('lesson');

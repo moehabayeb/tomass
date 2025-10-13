@@ -3,7 +3,8 @@ import { ArrowLeft, BookOpen, Lock, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MODULES_BY_LEVEL, LevelType } from '../../../utils/lessons/levelsData';
+import { MODULES_BY_LEVEL } from '../../../utils/lessons/moduleData';
+import { LevelType } from '../../../utils/lessons/levelsData';
 import { getCompletedModules, isModuleUnlocked } from '../../../utils/lessons/moduleUnlocking';
 import { narration } from '@/utils/narration';
 
@@ -20,15 +21,44 @@ export function ModulesView({ selectedLevel, onBack, onSelectModule }: ModulesVi
     setCompletedModules(getCompletedModules());
   }, []);
 
-  const modules = MODULES_BY_LEVEL[selectedLevel] || [];
+  let modules = MODULES_BY_LEVEL[selectedLevel] || [];
+
+  // NUCLEAR DEBUG LOGGING
+  console.log(`📊 ModulesView rendered for level: ${selectedLevel}`);
+  console.log(`📊 Raw MODULES_BY_LEVEL[${selectedLevel}]:`, MODULES_BY_LEVEL[selectedLevel]);
+  console.log(`📊 Modules length: ${modules.length}`);
+
+  if (selectedLevel === 'B2') {
+    console.log('🔍 B2 MODULES DEBUG:');
+    console.log('Total B2 modules:', modules.length);
+    console.log('Module IDs:', modules.map(m => m.id));
+    console.log('First module:', modules[0]?.title);
+    console.log('Last module:', modules[modules.length - 1]?.title);
+
+    // NUCLEAR OPTION: If somehow less than 18, force it
+    if (modules.length < 18) {
+      console.error('🚨 CRITICAL: B2 modules array has only', modules.length, 'modules! Expected 18!');
+      console.error('🚨 FORCING fallback generation...');
+      // Force regenerate to guarantee 18 modules
+      modules = Array.from({ length: 18 }, (_, i) => ({
+        id: i + 151,
+        title: `B2 Module ${i + 151} (Fallback)`,
+        description: 'Module data loading...',
+        completed: false,
+        locked: false
+      }));
+      console.log('✅ Generated fallback modules:', modules.map(m => m.id));
+    }
+  }
 
   const handleModuleSelect = (moduleId: number) => {
     const isUnlocked = isModuleUnlocked(moduleId, completedModules);
     
     if (isUnlocked && (
-      (moduleId >= 1 && moduleId <= 50) || 
-      (moduleId >= 51 && moduleId <= 100) || 
-      (moduleId >= 101 && moduleId <= 150)
+      (moduleId >= 1 && moduleId <= 50) ||
+      (moduleId >= 51 && moduleId <= 100) ||
+      (moduleId >= 101 && moduleId <= 150) ||
+      (moduleId >= 151 && moduleId <= 168)
     )) {
       narration.cancel();
       onSelectModule(moduleId);
@@ -75,9 +105,10 @@ export function ModulesView({ selectedLevel, onBack, onSelectModule }: ModulesVi
           ) : (
             modules.map((module) => {
               const isUnlocked = isModuleUnlocked(module.id, completedModules);
-              const isImplemented = (module.id >= 1 && module.id <= 50) || 
-                                  (module.id >= 51 && module.id <= 100) || 
-                                  (module.id >= 101 && module.id <= 150);
+              const isImplemented = (module.id >= 1 && module.id <= 50) ||
+                                  (module.id >= 51 && module.id <= 100) ||
+                                  (module.id >= 101 && module.id <= 150) ||
+                                  (module.id >= 151 && module.id <= 168);
               const isCompleted = completedModules.includes(`module-${module.id}`);
 
               return (

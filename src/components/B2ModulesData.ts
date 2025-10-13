@@ -591,6 +591,527 @@ const MODULE_160_DATA = {
   ]
 };
 
+// Module 161 Data: Gerunds after Prepositions
+const MODULE_161_DATA = {
+  title: "Gerunds after Prepositions",
+  description: "Gerunds after Prepositions",
+  intro: `📘 Lesson Objectives
+✅ Understand and use gerunds after prepositions correctly.
+✅ Master common preposition + gerund combinations.
+✅ Respond fluently to related questions.
+
+📗 Grammar Explanation
+In English, when a verb follows a preposition, it must be in the gerund form (-ing). This is a common and important grammar rule, especially for fluent and natural speech.
+
+🧩 Structure
+✅ Preposition + gerund (verb + -ing)
+
+🧠 Example Sentences
+• I'm interested in learning Spanish.
+• She apologized for being late.
+• He left without saying goodbye.
+• They succeeded in solving the problem.
+
+⏰ Common Prepositions
+after, before, by, in, on, about, for, of, to, without`,
+  speakingPractice: [
+    { question: "What are you interested in doing this weekend?", answer: "I'm interested in going hiking with my friends." },
+    { question: "Are you good at cooking?", answer: "Yes, I'm quite good at making Italian dishes." },
+    { question: "Have you ever succeeded in completing something difficult?", answer: "Yes, I succeeded in finishing a marathon." },
+    { question: "Do you ever feel guilty about doing something?", answer: "I feel guilty about forgetting my friend's birthday." },
+    { question: "What do you usually do before going to bed?", answer: "I usually read a book before falling asleep." },
+    { question: "How do you relax after working all day?", answer: "I relax by watching TV or listening to music." },
+    { question: "What's something you're afraid of doing?", answer: "I'm afraid of speaking in public." },
+    { question: "Do you enjoy learning new skills?", answer: "Yes, I enjoy learning languages." },
+    { question: "Have you ever apologized for doing something?", answer: "Yes, I once apologized for being rude." },
+    { question: "What are you tired of hearing?", answer: "I'm tired of hearing complaints all the time." },
+    { question: "Do you ever think about changing your job?", answer: "Yes, I often think about switching careers." },
+    { question: "How do you usually celebrate after achieving something?", answer: "I celebrate by going out with friends." },
+    { question: "Are you interested in traveling abroad?", answer: "Yes, I'm very interested in exploring Asia." },
+    { question: "Have you ever been punished for doing something wrong?", answer: "Yes, I was punished for skipping class once." },
+    { question: "Do you believe in helping others?", answer: "Yes, I believe in supporting people when they need it." },
+    { question: "Have you ever complained about waiting too long?", answer: "Yes, I complained about waiting at the airport." },
+    { question: "Do you feel confident about speaking English?", answer: "Yes, I feel confident about using it in daily life." },
+    { question: "How do you stay focused while studying?", answer: "I stay focused by turning off my phone." },
+    { question: "Do you have a habit of checking your phone constantly?", answer: "Yes, I have a bad habit of checking it every few minutes." },
+    { question: "Have you ever been scared of trying something new?", answer: "Yes, I was scared of trying sushi." },
+    { question: "What are you responsible for doing at work?", answer: "I'm responsible for managing customer accounts." },
+    { question: "Are you interested in starting a new hobby?", answer: "Yes, I'm thinking about learning photography." },
+    { question: "Have you ever been thanked for doing something?", answer: "Yes, I was thanked for helping organize an event." },
+    { question: "Do you feel confident about solving problems?", answer: "Yes, I feel confident about finding solutions." },
+    { question: "What's something you're proud of doing?", answer: "I'm proud of graduating with honors." },
+    { question: "Have you ever gotten into trouble for doing something?", answer: "Yes, I got into trouble for being late to a meeting." },
+    { question: "What helps you relax before taking an exam?", answer: "I relax by breathing deeply and staying calm." },
+    { question: "Do you avoid talking about certain topics?", answer: "Yes, I avoid discussing politics." },
+    { question: "Have you ever been excited about learning something?", answer: "Yes, I was excited about learning how to code." },
+    { question: "Are you worried about making mistakes?", answer: "Sometimes, I'm worried about speaking incorrectly." },
+    { question: "Do you have trouble remembering things?", answer: "Yes, I sometimes have trouble remembering names." },
+    { question: "What are you bored of doing every day?", answer: "I'm bored of answering emails all morning." },
+    { question: "Have you ever succeeded in convincing someone?", answer: "Yes, I succeeded in changing my boss's mind." },
+    { question: "What do you usually do after finishing work?", answer: "After working, I enjoy going for a walk." },
+    { question: "Are you used to speaking in front of others?", answer: "Yes, I'm used to giving presentations." },
+    { question: "What are you looking forward to doing this weekend?", answer: "I'm looking forward to watching a movie." },
+    { question: "Do you often worry about failing?", answer: "Sometimes, I worry about not reaching my goals." },
+    { question: "How do you feel about asking for help?", answer: "I'm comfortable with asking when I need it." },
+    { question: "What are you thinking about doing next year?", answer: "I'm thinking about studying abroad." },
+    { question: "Do you feel nervous about meeting new people?", answer: "Yes, I sometimes feel nervous about introductions." },
+    { question: "What do you enjoy doing in your free time?", answer: "I enjoy drawing and listening to music." }
+  ]
+};
+
+// Module 162 Data: Advanced Collocations (make an effort, heavy rain)
+const MODULE_162_DATA = {
+  title: "Advanced Collocations (make an effort, heavy rain)",
+  description: "Advanced Collocations (make an effort, heavy rain)",
+  intro: `📘 Lesson Objectives
+✅ Learn and use natural word combinations (collocations).
+✅ Sound more fluent and native-like in English.
+✅ Master common verb + noun, adjective + noun collocations.
+
+📗 Grammar Explanation
+Collocations are natural combinations of words that are often used together. Advanced collocations help learners sound more fluent and native-like.
+
+🧩 Structure
+✅ Verb + noun: make an effort, catch a cold
+✅ Adjective + noun: heavy rain, strong coffee
+✅ Verb + adjective + noun: take full responsibility
+
+🧠 Example Sentences
+• I made an effort to arrive early.
+• We had heavy rain last night.
+• She takes full responsibility for the mistake.`,
+  speakingPractice: [
+    { question: "Have you ever made an effort to improve your health?", answer: "Yes, I made a real effort to eat healthier last year." },
+    { question: "What do you usually do during heavy rain?", answer: "I usually stay indoors when there's heavy rain." },
+    { question: "Do you prefer strong coffee or mild coffee?", answer: "I prefer strong coffee in the morning." },
+    { question: "Have you ever caught a cold before an important event?", answer: "Yes, I caught a cold just before a big interview." },
+    { question: "What helps you make a good impression?", answer: "Wearing neat clothes and smiling help me make a good impression." },
+    { question: "Have you ever made a mistake at work?", answer: "Yes, I made a serious mistake in a report once." },
+    { question: "What advice would you give to avoid taking unnecessary risks?", answer: "I'd say always calculate the risks before making a move." },
+    { question: "Have you ever made a promise you couldn't keep?", answer: "Yes, I once made a promise to visit but couldn't go." },
+    { question: "When do you usually take a break during the day?", answer: "I take a short break every two hours." },
+    { question: "How do you deal with heavy traffic?", answer: "I listen to music to stay calm during heavy traffic." },
+    { question: "Have you ever made a complaint in a restaurant?", answer: "Yes, I made a complaint about cold food last month." },
+    { question: "Do you think it's important to pay close attention to details?", answer: "Yes, paying close attention can prevent mistakes." },
+    { question: "Have you ever made a decision you regretted?", answer: "Yes, I made a quick decision without thinking it through." },
+    { question: "Do you prefer staying in a quiet place or a noisy place?", answer: "I prefer staying in a quiet place." },
+    { question: "How do you prepare for a big presentation?", answer: "I make a detailed plan and practice several times." },
+    { question: "Have you ever broken a promise?", answer: "Unfortunately, I have broken a promise before." },
+    { question: "When do you usually have a deep conversation?", answer: "I usually have deep conversations late at night." },
+    { question: "Do you like fast food or home-cooked meals?", answer: "I prefer home-cooked meals, but sometimes I eat fast food." },
+    { question: "What helps you avoid making the same mistake again?", answer: "Learning from experience helps me avoid repeating mistakes." },
+    { question: "Have you ever had a narrow escape?", answer: "Yes, I had a narrow escape while driving in the snow." },
+    { question: "What's something you can't take for granted?", answer: "I never take my family's support for granted." },
+    { question: "Have you ever paid a compliment to a stranger?", answer: "Yes, I paid a compliment to a woman's dress last week." },
+    { question: "Do you enjoy making small talk?", answer: "Yes, I enjoy making small talk, especially in new situations." },
+    { question: "How do you feel about facing a difficult challenge?", answer: "I try to stay positive when facing a difficult challenge." },
+    { question: "Have you ever taken part in a competition?", answer: "Yes, I took part in a local writing contest." },
+    { question: "What's a good way to break the ice?", answer: "Telling a light joke is a good way to break the ice." },
+    { question: "Have you ever had a heated argument with someone?", answer: "Yes, I had a heated argument with my colleague last year." },
+    { question: "Do you usually keep in touch with old friends?", answer: "Yes, I try to keep in touch regularly." },
+    { question: "When was the last time you made a big decision?", answer: "I made a big decision when I changed my job." },
+    { question: "Have you ever suffered a major setback?", answer: "Yes, I suffered a major setback after my startup failed." },
+    { question: "What's something you should take seriously?", answer: "I think mental health is something we should take seriously." },
+    { question: "Have you ever had mixed feelings about something?", answer: "Yes, I had mixed feelings about moving abroad." },
+    { question: "What makes you burst into laughter?", answer: "My best friend's jokes always make me burst into laughter." },
+    { question: "What's something you've been keeping a close eye on?", answer: "I've been keeping a close eye on the stock market." },
+    { question: "Have you ever had a sleepless night before an exam?", answer: "Yes, I've had many sleepless nights during finals." },
+    { question: "What helps you make up your mind quickly?", answer: "Experience and intuition help me make quick decisions." },
+    { question: "When was the last time you felt deep regret?", answer: "I felt deep regret after missing a family gathering." },
+    { question: "Do you usually give honest feedback?", answer: "Yes, I always try to give honest and constructive feedback." },
+    { question: "What's something you need to set a goal for?", answer: "I need to set a goal for improving my time management." },
+    { question: "What do you do when you get stuck in heavy traffic?", answer: "I use that time to listen to audiobooks." },
+    { question: "Have you ever missed an important deadline?", answer: "Yes, I missed an important deadline once due to illness." }
+  ]
+};
+
+// Module 163 Data: Advanced Phrasal Verbs (bring up, cut down on)
+const MODULE_163_DATA = {
+  title: "Advanced Phrasal Verbs (bring up, cut down on)",
+  description: "Advanced Phrasal Verbs (bring up, cut down on)",
+  intro: `📘 Lesson Objectives
+✅ Master common advanced phrasal verbs.
+✅ Use phrasal verbs naturally in conversation.
+✅ Understand idiomatic meanings.
+
+📗 Grammar Explanation
+Advanced phrasal verbs are common in everyday English and are essential for sounding natural and fluent. Many of them have idiomatic meanings that cannot be understood just by looking at the individual words.
+
+🧠 Example Phrasal Verbs
+• bring up: to mention something in conversation
+• cut down on: to reduce something (especially consumption)
+• carry out, come across, look into, put off, take up, turn down, run out of, go over
+
+🧠 Example Sentences
+• She brought up an interesting topic during the meeting.
+• I'm trying to cut down on sugar.
+• We need to look into the issue more closely.`,
+  speakingPractice: [
+    { question: "Have you ever brought up a sensitive topic in a meeting?", answer: "Yes, I once brought up salary issues during a team meeting." },
+    { question: "Is there anything you're trying to cut down on?", answer: "Yes, I'm trying to cut down on caffeine." },
+    { question: "Have you ever come across a strange situation?", answer: "Yes, I came across a man singing opera in the subway." },
+    { question: "What's something you've recently taken up?", answer: "I've recently taken up painting as a hobby." },
+    { question: "Have you ever had to turn down an offer?", answer: "Yes, I had to turn down a job because of the location." },
+    { question: "Is there a task you've been putting off?", answer: "Yes, I've been putting off cleaning my garage." },
+    { question: "Have you ever carried out an important project?", answer: "Yes, I carried out a research project at university." },
+    { question: "Have you ever looked into a topic deeply?", answer: "Yes, I looked into renewable energy for a school project." },
+    { question: "What do you do when you run out of energy?", answer: "When I run out of energy, I take a quick nap." },
+    { question: "Do you go over your notes before a presentation?", answer: "Yes, I always go over them several times." },
+    { question: "Have you ever brought up an idea that was rejected?", answer: "Yes, I brought up a design change that wasn't accepted." },
+    { question: "What food would you like to cut down on?", answer: "I'd like to cut down on fried foods." },
+    { question: "Have you come across any interesting books lately?", answer: "Yes, I came across a great book on productivity." },
+    { question: "Have you taken up any physical activity recently?", answer: "Yes, I've taken up running in the mornings." },
+    { question: "Why would someone turn down a promotion?", answer: "They might turn it down due to stress or work-life balance." },
+    { question: "Is there something you've been putting off for a long time?", answer: "Yes, I've been putting off scheduling a dentist appointment." },
+    { question: "Have you ever carried out a surprise for someone?", answer: "Yes, I carried out a surprise birthday party for my friend." },
+    { question: "What's something you want to look into more?", answer: "I want to look into how artificial intelligence works." },
+    { question: "What do you usually do when you run out of patience?", answer: "When I run out of patience, I take a deep breath and walk away." },
+    { question: "Do you go over your work before submitting it?", answer: "Yes, I always go over it to check for mistakes." },
+    { question: "Have you ever brought up something you regretted?", answer: "Yes, I once brought up someone's past and regretted it." },
+    { question: "What would you like to cut down on this year?", answer: "I'd like to cut down on screen time." },
+    { question: "Have you ever come across someone you knew in a strange place?", answer: "Yes, I came across an old classmate while traveling in Italy." },
+    { question: "Have you taken up any online courses?", answer: "Yes, I've taken up a course on project management." },
+    { question: "What kind of job would you turn down immediately?", answer: "I'd turn down a job that required too much travel." },
+    { question: "Is there a boring task you've been putting off?", answer: "Yes, I've been putting off organizing my closet." },
+    { question: "What's the most difficult project you've carried out?", answer: "The most difficult one was launching our company website." },
+    { question: "What's a mystery you'd like to look into?", answer: "I'd love to look into the history of my ancestors." },
+    { question: "How do you cope when you run out of motivation?", answer: "I watch motivational videos when I run out of motivation." },
+    { question: "Do you usually go over your emails before sending?", answer: "Yes, I always go over them to avoid mistakes." },
+    { question: "Have you ever brought up an awkward topic accidentally?", answer: "Yes, I brought up someone's breakup without realizing." },
+    { question: "Do you plan to cut down on anything in your diet?", answer: "Yes, I plan to cut down on sugar." },
+    { question: "What's the most surprising thing you've come across?", answer: "I once came across a hidden café in my neighborhood." },
+    { question: "Is there a new skill you've recently taken up?", answer: "Yes, I've taken up digital illustration." },
+    { question: "Would you turn down a job with a low salary?", answer: "Yes, I would turn it down if it didn't cover my expenses." },
+    { question: "Have you ever put off going to the doctor?", answer: "Yes, I put off a checkup for months." },
+    { question: "What's something important you've carried out at work?", answer: "I carried out a full audit of our system." },
+    { question: "Is there a topic you want to look into more this year?", answer: "Yes, I want to look into personal finance and investing." },
+    { question: "What do you do when you run out of ideas?", answer: "When I run out of ideas, I take a break and read." },
+    { question: "Do you go over conversations in your head afterward?", answer: "Yes, I often go over what I said to see if I could improve." }
+  ]
+};
+
+// Module 164 Data: Idioms and Expressions (hit the nail on the head)
+const MODULE_164_DATA = {
+  title: "Idioms and Expressions (hit the nail on the head)",
+  description: "Idioms and Expressions (hit the nail on the head)",
+  intro: `📘 Lesson Objectives
+✅ Learn common English idioms and expressions.
+✅ Understand figurative meanings.
+✅ Use idioms naturally in conversation.
+
+📗 Grammar Explanation
+Idioms and expressions are phrases that have a figurative meaning different from their literal meaning. They are commonly used in spoken and written English and help you sound more natural and fluent.
+
+🧠 Common Idioms
+• hit the nail on the head: to be exactly right
+• under the weather: feeling sick
+• break the ice: to start a conversation in a social setting
+• let the cat out of the bag: to reveal a secret
+• once in a blue moon: very rarely
+
+🧠 Example Sentences
+• You hit the nail on the head with your analysis.
+• I'm feeling a bit under the weather today.
+• He let the cat out of the bag about the surprise party.`,
+  speakingPractice: [
+    { question: "Have you ever hit the nail on the head in a discussion?", answer: "Yes, during a meeting, I hit the nail on the head with my suggestion." },
+    { question: "What do you do when you feel under the weather?", answer: "I usually rest and drink lots of fluids when I'm under the weather." },
+    { question: "How do you usually break the ice in a new group?", answer: "I break the ice by making a light joke or asking questions." },
+    { question: "Have you ever let the cat out of the bag accidentally?", answer: "Yes, I accidentally let the cat out of the bag about a friend's promotion." },
+    { question: "What's something you do once in a blue moon?", answer: "I go to the cinema once in a blue moon." },
+    { question: "Can you describe a time when you were over the moon?", answer: "I was over the moon when I got my first job offer." },
+    { question: "Have you ever been in hot water at work?", answer: "Yes, I was in hot water once for missing a deadline." },
+    { question: "Do you know someone who always spills the beans?", answer: "Yes, my cousin always spills the beans during family gatherings." },
+    { question: "Have you ever felt like you were walking on air?", answer: "Yes, I felt like I was walking on air after passing my final exam." },
+    { question: "What makes your blood boil?", answer: "It makes my blood boil when people are rude for no reason." },
+    { question: "When was the last time you felt under pressure?", answer: "I felt under pressure during last week's presentation." },
+    { question: "Have you ever jumped on the bandwagon?", answer: "Yes, I jumped on the bandwagon with the latest fashion trend." },
+    { question: "Do you sometimes put your foot in your mouth?", answer: "Yes, I put my foot in my mouth once by criticizing someone's cooking." },
+    { question: "Can you think of a moment when you were all ears?", answer: "Yes, I was all ears during my mentor's speech." },
+    { question: "Have you ever been caught red-handed?", answer: "Yes, I was caught red-handed sneaking cookies as a kid." },
+    { question: "Do you know someone who's the black sheep of the family?", answer: "Yes, my uncle is considered the black sheep." },
+    { question: "Have you ever felt like you were in the same boat as someone?", answer: "Yes, my colleague and I were in the same boat during layoffs." },
+    { question: "What helps you keep your chin up in hard times?", answer: "Talking to friends helps me keep my chin up." },
+    { question: "Have you ever gotten cold feet before something important?", answer: "Yes, I got cold feet before giving a public speech." },
+    { question: "Do you usually bite your tongue when you're angry?", answer: "Yes, I try to bite my tongue and stay calm." },
+    { question: "What's a time you had to face the music?", answer: "I had to face the music after missing an important meeting." },
+    { question: "Have you ever felt like a fish out of water?", answer: "Yes, I felt like a fish out of water during my first job." },
+    { question: "What's something you do when you hit the books?", answer: "When I hit the books, I usually prepare for exams." },
+    { question: "Have you ever let someone off the hook?", answer: "Yes, I let my brother off the hook when he forgot my birthday." },
+    { question: "Do you know someone who always goes the extra mile?", answer: "Yes, my team leader always goes the extra mile." },
+    { question: "When was the last time you bent over backwards for someone?", answer: "I bent over backwards helping my friend move." },
+    { question: "Have you ever burned the midnight oil?", answer: "Yes, I burned the midnight oil before a big deadline." },
+    { question: "Do you prefer to play it by ear or plan ahead?", answer: "I usually play it by ear when traveling." },
+    { question: "Have you ever blown things out of proportion?", answer: "Yes, I once blew a small issue out of proportion." },
+    { question: "Have you ever had to bite the bullet?", answer: "Yes, I had to bite the bullet and accept a lower salary." },
+    { question: "What's something you've done that cost you an arm and a leg?", answer: "My new phone cost me an arm and a leg." },
+    { question: "Do you like to hit the sack early?", answer: "Yes, I like to hit the sack before 11 PM." },
+    { question: "Have you ever jumped the gun?", answer: "Yes, I jumped the gun by sending an email too soon." },
+    { question: "Do you ever let things slip through your fingers?", answer: "Yes, I let a good opportunity slip through my fingers once." },
+    { question: "What helps you stay ahead of the game?", answer: "Reading daily news helps me stay ahead of the game." },
+    { question: "What's something you've done that was out of the blue?", answer: "I decided to take a solo trip out of the blue." },
+    { question: "Have you ever gone back to square one?", answer: "Yes, I had to go back to square one after losing my data." },
+    { question: "What's something that happens once in a blue moon for you?", answer: "I eat fast food once in a blue moon." },
+    { question: "Have you ever had to weather the storm?", answer: "Yes, I had to weather the storm during a tough breakup." },
+    { question: "What's something you've done by the skin of your teeth?", answer: "I passed my driving test by the skin of my teeth." }
+  ]
+};
+
+// Module 165 Data: Expressing Certainty and Doubt
+const MODULE_165_DATA = {
+  title: "Expressing Certainty and Doubt",
+  description: "Expressing Certainty and Doubt",
+  intro: `📘 Lesson Objectives
+✅ Express different levels of certainty and doubt.
+✅ Use appropriate phrases for showing confidence or uncertainty.
+✅ Sound natural in discussions and debates.
+
+📗 Grammar Explanation
+Expressing certainty and doubt is important in everyday communication to show how sure or unsure you are about something. At the B2 level, learners should be comfortable using a range of expressions for both certainty and doubt.
+
+🧩 Phrases to Express Certainty
+✅ I'm sure that...
+✅ There's no doubt that...
+✅ I'm convinced that...
+✅ It's obvious that...
+✅ Clearly...
+
+🧩 Phrases to Express Doubt
+✅ I'm not sure that...
+✅ I doubt that...
+✅ It's unlikely that...
+✅ I have my doubts about...
+✅ I don't think that...
+
+🧠 Example Sentences
+• I'm sure that she will come to the party.
+• I doubt that he knows the answer.
+• There's no doubt that this is the right decision.`,
+  speakingPractice: [
+    { question: "Are you sure about your decision?", answer: "Yes, I'm completely sure that this is the right choice." },
+    { question: "Do you think the weather will be good tomorrow?", answer: "I'm not sure, but it looks like it might rain." },
+    { question: "Are you convinced the plan will work?", answer: "Yes, I'm convinced that it will be successful." },
+    { question: "Do you believe they'll arrive on time?", answer: "I have my doubts about that. They're usually late." },
+    { question: "Is it obvious that she likes him?", answer: "Yes, it's obvious from the way she talks about him." },
+    { question: "Do you think he'll accept the job offer?", answer: "I doubt that he will. The salary is too low." },
+    { question: "Are you certain this is the right road?", answer: "There's no doubt that we're going the right way." },
+    { question: "Do you think the new policy will be effective?", answer: "Honestly, I don't think that it will make a big difference." },
+    { question: "Are you confident in your answer?", answer: "Yes, I'm quite confident that it's correct." },
+    { question: "Do you trust the results of the survey?", answer: "I'm not sure that the sample size was large enough." },
+    { question: "Do you think she'll pass the exam?", answer: "It's unlikely that she'll pass without studying." },
+    { question: "Are you sure he meant to offend you?", answer: "No, I doubt that he did it on purpose." },
+    { question: "Is there any chance that the flight will be delayed?", answer: "It's possible, but I'm sure it'll take off on time." },
+    { question: "Are you sure you locked the door?", answer: "I'm not completely sure, I should double-check." },
+    { question: "Do you believe what he said?", answer: "I have my doubts about his story." },
+    { question: "Are you convinced he's the right person for the job?", answer: "Yes, I'm convinced he has the right skills." },
+    { question: "Do you think they'll finish on time?", answer: "I don't think they will. They're behind schedule." },
+    { question: "Is it clear what needs to be done?", answer: "Yes, it's completely clear." },
+    { question: "Do you believe this strategy will work?", answer: "There's no doubt that this strategy is the best." },
+    { question: "Are you confident about the solution?", answer: "Yes, I'm confident that it'll solve the problem." },
+    { question: "Is it obvious what the problem is?", answer: "Yes, clearly, there's a communication issue." },
+    { question: "Are you sure she understood the instructions?", answer: "I'm not sure. She looked confused." },
+    { question: "Do you believe the company will recover?", answer: "Honestly, I doubt that it will anytime soon." },
+    { question: "Are you convinced that this is the best option?", answer: "Yes, I'm convinced it's the only logical choice." },
+    { question: "Is there any doubt in your mind?", answer: "No, there's no doubt at all." },
+    { question: "Do you trust their explanation?", answer: "I don't think that they told the whole truth." },
+    { question: "Are you sure the meeting is at 3 p.m.?", answer: "Yes, I'm completely sure." },
+    { question: "Do you think they'll win the game?", answer: "It's unlikely, but not impossible." },
+    { question: "Is it clear who made the mistake?", answer: "I'm not sure. It could've been anyone." },
+    { question: "Do you have any doubts about your decision?", answer: "No, I'm confident I did the right thing." },
+    { question: "Are you sure she's telling the truth?", answer: "I have my doubts. Her story keeps changing." },
+    { question: "Do you think we'll get a bonus this year?", answer: "I doubt it. The company didn't meet its goals." },
+    { question: "Are you sure we submitted the application?", answer: "I think we did, but I'm not 100% sure." },
+    { question: "Is it obvious that they're unhappy?", answer: "Yes, it's obvious from their body language." },
+    { question: "Do you believe we can fix the issue?", answer: "I'm sure we can if we work together." },
+    { question: "Do you think this will cause problems?", answer: "It's possible, but I doubt it." },
+    { question: "Are you confident in your team?", answer: "Yes, I'm confident they'll do a great job." },
+    { question: "Is there a chance this could fail?", answer: "There's always a chance, but I'm optimistic." },
+    { question: "Do you think he'll change his mind?", answer: "I doubt that. He seems pretty firm." },
+    { question: "Are you convinced this is the right approach?", answer: "Yes, I'm absolutely convinced." }
+  ]
+};
+
+// Module 166 Data: Hedging Language (Seems to / Appears to)
+const MODULE_166_DATA = {
+  title: "Hedging Language (Seems to / Appears to)",
+  description: "Hedging Language (Seems to / Appears to)",
+  intro: `📘 Lesson Objectives
+✅ Express uncertainty, politeness, or careful opinions using hedging language.
+✅ Use "seems to" and "appears to" appropriately in conversation.
+✅ Sound more diplomatic and professional.
+
+📗 Grammar Explanation
+Hedging language helps us show that something looks a certain way but isn't a hard fact. Use 'seems to' or 'appears to' to be less direct or to express uncertainty/politeness.
+
+🧩 Structure
+✅ Subject + seems to / appears to + Verb (base form for present)
+✅ Subject + seems to / appears to + have + past participle (for past)
+
+🧠 Example Sentences
+• He seems to enjoy working from home.
+• The company appears to be losing money.
+• She seems to have forgotten about the meeting.
+• It appears to have rained last night.`,
+  speakingPractice: [
+    { question: "Why do you think John left the party early?", answer: "He seems to have had a bad day, so maybe he didn't feel like staying." },
+    { question: "What do you think about the new manager?", answer: "She appears to be very professional and well-prepared." },
+    { question: "Is the project on track?", answer: "It seems to be progressing slower than expected." },
+    { question: "Did Ali understand the instructions?", answer: "He seems to have misunderstood one or two parts." },
+    { question: "How does the new intern behave?", answer: "He appears to be trying his best to fit in." },
+    { question: "Why isn't the internet working?", answer: "It seems to be down in the whole area." },
+    { question: "Do the students like the new method?", answer: "They seem to be enjoying the interactive activities a lot." },
+    { question: "Why are the prices so high this month?", answer: "It appears to be due to inflation and global market changes." },
+    { question: "Has the printer been fixed?", answer: "It seems to be working fine now." },
+    { question: "Why is the cat acting strange?", answer: "It seems to have eaten something bad." },
+    { question: "Do you think they will accept the offer?", answer: "They appear to be interested, but I'm not completely sure." },
+    { question: "What happened to the file you sent me?", answer: "It seems to have disappeared from my inbox somehow." },
+    { question: "How's the new policy affecting the employees?", answer: "People seem to be more stressed than before." },
+    { question: "Why did your friend cancel dinner?", answer: "She seems to have caught the flu." },
+    { question: "Why are they arguing again?", answer: "It appears to be a misunderstanding about money." },
+    { question: "Is the teacher angry?", answer: "She seems to be frustrated, but she's trying to stay calm." },
+    { question: "Why is the boss in a good mood today?", answer: "He appears to have received some good news." }
+  ]
+};
+
+// Module 167 Data: Modals in the Past (might have done, should have been)
+const MODULE_167_DATA = {
+  title: "Modals in the Past (might have done, should have been)",
+  description: "Modals in the Past (might have done, should have been)",
+  intro: `📘 Lesson Objectives
+✅ Use modal verbs to talk about past possibilities, regrets, or conclusions.
+✅ Express speculation about past events.
+✅ Understand the difference between different past modals.
+
+📗 Grammar Explanation
+Use 'might/could have' for possibility or uncertainty; 'should have' for regret/criticism; 'must have' for logical conclusions about past events.
+
+🧩 Structure
+✅ Subject + Modal Verb + have + Past Participle
+
+🧠 Example Sentences
+• They might have forgotten the appointment.
+• You should have studied harder for the test.
+• She must have left early to catch her flight.
+• He could have been more polite.
+• We shouldn't have ignored the warnings.`,
+  speakingPractice: [
+    { question: "Why didn't Sarah come to the party?", answer: "She might have been busy with work." },
+    { question: "Why did Ali fail the exam?", answer: "He should have studied more." },
+    { question: "Why wasn't the email sent?", answer: "It could have been a technical issue." },
+    { question: "Why is your phone broken?", answer: "I must have dropped it without noticing." },
+    { question: "Why didn't you call me last night?", answer: "I should have called, but I completely forgot." },
+    { question: "Why wasn't the report finished on time?", answer: "We might have underestimated the time needed." },
+    { question: "Why are you so tired today?", answer: "I should have gone to bed earlier." },
+    { question: "Why was the shop closed?", answer: "It must have closed earlier than usual." },
+    { question: "Why didn't she answer your message?", answer: "She might have lost her phone." },
+    { question: "Why didn't they win the match?", answer: "They could have played better." },
+    { question: "Why are you late?", answer: "I should have left home earlier." },
+    { question: "Why wasn't the meeting productive?", answer: "We might have needed a better agenda." },
+    { question: "Why did the car stop?", answer: "It could have run out of fuel." },
+    { question: "Why was he angry?", answer: "I might have said something offensive." },
+    { question: "Why did you miss the flight?", answer: "I should have arrived at the airport earlier." },
+    { question: "Why did the computer crash?", answer: "It might have overheated." },
+    { question: "Why didn't you attend the training?", answer: "I should have checked the schedule more carefully." },
+    { question: "Why was your boss disappointed?", answer: "I might have misunderstood the instructions." },
+    { question: "Why did she cry?", answer: "He could have said something hurtful." },
+    { question: "Why didn't you eat anything?", answer: "I must have lost my appetite." },
+    { question: "Why is the kitchen such a mess?", answer: "I should have cleaned it before leaving." },
+    { question: "Why didn't they invite you?", answer: "They might have forgotten." },
+    { question: "Why was the flight delayed?", answer: "There could have been bad weather." },
+    { question: "Why did he ignore your message?", answer: "He might have been upset about something." },
+    { question: "Why didn't you wear a jacket?", answer: "I should have listened to the weather forecast." },
+    { question: "Why didn't you say goodbye?", answer: "I must have been in a rush." },
+    { question: "Why was the project unsuccessful?", answer: "We might have focused on the wrong priorities." },
+    { question: "Why didn't she attend the interview?", answer: "She could have had a family emergency." },
+    { question: "Why didn't you answer the phone?", answer: "I might have been in the shower." },
+    { question: "Why were the guests unhappy?", answer: "We should have offered more food and drinks." },
+    { question: "Why didn't you finish the book?", answer: "I could have managed my time better." },
+    { question: "Why did you argue with your friend?", answer: "I should have stayed calm." },
+    { question: "Why did the kids get sick?", answer: "They might have eaten something bad." },
+    { question: "Why didn't he win the competition?", answer: "He might have been too nervous." },
+    { question: "Why was the presentation boring?", answer: "I could have made it more interactive." },
+    { question: "Why didn't she pass the driving test?", answer: "She should have practiced more." },
+    { question: "Why were you so quiet yesterday?", answer: "I might have been tired or distracted." },
+    { question: "Why wasn't the dinner ready?", answer: "I must have lost track of time." },
+    { question: "Why did the lights go out?", answer: "There might have been a power cut." },
+    { question: "Why did you feel disappointed?", answer: "I should have had lower expectations." }
+  ]
+};
+
+// Module 168 Data: Discursive Essays – Opinion Language
+const MODULE_168_DATA = {
+  title: "Discursive Essays – Opinion Language",
+  description: "Discursive Essays – Opinion Language",
+  intro: `📘 Lesson Objectives
+✅ Use appropriate language and expressions for sharing opinions.
+✅ Learn formal structures for agreeing and disagreeing.
+✅ Express multiple viewpoints effectively.
+
+📗 Grammar Explanation
+Use formal opinion language to explore different points of view, support ideas, agree/disagree, and show contrast or concession in essays.
+
+🧠 Opinion Phrases
+• In my opinion, ...
+• I strongly believe that ...
+• From my perspective, ...
+• It seems to me that ...
+• Many people argue that ...
+• It is often said that ...
+
+🧠 Agreement & Contrast
+• I agree with the view that ...
+• I completely disagree with the idea that ...
+• On the one hand, ... / On the other hand, ...
+• While it is true that ..., it is also important to consider ...
+• Although some people think ..., I believe ...
+
+🧠 Conclusion
+• In conclusion, ...
+• To sum up, ...`,
+  speakingPractice: [
+    { question: "Do you think social media has a positive impact on society?", answer: "In my opinion, social media has both positive and negative effects, but overall it helps people stay connected." },
+    { question: "Should university education be free?", answer: "I strongly believe that university education should be free to ensure equal opportunities for everyone." },
+    { question: "Is homework necessary for students?", answer: "From my perspective, homework reinforces learning, but too much of it can be overwhelming." },
+    { question: "Do you agree with banning cars from city centers?", answer: "I agree with the view that limiting cars in city centers can reduce pollution and improve public health." },
+    { question: "Should animals be used in scientific testing?", answer: "Although some people think animal testing is cruel, I believe it is sometimes necessary for medical advancement." },
+    { question: "Is it better to live in the city or the countryside?", answer: "While it is true that the city offers more opportunities, the countryside provides a more peaceful lifestyle." },
+    { question: "Should students wear school uniforms?", answer: "I completely disagree with the idea that uniforms are essential, as they limit self-expression." },
+    { question: "Is it important to learn a second language?", answer: "It seems to me that learning a second language is incredibly beneficial for both career and cultural understanding." },
+    { question: "Do violent video games lead to violent behavior?", answer: "Many people argue that violent games influence behavior, but I believe the impact is often exaggerated." },
+    { question: "Should governments invest more in public transport?", answer: "I strongly believe that investing in public transport can improve traffic and reduce pollution." },
+    { question: "Is money the key to happiness?", answer: "In my opinion, money can bring comfort, but it does not guarantee happiness." },
+    { question: "Should school days be shorter?", answer: "I agree with the idea that shorter school days could make learning more effective and less stressful." },
+    { question: "Is it better to read a book or watch a movie?", answer: "From my perspective, reading a book allows for deeper imagination and understanding." },
+    { question: "Should mobile phones be banned in classrooms?", answer: "While mobile phones can be distracting, I believe they can also be useful learning tools if used properly." },
+    { question: "Do celebrities have too much influence on society?", answer: "It seems to me that celebrities can influence people, especially teenagers, both positively and negatively." },
+    { question: "Should plastic bags be banned?", answer: "I strongly support the idea of banning plastic bags to protect the environment." },
+    { question: "Is online learning as effective as classroom learning?", answer: "Although online learning is convenient, I believe classroom interaction is more engaging and effective." },
+    { question: "Should fast food be banned?", answer: "I disagree with banning fast food entirely, but I believe healthier options should be promoted." },
+    { question: "Do exams reflect a student's true ability?", answer: "Many people argue that exams are necessary, but I think they don't always show a student's full potential." },
+    { question: "Is climate change the biggest threat to humanity?", answer: "I believe that climate change is one of the most serious issues we are facing today." },
+    { question: "Should children have chores at home?", answer: "In my opinion, having chores helps children become more responsible and independent." },
+    { question: "Do you think space exploration is worth the cost?", answer: "While it is expensive, I believe space exploration can lead to important discoveries and technologies." },
+    { question: "Should people be allowed to work from home permanently?", answer: "I agree that working from home offers flexibility, but it may reduce social interaction." },
+    { question: "Is it better to be rich or happy?", answer: "To sum up, I would rather be happy than rich, because money can't buy emotional well-being." },
+    { question: "Should the voting age be lowered to 16?", answer: "Although some young people are mature, I believe 18 is a more reasonable age for voting." },
+    { question: "Do you agree with using surveillance cameras in public places?", answer: "I agree with the use of surveillance cameras if they improve safety and do not invade privacy." },
+    { question: "Is technology making us less social?", answer: "From my perspective, technology can isolate people if not used wisely." },
+    { question: "Should the government control what people eat?", answer: "I completely disagree with government control over food choices, though education is important." },
+    { question: "Do you think students should take a gap year?", answer: "It seems to me that a gap year can help students gain valuable life experience." },
+    { question: "Should parents limit screen time for children?", answer: "I strongly believe that screen time should be limited to protect children's health and development." },
+    { question: "Is competition good for students?", answer: "While competition can motivate, too much of it might create unnecessary stress." },
+    { question: "Should everyone become vegetarian?", answer: "I believe becoming vegetarian is a personal choice and should not be forced." },
+    { question: "Do you think people rely too much on technology?", answer: "In my opinion, we depend on technology too much, especially for communication." },
+    { question: "Is fashion important in today's society?", answer: "Fashion may reflect personality, but I don't think it should be a priority." },
+    { question: "Should smoking be banned completely?", answer: "I agree that smoking should be banned in public places to protect others from secondhand smoke." },
+    { question: "Do you think exams should be replaced with continuous assessment?", answer: "I believe continuous assessment gives a more accurate picture of a student's progress." },
+    { question: "Should people have to pay for healthcare?", answer: "I strongly believe that healthcare should be free and accessible to all." },
+    { question: "Is it better to work for yourself or someone else?", answer: "Working for yourself gives more freedom, but it also brings more responsibility." },
+    { question: "Should students be allowed to grade their teachers?", answer: "It seems fair that students can give feedback, but it should be done respectfully and constructively." },
+    { question: "Is advertising harmful or helpful?", answer: "Advertising can be both — helpful for businesses and harmful if it misleads consumers." }
+  ]
+};
+
 // Export all B2 module data
 export {
   MODULE_151_DATA,
@@ -602,5 +1123,13 @@ export {
   MODULE_157_DATA,
   MODULE_158_DATA,
   MODULE_159_DATA,
-  MODULE_160_DATA
+  MODULE_160_DATA,
+  MODULE_161_DATA,
+  MODULE_162_DATA,
+  MODULE_163_DATA,
+  MODULE_164_DATA,
+  MODULE_165_DATA,
+  MODULE_166_DATA,
+  MODULE_167_DATA,
+  MODULE_168_DATA
 };

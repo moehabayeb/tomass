@@ -12,6 +12,7 @@ const Index = React.lazy(() => import("./pages/Index"));
 const Auth = React.lazy(() => import("./pages/Auth"));
 const Profile = React.lazy(() => import("./pages/Profile"));
 const MeetingsAdminPage = React.lazy(() => import("./pages/admin/MeetingsAdminPage"));
+const TestB2Modules = React.lazy(() => import("./pages/TestB2Modules"));
 const NotFound = React.lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -46,6 +47,7 @@ const App = () => (
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/admin/meetings" element={<MeetingsAdminPage />} />
+                <Route path="/test-b2" element={<TestB2Modules />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
