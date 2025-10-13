@@ -2093,6 +2093,84 @@ function createAdvancedFallbackQuestion(sentence: string, seed: number): Multipl
 
   // Advanced pattern recognition for better fallbacks
 
+  // ========================================================================
+  // NEW PRIORITY PATTERNS - Fix A1/A2 skipped MCQs
+  // ========================================================================
+
+  // Priority 0a: Yes/No answer format - strip prefix and process core sentence
+  // Handles: "Yes, I am a teacher." / "No, they are not students."
+  const yesNoPattern = /^(yes|no),?\s+(.+)$/i;
+  const yesNoMatch = sentence.match(yesNoPattern);
+  if (yesNoMatch) {
+    const prefix = yesNoMatch[1]; // "Yes" or "No"
+    const coreSentence = yesNoMatch[2]; // "I am a teacher"
+
+    // Try to generate MCQ from the core sentence
+    const coreMCQ = generateMultipleChoiceQuestion(coreSentence, seed);
+    if (coreMCQ) {
+      // Prepend the Yes/No to the prompt
+      return {
+        prompt: `${prefix}, ${coreMCQ.prompt}`,
+        options: coreMCQ.options
+      };
+    }
+  }
+
+  // Priority 0b: Demonstrative pronouns (This/That/These/Those)
+  // Handles: "This is my mother." / "These are students."
+  const demonstrativePattern = /^(this|that|these|those)\s+(is|are)\s+(.+)$/i;
+  const demoMatch = sentence.match(demonstrativePattern);
+  if (demoMatch) {
+    const demonstrative = demoMatch[1].toLowerCase();
+    const beVerb = demoMatch[2].toLowerCase();
+    const complement = demoMatch[3];
+
+    // Create MCQ for demonstrative pronoun
+    const wrongDemonstratives = demonstrative === 'this' ? ['that', 'these'] :
+                                 demonstrative === 'that' ? ['this', 'those'] :
+                                 demonstrative === 'these' ? ['those', 'this'] :
+                                 ['these', 'that']; // those
+
+    return {
+      prompt: sentence.replace(new RegExp(`^${demonstrative}\\b`, 'i'), '___'),
+      options: seededShuffleArray([
+        { letter: 'A', text: demonstrative, correct: true },
+        { letter: 'B', text: wrongDemonstratives[0], correct: false },
+        { letter: 'C', text: wrongDemonstratives[1], correct: false }
+      ], seed).map((option, index) => ({
+        ...option,
+        letter: (['A', 'B', 'C'] as const)[index]
+      }))
+    };
+  }
+
+  // Priority 0c: Simple pronoun + be verb + complement (Module 1-5 basic sentences)
+  // Handles: "I am a teacher." / "They are students." / "He is my brother."
+  const simplePronounPattern = /^(I|you|he|she|it|we|they)\s+(am|is|are)\s+(.+)$/i;
+  const simplePronounMatch = sentence.match(simplePronounPattern);
+  if (simplePronounMatch) {
+    const pronoun = simplePronounMatch[1].toLowerCase();
+    const beVerb = simplePronounMatch[2].toLowerCase();
+    const complement = simplePronounMatch[3];
+
+    // Create MCQ for be verb (most educational for beginners)
+    const wrongBeVerbs = beVerb === 'am' ? ['is', 'are'] :
+                         beVerb === 'is' ? ['am', 'are'] :
+                         ['am', 'is']; // are
+
+    return {
+      prompt: sentence.replace(new RegExp(`\\b${beVerb}\\b`, 'i'), '___'),
+      options: seededShuffleArray([
+        { letter: 'A', text: beVerb, correct: true },
+        { letter: 'B', text: wrongBeVerbs[0], correct: false },
+        { letter: 'C', text: wrongBeVerbs[1], correct: false }
+      ], seed).map((option, index) => ({
+        ...option,
+        letter: (['A', 'B', 'C'] as const)[index]
+      }))
+    };
+  }
+
   // Priority 1: Get expressions (Module 126)
   if (lowerSentence.includes('get') || lowerSentence.includes('getting') || lowerSentence.includes('got')) {
     const getMCQ = createGetExpressionMCQ(sentence, seed);
@@ -2370,8 +2448,195 @@ function createAdvancedFallbackQuestion(sentence: string, seed: number): Multipl
     }
   }
 
-  // If absolutely nothing works, return null
-  return null;
+  // If absolutely nothing works, use universal fallback - NEVER return null!
+  return createUniversalFallback(sentence, seed);
+}
+
+// ========================================================================
+// UNIVERSAL FALLBACK SYSTEM - GUARANTEED MCQ (NEVER returns null)
+// ========================================================================
+function createUniversalFallback(sentence: string, seed: number): MultipleChoiceQuestion {
+  const lowerSentence = sentence.toLowerCase();
+  const words = sentence.split(/\s+/).filter(w => w.length > 0);
+
+  // Strategy 1: Extract and replace ANY content word (noun, verb, adjective, adverb)
+  // Common content words with alternatives
+  const contentWordAlternatives: {[key: string]: string[]} = {
+    // Nouns
+    'teacher': ['student', 'doctor'],
+    'student': ['teacher', 'worker'],
+    'doctor': ['nurse', 'teacher'],
+    'friend': ['classmate', 'neighbor'],
+    'book': ['pen', 'notebook'],
+    'cat': ['dog', 'bird'],
+    'dog': ['cat', 'bird'],
+    'mother': ['father', 'sister'],
+    'father': ['mother', 'brother'],
+    'sister': ['brother', 'friend'],
+    'brother': ['sister', 'friend'],
+    'home': ['school', 'work'],
+    'school': ['home', 'office'],
+    // Adjectives
+    'happy': ['sad', 'tired'],
+    'sad': ['happy', 'angry'],
+    'tired': ['happy', 'busy'],
+    'ready': ['busy', 'tired'],
+    'tall': ['short', 'young'],
+    'short': ['tall', 'small'],
+    'big': ['small', 'large'],
+    'small': ['big', 'tiny'],
+    'beautiful': ['pretty', 'nice'],
+    'cold': ['hot', 'warm'],
+    'hot': ['cold', 'warm'],
+    'new': ['old', 'recent'],
+    'old': ['new', 'young'],
+    'young': ['old', 'new'],
+    'expensive': ['cheap', 'costly'],
+    'cheap': ['expensive', 'costly'],
+    // Verbs (base form)
+    'speaking': ['talking', 'listening'],
+    'talking': ['speaking', 'listening'],
+    'working': ['studying', 'playing'],
+    'studying': ['working', 'reading'],
+    'playing': ['working', 'studying'],
+  };
+
+  // Try to find any content word we can replace
+  for (const word of words) {
+    const lowerWord = word.toLowerCase().replace(/[.,!?;:]/g, '');
+    if (contentWordAlternatives[lowerWord]) {
+      const alternatives = contentWordAlternatives[lowerWord];
+      return {
+        prompt: sentence.replace(new RegExp(`\\b${word}\\b`, 'i'), '___'),
+        options: seededShuffleArray([
+          { letter: 'A', text: lowerWord, correct: true },
+          { letter: 'B', text: alternatives[0], correct: false },
+          { letter: 'C', text: alternatives[1], correct: false }
+        ], seed).map((option, index) => ({
+          ...option,
+          letter: (['A', 'B', 'C'] as const)[index]
+        }))
+      };
+    }
+  }
+
+  // Strategy 2: Find any pronoun and create pronoun alternatives
+  const pronounMap: {[key: string]: string[]} = {
+    'i': ['you', 'he'],
+    'you': ['I', 'we'],
+    'he': ['she', 'it'],
+    'she': ['he', 'it'],
+    'it': ['he', 'she'],
+    'we': ['you', 'they'],
+    'they': ['we', 'you']
+  };
+
+  for (const word of words) {
+    const lowerWord = word.toLowerCase();
+    if (pronounMap[lowerWord]) {
+      const alternatives = pronounMap[lowerWord];
+      return {
+        prompt: sentence.replace(new RegExp(`\\b${word}\\b`, 'i'), '___'),
+        options: seededShuffleArray([
+          { letter: 'A', text: lowerWord, correct: true },
+          { letter: 'B', text: alternatives[0].toLowerCase(), correct: false },
+          { letter: 'C', text: alternatives[1].toLowerCase(), correct: false }
+        ], seed).map((option, index) => ({
+          ...option,
+          letter: (['A', 'B', 'C'] as const)[index]
+        }))
+      };
+    }
+  }
+
+  // Strategy 3: Extract ANY word that appears (focus on longer words)
+  const meaningfulWords = words
+    .map(w => w.replace(/[.,!?;:]/g, ''))
+    .filter(w => w.length >= 3 && !['the', 'and', 'for', 'are', 'but', 'not', 'you', 'all', 'can', 'her', 'was', 'one', 'our', 'out', 'day', 'get', 'has', 'him', 'his', 'how', 'its', 'may', 'now', 'old', 'see', 'two', 'who', 'boy', 'did', 'let', 'put', 'say', 'too', 'use', 'yes'].includes(w.toLowerCase()));
+
+  if (meaningfulWords.length > 0) {
+    const targetWord = meaningfulWords[0]; // Use first meaningful word
+    // Generate generic alternatives based on word characteristics
+    const alternatives = generateGenericAlternatives(targetWord);
+
+    return {
+      prompt: sentence.replace(new RegExp(`\\b${targetWord}\\b`, 'i'), '___'),
+      options: seededShuffleArray([
+        { letter: 'A', text: targetWord.toLowerCase(), correct: true },
+        { letter: 'B', text: alternatives[0], correct: false },
+        { letter: 'C', text: alternatives[1], correct: false }
+      ], seed).map((option, index) => ({
+        ...option,
+        letter: (['A', 'B', 'C'] as const)[index]
+      }))
+    };
+  }
+
+  // Strategy 4: Last resort - create word order question using first 3 words
+  // This should almost never happen but guarantees we never return null
+  if (words.length >= 3) {
+    const firstThree = words.slice(0, 3).join(' ');
+    const scrambled1 = [words[1], words[0], words[2]].join(' ');
+    const scrambled2 = [words[2], words[1], words[0]].join(' ');
+
+    return {
+      prompt: `Put these words in order: "${words[0]}" "${words[1]}" "${words[2]}" ...`,
+      options: seededShuffleArray([
+        { letter: 'A', text: firstThree, correct: true },
+        { letter: 'B', text: scrambled1, correct: false },
+        { letter: 'C', text: scrambled2, correct: false }
+      ], seed).map((option, index) => ({
+        ...option,
+        letter: (['A', 'B', 'C'] as const)[index]
+      }))
+    };
+  }
+
+  // Absolute last resort (sentence with <3 words) - choose first word
+  const firstWord = words[0] || 'word';
+  return {
+    prompt: sentence.replace(firstWord, '___'),
+    options: seededShuffleArray([
+      { letter: 'A', text: firstWord.toLowerCase(), correct: true },
+      { letter: 'B', text: 'other', correct: false },
+      { letter: 'C', text: 'another', correct: false }
+    ], seed).map((option, index) => ({
+      ...option,
+      letter: (['A', 'B', 'C'] as const)[index]
+    }))
+  };
+}
+
+// Generate generic alternatives for any word
+function generateGenericAlternatives(word: string): string[] {
+  const lowerWord = word.toLowerCase();
+
+  // If word ends with common suffixes, create variations
+  if (lowerWord.endsWith('ing')) {
+    const base = lowerWord.slice(0, -3);
+    return [base + 'ed', base + 'es'];
+  }
+
+  if (lowerWord.endsWith('ed')) {
+    const base = lowerWord.slice(0, -2);
+    return [base + 'ing', base + 's'];
+  }
+
+  if (lowerWord.endsWith('s') && lowerWord.length > 2) {
+    const singular = lowerWord.slice(0, -1);
+    return [singular, singular + 'ing'];
+  }
+
+  // Default: just create similar length alternatives
+  const commonWords = ['word', 'thing', 'person', 'place', 'time', 'work', 'good', 'great', 'nice', 'fine'];
+  const alternatives = commonWords.filter(w => w !== lowerWord && Math.abs(w.length - lowerWord.length) <= 2);
+
+  if (alternatives.length >= 2) {
+    return [alternatives[0], alternatives[1]];
+  }
+
+  // Ultimate fallback
+  return ['other', 'another'];
 }
 
 // Dynamic answer generation for complex patterns

@@ -11035,6 +11035,36 @@ const MODULE_150_DATA = {
       cache[key] = mcq;
     });
 
+    // ========================================================================
+    // MCQ VALIDATION - Ensure 100% coverage (should NEVER have nulls after fix)
+    // ========================================================================
+    const totalQuestions = moduleData?.speakingPractice?.length ?? 0;
+    const successfulMCQs = Object.values(cache).filter(mcq => mcq !== null).length;
+    const failedMCQs = Object.values(cache).filter(mcq => mcq === null).length;
+
+    if (failedMCQs > 0) {
+      console.error('🚨 CRITICAL: MCQs failed to generate!', {
+        level: selectedLevel,
+        module: selectedModule,
+        total: totalQuestions,
+        successful: successfulMCQs,
+        failed: failedMCQs,
+        coverage: `${((successfulMCQs / totalQuestions) * 100).toFixed(1)}%`
+      });
+
+      // Log which specific questions failed
+      Object.entries(cache).forEach(([key, mcq]) => {
+        if (!mcq) {
+          const questionIndex = parseInt(key.split('-')[2]);
+          const item = moduleData?.speakingPractice?.[questionIndex];
+          const practiceItem = typeof item === 'string' ? { question: item, answer: item } : item;
+          console.error(`  ❌ Question ${questionIndex + 1}:`, practiceItem?.answer || 'Unknown');
+        }
+      });
+    } else {
+      console.log(`✅ MCQ Coverage: ${successfulMCQs}/${totalQuestions} (100%) - Module ${selectedModule}`);
+    }
+
     return cache;
   }, [selectedLevel, selectedModule]); // Only regenerate when module changes
 
