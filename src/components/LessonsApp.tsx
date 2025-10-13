@@ -81,7 +81,7 @@ type QuestionState = {
 };
 
 // Import robust evaluator and progress system
-import { evaluateAnswer, EvalOptions } from '../utils/evaluator';
+import { evaluateAnswer, evaluateAnswerDetailed, EvalOptions, EvaluationResult, GrammarCorrection } from '../utils/evaluator';
 import { save as saveProgress, resumeLastPointer, clearProgress as clearModuleProgress } from '../utils/progress';
 import { ProgressTrackerService } from '../services/progressTrackerService';
 import { detectGrammarErrors } from '../utils/grammarErrorDetector';
@@ -5921,7 +5921,7 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
     return matrix[b.length][a.length];
   }
 
-  // Robust answer checking using Module 51 proven logic
+  // Enhanced answer checking with detailed feedback and grammar corrections
   function isAnswerCorrect(spokenRaw: string, targetRaw: string, questionItem?: { question: string; answer: string }): boolean {
     // Create evaluation options
     const evalOptions: EvalOptions = {
@@ -5930,10 +5930,32 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
       requireAffirmationPolarity: questionItem?.requiresYesNo ?? true,
       keyLemmas: questionItem?.keyLemmas || []
     };
-    
-    const result = evaluateAnswer(spokenRaw, evalOptions);
-    
-    return result;
+
+    // Use the enhanced evaluator with detailed feedback
+    const detailedResult = evaluateAnswerDetailed(spokenRaw, evalOptions, currentAttemptNumber);
+
+    // Store the detailed result for UI display
+    setEvaluationResult(detailedResult);
+    setGrammarCorrections(detailedResult.grammarCorrections || []);
+
+    // Update feedback with the result
+    if (detailedResult.isCorrect) {
+      setFeedback(detailedResult.feedback);
+      setFeedbackType('success');
+      // Reset attempt number on success
+      setCurrentAttemptNumber(1);
+    } else {
+      // Show hint if available
+      const feedbackMessage = detailedResult.hint
+        ? `${detailedResult.feedback}\n\n${detailedResult.hint}`
+        : detailedResult.feedback;
+      setFeedback(feedbackMessage);
+      setFeedbackType('error');
+      // Increment attempt number for next try
+      setCurrentAttemptNumber(prev => prev + 1);
+    }
+
+    return detailedResult.isCorrect;
   }
 
   // Use the enhanced evaluator for all answer checking
@@ -6023,6 +6045,13 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
 
   // Update the speaking index ref when it changes
   useEffect(() => { speakingIndexRef.current = speakingIndex; }, [speakingIndex]);
+
+  // Reset attempt number and grammar corrections when question changes
+  useEffect(() => {
+    setCurrentAttemptNumber(1);
+    setGrammarCorrections([]);
+    setEvaluationResult(null);
+  }, [speakingIndex, selectedModule]);
 
   const { isSpeaking, soundEnabled, toggleSound } = useTextToSpeech();
   const { earnXPForGrammarLesson, addXP } = useGamification();
@@ -12044,6 +12073,9 @@ const MODULE_150_DATA = {
   const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
   const [microphoneError, setMicrophoneError] = useState<string | null>(null);
   const [retryAttempts, setRetryAttempts] = useState(0);
+  const [grammarCorrections, setGrammarCorrections] = useState<GrammarCorrection[]>([]);
+  const [currentAttemptNumber, setCurrentAttemptNumber] = useState(1);
+  const [evaluationResult, setEvaluationResult] = useState<EvaluationResult | null>(null);
 
   const initializeRecorder = useCallback(async (isRetry = false) => {
     try {
@@ -13129,7 +13161,31 @@ const MODULE_150_DATA = {
                     ) : feedbackType === 'error' ? (
                       <AlertCircle className="h-4 w-4" />
                     ) : null}
-                    <span className="text-sm">{feedback}</span>
+                    <span className="text-sm whitespace-pre-line">{feedback}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Grammar Corrections - Show when answer is correct but has grammar issues */}
+              {grammarCorrections.length > 0 && feedbackType === 'success' && (
+                <div className="mt-3 p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/30">
+                  <div className="flex items-start space-x-2 mb-3">
+                    <Star className="h-5 w-5 text-yellow-400 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <h4 className="text-sm font-semibold text-yellow-400 mb-2">Grammar Tips</h4>
+                      <div className="space-y-2">
+                        {grammarCorrections.map((correction, index) => (
+                          <div key={index} className="text-xs bg-black/20 p-2 rounded">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-red-300 line-through">{correction.userText}</span>
+                              <span className="text-xs text-white/50 mx-2">→</span>
+                              <span className="text-green-300 font-semibold">{correction.correctedText}</span>
+                            </div>
+                            <p className="text-white/70 italic">{correction.explanation}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
