@@ -349,6 +349,22 @@
     50% { box-shadow: 0 0 20px #ff4f80; }
     100% { box-shadow: 0 0 5px #ff4f80; }
   }
+
+  /* Slide in animations for feedback cards */
+  @keyframes slideInUp {
+    0% {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-slide-in-up {
+    animation: slideInUp 0.5s ease-out;
+  }
   
   /* Level up celebration animation */
   .level-up {

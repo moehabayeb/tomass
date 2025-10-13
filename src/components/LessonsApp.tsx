@@ -13106,40 +13106,58 @@ const MODULE_150_DATA = {
                   return (
                     <>
                       <div className="mb-4 text-center">
-                        <Button
-                          id="micButton"
-                          key={`mic-${speakingIndex}`}
-                          onClick={() => {
-                            const canSpeak = viewState === 'lesson' && currentPhase === 'speaking';
-                            if (!canSpeak) return;
-                            // single-source speaking entry; safe-guard inside
-                            startSpeakingFlow();
-                          }}
-                          disabled={false}
-                          aria-disabled={false}
-                          style={{
-                            pointerEvents: 'auto',
-                            zIndex: 5,                  // sit above any card overlays
-                            touchAction: 'manipulation' // iOS tap reliability
-                          }}
-                          size="lg"
-                          className={`mic-button rounded-full w-20 h-20 ${
-                            speakStatus === 'recording' 
-                              ? 'bg-red-500 hover:bg-red-600 animate-pulse' 
-                              : 'bg-white/20 hover:bg-white/30'
-                          }`}
-                        >
-                          {speakStatus === 'recording' ? (
-                            <MicOff className="h-8 w-8" />
-                          ) : (
-                            <Mic className="h-8 w-8" />
+                        <div className="relative inline-block">
+                          {/* Pulsing rings when recording */}
+                          {speakStatus === 'recording' && (
+                            <>
+                              <div className="absolute inset-0 rounded-full bg-red-500/30 animate-ping" style={{ animationDuration: '1s' }} />
+                              <div className="absolute inset-0 rounded-full bg-red-500/20 animate-ping" style={{ animationDuration: '1.5s' }} />
+                            </>
                           )}
-                        </Button>
+
+                          <Button
+                            id="micButton"
+                            key={`mic-${speakingIndex}`}
+                            onClick={() => {
+                              const canSpeak = viewState === 'lesson' && currentPhase === 'speaking';
+                              if (!canSpeak) return;
+                              // single-source speaking entry; safe-guard inside
+                              startSpeakingFlow();
+                            }}
+                            disabled={false}
+                            aria-disabled={false}
+                            style={{
+                              pointerEvents: 'auto',
+                              zIndex: 5,
+                              touchAction: 'manipulation',
+                              transition: 'all 0.3s ease'
+                            }}
+                            size="lg"
+                            className={`mic-button rounded-full w-20 h-20 shadow-lg transform transition-all duration-300 ${
+                              speakStatus === 'recording'
+                                ? 'bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 scale-110'
+                                : 'bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 hover:scale-105'
+                            }`}
+                          >
+                            {speakStatus === 'recording' ? (
+                              <MicOff className="h-8 w-8 animate-pulse" />
+                            ) : (
+                              <Mic className="h-8 w-8" />
+                            )}
+                          </Button>
+                        </div>
                       </div>
 
                       <div style={{ pointerEvents: 'none' }}>
-                        <p className="text-white/70 text-sm mb-4">
-                          {speakStatus === 'recording' ? 'Listening...' : 'Tap to speak the sentence'}
+                        <p className="text-white/90 text-sm mb-2 font-medium">
+                          {speakStatus === 'recording'
+                            ? '🎤 Listening... Speak now!'
+                            : '🎯 Press once and speak'}
+                        </p>
+                        <p className="text-white/60 text-xs">
+                          {speakStatus === 'recording'
+                            ? "I'll stop automatically when you finish"
+                            : 'One press - hands free recording'}
                         </p>
                       </div>
                     </>
@@ -13148,40 +13166,61 @@ const MODULE_150_DATA = {
                 return null;
               })()}
 
-              {/* Feedback */}
+              {/* Feedback with smooth animation */}
               {feedback && (
-                <div className={`p-3 rounded-lg ${
-                  feedbackType === 'success' ? 'bg-green-500/20 text-green-400' :
-                  feedbackType === 'error' ? 'bg-red-500/20 text-red-400' :
-                  'bg-blue-500/20 text-blue-400'
-                }`}>
-                  <div className="flex items-center justify-center space-x-2">
+                <div
+                  className={`p-4 rounded-xl shadow-lg transform transition-all duration-500 ease-out animate-in slide-in-from-bottom ${
+                    feedbackType === 'success'
+                      ? 'bg-gradient-to-br from-green-500/30 to-green-600/20 text-green-300 border border-green-500/30'
+                      : feedbackType === 'error'
+                      ? 'bg-gradient-to-br from-red-500/30 to-red-600/20 text-red-300 border border-red-500/30'
+                      : 'bg-gradient-to-br from-blue-500/30 to-blue-600/20 text-blue-300 border border-blue-500/30'
+                  }`}
+                  style={{
+                    animation: 'slideInUp 0.5s ease-out'
+                  }}
+                >
+                  <div className="flex items-center justify-center space-x-3">
                     {feedbackType === 'success' ? (
-                      <CheckCircle className="h-4 w-4" />
+                      <CheckCircle className="h-5 w-5 animate-bounce" style={{ animationDuration: '1s', animationIterationCount: '2' }} />
                     ) : feedbackType === 'error' ? (
-                      <AlertCircle className="h-4 w-4" />
+                      <AlertCircle className="h-5 w-5 animate-pulse" />
                     ) : null}
-                    <span className="text-sm whitespace-pre-line">{feedback}</span>
+                    <span className="text-sm font-medium whitespace-pre-line">{feedback}</span>
                   </div>
                 </div>
               )}
 
               {/* Grammar Corrections - Show when answer is correct but has grammar issues */}
               {grammarCorrections.length > 0 && feedbackType === 'success' && (
-                <div className="mt-3 p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/30">
-                  <div className="flex items-start space-x-2 mb-3">
-                    <Star className="h-5 w-5 text-yellow-400 flex-shrink-0 mt-0.5" />
+                <div
+                  className="mt-3 p-4 rounded-xl bg-gradient-to-br from-yellow-500/20 to-orange-500/10 border border-yellow-500/40 shadow-lg transform transition-all duration-500"
+                  style={{
+                    animation: 'slideInUp 0.6s ease-out 0.2s both'
+                  }}
+                >
+                  <div className="flex items-start space-x-3 mb-3">
+                    <Star className="h-6 w-6 text-yellow-400 flex-shrink-0 mt-0.5 animate-pulse" style={{ animationDuration: '2s' }} />
                     <div className="flex-1">
-                      <h4 className="text-sm font-semibold text-yellow-400 mb-2">Grammar Tips</h4>
-                      <div className="space-y-2">
+                      <h4 className="text-base font-bold text-yellow-300 mb-3 flex items-center">
+                        Grammar Tips
+                        <span className="ml-2 text-xs bg-yellow-500/20 px-2 py-0.5 rounded-full">Pro Tip</span>
+                      </h4>
+                      <div className="space-y-3">
                         {grammarCorrections.map((correction, index) => (
-                          <div key={index} className="text-xs bg-black/20 p-2 rounded">
-                            <div className="flex items-center justify-between mb-1">
-                              <span className="text-red-300 line-through">{correction.userText}</span>
-                              <span className="text-xs text-white/50 mx-2">→</span>
-                              <span className="text-green-300 font-semibold">{correction.correctedText}</span>
+                          <div
+                            key={index}
+                            className="bg-black/30 p-3 rounded-lg border border-yellow-500/20 transform transition-all hover:scale-102 hover:border-yellow-500/40"
+                            style={{
+                              animation: `slideInUp 0.4s ease-out ${0.3 + index * 0.1}s both`
+                            }}
+                          >
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-red-300 line-through font-medium">{correction.userText}</span>
+                              <span className="text-xs text-white/50 mx-3">→</span>
+                              <span className="text-green-300 font-bold">{correction.correctedText}</span>
                             </div>
-                            <p className="text-white/70 italic">{correction.explanation}</p>
+                            <p className="text-white/80 text-xs italic bg-white/5 p-2 rounded">{correction.explanation}</p>
                           </div>
                         ))}
                       </div>
