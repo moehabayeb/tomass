@@ -85,6 +85,7 @@ import { evaluateAnswer, evaluateAnswerDetailed, EvalOptions, EvaluationResult, 
 import { save as saveProgress, resumeLastPointer, clearProgress as clearModuleProgress } from '../utils/progress';
 import { ProgressTrackerService } from '../services/progressTrackerService';
 import { detectGrammarErrors } from '../utils/grammarErrorDetector';
+import { useVoiceActivityDetection } from '../hooks/useVoiceActivityDetection';
 
 // Enhanced progress saving with new progress system
 function saveModuleProgress(level: string, moduleId: number, phase: LessonPhaseType, questionIndex: number = 0) {
@@ -5556,7 +5557,33 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
   const [speakStatus, setSpeakStatus] = useState<RunStatus>('idle');
   const recognizerRef = useRef<SpeechRecognition | null>(null);
   const retryCountRef = useRef(0);
-  const MAX_ASR_RETRIES = 3;
+  const MAX_ASR_RETRIES = 3; // Maximum ASR retry attempts
+
+  // ---- Voice Activity Detection for visual feedback ----
+  const [vadVolume, setVadVolume] = useState(0);
+  const [isSpeechDetected, setIsSpeechDetected] = useState(false);
+  const vadRef = useRef<any>(null);
+
+  // Initialize VAD hook (for visual feedback only)
+  const vad = useVoiceActivityDetection({
+    onSpeechStart: () => {
+      setIsSpeechDetected(true);
+    },
+    onSpeechEnd: () => {
+      setIsSpeechDetected(false);
+    },
+    onVolumeChange: (volume) => {
+      setVadVolume(volume);
+    },
+    silenceThreshold: 20,
+    silenceDuration: 1500, // 1.5 seconds of silence
+    minSpeechDuration: 300, // 300ms minimum speech
+  });
+
+  // Store VAD reference for manual control
+  useEffect(() => {
+    vadRef.current = vad;
+  }, [vad]);
 
   // ---- Mic + ASR utilities (robust) ----
   type Abortable = { signal?: AbortSignal };
@@ -12449,8 +12476,18 @@ const MODULE_150_DATA = {
 
     try {
       setSpeakStatus('recording');
+
+      // Start VAD for visual feedback
+      await vad.startListening();
+
       await unlockAudioOnce();          // iOS resume AudioContext
       const transcript = await recognizeOnce(); // from our robust ASR helper
+
+      // Stop VAD
+      vad.stopListening();
+      setVadVolume(0);
+      setIsSpeechDetected(false);
+
       if (transcript == null) return;
 
       setSpeakStatus('evaluating');
@@ -12474,6 +12511,9 @@ const MODULE_150_DATA = {
       }
     } catch {
       // silent failure; user can tap again
+      vad.stopListening();
+      setVadVolume(0);
+      setIsSpeechDetected(false);
       setSpeakStatus('idle');
     }
   }
@@ -13154,11 +13194,50 @@ const MODULE_150_DATA = {
                             ? '🎤 Listening... Speak now!'
                             : '🎯 Press once and speak'}
                         </p>
-                        <p className="text-white/60 text-xs">
+                        <p className="text-white/60 text-xs mb-3">
                           {speakStatus === 'recording'
                             ? "I'll stop automatically when you finish"
                             : 'One press - hands free recording'}
                         </p>
+
+                        {/* Volume Meter and Speech Detection - Show during recording */}
+                        {speakStatus === 'recording' && (
+                          <div className="mt-4 space-y-2">
+                            {/* Volume Meter */}
+                            <div className="bg-white/10 rounded-full h-2 w-48 mx-auto overflow-hidden">
+                              <div
+                                className="h-full bg-gradient-to-r from-green-400 to-blue-500 transition-all duration-150"
+                                style={{
+                                  width: `${Math.min((vadVolume / 100) * 100, 100)}%`,
+                                  boxShadow: vadVolume > 30 ? '0 0 10px rgba(34, 197, 94, 0.5)' : 'none'
+                                }}
+                              />
+                            </div>
+
+                            {/* Speech Detection Indicator */}
+                            <div className="flex items-center justify-center space-x-2">
+                              <div
+                                className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                                  isSpeechDetected
+                                    ? 'bg-green-400 animate-pulse shadow-lg shadow-green-400/50'
+                                    : 'bg-gray-500'
+                                }`}
+                              />
+                              <span
+                                className={`text-xs transition-colors duration-300 ${
+                                  isSpeechDetected ? 'text-green-300 font-semibold' : 'text-white/50'
+                                }`}
+                              >
+                                {isSpeechDetected ? 'Speech detected' : 'Waiting for speech...'}
+                              </span>
+                            </div>
+
+                            {/* Timer */}
+                            <p className="text-white/40 text-xs">
+                              {Math.floor(vad.elapsedTime / 1000)}s
+                            </p>
+                          </div>
+                        )}
                       </div>
                     </>
                   );
