@@ -73,7 +73,7 @@ const XPProgressBar = ({ current, max, className }: { current: number; max: numb
   );
 };
 
-// Premium Chat Bubble component with animations
+// Mobile-First Chat Bubble component (iPhone optimized)
 const ChatBubble = ({
   message,
   isUser = false,
@@ -84,27 +84,35 @@ const ChatBubble = ({
   className?: string;
 }) => (
   <div
-    className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-3 sm:mb-4 animate-slide-in-up ${className}`}
-    style={{ animation: 'slideInUp 0.5s ease-out' }}
+    className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-2 animate-slide-in-up ${className}`}
+    style={{ animation: 'slideInUp 0.4s ease-out' }}
   >
-    <div className="flex items-start space-x-2 sm:space-x-3 max-w-[90%] sm:max-w-[85%]">
+    <div className={`flex items-end gap-2 max-w-[85%] ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
       <div
-        className={`conversation-bubble px-4 py-3 sm:px-5 sm:py-4 font-medium text-sm sm:text-base leading-relaxed flex-1 shadow-lg transform transition-all duration-300 hover:shadow-xl ${
+        className={`px-3 py-2 rounded-[18px] text-[15px] leading-[1.4] shadow-md ${
           isUser
-            ? 'bg-gradient-to-br from-white/95 to-white/85 text-gray-800 border-l-4 border-orange-400 hover:border-orange-500'
-            : 'bg-gradient-to-br from-blue-50/90 to-blue-100/80 text-gray-800 border-l-4 border-blue-400 hover:border-blue-500'
+            ? 'bg-gradient-to-br from-purple-500 to-pink-500 text-white rounded-br-[4px]'
+            : 'bg-white text-gray-800 rounded-bl-[4px]'
         }`}
       >
         {message}
       </div>
 
-      {/* Bookmark button for non-user messages (AI responses) */}
+      {/* Compact bookmark button for AI messages */}
       {!isUser && (
-        <BookmarkButton
-          content={message}
-          type="message"
-          className="mt-2 sm:mt-3 opacity-60 hover:opacity-100 text-xs sm:text-sm pill-button"
-        />
+        <button
+          onClick={() => {
+            // Trigger bookmark action
+          }}
+          className="opacity-0 group-hover:opacity-60 hover:opacity-100 transition-opacity p-1"
+          aria-label="Bookmark message"
+        >
+          <BookmarkButton
+            content={message}
+            type="message"
+            className="w-5 h-5"
+          />
+        </button>
       )}
     </div>
   </div>
@@ -921,59 +929,74 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     }
   }, [flowState, isSpeaking, micState]);
 
-  // Mascot Header Component  
-  const MascotHeader = () => {
-    
-    // Format XP with thousands separator and memoize to avoid re-renders
+  // Compact Mobile Header Component
+  const MobileHeader = () => {
     const formattedXP = useMemo(() => {
       return xp_current ? xp_current.toLocaleString() : "—";
     }, [xp_current]);
-    
+
     return (
-      <div className="hf-header mx-auto mt-3 flex flex-col items-center gap-2 pointer-events-none z-10">
-        {/* Avatar */}
-        <div 
-          className="h-24 w-24 rounded-full ring-2 ring-white/20 shadow-lg pointer-events-none"
-          role="img"
-          aria-label="Tutor avatar"
-        >
-          <DIDAvatar 
-            className={cn(
-              "w-full h-full rounded-full object-cover transition-all duration-300",
-              isSpeaking && "ring-4 ring-primary/50 shadow-glow"
-            )}
-            hideLoadingText={true}
-          />
-        </div>
-        
-        {/* XP Chip */}
-        <div className="px-3 py-1 rounded-full text-sm bg-white/10 text-white/90 backdrop-blur-sm pointer-events-none">
-          XP: {formattedXP}
+      <div className="fixed top-0 left-0 right-0 z-30 bg-gradient-to-b from-purple-900/95 to-purple-900/80 backdrop-blur-xl border-b border-white/10">
+        <div className="safe-top px-4 py-3 flex items-center justify-between">
+          {/* Left: Avatar + Status */}
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <div className="w-12 h-12 rounded-full ring-2 ring-white/20">
+                <DIDAvatar
+                  className={cn(
+                    "w-full h-full rounded-full object-cover transition-all duration-300",
+                    isSpeaking && "ring-2 ring-green-400"
+                  )}
+                  hideLoadingText={true}
+                />
+              </div>
+              {/* Status indicator dot */}
+              <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-purple-900 ${
+                flowState === 'LISTENING' ? 'bg-green-400 animate-pulse' :
+                flowState === 'READING' ? 'bg-blue-400 animate-pulse' :
+                flowState === 'PROCESSING' ? 'bg-yellow-400 animate-pulse' :
+                'bg-gray-400'
+              }`} />
+            </div>
+
+            <div className="flex flex-col">
+              <span className="text-white font-semibold text-sm">Tomas AI</span>
+              <span className="text-white/60 text-xs">
+                {flowState === 'READING' ? '🗣️ Speaking...' :
+                 flowState === 'LISTENING' ? '👂 Listening...' :
+                 flowState === 'PROCESSING' ? '💭 Thinking...' :
+                 flowState === 'PAUSED' ? '⏸️ Paused' :
+                 '✨ Ready'}
+              </span>
+            </div>
+          </div>
+
+          {/* Right: XP + Sound toggle */}
+          <div className="flex items-center gap-2">
+            <div className="px-2.5 py-1 rounded-full text-xs bg-white/10 text-white/90 backdrop-blur-sm font-medium">
+              ⚡ {formattedXP}
+            </div>
+            <button
+              onClick={toggleSpeakingSound}
+              className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-sm text-white active:bg-white/20 transition-colors"
+              aria-label={speakingSoundEnabled ? "Mute" : "Unmute"}
+            >
+              {speakingSoundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+            </button>
+          </div>
         </div>
       </div>
     );
   };
 
-  // Component return with locked minimal UI
+  // Mobile-First Full-Screen Layout
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
-      {/* Top bar with sound toggle (position: fixed or absolute for proper stacking) */}
-      <div className="fixed top-4 right-4 z-20">
-        <button
-          onClick={toggleSpeakingSound}
-          className="flex items-center gap-2 px-4 py-2 bg-white/10 rounded-lg backdrop-blur-sm text-white hover:bg-white/20 transition-colors"
-        >
-          {speakingSoundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-        </button>
-      </div>
+    <div className="fixed inset-0 flex flex-col bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 overflow-hidden">
+      {/* Fixed Mobile Header */}
+      <MobileHeader />
 
-      <div className="w-full max-w-4xl mx-auto space-y-6">
-        
-        {/* Mascot Header */}
-        <MascotHeader />
-        
-        {/* Chat messages container */}
-        <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 min-h-[400px] max-h-[500px] overflow-y-auto">
+      {/* Full-Screen Scrollable Chat Area */}
+      <div className="flex-1 overflow-y-auto pt-[72px] pb-24 px-4 overscroll-behavior-contain">
           <div className="space-y-4">
             {messages.map((message, index) => (
               <ChatBubble
@@ -992,45 +1015,37 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
               />
             )}
 
-            {/* Live captions */}
+            {/* Live captions (Mobile optimized) */}
             {flowState === 'LISTENING' && interimCaption && (
-              <div className="text-white/60 italic text-sm text-center">
-                "{interimCaption}"
+              <div className="text-center py-2">
+                <div className="inline-block px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm">
+                  <span className="text-white/70 italic text-sm">"{interimCaption}"</span>
+                </div>
               </div>
             )}
 
-            {/* Grammar Corrections Display - Premium UI with animations */}
+            {/* Compact Grammar Corrections - Mobile Bottom Sheet Style */}
             {grammarCorrections.length > 0 && (
               <div
-                className="mt-4 p-4 rounded-xl bg-gradient-to-br from-yellow-500/20 to-orange-500/10 border border-yellow-500/40 shadow-lg transform transition-all duration-500"
-                style={{
-                  animation: 'slideInUp 0.6s ease-out 0.2s both'
-                }}
+                className="mt-3 p-3 rounded-2xl bg-gradient-to-br from-yellow-500/25 to-orange-500/15 border border-yellow-500/50 shadow-xl"
+                style={{ animation: 'slideInUp 0.5s ease-out' }}
               >
-                <div className="flex items-start space-x-3 mb-3">
-                  <Star className="h-6 w-6 text-yellow-400 flex-shrink-0 mt-0.5 animate-pulse" style={{ animationDuration: '2s' }} />
+                <div className="flex items-start gap-2">
+                  <Star className="h-5 w-5 text-yellow-400 flex-shrink-0 mt-0.5" />
                   <div className="flex-1">
-                    <h4 className="text-base font-bold text-yellow-300 mb-3 flex items-center">
-                      Grammar Tip
-                      <span className="ml-2 text-xs bg-yellow-500/20 px-2 py-0.5 rounded-full">Pro Tip</span>
-                    </h4>
-                    <div className="space-y-3">
-                      {grammarCorrections.map((correction, index) => (
-                        <div
-                          key={index}
-                          className="bg-black/30 p-3 rounded-lg border border-yellow-500/20 transform transition-all hover:scale-102 hover:border-yellow-500/40"
-                          style={{
-                            animation: `slideInUp 0.4s ease-out ${0.3 + index * 0.1}s both`
-                          }}
-                        >
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-red-300 line-through font-medium">{correction.originalPhrase}</span>
-                            <span className="text-xs text-white/50 mx-3">→</span>
-                            <span className="text-green-300 font-bold">{correction.correctedPhrase}</span>
-                          </div>
+                    <h4 className="text-sm font-bold text-yellow-200 mb-2">Grammar Tip ✨</h4>
+                    {grammarCorrections.map((correction, index) => (
+                      <div
+                        key={index}
+                        className="bg-black/20 p-2 rounded-lg border border-yellow-500/30 mb-2 last:mb-0"
+                      >
+                        <div className="flex items-center gap-2 text-xs">
+                          <span className="text-red-300 line-through">{correction.originalPhrase}</span>
+                          <span className="text-white/50">→</span>
+                          <span className="text-green-300 font-semibold">{correction.correctedPhrase}</span>
                         </div>
-                      ))}
-                    </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -1038,33 +1053,14 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           </div>
         </div>
 
-        {/* Status chip under conversation */}
-        <div className="text-center">
-          <div 
-            className="hf-status-chip inline-flex items-center gap-2 px-4 py-2 bg-white/10 rounded-full backdrop-blur-sm"
-            aria-live="polite"
-          >
-            <div className={`w-3 h-3 rounded-full ${
-              flowState === 'READING' ? 'bg-blue-400 animate-pulse' :
-              flowState === 'LISTENING' ? 'bg-green-400 animate-pulse' :
-              flowState === 'PROCESSING' ? 'bg-yellow-400 animate-pulse' :
-              flowState === 'PAUSED' ? 'bg-orange-400' :
-              'bg-gray-400'
-            }`} />
-            <span className="text-white text-sm">
-              {flowState === 'READING' ? 'Reading…' :
-               flowState === 'LISTENING' ? 'Listening…' :
-               flowState === 'PROCESSING' ? 'Thinking…' :
-               flowState === 'PAUSED' ? 'Paused' :
-               'Ready'}
-            </span>
-          </div>
-        </div>
-
-        {/* Primary control (always mounted, opacity for hide/reveal) */}
-        <div className="flex justify-center items-center gap-4">
-          <Button
-            className="hf-primary w-16 h-16 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center"
+      {/* Floating Action Button (FAB) - iPhone optimized */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 pointer-events-none">
+        <div className="safe-bottom pb-6 pr-6 flex justify-end">
+          <button
+            className="pointer-events-auto w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-2xl active:scale-95 transition-all duration-200 flex items-center justify-center relative"
+            style={{
+              boxShadow: '0 10px 40px rgba(168, 85, 247, 0.4)'
+            }}
             onClick={async () => {
               if (flowState === 'IDLE') {
                 const text = 'What would you like to talk about?';
@@ -1083,7 +1079,6 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
                   setFlowState('PROCESSING');
                   setPausedFrom(null);
                 } else {
-                  // Resume from where we left off
                   const latestMessage = findLatestEligibleAssistantMessage();
                   if (latestMessage && unreadAssistantExists()) {
                     const messageKey = stableMessageKey(latestMessage.text, latestMessage.id);
@@ -1091,40 +1086,51 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
                   }
                 }
               } else if (flowState === 'READING' || flowState === 'LISTENING' || flowState === 'PROCESSING') {
-                // Pause current state
                 setPausedFrom(flowState);
                 setFlowState('PAUSED');
-                
-                // Stop TTS if speaking
                 if (TTSManager.isSpeaking()) {
                   TTSManager.stop();
                   setIsSpeaking(false);
                   setAvatarState('idle');
                 }
-                
-                // Stop mic if listening
                 if (micState === 'recording') {
                   stopRecording();
                 }
               }
             }}
+            aria-label={flowState === 'IDLE' || flowState === 'PAUSED' ? 'Start conversation' : 'Pause conversation'}
           >
-            {flowState === 'IDLE' ? <Play className="w-6 h-6" /> :
-             flowState === 'PAUSED' ? <Play className="w-6 h-6" /> :
-             <Pause className="w-6 h-6" />}
-          </Button>
+            {/* Pulsing ring when listening */}
+            {flowState === 'LISTENING' && (
+              <>
+                <div className="absolute inset-0 rounded-full bg-green-400/30 animate-ping" style={{ animationDuration: '1.5s' }} />
+                <div className="absolute inset-0 rounded-full bg-green-400/20 animate-ping" style={{ animationDuration: '2s' }} />
+              </>
+            )}
 
-          {/* Overflow menu (optional) */}
+            {/* Icon */}
+            {flowState === 'IDLE' ? <Play className="w-7 h-7" /> :
+             flowState === 'PAUSED' ? <Play className="w-7 h-7" /> :
+             flowState === 'LISTENING' ? <Mic className="w-7 h-7 animate-pulse" /> :
+             <Pause className="w-7 h-7" />}
+          </button>
+
+          {/* Secondary menu button */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="hf-overflow text-white/60 hover:text-white hover:bg-white/10">
-                <MoreHorizontal className="w-4 h-4" />
-              </Button>
+              <button
+                className="pointer-events-auto w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm text-white shadow-lg active:scale-95 transition-all duration-200 flex items-center justify-center ml-3"
+                aria-label="More options"
+              >
+                <MoreHorizontal className="w-5 h-5" />
+              </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="bg-black/90 backdrop-blur-sm border-white/20 text-white">
-              <DropdownMenuItem 
+            <DropdownMenuContent
+              className="bg-black/95 backdrop-blur-xl border-white/20 text-white mb-2 mr-4"
+              align="end"
+            >
+              <DropdownMenuItem
                 onClick={async () => {
-                  // Again - replay current message
                   const latestMessage = findLatestEligibleAssistantMessage();
                   if (latestMessage) {
                     const messageKey = stableMessageKey(latestMessage.text, latestMessage.id);
@@ -1134,24 +1140,16 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
                 className="hover:bg-white/10 focus:bg-white/10"
               >
                 <RotateCcw className="w-4 h-4 mr-2" />
-                Again
-              </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={async () => {
-                  console.log('🎯 Running Voice Consistency Test Suite...');
-                  await runVoiceConsistencyTestSuite();
-                }}
-                className="hover:bg-white/10 focus:bg-white/10"
-              >
-                🎯 Voice Test
+                Repeat
               </DropdownMenuItem>
               <DropdownMenuSeparator className="bg-white/20" />
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 onClick={() => {
                   setFlowState('IDLE');
                   setMessages([]);
                   setEphemeralAssistant(null);
                   setCurrentTurnToken('');
+                  setGrammarCorrections([]);
                   if (TTSManager.isSpeaking()) {
                     TTSManager.stop();
                     setIsSpeaking(false);
@@ -1164,21 +1162,21 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
                 className="hover:bg-white/10 focus:bg-white/10 text-red-400"
               >
                 <Square className="w-4 h-4 mr-2" />
-                End
+                End Chat
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-
-        {/* Error message */}
-        {errorMessage && (
-          <div className="text-center">
-            <div className="inline-block px-4 py-2 bg-red-500/20 text-red-300 rounded-lg backdrop-blur-sm">
-              {errorMessage}
-            </div>
-          </div>
-        )}
       </div>
+
+      {/* Error Toast - Mobile optimized */}
+      {errorMessage && (
+        <div className="fixed bottom-32 left-4 right-4 z-50 animate-slide-in-up">
+          <div className="bg-red-500/90 backdrop-blur-sm text-white px-4 py-3 rounded-xl shadow-2xl text-center text-sm">
+            {errorMessage}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

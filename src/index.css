@@ -746,3 +746,41 @@
 .animate-letter-bounce {
   animation: letter-bounce 0.6s ease-in-out;
 }
+
+/* iPhone Safe Area Support */
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.safe-left {
+  padding-left: env(safe-area-inset-left);
+}
+
+.safe-right {
+  padding-right: env(safe-area-inset-right);
+}
+
+/* Prevent overscroll bounce on mobile */
+.overscroll-behavior-contain {
+  overscroll-behavior: contain;
+}
+
+/* Mobile touch optimization */
+@media (hover: none) and (pointer: coarse) {
+  /* Larger touch targets for mobile */
+  button, a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Prevent text selection on buttons */
+  button {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
