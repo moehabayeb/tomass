@@ -937,8 +937,17 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
     return (
       <div className="fixed top-0 left-0 right-0 z-30 bg-gradient-to-b from-purple-900/95 to-purple-900/80 backdrop-blur-xl border-b border-white/10">
-        <div className="safe-top px-4 py-3 flex items-center justify-between">
-          {/* Left: Avatar + Status */}
+        <div className="safe-top px-4 py-3 flex items-center justify-center relative">
+          {/* Left: Sound toggle (absolute positioned) */}
+          <button
+            onClick={toggleSpeakingSound}
+            className="absolute left-4 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-sm text-white active:bg-white/20 transition-colors"
+            aria-label={speakingSoundEnabled ? "Mute" : "Unmute"}
+          >
+            {speakingSoundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+          </button>
+
+          {/* Center: Avatar + Status */}
           <div className="flex items-center gap-3">
             <div className="relative">
               <div className="w-12 h-12 rounded-full ring-2 ring-white/20">
@@ -971,18 +980,9 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
             </div>
           </div>
 
-          {/* Right: XP + Sound toggle */}
-          <div className="flex items-center gap-2">
-            <div className="px-2.5 py-1 rounded-full text-xs bg-white/10 text-white/90 backdrop-blur-sm font-medium">
-              ⚡ {formattedXP}
-            </div>
-            <button
-              onClick={toggleSpeakingSound}
-              className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-sm text-white active:bg-white/20 transition-colors"
-              aria-label={speakingSoundEnabled ? "Mute" : "Unmute"}
-            >
-              {speakingSoundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-            </button>
+          {/* Right: XP (absolute positioned) */}
+          <div className="absolute right-4 px-2.5 py-1 rounded-full text-xs bg-white/10 text-white/90 backdrop-blur-sm font-medium">
+            ⚡ {formattedXP}
           </div>
         </div>
       </div>
@@ -1055,7 +1055,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
       {/* Floating Action Button (FAB) - iPhone optimized */}
       <div className="fixed bottom-0 left-0 right-0 z-40 pointer-events-none">
-        <div className="safe-bottom pb-6 pr-6 flex justify-end">
+        <div className="safe-bottom pb-6 px-6 flex justify-center items-end gap-3">
           <button
             className="pointer-events-auto w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-2xl active:scale-95 transition-all duration-200 flex items-center justify-center relative"
             style={{
@@ -1119,7 +1119,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
-                className="pointer-events-auto w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm text-white shadow-lg active:scale-95 transition-all duration-200 flex items-center justify-center ml-3"
+                className="pointer-events-auto w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm text-white shadow-lg active:scale-95 transition-all duration-200 flex items-center justify-center"
                 aria-label="More options"
               >
                 <MoreHorizontal className="w-5 h-5" />
