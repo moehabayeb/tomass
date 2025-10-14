@@ -929,85 +929,111 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     }
   }, [flowState, isSpeaking, micState]);
 
-  // Avatar-Focused Mobile Header Component
+  // Premium Mobile Header Component - God-Tier Design
   const MobileHeader = () => {
     const formattedXP = useMemo(() => {
       return xp_current ? xp_current.toLocaleString() : "—";
     }, [xp_current]);
 
     return (
-      <div className="fixed top-0 left-0 right-0 z-30 bg-gradient-to-b from-purple-900/95 to-purple-900/80 backdrop-blur-xl border-b border-white/10">
-        <div className="safe-top px-4 py-4 flex flex-col items-center relative">
-          {/* Left: Sound toggle (absolute positioned top-left) */}
+      <div className="fixed top-0 left-0 right-0 z-30 bg-gradient-to-b from-purple-900/98 to-purple-900/85 backdrop-blur-2xl border-b border-white/15 shadow-2xl">
+        {/* Compact Top Bar - Sound & XP */}
+        <div className="safe-top px-4 py-2 flex items-center justify-between border-b border-white/10">
           <button
             onClick={toggleSpeakingSound}
-            className="absolute top-4 left-4 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-sm text-white active:bg-white/20 transition-colors"
+            className="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 active:scale-95 transition-all duration-200"
             aria-label={speakingSoundEnabled ? "Mute" : "Unmute"}
           >
             {speakingSoundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
           </button>
 
-          {/* Right: XP (absolute positioned top-right) */}
-          <div className="absolute top-4 right-4 px-2.5 py-1 rounded-full text-xs bg-white/10 text-white/90 backdrop-blur-sm font-medium">
-            ⚡ {formattedXP}
+          <div className="px-3 py-1.5 rounded-full text-xs bg-white/10 text-white/90 backdrop-blur-sm font-semibold tracking-wide">
+            ⚡ {formattedXP} XP
           </div>
+        </div>
 
-          {/* Center: Large Avatar with vertical layout */}
-          <div className="flex flex-col items-center gap-2">
+        {/* Avatar Section - Premium Layout */}
+        <div className="px-4 pb-3 flex flex-col items-center">
+          <div className="flex flex-col items-center gap-2 mt-2">
             <div className="relative">
-              {/* Larger avatar container */}
+              {/* Premium Avatar Container - Larger with dramatic shadows */}
               <div className={cn(
-                "w-24 h-24 rounded-full relative transition-all duration-300",
-                isSpeaking && "ring-4 ring-green-400/50 shadow-lg shadow-green-400/30"
+                "w-28 h-28 rounded-full relative transition-all duration-300 shadow-2xl",
+                isSpeaking && "ring-4 ring-green-400/60 shadow-green-400/40",
+                !isSpeaking && "shadow-purple-900/60"
               )}>
-                {/* Static avatar image - fallback to placeholder if not available */}
+                {/* Static avatar image with SVG support */}
                 <img
-                  src="/tomas-avatar.png"
+                  src="/tomas-avatar.svg"
                   alt="Tomas AI Avatar"
-                  className="w-full h-full rounded-full object-cover border-4 border-white/20"
+                  className="w-full h-full rounded-full object-cover border-4 border-white/25 bg-gradient-to-br from-purple-600 to-pink-600"
                   onError={(e) => {
-                    // Fallback to a gradient placeholder if image fails to load
-                    e.currentTarget.style.display = 'none';
-                    e.currentTarget.parentElement!.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                    // Try PNG fallback, then gradient
+                    if (e.currentTarget.src.includes('.svg')) {
+                      e.currentTarget.src = '/tomas-avatar.png';
+                    } else {
+                      e.currentTarget.style.display = 'none';
+                      e.currentTarget.parentElement!.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                      e.currentTarget.parentElement!.style.boxShadow = '0 20px 60px rgba(102, 126, 234, 0.4)';
+                    }
                   }}
                 />
 
-                {/* Pulsing rings when speaking/listening */}
+                {/* Enhanced Pulsing rings - Multi-layer depth */}
                 {flowState === 'LISTENING' && (
                   <>
-                    <div className="absolute inset-0 rounded-full bg-green-400/20 animate-ping" style={{ animationDuration: '1.5s' }} />
-                    <div className="absolute inset-0 rounded-full bg-green-400/10 animate-ping" style={{ animationDuration: '2s' }} />
+                    <div className="absolute -inset-2 rounded-full bg-green-400/25 animate-ping" style={{ animationDuration: '1.2s' }} />
+                    <div className="absolute -inset-4 rounded-full bg-green-400/15 animate-ping" style={{ animationDuration: '1.8s' }} />
+                    <div className="absolute -inset-6 rounded-full bg-green-400/8 animate-ping" style={{ animationDuration: '2.4s' }} />
                   </>
                 )}
                 {flowState === 'READING' && (
                   <>
-                    <div className="absolute inset-0 rounded-full bg-blue-400/20 animate-ping" style={{ animationDuration: '1.5s' }} />
-                    <div className="absolute inset-0 rounded-full bg-blue-400/10 animate-ping" style={{ animationDuration: '2s' }} />
+                    <div className="absolute -inset-2 rounded-full bg-blue-400/25 animate-ping" style={{ animationDuration: '1.2s' }} />
+                    <div className="absolute -inset-4 rounded-full bg-blue-400/15 animate-ping" style={{ animationDuration: '1.8s' }} />
+                    <div className="absolute -inset-6 rounded-full bg-blue-400/8 animate-ping" style={{ animationDuration: '2.4s' }} />
+                  </>
+                )}
+                {flowState === 'PROCESSING' && (
+                  <>
+                    <div className="absolute -inset-2 rounded-full bg-yellow-400/25 animate-ping" style={{ animationDuration: '1s' }} />
+                    <div className="absolute -inset-4 rounded-full bg-yellow-400/15 animate-ping" style={{ animationDuration: '1.5s' }} />
                   </>
                 )}
               </div>
 
-              {/* Status indicator dot - larger for better visibility */}
-              <div className={`absolute bottom-1 right-1 w-5 h-5 rounded-full border-3 border-purple-900 flex items-center justify-center ${
-                flowState === 'LISTENING' ? 'bg-green-400 animate-pulse' :
-                flowState === 'READING' ? 'bg-blue-400 animate-pulse' :
-                flowState === 'PROCESSING' ? 'bg-yellow-400 animate-pulse' :
-                'bg-gray-400'
-              }`}>
-                <div className="w-2 h-2 rounded-full bg-white/80" />
+              {/* Premium Status Indicator - Larger, more visible */}
+              <div className={cn(
+                "absolute bottom-0 right-0 w-6 h-6 rounded-full border-4 border-purple-900 flex items-center justify-center shadow-lg transition-all duration-300",
+                flowState === 'LISTENING' && 'bg-green-400 shadow-green-400/50 animate-pulse',
+                flowState === 'READING' && 'bg-blue-400 shadow-blue-400/50 animate-pulse',
+                flowState === 'PROCESSING' && 'bg-yellow-400 shadow-yellow-400/50 animate-pulse',
+                flowState === 'IDLE' && 'bg-gray-400 shadow-gray-400/30',
+                flowState === 'PAUSED' && 'bg-orange-400 shadow-orange-400/50'
+              )}>
+                <div className="w-2.5 h-2.5 rounded-full bg-white shadow-inner" />
               </div>
             </div>
 
-            {/* Name and status below avatar */}
-            <div className="flex flex-col items-center">
-              <span className="text-white font-bold text-base">Tomas AI</span>
-              <span className="text-white/70 text-xs font-medium">
+            {/* Name and Status - Improved typography */}
+            <div className="flex flex-col items-center mt-1">
+              <h2 className="text-white font-bold text-lg tracking-wide drop-shadow-lg">
+                Tomas AI
+              </h2>
+              <div className={cn(
+                "mt-1 px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm transition-all duration-300",
+                flowState === 'LISTENING' && 'bg-green-400/20 text-green-100',
+                flowState === 'READING' && 'bg-blue-400/20 text-blue-100',
+                flowState === 'PROCESSING' && 'bg-yellow-400/20 text-yellow-100',
+                flowState === 'PAUSED' && 'bg-orange-400/20 text-orange-100',
+                flowState === 'IDLE' && 'bg-white/10 text-white/80'
+              )}>
                 {flowState === 'READING' ? '🗣️ Speaking...' :
                  flowState === 'LISTENING' ? '👂 Listening...' :
                  flowState === 'PROCESSING' ? '💭 Thinking...' :
                  flowState === 'PAUSED' ? '⏸️ Paused' :
                  '✨ Ready to chat'}
-              </span>
+              </div>
             </div>
           </div>
         </div>
@@ -1021,8 +1047,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       {/* Fixed Mobile Header */}
       <MobileHeader />
 
-      {/* Full-Screen Scrollable Chat Area - adjusted for larger header */}
-      <div className="flex-1 overflow-y-auto pt-[160px] pb-24 px-4 overscroll-behavior-contain">
+      {/* Full-Screen Scrollable Chat Area - adjusted for premium header */}
+      <div className="flex-1 overflow-y-auto pt-[180px] pb-24 px-4 overscroll-behavior-contain">
           <div className="space-y-4">
             {messages.map((message, index) => (
               <ChatBubble
