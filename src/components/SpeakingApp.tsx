@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Mic, Volume2, VolumeX } from 'lucide-react';
+import { Mic, Volume2, VolumeX, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import DIDAvatar from './DIDAvatar';
@@ -73,28 +73,31 @@ const XPProgressBar = ({ current, max, className }: { current: number; max: numb
   );
 };
 
-// Premium Chat Bubble component
-const ChatBubble = ({ 
-  message, 
-  isUser = false, 
-  className 
-}: { 
-  message: string; 
-  isUser?: boolean; 
-  className?: string; 
+// Premium Chat Bubble component with animations
+const ChatBubble = ({
+  message,
+  isUser = false,
+  className
+}: {
+  message: string;
+  isUser?: boolean;
+  className?: string;
 }) => (
-  <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-3 sm:mb-4 ${className}`}>
+  <div
+    className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-3 sm:mb-4 animate-slide-in-up ${className}`}
+    style={{ animation: 'slideInUp 0.5s ease-out' }}
+  >
     <div className="flex items-start space-x-2 sm:space-x-3 max-w-[90%] sm:max-w-[85%]">
-      <div 
-        className={`conversation-bubble px-4 py-3 sm:px-5 sm:py-4 font-medium text-sm sm:text-base leading-relaxed flex-1 ${
-          isUser 
-            ? 'bg-gradient-to-br from-white/95 to-white/85 text-gray-800 border-l-4 border-orange-400' 
-            : 'bg-gradient-to-br from-blue-50/90 to-blue-100/80 text-gray-800 border-l-4 border-blue-400'
+      <div
+        className={`conversation-bubble px-4 py-3 sm:px-5 sm:py-4 font-medium text-sm sm:text-base leading-relaxed flex-1 shadow-lg transform transition-all duration-300 hover:shadow-xl ${
+          isUser
+            ? 'bg-gradient-to-br from-white/95 to-white/85 text-gray-800 border-l-4 border-orange-400 hover:border-orange-500'
+            : 'bg-gradient-to-br from-blue-50/90 to-blue-100/80 text-gray-800 border-l-4 border-blue-400 hover:border-blue-500'
         }`}
       >
         {message}
       </div>
-      
+
       {/* Bookmark button for non-user messages (AI responses) */}
       {!isUser && (
         <BookmarkButton
@@ -817,94 +820,49 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
   };
 
-  // C) Smart executeTeacherLoop - handles conversation vs correction intelligently
+  // State for grammar corrections display
+  const [grammarCorrections, setGrammarCorrections] = useState<Array<{
+    originalPhrase: string;
+    correctedPhrase: string;
+  }>>([]);
+
+  // C) Smart executeTeacherLoop - unified conversational AI with grammar correction
   const executeTeacherLoop = async (transcript: string) => {
-    
+
     try {
       setIsProcessingTranscript(true);
-      
-      // First, classify the intent to determine if it's conversational or needs correction
-      const { data: intentData, error: intentError } = await supabase.functions.invoke('classify-intent', {
+      setGrammarCorrections([]); // Clear previous corrections
+
+      // Use the unified conversational-ai function
+      const { data, error } = await supabase.functions.invoke('conversational-ai', {
         body: {
-          text: transcript,
-          context: conversationContext || 'English conversation practice'
+          userMessage: transcript,
+          conversationHistory: conversationContext || '',
+          userLevel: userLevel
         }
       });
-      
-      // If intent classification fails, default to treating as conversational
-      const intent = intentError ? 'small_talk' : intentData.intent;
-      
-      // For small talk and questions, handle conversationally without forced grammar evaluation
-      if (intent === 'small_talk' || intent === 'question') {
-        // Use handle-small-talk function for natural conversation flow
-        const { data: conversationData, error: conversationError } = await supabase.functions.invoke('handle-small-talk', {
-          body: {
-            text: transcript,
-            intent: intent,
-            context: conversationContext || 'English conversation practice',
-            level: userLevel
-          }
-        });
-        
-        if (!conversationError && conversationData?.response) {
-          // Natural conversation response - no correction needed
-          await addAssistantMessage(conversationData.response, 'feedback');
-          
-          // Update conversation context
-          setConversationContext(prev => `${prev}\nUser: ${transcript}\nAssistant: ${conversationData.response}`.trim());
-          return;
-        }
-      }
-      
-      // For lesson answers or if conversation handling fails, evaluate grammar
-      const { data, error } = await supabase.functions.invoke('evaluate-speaking', {
-        body: {
-          question: currentQuestion,
-          answer: transcript, // exact transcript, preserve accents like "café"
-          level: userLevel
-        }
-      });
-      
+
       if (error) {
-        await addAssistantMessage("I couldn't evaluate your answer right now. Please try again.", 'feedback');
+        await addAssistantMessage("I couldn't process your message right now. Please try again.", 'feedback');
         return;
       }
-      
-      const evaluation = data;
-      
-      // Only apply grammar correction if there are actual significant errors
-      let response = '';
-      
-      // Add correction only if there are meaningful grammar issues (not just minor style differences)
-      if (evaluation.hasErrors && evaluation.correctedVersion && evaluation.correctedVersion !== transcript) {
-        const filteredCorrection = filterCorrection(transcript, evaluation.correctedVersion);
-        if (filteredCorrection.trim()) {
-          response += `Actually, I'd say: "${filteredCorrection}"\n\n`;
-        }
+
+      const aiResponse = data;
+
+      // If there was a grammar issue, store it for highlighting
+      if (aiResponse.hadGrammarIssue && aiResponse.originalPhrase && aiResponse.correctedPhrase) {
+        setGrammarCorrections([{
+          originalPhrase: aiResponse.originalPhrase,
+          correctedPhrase: aiResponse.correctedPhrase
+        }]);
       }
-      
-      // Add encouraging feedback
-      if (evaluation.feedback) {
-        response += `${evaluation.feedback}\n\n`;
-      }
-      
-      // Add follow-up question
-      if (evaluation.followUpQuestion) {
-        response += evaluation.followUpQuestion;
-        setCurrentQuestion(evaluation.followUpQuestion);
-      } else {
-        // 🚨 CRITICAL FIX: Generate contextual follow-up based on user's actual response
-        const contextualFollowUp = generateContextualFollowUp(transcript, userLevel);
-        response += contextualFollowUp;
-        setCurrentQuestion(contextualFollowUp);
-      }
-      
-      // D) Assistant reply → speak once → back to LISTENING
-      await addAssistantMessage(response.trim(), 'feedback');
-      
+
+      // Add the AI's response to chat
+      await addAssistantMessage(aiResponse.response, 'feedback');
+
       // Update conversation context
-      setConversationContext(prev => `${prev}\nUser: ${transcript}\nAssistant: ${response}`.trim());
-      
+      setConversationContext(prev => `${prev}\nUser: ${transcript}\nAssistant: ${aiResponse.response}`.trim());
+
     } catch (error) {
       await addAssistantMessage("Sorry, I encountered an error. Let's continue our conversation.", 'feedback');
     } finally {
@@ -1024,7 +982,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
                 isUser={message.isUser}
               />
             ))}
-            
+
             {/* Ephemeral ghost bubble */}
             {ephemeralAssistant && (
               <ChatBubble
@@ -1033,11 +991,48 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
                 className="opacity-70"
               />
             )}
-            
+
             {/* Live captions */}
             {flowState === 'LISTENING' && interimCaption && (
               <div className="text-white/60 italic text-sm text-center">
                 "{interimCaption}"
+              </div>
+            )}
+
+            {/* Grammar Corrections Display - Premium UI with animations */}
+            {grammarCorrections.length > 0 && (
+              <div
+                className="mt-4 p-4 rounded-xl bg-gradient-to-br from-yellow-500/20 to-orange-500/10 border border-yellow-500/40 shadow-lg transform transition-all duration-500"
+                style={{
+                  animation: 'slideInUp 0.6s ease-out 0.2s both'
+                }}
+              >
+                <div className="flex items-start space-x-3 mb-3">
+                  <Star className="h-6 w-6 text-yellow-400 flex-shrink-0 mt-0.5 animate-pulse" style={{ animationDuration: '2s' }} />
+                  <div className="flex-1">
+                    <h4 className="text-base font-bold text-yellow-300 mb-3 flex items-center">
+                      Grammar Tip
+                      <span className="ml-2 text-xs bg-yellow-500/20 px-2 py-0.5 rounded-full">Pro Tip</span>
+                    </h4>
+                    <div className="space-y-3">
+                      {grammarCorrections.map((correction, index) => (
+                        <div
+                          key={index}
+                          className="bg-black/30 p-3 rounded-lg border border-yellow-500/20 transform transition-all hover:scale-102 hover:border-yellow-500/40"
+                          style={{
+                            animation: `slideInUp 0.4s ease-out ${0.3 + index * 0.1}s both`
+                          }}
+                        >
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-red-300 line-through font-medium">{correction.originalPhrase}</span>
+                            <span className="text-xs text-white/50 mx-3">→</span>
+                            <span className="text-green-300 font-bold">{correction.correctedPhrase}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </div>
