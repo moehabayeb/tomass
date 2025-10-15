@@ -929,104 +929,103 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     }
   }, [flowState, isSpeaking, micState]);
 
-  // Premium Mobile Header Component - God-Tier Design
+  // Modern Floating Header - Minimal, Clean Design (No Background Container)
   const MobileHeader = () => {
     const formattedXP = useMemo(() => {
       return xp_current ? xp_current.toLocaleString() : "—";
     }, [xp_current]);
 
     return (
-      <div className="fixed top-0 left-0 right-0 z-30 bg-gradient-to-b from-purple-900/98 to-purple-900/85 backdrop-blur-2xl border-b border-white/15 shadow-2xl">
-        {/* Compact Top Bar - Sound & XP */}
-        <div className="safe-top px-4 py-2 flex items-center justify-between border-b border-white/10">
+      <div className="fixed top-0 left-0 right-0 z-30 pointer-events-none">
+        {/* Floating Sound & XP Controls - No container background */}
+        <div className="safe-top px-4 py-4 flex items-center justify-between pointer-events-auto">
           <button
             onClick={toggleSpeakingSound}
-            className="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 active:scale-95 transition-all duration-200"
+            className="w-10 h-10 flex items-center justify-center rounded-full bg-white/15 backdrop-blur-xl text-white hover:bg-white/25 active:scale-95 transition-all duration-200 shadow-lg"
             aria-label={speakingSoundEnabled ? "Mute" : "Unmute"}
           >
-            {speakingSoundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+            {speakingSoundEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
           </button>
 
-          <div className="px-3 py-1.5 rounded-full text-xs bg-white/10 text-white/90 backdrop-blur-sm font-semibold tracking-wide">
+          <div className="px-4 py-2 rounded-full text-sm bg-white/15 text-white backdrop-blur-xl font-bold tracking-wide shadow-lg">
             ⚡ {formattedXP} XP
           </div>
         </div>
 
-        {/* Avatar Section - Premium Layout */}
-        <div className="px-4 pb-3 flex flex-col items-center">
-          <div className="flex flex-col items-center gap-2 mt-2">
-            <div className="relative">
-              {/* Premium Avatar Container - Larger with dramatic shadows */}
+        {/* Floating Avatar - Centered, No Container */}
+        <div className="px-4 pt-6 flex flex-col items-center pointer-events-none">
+          <div className="flex flex-col items-center gap-3">
+            <div className="relative pointer-events-auto">
+              {/* Floating Avatar Container - Dramatic shadow, no borders */}
               <div className={cn(
-                "w-28 h-28 rounded-full relative transition-all duration-300 shadow-2xl",
-                isSpeaking && "ring-4 ring-green-400/60 shadow-green-400/40",
-                !isSpeaking && "shadow-purple-900/60"
+                "w-32 h-32 rounded-full relative transition-all duration-300",
+                isSpeaking && "ring-4 ring-green-400/60 shadow-[0_0_40px_rgba(74,222,128,0.5)]",
+                !isSpeaking && "shadow-[0_20px_60px_rgba(88,28,135,0.6)]"
               )}>
-                {/* Static avatar image with SVG support */}
+                {/* Avatar image */}
                 <img
                   src="/tomas-avatar.svg"
                   alt="Tomas AI Avatar"
-                  className="w-full h-full rounded-full object-cover border-4 border-white/25 bg-gradient-to-br from-purple-600 to-pink-600"
+                  className="w-full h-full rounded-full object-cover bg-gradient-to-br from-purple-600 to-pink-600"
                   onError={(e) => {
-                    // Try PNG fallback, then gradient
                     if (e.currentTarget.src.includes('.svg')) {
                       e.currentTarget.src = '/tomas-avatar.png';
                     } else {
                       e.currentTarget.style.display = 'none';
                       e.currentTarget.parentElement!.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-                      e.currentTarget.parentElement!.style.boxShadow = '0 20px 60px rgba(102, 126, 234, 0.4)';
+                      e.currentTarget.parentElement!.style.boxShadow = '0 20px 60px rgba(102, 126, 234, 0.6)';
                     }
                   }}
                 />
 
-                {/* Enhanced Pulsing rings - Multi-layer depth */}
+                {/* Animated Pulsing Rings - State-based */}
                 {flowState === 'LISTENING' && (
                   <>
-                    <div className="absolute -inset-2 rounded-full bg-green-400/25 animate-ping" style={{ animationDuration: '1.2s' }} />
-                    <div className="absolute -inset-4 rounded-full bg-green-400/15 animate-ping" style={{ animationDuration: '1.8s' }} />
-                    <div className="absolute -inset-6 rounded-full bg-green-400/8 animate-ping" style={{ animationDuration: '2.4s' }} />
+                    <div className="absolute -inset-3 rounded-full bg-green-400/30 animate-ping" style={{ animationDuration: '1.2s' }} />
+                    <div className="absolute -inset-6 rounded-full bg-green-400/20 animate-ping" style={{ animationDuration: '1.8s' }} />
+                    <div className="absolute -inset-9 rounded-full bg-green-400/10 animate-ping" style={{ animationDuration: '2.4s' }} />
                   </>
                 )}
                 {flowState === 'READING' && (
                   <>
-                    <div className="absolute -inset-2 rounded-full bg-blue-400/25 animate-ping" style={{ animationDuration: '1.2s' }} />
-                    <div className="absolute -inset-4 rounded-full bg-blue-400/15 animate-ping" style={{ animationDuration: '1.8s' }} />
-                    <div className="absolute -inset-6 rounded-full bg-blue-400/8 animate-ping" style={{ animationDuration: '2.4s' }} />
+                    <div className="absolute -inset-3 rounded-full bg-blue-400/30 animate-ping" style={{ animationDuration: '1.2s' }} />
+                    <div className="absolute -inset-6 rounded-full bg-blue-400/20 animate-ping" style={{ animationDuration: '1.8s' }} />
+                    <div className="absolute -inset-9 rounded-full bg-blue-400/10 animate-ping" style={{ animationDuration: '2.4s' }} />
                   </>
                 )}
                 {flowState === 'PROCESSING' && (
                   <>
-                    <div className="absolute -inset-2 rounded-full bg-yellow-400/25 animate-ping" style={{ animationDuration: '1s' }} />
-                    <div className="absolute -inset-4 rounded-full bg-yellow-400/15 animate-ping" style={{ animationDuration: '1.5s' }} />
+                    <div className="absolute -inset-3 rounded-full bg-yellow-400/30 animate-ping" style={{ animationDuration: '1s' }} />
+                    <div className="absolute -inset-6 rounded-full bg-yellow-400/20 animate-ping" style={{ animationDuration: '1.5s' }} />
                   </>
                 )}
               </div>
 
-              {/* Premium Status Indicator - Larger, more visible */}
+              {/* Floating Status Indicator */}
               <div className={cn(
-                "absolute bottom-0 right-0 w-6 h-6 rounded-full border-4 border-purple-900 flex items-center justify-center shadow-lg transition-all duration-300",
-                flowState === 'LISTENING' && 'bg-green-400 shadow-green-400/50 animate-pulse',
-                flowState === 'READING' && 'bg-blue-400 shadow-blue-400/50 animate-pulse',
-                flowState === 'PROCESSING' && 'bg-yellow-400 shadow-yellow-400/50 animate-pulse',
-                flowState === 'IDLE' && 'bg-gray-400 shadow-gray-400/30',
-                flowState === 'PAUSED' && 'bg-orange-400 shadow-orange-400/50'
+                "absolute bottom-1 right-1 w-7 h-7 rounded-full border-4 border-purple-900 flex items-center justify-center shadow-2xl transition-all duration-300",
+                flowState === 'LISTENING' && 'bg-green-400 shadow-green-400/60 animate-pulse',
+                flowState === 'READING' && 'bg-blue-400 shadow-blue-400/60 animate-pulse',
+                flowState === 'PROCESSING' && 'bg-yellow-400 shadow-yellow-400/60 animate-pulse',
+                flowState === 'IDLE' && 'bg-gray-400 shadow-gray-400/40',
+                flowState === 'PAUSED' && 'bg-orange-400 shadow-orange-400/60'
               )}>
-                <div className="w-2.5 h-2.5 rounded-full bg-white shadow-inner" />
+                <div className="w-3 h-3 rounded-full bg-white" />
               </div>
             </div>
 
-            {/* Name and Status - Improved typography */}
-            <div className="flex flex-col items-center mt-1">
-              <h2 className="text-white font-bold text-lg tracking-wide drop-shadow-lg">
+            {/* Floating Name and Status Badge */}
+            <div className="flex flex-col items-center gap-2 pointer-events-auto">
+              <h2 className="text-white font-bold text-xl tracking-wide drop-shadow-[0_4px_12px_rgba(0,0,0,0.6)]">
                 Tomas AI
               </h2>
               <div className={cn(
-                "mt-1 px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm transition-all duration-300",
-                flowState === 'LISTENING' && 'bg-green-400/20 text-green-100',
-                flowState === 'READING' && 'bg-blue-400/20 text-blue-100',
-                flowState === 'PROCESSING' && 'bg-yellow-400/20 text-yellow-100',
-                flowState === 'PAUSED' && 'bg-orange-400/20 text-orange-100',
-                flowState === 'IDLE' && 'bg-white/10 text-white/80'
+                "px-4 py-1.5 rounded-full text-sm font-semibold backdrop-blur-xl transition-all duration-300 shadow-lg",
+                flowState === 'LISTENING' && 'bg-green-400/25 text-green-50 shadow-green-400/30',
+                flowState === 'READING' && 'bg-blue-400/25 text-blue-50 shadow-blue-400/30',
+                flowState === 'PROCESSING' && 'bg-yellow-400/25 text-yellow-50 shadow-yellow-400/30',
+                flowState === 'PAUSED' && 'bg-orange-400/25 text-orange-50 shadow-orange-400/30',
+                flowState === 'IDLE' && 'bg-white/15 text-white/90 shadow-white/20'
               )}>
                 {flowState === 'READING' ? '🗣️ Speaking...' :
                  flowState === 'LISTENING' ? '👂 Listening...' :
@@ -1047,8 +1046,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       {/* Fixed Mobile Header */}
       <MobileHeader />
 
-      {/* Full-Screen Scrollable Chat Area - adjusted for premium header */}
-      <div className="flex-1 overflow-y-auto pt-[180px] pb-24 px-4 overscroll-behavior-contain">
+      {/* Full-Screen Scrollable Chat Area - adjusted for floating header */}
+      <div className="flex-1 overflow-y-auto pt-[240px] pb-24 px-4 overscroll-behavior-contain">
           <div className="space-y-4">
             {messages.map((message, index) => (
               <ChatBubble
