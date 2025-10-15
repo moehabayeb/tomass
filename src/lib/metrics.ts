@@ -24,10 +24,30 @@ let deviceInfo: string;
 let batchTimer: number | undefined;
 let isOnline = true;
 
+// Universal UUID v4 generator - works on ALL browsers/devices
+function generateUUID(): string {
+  // Try native crypto.randomUUID first (modern browsers with HTTPS)
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    try {
+      return crypto.randomUUID();
+    } catch (e) {
+      // Fall through to polyfill
+    }
+  }
+
+  // Polyfill: RFC4122 version 4 compliant UUID
+  // Works on ALL devices including older mobile browsers
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
 // Initialize session ID and device info
 function initializeSession() {
   // Get or create session ID
-  sessionId = localStorage.getItem('speaking_session_id') || crypto.randomUUID();
+  sessionId = localStorage.getItem('speaking_session_id') || generateUUID();
   localStorage.setItem('speaking_session_id', sessionId);
   
   // Create short device identifier (no PII)
