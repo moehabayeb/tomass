@@ -784,3 +784,105 @@
     -webkit-tap-highlight-color: transparent;
   }
 }
+
+/* ========================================
+   ANIMATED AVATAR ANIMATIONS
+   ======================================== */
+
+/* Speaking bounce animation */
+@keyframes speaking-bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+.animate-speaking-bounce {
+  animation: speaking-bounce 0.6s ease-in-out infinite;
+}
+
+/* Mouth talking animation - cycle through 4 mouth states */
+@keyframes mouth-talking {
+  0% { opacity: 1; }
+  25% { opacity: 0; }
+  50% { opacity: 0; }
+  75% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes mouth-slightly-open {
+  0% { opacity: 0; }
+  25% { opacity: 1; }
+  50% { opacity: 0; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+
+@keyframes mouth-open {
+  0% { opacity: 0; }
+  25% { opacity: 0; }
+  50% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+
+@keyframes mouth-wide {
+  0% { opacity: 0; }
+  25% { opacity: 0; }
+  50% { opacity: 0; }
+  75% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Eyelid blink animation */
+@keyframes blink-eyelids {
+  0% {
+    transform: scaleY(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scaleY(0);
+    opacity: 0;
+  }
+}
+
+/* Subtle pupil movement when speaking */
+@keyframes pupil-move {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(0.5px, 0); }
+  50% { transform: translate(0, 0.5px); }
+  75% { transform: translate(-0.5px, 0); }
+}
+
+/* Apply animations via classes */
+.avatar-speaking .mouth-closed {
+  animation: mouth-talking 0.8s steps(4) infinite;
+}
+
+.avatar-speaking .mouth-slightly-open {
+  animation: mouth-slightly-open 0.8s steps(4) infinite;
+}
+
+.avatar-speaking .mouth-open {
+  animation: mouth-open 0.8s steps(4) infinite;
+}
+
+.avatar-speaking .mouth-wide {
+  animation: mouth-wide 0.8s steps(4) infinite;
+}
+
+.avatar-blinking .eyelid-left,
+.avatar-blinking .eyelid-right {
+  animation: blink-eyelids 0.15s ease-in-out;
+}
+
+.avatar-speaking .pupil-left,
+.avatar-speaking .pupil-right {
+  animation: pupil-move 2s ease-in-out infinite;
+}

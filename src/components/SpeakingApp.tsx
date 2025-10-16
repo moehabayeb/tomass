@@ -3,6 +3,7 @@ import { Mic, Volume2, VolumeX, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import DIDAvatar from './DIDAvatar';
+import AnimatedAvatar from './AnimatedAvatar';
 import { useAvatarState } from '@/hooks/useAvatarState';
 import { useSpeakingTTS } from '@/hooks/useSpeakingTTS';
 import { supabase } from '@/integrations/supabase/client';
@@ -1047,21 +1048,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
                 isSpeaking && "ring-4 ring-green-400/60 shadow-[0_0_40px_rgba(74,222,128,0.5)]",
                 !isSpeaking && "shadow-[0_20px_60px_rgba(88,28,135,0.6)]"
               )}>
-                {/* Avatar image */}
-                <img
-                  src="/tomas-avatar.svg"
-                  alt="Tomas AI Avatar"
-                  className="w-full h-full rounded-full object-cover bg-gradient-to-br from-purple-600 to-pink-600"
-                  onError={(e) => {
-                    if (e.currentTarget.src.includes('.svg')) {
-                      e.currentTarget.src = '/tomas-avatar.png';
-                    } else {
-                      e.currentTarget.style.display = 'none';
-                      e.currentTarget.parentElement!.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-                      e.currentTarget.parentElement!.style.boxShadow = '0 20px 60px rgba(102, 126, 234, 0.6)';
-                    }
-                  }}
-                />
+                {/* Animated Avatar */}
+                <AnimatedAvatar isSpeaking={isSpeaking} className="w-full h-full" />
 
                 {/* Animated Pulsing Rings - State-based */}
                 {flowState === 'LISTENING' && (

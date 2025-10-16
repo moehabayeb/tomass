@@ -27,18 +27,58 @@
   <line x1="50" y1="85" x2="30" y2="80" stroke="#000" stroke-width="3"/>
   <line x1="150" y1="85" x2="170" y2="80" stroke="#000" stroke-width="3"/>
 
-  <!-- Eyes behind glasses -->
-  <circle cx="70" cy="85" r="7" fill="#000"/>
-  <circle cx="73" cy="83" r="2" fill="#FFF"/>
-  <circle cx="130" cy="85" r="7" fill="#000"/>
-  <circle cx="133" cy="83" r="2" fill="#FFF"/>
+  <!-- Eyes behind glasses with animated pupils and eyelids -->
+  <g id="left-eye">
+    <!-- Eye white -->
+    <circle cx="70" cy="85" r="7" fill="#FFF"/>
+    <!-- Animated pupil -->
+    <circle class="pupil-left" cx="70" cy="85" r="4" fill="#000"/>
+    <!-- Eye highlight -->
+    <circle cx="73" cy="83" r="2" fill="#FFF"/>
+    <!-- Animated eyelid (for blinking) -->
+    <ellipse class="eyelid-left" cx="70" cy="85" rx="7" ry="7" fill="url(#faceGrad)"/>
+  </g>
+
+  <g id="right-eye">
+    <!-- Eye white -->
+    <circle cx="130" cy="85" r="7" fill="#FFF"/>
+    <!-- Animated pupil -->
+    <circle class="pupil-right" cx="130" cy="85" r="4" fill="#000"/>
+    <!-- Eye highlight -->
+    <circle cx="133" cy="83" r="2" fill="#FFF"/>
+    <!-- Animated eyelid (for blinking) -->
+    <ellipse class="eyelid-right" cx="130" cy="85" rx="7" ry="7" fill="url(#faceGrad)"/>
+  </g>
 
   <!-- Nose -->
   <ellipse cx="100" cy="105" rx="8" ry="12" fill="#E6B896"/>
 
-  <!-- Friendly smile -->
-  <path d="M 70 120 Q 100 140 130 120" fill="none" stroke="#000" stroke-width="4" stroke-linecap="round"/>
-  <path d="M 75 122 Q 100 135 125 122" fill="#FFF" opacity="0.3" stroke="none"/>
+  <!-- Animated Mouth Group -->
+  <g id="mouth">
+    <!-- Mouth Closed (default) -->
+    <path class="mouth-closed" d="M 70 120 Q 100 128 130 120" fill="none" stroke="#000" stroke-width="4" stroke-linecap="round"/>
+
+    <!-- Mouth Slightly Open (hidden by default) -->
+    <g class="mouth-slightly-open" style="opacity: 0;">
+      <path d="M 70 120 Q 100 135 130 120" fill="none" stroke="#000" stroke-width="4" stroke-linecap="round"/>
+      <ellipse cx="100" cy="128" rx="18" ry="6" fill="#8B4545" opacity="0.6"/>
+    </g>
+
+    <!-- Mouth Open (hidden by default) -->
+    <g class="mouth-open" style="opacity: 0;">
+      <ellipse cx="100" cy="128" rx="20" ry="12" fill="#8B4545"/>
+      <ellipse cx="100" cy="122" rx="16" ry="4" fill="#FFF" opacity="0.3"/>
+    </g>
+
+    <!-- Mouth Wide (hidden by default) -->
+    <g class="mouth-wide" style="opacity: 0;">
+      <path d="M 70 120 Q 100 140 130 120" fill="none" stroke="#000" stroke-width="4" stroke-linecap="round"/>
+      <ellipse cx="100" cy="130" rx="22" ry="10" fill="#8B4545" opacity="0.7"/>
+    </g>
+
+    <!-- Smile highlight -->
+    <path class="smile-highlight" d="M 75 122 Q 100 133 125 122" fill="#FFF" opacity="0.2" stroke="none"/>
+  </g>
 
   <!-- Ears -->
   <ellipse cx="30" cy="100" rx="14" ry="20" fill="url(#faceGrad)"/>
