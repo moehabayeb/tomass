@@ -834,6 +834,59 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     correctedPhrase: string;
   }>>([]);
 
+  // Helper: Validate grammar correction (prevent false positives)
+  const isValidGrammarCorrection = (original: string, corrected: string): boolean => {
+    if (!original || !corrected || original === corrected) return false;
+
+    // Normalize for comparison
+    const origLower = original.toLowerCase().trim();
+    const corrLower = corrected.toLowerCase().trim();
+
+    // Rule 1: If identical when normalized, not a real error
+    if (origLower === corrLower) return false;
+
+    // Rule 2: Check if only difference is contractions (both valid)
+    const contractionsMap: Record<string, string> = {
+      "i'd": "i would", "i'll": "i will", "i'm": "i am", "i've": "i have",
+      "you'd": "you would", "you'll": "you will", "you're": "you are", "you've": "you have",
+      "we'd": "we would", "we'll": "we will", "we're": "we are", "we've": "we have",
+      "they'd": "they would", "they'll": "they will", "they're": "they are", "they've": "they have",
+      "he's": "he is", "she's": "she is", "it's": "it is",
+      "won't": "will not", "can't": "cannot", "don't": "do not", "doesn't": "does not"
+    };
+
+    let origExpanded = origLower;
+    let corrExpanded = corrLower;
+    Object.entries(contractionsMap).forEach(([contr, expanded]) => {
+      const regex = new RegExp(`\\b${contr}\\b`, 'g');
+      origExpanded = origExpanded.replace(regex, expanded);
+      corrExpanded = corrExpanded.replace(regex, expanded);
+    });
+
+    // If same after expanding contractions, it's a style preference, not an error
+    if (origExpanded === corrExpanded) return false;
+
+    // Rule 3: Check for actual grammatical error markers
+    const errorPatterns = [
+      /\b(goed|wented|eated|drinked|buyed|taked|maked|sayed|knowed)\b/i,  // Wrong past tense
+      /\b(I|you|we|they)\s+is\b/i,  // Subject-verb disagreement
+      /\b(he|she|it)\s+are\b/i,  // Subject-verb disagreement
+      /\bI am (?!a |an |the )(student|teacher|doctor|engineer)\b/i,  // Missing article
+      /\bgo to (?!the |a |an )(park|school|store|mall)\b/i,  // Missing article (common nouns)
+      /\bmuch (people|friends|cars|books)\b/i,  // Countable/uncountable error
+      /\ba (apple|orange|hour|umbrella)\b/i,  // Wrong article (should be "an")
+    ];
+
+    const hasErrorInOriginal = errorPatterns.some(pattern => pattern.test(origLower));
+    const hasErrorInCorrected = errorPatterns.some(pattern => pattern.test(corrLower));
+
+    // Only valid if original has error and corrected doesn't
+    if (hasErrorInOriginal && !hasErrorInCorrected) return true;
+
+    // If no clear error pattern detected, be conservative (don't show correction)
+    return false;
+  };
+
   // C) Smart executeTeacherLoop - unified conversational AI with grammar correction
   const executeTeacherLoop = async (transcript: string) => {
 
@@ -857,12 +910,17 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
       const aiResponse = data;
 
-      // If there was a grammar issue, store it for highlighting
+      // Client-side validation: Only show if it's a REAL grammatical error
       if (aiResponse.hadGrammarIssue && aiResponse.originalPhrase && aiResponse.correctedPhrase) {
-        setGrammarCorrections([{
-          originalPhrase: aiResponse.originalPhrase,
-          correctedPhrase: aiResponse.correctedPhrase
-        }]);
+        // Validate before showing
+        const isValid = isValidGrammarCorrection(aiResponse.originalPhrase, aiResponse.correctedPhrase);
+
+        if (isValid) {
+          setGrammarCorrections([{
+            originalPhrase: aiResponse.originalPhrase,
+            correctedPhrase: aiResponse.correctedPhrase
+          }]);
+        }
       }
 
       // Add the AI's response to chat

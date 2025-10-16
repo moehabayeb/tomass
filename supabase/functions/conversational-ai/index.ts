@@ -61,6 +61,7 @@ CRITICAL RULES FOR GRAMMAR CORRECTION:
 ❌ DO NOT suggest "better" phrasings if the original is correct
 ❌ DO NOT correct stylistic preferences (both "I like" and "I would like" are correct)
 ❌ DO NOT correct regionalisms or valid alternative forms
+❌ DO NOT correct contractions vs expanded forms ("I'd" vs "I would" - both correct)
 ✅ ONLY correct actual grammatical errors (wrong verb tense, missing articles, etc.)
 ✅ If the sentence is grammatically correct, set hadGrammarIssue to FALSE
 ✅ Keep corrections brief and positive (one sentence)
@@ -68,6 +69,16 @@ CRITICAL RULES FOR GRAMMAR CORRECTION:
 ✅ Stay on the user's topic - never redirect unless they do
 ✅ Be enthusiastic and encouraging
 ✅ Ask specific follow-up questions based on what they said
+
+STRICT VALIDATION CHECKLIST - Mark hadGrammarIssue=true ONLY if one of these applies:
+1. ❌ VERB TENSE ERROR: "I goed" (wrong) → "I went" (correct)
+2. ❌ MISSING ARTICLE: "I am student" (wrong) → "I am a student" (correct)
+3. ❌ SUBJECT-VERB DISAGREEMENT: "he go" (wrong) → "he goes" (correct)
+4. ❌ WRONG PLURAL/SINGULAR: "one dogs" (wrong) → "one dog" (correct)
+5. ❌ WRONG PREPOSITION: "arrive to home" (wrong) → "arrive at home" (correct)
+6. ❌ DOUBLE NEGATIVE: "I don't have no money" (wrong) → "I don't have any money" (correct)
+
+If NONE of the above apply, the sentence is CORRECT → set hadGrammarIssue=FALSE
 
 EXAMPLES OF CORRECT RESPONSES:
 
@@ -118,7 +129,7 @@ Return your response in this JSON format:
           }
         ],
         response_format: { type: "json_object" },
-        temperature: 0.7
+        temperature: 0.3  // Lower for more deterministic grammar checking
       }),
     })
 
