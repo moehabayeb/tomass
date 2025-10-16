@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
+import TomasAvatarSVG from './TomasAvatarSVG';
 
 interface AnimatedAvatarProps {
   isSpeaking: boolean;
@@ -27,29 +28,13 @@ export default function AnimatedAvatar({ isSpeaking, className }: AnimatedAvatar
   return (
     <div
       className={cn(
-        "relative transition-all duration-300",
-        isSpeaking && "avatar-speaking",
+        "relative transition-all duration-300 rounded-full overflow-hidden bg-gradient-to-br from-purple-600 to-pink-600",
+        isSpeaking && "avatar-speaking animate-speaking-bounce",
         isBlinking && "avatar-blinking",
         className
       )}
     >
-      <img
-        src="/tomas-avatar.svg"
-        alt="Tomas AI Avatar"
-        className={cn(
-          "w-full h-full rounded-full object-cover bg-gradient-to-br from-purple-600 to-pink-600",
-          isSpeaking && "animate-speaking-bounce"
-        )}
-        onError={(e) => {
-          if (e.currentTarget.src.includes('.svg')) {
-            e.currentTarget.src = '/tomas-avatar.png';
-          } else {
-            e.currentTarget.style.display = 'none';
-            e.currentTarget.parentElement!.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-            e.currentTarget.parentElement!.style.boxShadow = '0 20px 60px rgba(102, 126, 234, 0.6)';
-          }
-        }}
-      />
+      <TomasAvatarSVG />
 
       {/* Inline styles for SVG animation - applied when avatar-speaking class is active */}
       <style>{`
