@@ -834,7 +834,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     correctedPhrase: string;
   }>>([]);
 
-  // Helper: Validate grammar correction (prevent false positives)
+  // Helper: Validate grammar correction (prevent false positives) - ULTRA STRICT
   const isValidGrammarCorrection = (original: string, corrected: string): boolean => {
     if (!original || !corrected || original === corrected) return false;
 
@@ -866,24 +866,51 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     // If same after expanding contractions, it's a style preference, not an error
     if (origExpanded === corrExpanded) return false;
 
-    // Rule 3: Check for actual grammatical error markers
-    const errorPatterns = [
+    // Rule 3: CRITICAL - Detect unnecessary article additions (biggest false positive source)
+    // "talk about apples" → "talk about the apples" (BOTH VALID!)
+    // "eating apple pie" → "eating an apple pie" (BOTH VALID!)
+    const origWithoutArticles = origLower
+      .replace(/\bthe\s+/g, '')
+      .replace(/\ban\s+/g, '')
+      .replace(/\ba\s+/g, '')
+      .replace(/\s+/g, ' ');
+
+    const corrWithoutArticles = corrLower
+      .replace(/\bthe\s+/g, '')
+      .replace(/\ban\s+/g, '')
+      .replace(/\ba\s+/g, '')
+      .replace(/\s+/g, ' ');
+
+    // If the only difference is articles, it's NOT an error (just style)
+    if (origWithoutArticles === corrWithoutArticles) {
+      // EXCEPTION: Required articles for identity/professions
+      // "I am student" → "I am a student" (REQUIRED)
+      const requiresArticle = /\b(I am|he is|she is|it is|you are|we are|they are)\s+(student|teacher|doctor|engineer|lawyer|nurse|programmer|designer)\b/i;
+
+      if (requiresArticle.test(origLower) && !/(a |an |the )/.test(origLower.match(requiresArticle)?.[0] || '')) {
+        return true; // This is a real error - missing required article
+      }
+
+      return false; // Otherwise, adding articles is just style, not an error
+    }
+
+    // Rule 4: Only allow corrections for CLEAR, OBVIOUS errors
+    const clearErrorPatterns = [
       /\b(goed|wented|eated|drinked|buyed|taked|maked|sayed|knowed)\b/i,  // Wrong past tense
       /\b(I|you|we|they)\s+is\b/i,  // Subject-verb disagreement
       /\b(he|she|it)\s+are\b/i,  // Subject-verb disagreement
-      /\bI am (?!a |an |the )(student|teacher|doctor|engineer)\b/i,  // Missing article
-      /\bgo to (?!the |a |an )(park|school|store|mall)\b/i,  // Missing article (common nouns)
+      /\b(he|she|it)\s+have\b/i,  // Should be "has"
       /\bmuch (people|friends|cars|books)\b/i,  // Countable/uncountable error
-      /\ba (apple|orange|hour|umbrella)\b/i,  // Wrong article (should be "an")
+      /\bdon't have no\b/i,  // Double negative
     ];
 
-    const hasErrorInOriginal = errorPatterns.some(pattern => pattern.test(origLower));
-    const hasErrorInCorrected = errorPatterns.some(pattern => pattern.test(corrLower));
+    const hasErrorInOriginal = clearErrorPatterns.some(pattern => pattern.test(origLower));
+    const hasErrorInCorrected = clearErrorPatterns.some(pattern => pattern.test(corrLower));
 
-    // Only valid if original has error and corrected doesn't
+    // Only valid if original has CLEAR error and corrected doesn't
     if (hasErrorInOriginal && !hasErrorInCorrected) return true;
 
-    // If no clear error pattern detected, be conservative (don't show correction)
+    // CONSERVATIVE APPROACH: If we're not 100% sure it's an error, don't show it
     return false;
   };
 

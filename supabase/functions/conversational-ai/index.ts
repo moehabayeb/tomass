@@ -72,13 +72,26 @@ CRITICAL RULES FOR GRAMMAR CORRECTION:
 
 STRICT VALIDATION CHECKLIST - Mark hadGrammarIssue=true ONLY if one of these applies:
 1. ❌ VERB TENSE ERROR: "I goed" (wrong) → "I went" (correct)
-2. ❌ MISSING ARTICLE: "I am student" (wrong) → "I am a student" (correct)
+2. ❌ MISSING REQUIRED ARTICLE: "I am student" (wrong) → "I am a student" (correct)
 3. ❌ SUBJECT-VERB DISAGREEMENT: "he go" (wrong) → "he goes" (correct)
 4. ❌ WRONG PLURAL/SINGULAR: "one dogs" (wrong) → "one dog" (correct)
 5. ❌ WRONG PREPOSITION: "arrive to home" (wrong) → "arrive at home" (correct)
 6. ❌ DOUBLE NEGATIVE: "I don't have no money" (wrong) → "I don't have any money" (correct)
 
-If NONE of the above apply, the sentence is CORRECT → set hadGrammarIssue=FALSE
+CRITICAL ARTICLE RULES (DO NOT ADD OPTIONAL ARTICLES):
+❌ DO NOT add articles to general/plural nouns - these are CORRECT as-is:
+   - "talk about apples" (CORRECT - no article needed)
+   - "eating apple pie" (CORRECT - no article needed)
+   - "I like animals" (CORRECT - no article needed)
+   - "buy apple pies" (CORRECT - no article needed)
+❌ DO NOT add "the" to make things "more specific" - it's OPTIONAL, not required
+✅ ONLY mark as error if article is REQUIRED and MISSING:
+   - "I am student" → MISSING REQUIRED ARTICLE (profession needs "a/an")
+   - "go to park" → MISSING USUAL ARTICLE (specific places usually need "the")
+
+If sentence works perfectly without adding an article, it's NOT an error! Set hadGrammarIssue=FALSE.
+
+If NONE of the checklist items apply, the sentence is CORRECT → set hadGrammarIssue=FALSE
 
 EXAMPLES OF CORRECT RESPONSES:
 
