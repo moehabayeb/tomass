@@ -23,6 +23,7 @@ import { wakeLockManager } from '@/utils/wakeLock';
 import { Play, Pause, MoreHorizontal, RotateCcw, Square } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import { LevelUpModal } from './LevelUpModal';
 
 // Feature flags
 const SPEAKING_HANDS_FREE = true;
@@ -34,14 +35,56 @@ const SPEAKING_HANDS_FREE_MINIMAL = true;
 
 // Sparkle component for background decoration
 const Sparkle = ({ className, delayed = false }: { className?: string; delayed?: boolean }) => (
-  <div 
+  <div
     className={`absolute w-2 h-2 bg-yellow-300 rounded-full ${delayed ? 'sparkle-delayed' : 'sparkle'} ${className}`}
-    style={{ 
+    style={{
       boxShadow: '0 0 8px currentColor',
       clipPath: 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)'
     }}
   />
 );
+
+// Floating XP Gain Animation Component
+const FloatingXP = ({ amount, onComplete }: { amount: number; onComplete: () => void }) => {
+  useEffect(() => {
+    const timer = setTimeout(onComplete, 2000); // Animation duration
+    return () => clearTimeout(timer);
+  }, [onComplete]);
+
+  return (
+    <div
+      className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 pointer-events-none"
+      style={{
+        animation: 'floatUpFade 2s ease-out forwards'
+      }}
+    >
+      <div className="flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 via-orange-400 to-yellow-400 text-white font-bold text-lg shadow-2xl">
+        <span className="text-2xl">⚡</span>
+        <span>+{amount} XP</span>
+      </div>
+      <style>{`
+        @keyframes floatUpFade {
+          0% {
+            opacity: 0;
+            transform: translateY(0) translateX(-50%) scale(0.8);
+          }
+          20% {
+            opacity: 1;
+            transform: translateY(-10px) translateX(-50%) scale(1);
+          }
+          80% {
+            opacity: 1;
+            transform: translateY(-50px) translateX(-50%) scale(1);
+          }
+          100% {
+            opacity: 0;
+            transform: translateY(-80px) translateX(-50%) scale(0.8);
+          }
+        }
+      `}</style>
+    </div>
+  );
+};
 
 // Premium XP Progress Bar component
 const XPProgressBar = ({ current, max, className }: { current: number; max: number; className?: string }) => {
@@ -310,6 +353,20 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     return true;
   });
 
+  // Helper function to strip emojis from text for TTS (keep visible in chat)
+  const stripEmojisForTTS = (text: string): string => {
+    return text
+      .replace(/[\u{1F600}-\u{1F64F}]/gu, '') // Emoticons
+      .replace(/[\u{1F300}-\u{1F5FF}]/gu, '') // Misc Symbols and Pictographs
+      .replace(/[\u{1F680}-\u{1F6FF}]/gu, '') // Transport and Map
+      .replace(/[\u{1F1E0}-\u{1F1FF}]/gu, '') // Flags
+      .replace(/[\u{2600}-\u{26FF}]/gu, '')   // Misc symbols
+      .replace(/[\u{2700}-\u{27BF}]/gu, '')   // Dingbats
+      .replace(/[\u{1F900}-\u{1F9FF}]/gu, '') // Supplemental Symbols
+      .replace(/[\u{1FA70}-\u{1FAFF}]/gu, '') // Symbols and Pictographs Extended-A
+      .trim();
+  };
+
   // Helper function to generate turn token (authoritative current turn)
   const generateTurnToken = () => {
     const timestamp = Date.now();
@@ -380,12 +437,12 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
     try {
       if (enabled) {
-        await TTSManager.speak(text, { canSkip: false }).finally(() => {
-          resolved = true; 
+        await TTSManager.speak(stripEmojisForTTS(text), { canSkip: false }).finally(() => {
+          resolved = true;
           clearTimeout(watchdog);
         });
       } else {
-        resolved = true; 
+        resolved = true;
         clearTimeout(watchdog);
       }
     } catch (e) {
@@ -508,7 +565,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       }, 45000); // 🚨 CRITICAL FIX: Extended to 45s to prevent AI speech cutoff
 
       try {
-        await TTSManager.speak(text, { canSkip: false }) // 🚨 CRITICAL FIX: Disabled skip to prevent interruption
+        await TTSManager.speak(stripEmojisForTTS(text), { canSkip: false }) // 🚨 CRITICAL FIX: Disabled skip to prevent interruption
           .then(() => {
             // TTS completed successfully
           })
@@ -835,6 +892,13 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     correctedPhrase: string;
   }>>([]);
 
+  // State for floating XP animation
+  const [floatingXP, setFloatingXP] = useState<number | null>(null);
+
+  // State for level-up celebration modal
+  const [showLevelUpModal, setShowLevelUpModal] = useState(false);
+  const [levelUpValue, setLevelUpValue] = useState<number | null>(null);
+
   // Helper: Simple validation to prevent display issues (NOT grammar validation - AI handles that)
   const isValidGrammarCorrection = (original: string, corrected: string): boolean => {
     // Only check for basic display validity - trust the AI's grammar validation
@@ -888,6 +952,18 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       // Update conversation context
       setConversationContext(prev => `${prev}\nUser: ${transcript}\nAssistant: ${aiResponse.response}`.trim());
 
+      // Award XP for successful conversation turn
+      const baseXP = 10; // Base XP per message
+      const grammarBonus = !aiResponse.hadGrammarIssue ? 5 : 0; // +5 XP for correct grammar
+      const xpToAward = baseXP + grammarBonus;
+
+      const success = await awardXp(xpToAward);
+      if (success) {
+        console.log(`✨ Awarded ${xpToAward} XP (Base: ${baseXP}, Grammar Bonus: ${grammarBonus})`);
+        // Show floating XP animation
+        setFloatingXP(xpToAward);
+      }
+
     } catch (error) {
       await addAssistantMessage("Sorry, I encountered an error. Let's continue our conversation.", 'feedback');
     } finally {
@@ -934,7 +1010,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
   // Stuck state detection and debugging
   useEffect(() => {
-    
+
     if (flowState === 'READING' && !isSpeaking) {
       // If we're in READING but not speaking for 3 seconds, transition to LISTENING
       const timer = setTimeout(() => {
@@ -945,6 +1021,15 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       return () => clearTimeout(timer);
     }
   }, [flowState, isSpeaking, micState]);
+
+  // Level-up detection: Show celebration modal when user levels up
+  useEffect(() => {
+    if (lastLevelUpTime && Date.now() - lastLevelUpTime < 1000) {
+      // A level-up just occurred (within last second)
+      setLevelUpValue(level);
+      setShowLevelUpModal(true);
+    }
+  }, [lastLevelUpTime, level]);
 
   // Modern Floating Header - Minimal, Clean Design (No Background Container)
   const MobileHeader = () => {
@@ -1231,6 +1316,25 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
             {errorMessage}
           </div>
         </div>
+      )}
+
+      {/* Floating XP Gain Animation */}
+      {floatingXP !== null && (
+        <FloatingXP
+          amount={floatingXP}
+          onComplete={() => setFloatingXP(null)}
+        />
+      )}
+
+      {/* Level Up Celebration Modal */}
+      {showLevelUpModal && levelUpValue && (
+        <LevelUpModal
+          level={levelUpValue}
+          onClose={() => {
+            setShowLevelUpModal(false);
+            resetLevelUpNotification();
+          }}
+        />
       )}
     </div>
   );

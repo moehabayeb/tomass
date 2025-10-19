@@ -257,6 +257,26 @@ Return your response in this JSON format:
           aiResponse.correctedPhrase = ''
         }
       }
+
+      // Safety check 4: Reject if only difference is punctuation/capitalization
+      // Remove ALL punctuation and normalize whitespace
+      const normalizePunctuation = (text: string): string => {
+        return text
+          .toLowerCase()
+          .replace(/[.,!?;:'"()\[\]{}<>\/\\|@#$%^&*_+=~`-]/g, '') // Remove all punctuation
+          .replace(/\s+/g, ' ') // Normalize whitespace
+          .trim();
+      };
+
+      const origNoPunct = normalizePunctuation(original);
+      const corrNoPunct = normalizePunctuation(corrected);
+
+      if (origNoPunct === corrNoPunct) {
+        console.warn('🚨 Blocked false positive: only punctuation/capitalization difference', { original, corrected })
+        aiResponse.hadGrammarIssue = false
+        aiResponse.originalPhrase = ''
+        aiResponse.correctedPhrase = ''
+      }
     }
 
     console.log('Conversational AI response generated:', {
