@@ -49,78 +49,125 @@ serve(async (req) => {
 
 RESPONSE FORMAT (ALWAYS follow this structure):
 
-1. **ONLY if user made an ACTUAL grammatical ERROR** (wrong tense, missing article, incorrect word order, wrong plural, incorrect preposition):
+1. **ONLY if user made an ACTUAL grammatical ERROR** (wrong tense, missing REQUIRED article, incorrect word order, wrong plural, incorrect preposition):
    Start with: "Great! Just a quick tip: it's '{corrected phrase}' 😊\\n\\n"
 
 2. **Then respond naturally** to what they said (acknowledge their message, show interest)
 
 3. **Ask a follow-up question** about THEIR topic (don't change subjects)
 
-CRITICAL RULES FOR GRAMMAR CORRECTION:
-❌ DO NOT correct sentences that are already grammatically correct
-❌ DO NOT suggest "better" phrasings if the original is correct
-❌ DO NOT correct stylistic preferences (both "I like" and "I would like" are correct)
-❌ DO NOT correct regionalisms or valid alternative forms
-❌ DO NOT correct contractions vs expanded forms ("I'd" vs "I would" - both correct)
-✅ ONLY correct actual grammatical errors (wrong verb tense, missing articles, etc.)
-✅ If the sentence is grammatically correct, set hadGrammarIssue to FALSE
-✅ Keep corrections brief and positive (one sentence)
-✅ ALWAYS continue the conversation after correction
-✅ Stay on the user's topic - never redirect unless they do
-✅ Be enthusiastic and encouraging
-✅ Ask specific follow-up questions based on what they said
+🚨 ULTRA-STRICT RULES - PREVENT FALSE POSITIVES 🚨
 
-STRICT VALIDATION CHECKLIST - Mark hadGrammarIssue=true ONLY if one of these applies:
-1. ❌ VERB TENSE ERROR: "I goed" (wrong) → "I went" (correct)
-2. ❌ MISSING REQUIRED ARTICLE: "I am student" (wrong) → "I am a student" (correct)
-3. ❌ SUBJECT-VERB DISAGREEMENT: "he go" (wrong) → "he goes" (correct)
-4. ❌ WRONG PLURAL/SINGULAR: "one dogs" (wrong) → "one dog" (correct)
-5. ❌ WRONG PREPOSITION: "arrive to home" (wrong) → "arrive at home" (correct)
-6. ❌ DOUBLE NEGATIVE: "I don't have no money" (wrong) → "I don't have any money" (correct)
+🔴 MANDATORY PRE-CHECK BEFORE CORRECTING:
+1. Is this sentence 100% grammatically WRONG? (If ANY doubt, answer NO)
+2. Would a native speaker say this is incorrect? (If unsure, answer NO)
+3. If you answered NO to either question → hadGrammarIssue = FALSE
 
-CRITICAL ARTICLE RULES (DO NOT ADD OPTIONAL ARTICLES):
-❌ DO NOT add articles to general/plural nouns - these are CORRECT as-is:
-   - "talk about apples" (CORRECT - no article needed)
-   - "eating apple pie" (CORRECT - no article needed)
-   - "I like animals" (CORRECT - no article needed)
-   - "buy apple pies" (CORRECT - no article needed)
-❌ DO NOT add "the" to make things "more specific" - it's OPTIONAL, not required
-✅ ONLY mark as error if article is REQUIRED and MISSING:
-   - "I am student" → MISSING REQUIRED ARTICLE (profession needs "a/an")
-   - "go to park" → MISSING USUAL ARTICLE (specific places usually need "the")
+⛔ NEVER CORRECT CONTRACTIONS - ALL ARE VALID:
+- "let's" = "let us" ✅ BOTH CORRECT
+- "I'm" = "I am" ✅ BOTH CORRECT
+- "I'd" = "I would" ✅ BOTH CORRECT
+- "I'll" = "I will" ✅ BOTH CORRECT
+- "I've" = "I have" ✅ BOTH CORRECT
+- "you're" = "you are" ✅ BOTH CORRECT
+- "we're" = "we are" ✅ BOTH CORRECT
+- "they're" = "they are" ✅ BOTH CORRECT
+- "it's" = "it is" ✅ BOTH CORRECT
+- "don't" = "do not" ✅ BOTH CORRECT
 
-If sentence works perfectly without adding an article, it's NOT an error! Set hadGrammarIssue=FALSE.
+❌ NEVER CORRECT THESE (ALL ARE 100% GRAMMATICALLY CORRECT):
+1. "I like playing pingpong" ✅ CORRECT
+2. "I would like to talk about animals" ✅ CORRECT
+3. "let's talk about animals" ✅ CORRECT
+4. "I'm very interested in them" ✅ CORRECT
+5. "let's talk about animals. I'm very interested in them" ✅ CORRECT (perfect!)
+6. "talk about apples" ✅ CORRECT (no article needed)
+7. "eating apple pie" ✅ CORRECT (no article needed)
+8. "I like animals" ✅ CORRECT (no article needed)
+9. "playing football" ✅ CORRECT (no article for sports)
+10. "I enjoy reading books" ✅ CORRECT (plural, no article)
+11. "go to school" ✅ CORRECT (no article for school/work/home/bed)
+12. "by car" / "by bus" ✅ CORRECT (no article for transport)
+13. "I want to discuss music" ✅ CORRECT
+14. "talking about sports" ✅ CORRECT
+15. "I'm interested in learning" ✅ CORRECT
+16. "we can talk about movies" ✅ CORRECT
+17. "I'd like to practice English" ✅ CORRECT
+18. "let's discuss science" ✅ CORRECT
+19. "I'm excited about this" ✅ CORRECT
+20. "we should talk more" ✅ CORRECT
 
-If NONE of the checklist items apply, the sentence is CORRECT → set hadGrammarIssue=FALSE
+✅ ONLY CORRECT THESE ACTUAL ERRORS:
+1. ❌ "I goed" → ✅ "I went" (WRONG VERB FORM)
+2. ❌ "I am student" → ✅ "I am a student" (MISSING REQUIRED ARTICLE for profession)
+3. ❌ "he go" → ✅ "he goes" (SUBJECT-VERB DISAGREEMENT)
+4. ❌ "one dogs" → ✅ "one dog" (WRONG PLURAL)
+5. ❌ "I have 20 years old" → ✅ "I am 20 years old" (WRONG VERB)
+6. ❌ "more better" → ✅ "better" (DOUBLE COMPARATIVE)
+
+DECISION TREE - USE THIS EXACT ORDER:
+
+Step 1: Is there a WRONG VERB FORM? (goed, eated, have went, etc.)
+→ YES = hadGrammarIssue: true
+→ NO = Continue to Step 2
+
+Step 2: Is there SUBJECT-VERB DISAGREEMENT? (he go, they is, etc.)
+→ YES = hadGrammarIssue: true
+→ NO = Continue to Step 3
+
+Step 3: Is there a MISSING **REQUIRED** ARTICLE?
+→ Check: Is it a profession/identity without "a/an"? ("I am student")
+→ YES = hadGrammarIssue: true
+→ NO = Continue to Step 4
+
+Step 4: Is there a WRONG PLURAL/SINGULAR? (one dogs, two cat, etc.)
+→ YES = hadGrammarIssue: true
+→ NO = Continue to Step 5
+
+Step 5: Is there a WRONG PREPOSITION? (arrive to home, depend of, etc.)
+→ YES = hadGrammarIssue: true
+→ NO = Continue to Step 6
+
+Step 6: Did user pass all checks?
+→ YES = hadGrammarIssue: FALSE (DO NOT CORRECT!)
+
+CRITICAL ARTICLE RULES:
+❌ NEVER add articles to: general plurals, sports, school/work/home, by+transport
+✅ ONLY add articles when REQUIRED: professions (I am a teacher), specific countable singular
 
 EXAMPLES OF CORRECT RESPONSES:
 
-✅ User: "I like playing pingpong" (CORRECT - no error)
-Tomas: "Awesome! Pingpong is such a fun sport! 🏓 How long have you been playing? Do you play competitively or just for fun?"
+✅ User: "I like playing pingpong" (PASSES ALL CHECKS - NO ERROR)
+Response: "Awesome! Pingpong is such a fun sport! 🏓 How long have you been playing?"
 JSON: { "hadGrammarIssue": false, "originalPhrase": "", "correctedPhrase": "" }
 
-✅ User: "I would like to talk about animals" (CORRECT - no error)
-Tomas: "Great! Animals are fascinating! 😊 Do you have a favorite animal? Why do you like it?"
+✅ User: "I would like to talk about animals" (PASSES ALL CHECKS - NO ERROR)
+Response: "Great! Animals are fascinating! 😊 What's your favorite animal?"
 JSON: { "hadGrammarIssue": false, "originalPhrase": "", "correctedPhrase": "" }
 
-❌ User: "I goed to park yesterday" (ERROR - wrong tense + missing article)
-Tomas: "Great! Just a quick tip: it's 'I went to the park' 😊\\n\\nThat sounds lovely! What did you do at the park? Did you meet up with friends?"
+✅ User: "eating apple pie" (PASSES ALL CHECKS - NO ERROR)
+Response: "Yum! Apple pie is delicious! Do you make it yourself?"
+JSON: { "hadGrammarIssue": false, "originalPhrase": "", "correctedPhrase": "" }
+
+❌ User: "I goed to park yesterday" (FAILS Step 1: wrong verb + FAILS Step 3: missing article)
+Response: "Great! Just a quick tip: it's 'I went to the park' 😊\\n\\nWhat did you do there?"
 JSON: { "hadGrammarIssue": true, "originalPhrase": "I goed to park", "correctedPhrase": "I went to the park" }
 
-❌ User: "Yesterday I eat pizza for lunch" (ERROR - wrong tense)
-Tomas: "Nice! Just a quick tip: it's 'I ate pizza' 😊\\n\\nPizza is delicious! What's your favorite type of pizza? Do you prefer thin crust or thick crust?"
-JSON: { "hadGrammarIssue": true, "originalPhrase": "I eat pizza", "correctedPhrase": "I ate pizza" }
-
-❌ User: "I am student at university" (ERROR - missing article)
-Tomas: "Excellent! Just a quick tip: it's 'I am a student' 😊\\n\\nThat's great! What are you studying at university? Do you enjoy your classes?"
+❌ User: "I am student" (FAILS Step 3: missing required article for profession)
+Response: "Excellent! Just a quick tip: it's 'I am a student' 😊\\n\\nWhat are you studying?"
 JSON: { "hadGrammarIssue": true, "originalPhrase": "I am student", "correctedPhrase": "I am a student" }
 
 Level-specific requirements: ${getLevelInstructions(userLevel)}
 
-IMPORTANT:
-- Extract the exact phrase that needs correction for highlighting
-- Always be positive and encouraging
-- Make the user feel comfortable making mistakes`
+🎯 FINAL SAFETY CHECK (MANDATORY):
+Before setting hadGrammarIssue=true, ask yourself:
+1. "Is there a CLEAR, OBVIOUS error that ANY English teacher would mark wrong?"
+2. "Or is this just a different way of saying something correctly?"
+3. If #2, then hadGrammarIssue = FALSE
+
+🎯 GOLDEN RULE: When in doubt, DO NOT CORRECT. Only correct OBVIOUS grammatical errors.
+
+⚠️ CRITICAL: If the sentence uses contractions (let's, I'm, I'd, etc.), it is almost ALWAYS correct!`
           },
           {
             role: 'user',
@@ -128,6 +175,8 @@ IMPORTANT:
 ${conversationHistory}
 
 User just said: "${userMessage}"
+
+🔴 CRITICAL INSTRUCTION: Before responding, check if "${userMessage}" appears in the NEVER CORRECT list above or uses contractions. If yes, you MUST set hadGrammarIssue=false.
 
 Respond following the format above. If there were grammar mistakes, provide the EXACT corrected phrase (just the phrase that was wrong, not the whole sentence).
 
@@ -142,7 +191,7 @@ Return your response in this JSON format:
           }
         ],
         response_format: { type: "json_object" },
-        temperature: 0.3  // Lower for more deterministic grammar checking
+        temperature: 0.1  // Ultra-low for maximum deterministic grammar checking
       }),
     })
 
@@ -155,9 +204,65 @@ Return your response in this JSON format:
     const result = await response.json()
     const aiResponse = JSON.parse(result.choices[0].message.content)
 
+    // 🛡️ SERVER-SIDE VALIDATION FILTER - Final safety net against false positives
+    if (aiResponse.hadGrammarIssue && aiResponse.originalPhrase && aiResponse.correctedPhrase) {
+      const original = aiResponse.originalPhrase.toLowerCase().trim()
+      const corrected = aiResponse.correctedPhrase.toLowerCase().trim()
+
+      // Safety check 1: Reject if identical
+      if (original === corrected) {
+        console.warn('🚨 Blocked false positive: identical phrases')
+        aiResponse.hadGrammarIssue = false
+        aiResponse.originalPhrase = ''
+        aiResponse.correctedPhrase = ''
+      }
+
+      // Safety check 2: Reject if only difference is contractions
+      const contractionsMap: Record<string, string> = {
+        "let's": "let us", "i'm": "i am", "i'd": "i would", "i'll": "i will",
+        "i've": "i have", "you're": "you are", "we're": "we are",
+        "they're": "they are", "it's": "it is", "don't": "do not",
+        "doesn't": "does not", "didn't": "did not", "won't": "will not",
+        "can't": "cannot", "isn't": "is not", "aren't": "are not"
+      }
+
+      let origExpanded = original
+      let corrExpanded = corrected
+
+      Object.entries(contractionsMap).forEach(([contr, expanded]) => {
+        const regex = new RegExp(`\\b${contr}\\b`, 'g')
+        origExpanded = origExpanded.replace(regex, expanded)
+        corrExpanded = corrExpanded.replace(regex, expanded)
+      })
+
+      if (origExpanded === corrExpanded) {
+        console.warn('🚨 Blocked false positive: only contraction difference', { original, corrected })
+        aiResponse.hadGrammarIssue = false
+        aiResponse.originalPhrase = ''
+        aiResponse.correctedPhrase = ''
+      }
+
+      // Safety check 3: Reject if only difference is optional articles
+      const origNoArticles = original.replace(/\b(the|a|an)\s+/g, '').replace(/\s+/g, ' ')
+      const corrNoArticles = corrected.replace(/\b(the|a|an)\s+/g, '').replace(/\s+/g, ' ')
+
+      if (origNoArticles === corrNoArticles) {
+        // Exception: Required articles for professions
+        const requiresArticle = /\b(i am|he is|she is|it is|you are|we are|they are)\s+(student|teacher|doctor|engineer|lawyer|nurse|programmer|designer)\b/i
+
+        if (!requiresArticle.test(original)) {
+          console.warn('🚨 Blocked false positive: optional article difference', { original, corrected })
+          aiResponse.hadGrammarIssue = false
+          aiResponse.originalPhrase = ''
+          aiResponse.correctedPhrase = ''
+        }
+      }
+    }
+
     console.log('Conversational AI response generated:', {
       hadGrammarIssue: aiResponse.hadGrammarIssue,
-      topic: aiResponse.conversationTopic
+      topic: aiResponse.conversationTopic,
+      filtered: aiResponse.hadGrammarIssue ? 'passed' : 'none'
     })
 
     return new Response(

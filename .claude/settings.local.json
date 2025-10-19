@@ -84,7 +84,8 @@
       "Bash(netstat:*)",
       "Bash(timeout 120 npm run build)",
       "Bash(rm:*)",
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "Bash(findstr:*)"
     ],
     "deny": [],
     "ask": []

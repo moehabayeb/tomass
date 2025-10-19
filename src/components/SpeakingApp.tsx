@@ -835,84 +835,15 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     correctedPhrase: string;
   }>>([]);
 
-  // Helper: Validate grammar correction (prevent false positives) - ULTRA STRICT
+  // Helper: Simple validation to prevent display issues (NOT grammar validation - AI handles that)
   const isValidGrammarCorrection = (original: string, corrected: string): boolean => {
-    if (!original || !corrected || original === corrected) return false;
+    // Only check for basic display validity - trust the AI's grammar validation
+    if (!original || !corrected) return false;
+    if (original.trim() === '' || corrected.trim() === '') return false;
+    if (original.trim() === corrected.trim()) return false;
 
-    // Normalize for comparison
-    const origLower = original.toLowerCase().trim();
-    const corrLower = corrected.toLowerCase().trim();
-
-    // Rule 1: If identical when normalized, not a real error
-    if (origLower === corrLower) return false;
-
-    // Rule 2: Check if only difference is contractions (both valid)
-    const contractionsMap: Record<string, string> = {
-      "i'd": "i would", "i'll": "i will", "i'm": "i am", "i've": "i have",
-      "you'd": "you would", "you'll": "you will", "you're": "you are", "you've": "you have",
-      "we'd": "we would", "we'll": "we will", "we're": "we are", "we've": "we have",
-      "they'd": "they would", "they'll": "they will", "they're": "they are", "they've": "they have",
-      "he's": "he is", "she's": "she is", "it's": "it is",
-      "won't": "will not", "can't": "cannot", "don't": "do not", "doesn't": "does not"
-    };
-
-    let origExpanded = origLower;
-    let corrExpanded = corrLower;
-    Object.entries(contractionsMap).forEach(([contr, expanded]) => {
-      const regex = new RegExp(`\\b${contr}\\b`, 'g');
-      origExpanded = origExpanded.replace(regex, expanded);
-      corrExpanded = corrExpanded.replace(regex, expanded);
-    });
-
-    // If same after expanding contractions, it's a style preference, not an error
-    if (origExpanded === corrExpanded) return false;
-
-    // Rule 3: CRITICAL - Detect unnecessary article additions (biggest false positive source)
-    // "talk about apples" → "talk about the apples" (BOTH VALID!)
-    // "eating apple pie" → "eating an apple pie" (BOTH VALID!)
-    const origWithoutArticles = origLower
-      .replace(/\bthe\s+/g, '')
-      .replace(/\ban\s+/g, '')
-      .replace(/\ba\s+/g, '')
-      .replace(/\s+/g, ' ');
-
-    const corrWithoutArticles = corrLower
-      .replace(/\bthe\s+/g, '')
-      .replace(/\ban\s+/g, '')
-      .replace(/\ba\s+/g, '')
-      .replace(/\s+/g, ' ');
-
-    // If the only difference is articles, it's NOT an error (just style)
-    if (origWithoutArticles === corrWithoutArticles) {
-      // EXCEPTION: Required articles for identity/professions
-      // "I am student" → "I am a student" (REQUIRED)
-      const requiresArticle = /\b(I am|he is|she is|it is|you are|we are|they are)\s+(student|teacher|doctor|engineer|lawyer|nurse|programmer|designer)\b/i;
-
-      if (requiresArticle.test(origLower) && !/(a |an |the )/.test(origLower.match(requiresArticle)?.[0] || '')) {
-        return true; // This is a real error - missing required article
-      }
-
-      return false; // Otherwise, adding articles is just style, not an error
-    }
-
-    // Rule 4: Only allow corrections for CLEAR, OBVIOUS errors
-    const clearErrorPatterns = [
-      /\b(goed|wented|eated|drinked|buyed|taked|maked|sayed|knowed)\b/i,  // Wrong past tense
-      /\b(I|you|we|they)\s+is\b/i,  // Subject-verb disagreement
-      /\b(he|she|it)\s+are\b/i,  // Subject-verb disagreement
-      /\b(he|she|it)\s+have\b/i,  // Should be "has"
-      /\bmuch (people|friends|cars|books)\b/i,  // Countable/uncountable error
-      /\bdon't have no\b/i,  // Double negative
-    ];
-
-    const hasErrorInOriginal = clearErrorPatterns.some(pattern => pattern.test(origLower));
-    const hasErrorInCorrected = clearErrorPatterns.some(pattern => pattern.test(corrLower));
-
-    // Only valid if original has CLEAR error and corrected doesn't
-    if (hasErrorInOriginal && !hasErrorInCorrected) return true;
-
-    // CONSERVATIVE APPROACH: If we're not 100% sure it's an error, don't show it
-    return false;
+    // Trust the AI backend - it has strict validation already
+    return true;
   };
 
   // C) Smart executeTeacherLoop - unified conversational AI with grammar correction
