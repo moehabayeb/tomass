@@ -954,16 +954,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
     return (
       <div className="fixed top-0 left-0 right-0 z-30 pointer-events-none">
-        {/* Floating Sound & XP Controls - No container background */}
-        <div className="safe-top px-4 py-4 flex items-center justify-between pointer-events-auto">
-          <button
-            onClick={toggleSpeakingSound}
-            className="w-10 h-10 flex items-center justify-center rounded-full bg-white/15 backdrop-blur-xl text-white hover:bg-white/25 active:scale-95 transition-all duration-200 shadow-lg"
-            aria-label={speakingSoundEnabled ? "Mute" : "Unmute"}
-          >
-            {speakingSoundEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
-          </button>
-
+        {/* Floating XP Display - Clean minimal header */}
+        <div className="safe-top px-4 py-4 flex items-center justify-center pointer-events-auto">
           <div className="px-4 py-2 rounded-full text-sm bg-white/15 text-white backdrop-blur-xl font-bold tracking-wide shadow-lg">
             ⚡ {formattedXP} XP
           </div>
@@ -1184,6 +1176,14 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
               className="bg-black/95 backdrop-blur-xl border-white/20 text-white mb-2 mr-4"
               align="end"
             >
+              <DropdownMenuItem
+                onClick={toggleSpeakingSound}
+                className="hover:bg-white/10 focus:bg-white/10"
+              >
+                {speakingSoundEnabled ? <Volume2 className="w-4 h-4 mr-2" /> : <VolumeX className="w-4 h-4 mr-2" />}
+                {speakingSoundEnabled ? 'Mute' : 'Unmute'}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="bg-white/20" />
               <DropdownMenuItem
                 onClick={async () => {
                   const latestMessage = findLatestEligibleAssistantMessage();
