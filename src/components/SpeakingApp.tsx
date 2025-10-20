@@ -186,7 +186,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   // TTS listener authority state
   const [ttsListenerActive, setTtsListenerActive] = useState(false);
   
-  const { level, xp_current, next_threshold, awardXp, lastLevelUpTime, fetchProgress, resetLevelUpNotification, subscribeToProgress } = useProgressStore();
+  const { level, xp_current, next_threshold, user_level, awardXp, lastLevelUpTime, fetchProgress, resetLevelUpNotification, subscribeToProgress } = useProgressStore();
 
   // 1) Helper to guarantee sound is ready
   const ensureSoundReady = async () => {
@@ -342,7 +342,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   const [history, setHistory] = useState<Array<{input: string; corrected: string; time: string}>>([]);
   const [currentQuestion, setCurrentQuestion] = useState("What did you have for lunch today?");
   const [conversationContext, setConversationContext] = useState("");
-  const [userLevel, setUserLevel] = useState<'beginner' | 'intermediate' | 'advanced'>('beginner');
+  // ✨ CONNECTED: userLevel now comes from XP progression (useProgressStore)
+  // No longer hardcoded! Automatically adjusts based on level (1-10=beginner, 11-25=intermediate, 26+=advanced)
   const [isProcessingTranscript, setIsProcessingTranscript] = useState(false);
   const [lastTranscript, setLastTranscript] = useState<string>('');
   const [lastMessageTime, setLastMessageTime] = useState<number>();
@@ -918,11 +919,12 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       setGrammarCorrections([]); // Clear previous corrections
 
       // Use the unified conversational-ai function
+      // 🎯 AUTOMATIC DIFFICULTY: user_level is now synced with XP progression!
       const { data, error } = await supabase.functions.invoke('conversational-ai', {
         body: {
           userMessage: transcript,
           conversationHistory: conversationContext || '',
-          userLevel: userLevel
+          userLevel: user_level // ✨ Dynamically adjusts based on XP level (beginner/intermediate/advanced)
         }
       });
 
@@ -1037,12 +1039,29 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       return xp_current ? xp_current.toLocaleString() : "—";
     }, [xp_current]);
 
+    // Get difficulty indicator data
+    const difficultyData = useMemo(() => {
+      switch (user_level) {
+        case 'beginner':
+          return { icon: '🌱', label: 'Beginner', color: 'from-green-500/20 to-green-600/10 border-green-500/50 text-green-50' };
+        case 'intermediate':
+          return { icon: '🔥', label: 'Intermediate', color: 'from-orange-500/20 to-orange-600/10 border-orange-500/50 text-orange-50' };
+        case 'advanced':
+          return { icon: '⭐', label: 'Advanced', color: 'from-purple-500/20 to-purple-600/10 border-purple-500/50 text-purple-50' };
+        default:
+          return { icon: '🌱', label: 'Beginner', color: 'from-green-500/20 to-green-600/10 border-green-500/50 text-green-50' };
+      }
+    }, [user_level]);
+
     return (
       <div className="fixed top-0 left-0 right-0 z-30 pointer-events-none">
-        {/* Floating XP Display - Clean minimal header */}
-        <div className="safe-top px-4 py-4 flex items-center justify-center pointer-events-auto">
+        {/* Floating XP Display & Difficulty - Clean minimal header */}
+        <div className="safe-top px-4 py-4 flex items-center justify-center gap-2 pointer-events-auto">
           <div className="px-4 py-2 rounded-full text-sm bg-white/15 text-white backdrop-blur-xl font-bold tracking-wide shadow-lg">
             ⚡ {formattedXP} XP
+          </div>
+          <div className={`px-3 py-1.5 rounded-full text-xs backdrop-blur-xl font-semibold tracking-wide shadow-lg border bg-gradient-to-br ${difficultyData.color}`}>
+            {difficultyData.icon} {difficultyData.label}
           </div>
         </div>
 

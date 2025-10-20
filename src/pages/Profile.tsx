@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuthReady } from '@/hooks/useAuthReady';
 import { useUserData } from '@/hooks/useUserData';
+import { useProgressStore } from '@/hooks/useProgressStore';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -29,10 +30,11 @@ interface ProfileData {
 export default function Profile() {
   const { user, session, isAuthenticated, isLoading, signOut } = useAuthReady();
   const { userProfile } = useUserData();
+  const { level, xp_total, xp_current, next_threshold, user_level } = useProgressStore();
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [isEditingName, setIsEditingName] = useState(false);
@@ -43,24 +45,20 @@ export default function Profile() {
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Use fallback values for gamification data since we're now auth-based
-  const level = userProfile?.level || 1;
-  const totalXP = userProfile?.xp || 0;
+  // Use XP data from useProgressStore (synced with Speaking page)
+  const totalXP = xp_total || 0;
   const streakData = {
     currentStreak: userProfile?.currentStreak || 0,
     bestStreak: userProfile?.bestStreak || 0
   };
-  
+
   const getXPProgress = () => {
-    const xpPerLevel = 500;
-    const currentLevelBase = (level - 1) * xpPerLevel;
-    const nextLevelBase = level * xpPerLevel;
-    const current = totalXP - currentLevelBase;
-    const max = nextLevelBase - currentLevelBase;
+    const current = xp_current || 0;
+    const max = next_threshold || 100;
     return {
-      current: Math.max(0, current),
+      current,
       max,
-      percentage: Math.max(0, (current / max) * 100)
+      percentage: max > 0 ? (current / max) * 100 : 0
     };
   };
 
@@ -541,6 +539,27 @@ export default function Profile() {
                 <div className="text-center p-3 sm:p-4 bg-white/5 rounded-lg border border-white/20">
                   <div className="text-lg sm:text-2xl font-bold text-white">{totalXP}</div>
                   <div className="text-white/60 text-xs sm:text-sm">Total XP</div>
+                </div>
+              </div>
+
+              {/* Conversation Difficulty Indicator */}
+              <div className="p-3 sm:p-4 bg-white/5 rounded-lg border border-white/20">
+                <div className="flex items-center justify-between">
+                  <span className="text-white font-medium text-sm sm:text-base">Conversation Difficulty</span>
+                  <Badge className={`text-xs ${
+                    user_level === 'beginner' ? 'bg-green-500/20 text-green-300 border-green-500/50' :
+                    user_level === 'intermediate' ? 'bg-orange-500/20 text-orange-300 border-orange-500/50' :
+                    'bg-purple-500/20 text-purple-300 border-purple-500/50'
+                  }`}>
+                    {user_level === 'beginner' ? '🌱 Beginner' :
+                     user_level === 'intermediate' ? '🔥 Intermediate' :
+                     '⭐ Advanced'}
+                  </Badge>
+                </div>
+                <div className="text-white/60 text-xs sm:text-sm mt-2">
+                  {user_level === 'beginner' && 'Simple sentences with basic vocabulary (CEFR A1-A2)'}
+                  {user_level === 'intermediate' && 'Natural conversation with varied sentences (CEFR B1-B2)'}
+                  {user_level === 'advanced' && 'Fluent, nuanced discussions (CEFR C1-C2)'}
                 </div>
               </div>
 

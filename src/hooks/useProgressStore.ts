@@ -7,6 +7,7 @@ export interface ProgressState {
   xp_current: number;
   xp_total: number;
   next_threshold: number;
+  user_level: 'beginner' | 'intermediate' | 'advanced';
   isLoading: boolean;
   lastLevelUpTime?: number;
 }
@@ -33,6 +34,7 @@ export const useProgressStore = create<ProgressStore>((set, get) => ({
   xp_current: 0,
   xp_total: 0,
   next_threshold: 150, // Level 2 threshold
+  user_level: 'beginner',
   isLoading: false,
   lastLevelUpTime: undefined,
 
@@ -54,7 +56,7 @@ export const useProgressStore = create<ProgressStore>((set, get) => ({
 
       const { data, error } = await supabase
         .from('user_profiles')
-        .select('level, xp_current, xp_total')
+        .select('level, xp_current, xp_total, user_level')
         .eq('user_id', user.id)
         .single();
 
@@ -65,11 +67,12 @@ export const useProgressStore = create<ProgressStore>((set, get) => ({
 
       if (data) {
         const next_threshold = getXpThreshold(data.level + 1);
-        
+
         set({
           level: data.level,
           xp_current: data.xp_current,
           xp_total: data.xp_total,
+          user_level: data.user_level as 'beginner' | 'intermediate' | 'advanced',
           next_threshold,
           isLoading: false,
         });
@@ -91,14 +94,15 @@ export const useProgressStore = create<ProgressStore>((set, get) => ({
         return false;
       }
 
-      // Update store state with the returned data
+      // Update store state with the returned data (includes user_level now)
       const wasLevelUp = data.level_up_occurred;
-      
+
       set({
         level: data.level,
         xp_current: data.xp_current,
         xp_total: data.xp_total,
         next_threshold: data.next_threshold,
+        user_level: data.user_level as 'beginner' | 'intermediate' | 'advanced',
         lastLevelUpTime: wasLevelUp ? Date.now() : get().lastLevelUpTime,
       });
 
@@ -127,15 +131,16 @@ export const useProgressStore = create<ProgressStore>((set, get) => ({
           filter: `user_id=eq.${userId}`,
         },
         (payload) => {
-          
+
           if (payload.new) {
-            const { level, xp_current, xp_total } = payload.new as any;
+            const { level, xp_current, xp_total, user_level } = payload.new as any;
             const next_threshold = getXpThreshold(level + 1);
-            
+
             set({
               level,
               xp_current,
               xp_total,
+              user_level: user_level as 'beginner' | 'intermediate' | 'advanced',
               next_threshold,
             });
           }
