@@ -429,7 +429,7 @@ const MODULES_BY_LEVEL = {
     locked: false, // TEMPORARILY UNLOCKED FOR DEVELOPMENT
   })),
   // B1 Level modules (101-148)
-  B1: Array.from({ length: 48 }, (_, i) => ({
+  B1: Array.from({ length: 50 }, (_, i) => ({
     id: i + 101, // Starting from 101 for B1 level
     title: i === 0 ? 'Present Perfect Continuous (I\'ve been working)' :
            i === 1 ? 'Present Perfect Continuous vs Present Perfect' :
@@ -479,6 +479,8 @@ const MODULES_BY_LEVEL = {
            i === 45 ? 'Personality and Character Vocabulary' :
            i === 46 ? 'Crime and Law Vocabulary' :
            i === 47 ? 'Health and Fitness Vocabulary' :
+           i === 48 ? 'Society and Social Issues Vocabulary (B1 Level)' :
+           i === 49 ? 'Travel and Adventure Vocabulary (B1 Level)' :
            `B1 Module ${i + 101}`,
     description: i === 0 ? 'Learn the structure and use of the Present Perfect Continuous tense' :
                  i === 1 ? 'Understand the difference between Present Perfect and Present Perfect Continuous tenses' :
@@ -528,6 +530,8 @@ const MODULES_BY_LEVEL = {
                  i === 45 ? 'Learn and practice advanced vocabulary related to personality and character' :
                  i === 46 ? 'Learn and apply vocabulary related to crime, court, and law enforcement' :
                  i === 47 ? 'Students will learn and practice vocabulary related to health, nutrition, and fitness' :
+                 i === 48 ? 'Use B1 vocabulary to discuss society, inequality, and social issues' :
+                 i === 49 ? 'Use B1 travel/adventure vocabulary to discuss trips, plans, and outdoor activities' :
                  'Coming soon',
     completed: false,
     locked: false, // TEMPORARILY UNLOCKED FOR DEVELOPMENT
