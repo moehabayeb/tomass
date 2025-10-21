@@ -30,14 +30,14 @@ import '../utils/placementQA';
 // Progress checkpointing imports
 import { useLessonCheckpoints } from '../hooks/useLessonCheckpoints';
 import { ResumeProgressDialog, SyncStatusIndicator } from './ResumeProgressDialog';
-// B2 Modules Data (151-168)
-import { MODULE_151_DATA, MODULE_152_DATA, MODULE_153_DATA, MODULE_154_DATA, MODULE_155_DATA, MODULE_156_DATA, MODULE_157_DATA, MODULE_158_DATA, MODULE_159_DATA, MODULE_160_DATA, MODULE_161_DATA, MODULE_162_DATA, MODULE_163_DATA, MODULE_164_DATA, MODULE_165_DATA, MODULE_166_DATA, MODULE_167_DATA, MODULE_168_DATA } from './B2ModulesData';
+// B2 Modules Data (151-180)
+import { MODULE_151_DATA, MODULE_152_DATA, MODULE_153_DATA, MODULE_154_DATA, MODULE_155_DATA, MODULE_156_DATA, MODULE_157_DATA, MODULE_158_DATA, MODULE_159_DATA, MODULE_160_DATA, MODULE_161_DATA, MODULE_162_DATA, MODULE_163_DATA, MODULE_164_DATA, MODULE_165_DATA, MODULE_166_DATA, MODULE_167_DATA, MODULE_168_DATA, MODULE_169_DATA, MODULE_170_DATA, MODULE_171_DATA, MODULE_172_DATA, MODULE_173_DATA, MODULE_174_DATA, MODULE_175_DATA, MODULE_176_DATA, MODULE_177_DATA, MODULE_178_DATA, MODULE_179_DATA, MODULE_180_DATA, MODULE_181_DATA, MODULE_182_DATA, MODULE_183_DATA, MODULE_184_DATA, MODULE_185_DATA, MODULE_186_DATA, MODULE_187_DATA, MODULE_188_DATA, MODULE_189_DATA } from './B2ModulesData';
 
 // ---------- Module Order and Next Module Logic ----------
 const ORDER_A1 = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50];
 const ORDER_A2 = [51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100];
 const ORDER_B1 = [101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150];
-const ORDER_B2 = [151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168];
+const ORDER_B2 = [151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189];
 
 function getOrderForLevel(level: 'A1'|'A2'|'B1'|'B2'): number[] {
   if (level === 'A1') return ORDER_A1;
@@ -188,7 +188,7 @@ const LEVELS = [
   { id: 'A1', name: 'A1 - Beginner', description: 'Start your English journey', moduleCount: 50, color: 'bg-blue-500' },
   { id: 'A2', name: 'A2 - Elementary', description: 'Build basic skills', moduleCount: 50, color: 'bg-green-500' },
   { id: 'B1', name: 'B1 - Intermediate', description: 'Expand your knowledge', moduleCount: 50, color: 'bg-orange-500' },
-  { id: 'B2', name: 'B2 - Upper Intermediate', description: 'Advanced concepts', moduleCount: 18, color: 'bg-purple-500' },
+  { id: 'B2', name: 'B2 - Upper Intermediate', description: 'Advanced concepts', moduleCount: 39, color: 'bg-purple-500' },
   { id: 'C1', name: 'C1 - Advanced', description: 'Master complex concepts', moduleCount: 50, color: 'bg-red-500' },
   { id: 'C2', name: 'C2 - Proficiency', description: 'Near-native fluency', moduleCount: 50, color: 'bg-indigo-500' },
 ];
@@ -536,7 +536,7 @@ const MODULES_BY_LEVEL = {
     completed: false,
     locked: false, // TEMPORARILY UNLOCKED FOR DEVELOPMENT
   })),
-  B2: Array.from({ length: 18 }, (_, i) => ({
+  B2: Array.from({ length: 39 }, (_, i) => ({
     id: i + 151,
     title: i === 0 ? 'Future Perfect Continuous (will have been doing)' :
            i === 1 ? 'Passive Voice – Past Perfect and Future Perfect' :
@@ -556,6 +556,27 @@ const MODULES_BY_LEVEL = {
            i === 15 ? 'Hedging Language (Seems to / Appears to)' :
            i === 16 ? 'Modals in the Past (might have done, should have been)' :
            i === 17 ? 'Discursive Essays – Opinion Language' :
+           i === 18 ? 'Describing Trends (Increase/Decrease/Fluctuate)' :
+           i === 19 ? 'Talking About Statistics – Percentages & Fractions' :
+           i === 20 ? 'Formal and Informal Registers' :
+           i === 21 ? 'Direct and Indirect Speech Review' :
+           i === 22 ? 'Politeness Strategies in English' :
+           i === 23 ? 'Advanced Descriptions of People and Places' :
+           i === 24 ? 'Speculating About the Past' :
+           i === 25 ? 'Speculating About the Future' :
+           i === 26 ? 'Hypothetical Past (Third Conditional)' :
+           i === 27 ? 'Vocabulary – Business and Economics' :
+           i === 28 ? 'Vocabulary – Science and Technology' :
+           i === 29 ? 'Vocabulary – Health and Medicine' :
+           i === 30 ? 'Vocabulary – Art and Literature' :
+           i === 31 ? 'Vocabulary – Politics and Society' :
+           i === 32 ? 'Vocabulary – Global Issues' :
+           i === 33 ? 'Vocabulary – Sports and Leisure' :
+           i === 34 ? 'Debating Skills – Expressing Agreement and Disagreement' :
+           i === 35 ? 'Persuasion Techniques in Speaking' :
+           i === 36 ? 'Making Complaints Politely' :
+           i === 37 ? 'Clarifying and Confirming Information' :
+           i === 38 ? 'Managing Conversations – Interruptions and Turn-taking' :
            'B2 Module',
     description: i === 0 ? 'Understand and form sentences using the Future Perfect Continuous tense' :
                  i === 1 ? 'Recognize and form passive structures in the Past Perfect and Future Perfect tenses' :
@@ -575,6 +596,27 @@ const MODULES_BY_LEVEL = {
                  i === 15 ? 'Use hedging language for politeness' :
                  i === 16 ? 'Speculate about past events using modals' :
                  i === 17 ? 'Master formal opinion language for essays' :
+                 i === 18 ? 'Learn how to describe and interpret changes over time using correct vocabulary' :
+                 i === 19 ? 'Talk naturally about percentages, fractions, and proportions in everyday English' :
+                 i === 20 ? 'Understand and use formal and informal English appropriately in different contexts' :
+                 i === 21 ? 'Report what other people said using both direct and indirect speech' :
+                 i === 22 ? 'Use polite, indirect, and respectful language for requests and suggestions' :
+                 i === 23 ? 'Describe people and places vividly using advanced adjectives and expressions' :
+                 i === 24 ? 'Express logical guesses about past events using modal verbs' :
+                 i === 25 ? 'Express predictions and possibilities about the future using modal verbs' :
+                 i === 26 ? 'Talk about imaginary situations in the past using third conditional' :
+                 i === 27 ? 'Build vocabulary related to business, economics, and finance' :
+                 i === 28 ? 'Build vocabulary for discussing science, innovation, and technology' :
+                 i === 29 ? 'Build vocabulary for discussing health, medicine, and well-being' :
+                 i === 30 ? 'Build vocabulary related to art forms, creative expression, and literature' :
+                 i === 31 ? 'Learn vocabulary for discussing government, politics, human rights, and social issues' :
+                 i === 32 ? 'Build vocabulary for discussing world problems like climate change, poverty, and globalization' :
+                 i === 33 ? 'Expand vocabulary for discussing sports, fitness, hobbies, and leisure activities' :
+                 i === 34 ? 'Learn to express agreement and disagreement politely and convincingly in debates' :
+                 i === 35 ? 'Learn to persuade and influence others using logic, emotion, and credibility' :
+                 i === 36 ? 'Learn to express dissatisfaction and solve problems politely and professionally' :
+                 i === 37 ? 'Develop strategies for checking understanding and confirming details in conversations' :
+                 i === 38 ? 'Master the art of interrupting politely, taking turns, and keeping discussions balanced' :
                  'Advanced B2 grammar module',
     completed: false,
     locked: false,
@@ -10991,6 +11033,27 @@ const MODULE_150_DATA = {
     if (selectedModule === 166) return MODULE_166_DATA;
     if (selectedModule === 167) return MODULE_167_DATA;
     if (selectedModule === 168) return MODULE_168_DATA;
+    if (selectedModule === 169) return MODULE_169_DATA;
+    if (selectedModule === 170) return MODULE_170_DATA;
+    if (selectedModule === 171) return MODULE_171_DATA;
+    if (selectedModule === 172) return MODULE_172_DATA;
+    if (selectedModule === 173) return MODULE_173_DATA;
+    if (selectedModule === 174) return MODULE_174_DATA;
+    if (selectedModule === 175) return MODULE_175_DATA;
+    if (selectedModule === 176) return MODULE_176_DATA;
+    if (selectedModule === 177) return MODULE_177_DATA;
+    if (selectedModule === 178) return MODULE_178_DATA;
+    if (selectedModule === 179) return MODULE_179_DATA;
+    if (selectedModule === 180) return MODULE_180_DATA;
+    if (selectedModule === 181) return MODULE_181_DATA;
+    if (selectedModule === 182) return MODULE_182_DATA;
+    if (selectedModule === 183) return MODULE_183_DATA;
+    if (selectedModule === 184) return MODULE_184_DATA;
+    if (selectedModule === 185) return MODULE_185_DATA;
+    if (selectedModule === 186) return MODULE_186_DATA;
+    if (selectedModule === 187) return MODULE_187_DATA;
+    if (selectedModule === 188) return MODULE_188_DATA;
+    if (selectedModule === 189) return MODULE_189_DATA;
 
     // Fallback to Module 1 for unknown modules
     return MODULE_1_DATA;

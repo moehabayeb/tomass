@@ -329,7 +329,7 @@ function generateB1Modules(): Module[] {
 }
 
 function generateB2Modules(): Module[] {
-  const modules = Array.from({ length: 18 }, (_, i) => ({
+  const modules = Array.from({ length: 39 }, (_, i) => ({
     id: i + 151, // Starting from 151 for B2 level
     title: i === 0 ? 'Future Perfect Continuous (will have been doing)' :
            i === 1 ? 'Passive Voice – Past Perfect and Future Perfect' :
@@ -349,6 +349,27 @@ function generateB2Modules(): Module[] {
            i === 15 ? 'Hedging Language (Seems to / Appears to)' :
            i === 16 ? 'Modals in the Past (might have done, should have been)' :
            i === 17 ? 'Discursive Essays – Opinion Language' :
+           i === 18 ? 'Describing Trends (Increase/Decrease/Fluctuate)' :
+           i === 19 ? 'Talking About Statistics – Percentages & Fractions' :
+           i === 20 ? 'Formal and Informal Registers' :
+           i === 21 ? 'Direct and Indirect Speech Review' :
+           i === 22 ? 'Politeness Strategies in English' :
+           i === 23 ? 'Advanced Descriptions of People and Places' :
+           i === 24 ? 'Speculating About the Past' :
+           i === 25 ? 'Speculating About the Future' :
+           i === 26 ? 'Hypothetical Past (Third Conditional)' :
+           i === 27 ? 'Vocabulary – Business and Economics' :
+           i === 28 ? 'Vocabulary – Science and Technology' :
+           i === 29 ? 'Vocabulary – Health and Medicine' :
+           i === 30 ? 'Vocabulary – Art and Literature' :
+           i === 31 ? 'Vocabulary – Politics and Society' :
+           i === 32 ? 'Vocabulary – Global Issues' :
+           i === 33 ? 'Vocabulary – Sports and Leisure' :
+           i === 34 ? 'Debating Skills – Expressing Agreement and Disagreement' :
+           i === 35 ? 'Persuasion Techniques in Speaking' :
+           i === 36 ? 'Making Complaints Politely' :
+           i === 37 ? 'Clarifying and Confirming Information' :
+           i === 38 ? 'Managing Conversations – Interruptions and Turn-taking' :
            `B2 Module ${i + 151}`,
     description: i === 0 ? 'Master the Future Perfect Continuous tense' :
                  i === 1 ? 'Learn passive voice in advanced tenses' :
@@ -368,6 +389,27 @@ function generateB2Modules(): Module[] {
                  i === 15 ? 'Use hedging language for politeness' :
                  i === 16 ? 'Speculate about past events using modals' :
                  i === 17 ? 'Master formal opinion language for essays' :
+                 i === 18 ? 'Learn how to describe and interpret changes over time using correct vocabulary' :
+                 i === 19 ? 'Talk naturally about percentages, fractions, and proportions in everyday English' :
+                 i === 20 ? 'Understand and use formal and informal English appropriately in different contexts' :
+                 i === 21 ? 'Report what other people said using both direct and indirect speech' :
+                 i === 22 ? 'Use polite, indirect, and respectful language for requests and suggestions' :
+                 i === 23 ? 'Describe people and places vividly using advanced adjectives and expressions' :
+                 i === 24 ? 'Express logical guesses about past events using modal verbs' :
+                 i === 25 ? 'Express predictions and possibilities about the future using modal verbs' :
+                 i === 26 ? 'Talk about imaginary situations in the past using third conditional' :
+                 i === 27 ? 'Build vocabulary related to business, economics, and finance' :
+                 i === 28 ? 'Build vocabulary for discussing science, innovation, and technology' :
+                 i === 29 ? 'Build vocabulary for discussing health, medicine, and well-being' :
+                 i === 30 ? 'Build vocabulary related to art forms, creative expression, and literature' :
+                 i === 31 ? 'Learn vocabulary for discussing government, politics, human rights, and social issues' :
+                 i === 32 ? 'Build vocabulary for discussing world problems like climate change, poverty, and globalization' :
+                 i === 33 ? 'Expand vocabulary for discussing sports, fitness, hobbies, and leisure activities' :
+                 i === 34 ? 'Learn to express agreement and disagreement politely and convincingly in debates' :
+                 i === 35 ? 'Learn to persuade and influence others using logic, emotion, and credibility' :
+                 i === 36 ? 'Learn to express dissatisfaction and solve problems politely and professionally' :
+                 i === 37 ? 'Develop strategies for checking understanding and confirming details in conversations' :
+                 i === 38 ? 'Master the art of interrupting politely, taking turns, and keeping discussions balanced' :
                  'Coming soon',
     completed: false,
     locked: false,

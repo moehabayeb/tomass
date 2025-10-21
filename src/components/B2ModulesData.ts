@@ -1112,6 +1112,1312 @@ Use formal opinion language to explore different points of view, support ideas, 
   ]
 };
 
+// Module 169 Data: Describing Trends (Increase/Decrease/Fluctuate)
+const MODULE_169_DATA = {
+  title: "Describing Trends (Increase/Decrease/Fluctuate)",
+  description: "Learn how to describe and interpret changes over time using correct vocabulary for increases, decreases, and fluctuations",
+  intro: `📘 Lesson Objectives
+✅ Learn how to describe trends and changes over time
+✅ Use correct vocabulary for increases, decreases, and fluctuations
+✅ Make your speech sound natural when discussing statistics and reports
+
+📗 Topic Explanation
+Today we're going to learn how to describe trends — how things change over time. This is especially useful when talking about statistics, reports, and real-life situations, like population growth, sales, weather, or prices.
+
+We'll focus on three main types of trends:
+• Increase (go up, rise, grow)
+• Decrease (go down, fall, drop)
+• Fluctuate (go up and down)
+
+When we describe trends, we often use verbs, nouns, and adverbs together to make our speech sound natural.
+
+🧩 Useful Phrases for Describing Trends
+
+📊 UPWARD MOVEMENT:
+• Verbs: rise, increase, go up, grow
+• Nouns: a rise, an increase
+• Adverbs/Adjectives: sharply, steadily, gradually, slightly
+
+📉 DOWNWARD MOVEMENT:
+• Verbs: fall, drop, decrease, decline
+• Nouns: a fall, a decrease
+• Adverbs/Adjectives: dramatically, slightly, rapidly
+
+📈 FLUCTUATION / STABILITY:
+• Verbs: fluctuate, vary, remain stable
+• Nouns: fluctuation, stability
+• Adverbs/Adjectives: slightly, constantly, consistently
+
+🧠 Example Sentences
+• Sales increased sharply in June.
+• There was a gradual decrease in production.
+• Prices fluctuated slightly throughout the year.
+• The rate remained stable between 2019 and 2021.`,
+  speakingPractice: [
+    { question: "How did the company's sales change last year?", answer: "The company's sales increased steadily throughout the year, especially after they launched a new product in the summer." },
+    { question: "What does it mean when prices decrease slightly?", answer: "It means prices went down a little, not dramatically — maybe by 2% or 3%, which is not a major change." },
+    { question: "Can you describe a situation where the weather fluctuates a lot?", answer: "In my city, temperatures fluctuate widely in spring, with warm days followed by sudden cold nights." },
+    { question: "What happens when unemployment rises sharply?", answer: "It means many people suddenly lose their jobs, usually because of an economic crisis or business closures." },
+    { question: "How can we describe a trend that doesn't change much?", answer: "We can say it remained stable or there was little change over time." },
+    { question: "What's another way to say \"sales went up quickly\"?", answer: "We can say sales rose sharply or there was a rapid increase in sales." },
+    { question: "What does a gradual rise mean?", answer: "A gradual rise means the numbers go up slowly over time, step by step, instead of suddenly." },
+    { question: "Can you describe a situation where the population decreases?", answer: "In some small towns, the population decreases as young people move to bigger cities for work." },
+    { question: "What happens when something fluctuates constantly?", answer: "It means it keeps changing up and down, like stock prices that rise one day and fall the next." },
+    { question: "How would you describe a company's profits that stayed the same?", answer: "I would say the profits remained stable or there was no significant change." },
+    { question: "What does \"a sharp fall\" mean?", answer: "It means something dropped very quickly, for example, There was a sharp fall in oil prices after the crisis." },
+    { question: "Can you describe a situation where costs increase rapidly?", answer: "During inflation, living costs increase rapidly, and people struggle to afford basic items." },
+    { question: "What happens when something peaks?", answer: "When something peaks, it reaches its highest point before going down again — like Tourism peaked in July." },
+    { question: "What does it mean if a trend bottoms out?", answer: "It means it reached the lowest point and can't go any lower, for example, Sales bottomed out in April." },
+    { question: "How do you describe a slow decrease?", answer: "We say it decreased gradually or there was a slow decline." },
+    { question: "What does \"a slight increase\" suggest?", answer: "It suggests a small but noticeable rise, maybe a few percentage points higher than before." },
+    { question: "How can you describe something that improves after falling?", answer: "You can say it recovered or it started to rise again." },
+    { question: "What happens when numbers stay constant?", answer: "It means there's no movement, they neither increase nor decrease." },
+    { question: "How do you describe something that changes unpredictably?", answer: "We say it fluctuates wildly, like The exchange rate fluctuates wildly during political instability." },
+    { question: "What is an upward trend?", answer: "It's when the data keeps moving upward, showing continuous growth or improvement." },
+    { question: "What is a downward trend?", answer: "It's when the data keeps going down, showing consistent decline." },
+    { question: "Can you describe an example of an upward trend in your life?", answer: "My English speaking confidence has been rising steadily since I started practicing every day." },
+    { question: "How can you describe a dramatic change?", answer: "You can say it changed dramatically, which means the difference was big and noticeable." },
+    { question: "What does \"stabilize\" mean?", answer: "It means to stop changing and become steady, like After a few months of fluctuation, prices finally stabilized." },
+    { question: "How can we describe a small fall?", answer: "We can say there was a slight decrease or the numbers fell slightly." },
+    { question: "Can you describe a sharp rise in something?", answer: "Yes, there was a sharp rise in online sales during the pandemic because more people started shopping from home." },
+    { question: "What happens when sales fluctuate during the year?", answer: "It means they go up and down, usually depending on seasons or holidays." },
+    { question: "What does \"to remain stable\" mean?", answer: "It means there's almost no change in the trend over a period of time." },
+    { question: "How would you describe fuel prices this year?", answer: "Fuel prices have fluctuated slightly, rising in some months and falling in others." },
+    { question: "How can you describe your energy level during the day?", answer: "My energy level increases in the morning, remains stable in the afternoon, and decreases at night." },
+    { question: "What happens when profits recover?", answer: "It means they rise again after a fall, showing that the company's situation is improving." },
+    { question: "Can you describe a trend that goes up and down every week?", answer: "Yes, we can say it fluctuates regularly or there are weekly ups and downs." },
+    { question: "How would you describe an economy that keeps improving?", answer: "I would say The economy is showing a steady upward trend." },
+    { question: "What does \"fall dramatically\" mean?", answer: "It means something dropped a lot in a short period, like Sales fell dramatically in March." },
+    { question: "How can you describe something that doesn't change at all?", answer: "You can say it remained constant or there was no variation." },
+    { question: "What does \"a sudden drop\" suggest?", answer: "It suggests a quick and unexpected fall, often caused by external factors." },
+    { question: "What happens after a company's profits reach a peak?", answer: "Usually, they begin to fall slightly after the peak, especially if demand decreases." },
+    { question: "How do you describe a steady improvement?", answer: "You can say there was a consistent rise or it improved steadily over time." },
+    { question: "How can you describe a situation where something starts low and ends high?", answer: "I'd say it shows a clear upward trend, meaning steady growth throughout the period." },
+    { question: "How can you describe your English progress using trend vocabulary?", answer: "I'd say My English has been improving gradually and steadily. It hasn't risen dramatically, but I can clearly see progress." }
+  ]
+};
+
+// Module 170 Data: Talking About Statistics – Percentages & Fractions
+const MODULE_170_DATA = {
+  title: "Talking About Statistics – Percentages & Fractions",
+  description: "Learn to talk naturally about percentages, fractions, and proportions in everyday English",
+  intro: `📘 Lesson Objectives
+✅ Talk naturally about percentages, fractions, and proportions
+✅ Describe surveys, facts, and simple data confidently
+✅ Make statistics sound conversational, not robotic
+
+📗 Topic Explanation
+Today, we're going to talk about statistics — don't worry, not in a boring math way! We'll learn how to use English to describe numbers, percentages, and fractions when we talk about real life things.
+
+You'll see, it's actually something we do every day without realizing it. For example, we say things like:
+• "Almost half of my friends drink coffee every morning."
+• "One in three people I know has a pet."
+• "About 70 percent of my students prefer learning online."
+
+Let's make statistics sound natural and human, not robotic!
+
+🧩 Useful Language for Talking About Statistics
+• Around 60 percent of people... / Almost everyone...
+• Only a small number of people... / A tiny fraction...
+• One third, a quarter, half — to make data sound smoother in speech
+• about, around, nearly, just over, just under for natural approximations
+
+🧠 Natural Examples
+• "Just under half of the students passed" sounds more natural than "48% of the students passed."`,
+  speakingPractice: [
+    { question: "How many people in your country use the internet regularly?", answer: "I'd say almost everyone. These days, even elderly people use it daily — probably around ninety percent or more." },
+    { question: "What percentage of your friends drink coffee every morning?", answer: "Hmm, maybe about seventy percent. The rest prefer tea or skip breakfast completely." },
+    { question: "How many people in your family use social media?", answer: "Almost all of them! Maybe ninety-five percent. Only my grandfather refuses to use it." },
+    { question: "Would you say most people enjoy their jobs?", answer: "Not really. I think less than half are truly happy at work, maybe around forty percent." },
+    { question: "How many people do you know who speak English fluently?", answer: "I'd say one in five, or about twenty percent — but many others understand it well." },
+    { question: "What does 'half of the people' mean?", answer: "It means exactly fifty percent — one out of every two people in that group." },
+    { question: "What does twenty-five percent represent as a fraction?", answer: "That's one quarter — imagine dividing a pizza into four slices, and taking one slice." },
+    { question: "What's another way to say seventy-five percent?", answer: "You can say three quarters, for example, 'Three quarters of students passed the exam.'" },
+    { question: "What does 'the majority' mean?", answer: "It means more than half. Like, 'The majority of customers prefer delivery over dining in.'" },
+    { question: "What does 'a minority' mean?", answer: "It means a smaller part of the total, usually less than half." },
+    { question: "What does it mean if something is 'just under fifty percent'?", answer: "It means it's a little less than half — maybe forty-eight or forty-nine percent." },
+    { question: "How can you describe something that's almost one hundred percent?", answer: "You can say 'nearly everyone' or 'almost all of them.'" },
+    { question: "How can you say ten percent in another way?", answer: "You could say 'one in ten' or 'a small percentage.'" },
+    { question: "How would you describe one third in a sentence?", answer: "One third of people in my city own a car, which is quite high considering traffic problems." },
+    { question: "How can you describe sixty-six percent naturally?", answer: "That's two thirds — like, 'Two thirds of the class came on time today.'" },
+    { question: "What does 'roughly half' mean?", answer: "It means around fifty percent — not exact, but close enough." },
+    { question: "How can you describe five percent?", answer: "You can say 'a tiny fraction' or 'a very small percentage.'" },
+    { question: "What does 'a vast majority' mean?", answer: "It means almost everyone — probably around eighty or ninety percent." },
+    { question: "What's the opposite of majority?", answer: "That's minority — the smaller group of people." },
+    { question: "How can you describe twenty-five out of a hundred people?", answer: "That's twenty-five percent or one quarter — pretty easy math." },
+    { question: "What does 'three out of four people' mean?", answer: "It means seventy-five percent. In other words, most people." },
+    { question: "How can you describe 'one in ten' naturally?", answer: "You can say 'ten percent' or 'only a small number of people.'" },
+    { question: "What does 'half as many' mean?", answer: "It means fifty percent fewer — for example, 'Half as many people joined this year compared to last year.'" },
+    { question: "What does 'twice as many' mean?", answer: "It means double the number — for example, 'Twice as many people applied this year.'" },
+    { question: "How would you describe forty percent?", answer: "You can say 'two out of five people,' or simply 'around forty percent.'" },
+    { question: "What does 'a small number of people' mean?", answer: "It means only a few individuals — maybe five or ten percent of the total." },
+    { question: "What does 'most people' mean?", answer: "It usually means seventy to eighty percent — a large majority." },
+    { question: "How can you describe ninety-nine percent naturally?", answer: "You can say 'almost everyone' or 'virtually all.'" },
+    { question: "What does 'the remaining ten percent' mean?", answer: "It means the last part that hasn't been counted — like, 'Ninety percent passed, the remaining ten percent failed.'" },
+    { question: "How would you describe one fifth?", answer: "That's twenty percent — for example, 'One fifth of the population lives abroad.'" },
+    { question: "What does 'a small fraction' mean?", answer: "It means a very small part, maybe just one or two percent." },
+    { question: "How can you describe seventy-five percent in an informal way?", answer: "You can say 'about three quarters' or 'most people.'" },
+    { question: "What does 'one out of every five people' mean?", answer: "It means twenty percent — one person from each group of five." },
+    { question: "What does 'just under ten percent' mean?", answer: "It means slightly less than ten, like eight or nine percent." },
+    { question: "How would you describe 100% naturally?", answer: "You'd simply say 'everyone' or 'all of them.'" },
+    { question: "What does 'one third' mean in everyday English?", answer: "It means about thirty-three percent, or one person out of every three." },
+    { question: "What does 'two thirds' mean?", answer: "It means about sixty-six percent — the majority, but not all." },
+    { question: "What does 'approximately' mean?", answer: "It means 'around' or 'close to,' not exact — for example, 'Approximately eighty percent of students agreed.'" },
+    { question: "How would you describe your English progress statistically?", answer: "I'd say my English has improved by around eighty percent since I started practicing with Tomas Hoca!" }
+  ]
+};
+
+// Module 171 Data: Formal and Informal Registers
+const MODULE_171_DATA = {
+  title: "Formal and Informal Registers",
+  description: "Learn to use formal and informal English appropriately in different contexts",
+  intro: `📘 Lesson Objectives
+✅ Understand and use formal and informal English appropriately
+✅ Switch between registers in conversations, emails, and public speaking
+✅ Sound natural in both professional and casual settings
+
+📗 Topic Explanation
+Today we're going to talk about register — that's the level of formality in your language. We don't talk to our boss the same way we talk to our best friend, right?
+
+For example:
+• Informal: "Hey, what's up?"
+• Formal: "Good morning, how are you today?"
+
+Formal English is used in professional, academic, or polite situations, while informal English is used with friends, family, or casual chats. Let's learn how to switch between the two naturally!
+
+🧩 Useful Language Examples (Informal → Formal)
+INFORMAL: Hi / Hey → FORMAL: Hello / Good morning
+INFORMAL: What's up? → FORMAL: How are you?
+INFORMAL: Thanks a lot → FORMAL: Thank you very much
+INFORMAL: Sorry → FORMAL: I apologize
+INFORMAL: Can you...? → FORMAL: Could you please...?
+INFORMAL: I think → FORMAL: In my opinion
+INFORMAL: Really big → FORMAL: Significant / Substantial
+INFORMAL: A lot of → FORMAL: Many / Much
+INFORMAL: Get → FORMAL: Receive / Obtain`,
+  speakingPractice: [
+    { question: "What's the difference between formal and informal English?", answer: "Formal English is polite and professional, while informal English is relaxed and used with friends." },
+    { question: "When do people use formal English?", answer: "People use formal English in business meetings, official emails, or academic writing." },
+    { question: "When do we usually speak informally?", answer: "We speak informally when we're with friends, family, or in casual conversations." },
+    { question: "How would you greet a close friend?", answer: "I'd say 'Hey, how's it going?' or 'What's up?'" },
+    { question: "How would you greet your boss formally?", answer: "I'd say 'Good morning, how are you today?' or 'Nice to see you.'" },
+    { question: "What's a formal way to say 'thanks'?", answer: "You can say 'Thank you very much' or 'I really appreciate it.'" },
+    { question: "What's an informal way to apologize?", answer: "You can just say 'Sorry!' or 'My bad.'" },
+    { question: "What's the formal version of 'Can you help me'?", answer: "'Could you please assist me?'" },
+    { question: "How do you say 'buy' in a more formal way?", answer: "'Purchase.' For example, 'I'd like to purchase a new computer.'" },
+    { question: "What's a more formal way to say 'I need your help'?", answer: "'I require your assistance.'" },
+    { question: "How would you say 'I think' in a formal essay?", answer: "'In my opinion' or 'It seems to me that.'" },
+    { question: "What's a formal way to say 'a lot of'?", answer: "'Many' or 'A large number of.'" },
+    { question: "How can you say 'get' in formal English?", answer: "'Receive' or 'Obtain.'" },
+    { question: "What's a polite way to ask someone to do something?", answer: "'Could you please...?' instead of 'Can you...?'" },
+    { question: "How would you refuse something politely?", answer: "'I'm afraid I'll have to decline,' sounds better than 'No, I can't.'" },
+    { question: "What's the formal word for 'help'?", answer: "'Assist.' For example, 'I'd be happy to assist you.'" },
+    { question: "How can you make 'Sorry' sound more formal?", answer: "'I apologize for the inconvenience.'" },
+    { question: "What's a formal alternative to 'use'?", answer: "'Utilize.' For example, 'We utilized this method to test the results.'" },
+    { question: "How would you say 'Ask him' formally?", answer: "'Please request the information from him.'" },
+    { question: "What's the formal version of 'Tell me the truth'?", answer: "'Please inform me of the truth.'" },
+    { question: "What's the informal version of 'I would like to request a meeting'?", answer: "'I wanna set up a meeting.'" },
+    { question: "What's a casual way to say 'I'm exhausted'?", answer: "'I'm so tired' or 'I'm dead tired.'" },
+    { question: "What's the formal version of 'I'm tired'?", answer: "'I'm feeling rather fatigued.'" },
+    { question: "How can you say 'kids' in a formal way?", answer: "'Children.'" },
+    { question: "What's the formal word for 'boss'?", answer: "'Supervisor' or 'Manager.'" },
+    { question: "What's the informal version of 'colleague'?", answer: "'Coworker' or 'work buddy.'" },
+    { question: "How would you end a formal email politely?", answer: "'Kind regards,' or 'Sincerely.'" },
+    { question: "How would you end a casual message to a friend?", answer: "'See ya,' or 'Take care!'" },
+    { question: "What's a formal version of 'Let's talk about it later'?", answer: "'We can discuss the matter at a later time.'" },
+    { question: "What's an informal version of 'I apologize for being late'?", answer: "'Sorry, I'm late!'" },
+    { question: "How can you say 'I want' in formal English?", answer: "'I would like' or 'I desire.'" },
+    { question: "What's a formal version of 'Let's start'?", answer: "'Shall we begin?'" },
+    { question: "How would you say 'That's great!' formally?", answer: "'That's excellent news.'" },
+    { question: "What's an informal way to say 'I understand'?", answer: "'Got it!' or 'I see.'" },
+    { question: "How can you make 'I don't know' more polite?", answer: "'I'm not entirely sure.'" },
+    { question: "What's a formal version of 'good job'?", answer: "'Well done' or 'Excellent work.'" },
+    { question: "What's the informal version of 'I'm certain'?", answer: "'I'm sure.'" },
+    { question: "What's the formal version of 'I'm sure'?", answer: "'I'm confident.'" },
+    { question: "What's the difference between 'Hi' and 'Dear Sir or Madam'?", answer: "'Hi' is casual, while 'Dear Sir or Madam' is very formal and used in letters or emails." },
+    { question: "How would you describe your English style in one sentence?", answer: "I can switch between formal and informal English easily — like saying 'Hey!' to friends and 'Good afternoon' in meetings." }
+  ]
+};
+
+// Module 172 Data: Direct and Indirect Speech Review
+const MODULE_172_DATA = {
+  title: "Direct and Indirect Speech Review",
+  description: "Master reporting what other people said using both direct and indirect speech",
+  intro: `📘 Lesson Objectives
+✅ Report what other people said confidently
+✅ Use both direct and indirect (reported) speech naturally
+✅ Apply pronoun changes, tense shifts, and time/place changes correctly
+
+📗 Topic Explanation
+Today we're reviewing one of the most practical topics in English — Direct and Indirect Speech.
+
+We use DIRECT SPEECH when we quote someone's exact words:
+→ She said, "I'm tired."
+
+We use INDIRECT (REPORTED) SPEECH when we report what someone said without quoting:
+→ She said (that) she was tired.
+
+In everyday English, we often switch from direct to indirect when retelling stories, gossip, or news.
+
+🧩 Key Rules to Remember
+• PRONOUN CHANGES: "I" → "he/she," "my" → "his/her," etc.
+• TENSE SHIFTS (Backshifting):
+  - am/is → was
+  - are → were
+  - do/does → did
+  - have/has → had
+  - will → would
+  - can → could
+  - may → might
+
+• TIME AND PLACE CHANGES:
+  - today → that day
+  - tomorrow → the next day
+  - yesterday → the day before
+  - here → there
+  - this → that`,
+  speakingPractice: [
+    { question: "What is direct speech?", answer: "Direct speech is when we repeat someone's exact words, like He said, \"I'm hungry.\"" },
+    { question: "What is indirect speech?", answer: "Indirect speech is when we report what someone said without quoting exactly, like He said he was hungry." },
+    { question: "Why do we use indirect speech?", answer: "We use it to tell stories, report conversations, or share information naturally." },
+    { question: "What happens to pronouns in indirect speech?", answer: "They usually change, for example I → he/she, my → his/her." },
+    { question: "What happens to verb tenses in reported speech?", answer: "They usually shift one step back, for example am → was, will → would." },
+    { question: "How do we report 'I am happy'?", answer: "She said she was happy." },
+    { question: "How do we report 'I love coffee'?", answer: "He said he loved coffee." },
+    { question: "How do we report 'We are late'?", answer: "They said they were late." },
+    { question: "How do we report 'She will come'?", answer: "He said she would come." },
+    { question: "How do we report 'I can swim'?", answer: "She said she could swim." },
+    { question: "How do we report 'I may go'?", answer: "He said he might go." },
+    { question: "How do we report 'I have finished'?", answer: "She said she had finished." },
+    { question: "How do we report 'I'm reading a book'?", answer: "He said he was reading a book." },
+    { question: "How do we report 'I will help you'?", answer: "She said she would help me." },
+    { question: "How do we report 'I don't like this movie'?", answer: "He said he didn't like that movie." },
+    { question: "What happens to 'this' in reported speech?", answer: "It usually becomes 'that.'" },
+    { question: "What happens to 'today'?", answer: "It becomes 'that day.'" },
+    { question: "What happens to 'tomorrow'?", answer: "It becomes 'the next day.'" },
+    { question: "What happens to 'yesterday'?", answer: "It becomes 'the day before.'" },
+    { question: "How do we report 'I saw him yesterday'?", answer: "She said she had seen him the day before." },
+    { question: "How do we report 'I will visit you tomorrow'?", answer: "He said he would visit me the next day." },
+    { question: "How do we report 'I am studying English today'?", answer: "She said she was studying English that day." },
+    { question: "How do we report 'I bought this car'?", answer: "He said he had bought that car." },
+    { question: "How do we report 'These books are mine'?", answer: "She said those books were hers." },
+    { question: "How do we report 'I am going to London next week'?", answer: "He said he was going to London the following week." },
+    { question: "What is the reported form of 'I can't find my keys'?", answer: "She said she couldn't find her keys." },
+    { question: "How do we report 'I must go now'?", answer: "He said he had to go then." },
+    { question: "How do we report 'I don't like these shoes'?", answer: "She said she didn't like those shoes." },
+    { question: "How do we report 'We saw him here'?", answer: "They said they had seen him there." },
+    { question: "How do we report 'I will see you tomorrow'?", answer: "She said she would see me the next day." },
+    { question: "When do we not change the tense in reported speech?", answer: "When the situation is still true, like The teacher said the earth is round." },
+    { question: "How do we report questions in indirect speech?", answer: "We remove quotation marks and change word order: He asked where I was going." },
+    { question: "How do we report yes/no questions?", answer: "We use if or whether, e.g., She asked if I was ready." },
+    { question: "How do we report 'Do you like pizza?'?", answer: "He asked if I liked pizza." },
+    { question: "How do we report 'Where are you from?'?", answer: "She asked where I was from." },
+    { question: "How do we report 'Can you help me?'?", answer: "He asked if I could help him." },
+    { question: "How do we report 'Are you coming?'?", answer: "She asked whether I was coming." },
+    { question: "How do we report 'Why are you late?'?", answer: "He asked why I was late." },
+    { question: "How do we report 'Will you marry me?'?", answer: "She asked if I would marry her." },
+    { question: "How would you describe direct and indirect speech in one sentence?", answer: "Direct speech repeats exact words, while indirect speech reports them in a smoother, more natural way." }
+  ]
+};
+
+// Module 173 Data: Politeness Strategies in English
+const MODULE_173_DATA = {
+  title: "Politeness Strategies in English",
+  description: "Master polite, indirect, and respectful language for requests, refusals, and everyday conversation",
+  intro: `📘 Lesson Objectives
+✅ Use polite, indirect, and respectful language in English
+✅ Make requests, refusals, and suggestions politely
+✅ Sound friendly and natural in everyday conversation
+
+📗 Topic Explanation
+Today we're going to learn how to sound polite in English. Being polite isn't just about saying "please" and "thank you" — it's about how you ask, refuse, suggest, or correct someone without sounding rude.
+
+For example:
+• Direct: "Give me that pen."
+• Polite: "Could you please pass me the pen?"
+
+Politeness is very important in English-speaking cultures. Even when people disagree, they often soften their language.
+
+🧩 Common Politeness Strategies
+• Use softeners: "Could you please...?", "Would you mind...?"
+• Add "please" and "thank you" naturally
+• Use indirect language: "It's a bit cold in here, isn't it?"
+• Apologize when interrupting: "I'm sorry to interrupt, but..."
+• Use tentative language: "Maybe we could...", "I was wondering if..."
+• Show appreciation: "That's very kind of you."`,
+  speakingPractice: [
+    { question: "What does \"being polite\" mean in English?", answer: "It means showing respect and kindness through your words and tone." },
+    { question: "Why is politeness important?", answer: "Because it helps you sound friendly, respectful, and professional in conversations." },
+    { question: "What's the difference between \"Give me that\" and \"Could you please give me that\"?", answer: "The first sounds like an order, the second sounds polite and considerate." },
+    { question: "How can you ask for help politely?", answer: "You can say, \"Could you help me, please?\" or \"Would you mind giving me a hand?\"" },
+    { question: "What's a polite way to refuse an invitation?", answer: "\"I'd love to, but I'm afraid I can't make it this time.\"" },
+    { question: "How can you disagree politely?", answer: "\"I see your point, but I think there's another side to it.\"" },
+    { question: "What's a polite way to interrupt someone?", answer: "\"I'm sorry to interrupt, but may I add something?\"" },
+    { question: "How can you make a polite suggestion?", answer: "\"Maybe we could try a different approach.\"" },
+    { question: "How can you make a request more polite?", answer: "By using \"Could you please...\" or \"Would you mind...\"" },
+    { question: "What's a polite way to ask someone to repeat something?", answer: "\"Sorry, could you say that again, please?\"" },
+    { question: "How can you show appreciation?", answer: "\"Thank you so much, that's very kind of you.\"" },
+    { question: "What's a polite way to correct someone?", answer: "\"Actually, I think it might be...\" instead of \"You're wrong.\"" },
+    { question: "What's a polite way to ask for permission?", answer: "\"Would it be okay if I opened the window?\"" },
+    { question: "How can you soften a command?", answer: "Add \"please,\" or turn it into a question: \"Could you open the window, please?\"" },
+    { question: "What's a polite way to ask for directions?", answer: "\"Excuse me, could you tell me how to get to the station?\"" },
+    { question: "How can you ask for someone's opinion politely?", answer: "\"What do you think about this idea?\" or \"I'd like to hear your thoughts.\"" },
+    { question: "How can you make a polite offer?", answer: "\"Would you like some coffee?\" or \"Can I get you something?\"" },
+    { question: "What's a polite way to say \"no\"?", answer: "\"I'm afraid not,\" or \"I don't think I can, unfortunately.\"" },
+    { question: "How can you show understanding when someone is upset?", answer: "\"I'm really sorry to hear that,\" or \"That must be difficult for you.\"" },
+    { question: "What's a polite way to end a conversation?", answer: "\"It was lovely talking to you, have a great day.\"" },
+    { question: "How can you politely start a business email?", answer: "\"Dear Mr. Smith, I hope this message finds you well.\"" },
+    { question: "How can you politely close an email?", answer: "\"Kind regards,\" or \"Thank you for your time.\"" },
+    { question: "What's a polite way to remind someone?", answer: "\"Just a gentle reminder about our meeting tomorrow.\"" },
+    { question: "What's a polite way to ask for a favor?", answer: "\"I was wondering if you could help me with something.\"" },
+    { question: "What's a polite way to give advice?", answer: "\"You might want to consider...\" or \"Perhaps you could try...\"" },
+    { question: "How can you sound polite when giving feedback?", answer: "Start with something positive, then add your suggestion: \"It's great, but maybe we could improve this part.\"" },
+    { question: "What's a polite way to express disagreement at work?", answer: "\"I understand your point, but I have a slightly different view.\"" },
+    { question: "How can you make an apology sound more sincere?", answer: "Add empathy: \"I'm really sorry, I didn't mean to cause any trouble.\"" },
+    { question: "How can you politely ask someone to wait?", answer: "\"Could you give me a moment, please?\"" },
+    { question: "What's a polite way to decline an offer?", answer: "\"That's very kind of you, but I'm fine, thank you.\"" },
+    { question: "How can you respond politely to thanks?", answer: "\"You're welcome,\" \"No problem,\" or \"My pleasure.\"" },
+    { question: "What's a polite way to ask for time?", answer: "\"Do you have a minute to talk?\"" },
+    { question: "How can you politely express uncertainty?", answer: "\"I'm not entirely sure, but I think...\"" },
+    { question: "What's a polite way to say someone is wrong?", answer: "\"I think there might be a small mistake.\"" },
+    { question: "How can you politely show surprise?", answer: "\"Oh, really?\" or \"That's interesting!\"" },
+    { question: "How can you politely say you didn't understand?", answer: "\"Sorry, I didn't quite catch that.\"" },
+    { question: "How can you politely ask someone to lower their voice?", answer: "\"Excuse me, would you mind speaking a bit more quietly?\"" },
+    { question: "What's a polite way to offer help?", answer: "\"Would you like me to help you with that?\"" },
+    { question: "How can you politely ask for payment or money owed?", answer: "\"Just checking in to see if you've had a chance to make the payment.\"" },
+    { question: "How would you describe your politeness in English?", answer: "I always try to be respectful and kind — using soft, friendly language in every situation." }
+  ]
+};
+
+// Module 174 Data: Advanced Descriptions of People and Places
+const MODULE_174_DATA = {
+  title: "Advanced Descriptions of People and Places",
+  description: "Describe people and places vividly using advanced adjectives, idiomatic expressions, and sensory details",
+  intro: `📘 Lesson Objectives
+✅ Describe people and places vividly and naturally
+✅ Use advanced adjectives and idiomatic expressions
+✅ Paint pictures with words using sensory details
+
+📗 Topic Explanation
+Today we're going to focus on describing people and places — but not in a simple way like "He is tall" or "The place is nice."
+
+We're going to take your English to the next level by learning how to paint pictures with words.
+
+When describing PEOPLE, think about: appearance, personality, emotions, and habits.
+When describing PLACES, think about: atmosphere, size, colors, sounds, smells, and feelings.
+
+Here's the secret: good descriptions make your listener see, hear, and feel what you're describing.
+
+🧩 Useful Language
+DESCRIBING PEOPLE:
+• He's tall and lean, with sharp features and dark hair.
+• She's down-to-earth and easy to talk to.
+• He seemed completely lost in thought.
+
+DESCRIBING PLACES:
+• The city buzzes with energy day and night.
+• The beach was breathtaking, with golden sand and turquoise water.
+• It's a charming little café tucked away on a quiet street.`,
+  speakingPractice: [
+    { question: "How would you describe your best friend's personality?", answer: "He's kind, reliable, and has a great sense of humor — the type of person you can always count on." },
+    { question: "How would you describe someone who inspires you?", answer: "She's incredibly passionate and hardworking — her energy motivates everyone around her." },
+    { question: "How can you describe someone's appearance politely?", answer: "Focus on positive traits like \"He's well-groomed\" or \"She's got a warm smile.\"" },
+    { question: "What's an example of a vivid description of a person?", answer: "He's tall and athletic, with eyes that look like they've seen a thousand stories." },
+    { question: "How can you describe a shy person naturally?", answer: "He tends to keep to himself, but once you talk to him, he's really thoughtful." },
+    { question: "What's a polite way to describe an overweight person?", answer: "He's a bit on the heavy side, or She has a fuller figure." },
+    { question: "How can you describe a confident person?", answer: "She walks into every room like she belongs there — calm and self-assured." },
+    { question: "What's a good way to describe someone's voice?", answer: "His voice is deep and soothing — it sounds like a radio presenter's." },
+    { question: "How can you describe a funny person?", answer: "He's hilarious — he always knows how to make people laugh without trying too hard." },
+    { question: "How can you describe a creative person?", answer: "She sees the world differently — always full of ideas and imagination." },
+    { question: "How can you describe a reliable person?", answer: "If he says he'll do something, he does it — no excuses." },
+    { question: "What's a natural way to describe a moody person?", answer: "He's a bit unpredictable — one moment cheerful, the next quiet." },
+    { question: "How can you describe someone's eyes beautifully?", answer: "Her eyes sparkle like sunlight on water." },
+    { question: "What's a good way to describe someone's smile?", answer: "He's got one of those smiles that can brighten anyone's day." },
+    { question: "How can you describe a person's energy?", answer: "She's bursting with enthusiasm — you feel happier just being around her." },
+    { question: "How can you describe a busy city?", answer: "The streets are always buzzing with life, full of colors, sounds, and energy." },
+    { question: "How can you describe a quiet village?", answer: "It's a peaceful little place surrounded by hills and green fields." },
+    { question: "How can you describe a luxurious place?", answer: "The hotel lobby was elegant, with marble floors and golden chandeliers." },
+    { question: "How can you describe a cozy café?", answer: "It's warm, full of soft music, and smells like freshly baked bread." },
+    { question: "How can you describe a mountain scene?", answer: "The mountains stretched endlessly, covered in mist like a dream." },
+    { question: "How can you describe a beach naturally?", answer: "The waves were gentle, and the sand was warm between my toes." },
+    { question: "How can you describe an old town?", answer: "Narrow cobblestone streets, small balconies, and a smell of fresh bread — pure charm." },
+    { question: "How can you describe a modern city?", answer: "Skyscrapers shining in the sun, fast trains, and people always in motion." },
+    { question: "How can you describe a house you love?", answer: "It's bright and welcoming, with big windows and a cozy garden." },
+    { question: "How can you describe a crowded place?", answer: "It's packed with people, noisy but somehow full of excitement." },
+    { question: "How can you describe a calm place?", answer: "It's so quiet you can hear the wind through the trees." },
+    { question: "How can you describe an unpleasant place?", answer: "It felt dark and gloomy, with peeling walls and a strange smell." },
+    { question: "How can you describe a clean, beautiful city?", answer: "Everything is neat and organized — even the air feels fresh." },
+    { question: "How can you describe an energetic neighborhood?", answer: "Every corner has music, laughter, and people chatting — it feels alive." },
+    { question: "How can you describe a tourist attraction?", answer: "It's breathtaking — the kind of view you never forget." },
+    { question: "How can you describe a historical place?", answer: "The castle stands proudly, surrounded by stories from centuries ago." },
+    { question: "How can you describe a rainy city?", answer: "The streets glisten, and people rush by under colorful umbrellas." },
+    { question: "How can you describe a person who dresses well?", answer: "He's always stylish — simple, clean, and elegant." },
+    { question: "How can you describe someone who's lazy?", answer: "He's laid-back to the point where you wonder if he'll ever get up." },
+    { question: "How can you describe a curious person?", answer: "She's always asking questions and eager to learn something new." },
+    { question: "How can you describe a friendly person?", answer: "He's the kind of person who smiles at strangers and makes everyone feel welcome." },
+    { question: "How can you describe a place you'd love to visit?", answer: "A quiet coastal village with blue water and white houses on a hill." },
+    { question: "How can you describe a person with charisma?", answer: "She has this magnetic energy — when she speaks, people listen." },
+    { question: "How can you describe your hometown?", answer: "It's a mix of old and new — full of life, yet still peaceful at night." },
+    { question: "How would you describe your ideal place to live?", answer: "Somewhere calm but connected — with green parks, kind people, and good coffee." }
+  ]
+};
+
+// Module 175 Data: Speculating About the Past
+const MODULE_175_DATA = {
+  title: "Speculating About the Past",
+  description: "Express logical guesses about past events using modal verbs: must have, might have, could have, can't have",
+  intro: `📘 Lesson Objectives
+✅ Express logical guesses about past events
+✅ Use modal verbs + have + past participle correctly
+✅ Show different degrees of certainty about the past
+
+📗 Topic Explanation
+Today we're going to learn how to talk about things that happened in the past — when we aren't completely sure what actually happened. We call this "speculating about the past."
+
+We use modal verbs + have + past participle to express degrees of certainty:
+• MUST HAVE (almost sure)
+• MIGHT HAVE / MAY HAVE (possible)
+• COULD HAVE (possible, often when something didn't happen)
+• CAN'T HAVE (sure it didn't happen)
+
+🧠 Examples
+• He must have been tired after that long trip.
+• She might have left already.
+• They could have taken a taxi instead.
+• He can't have done it alone.`,
+  speakingPractice: [
+    { question: "Why do we use modal verbs with 'have' when talking about the past?", answer: "Because they help us guess or speculate about what happened when we're not completely sure." },
+    { question: "What does 'must have' mean?", answer: "It means you are almost certain something happened. For example, 'He must have been tired after the flight.'" },
+    { question: "What does 'might have' mean?", answer: "It means it's possible something happened, but you're not sure." },
+    { question: "What does 'could have' mean?", answer: "It means it was possible, but maybe it didn't actually happen." },
+    { question: "What does 'can't have' mean?", answer: "It means you're sure something didn't happen." },
+    { question: "How would you use 'must have' in a sentence about yesterday?", answer: "He must have gone home early — I didn't see him after 5 p.m." },
+    { question: "How would you use 'might have' about a friend?", answer: "She might have forgotten to text me back." },
+    { question: "How would you use 'could have' about an opportunity?", answer: "I could have applied for that job, but I didn't feel ready." },
+    { question: "How would you use 'can't have' about someone's behavior?", answer: "He can't have shouted at her — that's not his style." },
+    { question: "What's the difference between 'must have' and 'might have'?", answer: "'Must have' shows strong certainty; 'might have' shows weaker, possible certainty." },
+    { question: "How can you speculate politely about someone being late?", answer: "He might have missed the bus or been stuck in traffic." },
+    { question: "How can you speculate about a missing phone?", answer: "She must have left it in the car." },
+    { question: "How can you speculate about a strange noise?", answer: "It could have been the wind, or maybe a cat." },
+    { question: "How can you speculate about someone's mood?", answer: "He must have had a bad day — he looks really upset." },
+    { question: "How can you speculate about a friend not coming?", answer: "She might have changed her mind at the last minute." },
+    { question: "How can you speculate about a canceled flight?", answer: "It could have been canceled due to bad weather." },
+    { question: "How can you speculate about an empty house?", answer: "They must have gone on vacation." },
+    { question: "How can you speculate about someone not answering?", answer: "He might have fallen asleep or forgotten his phone." },
+    { question: "How can you speculate about a difficult exam?", answer: "It must have been tough — everyone looked exhausted." },
+    { question: "How can you speculate about a low score?", answer: "I could have studied harder, honestly." },
+    { question: "How can you speculate about a lost wallet?", answer: "She might have dropped it in the restaurant." },
+    { question: "How can you speculate about someone's success?", answer: "He must have worked very hard to achieve that." },
+    { question: "How can you speculate about a cold room?", answer: "The window might have been open all night." },
+    { question: "How can you speculate about a broken window?", answer: "It could have been the storm last night." },
+    { question: "How can you speculate about a missing email?", answer: "It might have gone to the spam folder." },
+    { question: "How can you speculate about an expensive car?", answer: "He must have saved for years to buy it." },
+    { question: "How can you speculate about a lie?", answer: "He can't have told the truth — it doesn't make sense." },
+    { question: "How can you speculate about strange behavior?", answer: "She might have been nervous or distracted." },
+    { question: "How can you speculate about late delivery?", answer: "It could have been delayed by customs." },
+    { question: "How can you speculate about an early morning?", answer: "He must have woken up before sunrise." },
+    { question: "How can you speculate about a lost key?", answer: "It might have fallen out of my pocket." },
+    { question: "How can you speculate about an empty fridge?", answer: "They must have forgotten to shop this week." },
+    { question: "How can you speculate about a friend's absence?", answer: "She could have been feeling unwell." },
+    { question: "How can you speculate about a canceled meeting?", answer: "It must have been rescheduled for tomorrow." },
+    { question: "How can you speculate about an unread message?", answer: "He might have seen it but decided to reply later." },
+    { question: "How can you speculate about an argument?", answer: "They could have disagreed about something small." },
+    { question: "How can you speculate about a funny photo?", answer: "He must have been joking in that picture." },
+    { question: "How can you speculate about traffic?", answer: "There might have been an accident on the road." },
+    { question: "How can you speculate about someone looking tired?", answer: "He must have stayed up late last night." },
+    { question: "How would you describe your understanding of speculation?", answer: "It's about guessing past events logically using modal verbs — like a detective in English!" }
+  ]
+};
+
+// Module 176 Data: Speculating About the Future
+const MODULE_176_DATA = {
+  title: "Speculating About the Future",
+  description: "Express predictions and possibilities about the future using will, might, could, may, and be likely to",
+  intro: `📘 Lesson Objectives
+✅ Express predictions and possibilities about the future
+✅ Show how sure or unsure you are
+✅ Use will, might, could, may, and be likely to naturally
+
+📗 Topic Explanation
+Today we're learning how to talk about the future — not just what we plan, but what we think might happen. When we speculate about the future, we use modal verbs and expressions to show how sure or unsure we are.
+
+🧠 Common Expressions
+• I think it WILL be fine. (strong certainty)
+• It MIGHT get colder tonight. (possibility)
+• She COULD arrive early. (possibility)
+• They're LIKELY TO win the match. (probable)
+• I doubt it will happen. (unlikely)`,
+  speakingPractice: [
+    { question: "What does it mean to speculate about the future?", answer: "It means making guesses or predictions about what might happen, even if we're not 100% sure." },
+    { question: "Which modal verb shows strong certainty about the future?", answer: "'Will' — for example, 'I think it will rain tomorrow.'" },
+    { question: "Which modals show possibility or uncertainty?", answer: "'Might,' 'may,' and 'could' all show possible but uncertain situations." },
+    { question: "What does 'be likely to' mean?", answer: "It means something is probable, like 'She's likely to pass the test.'" },
+    { question: "What's the opposite of 'likely to'?", answer: "'Unlikely to,' meaning it probably won't happen." },
+    { question: "How would you speculate about tomorrow's weather?", answer: "It might be sunny in the morning, but it could rain later." },
+    { question: "How would you speculate about technology in 10 years?", answer: "People will probably use AI for almost everything — even cooking and driving." },
+    { question: "How would you speculate about your country's economy?", answer: "It could improve if inflation stays under control." },
+    { question: "How would you speculate about your favorite football team?", answer: "They're likely to reach the finals this year — they've been playing really well." },
+    { question: "How would you speculate about a friend's decision?", answer: "She might move abroad for work — she's been talking about it for months." },
+    { question: "How would you speculate about your own future?", answer: "I'll probably keep working in education, maybe with even more technology involved." },
+    { question: "How would you speculate about tomorrow's traffic?", answer: "It will definitely be bad — Mondays are always chaotic." },
+    { question: "How would you speculate about an exam result?", answer: "I might pass, but I'm not sure — it was a tricky test." },
+    { question: "How would you speculate about someone's plans?", answer: "He could be planning a surprise — he's been acting strange lately." },
+    { question: "How would you speculate about your boss's mood?", answer: "He's likely to be stressed — the deadline is coming soon." },
+    { question: "How would you speculate about the future of education?", answer: "AI will probably become a normal part of every classroom." },
+    { question: "How would you speculate about future transport?", answer: "We might travel in self-driving cars or even flying taxis." },
+    { question: "How would you speculate about your city in 20 years?", answer: "It'll be cleaner and greener — more electric vehicles and better recycling." },
+    { question: "How would you speculate about food in the future?", answer: "People could eat more plant-based meals for health and the environment." },
+    { question: "How would you speculate about the next holiday?", answer: "It'll probably be relaxing, maybe somewhere by the sea." },
+    { question: "How would you speculate about global warming?", answer: "Temperatures will likely keep rising if we don't change our habits." },
+    { question: "How would you speculate about a future meeting?", answer: "It might be postponed if the manager is still abroad." },
+    { question: "How would you speculate about your friends next year?", answer: "Some of them will probably get married or move to new cities." },
+    { question: "How would you speculate about fashion trends?", answer: "Vintage clothes might come back again — they always do." },
+    { question: "How would you speculate about AI?", answer: "It will definitely change how we work, learn, and communicate." },
+    { question: "How would you speculate about tomorrow's exam?", answer: "It could be easier than the last one, but I'm not sure." },
+    { question: "How would you speculate about the weekend?", answer: "We'll probably go out if the weather's nice." },
+    { question: "How would you speculate about a celebrity rumor?", answer: "It might be true, but you never know with tabloids." },
+    { question: "How would you speculate about a friend not answering?", answer: "She could be busy or her phone might be dead." },
+    { question: "How would you speculate about your job in five years?", answer: "I'll likely be managing more people or teaching online full-time." },
+    { question: "How would you speculate about the economy?", answer: "It might improve slightly, but it's hard to say." },
+    { question: "How would you speculate about politics?", answer: "Things could get tense before the elections." },
+    { question: "How would you speculate about a movie sequel?", answer: "It'll probably be released next summer." },
+    { question: "How would you speculate about space travel?", answer: "People might live on Mars one day — who knows?" },
+    { question: "How would you speculate about social media?", answer: "It will probably become more regulated to protect privacy." },
+    { question: "How would you speculate about new technology?", answer: "There could be AI assistants that understand emotions perfectly." },
+    { question: "How would you speculate about your weekend plans?", answer: "I might just stay home and relax, or maybe visit some friends." },
+    { question: "How would you speculate about your English progress?", answer: "It will definitely improve if I keep practicing every day." },
+    { question: "How would you speculate about the world in 50 years?", answer: "There might be fewer countries, or maybe just one global community." },
+    { question: "How would you summarize future speculation in one sentence?", answer: "It's using modal verbs to express how sure or unsure we are about what will happen." }
+  ]
+};
+
+// Module 177 Data: Hypothetical Past (Third Conditional)
+const MODULE_177_DATA = {
+  title: "Hypothetical Past (Third Conditional)",
+  description: "Talk about imaginary situations in the past using the third conditional and modal verbs",
+  intro: `📘 Lesson Objectives
+✅ Talk about imaginary situations in the past
+✅ Express regret, imagination, or criticism
+✅ Use the Third Conditional structure correctly
+
+📗 Topic Explanation
+Today we're going to learn how to talk about imaginary situations in the past — things that didn't happen, but could have. We use these structures to express regret, imagination, or criticism.
+
+The main structure is the Third Conditional:
+IF + past perfect, WOULD HAVE + past participle
+
+🧠 Examples
+• If I had studied harder, I would have passed the exam.
+• If she had left earlier, she wouldn't have missed the bus.
+• If they had known, they might have come.
+• He could have won if he had trained more.`,
+  speakingPractice: [
+    { question: "What is a hypothetical situation in the past?", answer: "It's something that didn't actually happen, but we imagine what would have happened if it had." },
+    { question: "What is the structure of the third conditional?", answer: "If + past perfect, would have + past participle." },
+    { question: "Give one example of a third conditional sentence.", answer: "If I had gone to bed earlier, I wouldn't have been so tired today." },
+    { question: "How do we express possibility in the past?", answer: "We can use 'might have' — for example, 'She might have missed the train.'" },
+    { question: "How do we express ability in the past?", answer: "We use 'could have' — for example, 'He could have helped, but he chose not to.'" },
+    { question: "How do we express regret using the third conditional?", answer: "By imagining a different outcome — 'If I had studied, I would have passed.'" },
+    { question: "How can we use 'wouldn't have'?", answer: "To talk about something that didn't happen — 'If you had called, I wouldn't have worried.'" },
+    { question: "What's the difference between 'would have' and 'could have'?", answer: "'Would have' shows what definitely would happen; 'could have' shows what was possible." },
+    { question: "What's the difference between 'might have' and 'would have'?", answer: "'Might have' shows uncertainty; 'would have' shows a definite result." },
+    { question: "How would you describe a missed opportunity?", answer: "If I had accepted that job offer, my life would have been totally different." },
+    { question: "How can you describe a mistake from yesterday?", answer: "If I hadn't rushed, I wouldn't have made that mistake." },
+    { question: "How can you describe a lost chance to travel?", answer: "I could have gone to Italy if I had saved enough money." },
+    { question: "How can you describe a regret about studying?", answer: "If I had studied harder, I might have gotten a scholarship." },
+    { question: "How can you describe a friendship that ended?", answer: "If we had talked more, we might have stayed close friends." },
+    { question: "How can you describe a missed event?", answer: "If I hadn't forgotten the date, I would have gone to the concert." },
+    { question: "How can you describe an argument?", answer: "If I had stayed calm, we wouldn't have argued." },
+    { question: "How can you describe an accident?", answer: "If he had driven slower, he wouldn't have crashed." },
+    { question: "How can you describe a financial mistake?", answer: "If I hadn't spent so much, I could have bought a car." },
+    { question: "How can you describe a health problem?", answer: "If she had gone to the doctor earlier, she might have recovered faster." },
+    { question: "How can you describe an unfulfilled dream?", answer: "If I had believed in myself, I could have achieved more." },
+    { question: "How can you describe being late to work?", answer: "If I had left earlier, I wouldn't have been late." },
+    { question: "How can you describe missing a train?", answer: "If I hadn't stopped for coffee, I would have caught it." },
+    { question: "How can you describe a broken promise?", answer: "If he had remembered, he wouldn't have disappointed me." },
+    { question: "How can you describe forgetting a birthday?", answer: "If I had checked my calendar, I wouldn't have forgotten." },
+    { question: "How can you describe not helping someone?", answer: "If I had known he was in trouble, I would have helped." },
+    { question: "How can you describe a lost item?", answer: "If I had been more careful, I wouldn't have lost my phone." },
+    { question: "How can you describe missing a good deal?", answer: "If I had bought it then, I could have saved money." },
+    { question: "How can you describe a missed call?", answer: "If I had heard my phone, I would have answered." },
+    { question: "How can you describe skipping breakfast?", answer: "If I had eaten, I wouldn't have been so hungry later." },
+    { question: "How can you describe a failed exam?", answer: "If I had revised properly, I would have passed easily." },
+    { question: "How can you describe a bad decision?", answer: "If I had listened to my parents, I might have avoided it." },
+    { question: "How can you describe a happy memory that could have been different?", answer: "If it had rained that day, the picnic would have been ruined." },
+    { question: "How can you describe being too late?", answer: "If we had left five minutes earlier, we would have caught the bus." },
+    { question: "How can you describe missing someone's message?", answer: "If I had checked my phone, I might have seen it." },
+    { question: "How can you describe losing a game?", answer: "If we had practiced more, we could have won." },
+    { question: "How can you describe not getting a promotion?", answer: "If I had worked harder, I would have been promoted." },
+    { question: "How can you describe forgetting your keys?", answer: "If I had put them in my bag, I wouldn't have lost them." },
+    { question: "How can you describe being tired today?", answer: "If I had gone to bed earlier, I'd feel better now." },
+    { question: "How would you summarize third conditional meaning?", answer: "It's used to talk about unreal situations in the past and how things could have been different." }
+  ]
+};
+
+// Module 178 Data: Vocabulary – Business and Economics
+const MODULE_178_DATA = {
+  title: "Vocabulary – Business and Economics",
+  description: "Build vocabulary for discussing business, economics, markets, money, and management",
+  intro: `📘 Lesson Objectives
+✅ Build vocabulary related to business and economics
+✅ Speak confidently about markets, money, and management
+✅ Use business terms naturally in conversation
+
+📗 Topic Explanation
+Today we're focusing on Business and Economics vocabulary — words and expressions you can use in meetings, interviews, or when discussing global markets.
+
+You'll learn how to talk about companies, markets, profit, competition, investment, and economic trends naturally. Let's learn not only what these words mean, but how to use them like a fluent speaker.
+
+🧩 Key Vocabulary
+• REVENUE: the total money a company earns
+• PROFIT: the money you make after expenses
+• MARKET SHARE: the percentage of sales a company has
+• INFLATION: when prices rise and money loses value
+• INVESTMENT: putting money into something expecting profit
+• ENTREPRENEUR: someone who starts and runs a business`,
+  speakingPractice: [
+    { question: "What is revenue in business?", answer: "Revenue is the total amount of money a company earns before subtracting any costs." },
+    { question: "What is the difference between profit and revenue?", answer: "Revenue is all the money a company makes, while profit is what remains after expenses are subtracted." },
+    { question: "What does it mean when a company makes a loss?", answer: "It means the company's expenses were higher than its income." },
+    { question: "What is market share?", answer: "Market share shows how much of the total market a company controls compared to its competitors." },
+    { question: "How can a company increase its market share?", answer: "By offering better products, lowering prices, or improving marketing." },
+    { question: "What causes inflation?", answer: "Inflation happens when demand is high, or production costs increase, leading to higher prices." },
+    { question: "What happens during a recession?", answer: "During a recession, businesses slow down, unemployment rises, and people spend less." },
+    { question: "What does investment mean?", answer: "Investment means putting money into something expecting a future return or profit." },
+    { question: "Who is an entrepreneur?", answer: "An entrepreneur is someone who starts and manages a new business, often taking financial risks." },
+    { question: "What is a start-up?", answer: "A start-up is a small company in its early stages, often focused on innovation or technology." },
+    { question: "What is capital in business?", answer: "Capital is the money or assets used to start or grow a company." },
+    { question: "Why are expenses important?", answer: "Expenses show how much a company spends to operate — they affect the profit directly." },
+    { question: "What are interest rates?", answer: "Interest rates are the cost of borrowing money or the reward for saving it." },
+    { question: "Who are shareholders?", answer: "Shareholders are people or institutions that own shares in a company." },
+    { question: "What is a merger?", answer: "A merger happens when two companies join to become one larger business." },
+    { question: "Why is competition important?", answer: "Competition drives innovation, better prices, and higher quality products." },
+    { question: "What does productivity mean?", answer: "Productivity measures how efficiently work is done — higher productivity means better results with less effort." },
+    { question: "What is currency?", answer: "Currency is the money used in a particular country, like dollars, euros, or lira." },
+    { question: "What is an exchange rate?", answer: "It's the value of one currency compared to another, like how many euros one dollar can buy." },
+    { question: "What does economic growth mean?", answer: "It means a country's income, production, and employment levels are increasing." },
+    { question: "Why do companies invest in marketing?", answer: "To reach new customers and grow their sales and market share." },
+    { question: "What is a financial crisis?", answer: "A situation when the economy or financial institutions face serious problems, often leading to losses." },
+    { question: "How do entrepreneurs help the economy?", answer: "They create jobs, introduce innovation, and stimulate competition." },
+    { question: "What does GDP stand for?", answer: "GDP means Gross Domestic Product — the total value of goods and services produced in a country." },
+    { question: "Why is GDP important?", answer: "It shows the health of a country's economy and helps compare economic performance." },
+    { question: "What is outsourcing?", answer: "Hiring another company or country to do part of your work, often to save money." },
+    { question: "What is a loan?", answer: "Money borrowed that must be paid back with interest." },
+    { question: "Why are interest rates important for consumers?", answer: "They affect the cost of borrowing and the benefit of saving." },
+    { question: "What is the stock market?", answer: "A place where people buy and sell shares of companies." },
+    { question: "Why do companies sell shares?", answer: "To raise capital for growth, research, or expansion." },
+    { question: "What is a dividend?", answer: "A part of a company's profit paid to its shareholders." },
+    { question: "What does 'cost of living' mean?", answer: "The average amount of money people need for basic expenses like food and housing." },
+    { question: "What is unemployment?", answer: "When people who are able to work cannot find a job." },
+    { question: "What are imports and exports?", answer: "Imports are goods brought into a country; exports are goods sold abroad." },
+    { question: "What is taxation?", answer: "The money people and companies pay to the government to fund public services." },
+    { question: "What is a budget?", answer: "A plan that shows expected income and expenses for a period." },
+    { question: "What is debt?", answer: "Money that a person or company owes to another." },
+    { question: "What is profit margin?", answer: "It's the percentage of profit made on total sales — it shows how efficiently a company operates." },
+    { question: "What is innovation in business?", answer: "Creating new ideas, products, or methods that improve performance or attract customers." },
+    { question: "How would you summarize business and economics vocabulary?", answer: "It's all about understanding money, markets, and how companies grow and compete in the world." }
+  ]
+};
+
+// Module 179 Data: Vocabulary – Science and Technology
+const MODULE_179_DATA = {
+  title: "Vocabulary – Science and Technology",
+  description: "Build vocabulary for discussing science, innovation, and technology in everyday and academic contexts",
+  intro: `📘 Lesson Objectives
+✅ Build strong vocabulary for science and technology topics
+✅ Discuss inventions, discoveries, and experiments naturally
+✅ Use scientific and technical terms in real conversation
+
+📗 Topic Explanation
+Today we're going to explore vocabulary connected with science and technology. These words are important when you want to talk about inventions, discoveries, experiments, or how technology affects our lives.
+
+You'll learn how to use scientific and technical terms naturally — not just memorizing them, but using them in real conversation.
+
+🧩 Key Vocabulary
+• INNOVATION: creating something new or improving existing ideas
+• INVENTION: a new device or process created by study
+• EXPERIMENT: a scientific test to discover something new
+• ARTIFICIAL INTELLIGENCE (AI): machines designed to think like humans
+• AUTOMATION: using machines to perform tasks automatically
+• ROBOTICS: the technology dealing with robots`,
+  speakingPractice: [
+    { question: "What is innovation?", answer: "Innovation means creating new ideas, methods, or products that make life easier or more efficient." },
+    { question: "What is the difference between innovation and invention?", answer: "Invention is creating something completely new, while innovation improves something that already exists." },
+    { question: "What is an experiment?", answer: "An experiment is a scientific test designed to learn or prove something." },
+    { question: "What is a discovery?", answer: "A discovery is finding or learning something that already existed but was previously unknown." },
+    { question: "What is research?", answer: "Research means studying a topic deeply to find new information or answers." },
+    { question: "What is artificial intelligence?", answer: "Artificial intelligence, or AI, is when machines can think, learn, and solve problems like humans." },
+    { question: "How is AI used today?", answer: "AI is used in voice assistants, self-driving cars, education, and medical diagnosis." },
+    { question: "What is automation?", answer: "Automation means using machines or technology to do tasks that humans used to do manually." },
+    { question: "What is genetics?", answer: "Genetics is the branch of science that studies genes and heredity." },
+    { question: "What is robotics?", answer: "Robotics deals with designing and building robots that can perform various tasks." },
+    { question: "What is nanotechnology?", answer: "Nanotechnology involves manipulating materials on an atomic or molecular scale." },
+    { question: "What is a breakthrough?", answer: "A breakthrough is a major and important discovery, often after a long period of research." },
+    { question: "Why is cybersecurity important?", answer: "Because it protects our personal information and systems from hackers or attacks." },
+    { question: "What is virtual reality?", answer: "Virtual reality is a digital simulation that allows people to experience an artificial environment." },
+    { question: "What is biotechnology?", answer: "Biotechnology uses living organisms to develop useful products, especially in medicine and agriculture." },
+    { question: "What is renewable energy?", answer: "Renewable energy comes from natural sources like the sun, wind, or water — it's sustainable." },
+    { question: "What is the digital divide?", answer: "It's the gap between people who have access to modern technology and those who don't." },
+    { question: "What are ethical concerns in technology?", answer: "They include privacy, job loss, or how AI and data are used responsibly." },
+    { question: "What is sustainable development?", answer: "It means growing in ways that don't harm the environment or future generations." },
+    { question: "How has technology changed communication?", answer: "It has made communication faster, easier, and more global — through email, video calls, and social media." },
+    { question: "How has technology affected education?", answer: "It allows online learning, interactive lessons, and access to global knowledge." },
+    { question: "How has technology changed healthcare?", answer: "Doctors use advanced tools for diagnosis, surgery, and patient monitoring." },
+    { question: "What is big data?", answer: "Big data refers to very large amounts of information analyzed to understand trends or behavior." },
+    { question: "What is a startup in the tech world?", answer: "A startup is a new technology-based company developing innovative products or services." },
+    { question: "Why is innovation important?", answer: "Because it drives progress, creates jobs, and solves modern problems." },
+    { question: "What is machine learning?", answer: "It's a part of AI where computers learn from data and improve automatically without programming." },
+    { question: "What is space exploration?", answer: "It's the study and discovery of outer space using satellites, telescopes, and spacecraft." },
+    { question: "What is a robot?", answer: "A robot is a machine designed to perform specific tasks automatically or with guidance." },
+    { question: "How has social media changed society?", answer: "It connects people globally, but also creates issues like misinformation and privacy loss." },
+    { question: "What are the dangers of too much technology?", answer: "Overuse can cause addiction, lack of focus, and reduced real-life interaction." },
+    { question: "What is cloud computing?", answer: "It allows people to store and access data and programs over the internet instead of on their computers." },
+    { question: "What is 3D printing?", answer: "It's a process that creates three-dimensional objects from digital designs using special printers." },
+    { question: "What is quantum computing?", answer: "It's an advanced type of computing that uses quantum physics principles for faster problem-solving." },
+    { question: "What is a technological revolution?", answer: "It's a major change in society caused by rapid technological progress." },
+    { question: "What is e-waste?", answer: "Electronic waste — old devices that are thrown away and can harm the environment if not recycled." },
+    { question: "How can technology help the environment?", answer: "It can create renewable energy, reduce waste, and monitor climate change." },
+    { question: "What is the impact of technology on jobs?", answer: "It can create new opportunities but also replace some human jobs through automation." },
+    { question: "What is a drone?", answer: "A drone is a flying robot controlled remotely, often used for photography, delivery, or surveillance." },
+    { question: "What is innovation in daily life?", answer: "Simple improvements, like smart home devices or apps that save time, are examples of innovation." },
+    { question: "How would you summarize science and technology vocabulary?", answer: "It's about understanding the tools, ideas, and systems that drive modern life and progress." }
+  ]
+};
+
+// Module 180 Data: Vocabulary – Health and Medicine
+const MODULE_180_DATA = {
+  title: "Vocabulary – Health and Medicine",
+  description: "Build vocabulary for discussing health, medicine, and well-being",
+  intro: `📘 Lesson Objectives
+✅ Develop vocabulary for discussing health and medicine
+✅ Talk about illnesses, treatments, and healthy habits
+✅ Use healthcare terms naturally in conversation
+
+📗 Topic Explanation
+Health and medicine vocabulary helps you talk about illnesses, treatments, healthy habits, and healthcare naturally. Today we'll focus on understanding symptoms, diagnosis, treatment, and wellness — words you'll need when visiting doctors, talking about health, or discussing well-being.
+
+🧩 Key Vocabulary
+• SYMPTOM: a sign that shows you may have an illness
+• DIAGNOSIS: when a doctor finds out what illness you have
+• TREATMENT: medical care given to help recovery
+• PRESCRIPTION: written instruction for medicine
+• VACCINATION: injection to protect from diseases
+• INFECTION: when bacteria or viruses cause illness
+• CHRONIC: health problem that lasts a long time
+• MENTAL HEALTH: emotional and psychological well-being
+• PREVENTIVE CARE: actions to avoid getting sick`,
+  speakingPractice: [
+    { question: "What is a symptom?", answer: "A symptom is a sign that shows you may have an illness, like fever or cough." },
+    { question: "What is a diagnosis?", answer: "A diagnosis is when a doctor finds out what illness you have after examining you." },
+    { question: "What is a treatment?", answer: "Treatment is the medical care given to help a patient recover from an illness." },
+    { question: "What is a prescription?", answer: "A prescription is a written instruction from a doctor for medicine you need to take." },
+    { question: "What does recovery mean?", answer: "Recovery means the process of becoming healthy again after being sick or injured." },
+    { question: "What is vaccination?", answer: "Vaccination is when you get an injection to protect yourself from certain diseases." },
+    { question: "What is an infection?", answer: "An infection is when bacteria or viruses enter the body and cause illness." },
+    { question: "What does chronic mean?", answer: "Chronic describes a health problem that lasts a long time, like asthma or diabetes." },
+    { question: "What is surgery?", answer: "Surgery is a medical operation done by doctors to treat injuries or diseases." },
+    { question: "What is an injury?", answer: "An injury is physical harm to the body, such as a broken bone or cut." },
+    { question: "What is an allergy?", answer: "An allergy is when your body reacts badly to something like pollen or peanuts." },
+    { question: "What does mental health mean?", answer: "Mental health refers to your emotional and psychological well-being." },
+    { question: "How does stress affect health?", answer: "Too much stress can weaken your immune system and cause anxiety or headaches." },
+    { question: "What is a balanced diet?", answer: "A balanced diet includes the right amounts of proteins, carbohydrates, fats, vitamins, and minerals." },
+    { question: "Why is exercise important?", answer: "Exercise keeps your heart strong, improves mood, and helps control weight." },
+    { question: "What is obesity?", answer: "Obesity means being very overweight, which can cause health problems like heart disease." },
+    { question: "What is addiction?", answer: "Addiction means not being able to stop doing something harmful, like smoking or gambling." },
+    { question: "What is first aid?", answer: "First aid is the immediate help given to someone who is injured before a doctor arrives." },
+    { question: "What is a healthcare system?", answer: "It's the organization that provides medical services in a country." },
+    { question: "What is preventive care?", answer: "Preventive care means taking actions to avoid getting sick, such as regular check-ups and vaccines." },
+    { question: "How can we prevent infections?", answer: "By washing hands, eating healthy food, and keeping our surroundings clean." },
+    { question: "What causes stress?", answer: "Work pressure, family problems, or lack of rest can cause stress." },
+    { question: "How can stress be reduced?", answer: "By exercising, sleeping well, and talking to someone you trust." },
+    { question: "What is depression?", answer: "Depression is a serious mental illness that causes deep sadness and loss of interest in life." },
+    { question: "What does healthy lifestyle mean?", answer: "It means eating well, exercising regularly, and avoiding harmful habits." },
+    { question: "What are common chronic diseases?", answer: "Examples include diabetes, asthma, and heart disease." },
+    { question: "Why is mental health important?", answer: "Because emotional balance affects your overall well-being and relationships." },
+    { question: "What is rehabilitation?", answer: "Rehabilitation helps people recover from injury or addiction and return to normal life." },
+    { question: "What is physical therapy?", answer: "It's a treatment that helps restore movement and strength after an injury or surgery." },
+    { question: "Why are vaccines important?", answer: "Vaccines protect individuals and communities from dangerous diseases." },
+    { question: "What is a contagious disease?", answer: "It's a disease that spreads easily from one person to another, like the flu." },
+    { question: "How can we improve our immune system?", answer: "By eating nutritious food, exercising, and getting enough sleep." },
+    { question: "What is public health?", answer: "It's the science of protecting and improving the health of entire communities." },
+    { question: "What is hygiene?", answer: "Hygiene means keeping yourself and your environment clean to prevent disease." },
+    { question: "What is emergency care?", answer: "It's urgent medical treatment given to people with serious injuries or illnesses." },
+    { question: "Why is sleep important for health?", answer: "Good sleep helps your body recover, boosts your mood, and strengthens immunity." },
+    { question: "What is medication?", answer: "Medication is the general word for drugs used to treat illnesses." },
+    { question: "What is painkiller?", answer: "A painkiller is medicine that reduces or removes pain." },
+    { question: "What is a medical check-up?", answer: "It's a regular examination by a doctor to ensure you're healthy." },
+    { question: "How would you summarize health and medicine vocabulary?", answer: "It's about understanding illnesses, treatments, and habits that keep the body and mind healthy." }
+  ]
+};
+
+// Module 181 Data: Vocabulary – Art and Literature
+const MODULE_181_DATA = {
+  title: "Vocabulary – Art and Literature",
+  description: "Build vocabulary related to art forms, creative expression, and literature",
+  intro: `📘 Lesson Objectives
+✅ Build vocabulary for discussing art and literature
+✅ Describe creative works and artistic expression
+✅ Talk about genres, authors, and cultural themes naturally`,
+  speakingPractice: [
+    { question: "What is artwork?", answer: "Artwork is any creative visual expression like a painting, drawing, or sculpture." },
+    { question: "What is a masterpiece?", answer: "A masterpiece is an artist's best or most famous work." },
+    { question: "What is an exhibition?", answer: "An exhibition is an event where artists display their works for the public to see." },
+    { question: "What is a sculpture?", answer: "A sculpture is a three-dimensional art piece made from materials like stone or metal." },
+    { question: "What is a portrait?", answer: "A portrait is a picture, painting, or photo of a person's face or body." },
+    { question: "What is a landscape in art?", answer: "A landscape shows natural scenes such as mountains, rivers, or forests." },
+    { question: "What is abstract art?", answer: "Abstract art doesn't represent things realistically — it focuses on shapes and colors." },
+    { question: "Who is a critic?", answer: "A critic is someone who evaluates and writes opinions about art, books, or films." },
+    { question: "What is a genre?", answer: "A genre is a category or style of art or literature, like romance, comedy, or drama." },
+    { question: "What is a novel?", answer: "A novel is a long fictional story written in prose." },
+    { question: "What is poetry?", answer: "Poetry is a form of literature that expresses emotions and ideas through rhythm and imagination." },
+    { question: "What is prose?", answer: "Prose is normal written or spoken language, different from poetry or verse." },
+    { question: "What is a plot?", answer: "The plot is the main storyline of a book, movie, or play." },
+    { question: "What is a character?", answer: "A character is a person or figure that appears in a story or novel." },
+    { question: "What is a theme?", answer: "A theme is the central idea or message in a piece of art or literature." },
+    { question: "What is symbolism?", answer: "Symbolism is when objects or images represent deeper meanings, like a heart representing love." },
+    { question: "What is an illustration?", answer: "An illustration is a picture created to explain or decorate written text." },
+    { question: "What is a critique?", answer: "A critique is a written or spoken review analyzing strengths and weaknesses of a work." },
+    { question: "What is inspiration?", answer: "Inspiration is what gives an artist or writer the idea to create something new." },
+    { question: "What is culture?", answer: "Culture includes the beliefs, art, and traditions of a society." },
+    { question: "Who is an artist?", answer: "An artist is someone who creates visual or performing works to express ideas or emotions." },
+    { question: "Who is an author?", answer: "An author is someone who writes books, stories, or articles." },
+    { question: "What is literature?", answer: "Literature is written works such as novels, plays, or poetry considered to have artistic value." },
+    { question: "What is a museum?", answer: "A museum is a place where art, history, and culture are displayed for the public." },
+    { question: "What is creativity?", answer: "Creativity is the ability to produce original and imaginative ideas or works." },
+    { question: "What is the difference between fiction and non-fiction?", answer: "Fiction is imaginary writing; non-fiction is based on real facts and people." },
+    { question: "What is a painter?", answer: "A painter is an artist who creates art using paint on surfaces like canvas or walls." },
+    { question: "What is a mural?", answer: "A mural is a large painting done directly on a wall or ceiling." },
+    { question: "What is a gallery?", answer: "A gallery is a space where artworks are shown and sometimes sold." },
+    { question: "What is a play?", answer: "A play is a dramatic performance written for actors to perform on stage." },
+    { question: "What is drama?", answer: "Drama is a type of literature meant to be performed and often explores emotions and conflicts." },
+    { question: "What is classic literature?", answer: "Classic literature includes timeless works by famous authors, like Shakespeare or Tolstoy." },
+    { question: "What is a poet?", answer: "A poet is a person who writes poetry." },
+    { question: "What is an illustrator?", answer: "An illustrator is an artist who draws pictures for books or magazines." },
+    { question: "What is an art movement?", answer: "An art movement is a group of artists sharing a common style or philosophy, like Impressionism." },
+    { question: "What is a review?", answer: "A review is a written or spoken opinion about a book, movie, or artwork." },
+    { question: "How does art influence society?", answer: "Art reflects social values, emotions, and helps people express ideas visually." },
+    { question: "How does literature influence people?", answer: "It inspires imagination, empathy, and helps us understand different cultures and times." },
+    { question: "Why is creativity important?", answer: "Creativity encourages innovation, self-expression, and problem-solving in every area of life." },
+    { question: "How would you summarize art and literature vocabulary?", answer: "It's about understanding the words that describe creative expression, imagination, and culture." }
+  ]
+};
+
+// Module 182 Data: Vocabulary – Politics and Society
+const MODULE_182_DATA = {
+  title: "Vocabulary – Politics and Society",
+  description: "Learn vocabulary for discussing government, politics, human rights, and social issues",
+  intro: `📘 Lesson Objectives
+✅ Understand political and social vocabulary
+✅ Discuss governments, elections, and leadership
+✅ Express opinions on social justice and human rights`,
+  speakingPractice: [
+    { question: "What is democracy?", answer: "Democracy is a system of government where citizens have the power to vote and influence decisions." },
+    { question: "What is an election?", answer: "An election is when people vote to choose their leaders or representatives." },
+    { question: "What is a government?", answer: "The government is the group that runs a country and makes laws and policies." },
+    { question: "What is parliament?", answer: "Parliament is where elected representatives meet to discuss and pass laws." },
+    { question: "What is a political party?", answer: "A political party is a group of people with similar political goals and beliefs." },
+    { question: "Who is a Prime Minister?", answer: "The Prime Minister is the head of the government in many parliamentary systems." },
+    { question: "What does the opposition do?", answer: "The opposition challenges the ruling party and offers alternative ideas." },
+    { question: "What is a constitution?", answer: "The constitution is the fundamental law that defines how a country is governed." },
+    { question: "What are human rights?", answer: "Human rights are freedoms and protections that belong to every person equally." },
+    { question: "What is equality?", answer: "Equality means everyone has the same rights, opportunities, and treatment." },
+    { question: "What is freedom of speech?", answer: "Freedom of speech means being able to express your opinions without fear." },
+    { question: "What is corruption?", answer: "Corruption is when people in power act dishonestly for personal gain." },
+    { question: "Who is a citizen?", answer: "A citizen is a legal member of a country with certain rights and responsibilities." },
+    { question: "What is an activist?", answer: "An activist is someone who works to promote political or social change." },
+    { question: "What is a protest?", answer: "A protest is when people gather to express disagreement about an issue." },
+    { question: "What is public opinion?", answer: "Public opinion is the general view of society about a political or social issue." },
+    { question: "What is social justice?", answer: "Social justice means fairness and equality for all members of society." },
+    { question: "What is law and order?", answer: "Law and order refers to the rules that keep society peaceful and organized." },
+    { question: "What is censorship?", answer: "Censorship is when governments or organizations restrict access to information or ideas." },
+    { question: "Why is democracy important?", answer: "It ensures citizens have a voice in decision-making and protects freedom." },
+    { question: "What is a political campaign?", answer: "A campaign is when candidates promote their ideas to win elections." },
+    { question: "What is a referendum?", answer: "A referendum is when citizens vote directly on a specific issue or law." },
+    { question: "What is propaganda?", answer: "Propaganda is biased information used to influence public opinion." },
+    { question: "What is a dictatorship?", answer: "A dictatorship is a system where one leader has total power and citizens have little freedom." },
+    { question: "What is communism?", answer: "Communism is a political system where all property is owned collectively by the state." },
+    { question: "What is capitalism?", answer: "Capitalism is an economic system where individuals own businesses and compete in free markets." },
+    { question: "What is socialism?", answer: "Socialism focuses on equal distribution of wealth and government support for public services." },
+    { question: "What is a debate?", answer: "A debate is a formal discussion where people share and defend different opinions." },
+    { question: "What are civil rights?", answer: "Civil rights are the rights of citizens to political and social freedom and equality." },
+    { question: "What is immigration policy?", answer: "It's the rules that decide who can enter or stay in a country." },
+    { question: "What is unemployment?", answer: "Unemployment means people who are able to work but cannot find jobs." },
+    { question: "What is globalization?", answer: "Globalization is the process of countries becoming more connected economically and culturally." },
+    { question: "What is a welfare system?", answer: "It's government support that helps people with health, housing, and income when needed." },
+    { question: "What is discrimination?", answer: "Discrimination is unfair treatment of people based on race, gender, or religion." },
+    { question: "What is diversity?", answer: "Diversity means having a variety of people and cultures in a community." },
+    { question: "What is poverty?", answer: "Poverty is the state of not having enough money or resources to live comfortably." },
+    { question: "What is crime?", answer: "Crime is an action that breaks the law and is punishable by the government." },
+    { question: "What is justice?", answer: "Justice means fairness and proper treatment under the law." },
+    { question: "What is a constitutionally protected right?", answer: "It's a right guaranteed by the constitution, like freedom of religion or speech." },
+    { question: "How would you summarize politics and society vocabulary?", answer: "It's about understanding how governments work and how people live together in a fair, organized society." }
+  ]
+};
+
+// Module 183 Data: Vocabulary – Global Issues
+const MODULE_183_DATA = {
+  title: "Vocabulary – Global Issues",
+  description: "Build vocabulary for discussing world problems like climate change, poverty, and globalization",
+  intro: `📘 Lesson Objectives
+✅ Learn vocabulary for global challenges
+✅ Discuss climate change, poverty, and human rights
+✅ Express solutions and opinions on world issues`,
+  speakingPractice: [
+    { question: "What is climate change?", answer: "Climate change refers to long-term shifts in temperature and weather patterns caused by human activity." },
+    { question: "What is global warming?", answer: "Global warming means the rise in the Earth's average temperature due to greenhouse gases." },
+    { question: "What is pollution?", answer: "Pollution is when harmful substances enter the air, water, or soil, damaging the environment." },
+    { question: "What is deforestation?", answer: "Deforestation is cutting down forests for farming, logging, or construction." },
+    { question: "What is famine?", answer: "Famine is when a large number of people do not have enough food to survive." },
+    { question: "What is poverty?", answer: "Poverty means lacking basic needs such as food, shelter, and healthcare." },
+    { question: "What is inequality?", answer: "Inequality happens when some people have more wealth, rights, or opportunities than others." },
+    { question: "Who is a refugee?", answer: "A refugee is a person forced to leave their country because of war or danger." },
+    { question: "What are human rights?", answer: "Human rights are basic freedoms that belong to everyone, like education and safety." },
+    { question: "What is discrimination?", answer: "Discrimination is unfair treatment of people based on who they are or what they believe." },
+    { question: "What is sustainability?", answer: "Sustainability means using resources in a way that protects the environment for future generations." },
+    { question: "What is renewable energy?", answer: "Renewable energy comes from sources like wind, sunlight, and water that don't run out." },
+    { question: "What is globalization?", answer: "Globalization is the process of countries becoming more connected through business and culture." },
+    { question: "What is conflict?", answer: "Conflict is a serious disagreement or fight between countries or groups." },
+    { question: "What is migration?", answer: "Migration means moving from one place to another to live or work." },
+    { question: "What is overpopulation?", answer: "Overpopulation happens when too many people live in one area, causing lack of space and resources." },
+    { question: "What is a disease outbreak?", answer: "A disease outbreak is when an illness spreads quickly among many people." },
+    { question: "What is recycling?", answer: "Recycling is turning used materials into new products to reduce waste." },
+    { question: "What is charity?", answer: "Charity means giving money, goods, or time to help those in need." },
+    { question: "What is cooperation?", answer: "Cooperation means people or countries working together toward shared goals." },
+    { question: "Why is climate change dangerous?", answer: "It leads to rising sea levels, extreme weather, and loss of biodiversity." },
+    { question: "How can we reduce pollution?", answer: "We can use public transport, recycle more, and limit industrial waste." },
+    { question: "Why is deforestation a problem?", answer: "It destroys habitats, reduces oxygen, and contributes to global warming." },
+    { question: "How can poverty be reduced?", answer: "Through education, job opportunities, and fair economic policies." },
+    { question: "What causes inequality?", answer: "Unequal access to education, resources, and political power causes inequality." },
+    { question: "Why do people migrate?", answer: "They migrate to escape conflict, find work, or seek better living conditions." },
+    { question: "How can we support refugees?", answer: "By providing housing, education, and safe living conditions." },
+    { question: "Why is sustainability important?", answer: "Because it ensures future generations can enjoy a healthy planet." },
+    { question: "How does globalization affect culture?", answer: "It spreads ideas and products but can also reduce local traditions." },
+    { question: "What is the role of human rights organizations?", answer: "They protect people from abuse and promote justice worldwide." },
+    { question: "How can we promote equality?", answer: "By supporting laws and education that treat everyone fairly." },
+    { question: "What is renewable energy's benefit?", answer: "It reduces pollution and reliance on fossil fuels." },
+    { question: "What can individuals do for the planet?", answer: "They can recycle, save energy, and support green policies." },
+    { question: "What is the effect of overpopulation?", answer: "It causes shortages of food, water, and housing." },
+    { question: "How can we prevent disease outbreaks?", answer: "Through vaccination, hygiene, and early detection." },
+    { question: "What are the main global challenges today?", answer: "Climate change, poverty, inequality, and war are key challenges." },
+    { question: "Why is international cooperation important?", answer: "Because global problems require countries to work together." },
+    { question: "How can technology help global issues?", answer: "It improves healthcare, energy efficiency, and global communication." },
+    { question: "What role does education play in solving global issues?", answer: "It raises awareness and helps people make informed decisions." },
+    { question: "How would you summarize global issues vocabulary?", answer: "It's about understanding the challenges our planet faces and how humanity can respond together." }
+  ]
+};
+
+// Module 184 Data: Vocabulary – Sports and Leisure
+const MODULE_184_DATA = {
+  title: "Vocabulary – Sports and Leisure",
+  description: "Expand vocabulary for discussing sports, fitness, hobbies, and leisure activities",
+  intro: `📘 Lesson Objectives
+✅ Learn vocabulary for sports and fitness
+✅ Discuss hobbies, competitions, and recreation
+✅ Talk about healthy lifestyles naturally`,
+  speakingPractice: [
+    { question: "Who is an athlete?", answer: "An athlete is someone who trains and competes in sports events." },
+    { question: "What is a competition?", answer: "A competition is an event where people or teams try to win a prize." },
+    { question: "What is teamwork?", answer: "Teamwork means working together with others to reach a common goal." },
+    { question: "Who is a coach?", answer: "A coach is a person who trains and supports athletes or teams." },
+    { question: "Who is a referee?", answer: "A referee makes sure players follow the rules during a game." },
+    { question: "What does fitness mean?", answer: "Fitness means being physically healthy and strong through regular exercise." },
+    { question: "What is leisure?", answer: "Leisure is free time when you can relax or do enjoyable activities." },
+    { question: "What is a hobby?", answer: "A hobby is an activity you do regularly for fun, like painting or cycling." },
+    { question: "What is a tournament?", answer: "A tournament is a sports event made up of many matches to find a winner." },
+    { question: "Who is a spectator?", answer: "A spectator is a person who watches a game or performance." },
+    { question: "What is equipment?", answer: "Equipment includes the things needed to play a sport, such as a ball or racket." },
+    { question: "What is an injury?", answer: "An injury is damage to your body that happens while playing or training." },
+    { question: "What is practice?", answer: "Practice means repeating an activity to improve skills and performance." },
+    { question: "Who is a champion?", answer: "A champion is the person or team that wins first place in a competition." },
+    { question: "What is a record?", answer: "A record is the best result ever achieved in a sport or event." },
+    { question: "What is training?", answer: "Training means exercising regularly to prepare for a competition." },
+    { question: "What is an outdoor activity?", answer: "An outdoor activity takes place outside, like running, hiking, or football." },
+    { question: "What is an indoor activity?", answer: "An indoor activity is done inside a building, like yoga or table tennis." },
+    { question: "What is relaxation?", answer: "Relaxation means doing something calm to rest your mind and body." },
+    { question: "What is motivation?", answer: "Motivation is the desire or reason to keep working toward a goal." },
+    { question: "Why is teamwork important in sports?", answer: "Because it helps players support each other and win as a group." },
+    { question: "Why is fitness important?", answer: "Because good fitness keeps you healthy and improves performance." },
+    { question: "What causes injuries in sports?", answer: "Injuries often happen due to accidents, overtraining, or lack of warm-up." },
+    { question: "How can you stay motivated in sports?", answer: "By setting goals, celebrating progress, and enjoying the process." },
+    { question: "Why are tournaments exciting?", answer: "Because they bring competition, energy, and teamwork together." },
+    { question: "What's the difference between a hobby and a sport?", answer: "A sport is often competitive, while a hobby is for relaxation." },
+    { question: "How do athletes prepare for big events?", answer: "They train daily, follow a healthy diet, and stay focused mentally." },
+    { question: "Why do people like watching sports?", answer: "Because it's exciting and creates a sense of community and pride." },
+    { question: "What is fair play?", answer: "Fair play means respecting the rules and showing good sportsmanship." },
+    { question: "Why are referees important?", answer: "They ensure that games are played fairly and safely." },
+    { question: "How can sports improve health?", answer: "They strengthen muscles, improve heart health, and reduce stress." },
+    { question: "Why is relaxation necessary after training?", answer: "It helps muscles recover and prevents injuries." },
+    { question: "What is the role of a coach?", answer: "A coach teaches skills, motivates players, and builds strategy for success." },
+    { question: "What is the role of sports in society?", answer: "Sports unite people, promote health, and inspire teamwork and discipline." },
+    { question: "What are examples of leisure activities?", answer: "Reading, swimming, hiking, or playing board games are leisure activities." },
+    { question: "Why is motivation key to success?", answer: "Because without motivation, it's hard to stay committed to training." },
+    { question: "What's the difference between indoor and outdoor sports?", answer: "Indoor sports are played inside, while outdoor ones happen outside in nature." },
+    { question: "How do spectators influence athletes?", answer: "Their support and energy can inspire better performance." },
+    { question: "What are the benefits of team sports?", answer: "They teach cooperation, responsibility, and communication skills." },
+    { question: "How would you summarize sports and leisure vocabulary?", answer: "It's about talking naturally about fitness, hobbies, teamwork, and relaxation." }
+  ]
+};
+
+// Module 185 Data: Debating Skills – Expressing Agreement and Disagreement
+const MODULE_185_DATA = {
+  title: "Debating Skills – Expressing Agreement and Disagreement",
+  description: "Learn to express agreement and disagreement politely and convincingly in debates",
+  intro: `📘 Lesson Objectives
+✅ Express agreement and disagreement effectively
+✅ Use polite and persuasive language in debates
+✅ Sound professional and respectful in discussions`,
+  speakingPractice: [
+    { question: "Do you agree that money can buy happiness?", answer: "I'm afraid I disagree. Money can bring comfort, but true happiness comes from emotional fulfillment." },
+    { question: "Do you think social media does more harm than good?", answer: "I agree to some extent. It connects people, but it also causes stress and misinformation." },
+    { question: "Should homework be banned in schools?", answer: "I see your point, but I believe homework reinforces learning when used properly." },
+    { question: "Is it better to be rich or happy?", answer: "I completely agree that happiness is more important because wealth can't buy peace of mind." },
+    { question: "Do you agree that technology isolates people?", answer: "I partly agree. While it reduces face-to-face interaction, it also helps us stay connected globally." },
+    { question: "Should people work fewer hours?", answer: "I share your opinion that shorter hours can improve mental health and productivity." },
+    { question: "Do you agree that fast food should be banned?", answer: "I'm afraid I disagree. People should have the freedom to choose what they eat." },
+    { question: "Should children have smartphones?", answer: "I see what you mean, but I think smartphones can be useful for safety and education." },
+    { question: "Do you agree that online education is better?", answer: "I'm not convinced. Online learning is flexible but lacks real human interaction." },
+    { question: "Is competition good for success?", answer: "I completely agree. Competition pushes people to do their best." },
+    { question: "Do you think exams are necessary?", answer: "I agree to some extent. Exams measure knowledge but not creativity." },
+    { question: "Do you agree that celebrities are bad role models?", answer: "I see your point, but many celebrities use their fame for good causes." },
+    { question: "Is climate change the biggest global issue?", answer: "I completely agree. It affects every country and requires global cooperation." },
+    { question: "Do you think school uniforms are necessary?", answer: "I'm afraid I disagree. Uniforms limit personal expression." },
+    { question: "Should governments ban smoking entirely?", answer: "I see what you mean, but banning it completely would take away personal choice." },
+    { question: "Do you agree that artificial intelligence is dangerous?", answer: "That's true, but we should also consider the benefits it brings to medicine and education." },
+    { question: "Is it better to study abroad?", answer: "I completely agree. It broadens your horizons and teaches independence." },
+    { question: "Do you think sports stars earn too much?", answer: "I agree in a way, although their careers are short and require discipline and risk." },
+    { question: "Should public transport be free?", answer: "I agree to some extent. It would reduce pollution but cost the government a lot." },
+    { question: "Is social equality achievable?", answer: "I'm not convinced it's fully possible, but we can work toward reducing inequality." },
+    { question: "Do you agree that reading is better than watching TV?", answer: "I completely agree. Reading improves imagination and critical thinking." },
+    { question: "Should schools focus more on creativity than exams?", answer: "I share your opinion. Creativity prepares students for real-life challenges." },
+    { question: "Is success more about talent or hard work?", answer: "I see your point, but I think hard work plays a bigger role than talent." },
+    { question: "Do you agree that humans are destroying nature?", answer: "I completely agree. Deforestation and pollution prove it clearly." },
+    { question: "Should space exploration continue?", answer: "That's true, but we should also solve problems on Earth first." },
+    { question: "Do you agree that fashion influences personality?", answer: "I agree in a way. What we wear often reflects our confidence and style." },
+    { question: "Is it better to live in the city or countryside?", answer: "I see what you mean, but cities offer more opportunities and diversity." },
+    { question: "Do you think governments should increase taxes for the rich?", answer: "I agree to some extent. It can reduce inequality if done fairly." },
+    { question: "Do you agree that privacy no longer exists online?", answer: "I completely agree. Companies track our data almost everywhere." },
+    { question: "Should everyone learn a foreign language?", answer: "I share your opinion. Learning languages opens doors to new cultures." },
+    { question: "Do you agree that failure is part of success?", answer: "I completely agree. Every mistake is a lesson for improvement." },
+    { question: "Should we rely more on renewable energy?", answer: "I see your point, and I strongly agree—it's essential for sustainability." },
+    { question: "Do you think voting should be mandatory?", answer: "I understand what you mean, but I don't completely agree because people should have freedom of choice." },
+    { question: "Is it okay to lie sometimes?", answer: "I'm afraid I disagree. Honesty builds trust even when it's difficult." },
+    { question: "Do you agree that art is more valuable than science?", answer: "I see your point, but both art and science are essential for human progress." },
+    { question: "Should animal testing be banned?", answer: "I completely agree. It's cruel and we can use modern alternatives instead." },
+    { question: "Do you think technology makes people lazy?", answer: "I agree to some extent. It saves time but also reduces physical activity." },
+    { question: "Should students be graded on group work?", answer: "I see what you mean, but individual performance should also be recognized." },
+    { question: "Do you agree that debate skills are important?", answer: "I completely agree. They teach communication, confidence, and respect for other opinions." },
+    { question: "How would you summarize debating skills?", answer: "Debating is about expressing opinions confidently, listening carefully, and respecting differences while staying logical and polite." }
+  ]
+};
+
+// Module 186 Data: Persuasion Techniques in Speaking
+const MODULE_186_DATA = {
+  title: "Persuasion Techniques in Speaking",
+  description: "Learn to persuade and influence others using logic, emotion, and credibility",
+  intro: `📘 Lesson Objectives
+✅ Master persuasion techniques (ethos, pathos, logos)
+✅ Use rhetorical devices and emotional appeal
+✅ Speak persuasively in discussions and presentations`,
+  speakingPractice: [
+    { question: "What is persuasion?", answer: "Persuasion is the art of convincing someone to believe or do something through communication." },
+    { question: "What are the three main persuasive appeals?", answer: "They are ethos, pathos, and logos — credibility, emotion, and logic." },
+    { question: "What does ethos mean?", answer: "Ethos means convincing others by showing you are trustworthy or knowledgeable." },
+    { question: "What does pathos mean?", answer: "Pathos means appealing to emotions to make your message more powerful." },
+    { question: "What does logos mean?", answer: "Logos means using facts, logic, and reasoning to support your argument." },
+    { question: "What is a rhetorical question?", answer: "It's a question asked to make the audience think rather than answer." },
+    { question: "What is repetition in speaking?", answer: "Repetition is when you repeat key words or ideas to make them memorable." },
+    { question: "What is an anecdote?", answer: "An anecdote is a short personal story used to support your message." },
+    { question: "What is a call to action?", answer: "It's when a speaker encourages the audience to take specific action after the speech." },
+    { question: "What is contrast in persuasion?", answer: "Contrast shows the difference between two choices to make your point stronger." },
+    { question: "Why are statistics useful in persuasion?", answer: "They add evidence and make your argument sound more factual and credible." },
+    { question: "What is inclusive language?", answer: "Inclusive language makes listeners feel part of a group by using words like 'we' and 'our.'" },
+    { question: "What is emphatic language?", answer: "It uses strong, emotional words to grab attention and create impact." },
+    { question: "What is a metaphor?", answer: "A metaphor compares two things creatively to make your message more vivid." },
+    { question: "What is parallelism?", answer: "Parallelism repeats similar sentence structures for rhythm and emphasis." },
+    { question: "Why is credibility important?", answer: "Because people are more likely to trust and believe a credible speaker." },
+    { question: "How does storytelling help in persuasion?", answer: "Stories make your speech more relatable, emotional, and memorable." },
+    { question: "Why is emotion powerful in persuasion?", answer: "Because emotions influence people's decisions more than logic alone." },
+    { question: "How can tone affect persuasion?", answer: "A confident and respectful tone makes your argument more convincing." },
+    { question: "What is a persuasive speech?", answer: "It's a speech designed to convince the audience to believe or act on something." },
+    { question: "Why do politicians use repetition?", answer: "Because it helps their message stay in people's minds." },
+    { question: "What is the role of evidence in persuasion?", answer: "Evidence supports your ideas and makes them more believable." },
+    { question: "How can you build trust with an audience?", answer: "By being honest, confident, and showing knowledge of the topic." },
+    { question: "Why do speakers use rhetorical questions?", answer: "To make listeners think deeply and engage with the topic." },
+    { question: "What is the purpose of emotional appeal?", answer: "It connects with people's feelings to make the message more impactful." },
+    { question: "How can body language affect persuasion?", answer: "Positive gestures and eye contact increase credibility and connection." },
+    { question: "What makes a speaker sound confident?", answer: "Clear speech, strong posture, and good preparation show confidence." },
+    { question: "What is exaggeration in persuasion?", answer: "Exaggeration emphasizes a point to make it more dramatic or memorable." },
+    { question: "Why is clarity important in persuasion?", answer: "Because unclear messages confuse the audience and reduce impact." },
+    { question: "What is the difference between convincing and manipulating?", answer: "Convincing is honest persuasion; manipulating uses deceit or pressure." },
+    { question: "How can visuals help in persuasion?", answer: "Images or charts make arguments clearer and more convincing." },
+    { question: "What is the power of storytelling?", answer: "It captures attention, builds empathy, and helps people remember your message." },
+    { question: "Why is practice essential for persuasive speaking?", answer: "Because it improves fluency, timing, and confidence." },
+    { question: "How can empathy improve persuasion?", answer: "Understanding others' feelings makes your message more human and persuasive." },
+    { question: "What is emotional intelligence in speaking?", answer: "It's the ability to manage emotions—your own and the audience's—during communication." },
+    { question: "Why is it important to listen in persuasive speaking?", answer: "Listening helps you respond thoughtfully and build rapport." },
+    { question: "What is credibility based on?", answer: "It's based on honesty, experience, and confidence." },
+    { question: "How can you use examples effectively in persuasion?", answer: "By using real-life stories or data to make your argument relatable and realistic." },
+    { question: "What is your advice for persuasive speakers?", answer: "Be confident, authentic, and balance emotion with logic to influence effectively." },
+    { question: "How would you summarize persuasion techniques?", answer: "Persuasion combines emotion, logic, and trust to move people toward understanding or action." }
+  ]
+};
+
+// Module 187 Data: Making Complaints Politely
+const MODULE_187_DATA = {
+  title: "Making Complaints Politely",
+  description: "Learn to express dissatisfaction and solve problems politely and professionally",
+  intro: `📘 Lesson Objectives
+✅ Make complaints politely and effectively
+✅ Use diplomatic language in customer service situations
+✅ Resolve issues professionally without sounding rude`,
+  speakingPractice: [
+    { question: "How can you start a complaint politely?", answer: "You can start by saying, 'I'm sorry to bother you, but there seems to be a problem.'" },
+    { question: "What should you avoid when making complaints?", answer: "Avoid shouting or blaming; focus on the problem, not the person." },
+    { question: "How do you politely express dissatisfaction?", answer: "Use phrases like, 'I'm afraid there's been a misunderstanding.'" },
+    { question: "Why is tone important in complaints?", answer: "Because a polite tone keeps communication respectful and productive." },
+    { question: "What's a good phrase to describe a product issue?", answer: "You can say, 'The product I bought doesn't work as expected.'" },
+    { question: "How can you request a solution?", answer: "Ask politely, for example: 'Could you please replace this item?'" },
+    { question: "How can you show understanding?", answer: "Say, 'I understand these things happen.' to show empathy." },
+    { question: "How can you soften a complaint?", answer: "Use gentle language like, 'I know it's not your fault, but...'" },
+    { question: "What should you say if service is slow?", answer: "You can say, 'Excuse me, could you please check my order?'" },
+    { question: "How can you ask for a refund politely?", answer: "Say, 'Would it be possible to get a refund?'" },
+    { question: "What can you say to request faster action?", answer: "You can say, 'I'd appreciate it if this could be resolved quickly.'" },
+    { question: "What's a good way to end a complaint?", answer: "End with gratitude: 'Thank you for your help and understanding.'" },
+    { question: "Why should complaints be polite?", answer: "Because politeness increases the chance of a positive response." },
+    { question: "What's a polite phrase for a delivery problem?", answer: "You can say, 'I haven't received my package yet.'" },
+    { question: "How can you complain about poor service?", answer: "Say, 'I'm afraid I'm not satisfied with the service today.'" },
+    { question: "What should you say if food is cold at a restaurant?", answer: "Politely say, 'Excuse me, my food is a bit cold. Could you warm it up, please?'" },
+    { question: "How can you show you're patient but firm?", answer: "Say, 'I'd really appreciate it if this could be solved soon.'" },
+    { question: "What if someone gets defensive?", answer: "Stay calm and reply, 'I understand, but I still hope we can fix this issue.'" },
+    { question: "How can you handle a phone complaint?", answer: "Keep your tone friendly and use phrases like, 'I'd like to report an issue with my account.'" },
+    { question: "What is an example of a polite email complaint?", answer: "Start with, 'Dear Customer Service, I'm writing to inform you about a problem with my recent order.'" },
+    { question: "What should you include in a complaint email?", answer: "Details of the problem, dates, and what solution you expect." },
+    { question: "How can you sound professional when complaining?", answer: "Avoid emotional words and use formal language like 'I'd appreciate your assistance.'" },
+    { question: "What can you say if you're unhappy with hotel service?", answer: "Say, 'I'm sorry, but the room isn't as described on the website.'" },
+    { question: "What's a polite way to complain about noise?", answer: "You can say, 'Excuse me, would you mind lowering the volume a bit?'" },
+    { question: "How can you keep calm during complaints?", answer: "Take a breath and focus on the facts, not emotions." },
+    { question: "What can you say if your order is wrong?", answer: "Say, 'I think there's been a mistake with my order. Could you please check it?'" },
+    { question: "What's a polite way to complain about billing errors?", answer: "Say, 'I'm afraid there's an error on my bill. Could you please review it?'" },
+    { question: "What phrase can you use for repeated issues?", answer: "You can say, 'This issue seems to be happening quite often. Could it be checked again?'" },
+    { question: "How can you thank someone for solving your issue?", answer: "Say, 'Thank you very much for your quick help.'" },
+    { question: "What's a polite way to ask for an update?", answer: "Say, 'I just wanted to follow up on my previous request.'" },
+    { question: "How can you complain about rude staff?", answer: "Say, 'I'm sorry to mention this, but the staff member's behavior was unprofessional.'" },
+    { question: "What can you say if you feel ignored?", answer: "Say, 'Excuse me, I've been waiting for some time. Could someone assist me?'" },
+    { question: "Why is politeness important in business complaints?", answer: "Because it helps maintain professionalism and relationships." },
+    { question: "How can you complain about technical problems?", answer: "Say, 'My connection hasn't been working properly since yesterday.'" },
+    { question: "What's a polite phrase for missing information?", answer: "Say, 'It seems that some information was left out. Could you please resend it?'" },
+    { question: "How can you request a replacement product?", answer: "Say, 'Would it be possible to send a replacement item?'" },
+    { question: "What's the best way to deal with delays?", answer: "Politely ask for clarification: 'Could you please tell me when it will be ready?'" },
+    { question: "What can you say if the issue repeats?", answer: "Say, 'I appreciate your help before, but the same problem has occurred again.'" },
+    { question: "How can you keep the conversation positive?", answer: "Use gratitude and empathy: 'I know you're busy, thank you for helping me.'" },
+    { question: "How would you summarize polite complaining?", answer: "It's about expressing dissatisfaction calmly and respectfully while focusing on solutions." }
+  ]
+};
+
+// Module 188 Data: Clarifying and Confirming Information
+const MODULE_188_DATA = {
+  title: "Clarifying and Confirming Information",
+  description: "Develop strategies for checking understanding and confirming details in conversations",
+  intro: `📘 Lesson Objectives
+✅ Ask for clarification and repetition politely
+✅ Confirm understanding and verify details
+✅ Avoid misunderstandings in all situations`,
+  speakingPractice: [
+    { question: "What does clarifying mean?", answer: "Clarifying means asking for more information to make something clear or easier to understand." },
+    { question: "What does confirming mean?", answer: "Confirming means checking if the information you have is correct or understood correctly." },
+    { question: "How can you ask someone to repeat politely?", answer: "You can say, 'Sorry, could you repeat that, please?'" },
+    { question: "What can you say if you didn't understand a word?", answer: "You can ask, 'What does that word mean?'" },
+    { question: "How can you check your understanding?", answer: "You can say, 'So, if I understand correctly, you mean...'" },
+    { question: "What's a polite way to ask for clarification?", answer: "Say, 'I'm not sure I understood what you meant by...'" },
+    { question: "What's a good phrase to confirm time or details?", answer: "You can ask, 'Just to confirm, the meeting is at 2 p.m., right?'" },
+    { question: "Why is clarification important?", answer: "It helps prevent mistakes and shows you care about understanding correctly." },
+    { question: "How can you confirm understanding in a meeting?", answer: "Say, 'Let me make sure I've got this right.'" },
+    { question: "What's a casual way to ask for repetition?", answer: "You can simply say, 'Sorry, what was that again?'" },
+    { question: "What can you say if the line is bad on the phone?", answer: "Say, 'Sorry, the line's not clear. Could you repeat that?'" },
+    { question: "What's a polite way to ask someone to slow down?", answer: "Say, 'Could you speak a little more slowly, please?'" },
+    { question: "How can you clarify numbers or prices?", answer: "You can ask, 'Did you say fifteen or fifty?'" },
+    { question: "What can you say if someone uses an unfamiliar term?", answer: "You can say, 'I'm not familiar with that term — could you explain it?'" },
+    { question: "How can you politely interrupt for clarification?", answer: "Say, 'Sorry to interrupt, but could you clarify that point?'" },
+    { question: "What's a good phrase to confirm a name or spelling?", answer: "You can say, 'Could you please spell your name for me?'" },
+    { question: "Why is confirming important in business?", answer: "Because it avoids errors in schedules, prices, or agreements." },
+    { question: "How can you confirm understanding in class?", answer: "Say, 'So, do you mean that the past tense is used here?'" },
+    { question: "What can you say to make sure you understood correctly?", answer: "You can say, 'So, what you're saying is...'" },
+    { question: "What can you say after someone clarifies?", answer: "You can reply, 'Right, that makes sense now.'" },
+    { question: "What should you do if you're not sure?", answer: "Always ask politely for clarification instead of guessing." },
+    { question: "How can you show you're listening actively?", answer: "Repeat key points or ask follow-up questions like, 'So, it starts next week?'" },
+    { question: "What's a polite way to double-check an address?", answer: "You can say, 'Let me just double-check the address with you.'" },
+    { question: "How can you confirm understanding at work?", answer: "Say, 'Just to be clear, we'll send the report tomorrow, right?'" },
+    { question: "What can you say if instructions are unclear?", answer: "You can say, 'I didn't quite catch that, could you explain it again?'" },
+    { question: "How can you confirm a date?", answer: "Say, 'So, the deadline is Friday, correct?'" },
+    { question: "What can you say if someone speaks too fast?", answer: "You can say, 'I'm sorry, could you please slow down a bit?'" },
+    { question: "What's a polite way to restate information?", answer: "Say, 'Let me repeat that to make sure I understood correctly.'" },
+    { question: "How can you ask for clarification via email?", answer: "Write, 'Could you please clarify what you meant by...?'" },
+    { question: "What can you say to summarize someone's point?", answer: "Say, 'If I understand you right, you're suggesting that...'" },
+    { question: "How can you confirm payment details?", answer: "Say, 'Just to confirm, the total is 120 dollars, right?'" },
+    { question: "What's a casual way to clarify with a friend?", answer: "Say, 'Wait, what do you mean by that?'" },
+    { question: "How can you politely correct misunderstanding?", answer: "Say, 'Actually, I meant something a bit different.'" },
+    { question: "What can you say when someone confirms for you?", answer: "You can respond, 'Yes, that's correct, thank you.'" },
+    { question: "What's the difference between clarifying and confirming?", answer: "Clarifying means asking for more information; confirming means verifying accuracy." },
+    { question: "How can you show appreciation after clarification?", answer: "Say, 'Thanks for explaining, that's much clearer now.'" },
+    { question: "What can you say when you finally understand?", answer: "You can say, 'Oh, I get it now!'" },
+    { question: "Why is politeness important in clarification?", answer: "Because it keeps communication friendly and avoids sounding rude." },
+    { question: "What can you say if you didn't catch the last part?", answer: "Say, 'Sorry, I missed the last part, could you repeat it?'" },
+    { question: "How would you summarize clarification and confirmation skills?", answer: "They're about ensuring clear, polite communication and avoiding misunderstandings in any situation." }
+  ]
+};
+
+// Module 189 Data: Managing Conversations – Interruptions and Turn-taking
+const MODULE_189_DATA = {
+  title: "Managing Conversations – Interruptions and Turn-taking",
+  description: "Master the art of interrupting politely, taking turns, and keeping discussions balanced",
+  intro: `📘 Lesson Objectives
+✅ Interrupt politely when necessary
+✅ Take turns effectively in conversations
+✅ Keep discussions balanced and respectful`,
+  speakingPractice: [
+    { question: "What does turn-taking mean?", answer: "Turn-taking means knowing when it's your turn to speak and when to listen in a conversation." },
+    { question: "Why is turn-taking important?", answer: "It keeps the conversation organized and prevents people from talking over each other." },
+    { question: "What is an interruption?", answer: "An interruption is when someone starts speaking before the other person has finished." },
+    { question: "How can you interrupt politely?", answer: "You can say, 'Sorry to interrupt, but may I add something?'" },
+    { question: "What's a rude way to interrupt?", answer: "Speaking loudly or cutting someone off without saying sorry can be rude." },
+    { question: "How can you signal you want to speak?", answer: "You can raise your hand slightly or say, 'Can I just jump in for a second?'" },
+    { question: "What should you do after interrupting?", answer: "Apologize briefly and keep your comment short to stay polite." },
+    { question: "How can you let others speak?", answer: "You can say, 'Go ahead, please' or 'You were saying?'" },
+    { question: "What can you say if someone interrupts you?", answer: "You can say, 'If I could just finish my point, please.'" },
+    { question: "Why should you avoid interrupting too often?", answer: "Because it can make you seem disrespectful or impatient." },
+    { question: "How can you take turns naturally?", answer: "By listening carefully and waiting for a pause before speaking." },
+    { question: "What can you say to add to a discussion?", answer: "Say, 'May I add something to that point?'" },
+    { question: "How can you politely disagree without interrupting?", answer: "Wait until the other person finishes, then say, 'I see your point, but I think...'" },
+    { question: "What should you say if someone keeps interrupting?", answer: "Say calmly, 'Please let me finish my thought first.'" },
+    { question: "How can you return to your idea after interruption?", answer: "Say, 'As I was saying before...'" },
+    { question: "How can you encourage others to speak?", answer: "Say, 'What do you think about this?' or 'Would you like to add something?'" },
+    { question: "What is a good way to balance turn-taking in groups?", answer: "Take short turns and give space for others to talk." },
+    { question: "What's an example of a polite interruption?", answer: "'Excuse me, could I just add something quickly?'" },
+    { question: "What can you say if you want to clarify mid-conversation?", answer: "'Sorry, can I ask a quick question before we continue?'" },
+    { question: "How can you show active listening?", answer: "By nodding, maintaining eye contact, and saying small responses like 'I see' or 'Right.'" },
+    { question: "How can you make a quick point without taking over?", answer: "Say, 'Just a quick comment on that...'" },
+    { question: "What phrase can you use to keep control of your turn?", answer: "'If I could just finish my thought, I'll be quick.'" },
+    { question: "How can you politely hand the turn to someone?", answer: "'I think you wanted to say something, John?'" },
+    { question: "What should you do when many people talk at once?", answer: "Stay calm, wait for a pause, and say, 'If I may jump in...'" },
+    { question: "What can you say to get the conversation back on track?", answer: "'Let's get back to the main point we were discussing.'" },
+    { question: "How can you show respect during a debate?", answer: "Let others finish before responding and acknowledge their points." },
+    { question: "Why is polite interruption a skill?", answer: "Because it allows you to participate actively without being disrespectful." },
+    { question: "What can you say if someone interrupts kindly?", answer: "'No problem, go ahead.'" },
+    { question: "How can you make sure everyone participates?", answer: "Invite others by saying, 'What's your opinion on this topic?'" },
+    { question: "What is the difference between interrupting and participating?", answer: "Interrupting breaks the flow; participating means waiting for the right moment." },
+    { question: "How can you resume speaking after an interruption?", answer: "Say, 'As I was saying before, the main issue is...'" },
+    { question: "How can you apologize for interrupting?", answer: "Say, 'Sorry to interrupt, but I thought this might be important.'" },
+    { question: "What is a good way to handle long speakers?", answer: "Wait for a pause and say, 'If I could add something here briefly...'" },
+    { question: "How can you control overlapping talk?", answer: "Acknowledge others and wait for them to stop before continuing." },
+    { question: "How can you manage turn-taking in meetings?", answer: "Assign turns or use signals like raising hands to avoid interruptions." },
+    { question: "Why is managing conversation important?", answer: "It ensures clear communication and equal participation." },
+    { question: "What can you say when you lose your turn?", answer: "Say, 'Sorry, I wanted to mention this earlier.'" },
+    { question: "How can you encourage smooth conversation flow?", answer: "By using polite transitions and active listening." },
+    { question: "What's your best advice for managing conversations?", answer: "Be respectful, listen actively, and use polite phrases to enter or exit discussions." },
+    { question: "How would you summarize turn-taking and interruption skills?", answer: "It's about balancing speaking and listening while maintaining respect and clarity." }
+  ]
+};
+
 // Export all B2 module data
 export {
   MODULE_151_DATA,
@@ -1131,5 +2437,26 @@ export {
   MODULE_165_DATA,
   MODULE_166_DATA,
   MODULE_167_DATA,
-  MODULE_168_DATA
+  MODULE_168_DATA,
+  MODULE_169_DATA,
+  MODULE_170_DATA,
+  MODULE_171_DATA,
+  MODULE_172_DATA,
+  MODULE_173_DATA,
+  MODULE_174_DATA,
+  MODULE_175_DATA,
+  MODULE_176_DATA,
+  MODULE_177_DATA,
+  MODULE_178_DATA,
+  MODULE_179_DATA,
+  MODULE_180_DATA,
+  MODULE_181_DATA,
+  MODULE_182_DATA,
+  MODULE_183_DATA,
+  MODULE_184_DATA,
+  MODULE_185_DATA,
+  MODULE_186_DATA,
+  MODULE_187_DATA,
+  MODULE_188_DATA,
+  MODULE_189_DATA
 };
