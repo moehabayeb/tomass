@@ -443,12 +443,43 @@ function generateB2Modules(): Module[] {
   return modules;
 }
 
+function generateC1Modules(): Module[] {
+  const C1_TITLES = [
+    'Advanced Passive Structures',
+    'Cleft Sentences',
+    'Advanced Conditional Patterns',
+    'Nominal Clauses',
+    'Participle Clauses',
+    'Complex Sentences: Combining Multiple Clauses',
+    'Formal and Academic Writing Style',
+    'Hedging and Softening Statements',
+    'Euphemisms and Taboo Language',
+    'Advanced Idioms',
+    'Collocations for Academic English',
+    'Abstract Nouns and Concepts',
+    'Talking About Data and Research'
+  ];
+
+  const modules = Array.from({ length: 13 }, (_, i) => ({
+    id: i + 201,
+    title: C1_TITLES[i] || `Module ${i + 201}`,
+    description: `Master C1-level grammar and academic discourse`,
+    completed: false,
+    locked: false
+  }));
+
+  console.log('✅ generateC1Modules() called - Generated', modules.length, 'modules');
+  console.log('Module IDs generated:', modules.map(m => m.id));
+
+  return modules;
+}
+
 // Modules data for each level - TEMPORARILY UNLOCKED FOR DEVELOPMENT
 export const MODULES_BY_LEVEL: Record<LevelType, Module[]> = {
   A1: generateA1Modules(),
   A2: generateA2Modules(),
   B1: generateB1Modules(),
   B2: generateB2Modules(),
-  C1: [],
+  C1: generateC1Modules(),
   C2: []
 };

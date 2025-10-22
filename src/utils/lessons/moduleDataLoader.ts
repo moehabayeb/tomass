@@ -59,6 +59,23 @@ import {
   MODULE_200_DATA,
 } from '@/components/B2ModulesData';
 
+// Import C1 modules (201-213)
+import {
+  MODULE_201_DATA,
+  MODULE_202_DATA,
+  MODULE_203_DATA,
+  MODULE_204_DATA,
+  MODULE_205_DATA,
+  MODULE_206_DATA,
+  MODULE_207_DATA,
+  MODULE_208_DATA,
+  MODULE_209_DATA,
+  MODULE_210_DATA,
+  MODULE_211_DATA,
+  MODULE_212_DATA,
+  MODULE_213_DATA,
+} from '@/components/C1ModulesData';
+
 // Module data type definition
 export type ModuleData = {
   title: string;
@@ -82,7 +99,7 @@ export type ModuleData = {
 
 /**
  * Efficient module data lookup table using Map for O(1) access
- * B2 Modules (151-200) are pre-loaded since they're externalized
+ * B2 Modules (151-200) and C1 Modules (201-213) are pre-loaded since they're externalized
  */
 const moduleDataMap = new Map<number, ModuleData>();
 
@@ -140,14 +157,36 @@ const B2_MODULES = {
   200: MODULE_200_DATA,
 };
 
+// Pre-populate C1 modules (201-213)
+const C1_MODULES = {
+  201: MODULE_201_DATA,
+  202: MODULE_202_DATA,
+  203: MODULE_203_DATA,
+  204: MODULE_204_DATA,
+  205: MODULE_205_DATA,
+  206: MODULE_206_DATA,
+  207: MODULE_207_DATA,
+  208: MODULE_208_DATA,
+  209: MODULE_209_DATA,
+  210: MODULE_210_DATA,
+  211: MODULE_211_DATA,
+  212: MODULE_212_DATA,
+  213: MODULE_213_DATA,
+};
+
 // Initialize B2 modules in map
 Object.entries(B2_MODULES).forEach(([id, data]) => {
   moduleDataMap.set(Number(id), data as ModuleData);
 });
 
+// Initialize C1 modules in map
+Object.entries(C1_MODULES).forEach(([id, data]) => {
+  moduleDataMap.set(Number(id), data as ModuleData);
+});
+
 /**
  * Get module data by ID
- * @param moduleId - Module number (1-200)
+ * @param moduleId - Module number (1-213)
  * @returns Module data object
  */
 export function getModuleData(moduleId: number): ModuleData {

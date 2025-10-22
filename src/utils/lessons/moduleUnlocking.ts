@@ -8,7 +8,8 @@ const LEVEL_RANGES = {
   'A1': { start: 1, end: 50 },
   'A2': { start: 51, end: 100 },
   'B1': { start: 101, end: 150 },
-  'B2': { start: 151, end: 200 }
+  'B2': { start: 151, end: 200 },
+  'C1': { start: 201, end: 213 }
 };
 
 // Get level for a given module ID
@@ -17,12 +18,13 @@ function getLevelForModule(moduleId: number): string {
   if (moduleId >= 51 && moduleId <= 100) return 'A2';
   if (moduleId >= 101 && moduleId <= 150) return 'B1';
   if (moduleId >= 151 && moduleId <= 200) return 'B2';
+  if (moduleId >= 201 && moduleId <= 213) return 'C1';
   return 'A1'; // Default fallback
 }
 
 // Get previous module ID considering level boundaries
 function getPreviousModuleId(moduleId: number): number | null {
-  if (moduleId === 1 || moduleId === 51 || moduleId === 101 || moduleId === 151) {
+  if (moduleId === 1 || moduleId === 51 || moduleId === 101 || moduleId === 151 || moduleId === 201) {
     return null; // These are first modules of their levels
   }
   return moduleId - 1;
@@ -42,7 +44,7 @@ export function getCompletedModules(): string[] {
 // Enhanced module unlocking with accuracy requirements
 export function isModuleUnlocked(moduleId: number, completedModules?: string[]): boolean {
   // Always allow access to first modules of each level
-  if (moduleId === 1 || moduleId === 51 || moduleId === 101 || moduleId === 151) {
+  if (moduleId === 1 || moduleId === 51 || moduleId === 101 || moduleId === 151 || moduleId === 201) {
     return true;
   }
 
@@ -153,7 +155,7 @@ export function getModuleUnlockStatus(moduleId: number): ModuleUnlockStatus {
 }
 
 export function getAllModuleStatuses(levelId?: string): ModuleUnlockStatus[] {
-  const levels = levelId ? [levelId] : ['A1', 'A2', 'B1', 'B2'];
+  const levels = levelId ? [levelId] : ['A1', 'A2', 'B1', 'B2', 'C1'];
   const statuses: ModuleUnlockStatus[] = [];
 
   levels.forEach(level => {
@@ -226,6 +228,8 @@ export function getNextRecommendedModule(currentLevel?: string): { moduleId: num
     return { moduleId: 101, reason: 'Start B1 level' };
   } else if (targetLevel === 'B1') {
     return { moduleId: 151, reason: 'Start B2 level' };
+  } else if (targetLevel === 'B2') {
+    return { moduleId: 201, reason: 'Start C1 level' };
   }
 
   return null; // All modules completed
