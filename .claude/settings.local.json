@@ -85,7 +85,11 @@
       "Bash(timeout 120 npm run build)",
       "Bash(rm:*)",
       "Bash(npm uninstall:*)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(timeout 15 npm run dev)",
+      "Bash(tasklist)",
+      "Bash(do grep -q \"^const MODULE_$i_DATA = {\" \"C:\\Users\\Mohammad\\Downloads\\tomass-main\\src\\components\\B2ModulesData.ts\")",
+      "Bash(echo:*)"
     ],
     "deny": [],
     "ask": []

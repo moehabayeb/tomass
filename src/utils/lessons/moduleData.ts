@@ -329,7 +329,7 @@ function generateB1Modules(): Module[] {
 }
 
 function generateB2Modules(): Module[] {
-  const modules = Array.from({ length: 39 }, (_, i) => ({
+  const modules = Array.from({ length: 50 }, (_, i) => ({
     id: i + 151, // Starting from 151 for B2 level
     title: i === 0 ? 'Future Perfect Continuous (will have been doing)' :
            i === 1 ? 'Passive Voice – Past Perfect and Future Perfect' :
@@ -370,6 +370,17 @@ function generateB2Modules(): Module[] {
            i === 36 ? 'Making Complaints Politely' :
            i === 37 ? 'Clarifying and Confirming Information' :
            i === 38 ? 'Managing Conversations – Interruptions and Turn-taking' :
+           i === 39 ? 'Advanced Writing Skills – Reports and Proposals' :
+           i === 40 ? 'Advanced Grammar Review – Mixed Structures' :
+           i === 41 ? 'Collocations with Advanced Verbs (take, put, set)' :
+           i === 42 ? 'Idiomatic Expressions for Emotions' :
+           i === 43 ? 'Expressing Nuance and Subtle Differences' :
+           i === 44 ? 'Understanding Humor and Sarcasm' :
+           i === 45 ? 'Summarizing and Paraphrasing Skills' :
+           i === 46 ? 'Reading Between the Lines – Inferences' :
+           i === 47 ? 'Cultural Awareness in Language' :
+           i === 48 ? 'Formal Presentations – Language and Style' :
+           i === 49 ? 'Advanced Listening and Note-Taking Skills' :
            `B2 Module ${i + 151}`,
     description: i === 0 ? 'Master the Future Perfect Continuous tense' :
                  i === 1 ? 'Learn passive voice in advanced tenses' :
@@ -410,6 +421,17 @@ function generateB2Modules(): Module[] {
                  i === 36 ? 'Learn to express dissatisfaction and solve problems politely and professionally' :
                  i === 37 ? 'Develop strategies for checking understanding and confirming details in conversations' :
                  i === 38 ? 'Master the art of interrupting politely, taking turns, and keeping discussions balanced' :
+                 i === 39 ? 'Develop advanced writing skills for formal reports and proposals with clear structure and persuasive language' :
+                 i === 40 ? 'Review and master advanced grammar structures including conditionals, passives, modals, and relative clauses' :
+                 i === 41 ? 'Master natural collocations with take, put, and set to sound more fluent and native-like' :
+                 i === 42 ? 'Learn idiomatic expressions to describe emotions vividly and naturally in conversation' :
+                 i === 43 ? 'Express shades of meaning and subtle differences precisely using advanced modifiers' :
+                 i === 44 ? 'Recognize and use humor and sarcasm appropriately with cultural awareness' :
+                 i === 45 ? 'Master summarizing and paraphrasing to improve academic writing and comprehension' :
+                 i === 46 ? 'Learn to make logical inferences and understand implied meanings in English texts' :
+                 i === 47 ? 'Understand how culture influences communication and use language appropriately across contexts' :
+                 i === 48 ? 'Deliver formal presentations confidently using appropriate language, structure, and professional tone' :
+                 i === 49 ? 'Develop advanced listening comprehension and effective note-taking techniques for academic and professional contexts' :
                  'Coming soon',
     completed: false,
     locked: false,

@@ -30,14 +30,14 @@ import '../utils/placementQA';
 // Progress checkpointing imports
 import { useLessonCheckpoints } from '../hooks/useLessonCheckpoints';
 import { ResumeProgressDialog, SyncStatusIndicator } from './ResumeProgressDialog';
-// B2 Modules Data (151-180)
-import { MODULE_151_DATA, MODULE_152_DATA, MODULE_153_DATA, MODULE_154_DATA, MODULE_155_DATA, MODULE_156_DATA, MODULE_157_DATA, MODULE_158_DATA, MODULE_159_DATA, MODULE_160_DATA, MODULE_161_DATA, MODULE_162_DATA, MODULE_163_DATA, MODULE_164_DATA, MODULE_165_DATA, MODULE_166_DATA, MODULE_167_DATA, MODULE_168_DATA, MODULE_169_DATA, MODULE_170_DATA, MODULE_171_DATA, MODULE_172_DATA, MODULE_173_DATA, MODULE_174_DATA, MODULE_175_DATA, MODULE_176_DATA, MODULE_177_DATA, MODULE_178_DATA, MODULE_179_DATA, MODULE_180_DATA, MODULE_181_DATA, MODULE_182_DATA, MODULE_183_DATA, MODULE_184_DATA, MODULE_185_DATA, MODULE_186_DATA, MODULE_187_DATA, MODULE_188_DATA, MODULE_189_DATA } from './B2ModulesData';
+// B2 Modules Data (151-200)
+import { MODULE_151_DATA, MODULE_152_DATA, MODULE_153_DATA, MODULE_154_DATA, MODULE_155_DATA, MODULE_156_DATA, MODULE_157_DATA, MODULE_158_DATA, MODULE_159_DATA, MODULE_160_DATA, MODULE_161_DATA, MODULE_162_DATA, MODULE_163_DATA, MODULE_164_DATA, MODULE_165_DATA, MODULE_166_DATA, MODULE_167_DATA, MODULE_168_DATA, MODULE_169_DATA, MODULE_170_DATA, MODULE_171_DATA, MODULE_172_DATA, MODULE_173_DATA, MODULE_174_DATA, MODULE_175_DATA, MODULE_176_DATA, MODULE_177_DATA, MODULE_178_DATA, MODULE_179_DATA, MODULE_180_DATA, MODULE_181_DATA, MODULE_182_DATA, MODULE_183_DATA, MODULE_184_DATA, MODULE_185_DATA, MODULE_186_DATA, MODULE_187_DATA, MODULE_188_DATA, MODULE_189_DATA, MODULE_190_DATA, MODULE_191_DATA, MODULE_192_DATA, MODULE_193_DATA, MODULE_194_DATA, MODULE_195_DATA, MODULE_196_DATA, MODULE_197_DATA, MODULE_198_DATA, MODULE_199_DATA, MODULE_200_DATA } from './B2ModulesData';
 
 // ---------- Module Order and Next Module Logic ----------
 const ORDER_A1 = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50];
 const ORDER_A2 = [51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100];
 const ORDER_B1 = [101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150];
-const ORDER_B2 = [151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189];
+const ORDER_B2 = [151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196,197,198,199,200];
 
 function getOrderForLevel(level: 'A1'|'A2'|'B1'|'B2'): number[] {
   if (level === 'A1') return ORDER_A1;
@@ -188,7 +188,7 @@ const LEVELS = [
   { id: 'A1', name: 'A1 - Beginner', description: 'Start your English journey', moduleCount: 50, color: 'bg-blue-500' },
   { id: 'A2', name: 'A2 - Elementary', description: 'Build basic skills', moduleCount: 50, color: 'bg-green-500' },
   { id: 'B1', name: 'B1 - Intermediate', description: 'Expand your knowledge', moduleCount: 50, color: 'bg-orange-500' },
-  { id: 'B2', name: 'B2 - Upper Intermediate', description: 'Advanced concepts', moduleCount: 39, color: 'bg-purple-500' },
+  { id: 'B2', name: 'B2 - Upper Intermediate', description: 'Advanced concepts', moduleCount: 50, color: 'bg-purple-500' },
   { id: 'C1', name: 'C1 - Advanced', description: 'Master complex concepts', moduleCount: 50, color: 'bg-red-500' },
   { id: 'C2', name: 'C2 - Proficiency', description: 'Near-native fluency', moduleCount: 50, color: 'bg-indigo-500' },
 ];
@@ -536,7 +536,7 @@ const MODULES_BY_LEVEL = {
     completed: false,
     locked: false, // TEMPORARILY UNLOCKED FOR DEVELOPMENT
   })),
-  B2: Array.from({ length: 39 }, (_, i) => ({
+  B2: Array.from({ length: 50 }, (_, i) => ({
     id: i + 151,
     title: i === 0 ? 'Future Perfect Continuous (will have been doing)' :
            i === 1 ? 'Passive Voice – Past Perfect and Future Perfect' :
@@ -577,6 +577,17 @@ const MODULES_BY_LEVEL = {
            i === 36 ? 'Making Complaints Politely' :
            i === 37 ? 'Clarifying and Confirming Information' :
            i === 38 ? 'Managing Conversations – Interruptions and Turn-taking' :
+           i === 39 ? 'Advanced Writing Skills – Reports and Proposals' :
+           i === 40 ? 'Advanced Grammar Review – Mixed Structures' :
+           i === 41 ? 'Collocations with Advanced Verbs (take, put, set)' :
+           i === 42 ? 'Idiomatic Expressions for Emotions' :
+           i === 43 ? 'Expressing Nuance and Subtle Differences' :
+           i === 44 ? 'Understanding Humor and Sarcasm' :
+           i === 45 ? 'Summarizing and Paraphrasing Skills' :
+           i === 46 ? 'Reading Between the Lines – Inferences' :
+           i === 47 ? 'Cultural Awareness in Language' :
+           i === 48 ? 'Formal Presentations – Language and Style' :
+           i === 49 ? 'Advanced Listening and Note-Taking Skills' :
            'B2 Module',
     description: i === 0 ? 'Understand and form sentences using the Future Perfect Continuous tense' :
                  i === 1 ? 'Recognize and form passive structures in the Past Perfect and Future Perfect tenses' :
@@ -617,6 +628,17 @@ const MODULES_BY_LEVEL = {
                  i === 36 ? 'Learn to express dissatisfaction and solve problems politely and professionally' :
                  i === 37 ? 'Develop strategies for checking understanding and confirming details in conversations' :
                  i === 38 ? 'Master the art of interrupting politely, taking turns, and keeping discussions balanced' :
+                 i === 39 ? 'Develop advanced writing skills for formal reports and proposals with clear structure and persuasive language' :
+                 i === 40 ? 'Review and master advanced grammar structures including conditionals, passives, modals, and relative clauses' :
+                 i === 41 ? 'Master natural collocations with take, put, and set to sound more fluent and native-like' :
+                 i === 42 ? 'Learn idiomatic expressions to describe emotions vividly and naturally in conversation' :
+                 i === 43 ? 'Express shades of meaning and subtle differences precisely using advanced modifiers' :
+                 i === 44 ? 'Recognize and use humor and sarcasm appropriately with cultural awareness' :
+                 i === 45 ? 'Master summarizing and paraphrasing to improve academic writing and comprehension' :
+                 i === 46 ? 'Learn to make logical inferences and understand implied meanings in English texts' :
+                 i === 47 ? 'Understand how culture influences communication and use language appropriately across contexts' :
+                 i === 48 ? 'Deliver formal presentations confidently using appropriate language, structure, and professional tone' :
+                 i === 49 ? 'Develop advanced listening comprehension and effective note-taking techniques for academic and professional contexts' :
                  'Advanced B2 grammar module',
     completed: false,
     locked: false,
@@ -11054,6 +11076,17 @@ const MODULE_150_DATA = {
     if (selectedModule === 187) return MODULE_187_DATA;
     if (selectedModule === 188) return MODULE_188_DATA;
     if (selectedModule === 189) return MODULE_189_DATA;
+    if (selectedModule === 190) return MODULE_190_DATA;
+    if (selectedModule === 191) return MODULE_191_DATA;
+    if (selectedModule === 192) return MODULE_192_DATA;
+    if (selectedModule === 193) return MODULE_193_DATA;
+    if (selectedModule === 194) return MODULE_194_DATA;
+    if (selectedModule === 195) return MODULE_195_DATA;
+    if (selectedModule === 196) return MODULE_196_DATA;
+    if (selectedModule === 197) return MODULE_197_DATA;
+    if (selectedModule === 198) return MODULE_198_DATA;
+    if (selectedModule === 199) return MODULE_199_DATA;
+    if (selectedModule === 200) return MODULE_200_DATA;
 
     // Fallback to Module 1 for unknown modules
     return MODULE_1_DATA;
@@ -12857,7 +12890,7 @@ const MODULE_150_DATA = {
                   key={module.id} 
                   className={`bg-white/10 border-white/20 cursor-pointer transition-all hover:bg-white/15 ${!isUnlocked ? 'opacity-50' : ''}`}
                   onClick={() => {
-                    if (isUnlocked && ((module.id >= 1 && module.id <= 50) || (module.id >= 51 && module.id <= 100) || (module.id >= 101 && module.id <= 150) || (module.id >= 151 && module.id <= 168))) { // All A1, A2, B1, B2 modules are implemented
+                    if (isUnlocked && ((module.id >= 1 && module.id <= 50) || (module.id >= 51 && module.id <= 100) || (module.id >= 101 && module.id <= 150) || (module.id >= 151 && module.id <= 200))) { // All A1, A2, B1, B2 modules are implemented
                       narration.cancel();
                       setSelectedModule(module.id);
                       setViewState('lesson');

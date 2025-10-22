@@ -2418,6 +2418,569 @@ const MODULE_189_DATA = {
   ]
 };
 
+// Module 190 Data: Advanced Writing Skills – Reports and Proposals
+const MODULE_190_DATA = {
+  title: "Advanced Writing Skills – Reports and Proposals",
+  description: "Develop advanced writing skills for formal reports and proposals with clear structure and persuasive language",
+  intro: `📘 Lesson Objectives
+✅ Learn to write formal reports and proposals effectively
+✅ Master structure, tone, and coherence in professional writing
+✅ Use persuasive language and formal expressions naturally`,
+  speakingPractice: [
+    { question: "What is the purpose of a report?", answer: "A report presents factual information clearly and objectively, usually for analysis or decision-making." },
+    { question: "What is the purpose of a proposal?", answer: "A proposal aims to persuade the reader to accept or approve a plan or action." },
+    { question: "How is a report different from a proposal?", answer: "A report informs and analyzes; a proposal suggests and persuades." },
+    { question: "What should the introduction of a report include?", answer: "It should state the purpose, scope, and background of the report." },
+    { question: "What is included in the findings section?", answer: "Findings include factual information, data, and results from research or observation." },
+    { question: "How should analysis be written?", answer: "It should interpret the findings logically and link them to conclusions." },
+    { question: "What phrases can you use to introduce a report?", answer: "You can say, 'The aim of this report is to...' or 'This report examines...'" },
+    { question: "How can you present data in a report?", answer: "Use formal phrases like, 'The data indicates that...' or 'A survey revealed that...'" },
+    { question: "What should be in a report's conclusion?", answer: "It should summarize key points and offer clear recommendations." },
+    { question: "Why are recommendations important?", answer: "They provide actionable steps based on the findings of the report." },
+    { question: "What is the tone of a report?", answer: "The tone is formal, objective, and impersonal." },
+    { question: "What is the tone of a proposal?", answer: "A proposal uses a formal but persuasive tone to encourage action." },
+    { question: "How can you start a proposal?", answer: "Say, 'This proposal aims to address...' or 'The purpose of this proposal is to...'" },
+    { question: "Why is background information useful in proposals?", answer: "It helps the reader understand the context and importance of your suggestion." },
+    { question: "What should the 'Proposed Solution' section include?", answer: "It should describe your plan in detail and explain how it solves the problem." },
+    { question: "What is the role of evidence in reports?", answer: "Evidence supports findings and increases the credibility of your conclusions." },
+    { question: "What is the role of evidence in proposals?", answer: "It strengthens your argument and makes the proposal more convincing." },
+    { question: "What kind of language should you avoid?", answer: "Avoid informal words, emotional expressions, and personal opinions." },
+    { question: "What's a good phrase to show results?", answer: "You can say, 'As a result, we found that...' or 'This led to the following outcomes...'" },
+    { question: "How can you recommend politely?", answer: "Use phrases like, 'It is recommended that...' or 'It would be advisable to...'" },
+    { question: "What should the conclusion of a proposal contain?", answer: "It should restate your main idea and encourage approval or action." },
+    { question: "How can visuals help reports?", answer: "Charts, tables, and graphs make data easier to understand and interpret." },
+    { question: "What makes a proposal persuasive?", answer: "Clear logic, evidence, and emphasis on benefits make it persuasive." },
+    { question: "What is a formal way to introduce findings?", answer: "Say, 'The results of the study indicate that...'" },
+    { question: "How can you link sections smoothly?", answer: "Use connectors like 'Furthermore,' 'In addition,' and 'As a result.'" },
+    { question: "What's a formal way to introduce a suggestion?", answer: "You can write, 'It is proposed that...' or 'This report suggests that...'" },
+    { question: "How can you ensure clarity in writing?", answer: "Use short, precise sentences and organize information under clear headings." },
+    { question: "Why is structure important in reports and proposals?", answer: "It makes your writing easy to follow and professional." },
+    { question: "How can you show cause and effect formally?", answer: "Use phrases like, 'This was due to...' or 'This resulted in...'" },
+    { question: "What should be avoided in formal writing?", answer: "Avoid contractions like 'don't' or 'can't,' and personal pronouns like 'I' or 'we.'" },
+    { question: "What is the difference between findings and analysis?", answer: "Findings are facts; analysis interprets those facts." },
+    { question: "Why is proofreading important?", answer: "It ensures your writing is free of errors and sounds professional." },
+    { question: "What's a polite way to request approval in a proposal?", answer: "Say, 'We would appreciate your consideration of this proposal.'" },
+    { question: "What is the benefit of a clear recommendation?", answer: "It guides the reader toward specific, achievable actions." },
+    { question: "What can make a report stand out?", answer: "Good organization, clear visuals, and precise academic language." },
+    { question: "How can you show comparison in writing?", answer: "Use expressions like 'In contrast,' or 'Compared to previous data...'" },
+    { question: "What makes a conclusion strong?", answer: "Restating the purpose and summarizing the main insights clearly." },
+    { question: "How can tone affect a proposal's success?", answer: "A polite and confident tone makes your proposal more appealing and credible." },
+    { question: "What's your best advice for writing reports and proposals?", answer: "Plan before writing, use formal structures, and support all claims with evidence." },
+    { question: "How would you summarize report and proposal writing?", answer: "Both require formal structure, clarity, and logic — reports inform, proposals persuade." }
+  ]
+};
+
+// Module 191 Data: Advanced Grammar Review – Mixed Structures
+const MODULE_191_DATA = {
+  title: "Advanced Grammar Review – Mixed Structures",
+  description: "Master advanced grammar combinations including conditionals, passives, modals, reported speech, and relative clauses",
+  intro: `📘 Lesson Objectives
+✅ Review and combine advanced grammar structures naturally
+✅ Use conditionals, passives, modals, and reported speech fluently
+✅ Build complex, natural-sounding sentences with confidence`,
+  speakingPractice: [
+    { question: "What are mixed conditionals used for?", answer: "They combine different time references, such as past conditions with present results or vice versa." },
+    { question: "Can you give an example of a mixed conditional?", answer: "Yes, for example: 'If I had gone to bed earlier, I wouldn't be so tired now.'" },
+    { question: "What does 'If I had studied harder, I would have a better job now' mean?", answer: "It means you didn't study hard in the past, and that affects your present situation." },
+    { question: "How can you make a conditional sound more polite?", answer: "Use modal verbs like 'might' or 'could,' e.g. 'If you could help me, I'd appreciate it.'" },
+    { question: "What is the passive voice used for?", answer: "It's used to focus on the action or result rather than who did it." },
+    { question: "Give an example of the passive in a complex sentence.", answer: "'The project was completed by a team that had worked for months.'" },
+    { question: "What is reported speech?", answer: "It's when we tell someone what another person said without quoting their exact words." },
+    { question: "How do you change tenses in reported speech?", answer: "Usually, one tense back — for example, present becomes past, past becomes past perfect." },
+    { question: "What is a modal verb?", answer: "A modal verb shows possibility, necessity, permission, or obligation — such as can, must, should, may." },
+    { question: "Give an example of a modal in the past.", answer: "'He must have left early because his coat is gone.'" },
+    { question: "What is the difference between 'should have' and 'could have'?", answer: "'Should have' shows advice or regret, while 'could have' shows possibility or ability that didn't happen." },
+    { question: "What is a relative clause?", answer: "A clause that gives more information about a noun, often using 'who,' 'which,' or 'that.'" },
+    { question: "Give an example of a defining relative clause.", answer: "'The student who arrived late missed the quiz.'" },
+    { question: "Give an example of a non-defining relative clause.", answer: "'My brother, who lives in Canada, is visiting next month.'" },
+    { question: "Why are commas important in relative clauses?", answer: "They separate extra, non-essential information from the main sentence." },
+    { question: "Combine a modal and a conditional in one sentence.", answer: "'If I had known earlier, I might have joined the trip.'" },
+    { question: "Combine a passive and a conditional in one sentence.", answer: "'If the letter had been sent on time, we would have received a reply.'" },
+    { question: "What is the function of 'provided that' in conditionals?", answer: "It introduces a condition — meaning 'if and only if.'" },
+    { question: "How do you use 'suppose' or 'what if' for conditionals?", answer: "'Suppose it rains tomorrow — what will we do?'" },
+    { question: "What's the difference between 'had better' and 'should'?", answer: "'Had better' is stronger and implies a warning or consequence." },
+    { question: "What's an example of reported speech with a modal?", answer: "'He said he might come later.'" },
+    { question: "What's an example of reported speech with a question?", answer: "'She asked where I was going.'" },
+    { question: "What's an example of a relative clause with a modal verb?", answer: "'The person who might help us hasn't arrived yet.'" },
+    { question: "What's an example of a passive with a relative clause?", answer: "'The car that was stolen last week was found yesterday.'" },
+    { question: "What's an example of using both conditionals and reported speech?", answer: "'He said that if he had more time, he would travel abroad.'" },
+    { question: "Why are advanced grammar combinations useful?", answer: "They allow for more nuanced, natural, and precise communication." },
+    { question: "How can you sound formal with modals?", answer: "Use structures like 'may have been,' 'might have been,' or 'could have been.'" },
+    { question: "What's the difference between 'was written' and 'has been written'?", answer: "'Was written' refers to a finished past action; 'has been written' connects past and present." },
+    { question: "How can you report an order or request?", answer: "Use 'told' or 'asked' — e.g., 'She told me to wait.'" },
+    { question: "What's an example of double conditionals in one sentence?", answer: "'If I were you, I would have accepted that offer.'" },
+    { question: "What's an example of a relative clause with a perfect tense?", answer: "'The man who has been helping us just left.'" },
+    { question: "How can modals change meaning depending on tense?", answer: "'Must' (present) = obligation; 'must have' (past) = assumption." },
+    { question: "What's an example of combining reported speech and passive?", answer: "'It was said that the decision had been made.'" },
+    { question: "How can you express regret using modals?", answer: "'I should have studied more for the exam.'" },
+    { question: "What's an example of using multiple structures naturally?", answer: "'The manager, who was said to be strict, might have approved the change if it had been explained better.'" },
+    { question: "How do you express possibility in the past?", answer: "Use 'might have,' 'could have,' or 'may have.'" },
+    { question: "What's an example of complex conditional and modal combination?", answer: "'If I hadn't missed the train, I could have arrived on time.'" },
+    { question: "What's an example of relative and conditional mix?", answer: "'Anyone who has studied linguistics will understand this concept.'" },
+    { question: "How would you summarize mixed structures?", answer: "They blend advanced grammar forms to create fluent, precise, and natural-sounding English." }
+  ]
+};
+
+// Module 192 Data: Collocations with Advanced Verbs (take, put, set)
+const MODULE_192_DATA = {
+  title: "Collocations with Advanced Verbs (take, put, set)",
+  description: "Expand vocabulary by mastering natural collocations with take, put, and set",
+  intro: `📘 Lesson Objectives
+✅ Learn common collocations with take, put, and set
+✅ Use verb collocations naturally in speech and writing
+✅ Improve fluency with native-like expressions`,
+  speakingPractice: [
+    { question: "What is a collocation?", answer: "A collocation is a natural combination of words that frequently appear together in English." },
+    { question: "Why are collocations important?", answer: "Because they make your English sound natural and fluent." },
+    { question: "Give an example of a collocation with 'take'.", answer: "'Take responsibility' is a common collocation, meaning to accept duty or blame for something." },
+    { question: "What does 'take advantage of' mean?", answer: "It means to use an opportunity or situation to your benefit." },
+    { question: "What does 'take part in' mean?", answer: "It means to join or participate in an activity or event." },
+    { question: "What does 'take into account' mean?", answer: "It means to consider something before making a decision." },
+    { question: "Give an example of a sentence with 'take control'.", answer: "'She took control of the meeting when things got chaotic.'" },
+    { question: "What does 'take notes' mean?", answer: "It means to write down important information to remember later." },
+    { question: "Give an example of a 'put' collocation.", answer: "'Put pressure on' means to try to make someone do something." },
+    { question: "What does 'put an end to' mean?", answer: "It means to stop something completely." },
+    { question: "What does 'put effort into' mean?", answer: "It means to work hard on something." },
+    { question: "Give an example of 'put forward'.", answer: "'She put forward an idea for improving sales.'" },
+    { question: "What does 'put off' mean?", answer: "It means to postpone or delay something." },
+    { question: "What does 'put up with' mean?", answer: "It means to tolerate or accept something unpleasant." },
+    { question: "What does 'put emphasis on' mean?", answer: "It means to give special importance to something." },
+    { question: "Give an example of a 'set' collocation.", answer: "'Set a goal' means to decide what you want to achieve." },
+    { question: "What does 'set a deadline' mean?", answer: "It means to decide when something must be finished." },
+    { question: "What does 'set an example' mean?", answer: "It means to behave in a way that others should copy." },
+    { question: "What does 'set fire to' mean?", answer: "It means to cause something to start burning." },
+    { question: "What does 'set up' mean?", answer: "It means to start or establish something, like a business or meeting." },
+    { question: "What does 'set out to do' mean?", answer: "It means to begin working towards a specific goal." },
+    { question: "What does 'set aside' mean?", answer: "It means to save time or money for a particular purpose." },
+    { question: "Which verb collocates with 'pressure'?", answer: "'Put' collocates with 'pressure' — as in 'put pressure on.'" },
+    { question: "Which verb collocates with 'goal'?", answer: "'Set' collocates with 'goal' — as in 'set a goal.'" },
+    { question: "Which verb collocates with 'responsibility'?", answer: "'Take' collocates with 'responsibility' — as in 'take responsibility.'" },
+    { question: "Which verb collocates with 'effort'?", answer: "'Put' collocates with 'effort' — as in 'put effort into.'" },
+    { question: "Which verb collocates with 'example'?", answer: "'Set' collocates with 'example' — as in 'set an example.'" },
+    { question: "Give a sentence using 'put off'.", answer: "'We decided to put off our trip until next month.'" },
+    { question: "Give a sentence using 'take advantage of'.", answer: "'She took advantage of the sale and bought new clothes.'" },
+    { question: "Give a sentence using 'set up'.", answer: "'They set up a new online store last year.'" },
+    { question: "What's the difference between 'set up' and 'set out'?", answer: "'Set up' means to start something; 'set out' means to begin a journey or goal." },
+    { question: "What's a synonym for 'put off'?", answer: "'Postpone' or 'delay.'" },
+    { question: "What's an antonym for 'put an end to'?", answer: "'Continue' or 'prolong.'" },
+    { question: "What's another way to say 'take part in'?", answer: "'Participate in.'" },
+    { question: "What's another way to say 'take into account'?", answer: "'Consider' or 'think about.'" },
+    { question: "How can collocations help in IELTS or TOEFL?", answer: "They improve lexical resource and make your writing sound natural." },
+    { question: "What is a business collocation with 'set'?", answer: "'Set a deadline' or 'set up a company.'" },
+    { question: "What is a work-related collocation with 'put'?", answer: "'Put pressure on the team' or 'put forward a proposal.'" },
+    { question: "What is an academic collocation with 'take'?", answer: "'Take notes during lectures.'" },
+    { question: "How would you summarize these collocations?", answer: "'Take', 'put', and 'set' form hundreds of natural English expressions that make speech fluent and precise." }
+  ]
+};
+
+// Module 193 Data: Idiomatic Expressions for Emotions
+const MODULE_193_DATA = {
+  title: "Idiomatic Expressions for Emotions",
+  description: "Learn colorful idiomatic expressions to describe emotions vividly and naturally",
+  intro: `📘 Lesson Objectives
+✅ Master idiomatic expressions for different emotions
+✅ Express feelings naturally like a native speaker
+✅ Use emotional idioms in conversation and writing`,
+  speakingPractice: [
+    { question: "What does 'over the moon' mean?", answer: "It means extremely happy or delighted." },
+    { question: "What does 'on cloud nine' mean?", answer: "It means feeling very happy, as if you're floating on clouds." },
+    { question: "What does 'in high spirits' mean?", answer: "It means cheerful and full of energy." },
+    { question: "What does 'thrilled to bits' mean?", answer: "It means extremely pleased or excited." },
+    { question: "What does 'walking on air' mean?", answer: "It means feeling wonderful, joyful, or proud." },
+    { question: "What does 'down in the dumps' mean?", answer: "It means feeling sad or depressed." },
+    { question: "What does 'feeling blue' mean?", answer: "It means feeling sad or low." },
+    { question: "What does 'have a heavy heart' mean?", answer: "It means feeling deep sadness or regret." },
+    { question: "What does 'crying over spilt milk' mean?", answer: "It means being upset over something that can't be changed." },
+    { question: "What does 'heartbroken' mean?", answer: "It means deeply sad, usually after a loss or breakup." },
+    { question: "What does 'see red' mean?", answer: "It means to become very angry." },
+    { question: "What does 'hit the roof' mean?", answer: "It means to lose control and become extremely angry." },
+    { question: "What does 'lose your temper' mean?", answer: "It means to suddenly get angry." },
+    { question: "What does 'hot under the collar' mean?", answer: "It means feeling embarrassed or angry." },
+    { question: "What does 'drive someone up the wall' mean?", answer: "It means to annoy or irritate someone a lot." },
+    { question: "What does 'butterflies in my stomach' mean?", answer: "It means to feel nervous, usually before an event." },
+    { question: "What does 'shaking like a leaf' mean?", answer: "It means trembling with fear or nervousness." },
+    { question: "What does 'scared stiff' mean?", answer: "It means extremely frightened." },
+    { question: "What does 'break into a cold sweat' mean?", answer: "It means to start sweating due to fear or anxiety." },
+    { question: "What does 'jump out of your skin' mean?", answer: "It means to be very shocked or scared suddenly." },
+    { question: "What does 'taken aback' mean?", answer: "It means to be surprised or startled by something unexpected." },
+    { question: "What does 'blow your mind' mean?", answer: "It means to amaze or impress someone greatly." },
+    { question: "What does 'catch someone off guard' mean?", answer: "It means to surprise someone who is not prepared." },
+    { question: "What does 'at a loss for words' mean?", answer: "It means unable to speak because of shock or emotion." },
+    { question: "What does 'can't believe your eyes' mean?", answer: "It means to be amazed or shocked by what you see." },
+    { question: "How can idioms help describe emotions?", answer: "They make emotional expressions more vivid, natural, and memorable." },
+    { question: "Which idiom means 'extremely angry'?", answer: "'See red' or 'hit the roof.'" },
+    { question: "Which idiom means 'very nervous'?", answer: "'Butterflies in my stomach.'" },
+    { question: "Which idiom means 'very happy'?", answer: "'Over the moon' or 'on cloud nine.'" },
+    { question: "Which idiom means 'very sad'?", answer: "'Down in the dumps' or 'feeling blue.'" },
+    { question: "Which idiom means 'very surprised'?", answer: "'Taken aback' or 'blow your mind.'" },
+    { question: "Give an idiom for anger.", answer: "'He saw red when he realized he was cheated.'" },
+    { question: "Give an idiom for happiness.", answer: "'She was walking on air after hearing the news.'" },
+    { question: "Give an idiom for fear.", answer: "'He was shaking like a leaf before the test.'" },
+    { question: "Give an idiom for sadness.", answer: "'I've been feeling blue lately.'" },
+    { question: "Give an idiom for surprise.", answer: "'The news completely took me aback.'" },
+    { question: "What's a neutral idiom for nervousness?", answer: "'I've got butterflies in my stomach.'" },
+    { question: "How can idioms improve fluency?", answer: "They help you sound more natural and express emotions effectively." },
+    { question: "What's your best advice for using emotional idioms?", answer: "Learn them in context and practice using them in natural conversations." }
+  ]
+};
+
+// Module 194 Data: Expressing Nuance and Subtle Differences
+const MODULE_194_DATA = {
+  title: "Expressing Nuance and Subtle Differences",
+  description: "Learn to express shades of meaning and subtle distinctions using advanced modifiers",
+  intro: `📘 Lesson Objectives
+✅ Show subtle differences in meaning precisely
+✅ Use advanced modifiers like rather, somewhat, barely
+✅ Sound natural and sophisticated in expression`,
+  speakingPractice: [
+    { question: "What does 'nuance' mean?", answer: "A nuance is a very small difference in meaning, expression, or tone." },
+    { question: "Why is expressing nuance important?", answer: "It helps you sound natural and precise, especially at an advanced level." },
+    { question: "What does 'slightly' mean?", answer: "It means a little bit — for example, 'It's slightly cold today.'" },
+    { question: "What does 'somewhat' mean?", answer: "It means to a small or moderate degree — 'The plan was somewhat successful.'" },
+    { question: "What does 'rather' mean?", answer: "It means fairly or to some extent, often with surprise — 'It's rather strange.'" },
+    { question: "What does 'quite' mean?", answer: "It can mean 'fairly' or 'completely,' depending on the context — 'It's quite nice here.'" },
+    { question: "What does 'pretty' mean in informal English?", answer: "It means 'fairly' or 'quite' — 'That's pretty interesting.'" },
+    { question: "What's the difference between 'nearly' and 'almost'?", answer: "They mean the same, but 'nearly' is more common in British English, while 'almost' is universal." },
+    { question: "What does 'barely' mean?", answer: "It means only just — 'He barely made it on time.'" },
+    { question: "What does 'hardly' mean?", answer: "It means 'almost not at all' — 'I could hardly breathe.'" },
+    { question: "What does 'just about' mean?", answer: "It means barely or only just — 'I just about managed to get there.'" },
+    { question: "What does 'practically' mean?", answer: "It means 'almost' or 'virtually' — 'The meeting is practically over.'" },
+    { question: "What does 'to some extent' mean?", answer: "It means partly or not completely — 'I agree with you to some extent.'" },
+    { question: "What does 'more or less' mean?", answer: "It means approximately — 'It's more or less finished.'" },
+    { question: "What does 'in a way' mean?", answer: "It means 'partly true' — 'In a way, that's correct.'" },
+    { question: "What does 'to a degree' mean?", answer: "It means to some extent — 'That's true to a degree.'" },
+    { question: "What does 'kind of' mean?", answer: "It softens what you say — 'I kind of like it.'" },
+    { question: "What does 'sort of' mean?", answer: "It's similar to 'kind of' — 'I sort of agree with you.'" },
+    { question: "What does 'not exactly' mean?", answer: "It means 'not completely true' — 'That's not exactly what I said.'" },
+    { question: "What does 'a fine line between' mean?", answer: "It means a very small difference — 'There's a fine line between brave and foolish.'" },
+    { question: "What does 'shades of meaning' refer to?", answer: "It means small differences in meaning between similar words." },
+    { question: "Give an example using 'slightly'.", answer: "'The two colors are slightly different in tone.'" },
+    { question: "Give an example using 'barely'.", answer: "'He barely slept last night.'" },
+    { question: "Give an example using 'rather'.", answer: "'It's rather difficult to explain.'" },
+    { question: "Give an example using 'somewhat'.", answer: "'The design was somewhat outdated.'" },
+    { question: "Give an example using 'to some extent'.", answer: "'I agree with your opinion to some extent.'" },
+    { question: "Give an example using 'not exactly'.", answer: "'It's not exactly what I expected.'" },
+    { question: "Give an example using 'practically'.", answer: "'The house is practically brand new.'" },
+    { question: "Give an example using 'hardly'.", answer: "'I hardly know him.'" },
+    { question: "What's the difference between 'fairly' and 'quite'?", answer: "'Fairly' means moderately; 'quite' can mean fairly or completely, depending on tone." },
+    { question: "What's the difference between 'barely' and 'hardly'?", answer: "Both mean almost not, but 'barely' focuses on achievement, while 'hardly' on quantity or degree." },
+    { question: "What's the difference between 'a bit' and 'slightly'?", answer: "Both mean small degree, but 'slightly' is more formal." },
+    { question: "What phrase softens disagreement politely?", answer: "'To some extent' or 'in a way.'" },
+    { question: "What does 'almost identical' mean?", answer: "It means very similar but not exactly the same." },
+    { question: "How can nuance help in writing?", answer: "It helps you express detailed and sophisticated ideas clearly." },
+    { question: "How can nuance help in speaking?", answer: "It makes your speech more natural and precise, avoiding exaggeration." },
+    { question: "Which phrase means 'barely true'?", answer: "'More or less' or 'just about.'" },
+    { question: "Which phrase means 'a small difference between two similar things'?", answer: "'A fine line between.'" },
+    { question: "How would you summarize expressing nuance?", answer: "It's the art of showing small but meaningful differences in tone, emotion, or fact." }
+  ]
+};
+
+// Module 195 Data: Understanding Humor and Sarcasm
+const MODULE_195_DATA = {
+  title: "Understanding Humor and Sarcasm",
+  description: "Recognize and use humor and sarcasm appropriately with cultural awareness",
+  intro: `📘 Lesson Objectives
+✅ Understand different types of humor and sarcasm
+✅ Recognize tone, context, and cultural nuances
+✅ Use humor appropriately in English conversation`,
+  speakingPractice: [
+    { question: "What is humor?", answer: "Humor is the quality of being amusing or entertaining through words, actions, or situations." },
+    { question: "What is sarcasm?", answer: "Sarcasm is a form of verbal irony used to mock or express contempt, often in a humorous way." },
+    { question: "How is humor different from sarcasm?", answer: "Humor aims to entertain or connect, while sarcasm often has a sharper, mocking tone." },
+    { question: "What is a pun?", answer: "A pun is a joke that plays on different meanings of a word or similar-sounding words." },
+    { question: "Give an example of a pun.", answer: "'Time flies like an arrow; fruit flies like a banana.'" },
+    { question: "What is irony?", answer: "Irony is saying the opposite of what you mean to highlight contrast or humor." },
+    { question: "Give an example of irony.", answer: "Saying 'Lovely weather!' during a thunderstorm." },
+    { question: "What is dry humor?", answer: "Dry humor is when something funny is said in a serious tone, without showing emotion." },
+    { question: "What is self-deprecating humor?", answer: "It's when you make fun of yourself in a light-hearted, non-serious way." },
+    { question: "Why do people use self-deprecating humor?", answer: "To seem humble, approachable, or relatable." },
+    { question: "What is exaggeration in humor?", answer: "It's when something is made bigger or more extreme than reality to make it funny." },
+    { question: "What is situational humor?", answer: "It's humor that comes from real-life situations or coincidences." },
+    { question: "What is a sarcastic comeback?", answer: "It's a quick, clever, and often ironic reply meant to mock or tease lightly." },
+    { question: "Why can sarcasm be misunderstood?", answer: "Because tone and facial expression are key, and they don't always translate well across cultures." },
+    { question: "What's the danger of using sarcasm?", answer: "It can sound rude or offensive if the listener doesn't realize it's a joke." },
+    { question: "How can you recognize sarcasm?", answer: "By listening to tone, noticing exaggeration, and reading the context." },
+    { question: "What's an example of sarcasm at work?", answer: "'Oh sure, I love working overtime for free!'" },
+    { question: "What's a friendly form of sarcasm?", answer: "Playful teasing between friends, like 'Nice of you to finally show up!'" },
+    { question: "What is irony used for in comedy?", answer: "To create contrast between expectations and reality." },
+    { question: "How can you respond to sarcasm politely?", answer: "Smile or laugh if it's light-hearted, or ask for clarification if unsure." },
+    { question: "Why do British people often use dry humor?", answer: "It's part of British culture to be subtle, witty, and understated in jokes." },
+    { question: "What is American humor often like?", answer: "It tends to be more direct, situational, and expressive." },
+    { question: "What's an example of self-deprecating humor?", answer: "'I'm not clumsy, the floor just hates me.'" },
+    { question: "What's an example of exaggeration?", answer: "'I'm so hungry I could eat a horse.'" },
+    { question: "What's an example of situational humor?", answer: "Laughing about locking yourself out right after saying you never forget your keys." },
+    { question: "How does tone affect sarcasm?", answer: "Tone determines whether sarcasm sounds playful or mean." },
+    { question: "What's an idiom related to sarcasm?", answer: "'Tongue-in-cheek,' meaning something said in a joking or ironic way." },
+    { question: "What's 'tongue-in-cheek' humor?", answer: "It's humor that sounds serious but is meant to be ironic or playful." },
+    { question: "What's the purpose of humor in conversation?", answer: "To make people laugh, build rapport, and create a relaxed atmosphere." },
+    { question: "Why is humor culturally dependent?", answer: "Because what's funny in one culture may be offensive or confusing in another." },
+    { question: "What's the difference between irony and sarcasm?", answer: "Irony shows contrast; sarcasm adds a mocking or humorous tone." },
+    { question: "Can sarcasm be positive?", answer: "Yes, when used playfully among friends who understand each other." },
+    { question: "What's an example of humor in storytelling?", answer: "Using exaggeration or surprise for a funny twist — 'The chicken didn't cross the road; it took the bus.'" },
+    { question: "How can you politely use humor in business?", answer: "Use mild jokes about universal topics, not personal or sensitive ones." },
+    { question: "What should you avoid in humor?", answer: "Avoid offensive jokes about race, religion, or gender." },
+    { question: "How can humor improve English learning?", answer: "It helps you understand idioms, wordplay, and cultural communication better." },
+    { question: "What's an example of misunderstanding sarcasm?", answer: "Someone saying 'Great job!' after a mistake, and the listener thinking it was sincere." },
+    { question: "Why is understanding humor important in English?", answer: "It helps you interpret tone, intent, and cultural context naturally." },
+    { question: "What's your best advice for using humor?", answer: "Be observant, keep it friendly, and match your humor to the situation." }
+  ]
+};
+
+// Module 196 Data: Summarizing and Paraphrasing Skills
+const MODULE_196_DATA = {
+  title: "Summarizing and Paraphrasing Skills",
+  description: "Master summarizing and paraphrasing to improve academic writing and comprehension",
+  intro: `📘 Lesson Objectives
+✅ Learn to summarize texts effectively by identifying main ideas
+✅ Master paraphrasing techniques to express ideas in your own words
+✅ Improve academic writing, comprehension, and avoid plagiarism`,
+  speakingPractice: [
+    { question: "What does it mean to summarize?", answer: "To summarize means to express the main ideas of a text in fewer words." },
+    { question: "What does it mean to paraphrase?", answer: "To paraphrase means to restate information using different words but the same meaning." },
+    { question: "Why are these skills important?", answer: "They help you understand, explain, and write about ideas clearly without copying." },
+    { question: "What's the difference between summarizing and paraphrasing?", answer: "Summarizing shortens the text; paraphrasing restates it in a new way." },
+    { question: "When should you summarize?", answer: "When you want to focus only on key points or give a brief overview." },
+    { question: "When should you paraphrase?", answer: "When you need to restate an idea or avoid plagiarism in academic writing." },
+    { question: "What's the first step in summarizing?", answer: "Identify the main ideas and ignore minor details." },
+    { question: "What's the first step in paraphrasing?", answer: "Understand the meaning completely before rewording it." },
+    { question: "How can you make a paraphrase sound natural?", answer: "Change word order, use synonyms, and vary sentence structure." },
+    { question: "Why is understanding the text important?", answer: "Because you can't summarize or paraphrase something you don't fully understand." },
+    { question: "What should you avoid when paraphrasing?", answer: "Avoid copying whole phrases or changing only one or two words." },
+    { question: "What should you avoid when summarizing?", answer: "Avoid including too many details or personal opinions." },
+    { question: "Give an example of a paraphrasing phrase.", answer: "'In other words, technology has reshaped our lives.'" },
+    { question: "Give an example of a summarizing phrase.", answer: "'To sum up, the study shows clear economic benefits.'" },
+    { question: "What is plagiarism?", answer: "Plagiarism is copying someone's work or ideas without proper credit." },
+    { question: "How can summarizing help in speaking?", answer: "It allows you to express long explanations briefly and clearly." },
+    { question: "How can paraphrasing help in writing?", answer: "It helps you use academic sources while keeping your writing original." },
+    { question: "What's an example of summarizing?", answer: "'The book explains the impact of social media on teenagers.'" },
+    { question: "What's an example of paraphrasing?", answer: "'Social media has influenced how teenagers behave and communicate.'" },
+    { question: "What's a good synonym for 'summarize'?", answer: "'Condense' or 'shorten.'" },
+    { question: "What's a good synonym for 'paraphrase'?", answer: "'Reword' or 'rephrase.'" },
+    { question: "Why do teachers value paraphrasing?", answer: "Because it shows understanding and prevents plagiarism." },
+    { question: "How can linking words help in summaries?", answer: "They connect ideas smoothly and make summaries coherent." },
+    { question: "What's the ideal length of a summary?", answer: "It should be about one-third or less of the original text." },
+    { question: "How do you start a paraphrased sentence?", answer: "You can use 'According to...' or 'It can be said that...'" },
+    { question: "What does 'in brief' mean?", answer: "It means to explain something in a short and clear way." },
+    { question: "What does 'in other words' mean?", answer: "It introduces a restatement using different language." },
+    { question: "What does 'the main point is that' mean?", answer: "It signals the most important idea in a summary." },
+    { question: "What is a poor paraphrase?", answer: "Changing only a few words or copying the original sentence structure." },
+    { question: "How can you improve paraphrasing skills?", answer: "Practice rewriting texts and using synonyms regularly." },
+    { question: "What's the difference between 'to rephrase' and 'to rewrite'?", answer: "'Rephrase' changes wording; 'rewrite' may change structure and tone too." },
+    { question: "How can summarizing improve note-taking?", answer: "It trains you to capture essential information quickly." },
+    { question: "What is a paraphrase of 'He finished the job quickly'?", answer: "'He completed the task in a short time.'" },
+    { question: "What is a summary of 'The study found that exercise improves mood'?", answer: "'Exercise boosts happiness.'" },
+    { question: "What does 'to put it simply' mean?", answer: "It means to explain something in an easy or direct way." },
+    { question: "How can summarizing help in IELTS Writing Task 1?", answer: "It helps describe graphs and trends concisely without repeating data." },
+    { question: "Why is paraphrasing key in IELTS Writing Task 2?", answer: "It allows you to restate the question in your own words and show range." },
+    { question: "How can you check a good paraphrase?", answer: "Compare it with the original — same meaning, different wording." },
+    { question: "How would you summarize summarizing and paraphrasing?", answer: "Both express ideas clearly and originally — summarizing shortens, paraphrasing rewords." }
+  ]
+};
+
+// Module 197 Data: Reading Between the Lines – Inferences
+const MODULE_197_DATA = {
+  title: "Reading Between the Lines – Inferences",
+  description: "Learn to make logical inferences and understand implied meanings in English texts",
+  intro: `📘 Lesson Objectives
+✅ Understand how to read between the lines and make inferences
+✅ Interpret tone, context, and implied meanings
+✅ Improve reading comprehension and critical thinking`,
+  speakingPractice: [
+    { question: "What does 'reading between the lines' mean?", answer: "It means understanding what is implied but not directly stated." },
+    { question: "What is an inference?", answer: "An inference is a logical guess based on clues from the text or situation." },
+    { question: "Why is making inferences important?", answer: "It helps you understand hidden meanings and emotions behind the words." },
+    { question: "What can tone tell us in a text?", answer: "Tone shows the writer's attitude or emotion, which helps infer meaning." },
+    { question: "What does 'It suggests that' mean?", answer: "It introduces your interpretation or inference from the text." },
+    { question: "How can context help with inference?", answer: "Context gives clues about meaning through surrounding words and situations." },
+    { question: "What does 'imply' mean?", answer: "To imply means to suggest something indirectly rather than state it directly." },
+    { question: "What's the difference between 'infer' and 'imply'?", answer: "The writer implies, and the reader infers — one gives a clue, the other interprets it." },
+    { question: "Give an example of inference in daily life.", answer: "If your friend avoids eye contact, you can infer they are upset or shy." },
+    { question: "Give an example from a story.", answer: "'He clenched his fists and turned red.' → We can infer he's angry." },
+    { question: "Why do writers use implications?", answer: "They want readers to think deeper and engage emotionally." },
+    { question: "What is an implied meaning?", answer: "It's a meaning that is not said directly but understood from context." },
+    { question: "How does background knowledge help inference?", answer: "It connects the new information with what you already know to form conclusions." },
+    { question: "What does 'The author implies that...' mean?", answer: "It means you're describing an idea suggested by the writer without direct words." },
+    { question: "What can we infer from 'She didn't touch her food'?", answer: "She might not be hungry or could be upset." },
+    { question: "What can we infer from 'He stayed silent during the meeting'?", answer: "He may disagree or feel uncomfortable." },
+    { question: "What can we infer from 'She kept checking her phone'?", answer: "She might be nervous or waiting for a message." },
+    { question: "What can we infer from 'He smiled politely but left quickly'?", answer: "He wasn't comfortable or interested in staying." },
+    { question: "What does 'from this we can guess that' mean?", answer: "It introduces a conclusion drawn from evidence." },
+    { question: "What does 'indicate' mean in inference?", answer: "It means to point toward a certain conclusion or idea." },
+    { question: "How can tone make inference harder?", answer: "If the tone is neutral or sarcastic, meaning may be unclear without context." },
+    { question: "What does sarcasm imply?", answer: "It often implies the opposite of what is said." },
+    { question: "What can we infer from 'He was whistling while cleaning'?", answer: "He was probably in a good mood." },
+    { question: "What can we infer from 'She avoided his calls all week'?", answer: "She might be angry, hurt, or uninterested." },
+    { question: "What does 'hidden meaning' mean?", answer: "It's an idea that is not obvious but can be understood through inference." },
+    { question: "Why is inference useful in reading comprehension?", answer: "Because many exam questions require understanding implied meaning." },
+    { question: "What can we infer from 'He looked at his watch three times'?", answer: "He was impatient or waiting for something." },
+    { question: "What can we infer from 'The teacher smiled when the student spoke'?", answer: "She approved of or liked the answer." },
+    { question: "What does 'We can infer that she's worried' mean?", answer: "It means we believe she's worried based on her behavior or tone." },
+    { question: "What's a common phrase to express inference?", answer: "'It seems that...' or 'It suggests that...'" },
+    { question: "What can we infer from 'They exchanged a quick glance'?", answer: "They understood each other silently or shared a secret." },
+    { question: "How does tone differ from emotion?", answer: "Tone is how something is said; emotion is what's felt." },
+    { question: "What can we infer from 'He sighed deeply'?", answer: "He was tired, sad, or disappointed." },
+    { question: "How can inference improve conversation skills?", answer: "It helps you read people's feelings and respond more empathetically." },
+    { question: "What can we infer from 'She hesitated before answering'?", answer: "She might be unsure, nervous, or hiding something." },
+    { question: "What can we infer from 'He raised an eyebrow'?", answer: "He might be surprised or doubtful." },
+    { question: "What can we infer from 'She spoke softly but firmly'?", answer: "She was calm but confident in her opinion." },
+    { question: "How can practice improve inference skills?", answer: "By reading more and noticing emotional or contextual clues." },
+    { question: "How would you summarize inference in one sentence?", answer: "Inference is reading what's not written — understanding meaning beyond words." }
+  ]
+};
+
+// Module 198 Data: Cultural Awareness in Language
+const MODULE_198_DATA = {
+  title: "Cultural Awareness in Language",
+  description: "Understand how culture influences communication and use language appropriately across contexts",
+  intro: `📘 Lesson Objectives
+✅ Understand how culture influences communication styles
+✅ Learn about direct vs. indirect communication
+✅ Use language appropriately in different cultural contexts`,
+  speakingPractice: [
+    { question: "What is cultural awareness?", answer: "Cultural awareness is understanding how culture affects the way people communicate and behave." },
+    { question: "Why is cultural awareness important in language learning?", answer: "Because it helps you communicate appropriately and avoid misunderstandings." },
+    { question: "What's the difference between direct and indirect communication?", answer: "Direct communication says things clearly, while indirect communication uses hints or polite expressions." },
+    { question: "Give an example of indirect speech.", answer: "'That's an interesting idea' can politely mean 'I don't agree.'" },
+    { question: "How do Americans tend to communicate?", answer: "They usually speak more directly and say exactly what they mean." },
+    { question: "How do British people often express disagreement?", answer: "They use polite, indirect phrases like 'I'm not sure I'd agree with that.'" },
+    { question: "What does 'That would be great' sometimes mean?", answer: "It can mean 'No' or 'Maybe later' in a polite way." },
+    { question: "Why is small talk important?", answer: "It helps people build trust and connect socially before serious topics." },
+    { question: "What topics are good for small talk?", answer: "Weather, travel, work, and hobbies are safe and common topics." },
+    { question: "What topics should you avoid in small talk?", answer: "Avoid discussing politics, money, religion, or personal relationships." },
+    { question: "How do English speakers make requests politely?", answer: "They use modals like 'Could you please...?' or 'Would you mind...?'" },
+    { question: "What does 'Would you mind closing the window?' mean?", answer: "It's a polite way of asking someone to close the window." },
+    { question: "What does 'You might want to check that' mean?", answer: "It's a polite suggestion, not an order." },
+    { question: "Why can humor be misunderstood across cultures?", answer: "Because humor depends on cultural references, tone, and shared experiences." },
+    { question: "What is British humor like?", answer: "It's often ironic, subtle, or self-deprecating." },
+    { question: "What is American humor like?", answer: "It's more direct, expressive, and based on storytelling." },
+    { question: "What does nonverbal communication include?", answer: "It includes gestures, facial expressions, tone, and personal space." },
+    { question: "Why is eye contact important?", answer: "It can show confidence, honesty, or respect, depending on the culture." },
+    { question: "What can too much eye contact mean?", answer: "In some cultures, it may seem rude or aggressive." },
+    { question: "What does 'personal space' mean?", answer: "It's the physical distance people prefer when interacting with others." },
+    { question: "How does politeness differ across cultures?", answer: "Some cultures use direct speech, while others soften messages with polite language." },
+    { question: "What does 'I'm afraid I can't' mean?", answer: "It's a polite way of saying no." },
+    { question: "What does 'I see your point, but...' mean?", answer: "It's a polite way to disagree or introduce another opinion." },
+    { question: "Why is it important to know cultural idioms?", answer: "Because they reflect values and everyday thinking in that culture." },
+    { question: "What's an example of cultural misunderstanding?", answer: "Smiling during serious discussions can seem disrespectful in some cultures." },
+    { question: "What can silence mean in conversation?", answer: "It can show respect, agreement, or discomfort depending on culture." },
+    { question: "Why do some cultures prefer indirectness?", answer: "To maintain harmony and avoid confrontation." },
+    { question: "Why do some cultures prefer directness?", answer: "Because clarity and honesty are seen as respectful and efficient." },
+    { question: "What can tone tell us about cultural context?", answer: "It can show how polite, emotional, or formal a message is meant to be." },
+    { question: "What does 'It's fine' mean in British English?", answer: "It often means 'It's not fine,' but the speaker is being polite." },
+    { question: "How can gestures cause confusion?", answer: "Because gestures that are friendly in one culture may be offensive in another." },
+    { question: "What does 'saving face' mean?", answer: "It means protecting someone's dignity or avoiding embarrassment in public." },
+    { question: "Why is laughter sometimes misunderstood?", answer: "Because in some cultures laughter can mean nervousness, not amusement." },
+    { question: "What's the connection between language and culture?", answer: "Language reflects cultural values, habits, and communication styles." },
+    { question: "How can cultural awareness improve English fluency?", answer: "It helps you use the right expressions in the right situations." },
+    { question: "What is a polite way to refuse an invitation?", answer: "'I'd love to, but I already have plans.'" },
+    { question: "What can we learn from studying culture?", answer: "We learn empathy, flexibility, and better global communication skills." },
+    { question: "What's your best advice for cross-cultural communication?", answer: "Listen carefully, be polite, and observe how others express themselves." },
+    { question: "How would you summarize cultural awareness?", answer: "It's the ability to adapt your communication style to different cultures respectfully." }
+  ]
+};
+
+// Module 199 Data: Formal Presentations – Language and Style
+const MODULE_199_DATA = {
+  title: "Formal Presentations – Language and Style",
+  description: "Deliver formal presentations confidently using appropriate language, structure, and professional tone",
+  intro: `📘 Lesson Objectives
+✅ Learn to deliver formal presentations with confidence
+✅ Master appropriate language, structure, and tone for professional settings
+✅ Use signposting and transitions effectively`,
+  speakingPractice: [
+    { question: "Why is structure important in a presentation?", answer: "Because it helps the audience follow your ideas easily and keeps your message clear." },
+    { question: "What's the purpose of an introduction?", answer: "To grab the audience's attention and explain what the presentation will cover." },
+    { question: "Give an example of a formal opening.", answer: "'Good morning everyone, my name is Tomas, and today I'll be talking about...'" },
+    { question: "What's a polite way to start explaining visuals?", answer: "'As you can see from the chart...' or 'This graph clearly shows...'" },
+    { question: "What's a good transition phrase?", answer: "'Moving on to the next point...' or 'Let's take a closer look at...'" },
+    { question: "Why are signposting phrases important?", answer: "They guide the listener through the structure of your talk and make it easy to follow." },
+    { question: "Give an example of a signposting phrase.", answer: "'First of all... secondly... finally...'" },
+    { question: "What's a good phrase to emphasize a point?", answer: "'I'd like to highlight...' or 'It's important to note that...'" },
+    { question: "How can you make your tone sound formal?", answer: "By speaking clearly, avoiding slang, and using polite expressions." },
+    { question: "What's an example of formal vocabulary?", answer: "'Assist' instead of 'help,' 'purchase' instead of 'buy.'" },
+    { question: "What's a polite way to ask for attention?", answer: "'If I could have your attention, please.'" },
+    { question: "What's a formal way to summarize your talk?", answer: "'To sum up, we have covered the main challenges and solutions.'" },
+    { question: "Why should you thank the audience?", answer: "It shows politeness and professionalism at the end of your talk." },
+    { question: "Give an example of a closing phrase.", answer: "'Thank you for your time and attention. Are there any questions?'" },
+    { question: "What's a polite way to handle a difficult question?", answer: "'That's a great question — I'll need to check that and get back to you.'" },
+    { question: "What's a good expression for showing confidence?", answer: "'As you can see, the data strongly supports this point.'" },
+    { question: "Why should visuals be explained clearly?", answer: "Because visuals help reinforce your key points and keep the audience engaged." },
+    { question: "What does 'to highlight' mean?", answer: "It means to emphasize or draw attention to something important." },
+    { question: "How can you avoid sounding nervous?", answer: "Practice your talk, maintain eye contact, and speak slowly and clearly." },
+    { question: "What's a polite phrase for disagreeing during Q&A?", answer: "'I see your point, but I would argue that...'" },
+    { question: "Why is tone important in formal presentations?", answer: "Because tone communicates confidence and respect to your audience." },
+    { question: "What's a formal way to express your opinion?", answer: "'In my view...' or 'From my perspective...'" },
+    { question: "What should you avoid in a formal talk?", answer: "Avoid slang, jokes that might offend, and overusing fillers like 'uh' or 'you know.'" },
+    { question: "How can you keep your audience engaged?", answer: "By using clear visuals, good eye contact, and structured transitions." },
+    { question: "What does 'to conclude' mean?", answer: "It means to finish your presentation by summarizing the main points." },
+    { question: "How can body language affect your presentation?", answer: "Positive body language shows confidence and keeps the audience's attention." },
+    { question: "What's a good expression for changing topics?", answer: "'Now let's turn to...' or 'This brings us to the next section.'" },
+    { question: "What's a good phrase for referencing a visual?", answer: "'If you look at the slide on the screen, you'll notice...'" },
+    { question: "What does 'to elaborate' mean?", answer: "It means to explain something in more detail." },
+    { question: "What's an example of polite hesitation?", answer: "'Let me think about that for a moment.'" },
+    { question: "How can you handle time limits?", answer: "By practicing beforehand and keeping each section concise." },
+    { question: "What's an example of a strong opening line?", answer: "'Imagine a world where communication breaks every barrier...'" },
+    { question: "What's a good phrase to signal your conclusion?", answer: "'Before I finish, let me summarize the key ideas.'" },
+    { question: "How can you encourage audience participation?", answer: "By asking open-ended questions or inviting comments politely." },
+    { question: "What's a polite phrase for asking questions?", answer: "'Does anyone have any questions or comments?'" },
+    { question: "How can technology help in presentations?", answer: "It allows visuals, videos, and data to be shown clearly and attractively." },
+    { question: "What's an example of a linking phrase?", answer: "'As mentioned earlier...' or 'This connects directly to...'" },
+    { question: "How can you check if your audience is following?", answer: "Ask, 'Is that clear so far?' or observe their reactions." },
+    { question: "How would you summarize presentation skills?", answer: "It's the art of delivering information clearly, confidently, and politely." }
+  ]
+};
+
+// Module 200 Data: Advanced Listening and Note-Taking Skills
+const MODULE_200_DATA = {
+  title: "Advanced Listening and Note-Taking Skills",
+  description: "Develop advanced listening comprehension and effective note-taking techniques for academic and professional contexts",
+  intro: `📘 Lesson Objectives
+✅ Develop advanced listening comprehension skills
+✅ Master effective note-taking techniques for academic and professional contexts
+✅ Learn to identify main ideas, supporting points, and organizational cues`,
+  speakingPractice: [
+    { question: "What does advanced listening mean?", answer: "It means understanding not only the words but also the implied meaning, tone, and organization of speech." },
+    { question: "Why is note-taking important?", answer: "Because it helps capture key ideas efficiently and improves memory and comprehension." },
+    { question: "What should you focus on when listening?", answer: "Focus on main ideas, not every single word." },
+    { question: "What are signal words?", answer: "Words like 'firstly', 'however', 'in conclusion' that show structure and relationships between ideas." },
+    { question: "What is the Cornell method?", answer: "A structured note-taking format with sections for notes, cues, and summaries." },
+    { question: "Why use abbreviations?", answer: "To write faster and keep up with the speaker." },
+    { question: "Give an example of a useful abbreviation.", answer: "'w/' for 'with', 'info' for 'information', or 'b/c' for 'because'." },
+    { question: "How can tone help you?", answer: "Tone changes often signal emphasis, importance, or attitude." },
+    { question: "What does it mean to infer?", answer: "To guess or conclude information based on context and clues." },
+    { question: "Why is summarizing after listening helpful?", answer: "Because it helps review and consolidate understanding." },
+    { question: "What's a common mistake in note-taking?", answer: "Writing too much and missing the main idea." },
+    { question: "What should you listen for first?", answer: "The topic sentence or introduction of the main point." },
+    { question: "What are organizational cues?", answer: "Phrases that show how ideas are connected or ordered in a talk." },
+    { question: "Give examples of organizational cues.", answer: "'Firstly', 'On the other hand', 'To conclude', 'As a result'." },
+    { question: "What's the difference between hearing and listening?", answer: "Hearing is physical; listening is active and involves understanding meaning." },
+    { question: "How can you predict what comes next?", answer: "By using logic, transitions, and your knowledge of the topic." },
+    { question: "Why is eye contact useful during listening?", answer: "It helps you focus and read nonverbal cues from the speaker." },
+    { question: "How can technology assist with note-taking?", answer: "Recording tools and apps can help review and organize information later." },
+    { question: "What should you avoid while taking notes?", answer: "Avoid writing full sentences or copying slides word for word." },
+    { question: "What's a good way to organize notes?", answer: "Use bullet points, indentation, and symbols for clarity." },
+    { question: "What is a keyword method?", answer: "Writing down only essential words that represent main ideas." },
+    { question: "What does '→' mean in notes?", answer: "It represents cause and effect, such as 'Rain → Flooding'." },
+    { question: "What's an example of a summary phrase?", answer: "'In short, the lecture focused on economic recovery.'" },
+    { question: "What's an example of a reporting phrase?", answer: "'According to the speaker, global warming is accelerating.'" },
+    { question: "Why should you listen for repetition?", answer: "Because repeated points often indicate importance." },
+    { question: "What's a good habit before listening?", answer: "Review topic-related vocabulary to understand the content better." },
+    { question: "How can active listening improve comprehension?", answer: "It engages your mind and helps you connect ideas during speech." },
+    { question: "Why is background knowledge useful?", answer: "It helps interpret unfamiliar words and infer meanings." },
+    { question: "What's an effective review strategy?", answer: "Summarize your notes in your own words after class or meetings." },
+    { question: "What is selective listening?", answer: "Focusing only on relevant information and ignoring details that don't matter." },
+    { question: "Why should you identify signal phrases?", answer: "They help track transitions and key arguments in a talk." },
+    { question: "What can help you remember numbers and dates?", answer: "Using symbols, grouping, or writing them in order." },
+    { question: "What's a polite way to clarify information?", answer: "'Could you please repeat that?' or 'Do you mean...?'" },
+    { question: "What's the best time to revise notes?", answer: "As soon as possible after listening, while memory is fresh." },
+    { question: "What's the benefit of summarizing in your own words?", answer: "It ensures real understanding and prevents memorization without meaning." },
+    { question: "What's the difference between notes and transcription?", answer: "Notes focus on key points; transcription records everything verbatim." },
+    { question: "What's one strategy to improve listening speed?", answer: "Expose yourself to different accents and real-world English content." },
+    { question: "What's a common mistake when summarizing?", answer: "Including too many details instead of focusing on the main ideas." },
+    { question: "How would you define good listening and note-taking?", answer: "Listening actively for meaning and recording key ideas efficiently for review." }
+  ]
+};
+
 // Export all B2 module data
 export {
   MODULE_151_DATA,
@@ -2458,5 +3021,16 @@ export {
   MODULE_186_DATA,
   MODULE_187_DATA,
   MODULE_188_DATA,
-  MODULE_189_DATA
+  MODULE_189_DATA,
+  MODULE_190_DATA,
+  MODULE_191_DATA,
+  MODULE_192_DATA,
+  MODULE_193_DATA,
+  MODULE_194_DATA,
+  MODULE_195_DATA,
+  MODULE_196_DATA,
+  MODULE_197_DATA,
+  MODULE_198_DATA,
+  MODULE_199_DATA,
+  MODULE_200_DATA
 };

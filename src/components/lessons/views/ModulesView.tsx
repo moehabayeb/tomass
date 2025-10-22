@@ -58,7 +58,7 @@ export function ModulesView({ selectedLevel, onBack, onSelectModule }: ModulesVi
       (moduleId >= 1 && moduleId <= 50) ||
       (moduleId >= 51 && moduleId <= 100) ||
       (moduleId >= 101 && moduleId <= 150) ||
-      (moduleId >= 151 && moduleId <= 189)
+      (moduleId >= 151 && moduleId <= 200)
     )) {
       narration.cancel();
       onSelectModule(moduleId);
@@ -108,7 +108,7 @@ export function ModulesView({ selectedLevel, onBack, onSelectModule }: ModulesVi
               const isImplemented = (module.id >= 1 && module.id <= 50) ||
                                   (module.id >= 51 && module.id <= 100) ||
                                   (module.id >= 101 && module.id <= 150) ||
-                                  (module.id >= 151 && module.id <= 189);
+                                  (module.id >= 151 && module.id <= 200);
               const isCompleted = completedModules.includes(`module-${module.id}`);
 
               return (

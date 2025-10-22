@@ -8,7 +8,7 @@ const LEVEL_RANGES = {
   'A1': { start: 1, end: 50 },
   'A2': { start: 51, end: 100 },
   'B1': { start: 101, end: 150 },
-  'B2': { start: 151, end: 168 }
+  'B2': { start: 151, end: 200 }
 };
 
 // Get level for a given module ID
@@ -16,7 +16,7 @@ function getLevelForModule(moduleId: number): string {
   if (moduleId >= 1 && moduleId <= 50) return 'A1';
   if (moduleId >= 51 && moduleId <= 100) return 'A2';
   if (moduleId >= 101 && moduleId <= 150) return 'B1';
-  if (moduleId >= 151 && moduleId <= 168) return 'B2';
+  if (moduleId >= 151 && moduleId <= 200) return 'B2';
   return 'A1'; // Default fallback
 }
 
