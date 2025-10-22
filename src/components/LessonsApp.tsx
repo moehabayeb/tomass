@@ -63,6 +63,9 @@ import {
 // B2 Modules Data (151-200)
 import { MODULE_151_DATA, MODULE_152_DATA, MODULE_153_DATA, MODULE_154_DATA, MODULE_155_DATA, MODULE_156_DATA, MODULE_157_DATA, MODULE_158_DATA, MODULE_159_DATA, MODULE_160_DATA, MODULE_161_DATA, MODULE_162_DATA, MODULE_163_DATA, MODULE_164_DATA, MODULE_165_DATA, MODULE_166_DATA, MODULE_167_DATA, MODULE_168_DATA, MODULE_169_DATA, MODULE_170_DATA, MODULE_171_DATA, MODULE_172_DATA, MODULE_173_DATA, MODULE_174_DATA, MODULE_175_DATA, MODULE_176_DATA, MODULE_177_DATA, MODULE_178_DATA, MODULE_179_DATA, MODULE_180_DATA, MODULE_181_DATA, MODULE_182_DATA, MODULE_183_DATA, MODULE_184_DATA, MODULE_185_DATA, MODULE_186_DATA, MODULE_187_DATA, MODULE_188_DATA, MODULE_189_DATA, MODULE_190_DATA, MODULE_191_DATA, MODULE_192_DATA, MODULE_193_DATA, MODULE_194_DATA, MODULE_195_DATA, MODULE_196_DATA, MODULE_197_DATA, MODULE_198_DATA, MODULE_199_DATA, MODULE_200_DATA } from './B2ModulesData';
 
+// C1 Modules Data (201-213)
+import { MODULE_201_DATA, MODULE_202_DATA, MODULE_203_DATA, MODULE_204_DATA, MODULE_205_DATA, MODULE_206_DATA, MODULE_207_DATA, MODULE_208_DATA, MODULE_209_DATA, MODULE_210_DATA, MODULE_211_DATA, MODULE_212_DATA, MODULE_213_DATA } from './C1ModulesData';
+
 // ---------- Module Order and Next Module Logic ----------
 const ORDER_A1 = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50];
 const ORDER_A2 = [51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100];
@@ -219,7 +222,7 @@ const LEVELS = [
   { id: 'A2', name: 'A2 - Elementary', description: 'Build basic skills', moduleCount: 50, color: 'bg-green-500' },
   { id: 'B1', name: 'B1 - Intermediate', description: 'Expand your knowledge', moduleCount: 50, color: 'bg-orange-500' },
   { id: 'B2', name: 'B2 - Upper Intermediate', description: 'Advanced concepts', moduleCount: 50, color: 'bg-purple-500' },
-  { id: 'C1', name: 'C1 - Advanced', description: 'Master complex concepts', moduleCount: 50, color: 'bg-red-500' },
+  { id: 'C1', name: 'C1 - Advanced', description: 'Master complex concepts', moduleCount: 13, color: 'bg-red-500' },
   { id: 'C2', name: 'C2 - Proficiency', description: 'Near-native fluency', moduleCount: 50, color: 'bg-indigo-500' },
 ];
 
@@ -673,7 +676,26 @@ const MODULES_BY_LEVEL = {
     completed: false,
     locked: false,
   })),
-  C1: [],
+  C1: Array.from({ length: 13 }, (_, i) => ({
+    id: i + 201,
+    title: i === 0 ? 'Advanced Passive Structures' :
+           i === 1 ? 'Cleft Sentences' :
+           i === 2 ? 'Advanced Conditional Patterns' :
+           i === 3 ? 'Nominal Clauses' :
+           i === 4 ? 'Participle Clauses' :
+           i === 5 ? 'Complex Sentences: Combining Multiple Clauses' :
+           i === 6 ? 'Formal and Academic Writing Style' :
+           i === 7 ? 'Hedging and Softening Statements' :
+           i === 8 ? 'Euphemisms and Taboo Language' :
+           i === 9 ? 'Advanced Idioms' :
+           i === 10 ? 'Collocations for Academic English' :
+           i === 11 ? 'Abstract Nouns and Concepts' :
+           i === 12 ? 'Talking About Data and Research' :
+           'Advanced C1 grammar module',
+    description: 'Master C1-level grammar and academic discourse',
+    completed: false,
+    locked: false,
+  })),
   C2: []
 };
 
@@ -1380,6 +1402,9 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
     186: MODULE_186_DATA, 187: MODULE_187_DATA, 188: MODULE_188_DATA, 189: MODULE_189_DATA, 190: MODULE_190_DATA,
     191: MODULE_191_DATA, 192: MODULE_192_DATA, 193: MODULE_193_DATA, 194: MODULE_194_DATA, 195: MODULE_195_DATA,
     196: MODULE_196_DATA, 197: MODULE_197_DATA, 198: MODULE_198_DATA, 199: MODULE_199_DATA, 200: MODULE_200_DATA,
+    201: MODULE_201_DATA, 202: MODULE_202_DATA, 203: MODULE_203_DATA, 204: MODULE_204_DATA, 205: MODULE_205_DATA,
+    206: MODULE_206_DATA, 207: MODULE_207_DATA, 208: MODULE_208_DATA, 209: MODULE_209_DATA, 210: MODULE_210_DATA,
+    211: MODULE_211_DATA, 212: MODULE_212_DATA, 213: MODULE_213_DATA,
   };
 
   // Get current module data with O(1) lookup
@@ -3187,10 +3212,10 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
               
               return (
                 <Card 
-                  key={module.id} 
+                  key={module.id}
                   className={`bg-white/10 border-white/20 cursor-pointer transition-all hover:bg-white/15 ${!isUnlocked ? 'opacity-50' : ''}`}
                   onClick={() => {
-                    if (isUnlocked && ((module.id >= 1 && module.id <= 50) || (module.id >= 51 && module.id <= 100) || (module.id >= 101 && module.id <= 150) || (module.id >= 151 && module.id <= 200))) { // All A1, A2, B1, B2 modules are implemented
+                    if (isUnlocked && ((module.id >= 1 && module.id <= 50) || (module.id >= 51 && module.id <= 100) || (module.id >= 101 && module.id <= 150) || (module.id >= 151 && module.id <= 200) || (module.id >= 201 && module.id <= 213))) { // All A1, A2, B1, B2, C1 modules are implemented
                       narration.cancel();
                       setSelectedModule(module.id);
                       setViewState('lesson');
