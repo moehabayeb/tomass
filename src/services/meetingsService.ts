@@ -1,7 +1,7 @@
 /**
  * Meetings Service
- * Handles all API calls for admin meetings system
- * Updated for new schema with proper parameter ordering
+ * Handles all API calls for user-facing meetings functionality
+ * Admin CRUD operations removed - admins use Supabase Studio for meeting management
  */
 
 import { supabase } from '@/integrations/supabase/client';
@@ -51,92 +51,7 @@ export interface MeetingRSVP {
   updated_at: string;
 }
 
-export interface CreateMeetingData {
-  title: string;
-  description?: string;
-  meeting_url: string;
-  scheduled_at: string; // ISO timestamp
-  duration_minutes: number;
-  level_code: 'general' | 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2'; // CEFR levels
-  capacity: number; // Max attendees (1-100), default 20
-}
-
-export interface UpdateMeetingData {
-  title: string;
-  description?: string;
-  meeting_url: string;
-  scheduled_at: string; // ISO timestamp
-  duration_minutes: number;
-  level_code: 'general' | 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2'; // CEFR levels
-  capacity: number; // Max attendees (1-100)
-}
-
-// Level to section mapping
-export const LEVEL_SECTIONS = {
-  'general': 'General',
-  'A1': 'A1 / Apples',
-  'A2': 'A2 / Avocado',
-  'B1': 'B1 / Banana',
-  'B2': 'B2 / Blueberry',
-  'C1': 'C1 / Cherry',
-  'C2': 'C2 / Coconut'
-} as const;
-
-export type LevelCode = 'general' | 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
-
-export const LEVEL_OPTIONS = [
-  { value: 'general' as LevelCode, label: 'General', section: 'General' },
-  { value: 'A1' as LevelCode, label: 'A1 (Beginner I)', section: 'A1 / Apples' },
-  { value: 'A2' as LevelCode, label: 'A2 (Beginner II)', section: 'A2 / Avocado' },
-  { value: 'B1' as LevelCode, label: 'B1 (Intermediate I)', section: 'B1 / Banana' },
-  { value: 'B2' as LevelCode, label: 'B2 (Intermediate II)', section: 'B2 / Blueberry' },
-  { value: 'C1' as LevelCode, label: 'C1 (Advanced I)', section: 'C1 / Cherry' },
-  { value: 'C2' as LevelCode, label: 'C2 (Advanced II)', section: 'C2 / Coconut' }
-];
-
 export class MeetingsService {
-  /**
-   * Check if current user is admin
-   */
-  static async isAdmin(): Promise<boolean> {
-    try {
-      // Use zero-arg version for simpler call
-      const { data, error } = await supabase.rpc('is_admin');
-
-      if (error) {
-        console.error('Error checking admin status:', error);
-        return false;
-      }
-
-      return data || false;
-    } catch (error) {
-      console.error('Error checking admin status:', error);
-      return false;
-    }
-  }
-
-  /**
-   * Get all meetings for admin (includes capacity, level_code, section_name if available)
-   */
-  static async getMeetings(): Promise<AdminMeeting[]> {
-    try {
-      const { data, error } = await supabase
-        .from('admin_meetings')
-        .select('*')
-        .order('starts_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching admin meetings:', error);
-        throw error;
-      }
-
-      return data || [];
-    } catch (error) {
-      console.error('Error in getMeetings:', error);
-      throw error;
-    }
-  }
-
   /**
    * Get public meetings (active & upcoming, includes capacity, level_code, section_name if available)
    */
@@ -161,7 +76,7 @@ export class MeetingsService {
   }
 
   /**
-   * Get upcoming meetings (next 7 days) - for admin
+   * Get upcoming meetings (next 7 days) - used by user-facing features
    */
   static async getUpcomingMeetings(): Promise<AdminMeeting[]> {
     try {
@@ -186,216 +101,6 @@ export class MeetingsService {
       return data || [];
     } catch (error) {
       console.error('Error in getUpcomingMeetings:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Create new meeting (admin only)
-   * Uses ALPHABETICAL parameter order: p_capacity, p_description, p_duration_minutes, p_level_code, p_meeting_url, p_scheduled_at, p_title
-   */
-  static async createMeeting(meetingData: CreateMeetingData): Promise<AdminMeeting> {
-    try {
-      // Client-side validation
-      if (!meetingData.title?.trim() || meetingData.title.trim().length < 3) {
-        throw new Error('Meeting title must be at least 3 characters long');
-      }
-
-      if (!meetingData.meeting_url?.trim() || !meetingData.meeting_url.match(/^https?:\/\//)) {
-        throw new Error('Please provide a valid meeting URL (must start with http:// or https://)');
-      }
-
-      if (!meetingData.scheduled_at) {
-        throw new Error('Please select a date and time for the meeting');
-      }
-
-      // Check if meeting is scheduled for the future
-      const scheduledDate = new Date(meetingData.scheduled_at);
-      const now = new Date();
-      if (scheduledDate <= now) {
-        throw new Error('Meeting must be scheduled for a future date and time');
-      }
-
-      if (!meetingData.duration_minutes || meetingData.duration_minutes <= 0 || meetingData.duration_minutes > 480) {
-        throw new Error('Meeting duration must be between 1 and 480 minutes (8 hours)');
-      }
-
-      if (!meetingData.level_code || !['general', 'A1', 'A2', 'B1', 'B2', 'C1', 'C2'].includes(meetingData.level_code)) {
-        throw new Error('Please select a valid level (general, A1, A2, B1, B2, C1, or C2)');
-      }
-
-      if (!meetingData.capacity || meetingData.capacity < 1 || meetingData.capacity > 100) {
-        throw new Error('Meeting capacity must be between 1 and 100 attendees');
-      }
-
-      // RPC call with parameters matching database function signature
-      const { data, error} = await supabase.rpc('create_meeting', {
-        p_description: meetingData.description?.trim() || null,
-        p_duration_minutes: meetingData.duration_minutes,
-        p_meeting_url: meetingData.meeting_url.trim(),
-        p_scheduled_at: meetingData.scheduled_at,
-        p_title: meetingData.title.trim(),
-        p_capacity: meetingData.capacity,
-        p_level_code: meetingData.level_code
-      });
-
-      if (error) {
-        console.error('Error creating meeting:', error);
-        // Provide user-friendly error messages
-        if (error.message?.includes('Permission denied')) {
-          throw new Error('You do not have permission to create meetings. Admin access required.');
-        }
-        if (error.message?.includes('Meeting is full')) {
-          throw new Error(error.message);
-        }
-        throw new Error(error.message || 'Failed to create meeting. Please try again.');
-      }
-
-      if (!data) {
-        throw new Error('Meeting was created but no data was returned. Please refresh the page.');
-      }
-
-      return data;
-    } catch (error) {
-      console.error('Error in createMeeting:', error);
-      if (error instanceof Error) {
-        throw error;
-      }
-      throw new Error('An unexpected error occurred while creating the meeting');
-    }
-  }
-
-  /**
-   * Update meeting (admin only)
-   * Uses ALPHABETICAL parameter order: p_capacity, p_description, p_duration_minutes, p_level_code, p_meeting_id, p_meeting_url, p_scheduled_at, p_title
-   */
-  static async updateMeeting(meetingId: string, meetingData: UpdateMeetingData): Promise<AdminMeeting> {
-    try {
-      // Client-side validation
-      if (!meetingData.title?.trim() || meetingData.title.trim().length < 3) {
-        throw new Error('Meeting title must be at least 3 characters long');
-      }
-
-      if (!meetingData.meeting_url?.trim() || !meetingData.meeting_url.match(/^https?:\/\//)) {
-        throw new Error('Please provide a valid meeting URL (must start with http:// or https://)');
-      }
-
-      if (!meetingData.scheduled_at) {
-        throw new Error('Please select a date and time for the meeting');
-      }
-
-      if (!meetingData.duration_minutes || meetingData.duration_minutes <= 0 || meetingData.duration_minutes > 480) {
-        throw new Error('Meeting duration must be between 1 and 480 minutes (8 hours)');
-      }
-
-      if (!meetingData.level_code || !['general', 'A1', 'A2', 'B1', 'B2', 'C1', 'C2'].includes(meetingData.level_code)) {
-        throw new Error('Please select a valid level (general, A1, A2, B1, B2, C1, or C2)');
-      }
-
-      if (!meetingData.capacity || meetingData.capacity < 1 || meetingData.capacity > 100) {
-        throw new Error('Meeting capacity must be between 1 and 100 attendees');
-      }
-
-      // RPC call with parameters matching database function signature
-      const { data, error } = await supabase.rpc('update_meeting', {
-        p_description: meetingData.description?.trim() || null,
-        p_duration_minutes: meetingData.duration_minutes,
-        p_meeting_url: meetingData.meeting_url.trim(),
-        p_scheduled_at: meetingData.scheduled_at,
-        p_title: meetingData.title.trim(),
-        p_capacity: meetingData.capacity,
-        p_level_code: meetingData.level_code,
-        p_meeting_id: meetingId
-      });
-
-      if (error) {
-        console.error('Error updating meeting:', error);
-        // Provide user-friendly error messages
-        if (error.message?.includes('Permission denied')) {
-          throw new Error('You do not have permission to update meetings. Admin access required.');
-        }
-        if (error.message?.includes('not found')) {
-          throw new Error('Meeting not found or you do not have permission to update it.');
-        }
-        if (error.message?.includes('Meeting is full')) {
-          throw new Error(error.message);
-        }
-        throw new Error(error.message || 'Failed to update meeting. Please try again.');
-      }
-
-      if (!data) {
-        throw new Error('Meeting was updated but no data was returned. Please refresh the page.');
-      }
-
-      return data;
-    } catch (error) {
-      console.error('Error in updateMeeting:', error);
-      if (error instanceof Error) {
-        throw error;
-      }
-      throw new Error('An unexpected error occurred while updating the meeting');
-    }
-  }
-
-  /**
-   * Hide meeting (admin only)
-   */
-  static async hideMeeting(meetingId: string): Promise<AdminMeeting> {
-    try {
-      const { data, error } = await supabase.rpc('hide_meeting', {
-        p_meeting_id: meetingId
-      });
-
-      if (error) {
-        console.error('Error hiding meeting:', error);
-        throw new Error(error.message || 'Failed to hide meeting. Please try again.');
-      }
-
-      return data;
-    } catch (error) {
-      console.error('Error in hideMeeting:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Unhide meeting (admin only)
-   */
-  static async unhideMeeting(meetingId: string): Promise<AdminMeeting> {
-    try {
-      const { data, error } = await supabase.rpc('unhide_meeting', {
-        p_meeting_id: meetingId
-      });
-
-      if (error) {
-        console.error('Error unhiding meeting:', error);
-        throw new Error(error.message || 'Failed to unhide meeting. Please try again.');
-      }
-
-      return data;
-    } catch (error) {
-      console.error('Error in unhideMeeting:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Delete meeting (admin only)
-   */
-  static async deleteMeeting(meetingId: string): Promise<AdminMeeting> {
-    try {
-      const { data, error } = await supabase.rpc('delete_meeting', {
-        p_meeting_id: meetingId
-      });
-
-      if (error) {
-        console.error('Error deleting meeting:', error);
-        throw new Error(error.message || 'Failed to delete meeting. Please try again.');
-      }
-
-      return data;
-    } catch (error) {
-      console.error('Error in deleteMeeting:', error);
       throw error;
     }
   }
@@ -445,44 +150,6 @@ export class MeetingsService {
       return data;
     } catch (error) {
       console.error('Error in setRSVP:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get RSVP counts for a meeting (admin only)
-   */
-  static async getMeetingRSVPs(meetingId: string): Promise<{
-    yes: number;
-    no: number;
-    maybe: number;
-    total: number;
-  }> {
-    try {
-      const { data, error } = await supabase
-        .from('meeting_rsvps')
-        .select('status')
-        .eq('meeting_id', meetingId);
-
-      if (error) {
-        console.error('Error fetching meeting RSVPs:', error);
-        throw error;
-      }
-
-      const counts = {
-        yes: 0,
-        no: 0,
-        maybe: 0,
-        total: data?.length || 0
-      };
-
-      data?.forEach(rsvp => {
-        counts[rsvp.status as keyof typeof counts]++;
-      });
-
-      return counts;
-    } catch (error) {
-      console.error('Error in getMeetingRSVPs:', error);
       throw error;
     }
   }
