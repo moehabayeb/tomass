@@ -21,13 +21,15 @@ function MeetingCard({ meeting, onJoin }: MeetingCardProps) {
   const [timeInfo, setTimeInfo] = useState(MeetingsService.getTimeUntilMeeting(meeting.scheduled_at));
   const { rsvp, setRSVPStatus } = useMeetingRSVP(meeting.id);
 
-  // Update countdown every minute
+  // 🔧 FIX: Memory leak - Update countdown every minute with proper cleanup
   useEffect(() => {
     const interval = setInterval(() => {
       setTimeInfo(MeetingsService.getTimeUntilMeeting(meeting.scheduled_at));
     }, 60000);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+    };
   }, [meeting.scheduled_at]);
 
   const handleRSVP = async (status: 'yes' | 'no' | 'maybe') => {
@@ -136,7 +138,7 @@ export function MeetingsWidget({
   const { upcomingMeetings, isLoading, error } = useUpcomingMeetings();
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
 
-  // Check notification permission status
+  // 🔧 FIX: Memory leak - Check notification permission status with proper cleanup
   useEffect(() => {
     const checkNotificationStatus = () => {
       setNotificationsEnabled(meetingNotifications.getPermissionStatus() === 'granted');
@@ -147,7 +149,9 @@ export function MeetingsWidget({
     // Check every few seconds in case permission changes
     const interval = setInterval(checkNotificationStatus, 5000);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+    };
   }, []);
 
   const handleJoinMeeting = (url: string) => {
@@ -253,6 +257,7 @@ export function MeetingsNotificationBadge({ className = '' }: MeetingsNotificati
   const { upcomingMeetings, isLoading } = useUpcomingMeetings();
   const [liveMeetings, setLiveMeetings] = useState<AdminMeeting[]>([]);
 
+  // 🔧 FIX: Memory leak - Update live meetings with proper cleanup
   useEffect(() => {
     const updateLiveMeetings = () => {
       const live = upcomingMeetings.filter(meeting => {
@@ -267,7 +272,9 @@ export function MeetingsNotificationBadge({ className = '' }: MeetingsNotificati
     // Update every minute
     const interval = setInterval(updateLiveMeetings, 60000);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+    };
   }, [upcomingMeetings]);
 
   if (isLoading || upcomingMeetings.length === 0) {

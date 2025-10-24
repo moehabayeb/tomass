@@ -19,21 +19,27 @@ export class MeetingNotificationsService {
   }
 
   private constructor() {
-    this.initializePermissions();
+    // 🔧 FIX: Don't auto-request permission (Apple compliance - must be user-initiated)
+    if ('Notification' in window) {
+      this.notificationPermission = Notification.permission;
+    }
     this.loadShownNotifications();
   }
 
   /**
-   * Request notification permission and initialize
+   * Request notification permission (must be called from user action)
+   * 🔧 FIX: Public method for explicit user-initiated permission requests
    */
-  async initializePermissions(): Promise<boolean> {
+  async requestPermission(): Promise<boolean> {
     if (!('Notification' in window)) {
       console.warn('Browser does not support notifications');
       return false;
     }
 
+    // Update current permission status
     this.notificationPermission = Notification.permission;
 
+    // Only request if not already decided
     if (this.notificationPermission === 'default') {
       try {
         this.notificationPermission = await Notification.requestPermission();
@@ -48,12 +54,25 @@ export class MeetingNotificationsService {
 
   /**
    * Start checking for upcoming meetings
+   * 🔧 FIX: Returns boolean to indicate success
    */
-  async startNotificationService(): Promise<void> {
-    const hasPermission = await this.initializePermissions();
-    if (!hasPermission) {
+  async startNotificationService(): Promise<boolean> {
+    // Check permission status (don't request, just check)
+    if (!('Notification' in window)) {
+      console.warn('Browser does not support notifications');
+      return false;
+    }
+
+    this.notificationPermission = Notification.permission;
+
+    if (this.notificationPermission !== 'granted') {
       console.warn('Notification permission not granted');
-      return;
+      return false;
+    }
+
+    // Stop existing interval if any (prevent multiple intervals)
+    if (this.checkInterval) {
+      clearInterval(this.checkInterval);
     }
 
     // Check every 2 minutes
@@ -64,6 +83,7 @@ export class MeetingNotificationsService {
     // Initial check
     await this.checkUpcomingMeetings();
     console.log('📅 Meeting notification service started');
+    return true;
   }
 
   /**
@@ -108,6 +128,7 @@ export class MeetingNotificationsService {
 
   /**
    * Show browser notification for a meeting
+   * 🔧 FIX: Safari compatibility - actions not supported in Safari
    */
   private showMeetingNotification(meeting: AdminMeeting): void {
     if (this.notificationPermission !== 'granted') return;
@@ -117,23 +138,16 @@ export class MeetingNotificationsService {
     const body = `Meeting starts ${timeInfo.timeString}. Click to join.`;
 
     try {
-      const notification = new Notification(title, {
+      // 🔧 FIX: Simplified options for Safari compatibility
+      // Safari doesn't support 'actions', 'badge', or 'requireInteraction'
+      const notificationOptions: NotificationOptions = {
         body,
-        icon: '/favicon.ico', // Use app favicon
-        badge: '/favicon.ico',
+        icon: '/favicon.ico',
         tag: `meeting_${meeting.id}`, // Prevent duplicate notifications
-        requireInteraction: true, // Keep notification visible until user interacts
-        actions: [
-          {
-            action: 'join',
-            title: 'Join Meeting'
-          },
-          {
-            action: 'dismiss',
-            title: 'Dismiss'
-          }
-        ]
-      });
+        silent: false
+      };
+
+      const notification = new Notification(title, notificationOptions);
 
       // Handle notification click
       notification.onclick = () => {
@@ -142,10 +156,15 @@ export class MeetingNotificationsService {
         notification.close();
       };
 
-      // Auto-close after 30 seconds if no interaction
-      setTimeout(() => {
+      // 🔧 FIX: Auto-close after 30 seconds with proper cleanup
+      const closeTimer = setTimeout(() => {
         notification.close();
       }, 30 * 1000);
+
+      // Clear timer if user closes notification manually
+      notification.onclose = () => {
+        clearTimeout(closeTimer);
+      };
 
       console.log(`📅 Notification shown for meeting: ${meeting.title}`);
     } catch (error) {
@@ -226,9 +245,10 @@ export class MeetingNotificationsService {
 
   /**
    * Test notification (for debugging)
+   * 🔧 FIX: Use requestPermission instead of deprecated method
    */
   async testNotification(): Promise<void> {
-    const hasPermission = await this.initializePermissions();
+    const hasPermission = await this.requestPermission();
     if (!hasPermission) {
       alert('Notification permission required for testing');
       return;
@@ -239,7 +259,12 @@ export class MeetingNotificationsService {
       icon: '/favicon.ico'
     });
 
-    setTimeout(() => notification.close(), 5000);
+    const closeTimer = setTimeout(() => notification.close(), 5000);
+
+    // 🔧 FIX: Clear timer if user closes notification manually
+    notification.onclose = () => {
+      clearTimeout(closeTimer);
+    };
   }
 
   /**

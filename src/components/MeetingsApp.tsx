@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Calendar, Clock, Users, ChevronDown, ChevronUp, Bell, AlertCircle, LogIn, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -67,13 +67,23 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
   const { isAuthenticated, user, signOut } = useAuthReady();
   const navigate = useNavigate();
 
+  // 🔧 FIX: Prevent state updates after unmount
+  const isMounted = useRef(true);
+
   // Load meetings and user data
   useEffect(() => {
+    isMounted.current = true;
     loadMeetingsData();
+
+    // 🔧 FIX: Cleanup on unmount
+    return () => {
+      isMounted.current = false;
+    };
   }, []);
 
   const loadMeetingsData = async () => {
     try {
+      if (!isMounted.current) return; // 🔧 FIX: Don't start if unmounted
       setLoading(true);
 
       // Get all upcoming meetings (includes capacity, level_code, section_name if available)
@@ -81,6 +91,8 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
         .from('public_meetings')
         .select('*')
         .order('scheduled_at', { ascending: true });
+
+      if (!isMounted.current) return; // 🔧 FIX: Check before setState
 
       if (error) {
         console.error('Error loading meetings:', error);
@@ -104,6 +116,8 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
           .select('*')
           .eq('user_id', user.id);
 
+        if (!isMounted.current) return; // 🔧 FIX: Check before setState
+
         if (remindersError) {
           console.error('Error loading reminders:', remindersError);
         } else if (reminders) {
@@ -111,6 +125,7 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
         }
       }
     } catch (error) {
+      if (!isMounted.current) return; // 🔧 FIX: Check before setState
       console.error('Unexpected error loading meetings:', error);
       toast({
         title: "Unexpected error",
@@ -118,15 +133,19 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
         variant: "destructive"
       });
     } finally {
-      setLoading(false);
+      if (isMounted.current) { // 🔧 FIX: Check before setState
+        setLoading(false);
+      }
     }
   };
 
-  // Update countdown timer using unified service logic
+  // 🔧 FIX: Update countdown timer with proper cleanup
   useEffect(() => {
     if (!nextMeeting) return;
 
     const updateCountdown = () => {
+      if (!isMounted.current) return; // 🔧 FIX: Don't update if unmounted
+
       // Use the unified MeetingsService logic
       const timeInfo = MeetingsService.getTimeUntilMeeting(nextMeeting.scheduled_at);
 
@@ -137,7 +156,9 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
     updateCountdown();
     const interval = setInterval(updateCountdown, 60000); // Update every minute
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+    };
   }, [nextMeeting]);
 
   const handleJoinClass = () => {

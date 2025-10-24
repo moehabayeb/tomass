@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Menu, Mic, BookOpen, Bookmark, Award, Gamepad2, Users, Lightbulb, Settings } from 'lucide-react';
-import { useAdminRole } from '@/hooks/useMeetings';
+import { Menu, Mic, BookOpen, Bookmark, Award, Gamepad2, Users, Lightbulb } from 'lucide-react';
+// Admin functionality removed for Apple App Store compliance
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import DailyTips, { hasTodaysTipBeenViewed } from './DailyTips';
 
-type AppMode = 'speaking' | 'lessons' | 'bookmarks' | 'badges' | 'placement-test' | 'games' | 'meetings' | 'admin';
+type AppMode = 'speaking' | 'lessons' | 'bookmarks' | 'badges' | 'placement-test' | 'games' | 'meetings';
 
 interface NavigationDropdownProps {
   currentMode: AppMode;
@@ -59,7 +59,6 @@ const navigationItems = [
 export function NavigationDropdown({ currentMode, onModeChange }: NavigationDropdownProps) {
   const [open, setOpen] = useState(false);
   const [showDailyTips, setShowDailyTips] = useState(false);
-  const { isAdmin, isLoading: adminLoading } = useAdminRole();
 
   const handleItemClick = (mode: AppMode) => {
     onModeChange(mode);
@@ -130,23 +129,7 @@ export function NavigationDropdown({ currentMode, onModeChange }: NavigationDrop
               );
             })}
 
-            {/* Admin Section - Only show for admins */}
-            {!adminLoading && isAdmin && (
-              <>
-                <DropdownMenuSeparator className="my-1" />
-                <DropdownMenuItem
-                  onClick={() => handleItemClick('admin')}
-                  className={`flex items-center px-3 py-2 cursor-pointer rounded-lg mx-1 my-0.5 transition-all duration-200 ${
-                    currentMode === 'admin'
-                      ? 'bg-red-50 text-red-600 font-medium'
-                      : 'hover:bg-red-50 text-red-600'
-                  }`}
-                >
-                  <Settings className="h-4 w-4 mr-3 flex-shrink-0" />
-                  <span className="text-sm">Admin</span>
-                </DropdownMenuItem>
-              </>
-            )}
+            {/* Admin section removed for Apple App Store compliance */}
           </DropdownMenuContent>
         </DropdownMenu>
 

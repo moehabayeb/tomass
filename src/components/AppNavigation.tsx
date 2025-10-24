@@ -22,12 +22,12 @@ import { useBadgeSystem } from '@/hooks/useBadgeSystem';
 import { Toaster } from '@/components/ui/toaster';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
-import MeetingsAdminPage from '@/pages/admin/MeetingsAdminPage';
+// Admin panel removed for Apple App Store compliance
 import { MeetingsWidget } from '@/components/meetings/MeetingsWidget';
 import { TestResult } from '@/services/speakingTestService';
 import { ErrorBoundary } from './ErrorBoundary';
 
-type AppMode = 'speaking' | 'lessons' | 'bookmarks' | 'badges' | 'placement-test' | 'games' | 'meetings' | 'admin';
+type AppMode = 'speaking' | 'lessons' | 'bookmarks' | 'badges' | 'placement-test' | 'games' | 'meetings';
 
 export default function AppNavigation() {
   const [currentMode, setCurrentMode] = useState<AppMode>('speaking');
@@ -292,9 +292,11 @@ export default function AppNavigation() {
       {/* Meetings Widget - Show on speaking page */}
       {currentMode === 'speaking' && (
         <div className="fixed bottom-4 right-4 z-10 max-w-sm">
-          <MeetingsWidget
-            className="border-white/20 bg-white/10 backdrop-blur-xl text-white"
-          />
+          <ErrorBoundary>
+            <MeetingsWidget
+              className="border-white/20 bg-white/10 backdrop-blur-xl text-white"
+            />
+          </ErrorBoundary>
         </div>
       )}
 
@@ -336,11 +338,9 @@ export default function AppNavigation() {
       )}
       
       {currentMode === 'meetings' && (
-        <MeetingsApp onBack={() => setCurrentMode('speaking')} />
-      )}
-
-      {currentMode === 'admin' && (
-        <MeetingsAdminPage />
+        <ErrorBoundary>
+          <MeetingsApp onBack={() => setCurrentMode('speaking')} />
+        </ErrorBoundary>
       )}
 
       {currentMode === 'speaking' && (
