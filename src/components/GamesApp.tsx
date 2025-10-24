@@ -12,10 +12,17 @@ interface GamesAppProps {
 
 export const GamesApp: React.FC<GamesAppProps> = ({ onBack }) => {
   const [selectedGame, setSelectedGame] = useState<'menu' | 'hangman' | 'flashcards'>('menu');
+  // 🔧 FIX #6: Reset error boundary when game changes to prevent stale error state
+  const [errorBoundaryKey, setErrorBoundaryKey] = useState(0);
+
+  React.useEffect(() => {
+    // Reset error boundary when switching games
+    setErrorBoundaryKey(prev => prev + 1);
+  }, [selectedGame]);
 
   if (selectedGame === 'hangman') {
     return (
-      <HangmanErrorBoundary onReset={() => setSelectedGame('menu')}>
+      <HangmanErrorBoundary key={errorBoundaryKey} onReset={() => setSelectedGame('menu')}>
         <HangmanGame onBack={() => setSelectedGame('menu')} />
       </HangmanErrorBoundary>
     );

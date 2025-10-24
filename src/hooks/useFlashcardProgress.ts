@@ -153,10 +153,40 @@ export const useFlashcardProgress = () => {
     saveProgress(newProgress);
   }, [progress, saveProgress]);
 
+  // 🔧 FIX #9: Incremental progress save - update after each card to prevent data loss
+  const updateWordProgress = useCallback((word: string, correct: boolean) => {
+    const newProgress = { ...progress };
+
+    // Update word stats
+    if (!newProgress.wordAttempts[word]) {
+      newProgress.wordAttempts[word] = { correct: 0, total: 0 };
+    }
+    newProgress.wordAttempts[word].total += 1;
+    if (correct) {
+      newProgress.wordAttempts[word].correct += 1;
+    }
+
+    // Mark as mastered if correct 3+ times
+    const stats = newProgress.wordAttempts[word];
+    if (stats.correct >= 3 && !newProgress.masteredWords.includes(word)) {
+      newProgress.masteredWords.push(word);
+    }
+
+    // Update global stats
+    newProgress.totalAttempts += 1;
+    if (correct) {
+      newProgress.totalCorrect += 1;
+    }
+    newProgress.lastPlayedDate = new Date().toISOString();
+
+    saveProgress(newProgress);
+  }, [progress, saveProgress]);
+
   return {
     progress,
     isLoading,
     completeTier,
+    updateWordProgress,
     isTierUnlocked,
     getTierBestScore,
     getTierAttempts,
