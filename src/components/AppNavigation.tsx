@@ -25,6 +25,7 @@ import { Tables } from '@/integrations/supabase/types';
 import MeetingsAdminPage from '@/pages/admin/MeetingsAdminPage';
 import { MeetingsWidget } from '@/components/meetings/MeetingsWidget';
 import { TestResult } from '@/services/speakingTestService';
+import { ErrorBoundary } from './ErrorBoundary';
 
 type AppMode = 'speaking' | 'lessons' | 'bookmarks' | 'badges' | 'placement-test' | 'games' | 'meetings' | 'admin';
 
@@ -343,10 +344,12 @@ export default function AppNavigation() {
       )}
 
       {currentMode === 'speaking' && (
-        <SpeakingApp
-          initialMessage={continuedMessage}
-          key={continuedMessage ? `continued-${Date.now()}` : 'default'} // Force re-mount when continuing
-        />
+        <ErrorBoundary>
+          <SpeakingApp
+            initialMessage={continuedMessage}
+            key={continuedMessage ? `continued-${Date.now()}` : 'default'} // Force re-mount when continuing
+          />
+        </ErrorBoundary>
       )}
 
       {/* Toast Notifications */}

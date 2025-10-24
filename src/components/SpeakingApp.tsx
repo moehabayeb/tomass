@@ -183,6 +183,10 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   });
   const [audioContextResumed, setAudioContextResumed] = useState(false);
 
+  // 🔧 FIX #7: iOS autoplay handling - detect iOS and show unlock prompt
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const [showAudioUnlockPrompt, setShowAudioUnlockPrompt] = useState(false);
+
   // 🔧 FIX #2: Store AudioContext in ref to prevent memory leaks
   const audioContextRef = useRef<AudioContext | null>(null);
 
@@ -217,7 +221,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     return { enabled, resumed };
   };
 
-  // 🔧 FIX #2: Reuse AudioContext to prevent memory leaks
+  // 🔧 FIX #2 & #7: Reuse AudioContext to prevent memory leaks + iOS autoplay handling
   const enableAudioContext = async (): Promise<boolean> => {
     try {
       if (typeof window !== 'undefined' && window.AudioContext) {
@@ -229,14 +233,26 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         const audioContext = audioContextRef.current;
 
         if (audioContext.state === 'suspended') {
+          // 🔧 FIX #7: On iOS, show unlock prompt before attempting resume
+          if (isIOS && !audioContextResumed) {
+            setShowAudioUnlockPrompt(true);
+          }
           await audioContext.resume();
         }
 
-        setAudioContextResumed(true);
-        return true;
+        // 🔧 FIX #7: Hide prompt once audio is successfully unlocked
+        if (audioContext.state === 'running') {
+          setAudioContextResumed(true);
+          setShowAudioUnlockPrompt(false);
+          return true;
+        }
       }
       return false;
     } catch (error) {
+      // 🔧 FIX #7: Show prompt on error for iOS
+      if (isIOS) {
+        setShowAudioUnlockPrompt(true);
+      }
       return false;
     }
   };
@@ -1089,6 +1105,59 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     }
   }, [lastLevelUpTime, level]);
 
+  // 🔧 FIX #8: iOS audio session configuration - handle interruptions and visibility changes
+  useEffect(() => {
+    if (!isIOS) return; // Only needed for iOS
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        // Page is hidden - pause TTS if speaking
+        if (TTSManager.isSpeaking()) {
+          TTSManager.stop();
+        }
+        // Suspend audio context to save resources
+        if (audioContextRef.current && audioContextRef.current.state === 'running') {
+          audioContextRef.current.suspend();
+        }
+      } else {
+        // Page is visible - resume audio context if needed
+        if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
+          audioContextRef.current.resume().catch(() => {
+            // Resume failed - may need user gesture
+            setShowAudioUnlockPrompt(true);
+          });
+        }
+      }
+    };
+
+    const handleAudioInterruption = () => {
+      // Handle audio interruptions (phone calls, etc.)
+      if (TTSManager.isSpeaking()) {
+        TTSManager.stop();
+      }
+      if (micState === 'recording') {
+        try {
+          stopRecording();
+        } catch (e) {
+          // Ignore errors
+        }
+      }
+    };
+
+    // Listen for visibility changes
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Listen for audio interruptions (iOS Safari)
+    window.addEventListener('pagehide', handleAudioInterruption);
+    window.addEventListener('blur', handleAudioInterruption);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('pagehide', handleAudioInterruption);
+      window.removeEventListener('blur', handleAudioInterruption);
+    };
+  }, [isIOS, micState]);
+
   // 🔧 FIX #1, #2, #3: Comprehensive cleanup on component unmount (prevents memory leaks)
   useEffect(() => {
     // Mark component as mounted
@@ -1254,6 +1323,31 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     <div className="fixed inset-0 flex flex-col bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 overflow-hidden">
       {/* Fixed Mobile Header */}
       <MobileHeader />
+
+      {/* 🔧 FIX #7: iOS Audio Unlock Prompt - Prominent banner with clear CTA */}
+      {showAudioUnlockPrompt && isIOS && (
+        <div className="fixed top-20 left-4 right-4 z-50 animate-slide-in-up">
+          <div className="bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl shadow-2xl border-2 border-white/30 overflow-hidden">
+            <div className="p-4 flex items-center gap-4">
+              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
+                <Volume2 className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-white font-bold text-base mb-1">Enable Audio</h3>
+                <p className="text-white/90 text-sm">Tap the button below to enable sound and start speaking practice</p>
+              </div>
+              <button
+                onClick={async () => {
+                  await enableAudioContext();
+                }}
+                className="flex-shrink-0 px-6 py-3 bg-white text-purple-600 rounded-full font-bold text-sm shadow-lg active:scale-95 transition-transform"
+              >
+                Enable
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Full-Screen Scrollable Chat Area - adjusted for floating header */}
       <div className="flex-1 overflow-y-auto pt-[240px] pb-24 px-4 overscroll-behavior-contain">
