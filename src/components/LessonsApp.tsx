@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { useTextToSpeech } from '@/hooks/useTextToSpeech';
 import { useGamification } from '@/hooks/useGamification';
 import { useBadgeSystem } from '@/hooks/useBadgeSystem';
 import CanvasAvatar from './CanvasAvatar';
@@ -22,7 +21,6 @@ import { useLessonVoiceCommands } from '../hooks/useVoiceCommands';
 import VoiceControls from './lessons/VoiceControls';
 import ResumeChip from './lessons/ResumeChip';
 import { CelebrationOverlay } from './CelebrationOverlay';
-import { LessonAutoReader, type LessonContent, type ReadingProgress } from '@/utils/lessonAutoReader';
 import MobileCompactIntro from './MobileCompactIntro';
 import { useIsMobile } from '@/hooks/use-mobile';
 // Import QA test for browser console access
@@ -214,7 +212,7 @@ interface LessonsAppProps {
 }
 
 type ViewState = 'levels' | 'modules' | 'lesson';
-type LessonPhase = 'intro' | 'teacher-reading' | 'speaking' | 'complete';
+type LessonPhase = 'intro' | 'speaking' | 'complete';
 type SpeakStatus = 'idle'|'prompting'|'recording'|'transcribing'|'evaluating'|'advancing';
 
 // Levels data - TEMPORARILY UNLOCKED FOR DEVELOPMENT
@@ -718,9 +716,6 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
   const [selectedLevel, setSelectedLevel] = useState<string>('');
   const [selectedModule, setSelectedModule] = useState<number>(0);
   const [currentPhase, setCurrentPhase] = useState<LessonPhase>('intro');
-  const [isTeacherReading, setIsTeacherReading] = useState(false);
-  const [readingComplete, setReadingComplete] = useState(false);
-  const [hasBeenRead, setHasBeenRead] = useState<Record<string, boolean>>({});
   const [speakingIndex, setSpeakingIndex] = useState(0);
   const [isHydrated, setIsHydrated] = useState(false);
   
@@ -728,15 +723,7 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [questionStartTime, setQuestionStartTime] = useState<number>(0);
   const [currentQuestionRetries, setCurrentQuestionRetries] = useState<number>(0);
-  
-  // Auto-reader state
-  const [readingProgress, setReadingProgress] = useState<{
-    isReading: boolean;
-    currentSection: string;
-    progress: number;
-    currentText: string;
-  } | null>(null);
-  
+
   // UI state
   const [showCelebration, setShowCelebration] = useState(false);
   const [correctAnswers, setCorrectAnswers] = useState(0);
@@ -1325,13 +1312,11 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
     setEvaluationResult(null);
   }, [speakingIndex, selectedModule]);
 
-  const { isSpeaking, soundEnabled, toggleSound } = useTextToSpeech();
   const { earnXPForGrammarLesson, addXP } = useGamification();
   const { incrementGrammarLessons, incrementTotalExercises } = useBadgeSystem();
   
   const { avatarState, triggerState } = useAvatarState({
     isRecording,
-    isSpeaking,
     isProcessing,
     lastMessageTime: lastResponseTime
   });
@@ -1538,76 +1523,6 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
     obs.observe(introRef.current);
     return () => obs.disconnect();
   }, [cancelAllNarration]);
-
-  // Speak ONLY when Intro is the active phase AND the Intro block is visible.
-  // Stop on any change.
-  useEffect(() => {
-    cancelAllNarration();
-
-    const canRead =
-      viewState === 'lesson' &&
-      currentPhase === 'intro' &&
-      selectedModule != null &&
-      !!currentModuleData?.intro &&
-      !hasBeenRead[lessonKey];
-      // REMOVED: introVisibleRef.current dependency for immediate triggering
-
-    console.log('🔍 Auto-reading check:', {
-      viewState,
-      currentPhase,
-      selectedModule,
-      hasIntro: !!currentModuleData?.intro,
-      hasBeenRead: hasBeenRead[lessonKey],
-      canRead
-    });
-
-    if (canRead) {
-      console.log('🚀 Triggering auto-reading immediately for lesson:', currentModuleData?.title);
-      
-      // CRITICAL FIX: Run TTS test in parallel, don't block startAutoReading
-      setTimeout(async () => {
-        try {
-          // Start reading immediately, don't wait for test
-          console.log('🚀 Starting auto-reading immediately...');
-          startAutoReading();
-          
-          // Run TTS test in parallel (non-blocking)
-          console.log('🔧 Running TTS capability test in parallel...');
-          Promise.race([
-            testTTSCapabilities(),
-            new Promise(resolve => setTimeout(resolve, 5000)) // 5 second timeout
-          ]).then(() => {
-            console.log('🔧 TTS capability test completed or timed out');
-          }).catch(error => {
-            console.warn('🔧 TTS capability test failed:', error);
-          });
-          
-        } catch (error) {
-          console.error('🚨 Critical error in auto-reading setup:', error);
-          // Try to start reading anyway as fallback
-          try {
-            startAutoReading();
-          } catch (fallbackError) {
-            console.error('🚨 Fallback reading also failed:', fallbackError);
-          }
-        }
-      }, 500);
-    }
-
-    return () => cancelAllNarration();
-  }, [
-    viewState,
-    currentPhase,
-    selectedModule,
-    currentModuleData?.intro,
-    hasBeenRead[lessonKey],
-    cancelAllNarration
-  ]);
-
-  // Any phase that is not Intro must be silent
-  useEffect(() => {
-    if (currentPhase !== 'intro') cancelAllNarration();
-  }, [currentPhase, cancelAllNarration]);
 
   // Cancel if menu opens or route/view changes
   useEffect(() => { cancelAllNarration(); }, [viewState, cancelAllNarration]);
@@ -1979,590 +1894,6 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
     celebrateAndAdvance();
   }
 
-  // Auto-reading functionality with language detection
-  const startAutoReading = async () => {
-    console.log('🎬 startAutoReading called!');
-    setIsTeacherReading(true);
-    // Keep phase as 'intro' during reading so content stays visible
-    
-    try {
-      // IMMEDIATE FIX: Use simple language-aware reading
-      console.log('🎯 Starting quick language-aware reading for lesson:', currentModuleData.title);
-      
-      // Set initial progress
-      setReadingProgress({
-        isReading: true,
-        currentSection: 'Initializing',
-        progress: 0,
-        currentText: 'Preparing to read lesson...'
-      });
-      
-      // Import language detection
-      const { segmentMixedContent } = await import('@/utils/languageDetection');
-      const { VoiceConsistencyManager } = await import('@/config/voice');
-      
-      // Initialize voice system
-      await VoiceConsistencyManager.initialize();
-      
-      // Calculate total sections
-      let totalSections = 0;
-      if (currentModuleData.title) totalSections++;
-      if (currentModuleData.description) totalSections++;
-      if (currentModuleData.intro) totalSections++;
-      if ('tip' in currentModuleData && currentModuleData.tip) totalSections++;
-      
-      let completedSections = 0;
-      
-      // Read title
-      if (currentModuleData.title) {
-        setReadingProgress({
-          isReading: true,
-          currentSection: 'Title',
-          progress: (completedSections / totalSections) * 100,
-          currentText: currentModuleData.title
-        });
-        
-        console.log('📖 Reading title...');
-        const titleSegments = segmentMixedContent(currentModuleData.title);
-        for (let i = 0; i < titleSegments.length; i++) {
-          const segment = titleSegments[i];
-          console.log(`📝 Title segment ${i + 1}/${titleSegments.length}: "${segment.text}" (${segment.language})`);
-          await speakSegmentWithRetry(segment.text, segment.language === 'tr' ? 'tr' : 'en');
-          
-          // Language-aware pausing for smooth transitions
-          if (i < titleSegments.length - 1) {
-            const nextSegment = titleSegments[i + 1];
-            const needsLanguageSwitch = segment.language !== nextSegment.language;
-            const pauseDuration = needsLanguageSwitch ? 400 : 150; // Longer pause for language switch
-            await new Promise(resolve => setTimeout(resolve, pauseDuration));
-          }
-        }
-        completedSections++;
-        await new Promise(resolve => setTimeout(resolve, 800)); // Longer pause after title
-      }
-      
-      // Read description  
-      if (currentModuleData.description) {
-        setReadingProgress({
-          isReading: true,
-          currentSection: 'Description',
-          progress: (completedSections / totalSections) * 100,
-          currentText: currentModuleData.description
-        });
-        
-        console.log('📖 Reading description...');
-        const descSegments = segmentMixedContent(currentModuleData.description);
-        for (let i = 0; i < descSegments.length; i++) {
-          const segment = descSegments[i];
-          console.log(`📝 Description segment ${i + 1}/${descSegments.length}: "${segment.text}" (${segment.language})`);
-          await speakSegmentWithRetry(segment.text, segment.language === 'tr' ? 'tr' : 'en');
-          
-          // Language-aware pausing for smooth transitions
-          if (i < descSegments.length - 1) {
-            const nextSegment = descSegments[i + 1];
-            const needsLanguageSwitch = segment.language !== nextSegment.language;
-            const pauseDuration = needsLanguageSwitch ? 400 : 150;
-            await new Promise(resolve => setTimeout(resolve, pauseDuration));
-          }
-        }
-        completedSections++;
-        await new Promise(resolve => setTimeout(resolve, 800)); // Longer pause after description
-      }
-      
-      // Read intro
-      if (currentModuleData.intro) {
-        setReadingProgress({
-          isReading: true,
-          currentSection: 'Introduction',
-          progress: (completedSections / totalSections) * 100,
-          currentText: currentModuleData.intro.substring(0, 100) + '...'
-        });
-        
-        console.log('📖 Reading intro...');
-        const introSegments = segmentMixedContent(currentModuleData.intro);
-        for (let i = 0; i < introSegments.length; i++) {
-          const segment = introSegments[i];
-          console.log(`📝 Intro segment ${i + 1}/${introSegments.length}: "${segment.text}" (${segment.language})`);
-          await speakSegmentWithRetry(segment.text, segment.language === 'tr' ? 'tr' : 'en');
-          
-          // Language-aware pausing for smooth transitions
-          if (i < introSegments.length - 1) {
-            const nextSegment = introSegments[i + 1];
-            const needsLanguageSwitch = segment.language !== nextSegment.language;
-            const pauseDuration = needsLanguageSwitch ? 400 : 150;
-            await new Promise(resolve => setTimeout(resolve, pauseDuration));
-          }
-        }
-        completedSections++;
-      }
-      
-      // Read tip if available
-      if ('tip' in currentModuleData && currentModuleData.tip) {
-        setReadingProgress({
-          isReading: true,
-          currentSection: 'Grammar Tip',
-          progress: (completedSections / totalSections) * 100,
-          currentText: `Grammar tip: ${currentModuleData.tip}`
-        });
-        
-        console.log('📖 Reading grammar tip...');
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Pause before tip
-        const tipText = `Grammar tip: ${currentModuleData.tip}`;
-        const tipSegments = segmentMixedContent(tipText);
-        for (let i = 0; i < tipSegments.length; i++) {
-          const segment = tipSegments[i];
-          console.log(`📝 Tip segment ${i + 1}/${tipSegments.length}: "${segment.text}" (${segment.language})`);
-          await speakSegmentWithRetry(segment.text, segment.language === 'tr' ? 'tr' : 'en');
-          
-          if (i < tipSegments.length - 1) {
-            await new Promise(resolve => setTimeout(resolve, 200));
-          }
-        }
-        completedSections++;
-      }
-      
-      // Mark as completed
-      setReadingProgress({
-        isReading: false,
-        currentSection: 'Completed',
-        progress: 100,
-        currentText: 'Lesson reading completed successfully!'
-      });
-      
-      setIsTeacherReading(false);
-      setReadingComplete(true);
-      setCurrentPhase('listening');
-      setHasBeenRead(prev => ({ ...prev, [lessonKey]: true }));
-      
-      console.log('✅ Language-aware reading completed successfully');
-      
-    } catch (error) {
-      console.error('❌ Error during auto-reading:', error);
-      console.error('❌ Error stack:', error.stack);
-      setIsTeacherReading(false);
-      // Fallback to old reading method if auto-reader fails
-      console.log('🔄 Falling back to legacy reading...');
-      startLegacyTeacherReading();
-    }
-  };
-  
-  // RETRY FUNCTION: Enhanced TTS with retry logic and fallbacks
-  const speakSegmentWithRetry = async (text: string, language: 'en' | 'tr', maxRetries: number = 2): Promise<void> => {
-    let attempt = 0;
-    
-    while (attempt <= maxRetries) {
-      try {
-        console.log(`🔧 Attempt ${attempt + 1}/${maxRetries + 1} for: "${text.substring(0, 30)}..."`);
-        await speakSegmentCore(text, language);
-        console.log(`🔧 ✅ Success on attempt ${attempt + 1} for: "${text.substring(0, 30)}..."`);
-        return; // Success!
-      } catch (error) {
-        attempt++;
-        console.error(`🔧 ❌ Attempt ${attempt} failed for: "${text.substring(0, 30)}...":`, error);
-        
-        if (attempt <= maxRetries) {
-          console.log(`🔧 🔄 Retrying in 1 second... (attempt ${attempt + 1}/${maxRetries + 1})`);
-          
-          try {
-            // Reset speechSynthesis state before retry
-            speechSynthesis.cancel();
-            await new Promise(resolve => setTimeout(resolve, 1000));
-          } catch (resetError) {
-            console.warn('🔧 Error during retry setup:', resetError);
-          }
-        } else {
-          // Last resort: Try basic TTS without advanced features
-          console.log(`🔧 🚨 Trying basic fallback TTS for: "${text.substring(0, 30)}..."`);
-          try {
-            await basicTTSFallback(text, language);
-            console.log(`🔧 ✅ Basic fallback succeeded for: "${text.substring(0, 30)}..."`);
-            return;
-          } catch (fallbackError) {
-            console.error(`🔧 💀 Even basic fallback failed for: "${text.substring(0, 30)}...":`, fallbackError);
-          }
-        }
-      }
-    }
-    
-    console.error(`🔧 💀 All attempts failed for: "${text.substring(0, 30)}..." - continuing anyway`);
-    // Continue anyway to not block the entire reading process
-  };
-
-  // FALLBACK: Basic TTS without advanced features
-  const basicTTSFallback = async (text: string, language: 'en' | 'tr'): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      try {
-        const utterance = new SpeechSynthesisUtterance(text.trim());
-        utterance.lang = language === 'tr' ? 'tr-TR' : 'en-US';
-        utterance.rate = 0.9;
-        utterance.volume = 1.0;
-        utterance.pitch = 1.0;
-        
-        utterance.onend = () => resolve();
-        utterance.onerror = (event) => reject(new Error(`Basic TTS error: ${event.error}`));
-        
-        speechSynthesis.speak(utterance);
-        
-        // Basic timeout
-        setTimeout(() => {
-          speechSynthesis.cancel();
-          resolve(); // Don't reject to avoid blocking
-        }, 5000);
-        
-      } catch (error) {
-        reject(error);
-      }
-    });
-  };
-
-  // CRITICAL DEBUG: Enhanced TTS implementation with comprehensive logging
-  const speakSegmentCore = async (text: string, language: 'en' | 'tr'): Promise<void> => {
-    return new Promise(async (resolve, reject) => {
-      const debugId = Math.random().toString(36).substr(2, 9);
-      console.log(`🔧 [${debugId}] speakSegment STARTED for ${language}: "${text.trim()}"`);
-      
-      try {
-        // Skip empty or whitespace-only text
-        if (!text || text.trim().length === 0) {
-          console.log(`🔧 [${debugId}] SKIPPING empty text`);
-          resolve();
-          return;
-        }
-
-        // 1. DEBUG: Log speechSynthesis state before starting
-        console.log(`🔧 [${debugId}] speechSynthesis.speaking: ${speechSynthesis.speaking}`);
-        console.log(`🔧 [${debugId}] speechSynthesis.pending: ${speechSynthesis.pending}`);
-        console.log(`🔧 [${debugId}] speechSynthesis.paused: ${speechSynthesis.paused}`);
-
-        // Wait for any existing speech to complete first
-        console.log(`🔧 [${debugId}] Waiting for speech to finish...`);
-        await waitForSpeechToFinish();
-        console.log(`🔧 [${debugId}] Speech wait completed`);
-
-        // 2. DEBUG: Create utterance and log initial state
-        const utterance = new SpeechSynthesisUtterance(text.trim());
-        console.log(`🔧 [${debugId}] Utterance created for text: "${text.trim()}"`);
-        
-        const { VoiceConsistencyManager } = require('@/config/voice');
-        
-        // 3. DEBUG: Ensure voices are loaded with detailed logging
-        console.log(`🔧 [${debugId}] Ensuring voices are loaded...`);
-        await ensureVoicesLoaded();
-        const voices = speechSynthesis.getVoices();
-        console.log(`🔧 [${debugId}] Available voices count: ${voices.length}`);
-        console.log(`🔧 [${debugId}] Available ${language} voices:`, 
-          voices.filter(v => language === 'tr' ? v.lang.startsWith('tr') : v.lang.startsWith('en')).map(v => v.name));
-        
-        // 4. DEBUG: Configure voice with detailed logging
-        console.log(`🔧 [${debugId}] Configuring voice for language: ${language}`);
-        const success = VoiceConsistencyManager.configureUtterance(utterance, text, language);
-        console.log(`🔧 [${debugId}] VoiceConsistencyManager.configureUtterance success: ${success}`);
-        
-        if (!success) {
-          console.warn(`🔧 [${debugId}] Failed to configure ${language} voice, attempting fallback`);
-          const fallbackVoice = language === 'tr' 
-            ? voices.find(v => v.lang.startsWith('tr'))
-            : voices.find(v => v.lang.startsWith('en'));
-          if (fallbackVoice) {
-            utterance.voice = fallbackVoice;
-            console.log(`🔧 [${debugId}] Using fallback ${language} voice: ${fallbackVoice.name}`);
-          } else {
-            console.error(`🔧 [${debugId}] NO FALLBACK VOICE FOUND for language: ${language}`);
-          }
-        }
-
-        // 5. DEBUG: Log final voice selection
-        console.log(`🔧 [${debugId}] Final selected voice:`, utterance.voice ? utterance.voice.name : 'NULL');
-        console.log(`🔧 [${debugId}] Final voice lang:`, utterance.voice ? utterance.voice.lang : 'N/A');
-
-        // 6. DEBUG: Configure speech parameters with logging
-        utterance.rate = language === 'tr' ? 0.85 : 0.9;
-        utterance.volume = 1.0;
-        utterance.pitch = language === 'tr' ? 1.0 : 0.95;
-        console.log(`🔧 [${debugId}] Speech params - rate: ${utterance.rate}, volume: ${utterance.volume}, pitch: ${utterance.pitch}`);
-        
-        let completed = false;
-        let startTriggered = false;
-
-        // 7. DEBUG: Enhanced event handling with detailed logging
-        utterance.onstart = () => {
-          startTriggered = true;
-          console.log(`🔧 [${debugId}] ✅ ONSTART triggered - Audio playback started!`);
-          console.log(`🔧 [${debugId}] speechSynthesis.speaking during onstart: ${speechSynthesis.speaking}`);
-        };
-
-        utterance.onend = () => {
-          if (!completed) {
-            completed = true;
-            clearInterval(monitor); // Stop monitoring
-            console.log(`🔧 [${debugId}] ✅ ONEND triggered - Audio playback finished`);
-            console.log(`🔧 [${debugId}] startTriggered was: ${startTriggered}`);
-            resolve();
-          }
-        };
-
-        utterance.onerror = (event) => {
-          if (!completed) {
-            completed = true;
-            clearInterval(monitor); // Stop monitoring
-            console.error(`🔧 [${debugId}] ❌ ONERROR triggered:`, event.error, event);
-            console.log(`🔧 [${debugId}] startTriggered was: ${startTriggered}`);
-            reject(new Error(`TTS Error: ${event.error}`)); // Properly throw error for retry
-          }
-        };
-
-        utterance.onpause = () => {
-          console.log(`🔧 [${debugId}] ⏸️ ONPAUSE triggered`);
-        };
-
-        utterance.onresume = () => {
-          console.log(`🔧 [${debugId}] ▶️ ONRESUME triggered`);
-        };
-
-        utterance.onboundary = (event) => {
-          console.log(`🔧 [${debugId}] 🏁 ONBOUNDARY triggered:`, event.name);
-        };
-
-        // 8. DEBUG: Log speechSynthesis state right before speak
-        console.log(`🔧 [${debugId}] About to call speechSynthesis.speak()`);
-        console.log(`🔧 [${debugId}] speechSynthesis state before speak:`, {
-          speaking: speechSynthesis.speaking,
-          pending: speechSynthesis.pending,
-          paused: speechSynthesis.paused
-        });
-
-        // 9. DEBUG: Start monitoring and call speak with error handling
-        const monitor = monitorSpeechSynthesis(debugId, 500); // Monitor every 500ms
-        
-        try {
-          speechSynthesis.speak(utterance);
-          console.log(`🔧 [${debugId}] ✅ speechSynthesis.speak() called successfully`);
-        } catch (speakError) {
-          console.error(`🔧 [${debugId}] ❌ speechSynthesis.speak() threw error:`, speakError);
-          clearInterval(monitor);
-          completed = true;
-          resolve();
-          return;
-        }
-
-        // 10. DEBUG: Log state immediately after speak call
-        setTimeout(() => {
-          console.log(`🔧 [${debugId}] speechSynthesis state after speak (100ms delay):`, {
-            speaking: speechSynthesis.speaking,
-            pending: speechSynthesis.pending,
-            paused: speechSynthesis.paused
-          });
-          console.log(`🔧 [${debugId}] startTriggered so far: ${startTriggered}`);
-        }, 100);
-
-        // 11. DEBUG: Enhanced timeout with diagnostic info
-        setTimeout(() => {
-          if (!completed) {
-            completed = true;
-            clearInterval(monitor); // Stop monitoring
-            console.error(`🔧 [${debugId}] ⏰ TIMEOUT REACHED (10s)`);
-            console.log(`🔧 [${debugId}] Final diagnostic:`, {
-              startTriggered,
-              speechSynthesis_speaking: speechSynthesis.speaking,
-              speechSynthesis_pending: speechSynthesis.pending,
-              voice_name: utterance.voice?.name || 'NULL',
-              voice_lang: utterance.voice?.lang || 'N/A',
-              text_length: text.trim().length
-            });
-            speechSynthesis.cancel();
-            
-            // If onstart never triggered, this might be a voice/audio issue - retry
-            if (!startTriggered) {
-              reject(new Error('TTS Timeout - onstart never triggered (possible voice/audio issue)'));
-            } else {
-              // If onstart was triggered but onend didn't fire, continue without retry
-              resolve();
-            }
-          }
-        }, 10000);
-        
-      } catch (error) {
-        console.error(`🔧 [${debugId}] ❌ speakSegment EXCEPTION:`, error);
-        reject(error); // Propagate error for retry
-      }
-    });
-  };
-
-  // Helper: Wait for any existing speech to finish
-  const waitForSpeechToFinish = (): Promise<void> => {
-    return new Promise((resolve) => {
-      if (!speechSynthesis.speaking) {
-        resolve();
-        return;
-      }
-
-      const checkSpeech = () => {
-        if (!speechSynthesis.speaking) {
-          resolve();
-        } else {
-          setTimeout(checkSpeech, 50);
-        }
-      };
-      
-      checkSpeech();
-    });
-  };
-
-  // DIAGNOSTIC FUNCTION: Test TTS capabilities and voice selection (NON-BLOCKING)
-  const testTTSCapabilities = async () => {
-    try {
-      console.log('🔧 ===== TTS CAPABILITY TEST =====');
-      
-      // 1. Test speechSynthesis availability
-      console.log('🔧 speechSynthesis available:', 'speechSynthesis' in window);
-      if (!('speechSynthesis' in window)) {
-        throw new Error('speechSynthesis not available in this browser');
-      }
-      
-      console.log('🔧 speechSynthesis state:', {
-        speaking: speechSynthesis.speaking,
-        pending: speechSynthesis.pending,
-        paused: speechSynthesis.paused
-      });
-      
-      // 2. Test voice loading with timeout
-      console.log('🔧 Loading voices...');
-      try {
-        await Promise.race([
-          ensureVoicesLoaded(),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Voice loading timeout')), 2000))
-        ]);
-      } catch (error) {
-        console.warn('🔧 Voice loading failed:', error.message);
-      }
-      
-      const voices = speechSynthesis.getVoices();
-      console.log('🔧 Total voices available:', voices.length);
-      
-      // 3. Test English voices
-      const englishVoices = voices.filter(v => v.lang.startsWith('en'));
-      console.log('🔧 English voices:', englishVoices.map(v => `${v.name} (${v.lang})`));
-      
-      // 4. Test Turkish voices
-      const turkishVoices = voices.filter(v => v.lang.startsWith('tr'));
-      console.log('🔧 Turkish voices:', turkishVoices.map(v => `${v.name} (${v.lang})`));
-      
-      // 5. Test VoiceConsistencyManager (with error handling)
-      try {
-        const { VoiceConsistencyManager } = require('@/config/voice');
-        const testUtterance = new SpeechSynthesisUtterance('test');
-        const success = VoiceConsistencyManager.configureUtterance(testUtterance, 'test', 'en');
-        console.log('🔧 VoiceConsistencyManager configure success:', success);
-        console.log('🔧 Selected voice after configure:', testUtterance.voice?.name || 'NULL');
-      } catch (error) {
-        console.warn('🔧 VoiceConsistencyManager test failed:', error.message);
-      }
-      
-      // 6. Test simple TTS (quick, non-blocking)
-      console.log('🔧 Testing simple TTS...');
-      try {
-        const simpleUtterance = new SpeechSynthesisUtterance('Test');
-        simpleUtterance.volume = 0.1; // Very quiet for testing
-        simpleUtterance.rate = 2.0;   // Very fast for testing
-        simpleUtterance.pitch = 1.0;
-        
-        simpleUtterance.onstart = () => console.log('🔧 Simple TTS started successfully');
-        simpleUtterance.onend = () => console.log('🔧 Simple TTS ended successfully');
-        simpleUtterance.onerror = (e) => console.warn('🔧 Simple TTS error:', e.error);
-        
-        speechSynthesis.speak(simpleUtterance);
-        console.log('🔧 Simple TTS speak() called without error');
-      } catch (error) {
-        console.warn('🔧 Simple TTS speak() threw error:', error.message);
-      }
-      
-      console.log('🔧 ===== END TTS CAPABILITY TEST =====');
-    } catch (error) {
-      console.error('🔧 TTS Capability test failed:', error.message);
-      throw error; // Re-throw for Promise.race timeout handling
-    }
-  };
-
-  // DIAGNOSTIC FUNCTION: Monitor speechSynthesis state continuously
-  const monitorSpeechSynthesis = (debugId: string, intervalMs: number = 1000) => {
-    console.log(`🔧 [${debugId}] Starting speechSynthesis monitoring...`);
-    
-    const monitor = setInterval(() => {
-      console.log(`🔧 [${debugId}] Monitor:`, {
-        speaking: speechSynthesis.speaking,
-        pending: speechSynthesis.pending,
-        paused: speechSynthesis.paused,
-        voicesLength: speechSynthesis.getVoices().length
-      });
-    }, intervalMs);
-    
-    // Auto-stop monitoring after 30 seconds
-    setTimeout(() => {
-      clearInterval(monitor);
-      console.log(`🔧 [${debugId}] Stopped speechSynthesis monitoring`);
-    }, 30000);
-    
-    return monitor;
-  };
-
-  // Helper: Ensure voices are loaded
-  const ensureVoicesLoaded = (): Promise<void> => {
-    return new Promise((resolve) => {
-      const voices = speechSynthesis.getVoices();
-      if (voices.length > 0) {
-        resolve();
-        return;
-      }
-
-      const voicesChangedHandler = () => {
-        const voices = speechSynthesis.getVoices();
-        if (voices.length > 0) {
-          speechSynthesis.removeEventListener('voiceschanged', voicesChangedHandler);
-          resolve();
-        }
-      };
-
-      speechSynthesis.addEventListener('voiceschanged', voicesChangedHandler);
-      
-      // Timeout fallback
-      setTimeout(() => {
-        speechSynthesis.removeEventListener('voiceschanged', voicesChangedHandler);
-        resolve();
-      }, 3000);
-    });
-  };
-
-  // Legacy teacher reading (fallback)
-  const startLegacyTeacherReading = async () => {
-    setIsTeacherReading(true);
-    setCurrentPhase('teacher-reading');
-    narration.cancel();
-    
-    const introLines = currentModuleData.intro.split('\n');
-    
-    for (const line of introLines) {
-      if (line.trim() && !line.includes('Tabela') && !line.includes('tablo')) {
-        await new Promise<void>((resolve) => {
-          narration.speak(line);
-          const ms = Math.max(1200, line.split(' ').length * 350);
-          setTimeout(resolve, ms);
-        });
-      }
-    }
-    
-    if ('table' in currentModuleData && currentModuleData.table) {
-      await new Promise<void>((resolve) => {
-        narration.speak("Şimdi lütfen aşağıdaki tabloya göz atın.");
-        setTimeout(resolve, 2000);
-      });
-      await new Promise(resolve => setTimeout(resolve, 3000));
-    }
-    
-    setIsTeacherReading(false);
-    setReadingComplete(true);
-    setCurrentPhase('listening');
-    setHasBeenRead(prev => ({ ...prev, [lessonKey]: true }));
-  };
 
   // Audio recording setup
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
@@ -3386,14 +2717,6 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
                 isSyncing={checkpoints.isSyncing}
                 lastSyncAt={checkpoints.lastSyncAt}
               />
-              <Button
-                onClick={toggleSound}
-                variant="ghost"
-                size="icon"
-                className="text-white hover:bg-white/10 rounded-full w-10 h-10"
-              >
-                <Volume2 className={`h-4 w-4 ${!soundEnabled ? 'opacity-50' : ''}`} />
-              </Button>
             </div>
           </div>
 
@@ -3414,7 +2737,7 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
         {/* Removed duplicate "Tomas is Teaching" card - consolidated below */}
 
         {/* MOBILE COMPACT INTRO */}
-        {(currentPhase === 'intro' || currentPhase === 'teacher-reading') && (
+        {currentPhase === 'intro' && (
           <div ref={introRef}>
             <MobileCompactIntro
               title={currentModuleData.title}
@@ -3496,7 +2819,6 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
                           variant="ghost"
                           size="sm"
                           className="text-white/70 hover:text-white hover:bg-white/10"
-                          disabled={isSpeaking}
                         >
                           <Volume2 className="h-4 w-4 mr-2" />
                           Listen to Question
@@ -3586,7 +2908,6 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
                               variant="ghost"
                               size="sm"
                               className="text-white/70 hover:text-white hover:bg-white/10 mb-4"
-                              disabled={isSpeaking}
                             >
                               <Volume2 className="h-4 w-4 mr-2" />
                               Listen to Answer
