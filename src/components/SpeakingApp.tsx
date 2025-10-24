@@ -323,17 +323,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     return msgs;
   };
 
-  // 🔧 FIX #18: XSS protection - sanitize user input and AI responses
-  const sanitizeText = (text: string): string => {
-    // Escape HTML special characters to prevent XSS attacks
-    return text
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#x27;')
-      .replace(/\//g, '&#x2F;');
-  };
+  // Note: XSS protection is handled by React's default JSX escaping - no manual sanitization needed
 
   // B) No-duplicate rules + messageKey deduplication system
   const [spokenKeys, setSpokenKeys] = useState<Set<string>>(new Set()); // Track spoken message keys
@@ -546,28 +536,25 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     }
   };
 
-  // 🔧 FIX #18: Append user/assistant messages with XSS protection (unified with sequence counter)
+  // 🔧 FIX #18: Append user/assistant messages (React provides XSS protection via JSX escaping)
   const addChatBubble = (text: string, type: "user" | "bot" | "system", messageId?: string, messageKey?: string) => {
-    // Sanitize text to prevent XSS attacks
-    const sanitizedText = sanitizeText(text);
-
     const seq = messageSeqCounter;
     setMessageSeqCounter(prev => prev + 1);
 
     const id = messageId || `${type}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const newMessage = {
       id,
-      text: sanitizedText.trim(),
+      text: text.trim(),
       isUser: type === "user",
       isSystem: type === "system",
       role: type === "user" ? "user" as const : "assistant" as const,
-      content: sanitizedText.trim(),
+      content: text.trim(),
       seq
     };
 
     setMessages(prev => limitMessages([...prev, newMessage]));
     setLastMessageTime(Date.now());
-    
+
     return { id, seq, messageKey };
   };
 
