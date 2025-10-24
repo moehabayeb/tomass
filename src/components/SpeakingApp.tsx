@@ -1616,7 +1616,6 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
                 }
               }
             }}
-            aria-label={flowState === 'IDLE' || flowState === 'PAUSED' ? 'Start conversation' : 'Pause conversation'}
           >
             {/* Pulsing ring when listening */}
             {flowState === 'LISTENING' && (
