@@ -886,3 +886,35 @@
 .avatar-speaking .pupil-right {
   animation: pupil-move 2s ease-in-out infinite;
 }
+/* 🔧 FIX #16: Reduced motion support for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Disable specific animations */
+  .sparkle,
+  .sparkle-delayed,
+  .animate-slide-in-up,
+  .animate-pulse,
+  .avatar-speaking .mouth-closed,
+  .avatar-speaking .mouth-slightly-open,
+  .avatar-speaking .mouth-open,
+  .avatar-speaking .mouth-wide,
+  .avatar-blinking .eyelid-left,
+  .avatar-blinking .eyelid-right,
+  .avatar-speaking .pupil-left,
+  .avatar-speaking .pupil-right {
+    animation: none !important;
+  }
+
+  /* Keep essential feedback but remove decorative motion */
+  .active\:scale-95:active {
+    transform: none !important;
+  }
+}

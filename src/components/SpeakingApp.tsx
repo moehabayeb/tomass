@@ -44,7 +44,7 @@ const Sparkle = ({ className, delayed = false }: { className?: string; delayed?:
   />
 );
 
-// Floating XP Gain Animation Component
+// 🔧 FIX #11: Floating XP Gain Animation Component with ARIA
 const FloatingXP = ({ amount, onComplete }: { amount: number; onComplete: () => void }) => {
   useEffect(() => {
     const timer = setTimeout(onComplete, 2000); // Animation duration
@@ -57,6 +57,9 @@ const FloatingXP = ({ amount, onComplete }: { amount: number; onComplete: () => 
       style={{
         animation: 'floatUpFade 2s ease-out forwards'
       }}
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
     >
       <div className="flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 via-orange-400 to-yellow-400 text-white font-bold text-lg shadow-2xl">
         <span className="text-2xl">⚡</span>
@@ -186,6 +189,24 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   // 🔧 FIX #7: iOS autoplay handling - detect iOS and show unlock prompt
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   const [showAudioUnlockPrompt, setShowAudioUnlockPrompt] = useState(false);
+
+  // 🔧 FIX #13: iOS haptic feedback utility
+  const triggerHaptic = (type: 'light' | 'medium' | 'heavy' = 'light') => {
+    if (!isIOS || !navigator.vibrate) return;
+
+    // Different vibration patterns for different feedback types
+    const patterns = {
+      light: [10],       // Quick tap
+      medium: [20],      // Medium tap
+      heavy: [30, 10, 30] // Double tap for important events
+    };
+
+    try {
+      navigator.vibrate(patterns[type]);
+    } catch (e) {
+      // Vibration not supported or failed, silently ignore
+    }
+  };
 
   // 🔧 FIX #2: Store AudioContext in ref to prevent memory leaks
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -1158,6 +1179,69 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     };
   }, [isIOS, micState]);
 
+  // 🔧 FIX #12: Keyboard navigation support for accessibility
+  useEffect(() => {
+    const handleKeyboard = (e: KeyboardEvent) => {
+      // Don't trigger shortcuts when typing in input fields
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
+      switch (e.key) {
+        case ' ':
+        case 'Spacebar':
+          e.preventDefault();
+          // Space: Play/Pause/Resume
+          if (flowState === 'IDLE') {
+            const text = 'What would you like to talk about?';
+            const messageKey = stableKeyFromText(text);
+            setSpokenKeys(p => new Set([...p, messageKey]));
+            setEphemeralAssistant({ key: messageKey, text });
+            playAssistantOnce(text, messageKey);
+          } else if (flowState === 'PAUSED') {
+            if (pausedFrom === 'READING') {
+              setFlowState('READING');
+              setPausedFrom(null);
+            } else if (pausedFrom === 'LISTENING') {
+              setFlowState('LISTENING');
+              setPausedFrom(null);
+            }
+          } else if (flowState === 'READING' || flowState === 'LISTENING' || flowState === 'PROCESSING') {
+            setPausedFrom(flowState);
+            setFlowState('PAUSED');
+          }
+          break;
+
+        case 'Escape':
+          e.preventDefault();
+          // Escape: Stop/Reset
+          if (flowState !== 'IDLE') {
+            setFlowState('IDLE');
+            setPausedFrom(null);
+            if (TTSManager.isSpeaking()) {
+              TTSManager.stop();
+            }
+          }
+          break;
+
+        case 'Enter':
+          e.preventDefault();
+          // Enter: Replay last message (when paused or idle)
+          if (flowState === 'PAUSED' || flowState === 'IDLE') {
+            const latestMessage = findLatestEligibleAssistantMessage();
+            if (latestMessage && unreadAssistantExists()) {
+              const messageKey = stableMessageKey(latestMessage.text, latestMessage.id);
+              playAssistantOnce(latestMessage.text, messageKey);
+            }
+          }
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyboard);
+    return () => window.removeEventListener('keydown', handleKeyboard);
+  }, [flowState, pausedFrom]);
+
   // 🔧 FIX #1, #2, #3: Comprehensive cleanup on component unmount (prevents memory leaks)
   useEffect(() => {
     // Mark component as mounted
@@ -1297,14 +1381,19 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
               <h2 className="text-white font-bold text-xl tracking-wide drop-shadow-[0_4px_12px_rgba(0,0,0,0.6)]">
                 Tomas AI
               </h2>
-              <div className={cn(
-                "px-4 py-1.5 rounded-full text-sm font-semibold backdrop-blur-xl transition-all duration-300 shadow-lg",
-                flowState === 'LISTENING' && 'bg-green-400/25 text-green-50 shadow-green-400/30',
-                flowState === 'READING' && 'bg-blue-400/25 text-blue-50 shadow-blue-400/30',
-                flowState === 'PROCESSING' && 'bg-yellow-400/25 text-yellow-50 shadow-yellow-400/30',
-                flowState === 'PAUSED' && 'bg-orange-400/25 text-orange-50 shadow-orange-400/30',
-                flowState === 'IDLE' && 'bg-white/15 text-white/90 shadow-white/20'
-              )}>
+              <div
+                className={cn(
+                  "px-4 py-1.5 rounded-full text-sm font-semibold backdrop-blur-xl transition-all duration-300 shadow-lg",
+                  flowState === 'LISTENING' && 'bg-green-400/25 text-green-50 shadow-green-400/30',
+                  flowState === 'READING' && 'bg-blue-400/25 text-blue-50 shadow-blue-400/30',
+                  flowState === 'PROCESSING' && 'bg-yellow-400/25 text-yellow-50 shadow-yellow-400/30',
+                  flowState === 'PAUSED' && 'bg-orange-400/25 text-orange-50 shadow-orange-400/30',
+                  flowState === 'IDLE' && 'bg-white/15 text-white/90 shadow-white/20'
+                )}
+                role="status"
+                aria-live="polite"
+                aria-atomic="true"
+              >
                 {flowState === 'READING' ? '🗣️ Speaking...' :
                  flowState === 'LISTENING' ? '👂 Listening...' :
                  flowState === 'PROCESSING' ? '💭 Thinking...' :
@@ -1326,7 +1415,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
       {/* 🔧 FIX #7: iOS Audio Unlock Prompt - Prominent banner with clear CTA */}
       {showAudioUnlockPrompt && isIOS && (
-        <div className="fixed top-20 left-4 right-4 z-50 animate-slide-in-up">
+        <div className="fixed top-20 left-4 right-4 z-50 animate-slide-in-up" role="alert" aria-live="assertive">
           <div className="bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl shadow-2xl border-2 border-white/30 overflow-hidden">
             <div className="p-4 flex items-center gap-4">
               <div className="flex-shrink-0 w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
@@ -1338,9 +1427,11 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
               </div>
               <button
                 onClick={async () => {
+                  triggerHaptic('medium');
                   await enableAudioContext();
                 }}
-                className="flex-shrink-0 px-6 py-3 bg-white text-purple-600 rounded-full font-bold text-sm shadow-lg active:scale-95 transition-transform"
+                className="flex-shrink-0 px-6 py-3 bg-white text-purple-600 rounded-full font-bold text-sm shadow-lg active:scale-95 transition-transform focus:outline-none focus:ring-2 focus:ring-white/50"
+                aria-label="Enable audio for speaking practice"
               >
                 Enable
               </button>
@@ -1371,18 +1462,21 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
             {/* Live captions (Mobile optimized) */}
             {flowState === 'LISTENING' && interimCaption && (
-              <div className="text-center py-2">
+              <div className="text-center py-2" role="status" aria-live="polite" aria-atomic="true">
                 <div className="inline-block px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm">
                   <span className="text-white/70 italic text-sm">"{interimCaption}"</span>
                 </div>
               </div>
             )}
 
-            {/* Compact Grammar Corrections - Mobile Bottom Sheet Style */}
+            {/* 🔧 FIX #11: Compact Grammar Corrections - Mobile Bottom Sheet Style with ARIA */}
             {grammarCorrections.length > 0 && (
               <div
                 className="mt-3 p-3 rounded-2xl bg-gradient-to-br from-yellow-500/25 to-orange-500/15 border border-yellow-500/50 shadow-xl"
                 style={{ animation: 'slideInUp 0.5s ease-out' }}
+                role="status"
+                aria-live="polite"
+                aria-atomic="true"
               >
                 <div className="flex items-start gap-2">
                   <Star className="h-5 w-5 text-yellow-400 flex-shrink-0 mt-0.5" />
@@ -1407,15 +1501,22 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           </div>
         </div>
 
-      {/* Floating Action Button (FAB) - iPhone optimized */}
+      {/* 🔧 FIX #12: Floating Action Button (FAB) - iPhone optimized with keyboard support */}
       <div className="fixed bottom-0 left-0 right-0 z-40 pointer-events-none">
         <div className="safe-bottom pb-6 px-6 flex justify-center items-end gap-3">
           <button
-            className="pointer-events-auto w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-2xl active:scale-95 transition-all duration-200 flex items-center justify-center relative"
+            className="pointer-events-auto w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-2xl active:scale-95 transition-all duration-200 flex items-center justify-center relative focus:outline-none focus:ring-4 focus:ring-purple-400/50"
             style={{
               boxShadow: '0 10px 40px rgba(168, 85, 247, 0.4)'
             }}
+            aria-label={
+              flowState === 'IDLE' ? 'Start conversation' :
+              flowState === 'PAUSED' ? 'Resume' :
+              flowState === 'READING' || flowState === 'LISTENING' || flowState === 'PROCESSING' ? 'Pause' :
+              'Conversation control'
+            }
             onClick={async () => {
+              triggerHaptic('light');
               if (flowState === 'IDLE') {
                 const text = 'What would you like to talk about?';
                 const messageKey = stableKeyFromText(text);
