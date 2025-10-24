@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
 export interface GameWord {
   english: string;
@@ -94,13 +94,16 @@ export const useGameVocabulary = () => {
     return shuffled.slice(0, Math.min(count, shuffled.length));
   };
 
-  const getWordsForHangman = (): GameWord[] => {
-    // For hangman, prefer shorter words that are easier to guess
-    const suitableWords = vocabulary.filter(word => 
-      word.english.length >= 3 && word.english.length <= 8
-    );
-    return suitableWords.length > 0 ? suitableWords : vocabulary;
-  };
+  // 🔧 FIX #3: Memoize to prevent stale closures in HangmanGame
+  const getWordsForHangman = useMemo(() => {
+    return (): GameWord[] => {
+      // For hangman, prefer shorter words that are easier to guess
+      const suitableWords = vocabulary.filter(word =>
+        word.english.length >= 3 && word.english.length <= 8
+      );
+      return suitableWords.length > 0 ? suitableWords : vocabulary;
+    };
+  }, [vocabulary]);
 
   const getWordsForFlashcards = (): GameWord[] => {
     // For flashcards, we can use all vocabulary

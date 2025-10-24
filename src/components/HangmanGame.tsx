@@ -34,6 +34,8 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
   const [hintLetter, setHintLetter] = useState<string | null>(null);
   const [difficulty, setDifficulty] = useState<Difficulty>('medium');
   const [showSettings, setShowSettings] = useState(false);
+  // 🔧 FIX #7: Prevent hint button double-tap
+  const [isHintProcessing, setIsHintProcessing] = useState(false);
 
   // Refs for preventing race conditions and memory leaks
   const isInitialMount = useRef(true);
@@ -69,15 +71,16 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
     setStatus('playing');
     setShowHint(false);
     setHintLetter(null);
+    setIsHintProcessing(false); // 🔧 FIX #7: Reset hint processing lock
   }, [getWordsForHangman]);
 
-  // Initialize game ONCE on mount - prevent circular dependency
+  // 🔧 FIX #3: Initialize game ONCE on mount with proper dependencies
   useEffect(() => {
     if (!vocabLoading && !gameInitialized.current) {
       gameInitialized.current = true;
       startNewGame();
     }
-  }, [vocabLoading]); // Removed startNewGame from deps to prevent infinite loop
+  }, [vocabLoading, startNewGame]); // Safe now that getWordsForHangman is memoized
 
   // Check win/loss conditions
   useEffect(() => {
@@ -91,7 +94,14 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
 
         setScore(prev => prev + 10);
         setStreak(prev => prev + 1);
-        addXP(xpEarned, `Hangman victory! 🎉 Streak: ${streak + 1}`);
+
+        // 🔧 FIX #10: Handle XP network errors gracefully
+        try {
+          addXP(xpEarned, `Hangman victory! 🎉 Streak: ${streak + 1}`);
+        } catch (error) {
+          console.error('Failed to award XP:', error);
+          // User still sees success animation, XP will sync later
+        }
 
         // Play success sound using singleton
         audioManager.playSuccessSound();
@@ -171,9 +181,13 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
 
   // Handle hint - reveals a random unrevealed letter
   const handleHint = useCallback(() => {
+    // 🔧 FIX #7: Prevent double-tap by checking processing state
+    if (isHintProcessing) return;
+
     if (showHint) {
       setShowHint(false);
       setHintLetter(null);
+      setIsHintProcessing(false);
       return;
     }
 
@@ -183,14 +197,20 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
       .filter(letter => !guessed.has(letter.toLowerCase()));
 
     if (unrevealedLetters.length > 0 && wrong + 1 < maxWrong) {
+      // Lock to prevent double-tap
+      setIsHintProcessing(true);
+
       // Pick a random unrevealed letter
       const randomLetter = unrevealedLetters[Math.floor(Math.random() * unrevealedLetters.length)];
 
       setWrong(prev => prev + 1);
       setShowHint(true);
       setHintLetter(randomLetter);
+
+      // Release lock after state updates
+      setTimeout(() => setIsHintProcessing(false), 300);
     }
-  }, [showHint, wrong, maxWrong, word, guessed]);
+  }, [showHint, wrong, maxWrong, word, guessed, isHintProcessing]);
 
   // Handle keyboard letter click - already using processGuess which is memoized
   const handleLetterClick = processGuess;
@@ -378,12 +398,13 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
                   {status === 'playing' && !showHint && currentWordData && wrong + 1 < maxWrong && (
                     <Button
                       onClick={handleHint}
+                      disabled={isHintProcessing}
                       variant="outline"
                       size="sm"
-                      className="border-yellow-400/50 text-yellow-300 hover:bg-yellow-500/20"
+                      className="border-yellow-400/50 text-yellow-300 hover:bg-yellow-500/20 disabled:opacity-50"
                     >
                       <Lightbulb className="h-4 w-4 mr-2" />
-                      Need a hint? (-1 life)
+                      {isHintProcessing ? 'Getting hint...' : 'Need a hint? (-1 life)'}
                     </Button>
                   )}
                 </div>

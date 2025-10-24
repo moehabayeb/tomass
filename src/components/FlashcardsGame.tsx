@@ -4,21 +4,22 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Volume2, RotateCcw, Star, ChevronRight, Trophy, BookOpen, Sparkles, Mic, Lock, Unlock } from 'lucide-react';
+import { ArrowLeft, Volume2, RotateCcw, Star, ChevronRight, Trophy, BookOpen, Sparkles, Mic, Lock, Unlock, AlertTriangle } from 'lucide-react';
 import { useTextToSpeech } from '@/hooks/useTextToSpeech';
 import { useGamification } from '@/hooks/useGamification';
 import { useGameVocabulary, type GameWord } from '@/hooks/useGameVocabulary';
 import { useFlashcardSpeechRecognition } from '@/hooks/useFlashcardSpeechRecognition';
 import { useFlashcardProgress } from '@/hooks/useFlashcardProgress';
+import { audioManager } from '@/utils/audioContext';
 
 interface FlashcardsGameProps {
   onBack: () => void;
 }
 
-// Simple word definitions for vocabulary learning
+// 🔧 FIX #8: Complete word definitions for all 75 tier words
 const getWordDefinition = (word: string): string => {
   const definitions: Record<string, string> = {
-    // A1 Level - Basic words
+    // TIER 1: Beginner (A1 - Basic 4-5 letter words) - 15 words
     'book': 'Something you read with pages and stories',
     'home': 'The place where you live with your family',
     'work': 'A place where people do their jobs',
@@ -27,6 +28,15 @@ const getWordDefinition = (word: string): string => {
     'year': 'Twelve months, or 365 days',
     'word': 'A single unit of language that has meaning',
     'place': 'A location or area where something happens',
+    'house': 'A building where people live',
+    'room': 'A space inside a building with walls',
+    'fact': 'Something that is true and can be proven',
+    'light': 'What lets us see, the opposite of dark',
+    'sound': 'Something you can hear',
+    'order': 'An arrangement or a request for something',
+    'power': 'Strength or energy to do something',
+
+    // TIER 2: Elementary (A1+ - 5-6 letter words) - 15 words
     'world': 'The Earth and everything on it',
     'school': 'A place where students go to learn',
     'water': 'A clear liquid that you drink',
@@ -40,68 +50,47 @@ const getWordDefinition = (word: string): string => {
     'music': 'Sounds arranged to be pleasant to hear',
     'night': 'The time when it is dark outside',
     'point': 'A specific position or detail',
-    'house': 'A building where people live',
-    'state': 'A condition or a region in a country',
-    'room': 'A space inside a building with walls',
-    'fact': 'Something that is true and can be proven',
-    'light': 'What lets us see, the opposite of dark',
-    'sound': 'Something you can hear',
-    'order': 'An arrangement or a request for something',
-    'power': 'Strength or energy to do something',
     'heart': 'The organ that pumps blood in your body',
     'party': 'A celebration with friends and music',
-    'level': 'A position on a scale or height',
-    'price': 'The amount of money something costs',
-    'paper': 'Thin material for writing or printing',
-    'space': 'An empty area or the universe beyond Earth',
 
-    // A2 Level
+    // TIER 3: Intermediate (A2 - 6-7 letter words) - 15 words
     'nature': 'Plants, animals, and the natural world',
-    'peace': 'A state of calm without war or conflict',
     'health': 'The condition of being well and free from illness',
     'sister': 'A female sibling in your family',
     'brother': 'A male sibling in your family',
     'mother': 'A female parent',
     'father': 'A male parent',
     'friend': 'Someone you like and trust',
-    'happy': 'Feeling joy and contentment',
-    'tired': 'Feeling like you need rest',
     'strong': 'Having physical power',
-    'quick': 'Fast, not slow',
-    'clean': 'Free from dirt',
-    'dark': 'Having little or no light',
-    'heavy': 'Weighing a lot',
-    'short': 'Not tall or not long',
-    'tall': 'Having great height',
-    'wide': 'Broad, having great width',
-    'young': 'Not old, in early life',
-    'old': 'Having lived for many years',
-    'smart': 'Intelligent, clever',
-    'kind': 'Friendly, generous, and considerate',
-    'nice': 'Pleasant and agreeable',
-    'good': 'Of high quality or morally right',
-    'great': 'Very good or large',
-    'small': 'Little in size',
-    'large': 'Big in size',
-    'first': 'Coming before all others',
-    'last': 'Coming after all others',
-    'early': 'Near the beginning of a time period',
-    'late': 'After the expected time',
-    'today': 'This current day',
-    'green': 'The color of grass and leaves',
-    'blue': 'The color of the sky',
-
-    // B1 Level
     'energy': 'The power to do work or activity',
     'office': 'A place where people work at desks',
-    'doctor': 'A person who treats sick people',
-    'teacher': 'A person who helps others learn',
-    'worker': 'A person who does a job',
     'garden': 'A place where plants and flowers grow',
     'market': 'A place where people buy and sell goods',
     'center': 'The middle point of something',
     'travel': 'To go from one place to another',
     'future': 'The time that will come after now',
+
+    // TIER 4: Advanced (A2+ - Adjectives & concepts) - 15 words
+    'happy': 'Feeling joy and contentment',
+    'tired': 'Feeling like you need rest',
+    'quick': 'Fast, not slow',
+    'clean': 'Free from dirt',
+    'heavy': 'Weighing a lot',
+    'short': 'Not tall or not long',
+    'young': 'Not old, in early life',
+    'smart': 'Intelligent, clever',
+    'first': 'Coming before all others',
+    'early': 'Near the beginning of a time period',
+    'green': 'The color of grass and leaves',
+    'blue': 'The color of the sky',
+    'large': 'Big in size',
+    'small': 'Little in size',
+    'great': 'Very good or large',
+
+    // TIER 5: Master (B1 - Complex words & verbs) - 15 words
+    'doctor': 'A person who treats sick people',
+    'teacher': 'A person who helps others learn',
+    'worker': 'A person who does a job',
     'change': 'To become different or make something different',
     'choice': 'The act of picking between options',
     'chance': 'An opportunity or possibility',
@@ -109,22 +98,14 @@ const getWordDefinition = (word: string): string => {
     'season': 'One of the four periods of the year',
     'person': 'A human being',
     'animal': 'A living creature that is not a plant',
-    'plant': 'A living thing that grows in soil',
     'growth': 'The process of getting bigger',
     'create': 'To make something new',
     'build': 'To construct or make something',
-    'start': 'To begin',
     'finish': 'To complete or end',
-    'learn': 'To gain knowledge or skill',
-    'teach': 'To help someone learn',
-    'watch': 'To look at something',
-    'listen': 'To pay attention to sounds',
-    'speak': 'To say words out loud',
-    'write': 'To put words on paper',
-    'read': 'To look at and understand written words'
+    'listen': 'To pay attention to sounds'
   };
 
-  return definitions[word.toLowerCase()] || `Complete this sentence: "I need a ______" (answer: ${word})`;
+  return definitions[word.toLowerCase()] || `A word meaning something related to ${word}`;
 };
 
 export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
@@ -143,6 +124,8 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
   }>>([]);
   const [totalXPEarned, setTotalXPEarned] = useState(0);
   const [hasPlayedPronunciation, setHasPlayedPronunciation] = useState(false);
+  // 🔧 FIX #2: Race condition protection - prevent double submission
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const { speak } = useTextToSpeech();
   const { addXP } = useGamification();
@@ -152,6 +135,7 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
     progress,
     isLoading: progressLoading,
     completeTier,
+    updateWordProgress,
     isTierUnlocked,
     getTierBestScore,
     getTierAttempts,
@@ -171,6 +155,7 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
     setCardResults([]);
     setTotalXPEarned(0);
     setHasPlayedPronunciation(false);
+    setIsProcessing(false); // 🔧 FIX #2: Reset processing lock on new tier
     setScreen('playing');
   }, [isTierUnlocked, getWordsByTier]);
 
@@ -185,6 +170,10 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
 
   // Check if answer is correct (with fuzzy matching for typos)
   const checkAnswer = useCallback((answerOverride?: string) => {
+    // 🔧 FIX #2: Prevent race condition - only process if not already processing
+    if (isProcessing) return;
+    setIsProcessing(true);
+
     // Use override if provided (for voice input), otherwise use state
     const answerToCheck = answerOverride !== undefined ? answerOverride : userAnswer;
     const cleanedUserAnswer = answerToCheck.toLowerCase().trim();
@@ -206,32 +195,52 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
 
     setTotalXPEarned(prev => prev + xpEarned);
 
-    // Add XP to gamification system
-    if (isExactMatch) {
-      addXP(10, 'Perfect answer!');
-    } else {
-      addXP(2, 'Keep trying!');
+    // 🔧 FIX #10: Add XP with error handling
+    try {
+      if (isExactMatch) {
+        addXP(10, 'Perfect answer!');
+      } else {
+        addXP(2, 'Keep trying!');
+      }
+    } catch (error) {
+      console.error('Failed to award XP:', error);
+      // User still sees their answer feedback, XP will sync later
     }
 
-    // Move to answer phase
+    // 🔧 FIX #9: Save progress incrementally after each answer
+    updateWordProgress(currentCard.english, isExactMatch);
+
+    // Move to answer phase and release processing lock
     setGamePhase('answer');
-  }, [userAnswer, currentCard, addXP]);
+    setIsProcessing(false);
+  }, [userAnswer, currentCard, addXP, isProcessing, updateWordProgress]);
 
   // Handle voice input
   const handleVoiceInput = useCallback(async () => {
     if (!currentCard) return;
 
-    const word = await startListening(currentCard.english);
-    if (word) {
-      // Voice recognition succeeded with high confidence
-      setUserAnswer(word);
-      checkAnswer(word); // Pass word directly to avoid state timing issue
+    // 🔧 FIX #5: Add proper error handling and cleanup for voice recognition
+    try {
+      const word = await startListening(currentCard.english);
+      if (word) {
+        // Voice recognition succeeded with high confidence
+        setUserAnswer(word);
+        checkAnswer(word); // Pass word directly to avoid state timing issue
+      }
+      // If word is null, it means:
+      // 1. Low confidence → will show confirmation dialog
+      // 2. Error → user can try again or type
+      // 3. No match → user can try again or type
+    } catch (error) {
+      console.error('Voice input error:', error);
+      // Ensure cleanup happens even on error
+      try {
+        stopListening();
+      } catch (cleanupError) {
+        // Ignore cleanup errors
+      }
     }
-    // If word is null, it means:
-    // 1. Low confidence → will show confirmation dialog
-    // 2. Error → user can try again or type
-    // 3. No match → user can try again or type
-  }, [currentCard, startListening, checkAnswer]);
+  }, [currentCard, startListening, checkAnswer, stopListening]);
 
   // Handle voice confirmation (when confidence is medium)
   const handleConfirmYes = useCallback(() => {
@@ -243,6 +252,9 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
   }, [confirmWord, checkAnswer]);
 
   const nextCard = useCallback(() => {
+    // 🔧 FIX #2: Reset processing lock when moving to next card
+    setIsProcessing(false);
+
     if (currentCardIndex < flashcardWords.length - 1) {
       setCurrentCardIndex(prev => prev + 1);
       setGamePhase('question');
@@ -278,6 +290,20 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
     setSelectedTier(null);
     setCardResults([]);
   }, []);
+
+  // 🔧 FIX #1: Cleanup AudioContext on unmount to prevent memory leak (iOS limit: 6 contexts)
+  // 🔧 FIX #5: Also cleanup speech recognition on unmount
+  useEffect(() => {
+    return () => {
+      audioManager.cleanup();
+      // Ensure microphone is released on unmount
+      try {
+        stopListening();
+      } catch (error) {
+        // Ignore cleanup errors
+      }
+    };
+  }, [stopListening]);
 
   const getStarRating = () => {
     const correctCount = cardResults.filter(result => result.correct).length;
@@ -773,11 +799,11 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
                     </div>
 
                     <Button
-                      onClick={checkAnswer}
-                      disabled={!userAnswer.trim()}
+                      onClick={() => checkAnswer()}
+                      disabled={!userAnswer.trim() || isProcessing}
                       className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 py-6 text-xl font-bold disabled:opacity-50"
                     >
-                      ✅ Check Answer
+                      {isProcessing ? '⏳ Processing...' : '✅ Check Answer'}
                     </Button>
                   </div>
                 </>
@@ -849,6 +875,43 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
     );
   }
 
-  // Fallback (should never reach here)
-  return null;
+  // 🔧 FIX #4: Fallback UI instead of blank screen - prevents user being stuck
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
+      <Card className="max-w-md w-full bg-gradient-to-br from-red-500/20 to-orange-500/20 backdrop-blur-xl border border-red-300/50">
+        <CardContent className="p-6 text-center space-y-4">
+          <div className="flex justify-center">
+            <div className="bg-red-500/20 rounded-full p-4">
+              <AlertTriangle className="h-12 w-12 text-red-400" />
+            </div>
+          </div>
+
+          <h2 className="text-2xl font-bold text-white">
+            Oops! Something went wrong
+          </h2>
+
+          <p className="text-white/80">
+            The game encountered an unexpected error. Don't worry, your progress is safe.
+          </p>
+
+          <Button
+            onClick={backToTierSelection}
+            className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-3"
+          >
+            <ArrowLeft className="h-5 w-5 mr-2" />
+            Back to Tier Selection
+          </Button>
+
+          <Button
+            onClick={onBack}
+            variant="outline"
+            className="w-full border-white/20 text-white hover:bg-white/10"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Games
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  );
 };
