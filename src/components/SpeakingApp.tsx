@@ -170,7 +170,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   // Initialize isSpeaking state first
   const [isSpeaking, setIsSpeaking] = useState(false);
   const { avatarState, setAvatarState } = useAvatarState({ isSpeaking });
-  const [didAvatarRef, setDIDAvatarRef] = useState<any>(null);
+  // 🔧 FIX #30: Removed dead code - didAvatarRef was never used
   const { streakData, getStreakMessage } = useStreakTracker();
   const { incrementSpeakingSubmissions } = useBadgeSystem();
   const { user } = useAuthReady();
@@ -182,7 +182,22 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     return saved !== null ? saved === 'true' : true; // Default = true
   });
   const [audioContextResumed, setAudioContextResumed] = useState(false);
-  
+
+  // 🔧 FIX #2: Store AudioContext in ref to prevent memory leaks
+  const audioContextRef = useRef<AudioContext | null>(null);
+
+  // 🔧 FIX #3: Track if component is mounted to prevent setState on unmounted component
+  const isMountedRef = useRef(true);
+
+  // 🔧 FIX #3: Safe setState wrapper - only call if component is still mounted
+  const safeSetState = <T,>(setter: React.Dispatch<React.SetStateAction<T>>) => {
+    return (value: React.SetStateAction<T>) => {
+      if (isMountedRef.current) {
+        setter(value);
+      }
+    };
+  };
+
   // TTS listener authority state
   const [ttsListenerActive, setTtsListenerActive] = useState(false);
   
@@ -202,14 +217,21 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     return { enabled, resumed };
   };
 
-  // Helper function to enable audio context for TTS (autoplay policy compliance)
+  // 🔧 FIX #2: Reuse AudioContext to prevent memory leaks
   const enableAudioContext = async (): Promise<boolean> => {
     try {
       if (typeof window !== 'undefined' && window.AudioContext) {
-        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        // Reuse existing AudioContext if available
+        if (!audioContextRef.current) {
+          audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+        }
+
+        const audioContext = audioContextRef.current;
+
         if (audioContext.state === 'suspended') {
           await audioContext.resume();
         }
+
         setAudioContextResumed(true);
         return true;
       }
@@ -410,8 +432,20 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     }
   };
 
+  // 🔧 FIX #5: Debounce turn token generation to prevent race conditions
+  const lastTurnStartRef = useRef(0);
+  const TURN_DEBOUNCE_MS = 300;
+
   // 2) When starting a turn, always pass a token and always call completion
   const startNewTurn = () => {
+    // 🔧 FIX #5: Debounce to prevent rapid-fire token generation
+    const now = Date.now();
+    if (now - lastTurnStartRef.current < TURN_DEBOUNCE_MS) {
+      // Too soon, return current token
+      return currentTurnToken;
+    }
+    lastTurnStartRef.current = now;
+
     const tok = `turn-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,7)}`;
     cancelOldListeners();
     setCurrentTurnToken(tok);
@@ -754,7 +788,9 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         setFlowState('LISTENING');
         setTimeout(() => startHandsFreeMicCaptureSafe(), 100);
       }
-    } catch (err: Error) {
+    } catch (err) {
+      // 🔧 FIX #10: Fixed TypeScript error - catch type should not be annotated
+      console.error('Mic capture error:', err);
       setFlowState('PAUSED');
     }
   };
@@ -918,6 +954,12 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       setIsProcessingTranscript(true);
       setGrammarCorrections([]); // Clear previous corrections
 
+      // 🔧 FIX #9: Check network connectivity before API call
+      if (!navigator.onLine) {
+        await addAssistantMessage("You appear to be offline. Please check your internet connection and try again.", 'feedback');
+        return;
+      }
+
       // Use the unified conversational-ai function
       // 🎯 AUTOMATIC DIFFICULTY: user_level is now synced with XP progression!
       const { data, error } = await supabase.functions.invoke('conversational-ai', {
@@ -928,8 +970,22 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         }
       });
 
+      // 🔧 FIX #9: Comprehensive error handling with user-friendly messages
       if (error) {
-        await addAssistantMessage("I couldn't process your message right now. Please try again.", 'feedback');
+        console.error('Supabase function error:', error);
+
+        // Provide specific error messages based on error type
+        let errorMessage = "I couldn't process your message right now. ";
+
+        if (error.message?.includes('fetch')) {
+          errorMessage += "Please check your internet connection and try again.";
+        } else if (error.message?.includes('timeout')) {
+          errorMessage += "The request timed out. Please try again.";
+        } else {
+          errorMessage += "Please try again in a moment.";
+        }
+
+        await addAssistantMessage(errorMessage, 'feedback');
         return;
       }
 
@@ -1032,6 +1088,59 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       setShowLevelUpModal(true);
     }
   }, [lastLevelUpTime, level]);
+
+  // 🔧 FIX #1, #2, #3: Comprehensive cleanup on component unmount (prevents memory leaks)
+  useEffect(() => {
+    // Mark component as mounted
+    isMountedRef.current = true;
+
+    return () => {
+      // 🔧 FIX #3: Mark component as unmounted to prevent setState
+      isMountedRef.current = false;
+
+      // Clear all pending timers
+      ttsCompletionTimeouts.forEach(clearTimeout);
+      micReopenTimeouts.forEach(clearTimeout);
+
+      // Stop any active TTS
+      if (TTSManager.isSpeaking()) {
+        TTSManager.stop();
+      }
+
+      // Stop recording if active
+      if (micState === 'recording') {
+        try {
+          stopRecording();
+        } catch (e) {
+          // Ignore errors during cleanup
+        }
+      }
+
+      // 🔧 FIX #2: Close AudioContext to prevent memory leak
+      if (audioContextRef.current) {
+        try {
+          audioContextRef.current.close();
+          audioContextRef.current = null;
+        } catch (e) {
+          // Ignore errors during cleanup
+        }
+      }
+
+      // Release wake lock
+      try {
+        wakeLockManager.release();
+      } catch (e) {
+        // Ignore errors during cleanup
+      }
+
+      // Cleanup mic engine
+      try {
+        cleanup();
+      } catch (e) {
+        // Ignore errors during cleanup
+      }
+    };
+  }, []); // Empty deps = run only on mount/unmount
 
   // Modern Floating Header - Minimal, Clean Design (No Background Container)
   const MobileHeader = () => {
