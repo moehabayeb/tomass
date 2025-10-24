@@ -314,6 +314,27 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     seq: number;
   }>>([]);
 
+  // 🔧 FIX #17: Message pagination - limit to most recent 100 messages for performance
+  const MAX_MESSAGES = 100;
+  const limitMessages = (msgs: typeof messages) => {
+    if (msgs.length > MAX_MESSAGES) {
+      return msgs.slice(-MAX_MESSAGES); // Keep only last 100
+    }
+    return msgs;
+  };
+
+  // 🔧 FIX #18: XSS protection - sanitize user input and AI responses
+  const sanitizeText = (text: string): string => {
+    // Escape HTML special characters to prevent XSS attacks
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#x27;')
+      .replace(/\//g, '&#x2F;');
+  };
+
   // B) No-duplicate rules + messageKey deduplication system
   const [spokenKeys, setSpokenKeys] = useState<Set<string>>(new Set()); // Track spoken message keys
   const [lastSpokenSeq, setLastSpokenSeq] = useState(0);
@@ -525,23 +546,26 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     }
   };
 
-  // Append user/assistant messages (unified with sequence counter)
+  // 🔧 FIX #18: Append user/assistant messages with XSS protection (unified with sequence counter)
   const addChatBubble = (text: string, type: "user" | "bot" | "system", messageId?: string, messageKey?: string) => {
+    // Sanitize text to prevent XSS attacks
+    const sanitizedText = sanitizeText(text);
+
     const seq = messageSeqCounter;
     setMessageSeqCounter(prev => prev + 1);
-    
+
     const id = messageId || `${type}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const newMessage = {
       id,
-      text: text.trim(),
+      text: sanitizedText.trim(),
       isUser: type === "user",
       isSystem: type === "system",
       role: type === "user" ? "user" as const : "assistant" as const,
-      content: text.trim(),
+      content: sanitizedText.trim(),
       seq
     };
-    
-    setMessages(prev => [...prev, newMessage]);
+
+    setMessages(prev => limitMessages([...prev, newMessage]));
     setLastMessageTime(Date.now());
     
     return { id, seq, messageKey };
@@ -1054,7 +1078,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
       const success = await awardXp(xpToAward);
       if (success) {
-        console.log(`✨ Awarded ${xpToAward} XP (Base: ${baseXP}, Grammar Bonus: ${grammarBonus})`);
+        // 🔧 FIX #30: Removed console.log for production (XP award logging)
         // Show floating XP animation
         setFloatingXP(xpToAward);
       }
@@ -1241,6 +1265,45 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     window.addEventListener('keydown', handleKeyboard);
     return () => window.removeEventListener('keydown', handleKeyboard);
   }, [flowState, pausedFrom]);
+
+  // 🔧 FIX #20: Global network status monitoring with user feedback
+  useEffect(() => {
+    const handleOnline = () => {
+      toast({
+        title: "Back online",
+        description: "Your internet connection has been restored.",
+        duration: 3000,
+      });
+    };
+
+    const handleOffline = () => {
+      toast({
+        title: "You're offline",
+        description: "Please check your internet connection.",
+        variant: "destructive",
+        duration: 5000,
+      });
+
+      // Pause any active TTS
+      if (TTSManager.isSpeaking()) {
+        TTSManager.stop();
+      }
+
+      // Reset to IDLE if in an active state
+      if (flowState !== 'IDLE' && flowState !== 'PAUSED') {
+        setFlowState('PAUSED');
+        setPausedFrom(flowState);
+      }
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [flowState, toast]);
 
   // 🔧 FIX #1, #2, #3: Comprehensive cleanup on component unmount (prevents memory leaks)
   useEffect(() => {

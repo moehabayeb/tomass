@@ -918,3 +918,61 @@
     transform: none !important;
   }
 }
+
+/* 🔧 FIX #19: GPU-accelerated animations for better performance */
+/* Force GPU acceleration for frequently animated elements */
+.sparkle,
+.sparkle-delayed,
+.animate-slide-in-up,
+.animate-pulse,
+.active\:scale-95,
+.transition-all,
+.transition-transform {
+  will-change: transform, opacity;
+  transform: translateZ(0); /* Force GPU layer */
+  backface-visibility: hidden;
+  -webkit-font-smoothing: subpixel-antialiased;
+}
+
+/* Optimize specific animations */
+@keyframes slideInUp {
+  from {
+    transform: translate3d(0, 20px, 0) translateZ(0);
+    opacity: 0;
+  }
+  to {
+    transform: translate3d(0, 0, 0) translateZ(0);
+    opacity: 1;
+  }
+}
+
+@keyframes floatUpFade {
+  0% {
+    transform: translate3d(-50%, 0, 0) scale(0.8) translateZ(0);
+    opacity: 0;
+  }
+  20% {
+    transform: translate3d(-50%, -10px, 0) scale(1) translateZ(0);
+    opacity: 1;
+  }
+  80% {
+    transform: translate3d(-50%, -50px, 0) scale(1) translateZ(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(-50%, -80px, 0) scale(0.8) translateZ(0);
+    opacity: 0;
+  }
+}
+
+/* FAB and interactive elements */
+.pointer-events-auto {
+  will-change: transform;
+}
+
+/* Optimize avatar animations */
+.avatar-speaking,
+.avatar-blinking {
+  will-change: transform;
+  transform: translateZ(0);
+}
