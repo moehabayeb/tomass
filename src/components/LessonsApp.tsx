@@ -63,8 +63,9 @@ import {
 // B2 Modules Data (151-200)
 import { MODULE_151_DATA, MODULE_152_DATA, MODULE_153_DATA, MODULE_154_DATA, MODULE_155_DATA, MODULE_156_DATA, MODULE_157_DATA, MODULE_158_DATA, MODULE_159_DATA, MODULE_160_DATA, MODULE_161_DATA, MODULE_162_DATA, MODULE_163_DATA, MODULE_164_DATA, MODULE_165_DATA, MODULE_166_DATA, MODULE_167_DATA, MODULE_168_DATA, MODULE_169_DATA, MODULE_170_DATA, MODULE_171_DATA, MODULE_172_DATA, MODULE_173_DATA, MODULE_174_DATA, MODULE_175_DATA, MODULE_176_DATA, MODULE_177_DATA, MODULE_178_DATA, MODULE_179_DATA, MODULE_180_DATA, MODULE_181_DATA, MODULE_182_DATA, MODULE_183_DATA, MODULE_184_DATA, MODULE_185_DATA, MODULE_186_DATA, MODULE_187_DATA, MODULE_188_DATA, MODULE_189_DATA, MODULE_190_DATA, MODULE_191_DATA, MODULE_192_DATA, MODULE_193_DATA, MODULE_194_DATA, MODULE_195_DATA, MODULE_196_DATA, MODULE_197_DATA, MODULE_198_DATA, MODULE_199_DATA, MODULE_200_DATA } from './B2ModulesData';
 
-// C1 Modules Data (201-213)
-import { MODULE_201_DATA, MODULE_202_DATA, MODULE_203_DATA, MODULE_204_DATA, MODULE_205_DATA, MODULE_206_DATA, MODULE_207_DATA, MODULE_208_DATA, MODULE_209_DATA, MODULE_210_DATA, MODULE_211_DATA, MODULE_212_DATA, MODULE_213_DATA } from './C1ModulesData';
+// C1 Modules Data (201-224)
+import { MODULE_201_DATA, MODULE_202_DATA, MODULE_203_DATA, MODULE_204_DATA, MODULE_205_DATA, MODULE_206_DATA, MODULE_207_DATA, MODULE_208_DATA, MODULE_209_DATA, MODULE_210_DATA, MODULE_211_DATA, MODULE_212_DATA, MODULE_213_DATA, MODULE_214_DATA, MODULE_215_DATA, MODULE_216_DATA } from './C1ModulesData';
+import { MODULE_217_DATA, MODULE_218_DATA, MODULE_219_DATA, MODULE_220_DATA, MODULE_221_DATA, MODULE_222_DATA, MODULE_223_DATA, MODULE_224_DATA } from './C1ModulesData_Extended';
 
 // ---------- Module Order and Next Module Logic ----------
 const ORDER_A1 = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50];
@@ -222,7 +223,7 @@ const LEVELS = [
   { id: 'A2', name: 'A2 - Elementary', description: 'Build basic skills', moduleCount: 50, color: 'bg-green-500' },
   { id: 'B1', name: 'B1 - Intermediate', description: 'Expand your knowledge', moduleCount: 50, color: 'bg-orange-500' },
   { id: 'B2', name: 'B2 - Upper Intermediate', description: 'Advanced concepts', moduleCount: 50, color: 'bg-purple-500' },
-  { id: 'C1', name: 'C1 - Advanced', description: 'Master complex concepts', moduleCount: 13, color: 'bg-red-500' },
+  { id: 'C1', name: 'C1 - Advanced', description: 'Master complex concepts', moduleCount: 24, color: 'bg-red-500' },
   { id: 'C2', name: 'C2 - Proficiency', description: 'Near-native fluency', moduleCount: 50, color: 'bg-indigo-500' },
 ];
 
@@ -676,7 +677,7 @@ const MODULES_BY_LEVEL = {
     completed: false,
     locked: false,
   })),
-  C1: Array.from({ length: 13 }, (_, i) => ({
+  C1: Array.from({ length: 24 }, (_, i) => ({
     id: i + 201,
     title: i === 0 ? 'Advanced Passive Structures' :
            i === 1 ? 'Cleft Sentences' :
@@ -691,6 +692,17 @@ const MODULES_BY_LEVEL = {
            i === 10 ? 'Collocations for Academic English' :
            i === 11 ? 'Abstract Nouns and Concepts' :
            i === 12 ? 'Talking About Data and Research' :
+           i === 13 ? 'Critical Thinking Vocabulary' :
+           i === 14 ? 'Cause and Effect: Advanced Language' :
+           i === 15 ? 'Writing Critiques and Reviews' :
+           i === 16 ? 'Debating Ethical Issues' :
+           i === 17 ? 'Expressing Opinions with Subtlety' :
+           i === 18 ? 'Making Concessions in Argument' :
+           i === 19 ? 'Hypothetical Situations: Complex' :
+           i === 20 ? 'Discussing Trends and Future Predictions' :
+           i === 21 ? 'Managing Disagreement Diplomatically' :
+           i === 22 ? 'Cross-Cultural Communication Skills' :
+           i === 23 ? 'Writing Abstracts and Summaries' :
            'Advanced C1 grammar module',
     description: 'Master C1-level grammar and academic discourse',
     completed: false,
@@ -1404,7 +1416,9 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
     196: MODULE_196_DATA, 197: MODULE_197_DATA, 198: MODULE_198_DATA, 199: MODULE_199_DATA, 200: MODULE_200_DATA,
     201: MODULE_201_DATA, 202: MODULE_202_DATA, 203: MODULE_203_DATA, 204: MODULE_204_DATA, 205: MODULE_205_DATA,
     206: MODULE_206_DATA, 207: MODULE_207_DATA, 208: MODULE_208_DATA, 209: MODULE_209_DATA, 210: MODULE_210_DATA,
-    211: MODULE_211_DATA, 212: MODULE_212_DATA, 213: MODULE_213_DATA,
+    211: MODULE_211_DATA, 212: MODULE_212_DATA, 213: MODULE_213_DATA, 214: MODULE_214_DATA, 215: MODULE_215_DATA,
+    216: MODULE_216_DATA, 217: MODULE_217_DATA, 218: MODULE_218_DATA, 219: MODULE_219_DATA, 220: MODULE_220_DATA,
+    221: MODULE_221_DATA, 222: MODULE_222_DATA, 223: MODULE_223_DATA, 224: MODULE_224_DATA,
   };
 
   // Get current module data with O(1) lookup

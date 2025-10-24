@@ -1682,6 +1682,332 @@ const MODULE_213_DATA = {
   ]
 };
 
+// Module 214: Critical Thinking Vocabulary
+const MODULE_214_DATA = {
+  title: "Module 214 - Critical Thinking Vocabulary",
+  description: "Master vocabulary for analyzing, evaluating, and expressing reasoned judgments in academic contexts",
+  intro: `📘 Lesson Objectives
+✅ Use advanced critical thinking vocabulary
+✅ Express opinions objectively and logically
+✅ Support arguments with evidence
+✅ Question assumptions effectively
+
+**Understanding Critical Thinking**
+
+Critical thinking involves analyzing, evaluating, and interpreting information before forming a judgment. In academic English, critical thinking vocabulary helps students express ideas objectively, support arguments, and challenge assumptions effectively.
+
+**Key Critical Thinking Vocabulary**
+
+| Verb | Meaning | Example |
+|------|---------|---------|
+| Evaluate | To assess or judge something carefully | Students must evaluate the effectiveness of the solution. |
+| Analyze | To examine something in detail | The report analyzes the causes of the economic crisis. |
+| Infer | To draw a conclusion based on evidence | We can infer that motivation affects productivity. |
+| Justify | To give reasons or evidence for an opinion | He justified his position with relevant data. |
+| Assess | To determine the value or quality of something | The teacher assessed the students' understanding. |
+| Challenge | To question or oppose an idea | The article challenges traditional gender roles. |
+| Reflect | To think deeply or carefully about something | She reflected on her learning experience. |
+| Assume | To accept something as true without proof | We cannot assume that everyone agrees. |
+| Interpret | To explain the meaning of something | The researcher interpreted the results cautiously. |
+| Verify | To confirm the truth or accuracy of something | The data was verified before publication. |
+
+**Useful Collocations:**
+• Form an opinion • Provide justification • Question an assumption • Draw a conclusion • Support an argument • Present evidence • Evaluate a claim • Consider multiple perspectives • Identify bias • Challenge conventional wisdom • Analyze reasoning • Reach a logical conclusion • Develop a hypothesis • Compare viewpoints • Assess reliability
+
+**Academic Sentence Frames:**
+• It can be argued that...
+• This suggests that...
+• One could infer that...
+• There is evidence to support the claim that...
+• A possible explanation for this is that...
+• From this perspective...
+• This raises the question of whether...
+• The findings indicate that...
+• It is essential to consider that...
+• However, one might also argue that...`,
+
+  table: [
+    { english: "Evaluate", turkish: "Değerlendirmek", example: "Students must evaluate the effectiveness of the solution." },
+    { english: "Analyze", turkish: "Analiz etmek", example: "The report analyzes the causes of the economic crisis." },
+    { english: "Infer", turkish: "Çıkarım yapmak", example: "We can infer that motivation affects productivity." },
+    { english: "Justify", turkish: "Haklı çıkarmak", example: "He justified his position with relevant data." },
+    { english: "Assess", turkish: "Değerlendirmek", example: "The teacher assessed the students' understanding." },
+    { english: "Challenge", turkish: "Sorgulamak", example: "The article challenges traditional gender roles." },
+    { english: "Reflect", turkish: "Düşünmek", example: "She reflected on her learning experience." },
+    { english: "Assume", turkish: "Varsaymak", example: "We cannot assume that everyone agrees." },
+    { english: "Interpret", turkish: "Yorumlamak", example: "The researcher interpreted the results cautiously." },
+    { english: "Verify", turkish: "Doğrulamak", example: "The data was verified before publication." },
+    { english: "Form an opinion", turkish: "Fikir oluşturmak", example: "It takes time to form a well-reasoned opinion." },
+    { english: "Provide justification", turkish: "Gerekçe sunmak", example: "You must provide justification for your claims." },
+    { english: "Question an assumption", turkish: "Varsayımı sorgulamak", example: "Critical thinkers question assumptions regularly." },
+    { english: "Draw a conclusion", turkish: "Sonuç çıkarmak", example: "Based on the evidence, we can draw a conclusion." },
+    { english: "Support an argument", turkish: "Argümanı desteklemek", example: "Data should support your argument effectively." },
+    { english: "Present evidence", turkish: "Kanıt sunmak", example: "Always present evidence to back up your claims." },
+    { english: "Evaluate a claim", turkish: "İddiayı değerlendirmek", example: "We need to evaluate this claim carefully." },
+    { english: "Consider multiple perspectives", turkish: "Çoklu bakış açıları düşünmek", example: "Good thinkers consider multiple perspectives." },
+    { english: "Identify bias", turkish: "Önyargıyı belirlemek", example: "It's important to identify bias in sources." },
+    { english: "Challenge conventional wisdom", turkish: "Geleneksel bilgiyi sorgulamak", example: "Scientists often challenge conventional wisdom." }
+  ],
+
+  speakingPractice: [
+    { question: "Why is critical thinking essential in academic communication?", answer: "Critical thinking is essential because it allows students to question evidence, evaluate sources, and develop balanced arguments rather than simply accepting information at face value." },
+    { question: "How do you evaluate the credibility of a source?", answer: "I evaluate credibility by checking the author's credentials, examining the evidence presented, looking for bias, and comparing the information with other reliable sources." },
+    { question: "What does it mean to analyze an argument?", answer: "To analyze an argument means to break it down into its component parts — examining the claims, the evidence, the reasoning, and identifying any logical fallacies or weaknesses." },
+    { question: "How can you infer meaning from limited information?", answer: "You can infer meaning by looking at context clues, considering what's implied rather than explicitly stated, and drawing logical conclusions based on the available evidence." },
+    { question: "Why is it important to justify your opinions?", answer: "Justifying opinions is important because it demonstrates logical thinking, builds credibility, and helps others understand your reasoning rather than seeing your views as arbitrary." },
+    { question: "How would you assess a student's critical thinking skills?", answer: "I would assess critical thinking by evaluating their ability to question assumptions, analyze evidence, construct logical arguments, and consider alternative perspectives." },
+    { question: "When should you challenge an idea or theory?", answer: "You should challenge an idea when the evidence seems weak, when there are logical inconsistencies, or when alternative explanations haven't been adequately considered." },
+    { question: "What's the value of reflecting on your learning?", answer: "Reflecting on learning helps you identify what you've understood, recognize gaps in knowledge, and develop metacognitive awareness that improves future learning strategies." },
+    { question: "Why is it problematic to assume without evidence?", answer: "Assuming without evidence leads to faulty reasoning and poor decisions. It's essential to verify claims with concrete data before accepting them as true." },
+    { question: "How do you interpret research findings objectively?", answer: "I interpret findings objectively by focusing on what the data actually shows, avoiding personal bias, considering alternative explanations, and acknowledging limitations." },
+    { question: "Why should data be verified before publication?", answer: "Data must be verified to ensure accuracy, maintain academic integrity, and prevent the spread of misinformation that could mislead other researchers or the public." },
+    { question: "How do you form a well-reasoned opinion?", answer: "I form a well-reasoned opinion by gathering relevant information, evaluating different perspectives, examining the evidence, and constructing logical arguments before reaching a conclusion." },
+    { question: "What makes justification effective in arguments?", answer: "Effective justification includes relevant evidence, logical reasoning, acknowledgment of counterarguments, and clear connections between claims and supporting data." },
+    { question: "How do you question an assumption constructively?", answer: "I question assumptions constructively by asking 'What evidence supports this?', 'Are there alternative explanations?', and 'What would happen if this weren't true?'" },
+    { question: "What's the difference between inference and assumption?", answer: "Inference is a conclusion drawn from evidence and reasoning, while assumption is something accepted as true without proof. Inference is based on logic; assumption may not be." },
+    { question: "How can you draw valid conclusions from data?", answer: "Valid conclusions require analyzing the data thoroughly, ensuring the sample size is adequate, avoiding overgeneralization, and considering whether correlation implies causation." },
+    { question: "Why is it important to support arguments with evidence?", answer: "Supporting arguments with evidence makes them persuasive, credible, and verifiable. It moves discourse from mere opinion to reasoned analysis." },
+    { question: "How do you present evidence effectively?", answer: "I present evidence effectively by citing reliable sources, explaining its relevance to my argument, providing context, and showing how it supports my claims." },
+    { question: "What does it mean to evaluate a claim critically?", answer: "Evaluating a claim critically means examining its logical structure, assessing the quality of supporting evidence, identifying potential biases, and considering alternative viewpoints." },
+    { question: "Why should we consider multiple perspectives?", answer: "Considering multiple perspectives prevents narrow thinking, reveals blind spots in our reasoning, and leads to more comprehensive and balanced understanding of complex issues." },
+    { question: "How do you identify bias in sources?", answer: "I identify bias by examining the author's affiliations, looking for loaded language, checking if opposing views are fairly represented, and noticing what information is omitted." },
+    { question: "When is it appropriate to challenge conventional wisdom?", answer: "It's appropriate to challenge conventional wisdom when new evidence emerges, when logical inconsistencies become apparent, or when traditional views don't account for changing circumstances." },
+    { question: "How do you analyze the reasoning in an argument?", answer: "I analyze reasoning by identifying the premises and conclusions, checking for logical connections, looking for fallacies, and evaluating whether the evidence truly supports the claims." },
+    { question: "What does it mean to reach a logical conclusion?", answer: "A logical conclusion follows necessarily from the premises and evidence. It's not based on emotion or wishful thinking but on sound reasoning and factual support." },
+    { question: "How do you develop a hypothesis in research?", answer: "I develop a hypothesis by identifying a research question, reviewing existing literature, considering possible explanations, and formulating a testable prediction based on theory and evidence." },
+    { question: "Why is comparing viewpoints important?", answer: "Comparing viewpoints is important because it reveals the strengths and weaknesses of different positions, helps identify common ground, and leads to more nuanced understanding." },
+    { question: "How do you assess the reliability of information?", answer: "I assess reliability by checking the source's credentials, looking for peer review, examining the methodology, cross-referencing with other sources, and noting the publication date." },
+    { question: "What role does evidence play in critical thinking?", answer: "Evidence is the foundation of critical thinking. It transforms opinions into reasoned arguments and allows us to test claims objectively rather than relying on intuition alone." },
+    { question: "How can critical thinking improve decision-making?", answer: "Critical thinking improves decision-making by helping us analyze options objectively, anticipate consequences, identify hidden assumptions, and choose based on logic rather than emotion." },
+    { question: "Why is it important to interpret data cautiously?", answer: "Cautious interpretation prevents overconfidence in conclusions, acknowledges limitations in the data, and reduces the risk of making claims that aren't fully supported by evidence." },
+    { question: "How do you challenge your own biases?", answer: "I challenge my biases by actively seeking opposing viewpoints, questioning my automatic reactions, examining the evidence objectively, and being open to changing my mind." },
+    { question: "What's the relationship between critical thinking and creativity?", answer: "Critical thinking and creativity work together — creativity generates new ideas, while critical thinking evaluates and refines them. Both are essential for innovation and problem-solving." },
+    { question: "How do you teach critical thinking to others?", answer: "I teach critical thinking by modeling questioning techniques, encouraging evidence-based reasoning, presenting problems that require analysis, and creating a safe space for intellectual risk-taking." },
+    { question: "Why is reflection important after completing a task?", answer: "Reflection helps identify what worked well, what could be improved, and what was learned. It transforms experience into insight and improves future performance." },
+    { question: "How can you verify claims in the digital age?", answer: "I verify claims by checking primary sources, using fact-checking websites, examining the methodology behind studies, and being skeptical of sensational headlines or unattributed quotes." },
+    { question: "What makes an opinion objective vs. subjective?", answer: "An objective opinion is supported by verifiable evidence and logical reasoning, while a subjective opinion is based on personal feelings or preferences without empirical support." },
+    { question: "How do you evaluate conflicting evidence?", answer: "I evaluate conflicting evidence by examining the quality of each source, looking for methodological differences, considering sample sizes, and determining which evidence is more credible and relevant." },
+    { question: "Why should arguments acknowledge counterarguments?", answer: "Acknowledging counterarguments demonstrates intellectual honesty, strengthens your position by addressing objections, and shows that you've considered multiple perspectives thoroughly." },
+    { question: "How does critical thinking relate to academic integrity?", answer: "Critical thinking supports academic integrity by promoting honest evaluation of sources, proper attribution of ideas, and rejection of plagiarism or falsification of evidence." },
+    { question: "What's the ultimate goal of critical thinking?", answer: "The ultimate goal is to arrive at the truth through systematic analysis and evaluation, making informed decisions based on evidence and reason rather than emotion or bias." }
+  ]
+};
+
+// Module 215: Cause and Effect - Advanced Language
+const MODULE_215_DATA = {
+  title: "Module 215 - Cause and Effect: Advanced Language",
+  description: "Master advanced structures for expressing cause, effect, and consequence in academic writing",
+  intro: `📘 Lesson Objectives
+✅ Use advanced cause and effect expressions
+✅ Express reasons and results formally
+✅ Link ideas logically and coherently
+✅ Apply cause-effect language in essays
+
+**Understanding Cause and Effect**
+
+Understanding how to express cause and effect is essential for academic and analytical writing. It helps students explain reasons, results, and consequences clearly and logically. Mastering these structures improves essay coherence and makes arguments sound more sophisticated.
+
+**Key Cause and Effect Structures**
+
+| Connector / Phrase | Function | Example |
+|-------------------|----------|---------|
+| Because of / Due to | Shows reason or cause | The project was delayed due to technical issues. |
+| As a result (of) | Shows result or consequence | As a result of the policy, unemployment decreased. |
+| Therefore / Thus / Hence | Indicates logical conclusion | The data was inaccurate; therefore, the conclusion was invalid. |
+| Consequently | Shows direct result | Consequently, the team had to revise the plan. |
+| Owing to | Formal expression of cause | Owing to climate change, sea levels are rising. |
+| Lead to / Result in | Cause something to happen | Poor management led to decreased productivity. |
+| Be caused by | Passive cause structure | The flood was caused by heavy rainfall. |
+| Bring about / Give rise to | Initiate a process or change | Urbanization brought about rapid cultural shifts. |
+| Trigger / Spark | Start an event or reaction | The announcement triggered public protests. |
+| Be responsible for | Explain accountability | Lack of funding was responsible for the delay. |
+
+**Useful Collocations:**
+• Cause concern • Cause confusion • Lead to improvement • Result in success • Bring about change • Give rise to conflict • Be a result of • Be responsible for • Have an impact on • Play a role in • Trigger a reaction • Produce an effect • Be associated with • Contribute to development • Generate awareness
+
+**Advanced Sentence Frames:**
+• X resulted in Y.
+• Y occurred as a result of X.
+• Owing to X, Y happened.
+• X was primarily caused by Y.
+• X contributed to Y.
+• The increase in X led to a decline in Y.
+• As a result of X, Y improved.
+• X triggered a chain reaction that led to Y.
+• Y can be attributed to X.
+• X had a significant influence on Y.`,
+
+  table: [
+    { english: "Because of / Due to", turkish: "Nedeniyle", example: "The project was delayed due to technical issues." },
+    { english: "As a result (of)", turkish: "Sonuç olarak", example: "As a result of the policy, unemployment decreased." },
+    { english: "Therefore / Thus / Hence", turkish: "Bu nedenle", example: "The data was inaccurate; therefore, the conclusion was invalid." },
+    { english: "Consequently", turkish: "Sonuç olarak", example: "Consequently, the team had to revise the plan." },
+    { english: "Owing to", turkish: "Nedeniyle (resmi)", example: "Owing to climate change, sea levels are rising." },
+    { english: "Lead to / Result in", turkish: "Yol açmak / Sonuçlanmak", example: "Poor management led to decreased productivity." },
+    { english: "Be caused by", turkish: "Neden olmak (pasif)", example: "The flood was caused by heavy rainfall." },
+    { english: "Bring about / Give rise to", turkish: "Sebep olmak / Ortaya çıkarmak", example: "Urbanization brought about rapid cultural shifts." },
+    { english: "Trigger / Spark", turkish: "Tetiklemek", example: "The announcement triggered public protests." },
+    { english: "Be responsible for", turkish: "Sorumlu olmak", example: "Lack of funding was responsible for the delay." },
+    { english: "Cause concern", turkish: "Endişeye neden olmak", example: "The rising crime rates cause concern among citizens." },
+    { english: "Lead to improvement", turkish: "İyileşmeye yol açmak", example: "The new policy led to significant improvement." },
+    { english: "Result in success", turkish: "Başarıyla sonuçlanmak", example: "Hard work often results in success." },
+    { english: "Bring about change", turkish: "Değişim getirmek", example: "Education can bring about social change." },
+    { english: "Give rise to conflict", turkish: "Çatışmaya yol açmak", example: "Different values can give rise to conflict." },
+    { english: "Have an impact on", turkish: "Etkisi olmak", example: "Technology has a major impact on education." },
+    { english: "Play a role in", turkish: "Rol oynamak", example: "Diet plays a crucial role in health." },
+    { english: "Trigger a reaction", turkish: "Tepkiyi tetiklemek", example: "The decision triggered a strong reaction." },
+    { english: "Contribute to development", turkish: "Gelişmeye katkıda bulunmak", example: "Innovation contributes to economic development." },
+    { english: "Generate awareness", turkish: "Farkındalık yaratmak", example: "Campaigns generate awareness about climate change." }
+  ],
+
+  speakingPractice: [
+    { question: "How can you express cause and effect formally in academic writing?", answer: "You can use expressions such as 'as a result of', 'therefore', or 'owing to' to show cause and consequence. For example: 'Owing to increased pollution, many cities have implemented new environmental policies.'" },
+    { question: "What's the difference between 'because of' and 'owing to'?", answer: "'Because of' is more common in everyday speech, while 'owing to' is more formal and typically used in academic or professional writing. Both express causation." },
+    { question: "How do you use 'consequently' in a sentence?", answer: "'Consequently' shows a direct result and usually comes at the beginning of a clause: 'The budget was cut; consequently, several projects were cancelled.'" },
+    { question: "What does 'lead to' mean and how is it used?", answer: "'Lead to' means to cause or result in something. It's followed by a noun or gerund: 'Poor planning led to the project's failure' or 'Lack of exercise leads to health problems.'" },
+    { question: "How is 'result in' different from 'result from'?", answer: "'Result in' shows the effect (X results in Y means X causes Y), while 'result from' shows the cause (Y results from X means X causes Y). They express opposite directions of causation." },
+    { question: "When do you use 'as a result of' versus 'as a result'?", answer: "'As a result of' is followed by a noun and shows the cause: 'As a result of the storm, schools closed.' 'As a result' stands alone and shows consequence: 'It rained heavily. As a result, the game was cancelled.'" },
+    { question: "What's the meaning of 'give rise to'?", answer: "'Give rise to' means to cause something to begin or develop, especially something complex: 'The new law gave rise to numerous debates about privacy rights.'" },
+    { question: "How do you use 'trigger' in cause-effect contexts?", answer: "'Trigger' means to cause something to start suddenly, often used for reactions or events: 'The tax increase triggered widespread protests' or 'Stress can trigger headaches.'" },
+    { question: "What does 'bring about' mean?", answer: "'Bring about' means to make something happen, especially a change: 'The revolution brought about major political reforms' or 'Technology has brought about significant social changes.'" },
+    { question: "How is 'be responsible for' used to show causation?", answer: "'Be responsible for' indicates that something or someone is the cause: 'Human activities are responsible for climate change' or 'The new manager was responsible for the company's turnaround.'" },
+    { question: "What's the difference between 'therefore' and 'thus'?", answer: "Both show logical conclusion, but 'thus' is slightly more formal and often used in academic writing: 'The hypothesis was proven; therefore/thus, we can accept the theory.'" },
+    { question: "How do you express passive causation?", answer: "Use 'be caused by' to make the effect the subject: 'The accident was caused by driver error' rather than 'Driver error caused the accident.' This emphasizes the result." },
+    { question: "What does 'owing to' emphasize?", answer: "'Owing to' is a formal way to express cause, emphasizing the reason for something: 'Owing to severe weather conditions, flights were cancelled.' It's common in formal announcements." },
+    { question: "How can climate change lead to migration?", answer: "Climate change can lead to migration because rising temperatures and extreme weather make some regions uninhabitable, forcing people to move to more sustainable areas. Therefore, environmental factors result in population displacement." },
+    { question: "What causes traffic congestion in cities?", answer: "Traffic congestion is primarily caused by rapid urbanization and inadequate infrastructure. As a result of population growth, more vehicles use the same road systems, which consequently leads to severe traffic jams." },
+    { question: "How does education contribute to economic development?", answer: "Education contributes to economic development by creating a skilled workforce. Consequently, educated workers are more productive, which results in innovation and economic growth. Thus, investing in education brings about long-term prosperity." },
+    { question: "What are the effects of social media on communication?", answer: "Social media has brought about significant changes in how people communicate. It has led to instant global connection but also resulted in reduced face-to-face interaction. Consequently, while connectivity has improved, the quality of personal relationships may have declined." },
+    { question: "How can poor management result in business failure?", answer: "Poor management can result in business failure because it leads to inefficiency, low employee morale, and bad decision-making. As a result, the company loses competitiveness. Therefore, effective leadership is responsible for organizational success." },
+    { question: "What triggers inflation in an economy?", answer: "Inflation is typically triggered by increased money supply, rising production costs, or high demand. When demand exceeds supply, prices increase. Consequently, purchasing power decreases, which can give rise to economic instability." },
+    { question: "How does stress affect health?", answer: "Stress can have a significant impact on health by triggering the release of harmful hormones. This leads to increased blood pressure and weakens the immune system. Consequently, chronic stress results in serious health problems like heart disease." },
+    { question: "What are the consequences of deforestation?", answer: "Deforestation results in numerous environmental problems. It leads to habitat loss, contributes to climate change, and causes soil erosion. As a result of removing trees, ecosystems collapse and biodiversity decreases dramatically." },
+    { question: "How can automation lead to unemployment?", answer: "Automation can lead to unemployment because machines replace human workers in repetitive tasks. Consequently, jobs in manufacturing and data entry have declined. However, this has also given rise to new opportunities in technology and programming." },
+    { question: "What causes cultural misunderstandings?", answer: "Cultural misunderstandings are caused by different values, communication styles, and social norms. When people assume their cultural perspective is universal, this results in confusion. Therefore, cultural awareness is responsible for successful international communication." },
+    { question: "How does technology influence education?", answer: "Technology has had a profound impact on education by making information accessible globally. It has brought about personalized learning and online courses. As a result, education is no longer limited by geography or economic status." },
+    { question: "What are the effects of sleep deprivation?", answer: "Sleep deprivation results in impaired cognitive function, reduced concentration, and weakened immunity. It can trigger mood disorders and lead to serious health issues. Consequently, adequate sleep is responsible for maintaining both mental and physical health." },
+    { question: "How can urban planning reduce pollution?", answer: "Effective urban planning can reduce pollution by creating green spaces and efficient public transport. This leads to fewer private vehicles on roads and consequently results in cleaner air. Therefore, sustainable city design brings about environmental improvements." },
+    { question: "What gives rise to social inequality?", answer: "Social inequality is given rise to by unequal access to education, healthcare, and economic opportunities. Discrimination based on class, race, or gender also plays a role. As a result, wealth gaps widen, which further contributes to social division." },
+    { question: "How does exercise contribute to mental health?", answer: "Exercise contributes to mental health by releasing endorphins, which improve mood. It also reduces stress hormones and leads to better sleep quality. Consequently, regular physical activity results in reduced anxiety and depression." },
+    { question: "What are the consequences of overpopulation?", answer: "Overpopulation leads to resource depletion, environmental degradation, and increased competition for jobs and housing. As a result of overcrowding, living standards decline. This consequently triggers social tensions and economic challenges." },
+    { question: "How can poor diet result in chronic diseases?", answer: "Poor diet, high in sugar and processed foods, results in obesity, diabetes, and heart disease. It causes inflammation and weakens the immune system. Therefore, dietary choices are directly responsible for long-term health outcomes." },
+    { question: "What triggers economic recessions?", answer: "Economic recessions are triggered by various factors such as financial crises, reduced consumer spending, or external shocks. These lead to business closures and unemployment. Consequently, the economy contracts, which further impacts consumer confidence." },
+    { question: "How does corruption affect development?", answer: "Corruption has a devastating impact on development because it diverts resources from public services to private gain. This results in poor infrastructure and inadequate healthcare. Consequently, corruption is responsible for perpetuating poverty and inequality." },
+    { question: "What causes language extinction?", answer: "Language extinction is caused by globalization, urbanization, and cultural assimilation. When younger generations adopt dominant languages, traditional tongues disappear. As a result, linguistic diversity declines, which leads to loss of cultural heritage." },
+    { question: "How can renewable energy bring about change?", answer: "Renewable energy can bring about significant environmental change by reducing dependence on fossil fuels. This leads to lower carbon emissions and consequently results in cleaner air. Therefore, sustainable energy is responsible for combating climate change." },
+    { question: "What are the effects of advertising on consumer behavior?", answer: "Advertising has a powerful impact on consumer behavior by creating desire and shaping preferences. It triggers impulse buying and leads to consumption patterns based on image rather than need. As a result, marketing significantly influences economic choices." },
+    { question: "How does conflict give rise to humanitarian crises?", answer: "Conflict gives rise to humanitarian crises by destroying infrastructure, displacing populations, and disrupting food supplies. As a result of war, people lose access to healthcare and education. Consequently, entire generations suffer long-term trauma." },
+    { question: "What role does innovation play in progress?", answer: "Innovation plays a crucial role in progress by solving complex problems and improving efficiency. It brings about technological advances that result in better quality of life. Therefore, creativity and research contribute to societal development." },
+    { question: "How can misinformation trigger social problems?", answer: "Misinformation can trigger social problems by spreading false beliefs and creating division. When people act on inaccurate information, this leads to poor decisions and conflict. Consequently, media literacy is responsible for maintaining a well-informed society." },
+    { question: "What causes burnout in the workplace?", answer: "Burnout is caused by excessive workload, lack of control, and insufficient recognition. Chronic stress leads to emotional exhaustion and reduced productivity. As a result, employee well-being declines, which consequently impacts organizational performance." },
+    { question: "How does poverty contribute to crime?", answer: "Poverty contributes to crime by creating desperation and limiting legal opportunities for income. Economic hardship can lead people to illegal activities. Consequently, addressing poverty is responsible for reducing crime rates in communities." },
+    { question: "What are the long-term effects of childhood trauma?", answer: "Childhood trauma can have long-term effects on mental health, leading to anxiety, depression, and relationship difficulties. It triggers maladaptive coping mechanisms and results in lower life satisfaction. Therefore, early intervention is crucial for healing." },
+    { question: "How can effective communication prevent conflicts?", answer: "Effective communication can prevent conflicts by ensuring clarity and mutual understanding. When people express themselves honestly and listen actively, misunderstandings decrease. Consequently, open dialogue results in stronger relationships and collaborative problem-solving." }
+  ]
+};
+
+// Module 216: Writing Critiques and Reviews
+const MODULE_216_DATA = {
+  title: "Module 216 - Writing Critiques and Reviews",
+  description: "Learn to analyze and evaluate texts, studies, films, or performances with objectivity and academic rigor",
+  intro: `📘 Lesson Objectives
+✅ Write balanced, analytical critiques
+✅ Distinguish between description and evaluation
+✅ Use polite and objective language
+✅ Support judgments with evidence
+
+**Purpose and Tone of Critiques**
+
+A good critique is objective, analytical, and respectful. It highlights strengths and weaknesses while maintaining a professional tone. Writers must use cautious and polite language, often through hedging expressions such as "appears to" or "seems to."
+
+**Key Verbs and Expressions for Critiques**
+
+| Verb / Expression | Function | Example |
+|-------------------|----------|---------|
+| Evaluate | Assess value or quality | The author evaluates the effectiveness of the proposed solution. |
+| Highlight | Draw attention to | The study highlights the need for further research. |
+| Argue | Present reasoning | The writer argues that education reforms are necessary. |
+| Question | Doubt or challenge | The article questions the reliability of previous findings. |
+| Demonstrate | Show evidence or proof | The paper demonstrates a strong correlation between variables. |
+| Emphasize | Stress importance | The review emphasizes the significance of teamwork. |
+| Criticize | Point out flaws | The critique criticizes the limited sample size used in the research. |
+| Acknowledge | Recognize value or truth | The author acknowledges the limitations of the study. |
+| Support | Back up an argument | The researcher supports her claim with empirical evidence. |
+| Refute | Disagree or disprove | The paper refutes the earlier theory proposed by Smith. |
+
+**Useful Collocations:**
+• Offer insight • Provide analysis • Raise an issue • Express doubt • Give credit to • Draw attention to • Present a balanced view • Address a weakness • Identify a strength • Make a valid point • Offer an alternative perspective • Present evidence • Support a claim • Challenge an argument • Summarize key findings`,
+
+  table: [
+    { english: "Evaluate", turkish: "Değerlendirmek", example: "The author evaluates the effectiveness of the proposed solution." },
+    { english: "Highlight", turkish: "Vurgulamak", example: "The study highlights the need for further research." },
+    { english: "Argue", turkish: "Savunmak", example: "The writer argues that education reforms are necessary." },
+    { english: "Question", turkish: "Sorgulamak", example: "The article questions the reliability of previous findings." },
+    { english: "Demonstrate", turkish: "Göstermek", example: "The paper demonstrates a strong correlation between variables." },
+    { english: "Emphasize", turkish: "Vurgulamak", example: "The review emphasizes the significance of teamwork." },
+    { english: "Criticize", turkish: "Eleştirmek", example: "The critique criticizes the limited sample size." },
+    { english: "Acknowledge", turkish: "Kabul etmek", example: "The author acknowledges the limitations of the study." },
+    { english: "Support", turkish: "Desteklemek", example: "The researcher supports her claim with empirical evidence." },
+    { english: "Refute", turkish: "Çürütmek", example: "The paper refutes the earlier theory." },
+    { english: "Offer insight", turkish: "İçgörü sunmak", example: "The book offers valuable insight into human behavior." },
+    { english: "Provide analysis", turkish: "Analiz sunmak", example: "The review provides thorough analysis of the methodology." },
+    { english: "Raise an issue", turkish: "Sorun ortaya koymak", example: "The author raises an important ethical issue." },
+    { english: "Express doubt", turkish: "Şüphe belirtmek", example: "The critic expresses doubt about the findings." },
+    { english: "Give credit to", turkish: "Takdir etmek", example: "We must give credit to the researcher's innovative approach." },
+    { english: "Present a balanced view", turkish: "Dengeli görüş sunmak", example: "The critique presents a balanced view of strengths and weaknesses." },
+    { english: "Address a weakness", turkish: "Zayıflığa değinmek", example: "The review addresses a major weakness in the argument." },
+    { english: "Identify a strength", turkish: "Güçlü yönü belirlemek", example: "The analysis identifies the study's main strength." },
+    { english: "Challenge an argument", turkish: "Argümanı sorgulamak", example: "The paper challenges the author's central argument." },
+    { english: "Summarize key findings", turkish: "Ana bulguları özetlemek", example: "The review summarizes the key findings effectively." }
+  ],
+
+  speakingPractice: [
+    { question: "What distinguishes a critique from a summary?", answer: "A critique goes beyond description; it evaluates and analyzes the subject using reasoning and evidence. While a summary restates the author's points, a critique discusses how effective or convincing those points are." },
+    { question: "Why is objectivity important in writing critiques?", answer: "Objectivity ensures that the critique is fair, credible, and based on evidence rather than personal feelings. It allows readers to trust the evaluation and form their own informed opinions." },
+    { question: "How can you maintain a respectful tone while critiquing?", answer: "You can maintain respect by using hedging language like 'appears to' or 'seems to', acknowledging strengths alongside weaknesses, and focusing on the work rather than attacking the author personally." },
+    { question: "What does it mean to evaluate a text?", answer: "To evaluate a text means to assess its quality, effectiveness, and value by examining its arguments, evidence, methodology, and contribution to the field." },
+    { question: "How do you highlight important points in a review?", answer: "You highlight important points by using emphasis markers like 'notably', 'significantly', or 'particularly', and by dedicating more discussion to central themes or findings." },
+    { question: "When should you question findings in academic work?", answer: "You should question findings when the methodology is unclear, the sample size is inadequate, there are logical inconsistencies, or the conclusions don't fully match the evidence presented." },
+    { question: "What makes a demonstration convincing in research?", answer: "A convincing demonstration includes clear methodology, sufficient evidence, logical reasoning, acknowledgment of limitations, and reproducible results that support the claims." },
+    { question: "Why is it important to acknowledge limitations?", answer: "Acknowledging limitations shows intellectual honesty, helps readers understand the scope of the work, and identifies areas for future research. It strengthens rather than weakens academic credibility." },
+    { question: "How do you support a claim in a critique?", answer: "You support a claim by citing specific examples from the text, referencing evidence, comparing with other works, and using logical reasoning to explain your evaluation." },
+    { question: "What does it mean to refute an argument?", answer: "To refute an argument means to prove it wrong or invalid by presenting counterevidence, identifying logical fallacies, or demonstrating that the conclusions don't follow from the premises." },
+    { question: "How can you offer insight in a review?", answer: "You offer insight by connecting the work to broader themes, identifying implications that the author may not have addressed, or revealing patterns and relationships in the content." },
+    { question: "What should a balanced critique include?", answer: "A balanced critique should include both strengths and weaknesses, acknowledge what works well, identify areas for improvement, and provide constructive suggestions rather than just criticism." },
+    { question: "How do you identify strengths in academic writing?", answer: "Identify strengths by looking for clear argumentation, robust evidence, innovative methodology, significant contributions to the field, and effective communication of complex ideas." },
+    { question: "How can you address weaknesses constructively?", answer: "Address weaknesses constructively by explaining why they matter, suggesting how they could be improved, and balancing criticism with recognition of the work's positive aspects." },
+    { question: "Why should critiques present evidence?", answer: "Presenting evidence makes critiques credible and persuasive. It transforms subjective opinion into reasoned analysis and allows readers to verify and evaluate the critique's validity." },
+    { question: "How do you challenge an argument respectfully?", answer: "Challenge an argument respectfully by using phrases like 'one might argue that' or 'however, this view overlooks', providing alternative interpretations, and focusing on ideas rather than personal attacks." },
+    { question: "What role does analysis play in critique writing?", answer: "Analysis breaks down the work into components, examines how they function, evaluates their effectiveness, and explains the reasoning behind judgments. It's the foundation of any good critique." },
+    { question: "How can you express doubt diplomatically?", answer: "Express doubt diplomatically using hedging language: 'It seems questionable whether...', 'The evidence may not fully support...', or 'One might wonder if...' This softens criticism while still raising concerns." },
+    { question: "What makes a critique academic versus informal?", answer: "Academic critiques use formal language, support claims with evidence, reference scholarly sources, maintain objectivity, and follow structured argumentation. Informal reviews may be more subjective and casual." },
+    { question: "How do you give credit while still being critical?", answer: "You can acknowledge strengths and contributions while identifying weaknesses: 'While the author makes a valuable contribution to the field, the methodology raises some concerns regarding validity.'" },
+    { question: "Why is it important to summarize key findings first?", answer: "Summarizing key findings provides context for readers, ensures you've understood the work correctly, and establishes a foundation for your evaluative comments that follow." },
+    { question: "How can structure improve a critique?", answer: "Clear structure helps readers follow your analysis, separates descriptive content from evaluation, organizes strengths and weaknesses logically, and ensures all important aspects are addressed." },
+    { question: "What's the difference between criticizing and being critical?", answer: "Criticizing often implies finding fault, while being critical means analyzing carefully and making informed judgments. Good critiques are critical in the analytical sense, not merely fault-finding." },
+    { question: "How do you evaluate methodology in research?", answer: "Evaluate methodology by examining whether it's appropriate for the research question, adequately described, properly executed, and whether results are reproducible and reliable." },
+    { question: "When should you emphasize certain points?", answer: "Emphasize points that are central to your evaluation, represent significant strengths or weaknesses, have broader implications, or challenge conventional understanding in the field." },
+    { question: "How can you make your critique persuasive?", answer: "Make critiques persuasive through logical argumentation, specific evidence, clear explanation of your reasoning, acknowledgment of counterarguments, and professional, respectful tone." },
+    { question: "What makes criticism constructive?", answer: "Constructive criticism explains why something doesn't work, offers suggestions for improvement, maintains a helpful tone, and aims to contribute to better work rather than simply tear down." },
+    { question: "How do you handle biased sources in critique?", answer: "Acknowledge the bias, explain how it affects the work's credibility, provide balanced perspective by considering whether bias invalidates findings, and suggest how awareness of it should inform interpretation." },
+    { question: "What's the purpose of a literature review critique?", answer: "A literature review critique evaluates how comprehensively the author surveyed existing research, whether relevant studies were included, and if the synthesis of findings is accurate and insightful." },
+    { question: "How can you compare works in a critique?", answer: "Compare works by identifying similarities and differences, evaluating relative strengths, noting how each contributes uniquely to the field, and explaining which approaches are more effective." },
+    { question: "Why should you avoid absolute language in critiques?", answer: "Absolute language like 'always' or 'never' is rarely accurate and makes critiques sound dogmatic. Qualified language like 'often' or 'tends to' is more precise and professional." },
+    { question: "How do you critique creative works versus academic ones?", answer: "Creative critiques consider artistic merit, emotional impact, and aesthetic choices, while academic critiques focus on logical argumentation, evidence quality, and contribution to knowledge. Both require supporting your judgments." },
+    { question: "What makes a thesis statement critique-worthy?", answer: "A critique should evaluate whether the thesis is clear, arguable, significant, and adequately supported throughout the work. It should also assess whether the thesis addresses an important question." },
+    { question: "How can you improve your critique writing?", answer: "Improve by reading professional reviews, practicing analytical reading, learning discipline-specific criteria, developing precise vocabulary, and seeking feedback on your evaluations." },
+    { question: "What ethical considerations apply to critique writing?", answer: "Ethical critique writing requires honesty, fairness, avoiding personal attacks, acknowledging your own limitations and biases, and recognizing the effort and value in the work being reviewed." },
+    { question: "How do you handle disagreement with established scholars?", answer: "Handle disagreement respectfully by acknowledging their contributions, carefully explaining your reasoning, providing solid evidence, and presenting your view as an alternative perspective rather than definitive truth." },
+    { question: "What's the role of examples in critique?", answer: "Examples provide concrete evidence for your evaluations, help readers locate the features you're discussing, illustrate your points clearly, and make abstract criticism tangible and verifiable." },
+    { question: "How can you develop critical reading skills?", answer: "Develop critical reading by questioning assumptions, identifying underlying arguments, evaluating evidence quality, considering alternative interpretations, and practicing analysis of various texts regularly." },
+    { question: "Why is peer review important in academia?", answer: "Peer review ensures quality control, identifies weaknesses before publication, improves clarity and rigor, validates methodology and findings, and maintains academic standards across disciplines." },
+    { question: "How can critiques contribute to knowledge?", answer: "Critiques contribute by identifying flaws that need addressing, suggesting new research directions, clarifying misunderstandings, challenging assumptions, and advancing scholarly discourse through thoughtful evaluation." }
+  ]
+};
+
+// Modules 217-224 data constants are imported from C1ModulesData_Extended.ts
+// This organization improves maintainability and build performance
+
 // Export all C1 module data
 export {
   MODULE_201_DATA,
@@ -1697,4 +2023,10 @@ export {
   MODULE_211_DATA,
   MODULE_212_DATA,
   MODULE_213_DATA,
+  MODULE_214_DATA,
+  MODULE_215_DATA,
+  MODULE_216_DATA,
 };
+
+// Re-export extended modules for convenience
+export * from './C1ModulesData_Extended';
