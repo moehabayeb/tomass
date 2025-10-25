@@ -138,7 +138,7 @@ export function MeetingsWidget({
   const { upcomingMeetings, isLoading, error } = useUpcomingMeetings();
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
 
-  // 🔧 FIX: Memory leak - Check notification permission status with proper cleanup
+  // 🔧 FIX BUG #21: Immediate permission check, periodic refresh for changes
   useEffect(() => {
     const checkNotificationStatus = () => {
       setNotificationsEnabled(meetingNotifications.getPermissionStatus() === 'granted');
@@ -146,8 +146,8 @@ export function MeetingsWidget({
 
     checkNotificationStatus();
 
-    // Check every few seconds in case permission changes
-    const interval = setInterval(checkNotificationStatus, 5000);
+    // Check every minute (not too frequent to avoid performance issues)
+    const interval = setInterval(checkNotificationStatus, 60000);
 
     return () => {
       clearInterval(interval);
@@ -158,13 +158,23 @@ export function MeetingsWidget({
     window.open(url, '_blank', 'noopener,noreferrer');
   };
 
+  // 🔧 FIX BUG #21: Immediately update state after user action
   const handleToggleNotifications = async () => {
     if (notificationsEnabled) {
       meetingNotifications.stopNotificationService();
-      setNotificationsEnabled(false);
+      setNotificationsEnabled(false); // Immediate feedback
     } else {
+      // If permission not granted, request it first
+      if (meetingNotifications.getPermissionStatus() !== 'granted') {
+        const granted = await meetingNotifications.requestPermission();
+        if (!granted) {
+          setNotificationsEnabled(false); // Immediate feedback
+          return;
+        }
+      }
+
       const started = await meetingNotifications.startNotificationService();
-      setNotificationsEnabled(started);
+      setNotificationsEnabled(started); // Immediate feedback
     }
   };
 

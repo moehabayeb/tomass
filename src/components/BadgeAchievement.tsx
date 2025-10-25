@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { Badge } from '@/hooks/useBadgeSystem';
 import { X } from 'lucide-react';
 
@@ -9,81 +9,107 @@ interface BadgeAchievementProps {
 
 export const BadgeAchievement = ({ badge, onClose }: BadgeAchievementProps) => {
   const [show, setShow] = useState(false);
-  const [autoTimer, setAutoTimer] = useState<NodeJS.Timeout | null>(null);
+  // 🔧 FIX BUG #15: Use ref for timer instead of state
+  const autoTimerRef = useRef<NodeJS.Timeout | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
+  const isMountedRef = useRef(true);
 
-  const handleClose = () => {
-    setShow(false);
-    if (autoTimer) {
-      clearTimeout(autoTimer);
-      setAutoTimer(null);
+  // 🔧 FIX BUG #15, #18: Proper timer cleanup
+  const clearAutoTimer = useCallback(() => {
+    if (autoTimerRef.current) {
+      clearTimeout(autoTimerRef.current);
+      autoTimerRef.current = null;
     }
+  }, []);
+
+  const handleClose = useCallback(() => {
+    setShow(false);
+    clearAutoTimer();
+
     setTimeout(() => {
       onClose();
-      // Restore focus to previously focused element
-      if (previousFocusRef.current) {
-        previousFocusRef.current.focus();
+      // 🔧 FIX BUG #16: Safely restore focus
+      if (previousFocusRef.current && document.contains(previousFocusRef.current)) {
+        try {
+          // Check if element is still focusable
+          if (typeof previousFocusRef.current.focus === 'function') {
+            previousFocusRef.current.focus();
+          }
+        } catch (error) {
+          // Focus failed, ignore silently
+          console.debug('[BadgeAchievement] Focus restoration failed:', error);
+        }
       }
     }, 300);
-  };
+  }, [onClose, clearAutoTimer]);
 
-  const cancelAutoTimer = () => {
-    if (autoTimer) {
-      clearTimeout(autoTimer);
-      setAutoTimer(null);
+  // 🔧 FIX BUG #18: Allow re-enabling auto-dismiss on mouse leave
+  const restoreAutoTimer = useCallback(() => {
+    // Only restore if modal is still showing and no timer exists
+    if (show && !autoTimerRef.current && isMountedRef.current) {
+      autoTimerRef.current = setTimeout(() => {
+        if (isMountedRef.current) {
+          handleClose();
+        }
+      }, 4000);
     }
-  };
+  }, [show, handleClose]);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+
+    return () => {
+      isMountedRef.current = false;
+      clearAutoTimer();
+    };
+  }, [clearAutoTimer]);
 
   useEffect(() => {
     if (badge) {
       // Store currently focused element
       previousFocusRef.current = document.activeElement as HTMLElement;
-      
+
       setShow(true);
-      
+
       // Focus the close button after animation
       setTimeout(() => {
-        closeButtonRef.current?.focus();
+        if (isMountedRef.current) {
+          closeButtonRef.current?.focus();
+        }
       }, 100);
-      
+
       // Auto-dismiss after 4 seconds
-      const timer = setTimeout(() => {
-        handleClose();
+      autoTimerRef.current = setTimeout(() => {
+        if (isMountedRef.current) {
+          handleClose();
+        }
       }, 4000);
-      setAutoTimer(timer);
-
-      return () => {
-        if (timer) clearTimeout(timer);
-      };
     }
-  }, [badge]);
+  }, [badge, handleClose]);
 
-  // Handle escape key
+  // 🔧 FIX BUG #17: Single event listener with proper cleanup
   useEffect(() => {
+    if (!show) return;
+
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && show) {
+      if (e.key === 'Escape') {
         handleClose();
       }
     };
 
-    if (show) {
-      document.addEventListener('keydown', handleEscape);
-      return () => document.removeEventListener('keydown', handleEscape);
-    }
-  }, [show]);
-
-  // Handle route changes - force close popup
-  useEffect(() => {
     const handleRouteChange = () => {
-      if (show) {
-        handleClose();
-      }
+      handleClose();
     };
 
+    document.addEventListener('keydown', handleEscape);
     window.addEventListener('popstate', handleRouteChange);
-    return () => window.removeEventListener('popstate', handleRouteChange);
-  }, [show]);
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      window.removeEventListener('popstate', handleRouteChange);
+    };
+  }, [show, handleClose]);
 
   if (!badge) return null;
 
@@ -103,11 +129,11 @@ export const BadgeAchievement = ({ badge, onClose }: BadgeAchievementProps) => {
       />
       
       {/* Achievement Card */}
-      <div 
+      <div
         className={`relative bg-gradient-to-br from-primary/20 to-primary/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 max-w-md mx-4 transform transition-all duration-300 ${show ? 'scale-100 translate-y-0' : 'scale-95 translate-y-4'}`}
-        onMouseEnter={cancelAutoTimer}
-        onMouseMove={cancelAutoTimer}
-        onFocus={cancelAutoTimer}
+        onMouseEnter={clearAutoTimer}
+        onMouseLeave={restoreAutoTimer}
+        onFocus={clearAutoTimer}
       >
         {/* Close Button */}
         <button

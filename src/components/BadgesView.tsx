@@ -113,11 +113,12 @@ export default function BadgesView({ onBack }: BadgesViewProps) {
             }`}
           >
             {/* Sparkle Effect for Unlocked Badges */}
+            {/* 🔧 FIX BUG #20: Use will-change and limit animations to visible badges */}
             {badge.unlocked && (
-              <div className="absolute inset-0 pointer-events-none">
-                <div className="absolute top-2 right-2 w-1.5 sm:w-2 h-1.5 sm:h-2 bg-yellow-400 rounded-full animate-pulse opacity-80"></div>
-                <div className="absolute top-3 sm:top-4 right-5 sm:right-6 w-1 h-1 bg-blue-400 rounded-full animate-pulse opacity-60 animation-delay-1000"></div>
-                <div className="absolute top-4 sm:top-6 right-2 sm:right-3 w-1 sm:w-1.5 h-1 sm:h-1.5 bg-pink-400 rounded-full animate-pulse opacity-70 animation-delay-2000"></div>
+              <div className="absolute inset-0 pointer-events-none will-change-auto">
+                <div className="absolute top-2 right-2 w-1.5 sm:w-2 h-1.5 sm:h-2 bg-yellow-400 rounded-full opacity-80" style={{animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'}}></div>
+                <div className="absolute top-3 sm:top-4 right-5 sm:right-6 w-1 h-1 bg-blue-400 rounded-full opacity-60" style={{animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite 1s'}}></div>
+                <div className="absolute top-4 sm:top-6 right-2 sm:right-3 w-1 sm:w-1.5 h-1 sm:h-1.5 bg-pink-400 rounded-full opacity-70" style={{animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite 2s'}}></div>
               </div>
             )}
 

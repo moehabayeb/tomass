@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useUserData } from './useUserData';
 import { toast } from '@/hooks/use-toast';
 
@@ -34,6 +34,47 @@ export interface BadgeProgress {
   partyModeUnlocked: boolean;
 }
 
+// 🔧 FIX BUG #14: Safe localStorage wrapper with error handling
+const safeLocalStorage = {
+  getItem: (key: string): string | null => {
+    try {
+      return localStorage.getItem(key);
+    } catch (error) {
+      console.error(`[Badge System] Error reading ${key}:`, error);
+      return null;
+    }
+  },
+  setItem: (key: string, value: string): boolean => {
+    try {
+      localStorage.setItem(key, value);
+      return true;
+    } catch (error) {
+      // 🔧 FIX BUG #4: Handle quota exceeded
+      if (error instanceof DOMException && error.name === 'QuotaExceededError') {
+        console.warn('[Badge System] localStorage quota exceeded, clearing old data');
+        // Try to free up space by removing old notification data
+        try {
+          localStorage.removeItem('meeting_notifications_shown');
+          localStorage.setItem(key, value);
+          return true;
+        } catch (retryError) {
+          console.error('[Badge System] Failed to save after cleanup:', retryError);
+          return false;
+        }
+      }
+      console.error(`[Badge System] Error saving ${key}:`, error);
+      return false;
+    }
+  },
+  removeItem: (key: string): void => {
+    try {
+      localStorage.removeItem(key);
+    } catch (error) {
+      console.error(`[Badge System] Error removing ${key}:`, error);
+    }
+  }
+};
+
 export const useBadgeSystem = () => {
   const { userProfile } = useUserData();
   const [badges, setBadges] = useState<Badge[]>([]);
@@ -51,6 +92,16 @@ export const useBadgeSystem = () => {
     earlyRiserCount: 0,
     partyModeUnlocked: false
   });
+
+  // 🔧 FIX BUG #9: Track which badges were already shown to prevent spam
+  const shownBadgeIds = useRef<Set<string>>(new Set());
+
+  // 🔧 FIX BUG #8: Use ref to track if we're currently updating badges
+  const isUpdatingBadges = useRef(false);
+
+  // 🔧 FIX BUG #10: Use ref to batch progress updates
+  const pendingProgressUpdates = useRef<Partial<BadgeProgress>>({});
+  const updateTimeout = useRef<NodeJS.Timeout | null>(null);
 
   // Initialize badges with complete set
   useEffect(() => {
@@ -130,40 +181,33 @@ export const useBadgeSystem = () => {
       }
     ];
 
-    // Load saved badges from localStorage
-    const savedBadges = localStorage.getItem('user_badges');
+    // 🔧 FIX BUG #14: Safely load and validate badges from localStorage
+    const savedBadges = safeLocalStorage.getItem('user_badges');
     if (savedBadges) {
-      const parsed = JSON.parse(savedBadges);
-      // Merge with new badges for existing users
-      const mergedBadges = initialBadges.map(newBadge => {
-        const existingBadge = parsed.find((b: Badge) => b.id === newBadge.id);
-        return existingBadge || newBadge;
-      });
-      setBadges(mergedBadges);
-    } else {
-      setBadges(initialBadges);
+      try {
+        const parsed = JSON.parse(savedBadges);
+
+        // Validate structure
+        if (Array.isArray(parsed)) {
+          // Merge with new badges for existing users
+          const mergedBadges = initialBadges.map(newBadge => {
+            const existingBadge = parsed.find((b: any) =>
+              b && typeof b === 'object' && b.id === newBadge.id
+            );
+            return existingBadge || newBadge;
+          });
+          setBadges(mergedBadges);
+          return;
+        }
+      } catch (error) {
+        console.error('[Badge System] Error parsing saved badges, using defaults:', error);
+      }
     }
 
-    // Load badge progress
-    const savedProgress = localStorage.getItem('badge_progress');
-    if (savedProgress) {
-      const parsed = JSON.parse(savedProgress);
-      setBadgeProgress({
-        grammarLessonsCompleted: parsed.grammarLessonsCompleted || 0,
-        speakingSubmissions: parsed.speakingSubmissions || 0,
-        totalExercises: parsed.totalExercises || 0,
-        currentLevel: parsed.currentLevel || 1,
-        currentStreak: parsed.currentStreak || 0,
-        completedModules: parsed.completedModules || 0,
-        dailyTipsViewed: parsed.dailyTipsViewed || 0,
-        bookmarksSaved: parsed.bookmarksSaved || 0,
-        earlyRiserCount: parsed.earlyRiserCount || 0,
-        partyModeUnlocked: parsed.partyModeUnlocked || false
-      });
-    }
+    setBadges(initialBadges);
   }, []);
 
-  // Initialize unlockable features
+  // Initialize unlockable features (only once)
   useEffect(() => {
     const features: UnlockableFeature[] = [
       {
@@ -187,173 +231,262 @@ export const useBadgeSystem = () => {
     setUnlockableFeatures(features);
   }, []);
 
-  // Update progress based on user profile and localStorage
+  // Load badge progress from localStorage
   useEffect(() => {
-    if (userProfile) {
-      const currentStreak = parseInt(localStorage.getItem('currentStreak') || '0');
-      const totalExercises = parseInt(localStorage.getItem('totalExercises') || '0');
-      const grammarLessons = parseInt(localStorage.getItem('grammarLessonsCompleted') || '0');
-      const speakingSubmissions = parseInt(localStorage.getItem('speakingSubmissions') || '0');
-      const completedModules = parseInt(localStorage.getItem('completedModules') || '0');
-      const dailyTipsViewed = parseInt(localStorage.getItem('dailyTipsViewed') || '0');
-      const bookmarksSaved = parseInt(localStorage.getItem('bookmarksSaved') || '0');
-      const earlyRiserCount = parseInt(localStorage.getItem('earlyRiserCount') || '0');
-      
+    const savedProgress = safeLocalStorage.getItem('badge_progress');
+    if (savedProgress) {
+      try {
+        const parsed = JSON.parse(savedProgress);
+
+        // 🔧 FIX BUG #19: Validate all numeric values are non-negative
+        const validatedProgress = {
+          grammarLessonsCompleted: Math.max(0, parsed.grammarLessonsCompleted || 0),
+          speakingSubmissions: Math.max(0, parsed.speakingSubmissions || 0),
+          totalExercises: Math.max(0, parsed.totalExercises || 0),
+          currentLevel: Math.max(1, parsed.currentLevel || 1),
+          currentStreak: Math.max(0, parsed.currentStreak || 0),
+          completedModules: Math.max(0, parsed.completedModules || 0),
+          dailyTipsViewed: Math.max(0, parsed.dailyTipsViewed || 0),
+          bookmarksSaved: Math.max(0, parsed.bookmarksSaved || 0),
+          earlyRiserCount: Math.max(0, parsed.earlyRiserCount || 0),
+          partyModeUnlocked: Boolean(parsed.partyModeUnlocked)
+        };
+
+        setBadgeProgress(validatedProgress);
+      } catch (error) {
+        console.error('[Badge System] Error parsing badge progress:', error);
+      }
+    }
+  }, []);
+
+  // 🔧 FIX BUG #13: Sync with userProfile when it changes
+  useEffect(() => {
+    if (userProfile?.level) {
       setBadgeProgress(prev => ({
         ...prev,
-        grammarLessonsCompleted: grammarLessons,
-        speakingSubmissions: speakingSubmissions,
-        totalExercises: totalExercises,
-        currentLevel: userProfile.level,
-        currentStreak: currentStreak,
-        completedModules: completedModules,
-        dailyTipsViewed: dailyTipsViewed,
-        bookmarksSaved: bookmarksSaved,
-        earlyRiserCount: earlyRiserCount
+        currentLevel: Math.max(1, userProfile.level)
       }));
     }
-  }, [userProfile]);
+  }, [userProfile?.level]);
 
-  // Check for early riser on app open
+  // 🔧 FIX BUG #12: Early riser check only once per day with proper dependency
   useEffect(() => {
     const now = new Date();
     const hour = now.getHours();
     const today = now.toDateString();
-    const lastEarlyRiserCheck = localStorage.getItem('lastEarlyRiserCheck');
-    
+    const lastEarlyRiserCheck = safeLocalStorage.getItem('lastEarlyRiserCheck');
+
     if (hour < 9 && lastEarlyRiserCheck !== today) {
-      localStorage.setItem('lastEarlyRiserCheck', today);
+      safeLocalStorage.setItem('lastEarlyRiserCheck', today);
       incrementEarlyRiser();
     }
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount
 
-  // Check and unlock badges
-  useEffect(() => {
-    const updatedBadges = badges.map(badge => {
+  // 🔧 FIX BUG #8 & #11: Check badges without triggering infinite loop
+  const checkBadgeUnlocks = useCallback((progress: BadgeProgress, currentBadges: Badge[]) => {
+    if (isUpdatingBadges.current) return currentBadges;
+
+    isUpdatingBadges.current = true;
+
+    const updatedBadges = currentBadges.map(badge => {
       if (badge.unlocked) return badge;
 
       let shouldUnlock = false;
 
       switch (badge.id) {
         case 'streak_starter':
-          shouldUnlock = badgeProgress.currentStreak >= 3;
+          shouldUnlock = progress.currentStreak >= 3;
           break;
         case 'grammar_hero':
-          shouldUnlock = badgeProgress.completedModules >= 5; // All A1 modules
+          shouldUnlock = progress.completedModules >= 5;
           break;
         case 'speaking_pro':
-          shouldUnlock = badgeProgress.speakingSubmissions >= 10;
+          shouldUnlock = progress.speakingSubmissions >= 10;
           break;
         case 'daily_learner':
-          shouldUnlock = badgeProgress.dailyTipsViewed >= 7;
+          shouldUnlock = progress.dailyTipsViewed >= 7;
           break;
         case 'early_riser':
-          shouldUnlock = badgeProgress.earlyRiserCount >= 3;
+          shouldUnlock = progress.earlyRiserCount >= 3;
           break;
         case 'bookmark_master':
-          shouldUnlock = badgeProgress.bookmarksSaved >= 5;
+          shouldUnlock = progress.bookmarksSaved >= 5;
           break;
         case 'level_up':
-          shouldUnlock = badgeProgress.currentLevel >= 10;
+          shouldUnlock = progress.currentLevel >= 10;
           break;
         case 'party_master':
-          shouldUnlock = badgeProgress.partyModeUnlocked;
+          shouldUnlock = progress.partyModeUnlocked;
           break;
         case 'first_lesson':
-          shouldUnlock = badgeProgress.grammarLessonsCompleted >= 1 || badgeProgress.totalExercises >= 1;
+          shouldUnlock = progress.grammarLessonsCompleted >= 1 || progress.totalExercises >= 1;
           break;
       }
 
       if (shouldUnlock) {
         const unlockedBadge = { ...badge, unlocked: true, unlockedAt: new Date() };
-        
-        // Show toast notification
-        toast({
-          title: "🏅 Badge Unlocked!",
-          description: `You earned the "${badge.name}" badge!`,
-          duration: 4000,
-        });
-        
-        setNewlyUnlockedBadge(unlockedBadge);
+
+        // 🔧 FIX BUG #9: Only show toast for newly unlocked badges
+        if (!shownBadgeIds.current.has(badge.id)) {
+          shownBadgeIds.current.add(badge.id);
+
+          toast({
+            title: "🏅 Badge Unlocked!",
+            description: `You earned the "${badge.name}" badge!`,
+            duration: 4000,
+          });
+
+          setNewlyUnlockedBadge(unlockedBadge);
+        }
+
         return unlockedBadge;
       }
 
       return badge;
     });
 
-    if (JSON.stringify(updatedBadges) !== JSON.stringify(badges)) {
-      setBadges(updatedBadges);
-      localStorage.setItem('user_badges', JSON.stringify(updatedBadges));
-    }
-    localStorage.setItem('badge_progress', JSON.stringify(badgeProgress));
-  }, [badgeProgress, badges]);
+    isUpdatingBadges.current = false;
+    return updatedBadges;
+  }, []);
 
-  // Update unlockable features based on level
+  // Check badges when progress changes
   useEffect(() => {
-    const updatedFeatures = unlockableFeatures.map(feature => {
-      const wasUnlocked = feature.unlocked;
-      const isNowUnlocked = badgeProgress.currentLevel >= feature.unlockLevel;
-      
-      // If party mode just unlocked, update badge progress
-      if (feature.id === 'party_mode' && !wasUnlocked && isNowUnlocked) {
-        setBadgeProgress(prev => ({ ...prev, partyModeUnlocked: true }));
-      }
-      
-      return {
-        ...feature,
-        unlocked: isNowUnlocked
-      };
+    const updatedBadges = checkBadgeUnlocks(badgeProgress, badges);
+
+    // Only update if actually changed
+    const hasChanges = updatedBadges.some((badge, idx) =>
+      badge.unlocked !== badges[idx]?.unlocked
+    );
+
+    if (hasChanges) {
+      setBadges(updatedBadges);
+      safeLocalStorage.setItem('user_badges', JSON.stringify(updatedBadges));
+    }
+
+    // Always save progress
+    safeLocalStorage.setItem('badge_progress', JSON.stringify(badgeProgress));
+  }, [badgeProgress, badges, checkBadgeUnlocks]);
+
+  // 🔧 FIX BUG #11: Update features without infinite loop
+  useEffect(() => {
+    setUnlockableFeatures(prev => {
+      const updated = prev.map(feature => {
+        const wasUnlocked = feature.unlocked;
+        const isNowUnlocked = badgeProgress.currentLevel >= feature.unlockLevel;
+
+        // If party mode just unlocked, update badge progress
+        if (feature.id === 'party_mode' && !wasUnlocked && isNowUnlocked) {
+          // Use callback form to avoid race condition
+          setBadgeProgress(current => ({ ...current, partyModeUnlocked: true }));
+        }
+
+        return {
+          ...feature,
+          unlocked: isNowUnlocked
+        };
+      });
+
+      // Only return new array if something actually changed
+      const hasChanges = updated.some((f, idx) => f.unlocked !== prev[idx].unlocked);
+      return hasChanges ? updated : prev;
     });
-    setUnlockableFeatures(updatedFeatures);
-  }, [badgeProgress.currentLevel, unlockableFeatures]);
+  }, [badgeProgress.currentLevel]); // Only depend on level, not the full array
 
-  const incrementGrammarLessons = () => {
-    const newCount = badgeProgress.grammarLessonsCompleted + 1;
-    localStorage.setItem('grammarLessonsCompleted', newCount.toString());
-    setBadgeProgress(prev => ({ ...prev, grammarLessonsCompleted: newCount }));
-  };
+  // 🔧 FIX BUG #10: Batch progress updates to prevent race conditions
+  const batchProgressUpdate = useCallback((updates: Partial<BadgeProgress>) => {
+    // Accumulate updates
+    pendingProgressUpdates.current = {
+      ...pendingProgressUpdates.current,
+      ...updates
+    };
 
-  const incrementTotalExercises = () => {
-    const newCount = badgeProgress.totalExercises + 1;
-    localStorage.setItem('totalExercises', newCount.toString());
-    setBadgeProgress(prev => ({ ...prev, totalExercises: newCount }));
-  };
+    // Clear existing timeout
+    if (updateTimeout.current) {
+      clearTimeout(updateTimeout.current);
+    }
 
-  const incrementSpeakingSubmissions = () => {
-    const newCount = badgeProgress.speakingSubmissions + 1;
-    localStorage.setItem('speakingSubmissions', newCount.toString());
-    setBadgeProgress(prev => ({ ...prev, speakingSubmissions: newCount }));
-  };
+    // Batch updates after a short delay
+    updateTimeout.current = setTimeout(() => {
+      const updates = pendingProgressUpdates.current;
+      pendingProgressUpdates.current = {};
 
-  const incrementCompletedModules = () => {
-    const newCount = badgeProgress.completedModules + 1;
-    localStorage.setItem('completedModules', newCount.toString());
-    setBadgeProgress(prev => ({ ...prev, completedModules: newCount }));
-  };
+      setBadgeProgress(prev => {
+        const newProgress = { ...prev, ...updates };
 
-  const incrementDailyTips = () => {
-    const newCount = badgeProgress.dailyTipsViewed + 1;
-    localStorage.setItem('dailyTipsViewed', newCount.toString());
-    setBadgeProgress(prev => ({ ...prev, dailyTipsViewed: newCount }));
-  };
+        // Save each individual counter to localStorage for persistence
+        Object.entries(updates).forEach(([key, value]) => {
+          if (key !== 'partyModeUnlocked') {
+            safeLocalStorage.setItem(key, String(value));
+          }
+        });
 
-  const incrementBookmarks = () => {
-    const newCount = badgeProgress.bookmarksSaved + 1;
-    localStorage.setItem('bookmarksSaved', newCount.toString());
-    setBadgeProgress(prev => ({ ...prev, bookmarksSaved: newCount }));
-  };
+        return newProgress;
+      });
+    }, 50); // 50ms debounce
+  }, []);
 
-  const incrementEarlyRiser = () => {
-    const newCount = badgeProgress.earlyRiserCount + 1;
-    localStorage.setItem('earlyRiserCount', newCount.toString());
-    setBadgeProgress(prev => ({ ...prev, earlyRiserCount: newCount }));
-  };
+  const incrementGrammarLessons = useCallback(() => {
+    setBadgeProgress(prev => {
+      const newCount = prev.grammarLessonsCompleted + 1;
+      safeLocalStorage.setItem('grammarLessonsCompleted', newCount.toString());
+      return { ...prev, grammarLessonsCompleted: newCount };
+    });
+  }, []);
 
-  const closeBadgeNotification = () => {
+  const incrementTotalExercises = useCallback(() => {
+    setBadgeProgress(prev => {
+      const newCount = prev.totalExercises + 1;
+      safeLocalStorage.setItem('totalExercises', newCount.toString());
+      return { ...prev, totalExercises: newCount };
+    });
+  }, []);
+
+  const incrementSpeakingSubmissions = useCallback(() => {
+    setBadgeProgress(prev => {
+      const newCount = prev.speakingSubmissions + 1;
+      safeLocalStorage.setItem('speakingSubmissions', newCount.toString());
+      return { ...prev, speakingSubmissions: newCount };
+    });
+  }, []);
+
+  const incrementCompletedModules = useCallback(() => {
+    setBadgeProgress(prev => {
+      const newCount = prev.completedModules + 1;
+      safeLocalStorage.setItem('completedModules', newCount.toString());
+      return { ...prev, completedModules: newCount };
+    });
+  }, []);
+
+  const incrementDailyTips = useCallback(() => {
+    setBadgeProgress(prev => {
+      const newCount = prev.dailyTipsViewed + 1;
+      safeLocalStorage.setItem('dailyTipsViewed', newCount.toString());
+      return { ...prev, dailyTipsViewed: newCount };
+    });
+  }, []);
+
+  const incrementBookmarks = useCallback(() => {
+    setBadgeProgress(prev => {
+      const newCount = prev.bookmarksSaved + 1;
+      safeLocalStorage.setItem('bookmarksSaved', newCount.toString());
+      return { ...prev, bookmarksSaved: newCount };
+    });
+  }, []);
+
+  const incrementEarlyRiser = useCallback(() => {
+    setBadgeProgress(prev => {
+      const newCount = prev.earlyRiserCount + 1;
+      safeLocalStorage.setItem('earlyRiserCount', newCount.toString());
+      return { ...prev, earlyRiserCount: newCount };
+    });
+  }, []);
+
+  const closeBadgeNotification = useCallback(() => {
     setNewlyUnlockedBadge(null);
-  };
+  }, []);
 
-  const getFeatureProgress = (featureId: string) => {
+  const getFeatureProgress = useCallback((featureId: string) => {
     const feature = unlockableFeatures.find(f => f.id === featureId);
     if (!feature) return '';
 
@@ -363,7 +496,7 @@ export const useBadgeSystem = () => {
     if (feature.unlocked) return 'Unlocked!';
     if (levelsToGo === 1) return `1 level to unlock!`;
     return `${levelsToGo} levels to unlock!`;
-  };
+  }, [unlockableFeatures, badgeProgress.currentLevel]);
 
   return {
     badges,
