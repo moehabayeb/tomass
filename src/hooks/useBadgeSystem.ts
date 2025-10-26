@@ -426,61 +426,41 @@ export const useBadgeSystem = () => {
     }, 50); // 50ms debounce
   }, []);
 
+  // 🔧 FIX BUG #10 COMPLETE: Use batched updates to prevent race conditions
   const incrementGrammarLessons = useCallback(() => {
-    setBadgeProgress(prev => {
-      const newCount = prev.grammarLessonsCompleted + 1;
-      safeLocalStorage.setItem('grammarLessonsCompleted', newCount.toString());
-      return { ...prev, grammarLessonsCompleted: newCount };
-    });
-  }, []);
+    const currentValue = pendingProgressUpdates.current.grammarLessonsCompleted ?? badgeProgress.grammarLessonsCompleted;
+    batchProgressUpdate({ grammarLessonsCompleted: currentValue + 1 });
+  }, [badgeProgress.grammarLessonsCompleted, batchProgressUpdate]);
 
   const incrementTotalExercises = useCallback(() => {
-    setBadgeProgress(prev => {
-      const newCount = prev.totalExercises + 1;
-      safeLocalStorage.setItem('totalExercises', newCount.toString());
-      return { ...prev, totalExercises: newCount };
-    });
-  }, []);
+    const currentValue = pendingProgressUpdates.current.totalExercises ?? badgeProgress.totalExercises;
+    batchProgressUpdate({ totalExercises: currentValue + 1 });
+  }, [badgeProgress.totalExercises, batchProgressUpdate]);
 
   const incrementSpeakingSubmissions = useCallback(() => {
-    setBadgeProgress(prev => {
-      const newCount = prev.speakingSubmissions + 1;
-      safeLocalStorage.setItem('speakingSubmissions', newCount.toString());
-      return { ...prev, speakingSubmissions: newCount };
-    });
-  }, []);
+    const currentValue = pendingProgressUpdates.current.speakingSubmissions ?? badgeProgress.speakingSubmissions;
+    batchProgressUpdate({ speakingSubmissions: currentValue + 1 });
+  }, [badgeProgress.speakingSubmissions, batchProgressUpdate]);
 
   const incrementCompletedModules = useCallback(() => {
-    setBadgeProgress(prev => {
-      const newCount = prev.completedModules + 1;
-      safeLocalStorage.setItem('completedModules', newCount.toString());
-      return { ...prev, completedModules: newCount };
-    });
-  }, []);
+    const currentValue = pendingProgressUpdates.current.completedModules ?? badgeProgress.completedModules;
+    batchProgressUpdate({ completedModules: currentValue + 1 });
+  }, [badgeProgress.completedModules, batchProgressUpdate]);
 
   const incrementDailyTips = useCallback(() => {
-    setBadgeProgress(prev => {
-      const newCount = prev.dailyTipsViewed + 1;
-      safeLocalStorage.setItem('dailyTipsViewed', newCount.toString());
-      return { ...prev, dailyTipsViewed: newCount };
-    });
-  }, []);
+    const currentValue = pendingProgressUpdates.current.dailyTipsViewed ?? badgeProgress.dailyTipsViewed;
+    batchProgressUpdate({ dailyTipsViewed: currentValue + 1 });
+  }, [badgeProgress.dailyTipsViewed, batchProgressUpdate]);
 
   const incrementBookmarks = useCallback(() => {
-    setBadgeProgress(prev => {
-      const newCount = prev.bookmarksSaved + 1;
-      safeLocalStorage.setItem('bookmarksSaved', newCount.toString());
-      return { ...prev, bookmarksSaved: newCount };
-    });
-  }, []);
+    const currentValue = pendingProgressUpdates.current.bookmarksSaved ?? badgeProgress.bookmarksSaved;
+    batchProgressUpdate({ bookmarksSaved: currentValue + 1 });
+  }, [badgeProgress.bookmarksSaved, batchProgressUpdate]);
 
   const incrementEarlyRiser = useCallback(() => {
-    setBadgeProgress(prev => {
-      const newCount = prev.earlyRiserCount + 1;
-      safeLocalStorage.setItem('earlyRiserCount', newCount.toString());
-      return { ...prev, earlyRiserCount: newCount };
-    });
-  }, []);
+    const currentValue = pendingProgressUpdates.current.earlyRiserCount ?? badgeProgress.earlyRiserCount;
+    batchProgressUpdate({ earlyRiserCount: currentValue + 1 });
+  }, [badgeProgress.earlyRiserCount, batchProgressUpdate]);
 
   const closeBadgeNotification = useCallback(() => {
     setNewlyUnlockedBadge(null);

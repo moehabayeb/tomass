@@ -37,3 +37,23 @@ export const MODULE_221_DATA = { title: "Module 221 - Discussing Trends", descri
 export const MODULE_222_DATA = { title: "Module 222 - Managing Disagreement", description: "Disagree diplomatically", intro: "Content", speakingPractice: [] };
 export const MODULE_223_DATA = { title: "Module 223 - Cross-Cultural Communication", description: "Communicate across cultures", intro: "Content", speakingPractice: [] };
 export const MODULE_224_DATA = { title: "Module 224 - Writing Abstracts", description: "Write concise summaries", intro: "Content", speakingPractice: [] };
+
+// Re-export final modules 225-240
+export {
+  MODULE_225_DATA,
+  MODULE_226_DATA,
+  MODULE_227_DATA,
+  MODULE_228_DATA,
+  MODULE_229_DATA,
+  MODULE_230_DATA,
+  MODULE_231_DATA,
+  MODULE_232_DATA,
+  MODULE_233_DATA,
+  MODULE_234_DATA,
+  MODULE_235_DATA,
+  MODULE_236_DATA,
+  MODULE_237_DATA,
+  MODULE_238_DATA,
+  MODULE_239_DATA,
+  MODULE_240_DATA
+} from './C1ModulesData_Final';

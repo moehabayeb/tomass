@@ -56,9 +56,17 @@ async function loadModuleData(moduleId: number): Promise<any> {
       // C1 modules (201-216)
       const module = await import('./C1ModulesData');
       moduleData = module[`MODULE_${moduleId}_DATA`];
-    } else if (moduleId >= 217 && moduleId <= 224) {
-      // C1 Extended modules (217-224)
+    } else if (moduleId >= 217 && moduleId <= 240) {
+      // C1 Extended modules (217-240)
       const module = await import('./C1ModulesData_Extended');
+      moduleData = module[`MODULE_${moduleId}_DATA`];
+    } else if (moduleId >= 241 && moduleId <= 250) {
+      // C1 Advanced modules (241-250)
+      const module = await import('./C1ModulesData_Advanced');
+      moduleData = module[`MODULE_${moduleId}_DATA`];
+    } else if (moduleId >= 251 && moduleId <= 260) {
+      // C2 modules (251-260)
+      const module = await import('./C2ModulesData');
       moduleData = module[`MODULE_${moduleId}_DATA`];
     }
 
@@ -79,15 +87,19 @@ const ORDER_A1 = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24
 const ORDER_A2 = [51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100];
 const ORDER_B1 = [101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150];
 const ORDER_B2 = [151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196,197,198,199,200];
+const ORDER_C1 = [201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,247,248,249,250];
+const ORDER_C2 = [251,252,253,254,255,256,257,258,259,260];
 
-function getOrderForLevel(level: 'A1'|'A2'|'B1'|'B2'): number[] {
+function getOrderForLevel(level: 'A1'|'A2'|'B1'|'B2'|'C1'|'C2'): number[] {
   if (level === 'A1') return ORDER_A1;
   if (level === 'A2') return ORDER_A2;
   if (level === 'B2') return ORDER_B2;
+  if (level === 'C1') return ORDER_C1;
+  if (level === 'C2') return ORDER_C2;
   return ORDER_B1;
 }
 
-function getNextModuleId(level: 'A1'|'A2'|'B1'|'B2', current: number): number | null {
+function getNextModuleId(level: 'A1'|'A2'|'B1'|'B2'|'C1'|'C2', current: number): number | null {
   const order = getOrderForLevel(level);
   const idx = order.indexOf(current);
   if (idx === -1) return null;
@@ -230,7 +242,7 @@ const LEVELS = [
   { id: 'A2', name: 'A2 - Elementary', description: 'Build basic skills', moduleCount: 50, color: 'bg-green-500' },
   { id: 'B1', name: 'B1 - Intermediate', description: 'Expand your knowledge', moduleCount: 50, color: 'bg-orange-500' },
   { id: 'B2', name: 'B2 - Upper Intermediate', description: 'Advanced concepts', moduleCount: 50, color: 'bg-purple-500' },
-  { id: 'C1', name: 'C1 - Advanced', description: 'Master complex concepts', moduleCount: 24, color: 'bg-red-500' },
+  { id: 'C1', name: 'C1 - Advanced', description: 'Master complex concepts', moduleCount: 40, color: 'bg-red-500' },
   { id: 'C2', name: 'C2 - Proficiency', description: 'Near-native fluency', moduleCount: 50, color: 'bg-indigo-500' },
 ];
 
@@ -684,7 +696,7 @@ const MODULES_BY_LEVEL = {
     completed: false,
     locked: false,
   })),
-  C1: Array.from({ length: 24 }, (_, i) => ({
+  C1: Array.from({ length: 50 }, (_, i) => ({
     id: i + 201,
     title: i === 0 ? 'Advanced Passive Structures' :
            i === 1 ? 'Cleft Sentences' :
@@ -710,12 +722,54 @@ const MODULES_BY_LEVEL = {
            i === 21 ? 'Managing Disagreement Diplomatically' :
            i === 22 ? 'Cross-Cultural Communication Skills' :
            i === 23 ? 'Writing Abstracts and Summaries' :
+           i === 24 ? 'Understanding Academic Texts' :
+           i === 25 ? 'Advanced Punctuation and Style' :
+           i === 26 ? 'Creative Writing Techniques' :
+           i === 27 ? 'Advanced Note-Taking Strategies' :
+           i === 28 ? 'Language for Leadership' :
+           i === 29 ? 'Negotiation Skills Language' :
+           i === 30 ? 'Legal and Political Vocabulary' :
+           i === 31 ? 'Environmental Issues Vocabulary' :
+           i === 32 ? 'Social Justice and Equality Vocabulary' :
+           i === 33 ? 'Complex Phrasal Verbs' :
+           i === 34 ? 'Idiomatic Phrasal Verbs' :
+           i === 35 ? 'Language of Persuasion and Influence' :
+           i === 36 ? 'Expressing Doubt and Certainty at a High Level' :
+           i === 37 ? 'Using Metaphor and Simile in Speech' :
+           i === 38 ? 'Humor and Irony in Language' :
+           i === 39 ? 'Adapting Language for Different Audiences' :
+           i === 40 ? 'Public Speaking Skills – Advanced' :
+           i === 41 ? 'Pronunciation Focus – Connected Speech' :
+           i === 42 ? 'Stress and Intonation for Emphasis' :
+           i === 43 ? 'Language of Formal Debates' :
+           i === 44 ? 'Summarizing Long Texts and Talks' :
+           i === 45 ? 'Paraphrasing Complex Ideas' :
+           i === 46 ? 'Giving Extended Presentations' :
+           i === 47 ? 'Understanding and Using Slang Appropriately' :
+           i === 48 ? 'Writing Research Papers and Essays' :
+           i === 49 ? 'Advanced Reading Skills – Critical Analysis' :
            'Advanced C1 grammar module',
     description: 'Master C1-level grammar and academic discourse',
     completed: false,
     locked: false,
   })),
-  C2: []
+  C2: Array.from({ length: 10 }, (_, i) => ({
+    id: i + 251,
+    title: i === 0 ? 'Advanced Discourse Markers (Nevertheless, Notwithstanding)' :
+           i === 1 ? 'Idiomatic Expressions for Complex Ideas' :
+           i === 2 ? 'Language of Diplomacy and Negotiation' :
+           i === 3 ? 'Legal and Technical Language' :
+           i === 4 ? 'Philosophical Vocabulary and Abstract Concepts' :
+           i === 5 ? 'Academic Writing Mastery (Theses, Dissertations)' :
+           i === 6 ? 'Cultural References and Allusions' :
+           i === 7 ? 'Humor, Irony, and Sarcasm – Mastery' :
+           i === 8 ? 'Figurative Language (Allegory, Symbolism)' :
+           i === 9 ? 'Advanced Collocations – Nuanced Usage' :
+           'Advanced C2 module',
+    description: 'Master C2-level proficiency and near-native fluency',
+    completed: false,
+    locked: false,
+  }))
 };
 
 export default function LessonsApp({ onBack, initialLevel, initialModule }: LessonsAppProps) {
@@ -743,7 +797,12 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
   const [showConfetti, setShowConfetti] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [lastResponseTime, setLastResponseTime] = useState(0);
-  
+
+  // 🔧 GOD-LEVEL FIX: Dynamic module loading state
+  const [moduleData, setModuleData] = useState<any>(null);
+  const [isLoadingModule, setIsLoadingModule] = useState(true);
+  const [moduleLoadError, setModuleLoadError] = useState<string | null>(null);
+
   // Enhanced question state management for multiple choice
   const [questionStates, setQuestionStates] = useState<Record<number, QuestionState>>({});
   const [currentQuestionPhase, setCurrentQuestionPhase] = useState<'multiple-choice' | 'speaking'>('multiple-choice');
@@ -760,6 +819,45 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
       setViewState('lesson');
     }
   }, [initialLevel, initialModule]);
+
+  // 🔧 GOD-LEVEL FIX: Dynamic module loading - load modules on-demand
+  useEffect(() => {
+    async function fetchModuleData() {
+      if (selectedModule === 0) {
+        setModuleData(null);
+        setIsLoadingModule(false);
+        return;
+      }
+
+      setIsLoadingModule(true);
+      setModuleLoadError(null);
+
+      try {
+        const data = await loadModuleData(selectedModule);
+
+        if (!data) {
+          // Fallback for modules 68-87 (not yet implemented) - use module 51
+          if (selectedModule >= 68 && selectedModule <= 87) {
+            const fallbackData = await loadModuleData(51);
+            setModuleData(fallbackData);
+          } else {
+            setModuleLoadError(`Module ${selectedModule} not found`);
+            setModuleData(null);
+          }
+        } else {
+          setModuleData(data);
+        }
+      } catch (error: any) {
+        console.error('Error loading module:', error);
+        setModuleLoadError(error.message || 'Failed to load module');
+        setModuleData(null);
+      } finally {
+        setIsLoadingModule(false);
+      }
+    }
+
+    fetchModuleData();
+  }, [selectedModule]);
 
   // ===== DERIVED VALUES (after state) =====
   // Initialize Progress Tracker Service
@@ -1080,7 +1178,7 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
       setFeedbackType(accuracy >= config.accuracyThreshold ? 'success' : 'warning');
 
     // compute next module - only advance if accuracy requirement is met
-    const nextId = getNextModuleId(selectedLevel as 'A1' | 'A2' | 'B1', selectedModule);
+    const nextId = getNextModuleId(selectedLevel as 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2', selectedModule);
       if (nextId && accuracy >= config.accuracyThreshold) {
         setTimeout(() => {
           narration.cancel();
@@ -1369,64 +1467,11 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
 
 
 
-  // Efficient module data lookup using object (O(1) vs O(n) with if-statements)
-  const MODULE_DATA_MAP: Record<number, any> = {
-    1: MODULE_1_DATA, 2: MODULE_2_DATA, 3: MODULE_3_DATA, 4: MODULE_4_DATA, 5: MODULE_5_DATA,
-    6: MODULE_6_DATA, 7: MODULE_7_DATA, 8: MODULE_8_DATA, 9: MODULE_9_DATA, 10: MODULE_10_DATA,
-    11: MODULE_11_DATA, 12: MODULE_12_DATA, 13: MODULE_13_DATA, 14: MODULE_14_DATA, 15: MODULE_15_DATA,
-    16: MODULE_16_DATA, 17: MODULE_17_DATA, 18: MODULE_18_DATA, 19: MODULE_19_DATA, 20: MODULE_20_DATA,
-    21: MODULE_21_DATA, 22: MODULE_22_DATA, 23: MODULE_23_DATA, 24: MODULE_24_DATA, 25: MODULE_25_DATA,
-    26: MODULE_26_DATA, 27: MODULE_27_DATA, 28: MODULE_28_DATA, 29: MODULE_29_DATA, 30: MODULE_30_DATA,
-    31: MODULE_31_DATA, 32: MODULE_32_DATA, 33: MODULE_33_DATA, 34: MODULE_34_DATA, 35: MODULE_35_DATA,
-    36: MODULE_36_DATA, 37: MODULE_37_DATA, 38: MODULE_38_DATA, 39: MODULE_39_DATA, 40: MODULE_40_DATA,
-    41: MODULE_41_DATA, 42: MODULE_42_DATA, 43: MODULE_43_DATA, 44: MODULE_44_DATA, 45: MODULE_45_DATA,
-    46: MODULE_46_DATA, 47: MODULE_47_DATA, 48: MODULE_48_DATA, 49: MODULE_49_DATA, 50: MODULE_50_DATA,
-    51: MODULE_51_DATA, 52: MODULE_52_DATA, 53: MODULE_53_DATA, 54: MODULE_54_DATA, 55: MODULE_55_DATA,
-    56: MODULE_56_DATA, 57: MODULE_57_DATA, 58: MODULE_58_DATA, 59: MODULE_59_DATA, 60: MODULE_60_DATA,
-    61: MODULE_61_DATA, 62: MODULE_62_DATA, 63: MODULE_63_DATA, 64: MODULE_64_DATA, 65: MODULE_65_DATA,
-    66: MODULE_66_DATA, 67: MODULE_67_DATA,
-    88: MODULE_88_DATA, 89: MODULE_89_DATA, 90: MODULE_90_DATA, 91: MODULE_91_DATA, 92: MODULE_92_DATA,
-    93: MODULE_93_DATA, 94: MODULE_94_DATA, 95: MODULE_95_DATA, 96: MODULE_96_DATA, 97: MODULE_97_DATA,
-    98: MODULE_98_DATA, 99: MODULE_99_DATA, 100: MODULE_100_DATA,
-    101: MODULE_101_DATA, 102: MODULE_102_DATA, 103: MODULE_103_DATA, 104: MODULE_104_DATA, 105: MODULE_105_DATA,
-    106: MODULE_106_DATA, 107: MODULE_107_DATA, 108: MODULE_108_DATA, 109: MODULE_109_DATA, 110: MODULE_110_DATA,
-    111: MODULE_111_DATA, 112: MODULE_112_DATA, 113: MODULE_113_DATA, 114: MODULE_114_DATA, 115: MODULE_115_DATA,
-    116: MODULE_116_DATA, 117: MODULE_117_DATA, 118: MODULE_118_DATA, 119: MODULE_119_DATA, 120: MODULE_120_DATA,
-    121: MODULE_121_DATA, 122: MODULE_122_DATA, 123: MODULE_123_DATA, 124: MODULE_124_DATA, 125: MODULE_125_DATA,
-    126: MODULE_126_DATA, 127: MODULE_127_DATA, 128: MODULE_128_DATA, 129: MODULE_129_DATA, 130: MODULE_130_DATA,
-    131: MODULE_131_DATA, 132: MODULE_132_DATA, 133: MODULE_133_DATA, 134: MODULE_134_DATA, 135: MODULE_135_DATA,
-    136: MODULE_136_DATA, 137: MODULE_137_DATA, 138: MODULE_138_DATA, 139: MODULE_139_DATA, 140: MODULE_140_DATA,
-    141: MODULE_141_DATA, 142: MODULE_142_DATA, 143: MODULE_143_DATA, 144: MODULE_144_DATA, 145: MODULE_145_DATA,
-    146: MODULE_146_DATA, 147: MODULE_147_DATA, 148: MODULE_148_DATA, 149: MODULE_149_DATA, 150: MODULE_150_DATA,
-    151: MODULE_151_DATA, 152: MODULE_152_DATA, 153: MODULE_153_DATA, 154: MODULE_154_DATA, 155: MODULE_155_DATA,
-    156: MODULE_156_DATA, 157: MODULE_157_DATA, 158: MODULE_158_DATA, 159: MODULE_159_DATA, 160: MODULE_160_DATA,
-    161: MODULE_161_DATA, 162: MODULE_162_DATA, 163: MODULE_163_DATA, 164: MODULE_164_DATA, 165: MODULE_165_DATA,
-    166: MODULE_166_DATA, 167: MODULE_167_DATA, 168: MODULE_168_DATA, 169: MODULE_169_DATA, 170: MODULE_170_DATA,
-    171: MODULE_171_DATA, 172: MODULE_172_DATA, 173: MODULE_173_DATA, 174: MODULE_174_DATA, 175: MODULE_175_DATA,
-    176: MODULE_176_DATA, 177: MODULE_177_DATA, 178: MODULE_178_DATA, 179: MODULE_179_DATA, 180: MODULE_180_DATA,
-    181: MODULE_181_DATA, 182: MODULE_182_DATA, 183: MODULE_183_DATA, 184: MODULE_184_DATA, 185: MODULE_185_DATA,
-    186: MODULE_186_DATA, 187: MODULE_187_DATA, 188: MODULE_188_DATA, 189: MODULE_189_DATA, 190: MODULE_190_DATA,
-    191: MODULE_191_DATA, 192: MODULE_192_DATA, 193: MODULE_193_DATA, 194: MODULE_194_DATA, 195: MODULE_195_DATA,
-    196: MODULE_196_DATA, 197: MODULE_197_DATA, 198: MODULE_198_DATA, 199: MODULE_199_DATA, 200: MODULE_200_DATA,
-    201: MODULE_201_DATA, 202: MODULE_202_DATA, 203: MODULE_203_DATA, 204: MODULE_204_DATA, 205: MODULE_205_DATA,
-    206: MODULE_206_DATA, 207: MODULE_207_DATA, 208: MODULE_208_DATA, 209: MODULE_209_DATA, 210: MODULE_210_DATA,
-    211: MODULE_211_DATA, 212: MODULE_212_DATA, 213: MODULE_213_DATA, 214: MODULE_214_DATA, 215: MODULE_215_DATA,
-    216: MODULE_216_DATA, 217: MODULE_217_DATA, 218: MODULE_218_DATA, 219: MODULE_219_DATA, 220: MODULE_220_DATA,
-    221: MODULE_221_DATA, 222: MODULE_222_DATA, 223: MODULE_223_DATA, 224: MODULE_224_DATA,
-  };
+  // 🔧 GOD-LEVEL FIX: Removed static MODULE_DATA_MAP and getCurrentModuleData()
+  // Now using dynamic module loading via useEffect above (lines 769-806)
 
-  // Get current module data with O(1) lookup
-  const getCurrentModuleData = () => {
-    // Fallback for modules 68-87 (not yet implemented)
-    if (selectedModule >= 68 && selectedModule <= 87) {
-      return MODULE_DATA_MAP[51] || MODULE_1_DATA;
-    }
-
-    return MODULE_DATA_MAP[selectedModule] || MODULE_1_DATA;
-  };
-
-  // Calculate progress
-  const currentModuleData = getCurrentModuleData();
+  // Calculate progress - now using moduleData from state
+  const currentModuleData = moduleData;
   const totalQuestions = currentModuleData?.speakingPractice?.length ?? 0;
   const overallProgress = ((speakingIndex + (correctAnswers > 0 ? 1 : 0)) / totalQuestions) * 100;
   const lessonKey = `${selectedLevel}-${selectedModule}`;
@@ -1448,12 +1493,12 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
   }, [selectedLevel, selectedModule, currentModuleData]);
 
   // MCQ Cache - generated once per module, prevents flicker across re-renders
-  // MOVED HERE: Must come after getCurrentModuleData to avoid initialization error
+  // 🔧 FLAWLESS FIX: Now uses currentModuleData from state instead of getCurrentModuleData()
   const mcqCache = useMemo(() => {
     const cache: Record<string, MultipleChoiceQuestion | null> = {};
 
-    const moduleData = getCurrentModuleData();
-    moduleData?.speakingPractice?.forEach((item, index) => {
+    // ✅ Use currentModuleData from state (dynamically loaded)
+    currentModuleData?.speakingPractice?.forEach((item, index) => {
       const key = `${selectedLevel}-${selectedModule}-${index}`;
       const practiceItem = typeof item === 'string'
         ? { question: item, answer: item }
@@ -1471,7 +1516,7 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
     // ========================================================================
     // MCQ VALIDATION - Ensure 100% coverage (should NEVER have nulls after fix)
     // ========================================================================
-    const totalQuestions = moduleData?.speakingPractice?.length ?? 0;
+    const totalQuestions = currentModuleData?.speakingPractice?.length ?? 0;
     const successfulMCQs = Object.values(cache).filter(mcq => mcq !== null).length;
     const failedMCQs = Object.values(cache).filter(mcq => mcq === null).length;
 
@@ -1489,7 +1534,7 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
       Object.entries(cache).forEach(([key, mcq]) => {
         if (!mcq) {
           const questionIndex = parseInt(key.split('-')[2]);
-          const item = moduleData?.speakingPractice?.[questionIndex];
+          const item = currentModuleData?.speakingPractice?.[questionIndex];
           const practiceItem = typeof item === 'string' ? { question: item, answer: item } : item;
           console.error(`  ❌ Question ${questionIndex + 1}:`, practiceItem?.answer || 'Unknown');
         }
@@ -1499,7 +1544,7 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
     }
 
     return cache;
-  }, [selectedLevel, selectedModule]); // Only regenerate when module changes
+  }, [selectedLevel, selectedModule, currentModuleData]); // ✅ Added currentModuleData dependency
 
   // Wrapper function to get speaking practice item using the cache
   const getSpeakingPracticeItem = useCallback((item: any, questionIndex: number): SpeakingPracticeItem => {
@@ -1823,7 +1868,7 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
     narration.cancel();
     narration.speak(`Congratulations! You have completed Module ${selectedModule}. Well done!`);
 
-    const nextModule = getNextModuleId(selectedLevel as 'A1' | 'A2' | 'B1', selectedModule);
+    const nextModule = getNextModuleId(selectedLevel as 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2', selectedModule);
     window.setTimeout(() => {
       setShowConfetti(false);
 
@@ -2424,9 +2469,10 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
   };
 
   // Set up lesson-specific voice command handlers (must be after handler functions are defined)
+  // 🔧 FLAWLESS FIX: Now uses currentModuleData from state instead of getCurrentModuleData()
   useEffect(() => {
-    const currentData = getCurrentModuleData();
-    const totalQ = currentData?.speakingPractice?.length ?? 0;
+    // ✅ Use currentModuleData from state (dynamically loaded)
+    const totalQ = currentModuleData?.speakingPractice?.length ?? 0;
 
     voiceCommands.setLessonHandlers({
       onNext: () => {
@@ -2450,7 +2496,7 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
         }
       }
     });
-  }, [currentPhase, speakingIndex, selectedModule, selectedLevel]);
+  }, [currentPhase, speakingIndex, selectedModule, selectedLevel, currentModuleData]); // ✅ Added currentModuleData dependency
 
   // Render levels view
   if (!isHydrated) {
@@ -2569,7 +2615,7 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
                   key={module.id}
                   className={`bg-white/10 border-white/20 cursor-pointer transition-all hover:bg-white/15 ${!isUnlocked ? 'opacity-50' : ''}`}
                   onClick={() => {
-                    if (isUnlocked && ((module.id >= 1 && module.id <= 50) || (module.id >= 51 && module.id <= 100) || (module.id >= 101 && module.id <= 150) || (module.id >= 151 && module.id <= 200) || (module.id >= 201 && module.id <= 213))) { // All A1, A2, B1, B2, C1 modules are implemented
+                    if (isUnlocked && ((module.id >= 1 && module.id <= 50) || (module.id >= 51 && module.id <= 100) || (module.id >= 101 && module.id <= 150) || (module.id >= 151 && module.id <= 200) || (module.id >= 201 && module.id <= 250) || (module.id >= 251 && module.id <= 260))) { // All A1, A2, B1, B2, C1, C2 modules are implemented
                       narration.cancel();
                       setSelectedModule(module.id);
                       setViewState('lesson');
@@ -2745,14 +2791,48 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
 
         {/* Removed duplicate "Tomas is Teaching" card - consolidated below */}
 
+        {/* 🔧 GOD-LEVEL FIX: Loading UI for dynamic module loading */}
+        {isLoadingModule && (
+          <Card className="bg-white/10 border-white/20">
+            <CardContent className="p-8 flex flex-col items-center justify-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mb-4"></div>
+              <p className="text-white text-lg">Loading module {selectedModule}...</p>
+              <p className="text-white/60 text-sm mt-2">Please wait</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* 🔧 GOD-LEVEL FIX: Error UI if module fails to load */}
+        {moduleLoadError && !isLoadingModule && (
+          <Card className="bg-red-500/10 border-red-500/30">
+            <CardContent className="p-8 flex flex-col items-center justify-center">
+              <AlertCircle className="h-12 w-12 text-red-400 mb-4" />
+              <p className="text-white text-lg font-semibold">Failed to load module</p>
+              <p className="text-white/80 text-sm mt-2">{moduleLoadError}</p>
+              <Button
+                onClick={() => window.location.reload()}
+                className="mt-4 bg-red-500 hover:bg-red-600"
+              >
+                Reload Page
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
         {/* MOBILE COMPACT INTRO */}
-        {currentPhase === 'intro' && (
+        {!isLoadingModule && !moduleLoadError && currentPhase === 'intro' && currentModuleData && (
           <div ref={introRef}>
             <MobileCompactIntro
               title={currentModuleData.title}
               preview={currentModuleData.intro?.split('\n')[0] || ''}
               fullContent={currentModuleData.intro || ''}
               table={('table' in currentModuleData && currentModuleData.table) ? currentModuleData.table : []}
+              table1={'table1' in currentModuleData ? currentModuleData.table1 : undefined}
+              table2={'table2' in currentModuleData ? currentModuleData.table2 : undefined}
+              table3={'table3' in currentModuleData ? currentModuleData.table3 : undefined}
+              table4={'table4' in currentModuleData ? currentModuleData.table4 : undefined}
+              table5={'table5' in currentModuleData ? currentModuleData.table5 : undefined}
+              table6={'table6' in currentModuleData ? currentModuleData.table6 : undefined}
               tip={('tip' in currentModuleData && currentModuleData.tip) ? currentModuleData.tip : undefined}
               listeningExamples={currentModuleData.listeningExamples || []}
               moduleId={selectedModule}
@@ -2763,7 +2843,7 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
         )}
 
         {/* Grammar Tip - Always Visible During Speaking Practice */}
-        {currentPhase === 'speaking' && 'tip' in currentModuleData && currentModuleData.tip && (
+        {!isLoadingModule && !moduleLoadError && currentPhase === 'speaking' && currentModuleData && 'tip' in currentModuleData && currentModuleData.tip && (
           <Card className="mb-4 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border-blue-500/30 shadow-lg">
             <CardContent className="p-4">
               <div className="flex items-start space-x-3">
@@ -2785,7 +2865,7 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
         )}
 
         {/* Enhanced Speaking Phase with Multiple Choice */}
-        {currentPhase === 'speaking' && (
+        {!isLoadingModule && !moduleLoadError && currentPhase === 'speaking' && currentModuleData && (
           <Card key={speakingIndex} className="bg-white/10 border-white/20">
             <CardHeader>
               <CardTitle className="text-white flex items-center justify-between">

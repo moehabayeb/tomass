@@ -95,6 +95,11 @@ export class SpeechAnalyzer {
       throw new Error('Speech recognition not supported');
     }
 
+    // 🔧 FIX BUG #17: Prevent multiple recognition instances - check if already running
+    if (this.isRecording) {
+      throw new Error('Recognition already in progress');
+    }
+
     this.isRecording = true;
     this.startTime = Date.now();
     this.transcript = '';
@@ -116,7 +121,17 @@ export class SpeechAnalyzer {
         reject(new Error(`Speech recognition error: ${event.error}`));
       };
 
-      this.recognition.start();
+      // 🔧 FIX BUG #17: Wrap start() in try-catch to handle "already started" errors
+      try {
+        this.recognition.start();
+      } catch (error: any) {
+        this.isRecording = false;
+        if (error.message?.includes('already started')) {
+          reject(new Error('Recognition already running. Please wait.'));
+        } else {
+          reject(error);
+        }
+      }
     });
   }
 

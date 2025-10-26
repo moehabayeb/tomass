@@ -138,19 +138,33 @@ export function MeetingsWidget({
   const { upcomingMeetings, isLoading, error } = useUpcomingMeetings();
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
 
-  // 🔧 FIX BUG #21: Immediate permission check, periodic refresh for changes
+  // 🔧 FIX BUG #21 OPTIMIZED: Event-based permission check (no polling)
   useEffect(() => {
     const checkNotificationStatus = () => {
       setNotificationsEnabled(meetingNotifications.getPermissionStatus() === 'granted');
     };
 
+    // Check immediately on mount
     checkNotificationStatus();
 
-    // Check every minute (not too frequent to avoid performance issues)
-    const interval = setInterval(checkNotificationStatus, 60000);
+    // Check when page becomes visible (user switched back to tab)
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        checkNotificationStatus();
+      }
+    };
+
+    // Check when window gains focus
+    const handleFocus = () => {
+      checkNotificationStatus();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
 
     return () => {
-      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
     };
   }, []);
 

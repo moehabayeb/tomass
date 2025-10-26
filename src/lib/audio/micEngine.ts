@@ -258,12 +258,20 @@ function cleanupResources() {
     try { sourceNodeRef.disconnect(); } catch {}
     sourceNodeRef = null;
   }
-  
+
+  // 🔧 FIX BUG #27: Properly close AudioContext to prevent memory leak
+  // Close instead of just suspending - create new context if needed later
   if (audioContextRef) {
-    try { audioContextRef.suspend(); } catch {}
-    // Don't close immediately - may be reused
+    try {
+      if (audioContextRef.state !== 'closed') {
+        audioContextRef.close();
+      }
+    } catch (e) {
+      // Ignore errors during cleanup
+    }
+    audioContextRef = null;
   }
-  
+
 }
 
 // ============= SPEECH RECOGNITION ENGINE =============
@@ -497,7 +505,19 @@ async function internalStart(id: number, maxSec: number): Promise<MicResult> {
     
   } catch (error: any) {
     emitMetrics('recording_error', { error: error.message });
-    
+
+    // 🔧 FIX BUG #25: CRITICAL - Stop mic stream immediately on error (privacy violation fix)
+    if (streamRef) {
+      streamRef.getTracks().forEach(track => {
+        try {
+          track.stop();
+        } catch (e) {
+          // Ignore errors during emergency cleanup
+        }
+      });
+      streamRef = null;
+    }
+
     if (error.message?.includes('denied') || error.name === 'NotAllowedError') {
       throw new Error('Microphone access denied. Allow mic in Settings.');
     }

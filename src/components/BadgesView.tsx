@@ -2,13 +2,69 @@ import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useBadgeSystem } from '@/hooks/useBadgeSystem';
+import { useEffect, useRef, useState } from 'react';
 
 interface BadgesViewProps {
   onBack: () => void;
 }
 
+// 🔧 FIX BUG #20: Hook to track which badges are visible (for performance)
+function useVisibleBadges(badgeIds: string[]) {
+  const [visibleBadges, setVisibleBadges] = useState<Set<string>>(new Set());
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const elementRefs = useRef<Map<string, Element>>(new Map());
+
+  useEffect(() => {
+    // Create intersection observer to track visible badges
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        setVisibleBadges(prev => {
+          const next = new Set(prev);
+          entries.forEach(entry => {
+            const badgeId = entry.target.getAttribute('data-badge-id');
+            if (badgeId) {
+              if (entry.isIntersecting) {
+                next.add(badgeId);
+              } else {
+                next.delete(badgeId);
+              }
+            }
+          });
+          return next;
+        });
+      },
+      { threshold: 0.1, rootMargin: '50px' }
+    );
+
+    // Observe all existing elements
+    elementRefs.current.forEach(el => {
+      observerRef.current?.observe(el);
+    });
+
+    return () => {
+      observerRef.current?.disconnect();
+    };
+  }, [badgeIds]);
+
+  const registerElement = (badgeId: string, element: Element | null) => {
+    if (element) {
+      elementRefs.current.set(badgeId, element);
+      observerRef.current?.observe(element);
+    } else {
+      const existingElement = elementRefs.current.get(badgeId);
+      if (existingElement) {
+        observerRef.current?.unobserve(existingElement);
+        elementRefs.current.delete(badgeId);
+      }
+    }
+  };
+
+  return { visibleBadges, registerElement };
+}
+
 export default function BadgesView({ onBack }: BadgesViewProps) {
   const { badges, badgeProgress } = useBadgeSystem();
+  const { visibleBadges, registerElement } = useVisibleBadges(badges.map(b => b.id));
 
   const getProgressText = (badgeId: string) => {
     switch (badgeId) {
@@ -103,30 +159,37 @@ export default function BadgesView({ onBack }: BadgesViewProps) {
 
         {/* Badges Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-        {badges.map((badge) => (
+        {badges.map((badge) => {
+          const isVisible = visibleBadges.has(badge.id);
+          const shouldAnimate = badge.unlocked && isVisible;
+
+          return (
           <div
             key={badge.id}
+            ref={(el) => registerElement(badge.id, el)}
+            data-badge-id={badge.id}
             className={`relative bg-white/10 backdrop-blur-xl rounded-2xl p-4 sm:p-6 border transition-all duration-300 ${
-              badge.unlocked 
-                ? 'border-primary/50 shadow-lg shadow-primary/20 scale-100 animate-fade-in' 
+              badge.unlocked
+                ? 'border-primary/50 shadow-lg shadow-primary/20 scale-100 animate-fade-in'
                 : 'border-white/20 opacity-60 grayscale hover:opacity-80'
             }`}
           >
-            {/* Sparkle Effect for Unlocked Badges */}
-            {/* 🔧 FIX BUG #20: Use will-change and limit animations to visible badges */}
-            {badge.unlocked && (
-              <div className="absolute inset-0 pointer-events-none will-change-auto">
-                <div className="absolute top-2 right-2 w-1.5 sm:w-2 h-1.5 sm:h-2 bg-yellow-400 rounded-full opacity-80" style={{animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'}}></div>
-                <div className="absolute top-3 sm:top-4 right-5 sm:right-6 w-1 h-1 bg-blue-400 rounded-full opacity-60" style={{animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite 1s'}}></div>
-                <div className="absolute top-4 sm:top-6 right-2 sm:right-3 w-1 sm:w-1.5 h-1 sm:h-1.5 bg-pink-400 rounded-full opacity-70" style={{animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite 2s'}}></div>
+            {/* 🔧 FIX BUG #20: Sparkle Effect - Only animate visible badges */}
+            {shouldAnimate && (
+              <div className="absolute inset-0 pointer-events-none">
+                <div className="absolute top-2 right-2 w-1.5 sm:w-2 h-1.5 sm:h-2 bg-yellow-400 rounded-full opacity-80 animate-pulse"></div>
+                <div className="absolute top-3 sm:top-4 right-5 sm:right-6 w-1 h-1 bg-blue-400 rounded-full opacity-60 animate-pulse" style={{animationDelay: '1s'}}></div>
+                <div className="absolute top-4 sm:top-6 right-2 sm:right-3 w-1 sm:w-1.5 h-1 sm:h-1.5 bg-pink-400 rounded-full opacity-70 animate-pulse" style={{animationDelay: '2s'}}></div>
               </div>
             )}
 
             {/* Badge Icon */}
             <div className="text-center mb-3 sm:mb-4">
               <div className={`text-4xl sm:text-6xl mb-2 transition-all duration-300 ${
-                badge.unlocked 
-                  ? 'animate-pulse filter drop-shadow-lg' 
+                shouldAnimate
+                  ? 'animate-pulse filter drop-shadow-lg'
+                  : badge.unlocked
+                  ? 'filter drop-shadow-lg'
                   : 'filter grayscale blur-sm'
               }`}>
                 {badge.unlocked ? badge.icon : '🔒'}
@@ -184,7 +247,8 @@ export default function BadgesView({ onBack }: BadgesViewProps) {
               </div>
             )}
           </div>
-        ))}
+          );
+        })}
         </div>
       </div>
     </div>

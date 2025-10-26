@@ -226,6 +226,13 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
   const calibrationStartRef = useRef<number>(0);
   const calibrationCompleteRef = useRef<boolean>(false);
   const lastWordCountRef = useRef<number>(0);
+
+  // 🔧 FIX BUG #5: Track if component is mounted to prevent setState on unmounted component
+  const isMountedRef = useRef<boolean>(true);
+
+  // 🔧 FIX BUG #2: Track if VAD cleanup is in progress to prevent race condition
+  const isCleaningUpVADRef = useRef<boolean>(false);
+
   const [pauseStatus, setPauseStatus] = useState<string>('');
 
   function newRunId() {
@@ -308,48 +315,60 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     }
   }
 
-  // FIXED: Enhanced VAD cleanup with proper resource management
+  // 🔧 FIX BUG #2: Enhanced VAD cleanup with mutex to prevent race condition
   function cleanupVAD() {
     logger.debug('Cleaning up VAD resources');
-    
-    // Clear monitoring interval
-    if (vadIntervalRef.current) {
-      clearInterval(vadIntervalRef.current);
-      vadIntervalRef.current = null;
+
+    // 🔧 FIX BUG #2: Mutex - prevent concurrent cleanup calls
+    if (isCleaningUpVADRef.current) {
+      logger.debug('VAD cleanup already in progress, skipping');
+      return;
     }
-    
-    // Stop all media tracks
-    if (mediaStreamRef.current) {
-      try {
-        mediaStreamRef.current.getTracks().forEach(track => {
-          if (track.readyState !== 'ended') {
-            track.stop();
-          }
-        });
-      } catch (error) {
-        logger.warn('Error stopping media tracks:', error);
+    isCleaningUpVADRef.current = true;
+
+    try {
+      // Clear monitoring interval
+      if (vadIntervalRef.current) {
+        clearInterval(vadIntervalRef.current);
+        vadIntervalRef.current = null;
       }
-      mediaStreamRef.current = null;
-    }
-    
-    // Clear audio analyser
-    if (analyserRef.current) {
-      try {
-        analyserRef.current.disconnect();
-      } catch (error) {
-        // Ignore disconnect errors
+
+      // Stop all media tracks
+      if (mediaStreamRef.current) {
+        try {
+          mediaStreamRef.current.getTracks().forEach(track => {
+            if (track.readyState !== 'ended') {
+              track.stop();
+            }
+          });
+        } catch (error) {
+          logger.warn('Error stopping media tracks:', error);
+        }
+        mediaStreamRef.current = null;
       }
-      analyserRef.current = null;
+
+      // Clear audio analyser
+      if (analyserRef.current) {
+        try {
+          analyserRef.current.disconnect();
+        } catch (error) {
+          // Ignore disconnect errors
+        }
+        analyserRef.current = null;
+      }
+
+      // Reset all VAD state
+      voicedStartTimeRef.current = 0;
+      lastVoiceActivityRef.current = 0;
+      totalVoicedDurationRef.current = 0;
+      shortPauseCountRef.current = 0;
+      ambientNoiseThresholdRef.current = 25;
+      calibrationStartRef.current = 0;
+      calibrationCompleteRef.current = false;
+    } finally {
+      // 🔧 FIX BUG #2: Always reset cleanup flag, even if errors occur
+      isCleaningUpVADRef.current = false;
     }
-    
-    // Reset all VAD state
-    voicedStartTimeRef.current = 0;
-    lastVoiceActivityRef.current = 0;
-    totalVoicedDurationRef.current = 0;
-    shortPauseCountRef.current = 0;
-    ambientNoiseThresholdRef.current = 25;
-    calibrationStartRef.current = 0;
-    calibrationCompleteRef.current = false;
     lastWordCountRef.current = 0;
     setPauseStatus('');
   }
@@ -716,29 +735,36 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     };
   }, [SPEAKING_TEST_STRICT_SESSION]);
 
-  // FIXED: Complete cleanup on unmount with audio context cleanup
+  // 🔧 FIX BUG #1 & #5: Complete cleanup on unmount - properly close AudioContext + prevent setState
   useEffect(() => {
+    // 🔧 FIX BUG #5: Set mounted flag
+    isMountedRef.current = true;
+
     return () => {
+      // 🔧 FIX BUG #5: Mark as unmounted to prevent setState on unmounted component
+      isMountedRef.current = false;
+
       console.log('🧹 Cleaning up speaking test component');
-      
+
       // Stop TTS
       TTSManager.stop();
       clearAllTimers();
-      
+
       // Clean up session
       if (SPEAKING_TEST_STRICT_SESSION) {
         hardResetSession();
       } else {
         cleanupRecognition();
       }
-      
-      // Clean up audio context
-      handleAudioContext(false).then(() => {
-        console.log('🔊 Audio context released');
-      }).catch(err => {
+
+      // 🔧 FIX BUG #1: Properly close AudioContext to prevent memory leak
+      try {
+        audioManager.cleanup(); // This closes the AudioContext
+        console.log('🔊 AudioContext closed successfully');
+      } catch (err) {
         console.warn('Audio context cleanup error:', err);
-      });
-      
+      }
+
       // Clear refs
       runIdRef.current = null;
     };
@@ -1265,6 +1291,8 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
       
       // Brief delay before retry
       setTimeout(() => {
+        // 🔧 FIX BUG #5: Check if component is still mounted before retry
+        if (!isMountedRef.current) return;
         startRecording();
       }, 500);
     } else {
@@ -1318,6 +1346,8 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
         setStatusMessage("🌐 Network error. Checking connection and retrying...");
         if (shouldAutoRetry) {
           setTimeout(() => {
+            // 🔧 FIX BUG #5: Check if component is still mounted
+            if (!isMountedRef.current) return;
             logger.info('Auto-retrying after network error...');
             retryCountRef.current++;
             onMicPress();
@@ -1328,6 +1358,8 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
         setStatusMessage("🎤 Audio capture error. Please check your microphone.");
         if (shouldAutoRetry) {
           setTimeout(() => {
+            // 🔧 FIX BUG #5: Check if component is still mounted
+            if (!isMountedRef.current) return;
             logger.info('Auto-retrying after audio capture error...');
             retryCountRef.current++;
             onMicPress();
@@ -1347,6 +1379,8 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
         setStatusMessage(`⚠️ Recognition error (${errorType}). Please try again.`);
         if (shouldAutoRetry) {
           setTimeout(() => {
+            // 🔧 FIX BUG #5: Check if component is still mounted
+            if (!isMountedRef.current) return;
             logger.info('Auto-retrying after unknown error...');
             retryCountRef.current++;
             onMicPress();

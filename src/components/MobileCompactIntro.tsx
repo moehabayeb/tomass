@@ -4,11 +4,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { BookOpen, ChevronDown, ChevronUp, Play } from "lucide-react";
 
+interface TableData {
+  title: string;
+  data: any[];
+}
+
 interface MobileCompactIntroProps {
   title: string;
   preview: string;
   fullContent: string;
-  table: any[];
+  table: any[] | TableData;  // Support both old format (array) and new format (object with title + data)
+  table1?: TableData;
+  table2?: TableData;
+  table3?: TableData;
+  table4?: TableData;
+  table5?: TableData;
+  table6?: TableData;
   tip?: string;
   listeningExamples?: string[];
   moduleId?: number;
@@ -21,6 +32,12 @@ export default function MobileCompactIntro({
   preview,
   fullContent,
   table,
+  table1,
+  table2,
+  table3,
+  table4,
+  table5,
+  table6,
   tip,
   listeningExamples = [],
   moduleId = 0,
@@ -152,6 +169,98 @@ export default function MobileCompactIntro({
 
   const tableTitle = getTableTitle(moduleId, level);
 
+  // Helper function to render a single table
+  const renderTable = (tableData: any[], customTitle?: string, tableIndex?: number, totalTables?: number) => {
+    if (!tableData || tableData.length === 0) return null;
+
+    const displayTitle = customTitle || tableTitle;
+    const tableIndicator = totalTables && totalTables > 1 ? ` (${tableIndex}/${totalTables})` : '';
+
+    return (
+      <div key={`table-${tableIndex || 0}`} className="bg-white/5 rounded-lg p-4 border border-white/10 mb-4">
+        <h4 className="text-white font-semibold mb-3 text-center">
+          {displayTitle}{tableIndicator}
+        </h4>
+        <div className="overflow-x-auto">
+          <table className="w-full text-white/90 text-sm">
+            <thead>
+              <tr className="border-b border-white/20">
+                {/* Dynamic table headers based on first row properties */}
+                {tableData[0] && Object.keys(tableData[0]).map((key, idx) => (
+                  <th key={idx} className="text-left py-2 px-1 capitalize">
+                    {key === 'auxiliary' ? 'Auxiliary' :
+                     key === 'verb' ? 'Verb' :
+                     key === 'subject' ? 'Subject' :
+                     key === 'object' ? 'Object' :
+                     key === 'complement' ? 'Complement' :
+                     key === 'example' ? 'Example' :
+                     key === 'turkish' ? 'Turkish' :
+                     key}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {tableData.map((row, index) => (
+                <tr key={index} className="border-b border-white/10">
+                  {Object.entries(row).map(([key, value], idx) => (
+                    <td
+                      key={idx}
+                      className={`py-2 px-1 ${
+                        key === 'subject' ? 'font-medium' :
+                        key === 'auxiliary' ? 'text-red-300' :
+                        key === 'verb' ? 'text-blue-300' :
+                        key === 'turkish' ? 'text-yellow-300 italic' :
+                        ''
+                      }`}
+                    >
+                      {Array.isArray(value) ? value.join(', ') : String(value)}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Example sentences from table if available */}
+        {tableData.some(row => row.example) && (
+          <div className="mt-4 space-y-2">
+            <h5 className="text-white/80 font-medium text-sm">Examples:</h5>
+            {tableData.filter(row => row.example).slice(0, 3).map((row, index) => (
+              <div key={index} className="bg-white/5 rounded p-2">
+                <p className="text-white/90 text-sm">{row.example}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Collect all tables to render
+  const tablesToRender: { data: any[], title?: string }[] = [];
+
+  // Check for new format (table1-table6)
+  if (table1) tablesToRender.push({ data: table1.data, title: table1.title });
+  if (table2) tablesToRender.push({ data: table2.data, title: table2.title });
+  if (table3) tablesToRender.push({ data: table3.data, title: table3.title });
+  if (table4) tablesToRender.push({ data: table4.data, title: table4.title });
+  if (table5) tablesToRender.push({ data: table5.data, title: table5.title });
+  if (table6) tablesToRender.push({ data: table6.data, title: table6.title });
+
+  // Fallback to old format if no new tables found
+  if (tablesToRender.length === 0 && table) {
+    if (Array.isArray(table)) {
+      tablesToRender.push({ data: table });
+    } else if (table.data) {
+      // New format passed as single table
+      tablesToRender.push({ data: table.data, title: table.title });
+    }
+  }
+
+  const totalTables = tablesToRender.length;
+
   return (
     <div className="space-y-4">
       {/* Compact Lesson Overview Card */}
@@ -187,64 +296,16 @@ export default function MobileCompactIntro({
             </div>
           )}
 
-          {/* Expandable Grammar Table */}
-          {isExpanded && table && table.length > 0 && (
-            <div className="bg-white/5 rounded-lg p-4 border border-white/10">
-              <h4 className="text-white font-semibold mb-3 text-center">
-                {tableTitle}
-              </h4>
-              <div className="overflow-x-auto">
-                <table className="w-full text-white/90 text-sm">
-                  <thead>
-                    <tr className="border-b border-white/20">
-                      {/* Dynamic table headers based on first row properties */}
-                      {table[0] && Object.keys(table[0]).map((key, idx) => (
-                        <th key={idx} className="text-left py-2 px-1 capitalize">
-                          {key === 'auxiliary' ? 'Auxiliary' :
-                           key === 'verb' ? 'Verb' :
-                           key === 'subject' ? 'Subject' :
-                           key === 'object' ? 'Object' :
-                           key === 'complement' ? 'Complement' :
-                           key === 'example' ? 'Example' :
-                           key === 'turkish' ? 'Turkish' :
-                           key}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {table.map((row, index) => (
-                      <tr key={index} className="border-b border-white/10">
-                        {Object.entries(row).map(([key, value], idx) => (
-                          <td
-                            key={idx}
-                            className={`py-2 px-1 ${
-                              key === 'subject' ? 'font-medium' :
-                              key === 'auxiliary' ? 'text-red-300' :
-                              key === 'verb' ? 'text-blue-300' :
-                              key === 'turkish' ? 'text-yellow-300 italic' :
-                              ''
-                            }`}
-                          >
-                            {Array.isArray(value) ? value.join(', ') : String(value)}
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Example sentences from table if available */}
-              {table.some(row => row.example) && (
-                <div className="mt-4 space-y-2">
-                  <h5 className="text-white/80 font-medium text-sm">Examples:</h5>
-                  {table.filter(row => row.example).slice(0, 3).map((row, index) => (
-                    <div key={index} className="bg-white/5 rounded p-2">
-                      <p className="text-white/90 text-sm">{row.example}</p>
-                    </div>
-                  ))}
+          {/* Render all tables */}
+          {isExpanded && tablesToRender.length > 0 && (
+            <div className="space-y-2">
+              {totalTables > 1 && (
+                <div className="text-white/60 text-xs text-center mb-2">
+                  📚 {totalTables} Reference Tables
                 </div>
+              )}
+              {tablesToRender.map((tableObj, index) =>
+                renderTable(tableObj.data, tableObj.title, index + 1, totalTables)
               )}
             </div>
           )}
