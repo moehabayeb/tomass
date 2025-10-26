@@ -1511,3 +1511,705 @@ This module equips you to **build meaningful professional connections** through 
     { question: "Why is professional networking a C2-level skill?", answer: "Because it requires cultural awareness, strategic communication, and the ability to adapt language to diverse professional contexts — hallmarks of advanced fluency." }
   ]
 };
+
+export const MODULE_271_DATA = {
+  title: "Module 271 - Expressing Subtle Emotions and Attitudes",
+  description: "Learn to express emotions, attitudes, and opinions in nuanced, natural, and culturally appropriate ways at the C2 level.",
+  intro: `📘 Lesson Objectives
+
+At the C2 level, expressing emotions goes beyond basic vocabulary—it's about **how** you say it.
+
+Tone, intonation, vocabulary, and context combine to convey subtle feelings such as:
+✅ Irony, doubt, admiration
+✅ Hesitation, disappointment, reluctance
+✅ Polite disagreement and skepticism
+
+This module teaches you to communicate emotions with **precision, nuance, and cultural sensitivity**.`,
+  table1: {
+    title: "📋 Types of Subtle Emotional Expression",
+    data: [
+      { emotion_attitude: "Skepticism", typical_expression: "I'm not entirely convinced...", example_sentence: "I'm not sure that would work in practice." },
+      { emotion_attitude: "Polite Disagreement", typical_expression: "I see your point, but...", example_sentence: "I see what you mean, but perhaps there's another approach." },
+      { emotion_attitude: "Irony / Sarcasm", typical_expression: "Oh, great... another meeting!", example_sentence: "That went brilliantly, didn't it?" },
+      { emotion_attitude: "Hesitation / Uncertainty", typical_expression: "I might be wrong, but...", example_sentence: "I'm not completely certain about the data." },
+      { emotion_attitude: "Admiration / Praise", typical_expression: "That's impressive!", example_sentence: "You handled that so gracefully." },
+      { emotion_attitude: "Regret / Sympathy", typical_expression: "I'm really sorry to hear that.", example_sentence: "That must have been tough." },
+      { emotion_attitude: "Disappointment", typical_expression: "That's unfortunate.", example_sentence: "I was really hoping for a better outcome." },
+      { emotion_attitude: "Reluctant Agreement", typical_expression: "I suppose you're right.", example_sentence: "I guess that makes sense, yes." }
+    ]
+  },
+  table2: {
+    title: "📋 Useful Phrases to Express Nuance",
+    data: [
+      { function: "Softening Opinions", common_phrases: "It seems to me that... / From my perspective... / I might be mistaken, but..." },
+      { function: "Showing Appreciation", common_phrases: "I truly admire how you handled that. / That was quite an achievement." },
+      { function: "Conveying Disappointment", common_phrases: "That didn't quite go as planned. / It's a bit of a shame, really." },
+      { function: "Expressing Doubt", common_phrases: "I'm not completely sure about that. / That's debatable." },
+      { function: "Polite Criticism", common_phrases: "Maybe we could try a different approach. / It might be worth reconsidering." },
+      { function: "Mild Enthusiasm", common_phrases: "That sounds interesting. / I'd be curious to see how that develops." }
+    ]
+  },
+  table3: {
+    title: "📋 Cultural Notes",
+    data: [
+      { culture: "American", emotional_expression_style: "Open and expressive, often positive" },
+      { culture: "British", emotional_expression_style: "Indirect, uses understatement and irony" },
+      { culture: "Japanese", emotional_expression_style: "Reserved, avoids direct emotion" },
+      { culture: "Turkish", emotional_expression_style: "Warm and expressive, often emotional" },
+      { culture: "German", emotional_expression_style: "Direct and factual, avoids ambiguity" }
+    ]
+  },
+  speakingPractice: [
+    { question: "Why is it important to express emotions subtly in English?", answer: "Because excessive directness can sound rude or unnatural in many contexts." },
+    { question: "What's the difference between direct and indirect expression?", answer: "Direct says exactly how you feel; indirect implies it through tone or phrasing." },
+    { question: "How can tone change meaning?", answer: "The same words can sound sincere or sarcastic depending on intonation." },
+    { question: "What are hedging expressions?", answer: "Phrases like 'perhaps,' 'it seems,' or 'sort of' that soften statements." },
+    { question: "How do British speakers often express emotion?", answer: "Through understatement, irony, and humor." },
+    { question: "What's an example of polite disagreement?", answer: "I understand your point, but I'm not sure I completely agree." },
+    { question: "How can you show empathy in English?", answer: "By acknowledging the other person's feelings — 'That must be hard for you.'" },
+    { question: "Why is sarcasm risky in intercultural communication?", answer: "Because it may be misunderstood as genuine criticism." },
+    { question: "What's the role of pauses in emotional speech?", answer: "They create reflection, hesitation, or emphasis." },
+    { question: "What's the difference between admiration and flattery?", answer: "Admiration is sincere; flattery feels manipulative." },
+    { question: "How can you express doubt politely?", answer: "I'm not entirely convinced by that argument." },
+    { question: "What does 'That's interesting' sometimes mean sarcastically?", answer: "It can mean 'I disagree but don't want to say it directly.'" },
+    { question: "How can you express enthusiasm subtly?", answer: "That sounds quite promising." },
+    { question: "What is emotional intelligence in speech?", answer: "The ability to express and interpret emotions appropriately." },
+    { question: "How can understatement show politeness?", answer: "It reduces tension and sounds less confrontational." },
+    { question: "What's an example of reluctant agreement?", answer: "I suppose you're right, after all." },
+    { question: "How can you disagree without offending?", answer: "Use softeners like 'maybe,' 'perhaps,' or 'I see it a bit differently.'" },
+    { question: "Why is stress important in spoken English?", answer: "It helps highlight emotion and intention." },
+    { question: "How can you express disappointment politely?", answer: "That's a bit unfortunate." },
+    { question: "What's the difference between sympathy and empathy?", answer: "Sympathy feels for someone; empathy feels with someone." },
+    { question: "How do idioms express emotions?", answer: "They add color and depth — e.g., 'over the moon,' 'down in the dumps.'" },
+    { question: "How does culture influence emotional expression?", answer: "Different societies value different emotional norms." },
+    { question: "How can you express irritation diplomatically?", answer: "This situation is becoming a little frustrating." },
+    { question: "What's an example of emotional understatement?", answer: "That didn't go perfectly (meaning it went badly)." },
+    { question: "Why is self-control valued in professional settings?", answer: "It maintains composure and credibility." },
+    { question: "What's a subtle way to express excitement?", answer: "I'm really looking forward to that." },
+    { question: "How can humor soften strong emotions?", answer: "It diffuses tension and makes interactions smoother." },
+    { question: "Why might literal translations of emotions sound strange?", answer: "Because idiomatic or cultural differences affect meaning." },
+    { question: "What is the difference between being polite and being cold?", answer: "Politeness respects others; coldness avoids emotional connection." },
+    { question: "How can voice pitch affect perceived emotion?", answer: "Higher pitch can sound nervous; lower pitch more confident." },
+    { question: "What's the risk of overusing emotional expressions?", answer: "It can sound exaggerated or insincere." },
+    { question: "How can body language reinforce emotion?", answer: "Facial expressions and gestures add credibility to tone." },
+    { question: "What's an example of diplomatic criticism?", answer: "I think we could improve this section a bit." },
+    { question: "How can you express gratitude deeply but naturally?", answer: "I truly appreciate your help — it means a lot." },
+    { question: "How can you soften bad news?", answer: "Use empathy: 'I'm afraid the results weren't as expected.'" },
+    { question: "What does 'tone down' mean in communication?", answer: "To make your words or emotions less intense." },
+    { question: "Why do advanced speakers use nuance?", answer: "To communicate precisely and appropriately for the situation." },
+    { question: "What's a subtle way to say no?", answer: "I'd love to help, but I'm afraid I'm not available that day." },
+    { question: "How can reflective listening show emotional awareness?", answer: "Repeating or summarizing what someone feels — 'So you're saying you felt left out?'" },
+    { question: "Why is nuance key to mastering English fluency?", answer: "Because it allows emotional depth, politeness, and cultural sensitivity." }
+  ]
+};
+
+export const MODULE_272_DATA = {
+  title: "Module 272 - Advanced Writing for Publications",
+  description: "Master editorial precision, stylistic consistency, and audience awareness for professional publication writing.",
+  intro: `📘 Lesson Objectives
+
+At the C2 level, writing for publication requires:
+
+✅ **Grammatical mastery** combined with editorial precision
+✅ **Stylistic consistency** and audience awareness
+✅ **Balancing clarity and sophistication**
+
+This module teaches you to express complex ideas with elegance, coherence, and authority—writing that
+
+ commands attention and respect.`,
+  table: {
+    title: "📋 Core Principles of Published Writing",
+    data: [
+      { writing_focus: "Clarity", key_techniques: "Avoid jargon, use concise sentences", example: "The study highlights key trends instead of 'The study elucidates a range of paradigmatic tendencies.'" },
+      { writing_focus: "Objectivity", key_techniques: "Focus on facts, not emotions", example: "The evidence suggests... rather than I believe that..." },
+      { writing_focus: "Authority", key_techniques: "Use active voice, confident tone", example: "The data confirms instead of It seems that the data may confirm." },
+      { writing_focus: "Consistency", key_techniques: "Maintain tense, tone, and style throughout", example: "Academic writing typically uses present simple for established facts." },
+      { writing_focus: "Cohesion", key_techniques: "Use logical connectors and transitions", example: "Moreover, In contrast, Consequently, On the other hand." },
+      { writing_focus: "Editing", key_techniques: "Eliminate redundancy and ambiguity", example: "Replace 'due to the fact that' with 'because.'" }
+    ]
+  },
+  speakingPractice: [
+    { question: "What distinguishes academic writing from journalistic writing?", answer: "Academic writing prioritizes precision and evidence, while journalistic writing values accessibility and narrative flow." },
+    { question: "How do you ensure clarity in complex writing?", answer: "By breaking long sentences into logical clauses and prioritizing one idea per sentence." },
+    { question: "How important is structure in publication writing?", answer: "It's essential; a clear structure guides the reader through the argument and maintains engagement." },
+    { question: "How do you organize a professional article?", answer: "With a strong opening, a logical middle that develops ideas, and a concise conclusion that reinforces key points." },
+    { question: "What role does paragraph cohesion play?", answer: "Cohesion ensures that every paragraph flows logically from the previous one, maintaining rhythm and clarity." },
+    { question: "How do you decide on a publication's tone?", answer: "By analyzing the target audience and the publication's purpose — whether academic, informative, or persuasive." },
+    { question: "What's the biggest challenge in writing for publication?", answer: "Balancing intellectual depth with readability." },
+    { question: "How do you maintain reader interest in a long article?", answer: "By varying sentence structure, including real-life examples, and creating logical progression." },
+    { question: "What does it mean to 'frame' your argument?", answer: "It means contextualizing your point within a larger discussion so the reader understands its relevance." },
+    { question: "How can you make complex topics accessible?", answer: "By simplifying without oversimplifying — translating technical ideas into relatable terms." },
+    { question: "How do you tailor your tone for different audiences?", answer: "I adjust the formality, vocabulary, and sentence structure depending on whether I'm addressing experts or general readers." },
+    { question: "What's an example of overly formal writing?", answer: "'It is incumbent upon the individual to ascertain' can be replaced by 'People should find out.'" },
+    { question: "Why is active voice preferred in publications?", answer: "It conveys confidence and clarity — 'Researchers found' sounds stronger than 'It was found by researchers.'" },
+    { question: "How do you keep your writing persuasive without sounding biased?", answer: "By supporting every claim with evidence rather than emotion." },
+    { question: "How do you show expertise subtly?", answer: "By using precise terminology and referencing credible sources, not by overloading the text with jargon." },
+    { question: "How can humor be used effectively in published writing?", answer: "Sparingly, and only when it enhances reader engagement without undermining professionalism." },
+    { question: "How do you handle controversial topics?", answer: "By presenting multiple viewpoints fairly before offering a reasoned conclusion." },
+    { question: "How do you avoid sounding repetitive?", answer: "By varying transitions and rephrasing key terms without changing meaning." },
+    { question: "What's the key to sounding natural in English writing?", answer: "Reading widely and internalizing authentic rhythm and phrasing." },
+    { question: "What's an example of maintaining neutrality in tone?", answer: "'Some studies indicate a correlation, though evidence remains inconclusive.'" },
+    { question: "What's the purpose of the editing phase?", answer: "To refine clarity, tone, and structure — ensuring every word serves a purpose." },
+    { question: "How do you cut redundant language?", answer: "By replacing multi-word phrases like 'in order to' with 'to,' and removing filler expressions." },
+    { question: "How can peer review improve your work?", answer: "It provides external perspective, identifying unclear logic or weak evidence." },
+    { question: "How do you improve sentence rhythm?", answer: "By alternating long and short sentences for flow and impact." },
+    { question: "What's the difference between proofreading and editing?", answer: "Editing improves content and structure; proofreading corrects grammar and formatting." },
+    { question: "How do you detect bias in your writing?", answer: "By reviewing adjectives and emotional phrasing that suggest personal opinion." },
+    { question: "Why is conciseness valued in published writing?", answer: "It respects readers' time and enhances authority." },
+    { question: "How do you revise an unclear paragraph?", answer: "By identifying the main idea and reorganizing supporting points logically." },
+    { question: "What tool can help maintain style consistency?", answer: "A style guide such as APA, MLA, or the publication's in-house guide." },
+    { question: "How do you edit for tone?", answer: "By reading aloud and noticing whether the text sounds too aggressive or too detached." },
+    { question: "What are publication ethics?", answer: "Standards ensuring honesty, originality, and respect for intellectual property." },
+    { question: "How do you avoid plagiarism?", answer: "By paraphrasing properly and citing all external sources." },
+    { question: "Why is originality crucial in published work?", answer: "Because the purpose of publication is to contribute something new to existing knowledge." },
+    { question: "How do you respond to editorial feedback?", answer: "Professionally — by addressing suggestions objectively, not defensively." },
+    { question: "What should you do if your article is rejected?", answer: "Analyze the feedback, refine your work, and submit to another outlet." },
+    { question: "How can networking help writers?", answer: "It builds relationships with editors, publishers, and fellow writers, opening doors for collaboration." },
+    { question: "What's the value of a consistent publishing voice?", answer: "It builds credibility and recognizability across platforms." },
+    { question: "How do you adapt academic content for a general audience?", answer: "By reducing technical jargon and emphasizing real-world relevance." },
+    { question: "What's an example of responsible citation?", answer: "Acknowledging all sources clearly and avoiding vague references like 'some people say.'" },
+    { question: "Why should writers keep revising even after publication?", answer: "Because writing evolves; continuous refinement improves clarity and influence over time." }
+  ]
+};
+
+export const MODULE_273_DATA = {
+  title: "Module 273 - Peer Review Language and Etiquette",
+  description: "Master diplomatic, constructive, and academically appropriate language for giving and receiving peer feedback.",
+  intro: `📘 Lesson Objectives
+
+At the C2 level, peer review is a **formal yet collaborative process**.
+
+It requires:
+✅ **Precision** in identifying strengths and weaknesses
+✅ **Professionalism** that maintains respect
+✅ **Empathy** that encourages improvement
+
+This module teaches you to provide feedback that is constructive, balanced, and actionable—turning critique into collaboration.`,
+  table: {
+    title: "📋 Core Principles of Peer Review",
+    data: [
+      { focus: "Constructive Feedback", techniques: "Critique ideas, not people", example: "The argument could be strengthened by more evidence." },
+      { focus: "Diplomatic Language", techniques: "Use hedging and softeners", example: "It might be worth considering..." },
+      { focus: "Balanced Evaluation", techniques: "Combine praise with suggestions", example: "Your introduction is clear, though the conclusion might need more synthesis." },
+      { focus: "Clarity and Specificity", techniques: "Refer to exact sections", example: "In paragraph three, the transition could be smoother." },
+      { focus: "Professional Tone", techniques: "Stay objective and courteous", example: "Avoid sarcasm or exaggeration." },
+      { focus: "Collaboration", techniques: "Emphasize mutual improvement", example: "Your work inspired me to reconsider my own approach." }
+    ]
+  },
+  speakingPractice: [
+    { question: "How do you start a peer review politely?", answer: "I begin with appreciation to establish a positive tone. For example: 'You've presented a well-organized paper that clearly demonstrates your commitment to the topic.'" },
+    { question: "How do you soften critical comments?", answer: "I rely on hedging language such as 'It might be helpful if...' or 'Perhaps you could elaborate...'" },
+    { question: "How do you express disagreement professionally?", answer: "I prefer phrasing like, 'I see your point, but my interpretation differs slightly.'" },
+    { question: "How do you address unclear sections?", answer: "By being specific: 'The transition between paragraphs two and three could be clarified by adding a linking sentence.'" },
+    { question: "How do you avoid sounding judgmental?", answer: "I comment on the text, not the person. For example, 'This section lacks cohesion,' instead of 'You didn't organize this properly.'" },
+    { question: "How do you balance praise and criticism?", answer: "I use the 'sandwich' method: start with positive feedback, insert constructive criticism, and end with encouragement." },
+    { question: "How do you make feedback actionable?", answer: "I focus on specific revisions rather than vague comments—for instance, 'Add a source to support this claim' instead of 'This part is weak.'" },
+    { question: "How do you encourage improvement?", answer: "By recognizing strengths and offering realistic suggestions: 'Your argument is solid; adding more current data would make it even stronger.'" },
+    { question: "What's the tone of effective peer review?", answer: "Polite, calm, and objective. The goal is to assist, not to judge." },
+    { question: "How do you acknowledge strong points?", answer: "I highlight effective parts explicitly: 'The conclusion neatly summarizes your findings without unnecessary repetition.'" },
+    { question: "How do you respond to feedback you disagree with?", answer: "I express openness: 'That's an interesting perspective; I'll consider whether it aligns with my intent.'" },
+    { question: "How do you show gratitude for criticism?", answer: "'Thank you for catching that detail; it's something I can definitely improve upon.'" },
+    { question: "How do you clarify misunderstood ideas?", answer: "By rephrasing politely: 'I see how this might seem unclear; I'll revise that section for clarity.'" },
+    { question: "How do you handle harsh feedback?", answer: "I focus on substance, not tone, extracting useful points and ignoring emotional language." },
+    { question: "Why is humility essential in peer review?", answer: "Because learning is reciprocal—acknowledging others' insights fosters academic growth and respect." },
+    { question: "How do you phrase uncertainty?", answer: "Phrases like 'I might be mistaken, but...' signal open-mindedness and respect." },
+    { question: "How do you keep your tone balanced online?", answer: "Avoid all caps, exclamation marks, or sarcasm; written feedback lacks emotional nuance." },
+    { question: "What's a good way to show empathy?", answer: "By saying, 'I can see you put effort into this section; refining it slightly could make it even more effective.'" },
+    { question: "How do you suggest major revisions politely?", answer: "By emphasizing potential: 'Reorganizing these sections could make your argument more persuasive.'" },
+    { question: "How do you conclude feedback?", answer: "With encouragement: 'Overall, this piece shows promise; with a few adjustments, it could be excellent.'" },
+    { question: "How do you express subtle disagreement?", answer: "By framing it as interpretation: 'Another way to view this might be...'" },
+    { question: "How can you use hedging effectively?", answer: "Hedging adds diplomacy: 'It seems that...' or 'It could be argued that...' softens critiques." },
+    { question: "Why is specificity important in feedback?", answer: "Specific comments are actionable; general remarks rarely help improvement." },
+    { question: "How do you make feedback collaborative?", answer: "Use inclusive pronouns: 'We might explore...' instead of 'You should fix...'."},
+    { question: "What is ethical behavior in peer review?", answer: "Avoid using reviewed content elsewhere and maintain confidentiality." },
+    { question: "Why should reviewers remain anonymous?", answer: "Anonymity ensures objectivity, protecting both reviewer and author from bias." },
+    { question: "How can you show respect for expertise?", answer: "'Your methodological insights are impressive; expanding your data section could make them shine further.'" },
+    { question: "What's the best way to handle disagreement between reviewers?", answer: "Keep the focus on evidence and acknowledge diversity of thought: 'Different readers may interpret this section differently.'" },
+    { question: "Why is tone critical in feedback?", answer: "Because written tone conveys all emotional meaning—overly blunt phrasing can demotivate." },
+    { question: "How do you suggest reorganization?", answer: "'Consider moving this paragraph to the introduction for better flow.' This is clear and neutral." },
+    { question: "How do you evaluate fairly?", answer: "Assess content quality, not personal reputation or writing style." },
+    { question: "How do you identify bias in your own review?", answer: "Ask yourself whether comments reflect evidence or personal preference." },
+    { question: "How do you maintain professionalism under pressure?", answer: "Pause before responding—objectivity returns once emotion subsides." },
+    { question: "Why is feedback structure important?", answer: "It provides predictability, making even critical comments easier to digest." },
+    { question: "What's the role of empathy in reviewing?", answer: "It transforms critique into guidance, fostering a positive academic environment." },
+    { question: "How should you reference specific errors?", answer: "'On line 27, you might correct the citation format.' Being precise avoids confusion." },
+    { question: "How can you build rapport through feedback?", answer: "By using phrases like, 'I found your argument thought-provoking; I'd love to see it expanded further.'" },
+    { question: "How do you avoid repetition in feedback?", answer: "Group similar issues under one comment instead of repeating them." },
+    { question: "Why is integrity vital in peer review?", answer: "Because reviewers hold ethical responsibility—feedback should be honest, not manipulative." },
+    { question: "How do you summarize your review?", answer: "'In summary, this is a strong and original contribution; addressing clarity and structure would make it even better.'" }
+  ]
+};
+
+export const MODULE_274_DATA = {
+  title: "Module 274 - Cross-Cultural Pragmatics",
+  description: "Understand how meaning, politeness, and intention vary between cultures in global communication.",
+  intro: `📘 Lesson Objectives
+
+At the C2 level, cross-cultural pragmatics explores **how meaning shifts across cultures**.
+
+✅ Social norms, tone, and context shape interpretation
+✅ Effective global communication requires **intercultural sensitivity**
+✅ Avoiding pragmatic failures in international interaction
+
+This module develops awareness of cultural differences in politeness, directness, and communication style.`,
+  table: {
+    title: "📋 Core Principles of Cross-Cultural Pragmatics",
+    data: [
+      { concept: "Pragmatic Competence", description: "Understanding how meaning changes with context", example: "'Could you open the window?' = polite request, not literal question." },
+      { concept: "Cultural Politeness Strategies", description: "Different norms for tone and hierarchy", example: "Turkish speakers may prefer indirectness; Americans are more direct." },
+      { concept: "Speech Acts", description: "Variation in apologies, compliments, or refusals", example: "In Japan, over-apologizing shows respect; in the U.S., it may imply guilt." },
+      { concept: "High vs. Low Context", description: "Implicit vs. explicit communication styles", example: "Germans are low-context; Koreans are high-context." },
+      { concept: "Intercultural Sensitivity", description: "Understanding others' communication norms", example: "Silence in Finland = thoughtfulness, not discomfort." },
+      { concept: "Avoiding Pragmatic Failure", description: "Preventing misinterpretation of politeness", example: "A Turkish 'Maybe later' may sound like 'Yes' to an American." }
+    ]
+  },
+  speakingPractice: [
+    { question: "What is cross-cultural pragmatics?", answer: "It's the study of how people from different cultures interpret and use language based on context and shared assumptions." },
+    { question: "Why do misunderstandings happen between cultures?", answer: "Because people assume their communication norms are universal, even though politeness and directness vary widely." },
+    { question: "What's an example of a pragmatic misunderstanding?", answer: "A British 'We should meet sometime' might mean a polite dismissal; an American may interpret it as a real plan." },
+    { question: "How does tone influence meaning?", answer: "Tonal variations can shift intent—confidence in one culture might seem arrogance in another." },
+    { question: "What's the difference between high-context and low-context communication?", answer: "High-context relies on shared understanding; low-context depends on explicit language." },
+    { question: "How does hierarchy affect communication?", answer: "In hierarchical societies, people speak formally to superiors; egalitarian cultures prefer casual speech." },
+    { question: "How does humor differ across cultures?", answer: "Irony or sarcasm may not translate; humor often depends on local references." },
+    { question: "Why is silence interpreted differently?", answer: "Silence can mean respect in Japan or awkwardness in the U.S.—context determines meaning." },
+    { question: "How do apologies vary globally?", answer: "Some cultures apologize for harmony; others reserve apologies for actual guilt." },
+    { question: "How can you avoid unintentional rudeness?", answer: "By observing local norms for greetings, refusals, and thanks." },
+    { question: "What's the role of politeness theory?", answer: "It explains how speakers maintain respect ('face') through linguistic strategies." },
+    { question: "How do indirect requests differ culturally?", answer: "English favors softeners; some languages view directness as normal." },
+    { question: "How does hierarchy shape word choice?", answer: "In Japanese or Korean, verbs and honorifics change with rank." },
+    { question: "How do Western and Eastern refusals differ?", answer: "Westerners say 'No' directly; Easterners use delay or excuses." },
+    { question: "How does business communication fail cross-culturally?", answer: "Assertive tone in one culture may appear rude in another, hurting trust." },
+    { question: "How do emotions vary in communication?", answer: "Expressive cultures (Italians) show emotion openly; restrained ones (Finns) value composure." },
+    { question: "How do you disagree politely?", answer: "'That's a fair point; my view differs slightly.' conveys respect and clarity." },
+    { question: "How does feedback differ across cultures?", answer: "Americans prefer direct feedback; East Asians prefer hints to avoid embarrassment." },
+    { question: "What's the key to intercultural success?", answer: "Curiosity and empathy—assuming you might not fully understand another's norms." },
+    { question: "How does small talk vary globally?", answer: "In the U.S., it builds rapport; in Germany, it may seem shallow." },
+    { question: "How do professionals adapt across cultures?", answer: "By mirroring tone, observing norms, and avoiding assumptions." },
+    { question: "Why should professionals study cultural pragmatics?", answer: "To prevent costly miscommunication in diplomacy and global business." },
+    { question: "How can cultural errors be repaired?", answer: "By apologizing sincerely and acknowledging misinterpretation: 'Thank you for clarifying.'" },
+    { question: "How do greeting rituals differ?", answer: "Southern cultures use touch; northern cultures prefer distance." },
+    { question: "What's the link between pragmatics and emotional intelligence?", answer: "Both involve reading unspoken cues and adapting behavior appropriately." },
+    { question: "How does body language affect meaning?", answer: "Eye contact, gestures, and space differ widely—what's polite in one culture may offend in another." },
+    { question: "What's universal politeness?", answer: "Respect for dignity and autonomy—across all languages." },
+    { question: "How do taboos affect communication?", answer: "Topics like money or religion are open in some cultures, avoided in others." },
+    { question: "Why study discourse markers?", answer: "Words like 'actually' or 'well' have pragmatic weight that differs by language." },
+    { question: "What's pragmatic transfer?", answer: "Applying your native politeness rules in another language—often causing confusion." },
+    { question: "How do you build empathy?", answer: "By active listening, suspending judgment, and asking clarifying questions." },
+    { question: "What's the risk of ethnocentrism?", answer: "Assuming your culture's norms are superior—causing unintentional offense." },
+    { question: "How does pragmatics improve global teamwork?", answer: "It prevents misunderstanding, improves collaboration, and strengthens trust." },
+    { question: "What role does humor play?", answer: "Used carefully, it builds rapport; used carelessly, it alienates others." },
+    { question: "How do teachers teach cross-cultural pragmatics?", answer: "Through exposure, simulations, and cultural reflection exercises." },
+    { question: "How does hierarchy affect translation?", answer: "Translators must adapt politeness levels, not just vocabulary." },
+    { question: "How can misunderstandings lead to growth?", answer: "By prompting reflection and improved cultural competence." },
+    { question: "How does digital communication change pragmatics?", answer: "Emojis and punctuation now convey tone once expressed by voice." },
+    { question: "What's the long-term value of pragmatic competence?", answer: "Greater adaptability, empathy, and leadership in global settings." },
+    { question: "How does sarcasm cause pragmatic failure?", answer: "Without shared context, irony may be taken literally and offend." }
+  ]
+};
+
+export const MODULE_275_DATA = {
+  title: "Module 275 - Understanding Literature: Deep Analysis",
+  description: "Master critical interpretation of style, symbolism, and subtext in literary works.",
+  intro: `📘 Lesson Objectives
+
+At the C2 level, literary analysis goes beyond plot summary.
+
+✅ **Interpreting style, symbolism, and subtext**
+✅ **Reading critically** to identify deeper meanings
+✅ **Discussing complex ideas** with precision and emotional insight
+
+This module develops your ability to analyze literature as art—exploring how language shapes human experience.`,
+  table: {
+    title: "📋 Core Principles of Literary Analysis",
+    data: [
+      { aspect: "Theme", description: "Central idea explored by the author", example: "'The futility of war' in All Quiet on the Western Front" },
+      { aspect: "Tone & Mood", description: "Writer's attitude and emotional atmosphere", example: "Ironic tone; melancholic mood" },
+      { aspect: "Symbolism", description: "Objects or imagery conveying abstract ideas", example: "Green light in The Great Gatsby = unattainable dreams" },
+      { aspect: "Narrative Perspective", description: "Point of view shaping interpretation", example: "First-person limits knowledge and biases perception" },
+      { aspect: "Imagery & Style", description: "Word choice and sensory detail shaping response", example: "'The crimson sky bled over the horizon' evokes intensity" },
+      { aspect: "Context", description: "Historical and cultural background shaping meaning", example: "Victorian values influencing Pride and Prejudice" }
+    ]
+  },
+  speakingPractice: [
+    { question: "What does it mean to analyze literature deeply?", answer: "It means examining how language, structure, and symbolism express human experiences, beyond mere plot summary." },
+    { question: "How can themes be identified?", answer: "By tracing recurring ideas, conflicts, or imagery that reflect the author's worldview or criticism." },
+    { question: "What's the difference between plot and theme?", answer: "Plot is what happens; theme is the underlying message or meaning." },
+    { question: "How does narrative perspective shape meaning?", answer: "A limited narrator may distort truth, forcing readers to interpret independently." },
+    { question: "How does irony deepen a text's impact?", answer: "Irony creates contrast between appearance and reality, encouraging reflection." },
+    { question: "Why is context important?", answer: "It links text to history and culture, enriching understanding of authorial intent." },
+    { question: "How do authors create tone?", answer: "Through diction, rhythm, and imagery that evoke emotion and perspective." },
+    { question: "What's explicit vs implicit meaning?", answer: "Explicit meaning is stated directly; implicit lies beneath the surface in subtext." },
+    { question: "How can symbols guide interpretation?", answer: "Recurrent images—light, mirrors, seasons—often represent deeper truths." },
+    { question: "How do readers' backgrounds influence meaning?", answer: "Interpretation depends on personal culture, beliefs, and emotional experience." },
+    { question: "What role does imagery play?", answer: "It transforms abstract ideas into sensory experience, intensifying emotion." },
+    { question: "How can rhythm or syntax shape meaning?", answer: "Sentence length and flow create emotional pacing—short = tension, long = reflection." },
+    { question: "Why is metaphor powerful?", answer: "It condenses complex emotion into symbolic imagery, uniting intellect and feeling." },
+    { question: "Symbol vs motif—what's the difference?", answer: "A symbol carries one central meaning; a motif recurs to reinforce themes." },
+    { question: "How do authors use contrast?", answer: "Oppositions like light/dark or good/evil emphasize moral complexity." },
+    { question: "How does narrative structure affect understanding?", answer: "Nonlinear or fragmented structure mirrors memory, confusion, or emotion." },
+    { question: "What's the function of unreliable narrators?", answer: "They challenge readers to question truth and perspective." },
+    { question: "How does dialogue reveal subtext?", answer: "Characters' indirect speech exposes hidden motives and tension." },
+    { question: "What do minor characters contribute?", answer: "They mirror or oppose main characters, revealing thematic contrasts." },
+    { question: "How does literary style reflect identity?", answer: "A writer's syntax and rhythm embody their worldview and emotion." },
+    { question: "How does literature reflect society?", answer: "It mirrors cultural values, questioning power, morality, and justice." },
+    { question: "What's the value of feminist or postcolonial readings?", answer: "They expose marginalized voices and reinterpret dominant narratives." },
+    { question: "How does psychoanalytic criticism interpret characters?", answer: "By exploring unconscious motives, repression, and internal conflict." },
+    { question: "How do existential themes appear?", answer: "Characters often face meaninglessness, choice, and identity crises." },
+    { question: "What is intertextuality?", answer: "Connections between texts create layers of meaning and cultural dialogue." },
+    { question: "What's the role of ambiguity?", answer: "It invites readers to co-create meaning, fostering interpretation." },
+    { question: "Why use metafiction?", answer: "It highlights the act of storytelling and blurs fiction vs reality." },
+    { question: "How does setting function symbolically?", answer: "Landscape often mirrors emotion—storm for chaos, calm sea for peace." },
+    { question: "How does literature create empathy?", answer: "It immerses readers in other lives, expanding moral imagination." },
+    { question: "How does time structure affect narrative?", answer: "Flashbacks and circular timelines reshape perception and memory." },
+    { question: "Interpretation vs evaluation—difference?", answer: "Interpretation finds meaning; evaluation judges effectiveness." },
+    { question: "How to avoid over-interpretation?", answer: "Base conclusions on textual evidence, not speculation." },
+    { question: "What's the goal of criticism?", answer: "To deepen understanding rather than impose one reading." },
+    { question: "How do eras reinterpret classics?", answer: "Each generation reads old works through new cultural lenses." },
+    { question: "Why is close reading essential?", answer: "It reveals subtle patterns of diction and imagery often overlooked." },
+    { question: "How does metaphor reveal worldview?", answer: "Metaphors expose how writers conceptualize life and emotion." },
+    { question: "What's the effect of translation?", answer: "Shifts in tone or rhythm may alter a work's emotional force." },
+    { question: "How can literature teach empathy?", answer: "By presenting universal human experiences through diverse voices." },
+    { question: "Why does great literature remain timeless?", answer: "It expresses emotions and conflicts that transcend historical boundaries." },
+    { question: "What's the goal of deep analysis?", answer: "To grasp how art, language, and culture intertwine to move readers intellectually and emotionally." }
+  ]
+};
+
+export const MODULE_276_DATA = {
+  title: "Module 276 - Interpreting Poetry and Figurative Meaning",
+  description: "Master the analysis of imagery, tone, rhythm, and symbolism in poetic language.",
+  intro: `📘 Lesson Objectives
+
+At the C2 level, interpreting poetry means **understanding compressed, figurative language**.
+
+✅ **Imagery, tone, rhythm, and symbolism**
+✅ **Decoding meaning** through poetic devices
+✅ **Articulating nuanced interpretations**
+
+This module helps you analyze poetry as both art and emotion—experiencing beauty, truth, and language's deepest resonance.`,
+  table: {
+    title: "📋 Core Principles of Poetry Interpretation",
+    data: [
+      { aspect: "Imagery", description: "Appeals to the senses", example: "'The moon dripped silver on the quiet sea.'" },
+      { aspect: "Metaphor & Simile", description: "Creates meaning through comparison", example: "'Hope is the thing with feathers.' – Emily Dickinson" },
+      { aspect: "Symbolism", description: "Represents abstract ideas", example: "A caged bird symbolizes oppression." },
+      { aspect: "Tone & Mood", description: "Attitude and emotional atmosphere", example: "Sarcastic tone, nostalgic mood." },
+      { aspect: "Sound Devices", description: "Alliteration, rhyme, rhythm, assonance", example: "'Softly, silently, slips the snake.'" },
+      { aspect: "Structure", description: "Form and rhythm influencing meaning", example: "Sonnet's order mirrors discipline." },
+      { aspect: "Ambiguity", description: "Multiple interpretations", example: "'Nothing gold can stay' – beauty, youth, mortality." }
+    ]
+  },
+  speakingPractice: [
+    { question: "What makes poetry different from prose?", answer: "Poetry compresses meaning through rhythm, imagery, and figurative language; every word carries emotional weight." },
+    { question: "How does figurative language deepen meaning?", answer: "It allows the reader to feel concepts rather than just understand them intellectually." },
+    { question: "What's the function of imagery?", answer: "Imagery translates emotions into sensory experiences, letting readers visualize and empathize." },
+    { question: "How can a single image have multiple meanings?", answer: "Poetic images are symbolic; a rose may represent love, passion, or fragility." },
+    { question: "Why do poets use ambiguity?", answer: "Ambiguity invites diverse interpretations, making the poem timeless." },
+    { question: "How does rhythm affect feeling?", answer: "Rhythm mirrors emotional intensity—steady beats create calm; irregular ones convey anxiety." },
+    { question: "How does sound influence emotion?", answer: "Devices like alliteration and assonance create musicality that enhances tone and memory." },
+    { question: "Why is metaphor central to poetry?", answer: "Metaphor reveals hidden connections and emotional truths through symbolic comparison." },
+    { question: "How can silence be meaningful?", answer: "Pauses, line breaks, or blank space evoke reflection and tension." },
+    { question: "Why is interpretation subjective?", answer: "Each reader brings personal emotions, memories, and perspectives." },
+    { question: "How does structure influence meaning?", answer: "A strict sonnet form may convey control; free verse suggests emotional freedom." },
+    { question: "What is enjambment?", answer: "When a sentence runs over multiple lines, creating momentum or suspense." },
+    { question: "How does repetition strengthen feeling?", answer: "Repetition emphasizes emotion or obsession, creating rhythm and intensity." },
+    { question: "What is tone in poetry?", answer: "The poet's emotional stance—joyful, mournful, ironic—revealed through word choice." },
+    { question: "How does punctuation change interpretation?", answer: "Pauses and breaks alter pacing and emotional nuance." },
+    { question: "Why is contrast used in imagery?", answer: "Opposites like light and dark create tension and complexity." },
+    { question: "How does symbolism differ from metaphor?", answer: "Metaphor is direct comparison; symbolism represents broader cultural ideas." },
+    { question: "Why is diction important?", answer: "Every word's sound and connotation influence rhythm and imagery." },
+    { question: "How do poets express change or time?", answer: "Through seasonal imagery, tense shifts, or evolving rhythm." },
+    { question: "How does form represent freedom or restriction?", answer: "Formal verse implies discipline; free verse reflects independence." },
+    { question: "How does culture affect imagery?", answer: "Symbols differ—white may mean purity in one culture, mourning in another." },
+    { question: "Why does translation alter poetry?", answer: "Sound, rhythm, and wordplay rarely survive across languages." },
+    { question: "How can poetry express resistance?", answer: "Through metaphor or allegory that disguise political messages." },
+    { question: "How do love poems differ across eras?", answer: "Older works idealize love; modern poems reveal vulnerability." },
+    { question: "What's the link between nature and emotion?", answer: "Poets project feeling onto landscape—storm as anger, spring as renewal." },
+    { question: "How does history shape poetry?", answer: "Context influences theme, diction, and rhythm." },
+    { question: "Why use mythological symbols?", answer: "They connect personal emotion to universal human stories." },
+    { question: "How does the poet's voice differ from the author?", answer: "The poetic speaker is a crafted persona, not always the poet." },
+    { question: "What effect does minimalism create?", answer: "Sparse words heighten meaning and silence becomes part of rhythm." },
+    { question: "How does poetry capture memory?", answer: "By condensing emotion and imagery into timeless form." },
+    { question: "How can readers interpret responsibly?", answer: "Combine emotional intuition with textual evidence for balance." },
+    { question: "What's the danger of over-analysis?", answer: "Too much dissection can destroy the poem's emotional pulse." },
+    { question: "How do rhythm and meaning interact?", answer: "Slow rhythm evokes contemplation; fast rhythm conveys urgency." },
+    { question: "Why is metaphor powerful emotionally?", answer: "It bypasses reason, speaking directly to imagination and empathy." },
+    { question: "How do poets achieve universality?", answer: "By expressing personal truths in images anyone can relate to." },
+    { question: "Why is ambiguity valuable?", answer: "It allows multiple readings, keeping the poem alive through time." },
+    { question: "How is poetic language different from speech?", answer: "It's condensed, rhythmic, and intentionally musical." },
+    { question: "How does poetry build empathy?", answer: "By letting readers inhabit another consciousness and emotion." },
+    { question: "Why read poetry aloud?", answer: "Sound reveals rhythm and tone that text alone hides." },
+    { question: "What's the ultimate goal of interpretation?", answer: "To experience beauty, truth, and emotion through language's deepest resonance." }
+  ]
+};
+
+export const MODULE_277_DATA = {
+  title: "Module 277 - Critical Discourse Analysis (CDA)",
+  description: "Examine how language reflects power, ideology, and culture in social discourse.",
+  intro: `📘 Lesson Objectives
+
+At the C2 level, Critical Discourse Analysis (CDA) **uncovers hidden power structures**.
+
+✅ **How language sustains or challenges hierarchies**
+✅ **Critical awareness** of bias, framing, and silence
+✅ **Analyzing ideology** embedded in everyday language
+
+This module develops your ability to question taken-for-granted truths and understand how words shape perception and influence.`,
+  table: {
+    title: "📋 Core Concepts of CDA",
+    data: [
+      { concept: "Discourse", description: "Language as social practice", example: "Political speeches or media reports." },
+      { concept: "Ideology", description: "Beliefs reflected in language", example: "'Freedom' vs 'control' framed differently by parties." },
+      { concept: "Power & Hegemony", description: "Dominance through consent", example: "Media reinforcing specific values." },
+      { concept: "Framing", description: "Presentation shaping interpretation", example: "'Tax relief' implies burden; 'reform' implies fairness." },
+      { concept: "Lexical Choice", description: "Word selection showing bias", example: "'Freedom fighter' vs 'terrorist'." },
+      { concept: "Presupposition", description: "Hidden assumptions in language", example: "'When did you stop being careless?' assumes guilt." },
+      { concept: "Intertextuality", description: "Texts referencing other texts", example: "A headline echoing a political slogan." }
+    ]
+  },
+  speakingPractice: [
+    { question: "What is Critical Discourse Analysis?", answer: "It studies how language reflects and sustains power structures, focusing on bias, framing, and silence." },
+    { question: "How does CDA differ from linguistics?", answer: "Linguistics analyzes form; CDA explores how language constructs ideology and shapes perception." },
+    { question: "Why is CDA critical?", answer: "It challenges taken-for-granted truths and uncovers hidden power relations." },
+    { question: "What connects language and power?", answer: "Power defines what's considered 'normal' or 'true' through discourse." },
+    { question: "How does ideology shape expression?", answer: "It influences how we describe events, often unconsciously reinforcing beliefs." },
+    { question: "Why is context vital?", answer: "Meaning changes with social and historical circumstances." },
+    { question: "What does 'language as social practice' mean?", answer: "Language both reflects and shapes society, making it an active force." },
+    { question: "How do metaphors shape ideology?", answer: "Metaphors frame thought: 'war on drugs' implies conflict instead of care." },
+    { question: "Why analyze media discourse?", answer: "Media normalizes particular values and influences public opinion." },
+    { question: "What can silence reveal?", answer: "Silence can exclude or resist dominant narratives." },
+    { question: "What is lexical bias?", answer: "Word choice favors one ideology over another—'invader' vs 'migrant'." },
+    { question: "How do grammar and power connect?", answer: "Passive voice hides responsibility, as in 'Mistakes were made'." },
+    { question: "What is presupposition?", answer: "An assumption built into language that the listener accepts unconsciously." },
+    { question: "How do pronouns construct identity?", answer: "'We' and 'they' define inclusion and exclusion in discourse." },
+    { question: "How does CDA view political speeches?", answer: "It examines how speakers manipulate tone, credibility, and emotion to persuade." },
+    { question: "What's interdiscursivity?", answer: "Overlapping discourse types—political, religious, or economic—in the same text." },
+    { question: "How can humor express ideology?", answer: "It normalizes prejudice by disguising it as harmless." },
+    { question: "What is naturalization?", answer: "When ideology becomes invisible because it feels like common sense." },
+    { question: "How can CDA uncover gender bias?", answer: "By analyzing patterns portraying men as active and women as passive." },
+    { question: "Why is reflexivity important?", answer: "Analysts must be aware of their own assumptions while studying texts." },
+    { question: "How is CDA used in education?", answer: "To reveal how classroom discourse includes or excludes certain perspectives." },
+    { question: "How does advertising use discourse?", answer: "By associating products with identity or aspiration—'freedom,' 'success,' 'beauty.'" },
+    { question: "How is institutional power visible in language?", answer: "In formal tone, hierarchical structures, and impersonal expressions." },
+    { question: "How are news headlines analyzed in CDA?", answer: "By studying framing, agency, and omission of information." },
+    { question: "Why is repetition powerful?", answer: "It normalizes ideology—repeated messages become accepted truths." },
+    { question: "How do visuals reinforce discourse?", answer: "Images and layout guide emotional reaction alongside text." },
+    { question: "What is 'othering'?", answer: "Portraying groups as alien or inferior to justify exclusion." },
+    { question: "Why focus on political metaphors?", answer: "Because metaphors shape perception of reality—'migration as flood' implies threat." },
+    { question: "How does CDA support social justice?", answer: "By revealing linguistic inequality and promoting awareness." },
+    { question: "How can CDA change journalism?", answer: "It encourages fairer, more transparent reporting free of unconscious bias." },
+    { question: "How does CDA build critical literacy?", answer: "It helps readers question ideology and power behind language." },
+    { question: "Why is neutrality impossible in language?", answer: "Every word reflects a viewpoint or intention, explicit or implicit." },
+    { question: "What are CDA's ethical boundaries?", answer: "Analysts must avoid projecting ideology where none exists." },
+    { question: "How does CDA differ from propaganda study?", answer: "CDA focuses on implicit meanings rather than overt persuasion." },
+    { question: "What is the role of corpus linguistics in CDA?", answer: "Quantitative data highlights recurring patterns of power and bias." },
+    { question: "How does CDA address racism?", answer: "By identifying exclusionary language, stereotypes, and discourse inequality." },
+    { question: "Why is CDA interdisciplinary?", answer: "It combines linguistics, sociology, psychology, and philosophy." },
+    { question: "How can everyday talk show power?", answer: "Through interruptions, politeness norms, or who controls topics." },
+    { question: "What is critical empathy?", answer: "Understanding others' perspectives while questioning ideological roots." },
+    { question: "What is CDA's ultimate goal?", answer: "To expose how language influences thought and empower ethical communication." }
+  ]
+};
+
+export const MODULE_278_DATA = {
+  title: "Module 278 - Public Speaking Mastery: Rhetoric",
+  description: "Master the art of persuasive language and ethical rhetoric in public speaking.",
+  intro: `📘 Lesson Objectives
+
+At the C2 level, rhetoric means **using language to persuade ethically**.
+
+✅ **Classical rhetorical theory** meets modern psychology
+✅ **Inspire, convince, and lead** through speech
+✅ **Ethos, Pathos, Logos** — credibility, emotion, logic
+
+This module combines timeless principles with practical techniques to transform you into a powerful, authentic speaker.`,
+  table: {
+    title: "📋 Core Principles of Rhetoric in Public Speaking",
+    data: [
+      { element: "Ethos", description: "Credibility and trust", example: "As a doctor with 20 years of experience..." },
+      { element: "Pathos", description: "Emotional appeal", example: "Imagine a child waking up hungry every morning..." },
+      { element: "Logos", description: "Logic and reasoning", example: "Research shows a 40% increase when..." },
+      { element: "Kairos", description: "Perfect timing", example: "Delivering unity messages after crises." },
+      { element: "Repetition & Rhythm", description: "Reinforcing ideas through phrasing", example: "We will fight. We will rise. We will win." },
+      { element: "Rhetorical Questions", description: "Engaging the audience intellectually", example: "What future do we want to leave for our children?" },
+      { element: "Parallelism", description: "Balanced structure for clarity and beauty", example: "Not because it is easy, but because it is hard. – JFK" }
+    ]
+  },
+  speakingPractice: [
+    { question: "What is rhetoric?", answer: "The art of persuasive language that inspires, influences, and conveys conviction." },
+    { question: "Why is rhetoric vital in public speaking?", answer: "It transforms information into emotion and action." },
+    { question: "What are Aristotle's three appeals?", answer: "Ethos, Pathos, and Logos—credibility, emotion, and logic." },
+    { question: "How does ethos build trust?", answer: "By demonstrating honesty, expertise, and moral integrity." },
+    { question: "What is pathos used for?", answer: "To stir empathy, passion, or shared feeling in the audience." },
+    { question: "Why is logos essential?", answer: "It provides structure and intellectual credibility." },
+    { question: "What is kairos?", answer: "Knowing the right moment to speak for maximum influence." },
+    { question: "How does body language enhance rhetoric?", answer: "Gestures, stance, and eye contact amplify verbal messages." },
+    { question: "Why do great speakers use rhythm?", answer: "Because rhythm creates emotional flow and memorability." },
+    { question: "What makes a speech resonate?", answer: "Alignment of logic, emotion, and purpose." },
+    { question: "How does storytelling strengthen persuasion?", answer: "Stories humanize arguments, making them relatable." },
+    { question: "Why use rhetorical questions?", answer: "They engage thought and invite participation." },
+    { question: "How does repetition aid rhetoric?", answer: "It anchors ideas and creates rhythmical emphasis." },
+    { question: "What is antithesis?", answer: "Juxtaposing contrasting ideas: 'Ask not what your country can do for you...'" },
+    { question: "Why is contrast effective?", answer: "It sharpens differences and clarifies perspective." },
+    { question: "Why is simplicity powerful?", answer: "Audiences recall concise, rhythmic language more easily." },
+    { question: "How does tone affect persuasion?", answer: "Controlled tone shows confidence and sincerity." },
+    { question: "Why are pauses important?", answer: "They build tension and let ideas sink in." },
+    { question: "How do metaphors help speakers?", answer: "They turn abstract ideas into vivid, emotional imagery." },
+    { question: "Why use humor in rhetoric?", answer: "It builds rapport, diffuses tension, and makes ideas relatable." },
+    { question: "How does structure affect impact?", answer: "A clear opening, climax, and conclusion create flow." },
+    { question: "What is anaphora?", answer: "Repetition at the beginning of clauses—'We will fight. We will rise. We will win.'" },
+    { question: "How does contrast show conviction?", answer: "Opposing realities emphasize transformation and urgency." },
+    { question: "What's the value of voice modulation?", answer: "Pitch and pace reflect emotion and sustain engagement." },
+    { question: "Persuasion vs manipulation—difference?", answer: "Persuasion enlightens; manipulation deceives." },
+    { question: "How can visual rhetoric enhance speeches?", answer: "Gestures or imagery strengthen verbal arguments." },
+    { question: "Why is authenticity crucial?", answer: "Sincerity builds emotional credibility." },
+    { question: "How do rhetorical devices enhance memory?", answer: "Alliteration, triads, and rhythm imprint key ideas." },
+    { question: "What's an emotional arc?", answer: "The rise and release of feeling that keeps audiences invested." },
+    { question: "Why use anticipation?", answer: "Foreshadowing ideas keeps audiences mentally engaged." },
+    { question: "How does rhetoric drive social change?", answer: "It transforms language into moral and emotional force." },
+    { question: "What role does humility play?", answer: "It balances confidence with humanity, inspiring trust." },
+    { question: "What are ethical limits in persuasion?", answer: "Speakers must not distort truth or exploit emotion." },
+    { question: "What is rhetorical listening?", answer: "Hearing with empathy and awareness to respond meaningfully." },
+    { question: "How can speakers overcome fear?", answer: "By focusing on message, not self, and rehearsing intentionally." },
+    { question: "What is the rule of three?", answer: "Tripartite phrasing enhances rhythm and memorability." },
+    { question: "Why appeal to shared values?", answer: "It fosters unity and emotional identification." },
+    { question: "How does rhetoric adapt online?", answer: "Through tone, pacing, visuals, and digital storytelling." },
+    { question: "Rhetoric and leadership—link?", answer: "Leadership needs rhetoric to inspire; rhetoric needs ethics to endure." },
+    { question: "What defines rhetorical mastery?", answer: "The ability to merge truth, logic, and emotion into unforgettable speech." }
+  ]
+};
+
+export const MODULE_279_DATA = {
+  title: "Module 279 - Language for International Relations",
+  description: "Master the diplomatic English required for global communication and negotiation.",
+  intro: `📘 Lesson Objectives
+
+At the C2 level, diplomatic English demands **precision, tact, and cultural sensitivity**.
+
+✅ **Language of diplomacy** and negotiation
+✅ **Maintaining professionalism** even in disagreement
+✅ **Strategic communication** that preserves harmony
+
+This module teaches you the language skills essential for international relations, conflict resolution, and cross-cultural leadership.`,
+  table: {
+    title: "📋 Core Principles of Diplomatic and International Language",
+    data: [
+      { element: "Neutrality", description: "Avoid emotionally charged words", example: "We note with concern... instead of We strongly condemn..." },
+      { element: "Tact and Politeness", description: "Use indirect phrasing for sensitive topics", example: "We encourage further dialogue on this issue." },
+      { element: "Precision", description: "Choose specific, unambiguous terms", example: "Ceasefire vs temporary suspension of hostilities." },
+      { element: "Formality", description: "Maintain professionalism", example: "The delegation expresses its appreciation..." },
+      { element: "Cultural Sensitivity", description: "Acknowledge diverse perspectives", example: "Avoid idioms or jokes that may not translate." },
+      { element: "Consensus Building", description: "Promote inclusion and cooperation", example: "We share a mutual commitment to stability." },
+      { element: "Strategic Ambiguity", description: "Allow flexible interpretation", example: "The parties will seek to enhance cooperation..." }
+    ]
+  },
+  speakingPractice: [
+    { question: "What is diplomatic language?", answer: "Formal, tactful communication aimed at preserving peace and cooperation." },
+    { question: "Why is neutrality essential?", answer: "Strong emotional language can escalate conflict or suggest bias." },
+    { question: "How does tone affect diplomacy?", answer: "Tone determines whether dialogue feels cooperative or confrontational." },
+    { question: "Example of diplomatic rephrasing?", answer: "Instead of 'You're wrong,' say 'We view this matter differently.'" },
+    { question: "Why use indirectness?", answer: "It softens disagreement and preserves mutual respect." },
+    { question: "Difference between agreement and understanding?", answer: "'Understanding' allows flexibility; 'agreement' implies obligation." },
+    { question: "How show politeness under pressure?", answer: "Use modals like 'may' or softeners like 'perhaps' and 'we believe.'" },
+    { question: "Why is cultural awareness vital?", answer: "Misinterpreting gestures or idioms can damage diplomatic ties." },
+    { question: "What's 'constructive dialogue'?", answer: "Talk focused on understanding and collaboration, not blame." },
+    { question: "Why is listening crucial?", answer: "Active listening reveals intent and fosters trust." },
+    { question: "How can language prevent conflict?", answer: "By emphasizing shared goals and avoiding accusatory phrasing." },
+    { question: "What is strategic ambiguity?", answer: "Intentionally vague language that lets all parties save face." },
+    { question: "How to express partial agreement?", answer: "We agree in principle but require further discussion." },
+    { question: "Why use euphemisms?", answer: "They maintain decorum and avoid emotional escalation." },
+    { question: "How does tone show compromise?", answer: "Positive phrasing like 'We remain open to solutions' signals flexibility." },
+    { question: "Why is phrasing key in resolutions?", answer: "Small wording changes alter political or legal implications." },
+    { question: "How to disagree politely?", answer: "We respectfully question the interpretation of the previous speaker." },
+    { question: "How to express concern diplomatically?", answer: "We note with concern... or We are aware of the challenges." },
+    { question: "Role of empathy in diplomacy?", answer: "It humanizes negotiation and builds bridges." },
+    { question: "Why be concise?", answer: "Excessive length risks misinterpretation or dilution of message." },
+    { question: "How to express gratitude formally?", answer: "The delegation extends its appreciation to the host nation." },
+    { question: "How do reports stay neutral?", answer: "By stating facts objectively, avoiding emotional adjectives." },
+    { question: "Difference between 'urge' and 'encourage'?", answer: "'Urge' is stronger; 'encourage' is cooperative." },
+    { question: "How to show unity?", answer: "Use inclusive language: 'We reaffirm our shared goals.'" },
+    { question: "What is hedging?", answer: "Softening statements to remain open to change or negotiation." },
+    { question: "How to express optimism?", answer: "We remain hopeful that progress will continue." },
+    { question: "Why is precision crucial in treaties?", answer: "Ambiguity leads to later disputes." },
+    { question: "'Shall' vs 'should'?", answer: "'Shall' is binding; 'should' expresses moral expectation." },
+    { question: "How avoid escalation?", answer: "Frame conflicts as shared challenges, not confrontations." },
+    { question: "Why is humor risky?", answer: "Cultural differences can lead to unintended offense." },
+    { question: "How language shapes reputation?", answer: "Diplomatic tone influences perception of a nation's stability." },
+    { question: "Why must translators grasp pragmatics?", answer: "Literal translation can distort nuance or intent." },
+    { question: "What's 'language of sanctions'?", answer: "Formal tone used in official warnings or restrictions." },
+    { question: "How does rhetoric serve diplomacy?", answer: "It inspires unity while preserving tact and precision." },
+    { question: "Press vs negotiation language?", answer: "Press statements stress unity; private talks express candor." },
+    { question: "Diplomatic equivalent of 'no'?", answer: "That would be difficult to consider at this stage." },
+    { question: "How is international English different?", answer: "It's clear, neutral, and idiom-free." },
+    { question: "How do nonverbal cues affect diplomacy?", answer: "Gestures, timing, and tone reinforce or contradict words." },
+    { question: "Ethical duty of diplomats?", answer: "To communicate truthfully while maintaining respect and peace." },
+    { question: "What defines mastery in diplomatic English?", answer: "Expressing complex ideas with clarity, balance, and restraint." }
+  ]
+};
+
+export const MODULE_280_DATA = {
+  title: "Module 280 - Advanced Listening: Nuanced Understanding",
+  description: "Master the interpretation of both explicit and implicit meaning in listening comprehension.",
+  intro: `📘 Lesson Objectives
+
+At the C2 level, listening means interpreting **beyond words**.
+
+✅ **Tone, attitude, and emotion** shape meaning
+✅ **Irony, hesitation, and cultural nuance** require active interpretation
+✅ **Listening as active interpretation**, not passive reception
+
+This module develops your ability to hear not just what is said, but how it's said—and what remains unsaid.`,
+  table: {
+    title: "📋 Core Principles of Nuanced Listening",
+    data: [
+      { skill: "Inference", description: "Grasp implied meaning beyond words", example: "That's brave of you to wear that! (sarcastic, not praise)" },
+      { skill: "Tone Recognition", description: "Understand emotion through voice", example: "Same sentence may sound sincere or irritated." },
+      { skill: "Intonation & Stress", description: "Detect emphasis that changes meaning", example: "I didn't SAY he stole the money." },
+      { skill: "Register Awareness", description: "Recognize social context and formality", example: "Different tone for friend vs diplomat." },
+      { skill: "Emotional Interpretation", description: "Hear irony, guilt, or hesitation", example: "A pause before 'I'm fine' suggests discomfort." },
+      { skill: "Cultural Listening", description: "Identify politeness or indirectness norms", example: "'Maybe later' can mean 'No' in some cultures." },
+      { skill: "Active Response", description: "Confirm meaning verbally", example: "'So you mean...?' or 'If I understand correctly...'" }
+    ]
+  },
+  speakingPractice: [
+    { question: "What distinguishes advanced listening from basic comprehension?", answer: "It involves understanding tone, emotion, and implication beyond words." },
+    { question: "Why is tone important?", answer: "Tone conveys intent and attitude, often overriding literal meaning." },
+    { question: "How can stress change meaning?", answer: "Emphasis shifts interpretation: 'I didn't SAY he stole it' vs 'I didn't say HE stole it.'" },
+    { question: "What does 'read between the lines' mean?", answer: "To infer meaning from subtle cues or context." },
+    { question: "How does sarcasm affect meaning?", answer: "It expresses the opposite of the words' literal sense." },
+    { question: "Why do pauses matter?", answer: "Silence can show hesitation, reflection, or tension." },
+    { question: "How to handle accent variation?", answer: "Focus on rhythm, context, and keywords rather than every sound." },
+    { question: "What is empathic listening?", answer: "Understanding emotional tone and meaning together." },
+    { question: "Why is background knowledge helpful?", answer: "It aids prediction and interpretation of references." },
+    { question: "Why paraphrase?", answer: "To confirm comprehension and show engagement." },
+    { question: "How detect insincerity?", answer: "Tone or laughter inconsistent with message reveals it." },
+    { question: "Why is context key?", answer: "It determines the intended interpretation of language." },
+    { question: "How culture affects listening?", answer: "Cultural norms shape how silence or directness are perceived." },
+    { question: "How handle ambiguity?", answer: "Ask clarifying questions and stay attentive to tone shifts." },
+    { question: "Role of empathy?", answer: "It builds rapport and helps decode unspoken meaning." },
+    { question: "How emotion shapes persuasion?", answer: "Warm, calm tone builds trust; aggressive tone alienates." },
+    { question: "Challenge of group talks?", answer: "Multiple voices and layered meanings require focus and inference." },
+    { question: "How recognize polite disagreement?", answer: "Listen for hedging or soft tones like 'That's one perspective...'" },
+    { question: "Why is irony hard to catch?", answer: "Because literal words mask opposite intention." },
+    { question: "How to improve inference skills?", answer: "Practice interpreting context in films and real dialogues." },
+    { question: "Academic vs casual listening?", answer: "Academic listening focuses on argument flow and evidence signals." },
+    { question: "Signals of contrast or conclusion?", answer: "Words like 'however,' 'to sum up,' or 'that being said.'" },
+    { question: "How detect bias?", answer: "Notice emotional adjectives or evaluative phrasing." },
+    { question: "Listening in negotiation?", answer: "Pay attention to tone shifts and hesitation for hidden motives." },
+    { question: "Why neutrality helps interpreters?", answer: "Prevents personal bias from distorting messages." },
+    { question: "Why note-taking helps?", answer: "It keeps attention on key points and structure." },
+    { question: "Risk of selective listening?", answer: "Missing vital context by filtering through assumptions." },
+    { question: "Why notice hesitation?", answer: "It can indicate doubt, discomfort, or strategic delay." },
+    { question: "Identifying persuasion?", answer: "Listen for rhythm, emotional tone, and emphasis patterns." },
+    { question: "Why silence is powerful?", answer: "It communicates reflection, control, or quiet disagreement." },
+    { question: "How idioms affect listening?", answer: "Literal interpretation can lead to misunderstanding." },
+    { question: "Why understand understatement?", answer: "Tone defines meaning — 'not bad' may mean 'excellent.'" },
+    { question: "Humor and cultural values?", answer: "Jokes reveal attitudes about power, gender, and society." },
+    { question: "What is meta-listening?", answer: "Awareness of one's own listening biases and reactions." },
+    { question: "Emotional control in listening?", answer: "Staying calm improves accuracy and empathy." },
+    { question: "Why openness matters?", answer: "Flexibility prevents ethnocentric misunderstanding." },
+    { question: "Detecting manipulation?", answer: "Overly flattering or exaggerated tone may hide intent." },
+    { question: "Interpreting layered meaning?", answer: "Combine tone, context, and cultural clues for accuracy." },
+    { question: "Goal of nuanced listening?", answer: "To capture message, motive, and mood." },
+    { question: "Why essential for global communication?", answer: "It fosters empathy, prevents conflict, and builds understanding." }
+  ]
+};
