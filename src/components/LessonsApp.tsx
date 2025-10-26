@@ -64,8 +64,8 @@ async function loadModuleData(moduleId: number): Promise<any> {
       // C1 Advanced modules (241-250)
       const module = await import('./C1ModulesData_Advanced');
       moduleData = module[`MODULE_${moduleId}_DATA`];
-    } else if (moduleId >= 251 && moduleId <= 260) {
-      // C2 modules (251-260)
+    } else if (moduleId >= 251 && moduleId <= 270) {
+      // C2 modules (251-270)
       const module = await import('./C2ModulesData');
       moduleData = module[`MODULE_${moduleId}_DATA`];
     }
@@ -88,7 +88,7 @@ const ORDER_A2 = [51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71
 const ORDER_B1 = [101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150];
 const ORDER_B2 = [151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196,197,198,199,200];
 const ORDER_C1 = [201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,247,248,249,250];
-const ORDER_C2 = [251,252,253,254,255,256,257,258,259,260];
+const ORDER_C2 = [251,252,253,254,255,256,257,258,259,260,261,262,263,264,265,266,267,268,269,270];
 
 function getOrderForLevel(level: 'A1'|'A2'|'B1'|'B2'|'C1'|'C2'): number[] {
   if (level === 'A1') return ORDER_A1;
@@ -753,7 +753,7 @@ const MODULES_BY_LEVEL = {
     completed: false,
     locked: false,
   })),
-  C2: Array.from({ length: 10 }, (_, i) => ({
+  C2: Array.from({ length: 20 }, (_, i) => ({
     id: i + 251,
     title: i === 0 ? 'Advanced Discourse Markers (Nevertheless, Notwithstanding)' :
            i === 1 ? 'Idiomatic Expressions for Complex Ideas' :
@@ -765,6 +765,16 @@ const MODULES_BY_LEVEL = {
            i === 7 ? 'Humor, Irony, and Sarcasm – Mastery' :
            i === 8 ? 'Figurative Language (Allegory, Symbolism)' :
            i === 9 ? 'Advanced Collocations – Nuanced Usage' :
+           i === 10 ? 'Subtle Differences in Synonyms (Tiny vs. Minuscule)' :
+           i === 11 ? 'Metaphorical Language in Academic English' :
+           i === 12 ? 'Code-Switching and Multilingualism' :
+           i === 13 ? 'Corpus-Based Vocabulary Study' :
+           i === 14 ? 'Mastering Formal and Informal Registers' :
+           i === 15 ? 'Language Change and Evolution' :
+           i === 16 ? 'Sociolinguistics – Language and Identity' :
+           i === 17 ? 'Psycholinguistics – Language and Thought' :
+           i === 18 ? 'Accent Reduction and Global English' :
+           i === 19 ? 'Language for Professional Networking' :
            'Advanced C2 module',
     description: 'Master C2-level proficiency and near-native fluency',
     completed: false,
@@ -2615,7 +2625,7 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
                   key={module.id}
                   className={`bg-white/10 border-white/20 cursor-pointer transition-all hover:bg-white/15 ${!isUnlocked ? 'opacity-50' : ''}`}
                   onClick={() => {
-                    if (isUnlocked && ((module.id >= 1 && module.id <= 50) || (module.id >= 51 && module.id <= 100) || (module.id >= 101 && module.id <= 150) || (module.id >= 151 && module.id <= 200) || (module.id >= 201 && module.id <= 250) || (module.id >= 251 && module.id <= 260))) { // All A1, A2, B1, B2, C1, C2 modules are implemented
+                    if (isUnlocked && ((module.id >= 1 && module.id <= 50) || (module.id >= 51 && module.id <= 100) || (module.id >= 101 && module.id <= 150) || (module.id >= 151 && module.id <= 200) || (module.id >= 201 && module.id <= 250) || (module.id >= 251 && module.id <= 270))) { // All A1, A2, B1, B2, C1, C2 modules are implemented
                       narration.cancel();
                       setSelectedModule(module.id);
                       setViewState('lesson');
