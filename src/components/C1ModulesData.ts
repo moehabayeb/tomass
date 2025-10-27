@@ -1757,28 +1757,47 @@ Collocations are words that frequently occur together in natural language. In ac
 ✅ Wrong combinations mark you as non-native
 ✅ They carry precise academic meanings
 ✅ They're expected in scholarly writing`,
-  table: [
-    { english: "Conduct research", turkish: "Araştırma yapmak", example: "We conducted extensive research on climate patterns." },
-    { english: "Draw conclusions", turkish: "Sonuç çıkarmak", example: "Based on the data, we can draw several conclusions." },
-    { english: "Raise questions", turkish: "Soru gündeme getirmek", example: "This finding raises important questions about methodology." },
-    { english: "Address concerns", turkish: "Endişeleri ele almak", example: "The study addresses concerns about validity." },
-    { english: "Present findings", turkish: "Bulguları sunmak", example: "We will present our findings at the conference." },
-    { english: "Reach consensus", turkish: "Fikir birliğine varmak", example: "Scholars have reached consensus on this issue." },
-    { english: "Meet criteria", turkish: "Kriterleri karşılamak", example: "The participants met all inclusion criteria." },
-    { english: "Pose challenges", turkish: "Zorluklar yaratmak", example: "This methodology poses significant challenges." },
-    { english: "Shed light on", turkish: "Aydınlatmak", example: "This research sheds light on the mechanisms involved." },
-    { english: "Bridge the gap", turkish: "Boşluğu kapatmak", example: "Our study bridges the gap between theory and practice." },
-    { english: "Advance understanding", turkish: "Anlayışı geliştirmek", example: "This work advances understanding of neural processes." },
-    { english: "Generate debate", turkish: "Tartışma yaratmak", example: "The publication generated considerable debate." },
-    { english: "Gather evidence", turkish: "Kanıt toplamak", example: "Researchers gathered compelling evidence supporting the theory." },
-    { english: "Test hypotheses", turkish: "Hipotez test etmek", example: "The experiment was designed to test three hypotheses." },
-    { english: "Establish links", turkish: "Bağlantılar kurmak", example: "We established clear links between variables." },
-    { english: "Examine implications", turkish: "Etkileri incelemek", example: "The paper examines implications for policy." },
-    { english: "Yield results", turkish: "Sonuç vermek", example: "The analysis yielded unexpected results." },
-    { english: "Fill a gap", turkish: "Boşluğu doldurmak", example: "This study fills an important gap in the literature." },
-    { english: "Support claims", turkish: "İddiaları desteklemek", example: "The data strongly support our claims." },
-    { english: "Refute arguments", turkish: "Argümanları çürütmek", example: "Recent findings refute earlier arguments." }
-  ],
+
+  table: {
+    title: "📋 Collocations for Academic English",
+    data: [
+      { category: "What are Collocations?", explanation: "Words that frequently occur together in natural language", purpose: "Create natural-sounding academic prose", turkish: "Eş dizimler - doğal olarak bir arada kullanılan kelimeler", function: "Sound like native academic writer, convey precise meanings", note: "Wrong collocations immediately mark non-native writing!", remember: "Learn collocations as fixed phrases, not individual words!" },
+
+      { category: "Why Collocations Matter", reason_1: "Sound natural to native speakers", reason_2: "Wrong combinations mark you as non-native", reason_3: "Carry precise academic meanings", reason_4: "Expected in scholarly writing", reason_5: "Can't be translated word-for-word from other languages", note: "'Make research' sounds wrong - must say 'conduct research'!", remember: "Collocations = the difference between good and excellent academic writing!" },
+
+      { category: "Verb + Research/Study", conduct_research: "conduct research (araştırma yapmak) - NOT 'make research'!", carry_out_study: "carry out a study / undertake research", publish_findings: "publish findings / present results", analyze_data: "analyze data / examine data", examples: "We conducted extensive research. / They carried out a longitudinal study. / The team analyzed the data thoroughly.", note: "CONDUCT research, not 'make' or 'do' research!", remember: "These verb choices are NOT interchangeable!" },
+
+      { category: "Verb + Argument/Theory", present_argument: "present an argument (argüman sunmak)", propose_theory: "propose a theory / develop a framework", challenge_assumptions: "challenge assumptions / question premises", support_claim: "support a claim / substantiate an argument", refute_argument: "refute an argument / disprove a theory", examples: "She presented a compelling argument. / We propose a new theoretical framework. / Recent evidence refutes earlier arguments.", note: "Academic discourse has specific verb-noun partnerships!" },
+
+      { category: "Drawing & Reaching", draw_conclusions: "draw conclusions (sonuç çıkarmak) - NOT 'make conclusions'!", reach_consensus: "reach consensus / arrive at agreement", draw_distinction: "draw a distinction / make a differentiation", reach_conclusion: "reach the conclusion that...", examples: "Based on the data, we can draw several conclusions. / Scholars have reached consensus. / We must draw a distinction between correlation and causation.", note: "'Draw' and 'reach' have specific collocations!", remember: "DRAW conclusions, REACH consensus!" },
+
+      { category: "Raising & Addressing", raise_questions: "raise questions / pose questions (soru gündeme getirmek)", raise_concerns: "raise concerns / voice concerns", address_concerns: "address concerns / tackle issues", raise_awareness: "raise awareness / increase awareness", examples: "This finding raises important questions. / The study addresses concerns about validity. / We must raise awareness of this issue.", note: "'Raise' for bringing up, 'address' for dealing with!", remember: "RAISE questions/concerns, ADDRESS them!" },
+
+      { category: "Meeting & Filling", meet_criteria: "meet criteria / satisfy requirements (kriterleri karşılamak)", meet_needs: "meet the needs / fulfill requirements", fill_gap: "fill a gap / close a gap", meet_expectations: "meet expectations / exceed expectations", examples: "Participants met all inclusion criteria. / This study fills an important gap in the literature. / The results exceeded our expectations.", note: "'Meet' for criteria/needs/expectations, 'fill' for gaps!", remember: "MEET criteria, FILL gaps!" },
+
+      { category: "Shedding & Bridging", shed_light_on: "shed light on (aydınlatmak) - illuminate, clarify", bridge_gap: "bridge the gap (boşluğu kapatmak) - connect", cast_doubt_on: "cast doubt on / raise doubts about", bridge_divide: "bridge the divide / narrow the gap", examples: "This research sheds light on the mechanisms involved. / Our study bridges the gap between theory and practice. / New evidence casts doubt on earlier claims.", note: "Metaphorical collocations are common in academic English!", remember: "SHED light, BRIDGE gaps!" },
+
+      { category: "Advancing & Generating", advance_understanding: "advance understanding / further knowledge (anlayışı geliştirmek)", generate_debate: "generate debate / spark discussion", advance_field: "advance the field / push boundaries", generate_interest: "generate interest / attract attention", examples: "This work advances understanding of neural processes. / The publication generated considerable debate. / The findings generated significant interest.", note: "'Advance' for progress, 'generate' for creating!", remember: "ADVANCE understanding, GENERATE debate!" },
+
+      { category: "Gathering & Testing", gather_evidence: "gather evidence / collect data (kanıt toplamak)", test_hypotheses: "test hypotheses / verify predictions", gather_support: "gather support / garner backing", test_validity: "test validity / examine reliability", examples: "Researchers gathered compelling evidence. / The experiment tested three hypotheses. / We need to test the validity of these claims.", note: "Scientific method has specific collocations!", remember: "GATHER evidence, TEST hypotheses!" },
+
+      { category: "Establishing & Examining", establish_links: "establish links / demonstrate connections (bağlantılar kurmak)", examine_implications: "examine implications / explore consequences", establish_credibility: "establish credibility / build reputation", examine_relationship: "examine the relationship between...", examples: "We established clear links between variables. / The paper examines implications for policy. / The study examines the relationship between diet and health.", note: "'Establish' for creating/proving, 'examine' for investigating!", remember: "ESTABLISH links, EXAMINE implications!" },
+
+      { category: "Yielding & Posing", yield_results: "yield results / produce findings (sonuç vermek)", pose_challenges: "pose challenges / present difficulties", yield_insights: "yield insights / provide understanding", pose_threat: "pose a threat / present a danger", examples: "The analysis yielded unexpected results. / This methodology poses significant challenges. / The data yielded valuable insights.", note: "'Yield' for producing, 'pose' for presenting!", remember: "YIELD results, POSE challenges!" },
+
+      { category: "Supporting & Refuting", support_claims: "support claims / back up arguments (iddiaları desteklemek)", refute_arguments: "refute arguments / disprove theories", lend_support: "lend support to / provide evidence for", undermine_argument: "undermine an argument / weaken a claim", examples: "The data strongly support our claims. / Recent findings refute earlier arguments. / New evidence lends support to this theory.", note: "Argumentation has specific collocation patterns!", remember: "SUPPORT claims, REFUTE arguments!" },
+
+      { category: "Common Mistakes", mistake_1: "Using 'make' instead of 'conduct'", wrong_1: "We made research ✗ / They make experiments ✗", correct_1: "We conducted research ✓ / They conduct experiments ✓", rule: "CONDUCT research/experiments/studies, not 'make'", remember: "'Make' doesn't work with academic research!" },
+
+      { category: "Common Mistakes", mistake_2: "Using wrong verb with 'conclusions'", wrong_2: "We made conclusions ✗ / They reached results ✗", correct_2: "We drew conclusions ✓ / They obtained results ✓", rule: "DRAW conclusions, REACH consensus, OBTAIN/YIELD results", remember: "Each noun has its specific verb partner!" },
+
+      { category: "Adjective + Research Collocations", empirical_research: "empirical research (ampirik araştırma) - based on observation/experiment", qualitative_study: "qualitative/quantitative study - research types", compelling_evidence: "compelling/substantial/considerable evidence", extensive_literature: "extensive literature / vast body of research", groundbreaking_research: "groundbreaking/pioneering research", examples: "Empirical research supports this theory. / We conducted a qualitative study. / There is compelling evidence for this claim.", note: "Adjectives have natural partnerships with academic nouns!" },
+
+      { category: "Real-World Uses", research_papers: "conduct research, analyze data, draw conclusions, present findings", literature_reviews: "extensive literature, fill a gap, establish links, examine implications", methodology_sections: "meet criteria, test hypotheses, gather evidence, yield results", discussion_sections: "shed light on, advance understanding, generate debate, support claims", conclusions: "draw conclusions, reach consensus, address concerns, pose questions for future research", note: "Each paper section has its typical collocations!" },
+
+      { category: "Key Takeaway", summary: "Collocations are natural word partnerships essential for academic writing", why_matter: "Sound natural, carry precise meanings, mark native-like fluency", verb_research: "conduct research, carry out study, publish findings, analyze data", verb_argument: "present argument, propose theory, support claim, refute argument", draw_reach: "draw conclusions, reach consensus, draw distinction", raise_address: "raise questions/concerns, address concerns/issues", meet_fill: "meet criteria/needs, fill gap/void", shed_bridge: "shed light on, bridge gap, cast doubt on", advance_generate: "advance understanding, generate debate/interest", gather_test: "gather evidence, test hypotheses/validity", critical: "CONDUCT research (not 'make')! DRAW conclusions (not 'make')!", remember: "Learn collocations as fixed phrases! Wrong combinations = non-native writing!", next: "Practice using natural collocations in academic writing!" }
+    ]
+  },
   speakingPractice: [
     { question: "How do you conduct research in your field?", answer: "We conduct research by first reviewing existing literature, then designing experiments that test specific hypotheses using appropriate methodologies." },
     { question: "What conclusions can we draw from recent climate studies?", answer: "We can draw the conclusion that human activity significantly contributes to global warming, though the exact mechanisms remain subjects of ongoing investigation." },
@@ -1861,28 +1880,46 @@ Turning verbs and adjectives into nouns creates formal, academic tone:
 - analyze → analysis
 - significant → significance
 - emerge → emergence`,
-  table: [
-    { english: "Resilience", turkish: "Dayanıklılık", example: "Her resilience in the face of adversity was remarkable." },
-    { english: "Autonomy", turkish: "Özerklik", example: "The region gained greater political autonomy." },
-    { english: "Paradigm", turkish: "Paradigma", example: "This represents a paradigm shift in thinking." },
-    { english: "Ambiguity", turkish: "Belirsizlik", example: "The contract's ambiguity led to disputes." },
-    { english: "Integrity", turkish: "Dürüstlük", example: "She's known for her personal integrity." },
-    { english: "Phenomenon", turkish: "Olgu", example: "Social media is a relatively recent phenomenon." },
-    { english: "Deterioration", turkish: "Bozulma", example: "We observed a deterioration in conditions." },
-    { english: "Authenticity", turkish: "Özgünlük", example: "The authenticity of the document was questioned." },
-    { english: "Escalation", turkish: "Tırmanma", example: "The escalation of tensions concerned diplomats." },
-    { english: "Empiricism", turkish: "Deneycilik", example: "The study embraced empiricism over speculation." },
-    { english: "Dichotomy", turkish: "İkilem", example: "There's a false dichotomy between theory and practice." },
-    { english: "Hegemony", turkish: "Hegemonya", example: "Cultural hegemony influences social norms." },
-    { english: "Juxtaposition", turkish: "Yan yana koyma", example: "The juxtaposition of old and new was striking." },
-    { english: "Manifestation", turkish: "Tezahür", example: "This is a manifestation of deeper issues." },
-    { english: "Pragmatism", turkish: "Faydacılık", example: "His pragmatism helped solve practical problems." },
-    { english: "Reciprocity", turkish: "Karşılıklılık", example: "International relations depend on reciprocity." },
-    { english: "Sovereignty", turkish: "Egemenlik", example: "National sovereignty was a key concern." },
-    { english: "Transcendence", turkish: "Aşkınlık", example: "Art offers moments of transcendence." },
-    { english: "Volatility", turkish: "Değişkenlik", example: "Market volatility increased dramatically." },
-    { english: "Coherence", turkish: "Tutarlılık", example: "The argument lacks logical coherence." }
-  ],
+  table: {
+    title: "📋 Abstract Nouns and Concepts (Soyut İsimler ve Kavramlar)",
+    data: [
+      { category: "What are Abstract Nouns?", explanation: "Nouns referring to intangible concepts, ideas, qualities, or states rather than concrete objects", purpose: "Essential for discussing complex theoretical, philosophical, and academic topics", turkish: "Soyut isimler - somut olmayan kavramlar", function: "Express ideas that can't be touched or seen", note: "Master these for sophisticated intellectual discourse!" },
+
+      { category: "Nominalization - Verb to Noun", analyze_analysis: "analyze → analysis (analiz etmek → analiz)", significant_significance: "significant → significance (önemli → önem)", emerge_emergence: "emerge → emergence (ortaya çıkmak → ortaya çıkma)", develop_development: "develop → development (geliştirmek → gelişme)", transform_transformation: "transform → transformation (dönüştürmek → dönüşüm)", implement_implementation: "implement → implementation (uygulamak → uygulama)", purpose: "Creates more formal, academic tone", examples: "We analyzed... → Our analysis showed... / It's significant → The significance lies in...", note: "Essential for academic writing!" },
+
+      { category: "Nominalization - Adjective to Noun", resilient_resilience: "resilient → resilience (dayanıklı → dayanıklılık)", authentic_authenticity: "authentic → authenticity (özgün → özgünlük)", coherent_coherence: "coherent → coherence (tutarlı → tutarlılık)", volatile_volatility: "volatile → volatility (değişken → değişkenlik)", autonomous_autonomy: "autonomous → autonomy (özerk → özerklik)", ambiguous_ambiguity: "ambiguous → ambiguity (belirsiz → belirsizlik)", rule: "Add -ness, -ity, -ce, or -ence to adjectives", note: "Common pattern in academic English!" },
+
+      { category: "Philosophical & Political Concepts", autonomy: "autonomy (özerklik) - capacity for self-governance", sovereignty: "sovereignty (egemenlik) - supreme authority", hegemony: "hegemony (hegemonya) - dominance by one group", dichotomy: "dichotomy (ikilem) - division into two parts", paradigm: "paradigm (paradigma) - conceptual framework", transcendence: "transcendence (aşkınlık) - going beyond limits", examples: "The region gained greater autonomy. / Cultural hegemony shapes norms. / This represents a paradigm shift.", note: "Used in political science, philosophy, sociology" },
+
+      { category: "Qualities & Characteristics", resilience: "resilience (dayanıklılık) - ability to recover from difficulties", integrity: "integrity (dürüstlük) - moral uprightness", authenticity: "authenticity (özgünlük) - being genuine", coherence: "coherence (tutarlılık) - logical consistency", ambiguity: "ambiguity (belirsizlik) - multiple meanings", examples: "Her resilience was remarkable. / He's known for integrity. / The argument lacks coherence.", note: "Essential for character description and analysis" },
+
+      { category: "Processes & Changes", transformation: "transformation (dönüşüm) - complete change", deterioration: "deterioration (bozulma) - getting worse", escalation: "escalation (tırmanma) - increase in intensity", manifestation: "manifestation (tezahür) - visible expression", implementation: "implementation (uygulama) - putting into practice", examples: "Digital transformation changed business. / We observed deterioration in conditions. / The escalation of tensions concerned diplomats.", note: "Describes how things change over time" },
+
+      { category: "Academic & Research Concepts", phenomenon: "phenomenon (olgu) - observable fact or event", empiricism: "empiricism (deneycilik) - knowledge from observation", methodology: "methodology (metodoloji) - system of methods", hypothesis: "hypothesis (hipotez) - proposed explanation", paradigm: "paradigm (paradigma) - theoretical framework", examples: "Social media is a recent phenomenon. / The study embraced empiricism over speculation. / We tested the hypothesis.", note: "Core vocabulary for academic discourse!" },
+
+      { category: "Social & Economic Concepts", reciprocity: "reciprocity (karşılıklılık) - mutual exchange", volatility: "volatility (değişkenlik) - instability", pragmatism: "pragmatism (faydacılık) - practical approach", juxtaposition: "juxtaposition (yan yana koyma) - placing side by side for contrast", examples: "International relations depend on reciprocity. / Market volatility increased. / His pragmatism solved problems. / The juxtaposition was striking.", note: "Common in economics, sociology, business writing" },
+
+      { category: "Common Mistakes - Countability", mistake_1: "Using plural with uncountable abstracts", wrong_1: "We need more informations ✗ / They showed great courages ✗", correct_1: "We need more information ✓ / They showed great courage ✓", rule: "Most abstract nouns are UNCOUNTABLE (no -s)", list: "information, advice, knowledge, research, evidence, progress, courage, resilience, integrity", remember: "Don't add -S to abstract nouns!" },
+
+      { category: "Common Mistakes - Article Usage", mistake_2: "Omitting THE with specific abstractions", wrong_2: "Significance of findings is clear ✗ / Authenticity of document was questioned ✗", correct_2: "THE significance of findings is clear ✓ / THE authenticity of document was questioned ✓", rule: "Use THE when referring to specific instance of abstract concept", remember: "General concept = no article | Specific = THE" },
+
+      { category: "Using in OF Phrases", pattern: "abstract noun + OF + noun phrase", examples: "the significance OF this discovery / the emergence OF new technologies / the deterioration OF relations / the implementation OF policies / the manifestation OF symptoms", purpose: "Links abstract concept to what it relates to", note: "Very common pattern in academic writing!" },
+
+      { category: "Collocations with Abstract Nouns", demonstrate: "demonstrate resilience / demonstrate integrity / demonstrate coherence", show: "show ambiguity / show deterioration / show significance", gain: "gain autonomy / gain momentum / gain credibility", maintain: "maintain integrity / maintain coherence / maintain balance", lack: "lack coherence / lack authenticity / lack credibility", examples: "The report demonstrates coherence. / The region gained autonomy. / The argument lacks credibility.", note: "Learn verbs that naturally pair with abstract nouns!" },
+
+      { category: "In Academic Sentence Starters", starter_1: "The significance of X lies in...", starter_2: "The emergence of X has led to...", starter_3: "The implementation of X resulted in...", starter_4: "The deterioration of X can be attributed to...", starter_5: "The authenticity of X was confirmed by...", examples: "The significance of this study lies in its methodology. / The emergence of AI has led to ethical debates.", note: "Professional way to begin analytical sentences" },
+
+      { category: "Expressing Complexity & Nuance", resilience: "resilience in the face of adversity (zorluklar karşısında dayanıklılık)", ambiguity: "moral ambiguity / legal ambiguity (ahlaki/yasal belirsizlik)", dichotomy: "false dichotomy (yanlış ikilem)", paradigm: "paradigm shift (paradigma kayması)", juxtaposition: "striking juxtaposition (çarpıcı yan yana koyma)", examples: "Her resilience in the face of adversity was remarkable. / There's a false dichotomy between theory and practice.", note: "These phrases show sophisticated thinking!" },
+
+      { category: "In Critical Analysis", coherence: "logical coherence / internal coherence (mantıksal tutarlılık)", authenticity: "cultural authenticity / historical authenticity (kültürel/tarihsel özgünlük)", significance: "statistical significance / practical significance (istatistiksel/pratik önem)", manifestation: "physical manifestation / visible manifestation (fiziksel/görünür tezahür)", examples: "The argument lacks logical coherence. / The study shows statistical significance. / This is a manifestation of deeper issues.", note: "Essential for critique and evaluation!" },
+
+      { category: "Building Academic Vocabulary", easy_to_sophisticated: "change → transformation | getting worse → deterioration | independence → autonomy | genuineness → authenticity | importance → significance", impact: "Makes writing sound more scholarly and precise", examples: "Instead of: 'The change was big' → 'The transformation was significant' / Instead of: 'Things got worse' → 'We observed deterioration'", note: "Level up your academic writing!" },
+
+      { category: "Pronunciation Challenges", stress_patterns: "ReSILience (2nd syllable) / auTHENticity (3rd) / voLAtility (2nd) / coHErence (2nd) / HEgemony (1st) / trancSCENdence (2nd)", tip: "Many abstract nouns shift stress from base word", examples: "AUthentic → auTHENticity / VOLatile → voLAtility", practice: "Record yourself saying these words!", remember: "Stress placement changes meaning clarity!" },
+
+      { category: "Remember", takeaway_1: "Abstract nouns express intangible concepts (ideas, qualities, states)", takeaway_2: "Most are UNCOUNTABLE - don't add -S", takeaway_3: "Nominalization (verb/adjective → noun) creates formal tone", takeaway_4: "Use THE when referring to specific instances", takeaway_5: "Master OF phrases: 'the significance OF this finding'", final_note: "Abstract nouns are the foundation of academic and intellectual discourse - use them to discuss complex ideas with precision and sophistication!" }
+    ]
+  },
   speakingPractice: [
     { question: "What role does resilience play in personal development?", answer: "Resilience plays a crucial role because it enables individuals to recover from setbacks, adapt to challenges, and maintain psychological equilibrium during adversity." },
     { question: "How do you understand the concept of autonomy?", answer: "I understand autonomy as the capacity for self-governance and independent decision-making, free from external coercion, which is fundamental to human dignity and freedom." },
@@ -1966,28 +2003,48 @@ const MODULE_213_DATA = {
 ⚠️ "Correlation does not imply causation"
 ⚠️ "Significant" has specific statistical meaning
 ⚠️ Always specify what data shows vs. what it might mean`,
-  table: [
-    { english: "The data indicate/suggest", turkish: "Veri gösteriyor", example: "The data indicate a strong correlation between variables." },
-    { english: "A sharp increase", turkish: "Keskin artış", example: "We observed a sharp increase in participation rates." },
-    { english: "Gradual decline", turkish: "Kademeli düşüş", example: "There has been a gradual decline in smoking rates." },
-    { english: "Statistically significant", turkish: "İstatistiksel olarak anlamlı", example: "The difference was statistically significant (p<0.05)." },
-    { english: "Sample size", turkish: "Örneklem büyüklüğü", example: "The sample size was 500 participants." },
-    { english: "Margin of error", turkish: "Hata payı", example: "Results have a margin of error of ±3%." },
-    { english: "Correlation coefficient", turkish: "Korelasyon katsayısı", example: "The correlation coefficient was 0.78." },
-    { english: "Control group", turkish: "Kontrol grubu", example: "The control group received no intervention." },
-    { english: "Confounding variable", turkish: "Karıştırıcı değişken", example: "Age was identified as a confounding variable." },
-    { english: "Baseline measurement", turkish: "Başlangıç ölçümü", example: "Baseline measurements were taken before intervention." },
-    { english: "Longitudinal study", turkish: "Boylamsal çalışma", example: "This longitudinal study tracked participants for 10 years." },
-    { english: "Cross-sectional analysis", turkish: "Kesitsel analiz", example: "Cross-sectional analysis revealed age differences." },
-    { english: "Quantitative data", turkish: "Nicel veri", example: "We collected both quantitative and qualitative data." },
-    { english: "Outlier", turkish: "Aykırı değer", example: "Several outliers were removed from the analysis." },
-    { english: "Distribution curve", turkish: "Dağılım eğrisi", example: "The distribution curve showed normal variation." },
-    { english: "Confidence interval", turkish: "Güven aralığı", example: "The 95% confidence interval was 23-45%." },
-    { english: "Null hypothesis", turkish: "Boş hipotez", example: "We rejected the null hypothesis." },
-    { english: "Effect size", turkish: "Etki büyüklüğü", example: "The effect size was moderate (d=0.5)." },
-    { english: "Peer-reviewed", turkish: "Hakem denetimli", example: "This appeared in a peer-reviewed journal." },
-    { english: "Replicate findings", turkish: "Bulguları tekrarlamak", example: "Subsequent studies replicated these findings." }
-  ],
+  table: {
+    title: "📋 Talking About Data and Research (Veri ve Araştırma Hakkında Konuşma)",
+    data: [
+      { category: "Describing Trends - Increase", sharp_increase: "sharp increase (keskin artış) - rapid, dramatic rise", gradual_increase: "gradual increase (kademeli artış) - slow, steady rise", steady_growth: "steady growth (istikrarlı büyüme) - consistent upward trend", dramatic_rise: "dramatic rise (dramatik yükseliş) - very significant increase", examples: "We observed a sharp increase in participation. / Data show gradual increase over time. / The market experienced steady growth.", note: "Choose adjective based on speed and magnitude!", remember: "Sharp/dramatic = fast | Gradual/steady = slow" },
+
+      { category: "Describing Trends - Decrease", sharp_decline: "sharp decline (keskin düşüş) - rapid decrease", gradual_decline: "gradual decline (kademeli düşüş) - slow decrease", steady_decrease: "steady decrease (istikrarlı azalma) - consistent downward trend", dramatic_fall: "dramatic fall (dramatik düşüş) - very significant decrease", examples: "There has been a gradual decline in smoking rates. / The economy experienced a sharp decline. / Prices showed a steady decrease.", note: "Use decline/decrease for formal writing", remember: "Avoid 'go down' in academic contexts!" },
+
+      { category: "Describing Trends - Other Patterns", plateau: "plateau (plato) - level off after change", fluctuate: "fluctuate (dalgalanmak) - go up and down irregularly", stabilize: "stabilize (istikrara kavuşmak) - become steady", peak: "peak (zirve yapmak) - reach highest point", examples: "The data plateau after 6 months. / Values fluctuate between 30-50. / Rates stabilized in 2020. / Unemployment peaked in March.", note: "These describe non-linear patterns!" },
+
+      { category: "Presenting Data - Subject Choice", data_indicate: "The data indicate/suggest (NOT 'shows') - data is PLURAL", findings_reveal: "The findings reveal/demonstrate", results_show: "The results show/support", study_demonstrates: "The study demonstrates/indicates", examples: "The data indicate a strong correlation. / Findings reveal significant differences. / Results show positive outcomes.", critical: "DATA is PLURAL! Say 'data indicate' NOT 'data indicates'", remember: "one datum | multiple data (always use plural verb!)" },
+
+      { category: "Statistical Language - Significance", statistically_significant: "statistically significant (p<0.05) - unlikely due to chance", highly_significant: "highly significant (p<0.01) - very strong evidence", marginally_significant: "marginally significant (p≈0.05) - borderline evidence", not_significant: "not significant / non-significant - could be chance", examples: "The difference was statistically significant (p<0.05). / Results were highly significant. / The effect was marginally significant.", critical: "'Significant' in statistics ≠ 'important'!", note: "Statistical significance ≠ practical importance!" },
+
+      { category: "Study Design - Participants", sample_size: "sample size (örneklem büyüklüğü) - number of participants", control_group: "control group (kontrol grubu) - comparison group with no treatment", experimental_group: "experimental group (deney grubu) - receives treatment", baseline_measurement: "baseline measurement (başlangıç ölçümü) - before intervention", examples: "The sample size was 500 participants. / The control group received no intervention. / Baseline measurements were taken first.", note: "Control group = essential for causal claims!" },
+
+      { category: "Study Design - Types", longitudinal_study: "longitudinal study (boylamsal çalışma) - tracks SAME people over time", cross_sectional: "cross-sectional study (kesitsel çalışma) - different people at ONE time point", randomized_controlled: "randomized controlled trial (RCT) - random assignment to groups", qualitative_quantitative: "qualitative (nitel) vs quantitative (nicel) data", examples: "This longitudinal study tracked participants for 10 years. / Cross-sectional analysis revealed age differences. / The RCT included 200 participants.", note: "Longitudinal = same people, multiple times | Cross-sectional = different people, one time" },
+
+      { category: "Statistical Concepts - Correlation", correlation_coefficient: "correlation coefficient (r) - strength of relationship (-1 to +1)", strong_correlation: "strong correlation (r > 0.7) - close relationship", moderate_correlation: "moderate correlation (r = 0.3-0.7) - medium relationship", weak_correlation: "weak correlation (r < 0.3) - slight relationship", examples: "The correlation coefficient was 0.78 (strong). / We found moderate correlation between variables.", critical: "CORRELATION ≠ CAUSATION!", remember: "Ice cream sales correlate with drowning (both happen in summer), but don't cause each other!" },
+
+      { category: "Statistical Concepts - Reliability", confidence_interval: "confidence interval (güven aralığı) - range of plausible values", margin_of_error: "margin of error (hata payı) - ± amount of uncertainty", standard_deviation: "standard deviation (standart sapma) - spread of data", null_hypothesis: "null hypothesis (boş hipotez) - assumption of no effect", examples: "The 95% confidence interval was 23-45%. / Results have a margin of error of ±3%. / We rejected the null hypothesis.", note: "95% CI means we're 95% confident true value is in this range" },
+
+      { category: "Problematic Variables", confounding_variable: "confounding variable (karıştırıcı değişken) - influences both IV and DV", outlier: "outlier (aykırı değer) - extreme value far from others", missing_data: "missing data (eksik veri) - participants didn't provide data", examples: "Age was identified as a confounding variable. / Several outliers were removed. / We accounted for missing data.", note: "Confounders create SPURIOUS correlations!" },
+
+      { category: "Data Distribution", normal_distribution: "normal distribution (normal dağılım) - bell curve, symmetric", skewed_distribution: "skewed distribution (çarpık dağılım) - asymmetric", mean_median_mode: "mean (ortalama) / median (ortanca) / mode (tepe değer)", distribution_curve: "distribution curve (dağılım eğrisi) - graph of data spread", examples: "The distribution curve showed normal variation. / Data were positively skewed. / The mean was 75, median 72.", note: "Normal distribution = most common pattern in nature!" },
+
+      { category: "Research Quality", peer_reviewed: "peer-reviewed (hakem denetimli) - evaluated by experts before publication", replicate_findings: "replicate findings (bulguları tekrarlamak) - repeat study to verify", effect_size: "effect size (etki büyüklüğü) - practical importance of result", methodological_rigor: "methodological rigor (metodolojik titizlik) - careful, systematic design", examples: "This appeared in a peer-reviewed journal. / Subsequent studies replicated findings. / The effect size was moderate (d=0.5).", note: "Peer review + replication = gold standard of science!" },
+
+      { category: "Common Mistakes - DATA is Plural", mistake_1: "Using singular verb with 'data'", wrong_1: "The data shows ✗ / This data is important ✗", correct_1: "The data show ✓ / These data are important ✓", rule: "DATA = PLURAL (one datum, many data)", remember: "The data INDICATE (not indicates)!", note: "Though 'data is' becoming acceptable in informal English, use plural in academic writing!" },
+
+      { category: "Common Mistakes - Correlation vs Causation", mistake_2: "Claiming causation from correlation", wrong_2: "Exercise correlates with health, so exercise causes health ✗", correct_2: "Exercise correlates with health, suggesting a possible relationship ✓", explanation: "Correlation = things happen together | Causation = one CAUSES the other", examples: "Correct: 'The data suggest a relationship...' | Wrong: 'The data prove that X causes Y...'", critical: "Need controlled experiments for causation!" },
+
+      { category: "Hedging When Presenting Results", hedging_verbs: "suggest, indicate, appear to, seem to, may, might, could", examples: "The data SUGGEST a correlation. / Results APPEAR TO support the hypothesis. / This MAY indicate a trend.", purpose: "Show appropriate scientific caution", wrong: "The data PROVE... / Results DEFINITELY show... (too strong!)", remember: "Science is about evidence, not proof!" },
+
+      { category: "Useful Sentence Starters", starter_1: "The data indicate/suggest that...", starter_2: "Results show/demonstrate that...", starter_3: "Analysis revealed/found that...", starter_4: "A statistically significant difference was observed in...", starter_5: "The findings support/contradict the hypothesis that...", examples: "The data indicate a strong correlation. / Results show significant improvement. / Analysis revealed three main themes.", note: "Professional way to present findings!" },
+
+      { category: "Comparing Research Findings", consistent_with: "consistent with previous research (önceki araştırmalarla tutarlı)", contradict: "contradict earlier findings (önceki bulguları çürütmek)", replicate: "replicate Smith et al. (2020) (Smith'in bulgularını tekrarlamak)", extend: "extend the work of (çalışmayı genişletmek)", examples: "Our findings are consistent with Jones (2019). / These results contradict earlier studies. / This replicates Smith's findings.", note: "Always situate your research in existing literature!" },
+
+      { category: "Discussing Limitations", limitations: "Limitations include...", small_sample: "Small sample size limits generalizability.", self_reported: "Self-reported data may contain bias.", cross_sectional_limitation: "Cross-sectional design cannot establish causation.", examples: "Limitations include the small sample size and reliance on self-reported data. / The cross-sectional nature prevents causal inferences.", critical: "ALWAYS acknowledge limitations!", note: "Shows scientific integrity and critical thinking!" },
+
+      { category: "Remember", takeaway_1: "DATA is PLURAL - say 'data indicate' not 'data indicates'", takeaway_2: "Correlation ≠ Causation - need experiments for causal claims", takeaway_3: "Use hedging language: 'suggest', 'appear to', 'may indicate'", takeaway_4: "Statistical significance ≠ practical importance", takeaway_5: "Always report: sample size, p-values, confidence intervals, limitations", final_note: "Precise, cautious language is the hallmark of good scientific communication - avoid overclaiming!" }
+    ]
+  },
   speakingPractice: [
     { question: "How would you describe a sharp increase in unemployment rates?", answer: "The data show a sharp increase in unemployment, rising from 5% to 12% over just six months, representing a 140% relative increase." },
     { question: "What does statistical significance actually mean?", answer: "Statistical significance means the observed result is unlikely to have occurred by chance alone, typically with less than 5% probability, though it doesn't necessarily indicate practical importance." },
@@ -2076,28 +2133,48 @@ Critical thinking involves analyzing, evaluating, and interpreting information b
 • It is essential to consider that...
 • However, one might also argue that...`,
 
-  table: [
-    { english: "Evaluate", turkish: "Değerlendirmek", example: "Students must evaluate the effectiveness of the solution." },
-    { english: "Analyze", turkish: "Analiz etmek", example: "The report analyzes the causes of the economic crisis." },
-    { english: "Infer", turkish: "Çıkarım yapmak", example: "We can infer that motivation affects productivity." },
-    { english: "Justify", turkish: "Haklı çıkarmak", example: "He justified his position with relevant data." },
-    { english: "Assess", turkish: "Değerlendirmek", example: "The teacher assessed the students' understanding." },
-    { english: "Challenge", turkish: "Sorgulamak", example: "The article challenges traditional gender roles." },
-    { english: "Reflect", turkish: "Düşünmek", example: "She reflected on her learning experience." },
-    { english: "Assume", turkish: "Varsaymak", example: "We cannot assume that everyone agrees." },
-    { english: "Interpret", turkish: "Yorumlamak", example: "The researcher interpreted the results cautiously." },
-    { english: "Verify", turkish: "Doğrulamak", example: "The data was verified before publication." },
-    { english: "Form an opinion", turkish: "Fikir oluşturmak", example: "It takes time to form a well-reasoned opinion." },
-    { english: "Provide justification", turkish: "Gerekçe sunmak", example: "You must provide justification for your claims." },
-    { english: "Question an assumption", turkish: "Varsayımı sorgulamak", example: "Critical thinkers question assumptions regularly." },
-    { english: "Draw a conclusion", turkish: "Sonuç çıkarmak", example: "Based on the evidence, we can draw a conclusion." },
-    { english: "Support an argument", turkish: "Argümanı desteklemek", example: "Data should support your argument effectively." },
-    { english: "Present evidence", turkish: "Kanıt sunmak", example: "Always present evidence to back up your claims." },
-    { english: "Evaluate a claim", turkish: "İddiayı değerlendirmek", example: "We need to evaluate this claim carefully." },
-    { english: "Consider multiple perspectives", turkish: "Çoklu bakış açıları düşünmek", example: "Good thinkers consider multiple perspectives." },
-    { english: "Identify bias", turkish: "Önyargıyı belirlemek", example: "It's important to identify bias in sources." },
-    { english: "Challenge conventional wisdom", turkish: "Geleneksel bilgiyi sorgulamak", example: "Scientists often challenge conventional wisdom." }
-  ],
+  table: {
+    title: "📋 Critical Thinking Vocabulary (Eleştirel Düşünme Kelime Dağarcığı)",
+    data: [
+      { category: "What is Critical Thinking?", explanation: "Analyzing, evaluating, and interpreting information before forming a judgment", purpose: "Express opinions objectively with evidence and logical reasoning", turkish: "Eleştirel düşünme - bilgiyi değerlendirip sonuca varmak", function: "Move beyond accepting claims at face value", note: "Essential for academic success and informed decision-making!" },
+
+      { category: "Core Verbs - Examination", analyze: "analyze (analiz etmek) - examine in detail, break into parts", evaluate: "evaluate (değerlendirmek) - assess quality or value", assess: "assess (değerlendirmek) - determine value or importance", examine: "examine (incelemek) - look at closely and carefully", examples: "The report analyzes the causes of the crisis. / Students must evaluate the solution's effectiveness. / The teacher assessed understanding. / Let's examine the evidence.", note: "These verbs show deep engagement with content!" },
+
+      { category: "Core Verbs - Reasoning", infer: "infer (çıkarım yapmak) - draw conclusion from evidence", interpret: "interpret (yorumlamak) - explain meaning of something", justify: "justify (haklı çıkarmak) - give reasons or evidence for", verify: "verify (doğrulamak) - confirm truth or accuracy", examples: "We can infer that motivation affects productivity. / The researcher interpreted results cautiously. / He justified his position with data. / The data was verified before publication.", note: "Essential for constructing logical arguments!" },
+
+      { category: "Core Verbs - Questioning", challenge: "challenge (sorgulamak) - question or oppose an idea", question: "question (sorgulamak) - ask about, express doubt", reflect: "reflect (düşünmek) - think deeply or carefully", assume: "assume (varsaymak) - accept as true without proof (often negative context)", examples: "The article challenges traditional roles. / We should question these assumptions. / She reflected on her experience. / We cannot assume everyone agrees.", critical: "Don't assume without evidence!", remember: "Critical thinkers QUESTION, not accept blindly!" },
+
+      { category: "Academic Collocations - Opinion & Argument", form_opinion: "form an opinion (fikir oluşturmak) - develop a viewpoint based on thought", support_argument: "support an argument (argümanı desteklemek) - provide evidence for claims", present_evidence: "present evidence (kanıt sunmak) - show proof", provide_justification: "provide justification (gerekçe sunmak) - give reasons for position", examples: "It takes time to form a well-reasoned opinion. / Data should support your argument. / Always present evidence for claims. / You must provide justification.", note: "These collocations are NOT interchangeable - learn them together!" },
+
+      { category: "Academic Collocations - Conclusions & Claims", draw_conclusion: "draw a conclusion (sonuç çıkarmak) - reach final judgment based on evidence", reach_conclusion: "reach a conclusion (sonuca varmak) - arrive at final decision", evaluate_claim: "evaluate a claim (iddiayı değerlendirmek) - assess truth of statement", make_claim: "make a claim (iddia yapmak) - assert something as true", examples: "Based on evidence, we can draw a conclusion. / The study reached surprising conclusions. / We need to evaluate this claim carefully. / Don't make claims without evidence.", critical: "Claims need EVIDENCE!", remember: "In academics: claim → evidence → justification" },
+
+      { category: "Thinking About Perspectives", consider_perspectives: "consider multiple perspectives (çoklu bakış açıları düşünmek) - view from different angles", take_perspective: "take into account / consideration (hesaba katmak)", acknowledge: "acknowledge counterarguments (karşı argümanları kabul etmek)", recognize: "recognize limitations (sınırlamaları tanımak)", examples: "Good thinkers consider multiple perspectives. / We must take context into account. / The paper acknowledges counterarguments. / Recognize the limitations of this approach.", note: "Shows intellectual maturity and objectivity!" },
+
+      { category: "Identifying Problems in Arguments", identify_bias: "identify bias (önyargıyı belirlemek) - recognize prejudice or unfairness", detect_fallacy: "detect a fallacy (mantık hatasını tespit etmek) - spot logical error", recognize_assumption: "recognize an assumption (varsayımı tanımak) - identify unstated belief", question_validity: "question the validity (geçerliliği sorgulamak) - doubt accuracy/soundness", examples: "It's important to identify bias in sources. / The argument contains a logical fallacy. / Recognize the assumption underlying this claim. / We should question the validity of these results.", critical: "Bias, fallacies, and assumptions weaken arguments!", note: "Essential skills for critical reading!" },
+
+      { category: "Challenging Ideas", challenge_wisdom: "challenge conventional wisdom (geleneksel bilgiyi sorgulamak) - question accepted beliefs", question_assumption: "question an assumption (varsayımı sorgulamak) - doubt unstated belief", dispute_claim: "dispute a claim (iddiaya itiraz etmek) - disagree with statement", refute_argument: "refute an argument (argümanı çürütmek) - prove argument wrong", examples: "Scientists often challenge conventional wisdom. / Critical thinkers question assumptions regularly. / The study disputes earlier claims. / The evidence refutes this argument.", note: "Challenge ideas constructively with evidence!" },
+
+      { category: "Academic Sentence Frames - Suggesting", it_can_be_argued: "It can be argued that... (... iddia edilebilir)", this_suggests: "This suggests that... (Bu ... gösterir)", one_could_infer: "One could infer that... (... çıkarım yapılabilir)", there_is_evidence: "There is evidence to support the claim that... (... iddiasını destekleyen kanıt var)", examples: "It can be argued that technology improves learning. / This suggests that motivation is key. / One could infer that results are significant. / There is evidence to support this claim.", note: "Hedge your claims in academic writing!" },
+
+      { category: "Academic Sentence Frames - Qualifying", possible_explanation: "A possible explanation for this is that... (Bunun olası açıklaması...)", from_perspective: "From this perspective... (Bu bakış açısından...)", raises_question: "This raises the question of whether... (Bu ... sorusunu gündeme getiriyor)", findings_indicate: "The findings indicate that... (Bulgular ... gösteriyor)", examples: "A possible explanation is that samples were small. / From this perspective, the policy failed. / This raises the question of whether results are reliable. / Findings indicate strong correlation.", note: "Shows nuanced, cautious thinking!" },
+
+      { category: "Academic Sentence Frames - Balancing", however_might_argue: "However, one might also argue that... (Ancak ... da iddia edilebilir)", essential_to_consider: "It is essential to consider that... (... dikkate almak gerekir)", on_other_hand: "On the other hand... (Öte yandan...)", while_it_is_true: "While it is true that..., it is also important to note that... (... doğru olsa da, ... da önemlidir)", examples: "However, one might also argue that cost is prohibitive. / It is essential to consider context. / On the other hand, alternative explanations exist. / While it is true that..., we must also note...", note: "Balance claims with counterpoints!" },
+
+      { category: "Common Mistakes - Assuming vs Inferring", mistake_1: "Confusing assumption with inference", assume_wrong: "Assumption = accepting without evidence (weak!)", infer_correct: "Inference = concluding FROM evidence (strong!)", examples: "I ASSUME he's right (no evidence) ✗ vs I INFER from the data that... (evidence-based) ✓", critical: "Inferences require EVIDENCE, assumptions don't!", remember: "Academic writing needs inferences, not assumptions!" },
+
+      { category: "Common Mistakes - Unsupported Claims", mistake_2: "Making claims without evidence", wrong_2: "Technology is always good ✗ / Everyone knows that... ✗ / It's obvious that... ✗", correct_2: "Research suggests technology can improve learning ✓ / Studies show that... ✓ / Evidence indicates... ✓", rule: "Every claim needs EVIDENCE and SOURCE", remember: "No claim stands alone - back it up!" },
+
+      { category: "Critical Reading Skills", skim_for_gist: "skim for the gist (ana fikir için göz gezdirmek)", read_critically: "read critically (eleştirel okumak) - question while reading", annotate_text: "annotate the text (not almak) - write notes in margins", synthesize_information: "synthesize information (bilgiyi sentezlemek) - combine from multiple sources", examples: "First, skim for the gist. / Read critically, questioning claims. / Annotate the text as you read. / Synthesize information from various sources.", note: "Active reading, not passive acceptance!" },
+
+      { category: "Avoiding Logical Fallacies", ad_hominem: "ad hominem (kişiye saldırı) - attacking person, not argument", false_dilemma: "false dilemma (yanlış ikilem) - only two options when more exist", slippery_slope: "slippery slope (kaygan zemin) - claiming one thing leads to extreme outcome", hasty_generalization: "hasty generalization (acele genelleme) - conclusion from insufficient evidence", examples: "Don't use ad hominem attacks. / Avoid false dilemmas. / That's a slippery slope argument. / This is a hasty generalization.", critical: "Recognize and avoid these in your arguments!", note: "Spotting fallacies strengthens critical thinking!" },
+
+      { category: "Evaluating Sources", credible_source: "credible source (güvenilir kaynak)", peer_reviewed: "peer-reviewed (hakem denetimli)", primary_vs_secondary: "primary source (birincil kaynak) vs secondary source (ikincil kaynak)", author_credentials: "author's credentials (yazarın nitelikleri)", examples: "Is this a credible source? / Prefer peer-reviewed journals. / Use primary sources when possible. / Check the author's credentials.", note: "Source quality matters for strong arguments!" },
+
+      { category: "Metacognition - Thinking About Thinking", metacognition: "metacognition (üstbiliş) - awareness of own thought processes", self_assess: "self-assess (kendini değerlendirmek) - evaluate own work objectively", monitor_understanding: "monitor your understanding (anlayışını izlemek)", identify_gaps: "identify knowledge gaps (bilgi boşluklarını belirlemek)", examples: "Develop metacognition by reflecting on how you learn. / Self-assess your work honestly. / Monitor your understanding as you read. / Identify gaps in your knowledge.", note: "Thinking about thinking improves learning!" },
+
+      { category: "Remember", takeaway_1: "Critical thinking = analyze, evaluate, question - not blindly accept", takeaway_2: "Inference (from evidence) ≠ Assumption (without evidence)", takeaway_3: "All claims need EVIDENCE and SOURCE in academic writing", takeaway_4: "Consider multiple perspectives - acknowledge counterarguments", takeaway_5: "Use academic frames: 'It can be argued that...', 'Evidence suggests...'", final_note: "Critical thinking is the foundation of academic excellence - question everything, support all claims with evidence, and think independently!" }
+    ]
+  },
 
   speakingPractice: [
     { question: "Why is critical thinking essential in academic communication?", answer: "Critical thinking is essential because it allows students to question evidence, evaluate sources, and develop balanced arguments rather than simply accepting information at face value." },
@@ -2187,28 +2264,48 @@ Understanding how to express cause and effect is essential for academic and anal
 • Y can be attributed to X.
 • X had a significant influence on Y.`,
 
-  table: [
-    { english: "Because of / Due to", turkish: "Nedeniyle", example: "The project was delayed due to technical issues." },
-    { english: "As a result (of)", turkish: "Sonuç olarak", example: "As a result of the policy, unemployment decreased." },
-    { english: "Therefore / Thus / Hence", turkish: "Bu nedenle", example: "The data was inaccurate; therefore, the conclusion was invalid." },
-    { english: "Consequently", turkish: "Sonuç olarak", example: "Consequently, the team had to revise the plan." },
-    { english: "Owing to", turkish: "Nedeniyle (resmi)", example: "Owing to climate change, sea levels are rising." },
-    { english: "Lead to / Result in", turkish: "Yol açmak / Sonuçlanmak", example: "Poor management led to decreased productivity." },
-    { english: "Be caused by", turkish: "Neden olmak (pasif)", example: "The flood was caused by heavy rainfall." },
-    { english: "Bring about / Give rise to", turkish: "Sebep olmak / Ortaya çıkarmak", example: "Urbanization brought about rapid cultural shifts." },
-    { english: "Trigger / Spark", turkish: "Tetiklemek", example: "The announcement triggered public protests." },
-    { english: "Be responsible for", turkish: "Sorumlu olmak", example: "Lack of funding was responsible for the delay." },
-    { english: "Cause concern", turkish: "Endişeye neden olmak", example: "The rising crime rates cause concern among citizens." },
-    { english: "Lead to improvement", turkish: "İyileşmeye yol açmak", example: "The new policy led to significant improvement." },
-    { english: "Result in success", turkish: "Başarıyla sonuçlanmak", example: "Hard work often results in success." },
-    { english: "Bring about change", turkish: "Değişim getirmek", example: "Education can bring about social change." },
-    { english: "Give rise to conflict", turkish: "Çatışmaya yol açmak", example: "Different values can give rise to conflict." },
-    { english: "Have an impact on", turkish: "Etkisi olmak", example: "Technology has a major impact on education." },
-    { english: "Play a role in", turkish: "Rol oynamak", example: "Diet plays a crucial role in health." },
-    { english: "Trigger a reaction", turkish: "Tepkiyi tetiklemek", example: "The decision triggered a strong reaction." },
-    { english: "Contribute to development", turkish: "Gelişmeye katkıda bulunmak", example: "Innovation contributes to economic development." },
-    { english: "Generate awareness", turkish: "Farkındalık yaratmak", example: "Campaigns generate awareness about climate change." }
-  ],
+  table: {
+    title: "📋 Cause and Effect: Advanced Language (Neden-Sonuç İleri Seviye Dil)",
+    data: [
+      { category: "Expressing Cause - BECAUSE OF / DUE TO", because_of: "because of + NOUN (nedeniyle) - informal to neutral", due_to: "due to + NOUN (nedeniyle) - more formal", owing_to: "owing to + NOUN (nedeniyle) - very formal/academic", structure: "All followed by NOUN or NOUN PHRASE (not clause)", examples: "The project was delayed because of/due to technical issues. / Owing to climate change, sea levels are rising.", critical: "because of / due to / owing to + NOUN (not clause!)", remember: "Use 'because' + clause | Use 'because of' + noun!" },
+
+      { category: "Common Mistake - BECAUSE vs BECAUSE OF", mistake: "Confusing BECAUSE (+ clause) with BECAUSE OF (+ noun)", wrong_1: "We canceled because of it was raining ✗ / The delay due to the system crashed ✗", correct_1: "We canceled BECAUSE it was raining ✓ / The delay was DUE TO the system crash ✓", rule: "BECAUSE + subject + verb | BECAUSE OF + noun", examples: "BECAUSE he was sick (clause) | BECAUSE OF his illness (noun)", remember: "OF = needs a NOUN after it!" },
+
+      { category: "Expressing Result - AS A RESULT", as_a_result: "as a result (sonuç olarak) - shows consequence, stands alone", as_a_result_of: "as a result of + NOUN (... sonucu olarak) - shows cause", position: "'As a result' = sentence beginning | 'as a result of' = before noun", examples: "It rained heavily. As a result, the game was cancelled. / As a result of the policy, unemployment decreased.", note: "These two are NOT interchangeable!", remember: "'As a result' = alone | 'As a result of' = + noun" },
+
+      { category: "Expressing Result - THEREFORE / THUS / HENCE", therefore: "therefore (bu nedenle) - formal logical conclusion", thus: "thus (böylece) - very formal, academic", hence: "hence (bu yüzden) - formal, showing logical result", consequently: "consequently (sonuç olarak) - shows direct result", examples: "The data was inaccurate; therefore, the conclusion was invalid. / The budget was reduced; thus/hence, projects were cancelled. / Consequently, the team had to revise the plan.", note: "All mean same thing, differ in formality level!", punctuation: "Use semicolon (;) or period (.) before these words" },
+
+      { category: "Verbs - LEAD TO / RESULT IN (Active Cause)", lead_to: "lead to + NOUN/GERUND (yol açmak) - cause something to happen", result_in: "result in + NOUN/GERUND (sonuçlanmak) - have as consequence", structure: "Subject (cause) + lead to/result in + Object (effect)", examples: "Poor management led to decreased productivity. / Hard work often results in success. / The policy changes led to significant improvements.", note: "These are ACTIVE - subject is the cause!", remember: "X leads to Y = X causes Y to happen" },
+
+      { category: "Verbs - BE CAUSED BY / BE ATTRIBUTED TO (Passive Cause)", be_caused_by: "be caused by + NOUN (... nedeniyle olmak) - passive causation", be_attributed_to: "be attributed to + NOUN (... atfedilmek) - give credit to cause", be_due_to: "be due to + NOUN (... nedeniyle olmak) - explain reason", structure: "Subject (effect) + is caused by/attributed to/due to + Object (cause)", examples: "The flood was caused by heavy rainfall. / The success is attributed to teamwork. / The delay was due to technical problems.", note: "These are PASSIVE - subject is the effect!", remember: "Y is caused by X = X causes Y" },
+
+      { category: "Sophisticated Verbs - BRING ABOUT / GIVE RISE TO", bring_about: "bring about + NOUN (meydana getirmek) - make something happen, especially change", give_rise_to: "give rise to + NOUN (yol açmak) - cause something to begin/develop", initiate: "initiate + NOUN (başlatmak) - start a process", generate: "generate + NOUN (üretmek, yaratmak) - produce, create", examples: "Urbanization brought about rapid cultural shifts. / Education can bring about social change. / Different values can give rise to conflict. / The policy initiated reforms. / Campaigns generate awareness.", note: "More sophisticated than 'cause'!" },
+
+      { category: "Sudden Cause - TRIGGER / SPARK", trigger: "trigger + NOUN (tetiklemek) - cause something to start suddenly", spark: "spark + NOUN (kıvılcımlamak) - ignite, start suddenly (often used for conflicts/debates)", precipitate: "precipitate + NOUN (hızlandırmak) - cause to happen suddenly or sooner", examples: "The announcement triggered public protests. / The decision triggered a strong reaction. / The incident sparked heated debates. / The crisis precipitated government action.", note: "Used for SUDDEN or DRAMATIC events!", remember: "Trigger/spark = sudden start of something" },
+
+      { category: "Explaining Responsibility", be_responsible_for: "be responsible for + NOUN (sorumlu olmak) - explain who/what caused", play_a_role_in: "play a role in + NOUN (rol oynamak) - contribute to outcome", contribute_to: "contribute to + NOUN (katkıda bulunmak) - help cause", account_for: "account for + NOUN (açıklamak) - explain the cause of", examples: "Lack of funding was responsible for the delay. / Diet plays a crucial role in health. / Innovation contributes to economic development. / Stress accounts for many health problems.", note: "Shows nuanced causation, not direct cause!" },
+
+      { category: "Impact & Influence", have_impact_on: "have an impact on + NOUN (etkisi olmak) - affect, influence", influence: "influence + NOUN (etkilemek) - have effect on", affect: "affect + NOUN (etkilemek) - have effect on (verb!)", effect: "effect + NOUN (etkilemek) - bring about (formal verb!)", examples: "Technology has a major impact on education. / Social media influences consumer behavior. / Climate change affects agriculture. / The reforms effected significant changes.", critical: "AFFECT = verb (to influence) | EFFECT = noun (result) OR verb (bring about)", remember: "Usually: AFFECT = verb | EFFECT = noun" },
+
+      { category: "Useful Collocations", cause_concern: "cause concern (endişeye neden olmak)", lead_to_improvement: "lead to improvement (iyileşmeye yol açmak)", result_in_success: "result in success (başarıyla sonuçlanmak)", bring_about_change: "bring about change (değişim getirmek)", give_rise_to_conflict: "give rise to conflict (çatışmaya yol açmak)", trigger_reaction: "trigger a reaction (tepki tetiklemek)", contribute_to_development: "contribute to development (gelişmeye katkıda bulunmak)", generate_awareness: "generate awareness (farkındalık yaratmak)", examples: "The rising crime rates cause concern. / The new policy led to improvement. / Different values give rise to conflict. / Campaigns generate awareness about climate change.", note: "Learn these verb+noun partnerships!" },
+
+      { category: "Sentence Patterns - Cause → Effect", pattern_1: "X led to Y / X resulted in Y", pattern_2: "Owing to X, Y happened", pattern_3: "X was primarily caused by Y", pattern_4: "X contributed to Y", examples: "Poor planning led to failure. / Owing to budget cuts, projects were cancelled. / The delay was caused by technical issues. / Exercise contributed to his recovery.", note: "Subject position determines active/passive!" },
+
+      { category: "Sentence Patterns - Effect → Cause", pattern_1: "Y occurred as a result of X", pattern_2: "Y can be attributed to X", pattern_3: "X had a significant influence on Y", pattern_4: "Y was triggered by X", examples: "Unemployment decreased as a result of the policy. / Success can be attributed to teamwork. / Technology had significant influence on education. / Protests were triggered by the announcement.", note: "Effect comes first, then cause is explained!" },
+
+      { category: "Chain Reactions", chain: "X triggered a chain reaction that led to Y", sequence: "X, which in turn led to Y, ultimately resulting in Z", examples: "The crisis triggered a chain reaction that led to economic collapse. / Budget cuts led to staff reductions, which in turn led to decreased productivity, ultimately resulting in business failure.", note: "Shows complex, multi-step causation!", remember: "Use for sophisticated analysis!" },
+
+      { category: "Hedging Cause-Effect Claims", tentative_language: "may lead to, can result in, might contribute to, appears to cause, seems to influence", examples: "Stress MAY lead to health problems. / Exercise CAN result in improved mood. / Diet MIGHT contribute to longevity. / Smoking APPEARS TO cause cancer.", purpose: "Shows appropriate scientific caution", critical: "Don't overclaim causation without evidence!", remember: "Use hedging in academic writing!" },
+
+      { category: "Common Mistakes - Overstatement", mistake_3: "Claiming absolute causation", wrong_3: "Technology always causes isolation ✗ / Exercise definitely results in weight loss ✗", correct_3: "Technology can contribute to isolation ✓ / Exercise often results in weight loss ✓", rule: "Avoid 'always', 'never', 'definitely' in cause-effect claims", remember: "Use: can, may, often, typically, tends to" },
+
+      { category: "Correlation vs Causation Warning", correlation: "correlation (korelasyon) - variables change together", causation: "causation (nedensellik) - one variable CAUSES another", critical_distinction: "CORRELATION ≠ CAUSATION!", examples: "Ice cream sales correlate with drowning deaths (both happen in summer), but ice cream doesn't CAUSE drowning!", academic_language: "X is associated with Y (correlation) vs X causes Y (causation)", remember: "Need controlled experiments to claim causation!" },
+
+      { category: "Multiple Causes", multiple_factors: "Several factors contributed to...", combination: "A combination of X and Y led to...", range: "A range of factors was responsible for...", examples: "Several factors contributed to the economic crisis. / A combination of poor planning and bad weather led to disaster. / A range of factors was responsible for the outbreak.", note: "Real-world events usually have multiple causes!" },
+
+      { category: "Remember", takeaway_1: "because + CLAUSE | because of + NOUN (don't confuse!)", takeaway_2: "lead to / result in = active (subject is cause) | be caused by = passive (subject is effect)", takeaway_3: "therefore, thus, hence, consequently = show logical result", takeaway_4: "trigger/spark = sudden causation | contribute to/play a role in = partial causation", takeaway_5: "Correlation ≠ Causation - use hedging language (may, can, might)", final_note: "Master cause-effect language to write sophisticated academic essays showing logical relationships and analytical thinking - essential for IELTS, TOEFL, and university success!" }
+    ]
+  },
 
   speakingPractice: [
     { question: "How can you express cause and effect formally in academic writing?", answer: "You can use expressions such as 'as a result of', 'therefore', or 'owing to' to show cause and consequence. For example: 'Owing to increased pollution, many cities have implemented new environmental policies.'" },
