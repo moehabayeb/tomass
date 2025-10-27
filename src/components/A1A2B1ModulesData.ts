@@ -1941,12 +1941,50 @@ Yardımcı fiil varsa, sıklık zarfı yardımcı fiilden sonra gelir.
 👉 Örnek: You can sometimes see dolphins here.`,
   tip: "Sıklık zarfları 'to be' fiilinden sonra, diğer fiillerden önce gelir",
   
-  table: [
-    { adverb: "Always", meaning: "Her zaman", example: "I always wake up at 7 o'clock." },
-    { adverb: "Usually", meaning: "Genellikle", example: "She usually drinks tea in the morning." },
-    { adverb: "Sometimes", meaning: "Bazen", example: "We sometimes go to the cinema." },
-    { adverb: "Never", meaning: "Asla", example: "He never eats fast food." }
-  ],
+  table: {
+    title: "📋 Adverbs of Frequency (Sıklık Zarfları)",
+    data: [
+      { category: "What are Adverbs of Frequency?", explanation: "Words that tell HOW OFTEN something happens", turkish: "Sıklık zarfları", function: "Show the frequency of actions", usage: "Answer the question: How often?" },
+
+      { category: "The Frequency Scale", percent_100: "Always (100%) - Her zaman", percent_90: "Usually (90%) - Genellikle", percent_70: "Often (70%) - Sık sık", percent_50: "Sometimes (50%) - Bazen", percent_10: "Rarely/Seldom (10%) - Nadiren", percent_0: "Never (0%) - Asla", note: "From most frequent to least frequent" },
+
+      { category: "Always - 100%", adverb: "Always", turkish: "Her zaman", meaning: "Every single time, without exception", example: "I always brush my teeth before bed.", usage: "100% of the time", negative: "NEVER say 'always not' - use 'never' instead!" },
+      { category: "Always - 100%", more_examples: "She always arrives on time. / They always eat breakfast. / He always wears a suit.", pattern: "Subject + always + verb", position: "BEFORE the main verb", note: "Shows a habitual action that happens every time" },
+
+      { category: "Usually - 90%", adverb: "Usually", turkish: "Genellikle", meaning: "Most of the time, but not always", example: "I usually drink coffee in the morning.", usage: "About 90% of the time", flexibility: "Sometimes you don't, but most times you do" },
+      { category: "Usually - 90%", more_examples: "He usually goes to bed at 10 PM. / We usually walk to work. / She usually cooks dinner.", pattern: "Subject + usually + verb", position: "BEFORE the main verb", note: "Very common in daily routines" },
+
+      { category: "Often - 70%", adverb: "Often", turkish: "Sık sık", meaning: "Many times, frequently", example: "We often visit our grandparents.", usage: "About 70% of the time", synonym: "Frequently", note: "More than sometimes, less than usually" },
+      { category: "Often - 70%", more_examples: "They often play tennis. / I often read before sleeping. / She often works late.", pattern: "Subject + often + verb", position: "BEFORE the main verb", alternative: "Can also go at END: I visit them often." },
+
+      { category: "Sometimes - 50%", adverb: "Sometimes", turkish: "Bazen", meaning: "Occasionally, not regularly", example: "I sometimes eat pizza on weekends.", usage: "About 50% of the time", flexibility: "Can go at beginning, middle, or end of sentence" },
+      { category: "Sometimes - 50%", positions: "Beginning: Sometimes I go to the gym. / Middle: I sometimes go to the gym. / End: I go to the gym sometimes.", all_correct: "All three positions are correct!", most_common: "Middle position is most common", pattern: "Subject + sometimes + verb" },
+
+      { category: "Rarely / Seldom - 10%", adverbs: "Rarely = Seldom", turkish: "Nadiren", meaning: "Not often, almost never", example: "He rarely eats meat. / She seldom watches TV.", usage: "About 10% of the time", note: "Almost the same as 'never', but slightly more often" },
+      { category: "Rarely / Seldom - 10%", more_examples: "I rarely go out at night. / They seldom argue. / We rarely see snow here.", pattern: "Subject + rarely/seldom + verb", formal: "Seldom is more formal than rarely", common: "Rarely is more commonly used" },
+
+      { category: "Never - 0%", adverb: "Never", turkish: "Asla", meaning: "Not even once, at no time", example: "I never smoke.", usage: "0% of the time", important: "Already negative - DON'T use with 'not'!", wrong: "I don't never smoke ✗" },
+      { category: "Never - 0%", more_examples: "She never drinks alcohol. / They never arrive late. / He never forgets his keys.", pattern: "Subject + never + verb", note: "Strong and absolute", warning: "Never is already negative - don't add don't/doesn't!" },
+
+      { category: "Position Rule 1: With BE verb", rule: "After the BE verb (am/is/are/was/were)", examples: "I am always happy. / She is usually late. / They are never angry.", pattern: "Subject + BE + adverb + adjective/noun", turkish: "BE fiilinden sonra", remember: "AFTER be, BEFORE other verbs!" },
+
+      { category: "Position Rule 2: With other verbs", rule: "BEFORE the main verb", examples: "I always eat breakfast. / She usually drinks tea. / We never smoke.", pattern: "Subject + adverb + verb", turkish: "Diğer fiillerden önce", remember: "The adverb comes BETWEEN subject and verb!" },
+
+      { category: "Position Rule 3: With modal verbs", rule: "AFTER modal verbs (can, will, must, should)", examples: "I can always help you. / She will never forget. / You should usually exercise.", pattern: "Subject + modal + adverb + verb", turkish: "Yardımcı fiillerden sonra", note: "After can/will/must/should, before main verb" },
+
+      { category: "Questions with Adverbs", question_form: "Do/Does + subject + adverb + verb?", examples: "Do you always wake up early? / Does she usually drink coffee? / Do they often go out?", pattern: "Do/Does + subject + frequency adverb + base verb?", note: "Adverb comes AFTER subject in questions" },
+
+      { category: "Common Mistakes", mistake: "Wrong position with BE", wrong: "I always am happy. ✗", correct: "I am always happy. ✓", rule: "Adverb comes AFTER be, not before!", remember: "BE + adverb (not adverb + BE)" },
+      { category: "Common Mistakes", mistake: "Using never with not", wrong: "I don't never smoke. ✗", correct: "I never smoke. ✓", rule: "Never is already negative!", explanation: "Don't use two negatives together" },
+      { category: "Common Mistakes", mistake: "Wrong word order in questions", wrong: "Do always you wake up early? ✗", correct: "Do you always wake up early? ✓", rule: "Adverb comes AFTER subject in questions", pattern: "Do/Does + subject + adverb + verb?" },
+
+      { category: "Contrasting Examples", always_vs_never: "I always exercise. (100%) ↔ I never exercise. (0%)", usually_vs_rarely: "She usually eats meat. (90%) ↔ She rarely eats meat. (10%)", often_vs_sometimes: "We often travel. (70%) ↔ We sometimes travel. (50%)", key: "Choose the adverb that matches your frequency!" },
+
+      { category: "Real-World Usage", daily_routine: "I always wake up at 7. / I usually have coffee. / I sometimes skip breakfast. / I never arrive late.", habits: "She often exercises. / He rarely watches TV. / They usually eat out.", preferences: "I never eat meat. / She always drinks water. / We sometimes have pizza." },
+
+      { category: "Key Takeaway", summary: "Adverbs of frequency show HOW OFTEN", scale: "Always > Usually > Often > Sometimes > Rarely > Never", position_be: "AFTER be: I am always happy", position_other: "BEFORE main verb: I always eat", position_modal: "AFTER modal: I can always help", remember: "Never is already negative (don't use with 'not')!" }
+    ]
+  },
   
   speakingPractice: [
     { 
@@ -2201,12 +2239,43 @@ Soru (Question): Can + subject + verb (base form)?
 Cevap: Yes, I can. / No, I can't.`,
   tip: "Can kullanırken fiil kök halinde kullanılır (infinitive without 'to')",
   
-  table: [
-    { type: "Olumlu", form: "Subject + can + verb", example: "I can swim." },
-    { type: "Olumsuz", form: "Subject + can't + verb", example: "She can't drive." },
-    { type: "Soru", form: "Can + subject + verb?", example: "Can you play the piano?" },
-    { type: "Cevap", form: "Yes, I can. / No, I can't.", example: "Yes, I can play the piano." }
-  ],
+  table: {
+    title: "📋 Can / Can't for Abilities (Yetenekler için Can / Can't)",
+    data: [
+      { category: "What is 'can'?", explanation: "Modal verb used to express ABILITY (things you are able to do)", turkish: "Yapabilmek/yapamamak", function: "Talk about skills and abilities", examples: "I can swim / She can't drive", note: "Shows what someone is capable of doing" },
+
+      { category: "Structure - Positive", form: "Subject + CAN + base verb", examples: "I can swim / You can sing / He can drive / We can speak English", rule: "Use BASE FORM of verb after 'can' (no -s, no -ing!)", turkish: "Özne + can + fiil (yalın hali)", important: "NO -s even with he/she/it!" },
+      { category: "Structure - Positive", key_point: "Same form for ALL subjects!", all_subjects: "I/You/He/She/It/We/They + can + verb", examples: "I can play / He can play / They can play", rule: "No conjugation needed!", wrong: "He cans ✗ / She can plays ✗" },
+
+      { category: "Structure - Negative", form: "Subject + CAN'T (cannot) + base verb", examples: "I can't swim / She can't drive / They can't speak French", full_form: "cannot (one word, no space!)", contracted: "can't (more common in speech)", turkish: "Özne + can't + fiil", note: "Main verb stays in base form" },
+      { category: "Structure - Negative", important: "Don't use 'don't' or 'doesn't' with can!", wrong: "I don't can swim ✗ / He doesn't can drive ✗", correct: "I can't swim ✓ / He can't drive ✓", rule: "Can forms its own negative - just add 'not'", remember: "CAN'T (not don't can)" },
+
+      { category: "Structure - Questions", form: "CAN + subject + base verb?", examples: "Can you swim? / Can she drive? / Can they speak English?", inversion: "Put 'can' at the beginning (before subject)", turkish: "Can + özne + fiil?", pattern: "Move 'can' to the front to make a question" },
+      { category: "Structure - Questions", important: "Don't use 'do/does' with can!", wrong: "Do you can swim? ✗ / Does he can drive? ✗", correct: "Can you swim? ✓ / Can he drive? ✓", rule: "Can forms its own questions - just move it to the front", remember: "CAN + subject (not do/does)" },
+
+      { category: "Short Answers - Positive", pattern: "Yes, subject + can.", examples: "Can you swim? → Yes, I can. / Can she drive? → Yes, she can.", note: "Don't repeat the main verb!", wrong: "Yes, I can swim ✗ (too long for short answer)", correct: "Yes, I can ✓", full_answer: "Yes, I can swim. (for emphasis)" },
+      { category: "Short Answers - Negative", pattern: "No, subject + can't.", examples: "Can you swim? → No, I can't. / Can he dance? → No, he can't.", note: "Use contraction (can't) in speech", formal: "No, I cannot. (very formal)", everyday: "No, I can't. (normal speech)", remember: "Short answer = subject + can/can't" },
+
+      { category: "Common Abilities", physical: "swim, run, jump, dance, climb, ride (a bike), drive", skills: "cook, draw, paint, sing, play (an instrument), write", languages: "speak English/French/etc., read, understand", sports: "play football/tennis/etc., ski, skate", examples: "I can swim fast. / She can play the piano. / They can speak three languages." },
+
+      { category: "Pronunciation", can_strong: "CAN /kæn/ (stressed) - used in short answers: Yes, I CAN!", can_weak: "can /kən/ (unstressed) - used in sentences: I can /kən/ swim.", cant: "CAN'T /kɑːnt/ (always stressed)", tip: "In normal speech, 'can' sounds like 'kən'", practice: "I can /kən/ help you. vs No, I CAN'T." },
+
+      { category: "Common Mistakes", mistake: "Adding -s to can with he/she/it", wrong: "He cans swim. ✗", correct: "He can swim. ✓", rule: "Can NEVER changes form!", explanation: "Modal verbs don't conjugate" },
+      { category: "Common Mistakes", mistake: "Adding -s or -ing to main verb", wrong: "I can swims. ✗ / She can swimming. ✗", correct: "I can swim. ✓ / She can swim. ✓", rule: "Use BASE FORM after can!", remember: "can + base verb (no endings!)" },
+      { category: "Common Mistakes", mistake: "Using 'to' after can", wrong: "I can to swim. ✗", correct: "I can swim. ✓", rule: "NO 'to' after can!", comparison: "I want to swim ✓ BUT I can swim ✓", note: "Modal verbs don't use 'to'" },
+      { category: "Common Mistakes", mistake: "Using do/does with can", wrong: "Do you can swim? ✗ / Does she can drive? ✗", correct: "Can you swim? ✓ / Can she drive? ✓", rule: "Can makes its own questions!", remember: "Just move 'can' to the front" },
+
+      { category: "Can for Different Subjects", i_you_we_they: "I/You/We/They + can + verb", examples_plural: "I can cook / You can dance / We can help / They can come", he_she_it: "He/She/It + can + verb", examples_singular: "He can sing / She can drive / It can fly", same_form: "ALL use 'can' (no changes!)", rule: "No -s, no conjugation, same for everyone!" },
+
+      { category: "Talking About Abilities", what_you_can_do: "I can swim / cook / drive / play guitar / speak English", what_you_cant_do: "I can't fly / can't speak Japanese / can't play chess", asking_others: "Can you help me? / Can she come? / Can they stay?", general_abilities: "Birds can fly. / Fish can swim. / Babies can't walk." },
+
+      { category: "Real-World Examples", skills: "I can cook Italian food. / She can play three instruments. / He can speak five languages.", asking_for_help: "Can you help me? / Can you open the door? / Can you pass the salt?", general_facts: "Dogs can hear very well. / Penguins can't fly. / Cats can see in the dark.", sports: "He can run very fast. / She can swim 50 meters. / They can play football well." },
+
+      { category: "Can vs Can't - Listen Carefully!", difference: "CAN /kən/ (weak) vs CAN'T /kɑːnt/ (strong)", tip: "Can't is always stressed and clear", listen_for: "Can't ends with a 't' sound!", practice: "I can /kən/ swim. (able) vs I can't /kɑːnt/ swim. (not able)", important: "Pay attention to the 't' sound in can't!" },
+
+      { category: "Key Takeaway", summary: "CAN/CAN'T + base verb (for abilities)", positive: "Subject + can + verb (I can swim)", negative: "Subject + can't + verb (I can't swim)", question: "Can + subject + verb? (Can you swim?)", rules: "No -s with can | No 'to' after can | Use base verb | Same form for all subjects", remember: "CAN shows ability/possibility | CAN'T shows inability", next: "Next module: Can/Can't for permission!" }
+    ]
+  },
   
   speakingPractice: [
     { 
@@ -2397,14 +2466,43 @@ Soru (Question): Can + subject + verb (base form)?
 Cevap: Yes, you can. / No, you can't.`,
   tip: "Can ile izin istemek ve vermek için kullanın",
   
-  table: [
-    { subject: "I", affirmative: "I can go out.", negative: "I can't go out.", question: "Can I go out?", answer: "Yes, you can. / No, you can't." },
-    { subject: "You", affirmative: "You can use my pen.", negative: "You can't use my pen.", question: "Can I use your pen?", answer: "Yes, you can. / No, you can't." },
-    { subject: "He", affirmative: "He can visit us today.", negative: "He can't visit us.", question: "Can he visit us today?", answer: "Yes, he can. / No, he can't." },
-    { subject: "She", affirmative: "She can stay here.", negative: "She can't stay here.", question: "Can she stay here?", answer: "Yes, she can. / No, she can't." },
-    { subject: "We", affirmative: "We can enter now.", negative: "We can't enter now.", question: "Can we enter now?", answer: "Yes, you can. / No, you can't." },
-    { subject: "They", affirmative: "They can use the computer.", negative: "They can't use the computer.", question: "Can they use the computer?", answer: "Yes, they can. / No, they can't." }
-  ],
+  table: {
+    title: "📋 Can / Can't for Permission (İzin için Can / Can't)",
+    data: [
+      { category: "What is Permission?", explanation: "Asking if something is ALLOWED or giving/refusing permission", turkish: "İzin istemek/vermek", function: "To ask 'Is it okay?' or say 'It's okay/not okay'", examples: "Can I sit here? / You can't park here.", difference_from_ability: "Ability = what you're able to do | Permission = what you're allowed to do" },
+
+      { category: "Asking for Permission", form: "Can I/we + verb?", examples: "Can I sit here? / Can I use your phone? / Can we go now?", turkish: "... yapabilir miyim? (izin istemek)", usage: "Use when you want to do something and need approval", polite: "Add 'please' to be more polite: Can I please use the bathroom?" },
+      { category: "Asking for Permission", common_questions: "Can I come in? / Can I ask a question? / Can I leave early? / Can we eat here?", pattern: "Can + I/we + base verb?", note: "Usually use 'I' or 'we' when asking for permission for yourself", examples_context: "Can I open the window? (asking teacher) / Can we park here? (asking permission)" },
+
+      { category: "Giving Permission - Positive", form: "Yes, you/he/she/they + can.", examples: "Can I sit here? → Yes, you can. / Can he come? → Yes, he can.", meaning: "It's allowed, it's okay, you have permission", turkish: "İzin vermek (evet, yapabilirsin)", alternative: "Sure. / Of course. / Go ahead. / No problem.", note: "These alternatives are very common in conversation" },
+      { category: "Giving Permission - Positive", real_examples: "Can I borrow your pen? → Yes, you can. / Can we leave now? → Yes, you can go.", statements: "You can use my computer. / He can stay here. / They can enter now.", pattern: "Subject + can + verb", meaning_statement: "Stating that something is allowed" },
+
+      { category: "Refusing Permission - Negative", form: "No, you/he/she/they + can't.", examples: "Can I go out? → No, you can't. / Can they park here? → No, they can't.", meaning: "It's NOT allowed, it's not okay, no permission", turkish: "İzin vermemek (hayır, yapamazsın)", alternative: "Sorry, you can't. / I'm afraid not. / Not now.", note: "Usually add 'sorry' to be polite when refusing" },
+      { category: "Refusing Permission - Negative", real_examples: "Can I use your phone? → Sorry, you can't. / Can we smoke here? → No, you can't smoke here.", statements: "You can't park here. / He can't enter. / They can't use this room.", pattern: "Subject + can't + verb", meaning_statement: "Stating that something is forbidden or not allowed", common: "You can't... = It's not allowed to..." },
+
+      { category: "Common Permission Questions", general: "Can I...? (asking for myself)", examples_i: "Can I sit here? / Can I open the window? / Can I borrow this? / Can I use the bathroom?", examples_we: "Can we eat here? / Can we leave early? / Can we take photos? / Can we bring food?", in_class: "Can I ask a question? / Can I go to the toilet? / Can I close the door?", in_public: "Can I park here? / Can we smoke here? / Can I take a photo?" },
+
+      { category: "Giving Instructions/Rules", you_can: "You can enter. / You can sit anywhere. / You can ask questions.", you_cant: "You can't smoke here. / You can't use phones. / You can't park here.", signs: "You can't eat or drink. / You can't take photos. / You can't run.", turkish: "Kurallar ve talimatlar", usage: "Used for rules, signs, instructions" },
+
+      { category: "Politeness Levels", informal: "Can I borrow your pen? (casual, everyday)", more_polite: "Can I please use your phone? (adding please)", formal_alternative: "Could I...? / May I...? (more formal than 'can')", note: "'Can' is perfectly acceptable in most situations!", tip: "Add 'please' or 'excuse me' to be more polite" },
+
+      { category: "Permission vs Ability", ability: "Can you swim? (Are you able to?)", permission: "Can I swim here? (Am I allowed to?)", ability_he: "He can drive. (He has the skill)", permission_he: "He can drive my car. (He has permission)", key_difference: "Context tells you which meaning!", both: "Sometimes both meanings possible: Can I open the window? (Am I strong enough? OR Is it okay?)" },
+
+      { category: "Responding to Permission Requests", giving_permission: "Yes, you can. / Sure! / Of course! / Go ahead! / No problem!", refusing: "No, you can't. / Sorry, you can't. / I'm afraid not. / Not right now.", explaining: "You can use it, but be careful. / You can go, but come back soon.", partial: "You can sit there, but not here.", note: "Often give a reason when refusing: Sorry, you can't. It's broken." },
+
+      { category: "Common Mistakes", mistake: "Using 'do/does' with can", wrong: "Do I can sit here? ✗", correct: "Can I sit here? ✓", rule: "Can forms its own questions!", remember: "Just put 'Can' at the beginning" },
+      { category: "Common Mistakes", mistake: "Confusing pronouns in answers", wrong: "Can I go? → Yes, I can. ✗", correct: "Can I go? → Yes, you can. ✓", rule: "When someone asks 'Can I...?', answer 'Yes, you can' (not 'Yes, I can')", explanation: "Switch the perspective: I (asker) becomes you (answerer)" },
+      { category: "Common Mistakes", mistake: "Using 'to' after can", wrong: "Can I to go? ✗", correct: "Can I go? ✓", rule: "No 'to' after can!", remember: "Can + base verb (no 'to')" },
+
+      { category: "In Different Settings", at_school: "Can I go to the bathroom? / Can I ask a question? / Can I use a dictionary?", at_work: "Can I leave early? / Can I take a break? / Can I use this computer?", at_home: "Can I watch TV? / Can I go out? / Can I use your car?", in_public: "Can I sit here? / Can we take photos? / Can I try this on?", visiting: "Can I use your bathroom? / Can I get some water? / Can we stay longer?" },
+
+      { category: "Signs and Rules", you_can: "You can park here. / You can swim here. / You can bring dogs.", you_cant: "You can't smoke. / You can't take photos. / You can't eat or drink. / You can't enter.", alternative: "No smoking. = You can't smoke. / No parking. = You can't park.", pattern: "Can't = prohibition/forbidden", turkish: "Yasak/izin verilmiyor" },
+
+      { category: "Real-World Examples", asking_politely: "Excuse me, can I sit here? / Can I please borrow your pen? / Can we please leave early?", granting: "Yes, you can use my phone. / Sure, you can come with us. / Of course, you can ask questions.", refusing: "Sorry, you can't park there. / No, you can't use this room. / I'm afraid you can't smoke here.", rules: "You can't run in the halls. / Students can't eat in class. / You can't wear shoes inside." },
+
+      { category: "Key Takeaway", summary: "CAN/CAN'T for permission (asking if something is ALLOWED)", asking: "Can I/we + verb? (asking for permission for yourself)", giving: "Yes, you/he/she can. (granting permission)", refusing: "No, you/he/she can't. (refusing permission)", statements: "You can... (allowed) / You can't... (not allowed/forbidden)", remember: "Same structure as ability, but different meaning based on context!", difference: "Ability = capable of doing | Permission = allowed to do", next: "Context helps you know which meaning!" }
+    ]
+  },
   
   speakingPractice: [
     { 
@@ -2501,12 +2599,44 @@ She loves cooking. (O yemek yapmayı çok sever.)
 He hates running. (O koşmaktan nefret eder.)`,
   tip: "Like/Love/Hate fiillerinden sonra fiiller -ing takısı alır",
   
-  table: [
-    { verb: "Like", usage: "Subject + like + verb-ing", example: "I like reading books." },
-    { verb: "Love", usage: "Subject + love + verb-ing", example: "She loves cooking." },
-    { verb: "Hate", usage: "Subject + hate + verb-ing", example: "He hates running." },
-    { verb: "Don't like", usage: "Subject + don't/doesn't like + verb-ing", example: "They don't like swimming." }
-  ],
+  table: {
+    title: "📋 Like / Love / Hate + Verb-ing (Preferences with -ing)",
+    data: [
+      { category: "What are these verbs?", explanation: "Verbs that express your FEELINGS about activities", turkish: "Sevmek, çok sevmek, nefret etmek", function: "Talk about things you enjoy or don't enjoy doing", pattern: "Like/Love/Hate + verb-ing", examples: "I like reading / She loves cooking / He hates running" },
+
+      { category: "The Three Main Verbs", like: "Like = enjoy something", love: "Love = enjoy something VERY MUCH (stronger than like)", hate: "Hate = strongly dislike, can't stand", scale: "Love (strongest positive) → Like (positive) → Don't like (negative) → Hate (strongest negative)", turkish: "Sevmek → Çok sevmek → Sevmemek → Nefret etmek", note: "Choose based on how strong your feeling is!" },
+
+      { category: "Structure with LIKE", form: "Subject + like/likes + verb-ing", examples: "I like swimming / He likes reading / They like dancing", rule: "Add -ING to the verb that follows 'like'", turkish: "Özne + like/likes + fiil-ing", pattern: "like + activity (verb-ing)", wrong: "I like swim ✗ / I like to swim ✗ (A1 level)" },
+      { category: "Structure with LIKE", i_you_we_they: "I/You/We/They LIKE + verb-ing", he_she_it: "He/She/It LIKES + verb-ing", remember: "Like/Likes follows Simple Present rules!", examples: "I like playing / She likes playing", note: "Don't forget -s for he/she/it!" },
+
+      { category: "Structure with LOVE", form: "Subject + love/loves + verb-ing", examples: "I love cooking / She loves singing / They love traveling", rule: "Add -ING to the verb that follows 'love'", turkish: "Özne + love/loves + fiil-ing", meaning: "VERY STRONG like (adore, really enjoy)", stronger: "Love is stronger than 'like'!" },
+      { category: "Structure with LOVE", i_you_we_they: "I/You/We/They LOVE + verb-ing", he_she_it: "He/She/It LOVES + verb-ing", remember: "Love/Loves follows Simple Present rules!", examples: "I love dancing / He loves dancing", note: "Don't forget -s for he/she/it!" },
+
+      { category: "Structure with HATE", form: "Subject + hate/hates + verb-ing", examples: "I hate waiting / He hates studying / They hate waking up early", rule: "Add -ING to the verb that follows 'hate'", turkish: "Özne + hate/hates + fiil-ing", meaning: "STRONGLY dislike (can't stand)", opposite: "Love is the opposite of hate" },
+      { category: "Structure with HATE", i_you_we_they: "I/You/We/They HATE + verb-ing", he_she_it: "He/She/It HATES + verb-ing", remember: "Hate/Hates follows Simple Present rules!", examples: "I hate running / She hates running", note: "Don't forget -s for he/she/it!" },
+
+      { category: "Negative Forms", dont_like: "don't/doesn't like + verb-ing", examples: "I don't like swimming. / He doesn't like reading.", meaning: "Mild negative (not as strong as 'hate')", turkish: "Sevmemek", usage: "More polite than 'hate'", comparison: "Don't like < Hate" },
+      { category: "Negative Forms", with_love_hate: "Don't/doesn't love or Don't/doesn't hate (less common)", examples: "I don't love running. (= I like it, but not a lot) / I don't hate it. (= it's okay)", note: "Usually just say 'don't like' instead of 'don't love'", common: "'Don't like' is most common negative form" },
+
+      { category: "How to Add -ING", rule_1: "Most verbs: just add -ing", examples_1: "play → playing, read → reading, watch → watching, cook → cooking", rule_2: "Verbs ending in -e: remove e, add -ing", examples_2: "dance → dancing, write → writing, make → making, come → coming", rule_3: "Short verbs (CVC pattern): double last letter + -ing", examples_3: "swim → swimming, run → running, sit → sitting, shop → shopping" },
+
+      { category: "Common Activities with -ING", sports: "playing football/tennis, swimming, running, cycling, skiing", hobbies: "reading, drawing, painting, singing, dancing, cooking", daily: "watching TV, listening to music, eating, drinking, sleeping", work_study: "working, studying, writing, doing homework", social: "talking, meeting friends, going out, traveling" },
+
+      { category: "Questions", form: "Do/Does + subject + like/love/hate + verb-ing?", examples: "Do you like swimming? / Does she love cooking? / Do they hate running?", pattern: "Do/Does + subject + like/love/hate + verb-ing?", answers: "Yes, I do. / No, I don't. / Yes, she does. / No, she doesn't.", note: "Follow Simple Present question rules!" },
+
+      { category: "Common Mistakes", mistake: "Forgetting -ing", wrong: "I like swim. ✗ / She loves cook. ✗", correct: "I like swimming. ✓ / She loves cooking. ✓", rule: "Must add -ING to the verb after like/love/hate!", remember: "like/love/hate + VERB-ING" },
+      { category: "Common Mistakes", mistake: "Forgetting -s with he/she/it", wrong: "He like swimming. ✗ / She love cooking. ✗", correct: "He likes swimming. ✓ / She loves cooking. ✓", rule: "Add -s to like/love/hate with he/she/it!", remember: "Simple Present rules apply!" },
+      { category: "Common Mistakes", mistake: "Using 'to' instead of -ing (A1 level)", a1_level: "I like swimming ✓ (A1)", a2_level: "I like to swim ✓ (A2 - both correct)", note: "At A1 level, use -ING form", later: "Later you'll learn 'like to + verb' is also correct!", for_now: "Stick with -ING form!" },
+
+      { category: "The Preference Scale", love_it: "I LOVE running! (strongest positive - 100%)", like_it: "I like running. (positive - 70%)", ok: "It's OK. / I don't mind. (neutral - 50%)", dont_like: "I don't like running. (negative - 30%)", hate_it: "I HATE running! (strongest negative - 0%)", use: "Choose the verb that matches your feeling!" },
+
+      { category: "Real-World Examples", preferences: "I like reading books. / She loves watching movies. / He hates doing homework.", strong_feelings: "I love traveling! / They hate waiting in line. / We love eating ice cream.", mild_feelings: "I like swimming. / She likes cooking. / They don't like studying.", talking_about_others: "My brother loves playing video games. / My mom hates driving in traffic. / My dad likes fishing." },
+
+      { category: "Asking About Preferences", what_questions: "What do you like doing? / What does she love doing? / What do they hate doing?", yes_no: "Do you like swimming? / Does he love cooking? / Do they hate running?", follow_up: "Why do you like it? / Why do you hate it?", conversation: "I like reading. What about you? / She loves swimming. Do you?", answering: "I like playing football. / I don't like watching TV. / I hate waking up early." },
+
+      { category: "Key Takeaway", summary: "Like/Love/Hate + VERB-ING (to talk about preferences)", forms: "Subject + like/love/hate + verb-ing", examples: "I like reading / She loves cooking / He hates running", remember_ing: "MUST add -ING to the verb!", remember_s: "Add -s to like/love/hate with he/she/it (likes/loves/hates)", scale: "Love (strongest) → Like → Don't like → Hate (strongest negative)", next: "Use these to talk about your hobbies and preferences!" }
+    ]
+  },
   
   speakingPractice: [
     { 
@@ -2650,10 +2780,46 @@ How many → Sayılabilen isimlerle kullanılır (elma, kitap, öğrenci).
 How many apples do you want? → "Kaç tane elma istersin?"`,
   tip: "How much + uncountable nouns, How many + countable nouns",
   
-  table: [
-    { type: "How much", use: "Uncountable nouns", example: "How much money do you have?" },
-    { type: "How many", use: "Countable nouns", example: "How many books are on the table?" }
-  ],
+  table: {
+    title: "📋 How much / How many (Quantity Questions)",
+    data: [
+      { category: "What are these questions?", explanation: "Questions that ask about QUANTITY (how many or how much of something)", turkish: "Ne kadar? / Kaç tane?", function: "Ask about amounts and numbers", examples: "How much water? / How many apples?", key: "Depends on if the noun is countable or uncountable" },
+
+      { category: "How MUCH vs How MANY", how_much: "HOW MUCH = for UNCOUNTABLE nouns", how_many: "HOW MANY = for COUNTABLE nouns", key_difference: "Can you count it? → Use 'How many' | Can't count it? → Use 'How much'", turkish: "How much = sayılamayan / How many = sayılabilen", remember: "Count it or not? That's the key!" },
+
+      { category: "How MUCH - Uncountable", use: "Uncountable nouns (things you can't count individually)", pattern: "How much + uncountable noun?", examples: "How much water? / How much milk? / How much sugar? / How much money?", turkish: "Ne kadar (sayılamayan şeyler)", note: "Uncountable nouns have NO plural form", list: "water, milk, coffee, tea, rice, bread, sugar, salt, butter, cheese, flour" },
+      { category: "How MUCH - Uncountable", more_examples: "How much time? / How much information? / How much work? / How much homework?", abstract: "time, information, work, homework, advice, news, music", liquids: "water, milk, juice, oil, soup, tea, coffee", foods: "rice, bread, cheese, butter, meat, flour, sugar", remember: "If you can't say 'one, two, three...', use HOW MUCH!" },
+
+      { category: "How MANY - Countable", use: "Countable nouns (things you CAN count)", pattern: "How many + countable noun (plural)?", examples: "How many apples? / How many books? / How many students? / How many cars?", turkish: "Kaç tane (sayılabilen şeyler)", note: "Countable nouns can be singular or plural", list: "apples, books, students, cars, chairs, pens, cups, bottles" },
+      { category: "How MANY - Countable", more_examples: "How many people? / How many countries? / How many languages? / How many hours?", things: "books, pens, chairs, tables, phones, computers, eggs, apples", people: "people, students, teachers, friends, children, men, women", places: "countries, cities, rooms, schools, restaurants", remember: "If you can count 'one, two, three...', use HOW MANY!" },
+
+      { category: "Structure - How MUCH", question_form: "How much + uncountable noun + do/does + subject + verb?", examples: "How much water do you drink? / How much money does he have?", with_there: "How much + uncountable noun + is there?", example_there: "How much milk is there in the fridge?", pattern: "How much + noun + question form", note: "Noun stays singular (no -s)" },
+
+      { category: "Structure - How MANY", question_form: "How many + countable noun (plural) + do/does + subject + verb?", examples: "How many books do you have? / How many students does she teach?", with_there: "How many + countable noun (plural) + are there?", example_there: "How many apples are there in the basket?", pattern: "How many + plural noun + question form", note: "Noun must be PLURAL (-s)" },
+
+      { category: "Answering How MUCH", with_quantity: "Specific amount with unit", examples: "How much water? → 2 liters / 3 glasses / 500ml", with_general: "General amount: a lot, a little, not much, some, none", examples_general: "How much money? → A lot / A little / Not much", turkish_answers: "çok / az / hiç / biraz", pattern: "Quantity + of + noun OR just quantity word" },
+      { category: "Answering How MUCH", specific: "I drink 2 liters of water. / I have $50. / I need 100 grams of sugar.", general: "I drink a lot of water. / I have a little money. / I don't have much time.", note: "Can answer with specific number + unit OR with general words", remember: "Both specific and general answers are correct!" },
+
+      { category: "Answering How MANY", with_number: "Specific number", examples: "How many books? → 5 books / 10 books / 20 books", with_general: "General amount: many, a few, not many, some, none", examples_general: "How many friends? → Many / A few / Not many", turkish_answers: "çok / birkaç / hiç", pattern: "Number + noun OR quantity word + noun" },
+      { category: "Answering How MANY", specific: "I have 5 brothers. / There are 20 students. / I speak 3 languages.", general: "I have many friends. / There are a few apples. / I don't have many books.", note: "Can answer with specific number OR with general words", remember: "Usually we use numbers with countable nouns!" },
+
+      { category: "Common Uncountable Nouns", liquids: "water, milk, coffee, tea, juice, oil, soup, wine, beer", food: "rice, bread, meat, cheese, butter, sugar, salt, flour, pasta", abstract: "time, money, information, advice, work, homework, music, news", materials: "wood, paper, glass, plastic, metal, gold, silver", weather: "rain, snow, wind, sunshine", remember: "These NEVER have plural form (no -s)!" },
+
+      { category: "Common Countable Nouns", people: "people, students, teachers, friends, children, men, women, babies", things: "books, pens, chairs, tables, phones, computers, cars, houses", food_items: "apples, oranges, eggs, bananas, tomatoes, potatoes, biscuits", time_units: "hours, days, weeks, months, years, minutes, seconds", remember: "These CAN have plural form (add -s)!" },
+
+      { category: "Common Mistakes", mistake: "Using 'How many' with uncountable", wrong: "How many water? ✗ / How many money? ✗", correct: "How much water? ✓ / How much money? ✓", rule: "Water and money are uncountable!", remember: "Can't count it → How much" },
+      { category: "Common Mistakes", mistake: "Using 'How much' with countable", wrong: "How much books? ✗ / How much students? ✗", correct: "How many books? ✓ / How many students? ✓", rule: "Books and students are countable!", remember: "Can count it → How many" },
+      { category: "Common Mistakes", mistake: "Forgetting plural with 'How many'", wrong: "How many book? ✗ / How many student? ✗", correct: "How many books? ✓ / How many students? ✓", rule: "Countable nouns must be plural after 'How many'!", remember: "How many + plural noun" },
+
+      { category: "Tricky Words", people: "How many people? (countable - but irregular plural)", money: "How much money? (uncountable - even though we count bills/coins)", time: "How much time? (uncountable) BUT How many hours? (countable)", advice: "How much advice? (uncountable) BUT How many suggestions? (countable)", news: "How much news? (uncountable - singular even though ends in -s)", remember: "Some words look countable but aren't!" },
+
+      { category: "Real-World Examples", shopping: "How much does it cost? / How many do you want? / How much money do you have?", cooking: "How much sugar do we need? / How many eggs are there? / How much milk is left?", daily_life: "How much time do we have? / How many people are coming? / How much work do you have?", travel: "How much luggage do you have? / How many bags can I bring? / How much does the ticket cost?" },
+
+      { category: "With Units of Measurement", much_units: "How much water? → 2 liters, 3 glasses, 500ml", much_weight: "How much sugar? → 2 kilos, 100 grams, one spoon", much_money: "How much money? → $10, £50, 100 lira", many_units: "How many bottles? → 5 bottles / How many cups? → 3 cups", note: "Units help measure uncountable nouns!" },
+
+      { category: "Key Takeaway", summary: "How much/many ask about QUANTITY", how_much: "HOW MUCH + uncountable noun (singular) - for things you CAN'T count", how_many: "HOW MANY + countable noun (PLURAL) - for things you CAN count", rule: "Can you count it one by one? → How many | Can't count it? → How much", remember: "How much water? (uncountable) | How many apples? (countable)", tip: "Think: Can I say 'one water, two waters'? No → How much | Can I say 'one apple, two apples'? Yes → How many" }
+    ]
+  },
   
   speakingPractice: [
     { question: "How much water do you drink every day?", answer: "I drink about two liters of water every day." },
