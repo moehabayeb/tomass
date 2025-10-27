@@ -6132,7 +6132,19 @@ They've been arguing all day.
 Has he been working out recently?
 We haven't been sleeping well lately.`,
   tip: "Use have/has + been + verb-ing for ongoing actions",
-  
+
+  table: {
+    title: "📋 Present Perfect Continuous Structure",
+    data: [
+      { form: "Positive", structure: "Subject + have/has + been + V-ing", example: "I've been studying for three hours" },
+      { form: "Negative", structure: "Subject + haven't/hasn't + been + V-ing", example: "She hasn't been working lately" },
+      { form: "Question", structure: "Have/Has + subject + been + V-ing?", example: "Have you been waiting long?" },
+      { use: "Ongoing action", description: "Started in past, still happening", example: "She has been working here since 2019" },
+      { use: "Recent activity", description: "Just stopped, present result visible", example: "I'm tired because I've been running" },
+      { use: "Duration emphasis", description: "Focus on how long", example: "They've been talking for over an hour" }
+    ]
+  },
+
   speakingPractice: [
     { question: "Why are your hands dirty?", answer: "Because I've been fixing my bike." },
     { question: "Have you been studying for the exam?", answer: "Yes, I've been studying every evening this week." },
@@ -6205,7 +6217,18 @@ He had never seen the sea before that day.
 I had studied French before I moved to Paris.
 The train had left before we reached the station.`,
   tip: "Use had + past participle to show an action completed before another past action",
-  
+
+  table: {
+    title: "📋 Past Perfect Affirmative Structure",
+    data: [
+      { subject: "I/You/He/She/It/We/They", structure: "had + V3 (past participle)", example: "I had finished before dinner" },
+      { use: "Earlier past action", description: "Action before another past action", example: "She had left before I arrived" },
+      { use: "Past experience", description: "Experience up to a past point", example: "He had never seen the sea before that day" },
+      { use: "Completed past action", description: "Finished before past time", example: "They had already left when we arrived" },
+      { time_markers: "Time expressions", examples: "before, after, by the time, already, never", usage: "Show sequence of past events" }
+    ]
+  },
+
   speakingPractice: [
     { question: "What had you done before the guests arrived?", answer: "I had cleaned the whole house." },
     { question: "Had she already finished her meal before you arrived?", answer: "Yes, she had finished it." },
@@ -6278,6 +6301,18 @@ Examples:
 •    They hadn't cleaned the house before the guests arrived.
 •    He hadn't heard the news before you told him.`,
   tip: "Use hadn't + past participle for negative past perfect",
+
+  table: {
+    title: "📋 Past Perfect Negative Structure",
+    data: [
+      { form: "Full form", structure: "Subject + had not + V3", example: "I had not eaten before the meeting" },
+      { form: "Contraction", structure: "Subject + hadn't + V3", example: "She hadn't studied for the test" },
+      { use: "Action didn't happen", description: "Show something didn't occur before past time", example: "They hadn't arrived when we started" },
+      { use: "Explaining past situation", description: "Reason for past problem/result", example: "He was nervous because he hadn't prepared" },
+      { common_verbs: "Frequently used", examples: "hadn't seen, hadn't met, hadn't finished, hadn't known", note: "Show lack of prior action" }
+    ]
+  },
+
   speakingPractice: [
     { question: "Why was she surprised?", answer: "Because she hadn't expected them to arrive early." },
     { question: "Had you eaten before the show?", answer: "No, I hadn't eaten anything all day." },
@@ -6349,6 +6384,18 @@ Had they cleaned the house before the guests came?
 Had he told you the truth before you found out?
 Had you heard the news before I called?`,
   tip: "Use Had + subject + past participle for questions",
+
+  table: {
+    title: "📋 Past Perfect Question Structure",
+    data: [
+      { form: "Yes/No questions", structure: "Had + subject + V3?", example: "Had she met your parents before?" },
+      { form: "Wh- questions", structure: "Wh- + had + subject + V3?", example: "Where had they gone before?" },
+      { use: "Check completion", description: "Ask if action was done before past time", example: "Had you finished before the meeting?" },
+      { use: "Past experience", description: "Ask about experience up to past point", example: "Had you ever eaten sushi before that night?" },
+      { answers: "Short answers", positive: "Yes, I/he/she/we/they had", negative: "No, I/he/she/we/they hadn't" }
+    ]
+  },
+
   speakingPractice: [
     { question: "Had she met your parents before the wedding?", answer: "Yes, she had met them a few months before." },
     { question: "Had you finished your homework before dinner?", answer: "Yes, I had completed everything." },
@@ -6788,7 +6835,18 @@ They've been painting the house. (They may still be painting)
 He has cooked dinner. (Dinner is ready)
 He has been cooking for two hours. (Focus on the activity)`,
   tip: "Present Perfect focuses on results, Present Perfect Continuous focuses on duration",
-  
+
+  table: {
+    title: "📋 Present Perfect vs Present Perfect Continuous",
+    data: [
+      { tense: "Present Perfect", structure: "have/has + V3", focus: "Result/Completion", example: "I've read the book (finished)" },
+      { tense: "Present Perfect Continuous", structure: "have/has + been + V-ing", focus: "Duration/Activity", example: "I've been reading the book (ongoing)" },
+      { comparison: "Written 3 emails", perfect: "She has written 3 emails", continuous: "She's been writing emails all morning" },
+      { comparison: "Painted house", perfect: "They've painted the house (finished)", continuous: "They've been painting (maybe still painting)" },
+      { comparison: "Cooked dinner", perfect: "He has cooked dinner (ready)", continuous: "He's been cooking for 2 hours (activity)" }
+    ]
+  },
+
   speakingPractice: [
     { question: "Have you finished your homework?", answer: "Yes, I've done all of it." },
     { question: "Have you been doing your homework?", answer: "Yes, I've been working on it all afternoon." },
