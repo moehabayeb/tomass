@@ -3025,6 +3025,19 @@ const MODULE_191_DATA = {
 ✅ Review and combine advanced grammar structures naturally
 ✅ Use conditionals, passives, modals, and reported speech fluently
 ✅ Build complex, natural-sounding sentences with confidence`,
+  table: {
+    title: "📋 Advanced Grammar Structures Overview",
+    data: [
+      { structure: "Mixed Conditional", example: "If I had studied, I would be successful now" },
+      { structure: "Passive + Conditional", example: "If the letter had been sent, we'd know by now" },
+      { structure: "Modal + Past", example: "He must have forgotten the meeting" },
+      { structure: "Reported + Modal", example: "She said she might come later" },
+      { structure: "Relative + Perfect", example: "The man who has been helping us left" },
+      { structure: "Passive + Relative", example: "The car that was stolen was found" },
+      { structure: "Conditional + Reported", example: "He said that if he had time, he'd travel" },
+      { structure: "Modal + Conditional", example: "If I'd known, I could have helped" }
+    ]
+  },
   speakingPractice: [
     { question: "What are mixed conditionals used for?", answer: "They combine different time references, such as past conditions with present results or vice versa." },
     { question: "Can you give an example of a mixed conditional?", answer: "Yes, for example: 'If I had gone to bed earlier, I wouldn't be so tired now.'" },
@@ -3076,6 +3089,20 @@ const MODULE_192_DATA = {
 ✅ Learn common collocations with take, put, and set
 ✅ Use verb collocations naturally in speech and writing
 ✅ Improve fluency with native-like expressions`,
+  table: {
+    title: "📋 Common Collocations with Take, Put, Set",
+    data: [
+      { verb: "take", collocation: "take responsibility", meaning: "Accept duty/blame", example: "She took responsibility for the error" },
+      { verb: "take", collocation: "take advantage of", meaning: "Use an opportunity", example: "Take advantage of the sale" },
+      { verb: "take", collocation: "take part in", meaning: "Participate", example: "I took part in the competition" },
+      { verb: "put", collocation: "put pressure on", meaning: "Try to make someone do something", example: "Don't put pressure on yourself" },
+      { verb: "put", collocation: "put an end to", meaning: "Stop completely", example: "Put an end to the argument" },
+      { verb: "put", collocation: "put effort into", meaning: "Work hard on", example: "I put effort into my studies" },
+      { verb: "set", collocation: "set a goal", meaning: "Decide what to achieve", example: "Set realistic goals" },
+      { verb: "set", collocation: "set a deadline", meaning: "Decide when to finish", example: "We set a deadline for Friday" },
+      { verb: "set", collocation: "set an example", meaning: "Behave for others to copy", example: "He sets a good example" }
+    ]
+  },
   speakingPractice: [
     { question: "What is a collocation?", answer: "A collocation is a natural combination of words that frequently appear together in English." },
     { question: "Why are collocations important?", answer: "Because they make your English sound natural and fluent." },
@@ -3128,6 +3155,20 @@ const MODULE_193_DATA = {
 ✅ Master idiomatic expressions for different emotions
 ✅ Express feelings naturally like a native speaker
 ✅ Use emotional idioms in conversation and writing`,
+  table: {
+    title: "📋 Idiomatic Expressions for Emotions",
+    data: [
+      { emotion: "Happy", idiom: "over the moon", meaning: "Extremely happy", example: "She was over the moon about the news" },
+      { emotion: "Happy", idiom: "on cloud nine", meaning: "Very happy", example: "I'm on cloud nine after the promotion" },
+      { emotion: "Sad", idiom: "down in the dumps", meaning: "Feeling sad/depressed", example: "He's been down in the dumps lately" },
+      { emotion: "Sad", idiom: "feeling blue", meaning: "Feeling sad/low", example: "I've been feeling blue all week" },
+      { emotion: "Angry", idiom: "see red", meaning: "Become very angry", example: "I saw red when I heard the lie" },
+      { emotion: "Angry", idiom: "hit the roof", meaning: "Become extremely angry", example: "Dad hit the roof when he saw my grades" },
+      { emotion: "Nervous", idiom: "butterflies in stomach", meaning: "Feel nervous", example: "I have butterflies before the exam" },
+      { emotion: "Scared", idiom: "scared stiff", meaning: "Extremely frightened", example: "I was scared stiff during the horror movie" },
+      { emotion: "Surprised", idiom: "taken aback", meaning: "Surprised/startled", example: "I was taken aback by her reaction" }
+    ]
+  },
   speakingPractice: [
     { question: "What does 'over the moon' mean?", answer: "It means extremely happy or delighted." },
     { question: "What does 'on cloud nine' mean?", answer: "It means feeling very happy, as if you're floating on clouds." },
@@ -3179,6 +3220,19 @@ const MODULE_194_DATA = {
 ✅ Show subtle differences in meaning precisely
 ✅ Use advanced modifiers like rather, somewhat, barely
 ✅ Sound natural and sophisticated in expression`,
+  table: {
+    title: "📋 Advanced Modifiers for Expressing Nuance",
+    data: [
+      { modifier: "slightly", meaning: "A little bit", example: "It's slightly cold today" },
+      { modifier: "somewhat", meaning: "To a small/moderate degree", example: "The plan was somewhat successful" },
+      { modifier: "rather", meaning: "Fairly, with surprise", example: "It's rather strange" },
+      { modifier: "quite", meaning: "Fairly or completely", example: "It's quite nice here" },
+      { modifier: "barely", meaning: "Only just", example: "He barely made it on time" },
+      { modifier: "hardly", meaning: "Almost not at all", example: "I could hardly breathe" },
+      { modifier: "practically", meaning: "Almost/virtually", example: "The meeting is practically over" },
+      { modifier: "to some extent", meaning: "Partly", example: "I agree to some extent" }
+    ]
+  },
   speakingPractice: [
     { question: "What does 'nuance' mean?", answer: "A nuance is a very small difference in meaning, expression, or tone." },
     { question: "Why is expressing nuance important?", answer: "It helps you sound natural and precise, especially at an advanced level." },
@@ -3230,6 +3284,18 @@ const MODULE_195_DATA = {
 ✅ Understand different types of humor and sarcasm
 ✅ Recognize tone, context, and cultural nuances
 ✅ Use humor appropriately in English conversation`,
+  table: {
+    title: "📋 Types of Humor and Their Characteristics",
+    data: [
+      { type: "Pun", description: "Word play on meanings", example: "Time flies like an arrow; fruit flies like a banana" },
+      { type: "Irony", description: "Saying opposite of meaning", example: "Lovely weather! (during a storm)" },
+      { type: "Sarcasm", description: "Mocking/ironic tone", example: "Oh sure, I love working overtime!" },
+      { type: "Dry humor", description: "Funny said seriously", example: "Delivered deadpan without emotion" },
+      { type: "Self-deprecating", description: "Making fun of yourself", example: "I'm not clumsy, the floor hates me" },
+      { type: "Exaggeration", description: "Making things bigger/extreme", example: "I'm so hungry I could eat a horse" },
+      { type: "Situational", description: "Humor from real situations", example: "Locking yourself out after saying you never forget" }
+    ]
+  },
   speakingPractice: [
     { question: "What is humor?", answer: "Humor is the quality of being amusing or entertaining through words, actions, or situations." },
     { question: "What is sarcasm?", answer: "Sarcasm is a form of verbal irony used to mock or express contempt, often in a humorous way." },
