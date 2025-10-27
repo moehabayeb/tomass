@@ -30,6 +30,53 @@ Example: He is said to speak ten languages.
 
 Common verbs: say, think, believe, claim, report, expect, understand, know, consider, suppose`,
 
+  table: {
+    title: "📋 Advanced Passive Structures (Impersonal Passives)",
+    data: [
+      { category: "What are Impersonal Passives?", explanation: "Passive structures that avoid naming the source of information", purpose: "Report general beliefs, hearsay, opinions without stating the source directly", turkish: "Kişisel olmayan pasif yapılar - kaynak belirtmeden genel inanışları aktarma", function: "Academic writing, formal reports, news, expressing distance from claims", note: "Common in formal English, especially journalism and academic contexts" },
+
+      { category: "Two Forms", form_1: "It + is/was + past participle + that-clause", example_1: "It is said that he speaks ten languages.", form_2: "Subject + is/was + past participle + to-infinitive", example_2: "He is said to speak ten languages.", meaning: "Both forms have the same meaning!", note: "Form 2 is more common in modern English" },
+
+      { category: "FORM 1: It is said that...", structure: "It + is/was + past participle + that + full clause", examples: "It is said that Istanbul never sleeps. / It was believed that the earth was flat. / It is reported that profits increased.", use: "More formal, emphasizes the statement itself", common_verbs: "said, believed, thought, reported, claimed, expected, understood, known, considered, supposed", note: "The 'that' clause contains the complete statement" },
+
+      { category: "FORM 2: He is said to...", structure: "Subject + is/was + past participle + to-infinitive", examples: "Istanbul is said to never sleep. / The earth was believed to be flat. / Profits are reported to have increased.", use: "More common, makes the subject active", transformation: "Move the subject of the 'that' clause to the beginning", note: "Subject becomes grammatically active (but meaning is still passive)" },
+
+      { category: "Common Reporting Verbs", say: "say → It is said that... / He is said to...", believe: "believe → It is believed that... / He is believed to...", think: "think → It is thought that... / He is thought to...", report: "report → It is reported that... / He is reported to...", claim: "claim → It is claimed that... / He is claimed to...", expect: "expect → It is expected that... / He is expected to...", understand: "understand → It is understood that... / He is understood to...", consider: "consider → It is considered that... / He is considered to...", note: "All follow the same pattern!" },
+
+      { category: "Tense Matching - Present", active: "He speaks ten languages. (present simple)", passive_form_1: "It is said that he speaks ten languages.", passive_form_2: "He is said to speak ten languages.", structure: "is said + to + base verb (present infinitive)", note: "Same time reference - both happening now" },
+
+      { category: "Tense Matching - Past", active: "He spoke ten languages. (past simple)", passive_form_1: "It is said that he spoke ten languages.", passive_form_2: "He is said to have spoken ten languages.", structure: "is said + to have + past participle (perfect infinitive)", critical: "Use PERFECT INFINITIVE (to have + pp) for past actions!", note: "The 'have' shows action happened before the reporting" },
+
+      { category: "Tense Matching - Present Continuous", active: "He is working on a new project. (present continuous)", passive_form_1: "It is reported that he is working on a new project.", passive_form_2: "He is reported to be working on a new project.", structure: "is reported + to be + verb-ing (continuous infinitive)", note: "Shows ongoing action at reporting time" },
+
+      { category: "Tense Matching - Past Continuous", active: "He was working all night. (past continuous)", passive_form_1: "It is said that he was working all night.", passive_form_2: "He is said to have been working all night.", structure: "is said + to have been + verb-ing (perfect continuous infinitive)", note: "Past continuous action before reporting time" },
+
+      { category: "Academic Writing Use", purpose: "Distance yourself from claims, show objectivity", examples: "It is widely believed that exercise improves mental health. / The theory is thought to have originated in ancient Greece. / Climate change is considered to be the greatest threat.", note: "Essential for essays, research papers, formal reports", remember: "Shows you're reporting others' views, not claiming as fact" },
+
+      { category: "News & Journalism", typical: "It is reported that the president will resign. / The suspect is believed to be armed and dangerous. / The company is expected to announce layoffs.", purpose: "Report unconfirmed information without committing to truth", note: "Very common in news articles", alternative: "Also: 'According to reports...', 'Sources say that...'" },
+
+      { category: "Transformation Exercise", original: "People say that London is expensive.", step_1: "It is said that London is expensive. (Form 1)", step_2: "London is said to be expensive. (Form 2)", process: "1. Identify the verb (say), 2. Choose form, 3. Match tense", note: "Practice both transformations!" },
+
+      { category: "With BE verb", example_active: "She is very talented.", form_1: "It is said that she is very talented.", form_2: "She is said to be very talented.", structure: "is said + to be + adjective/noun", note: "Use 'to be' for states and descriptions" },
+
+      { category: "Negative Forms", form_1_neg: "It is not believed that the plan will work.", form_2_neg: "The plan is not believed to work.", alternative: "It is believed that the plan will not work. / The plan is believed not to work.", note: "Negative can go with 'believe' or with the infinitive", position: "More common to negate the reporting verb" },
+
+      { category: "Past Reporting Verb", structure: "It WAS + past participle / Subject WAS + past participle", examples: "It was believed that smoking was harmless. (historical belief) / Smoking was believed to be harmless.", use: "Report beliefs/claims from the past (now disproven or changed)", note: "Shows the belief existed in the past, not now" },
+
+      { category: "Common Mistakes", mistake_1: "Wrong infinitive for past actions", wrong_1: "He is said to speak ten languages yesterday ✗", correct_1: "He is said to have spoken ten languages ✗ (if past action)", rule: "Use PERFECT INFINITIVE (to have + pp) for past actions", remember: "Present: to speak | Past: to have spoken" },
+
+      { category: "Common Mistakes", mistake_2: "Mixing the two forms", wrong_2: "It is said to be expensive ✗ / London is said that it is expensive ✗", correct_2: "It is said that London is expensive ✓ / London is said to be expensive ✓", rule: "Form 1 needs 'that + clause' | Form 2 needs 'to-infinitive'", remember: "Don't mix the patterns!" },
+
+      { category: "Advanced: Multiple Reporting", structure: "It is widely believed / generally thought / commonly accepted that...", examples: "It is widely believed that meditation reduces stress. / It is generally thought that experience matters more than qualifications.", use: "Add adverbs to show strength of belief", note: "Sounds more sophisticated in academic writing" },
+
+      { category: "Formal vs Informal", formal: "It is believed that the economy will recover. (impersonal passive)", informal: "People believe (that) the economy will recover. (active voice)", academic: "The economy is believed to recover. (very formal)", note: "Impersonal passives are FORMAL structures", remember: "Use in academic writing, not casual speech!" },
+
+      { category: "Real-World Examples", news: "It is reported that negotiations have failed. / The minister is expected to resign.", academic: "It is generally accepted that DNA carries genetic information. / The theory is believed to have been developed in the 1950s.", business: "The company is thought to be planning layoffs. / Profits are expected to increase.", note: "Very common in these contexts!" },
+
+      { category: "Key Takeaway", summary: "Impersonal passives report information without stating the source", two_forms: "Form 1: It is said that... (emphasize statement) | Form 2: He is said to... (subject-focused)", tenses: "Present: to speak | Past: to have spoken | Continuous: to be speaking | Past Continuous: to have been speaking", common_verbs: "say, believe, think, report, claim, expect, understand, consider, know", use: "Academic writing, news, formal reports - show distance from claims", structure: "It/Subject + is/was + past participle + that-clause/to-infinitive", critical: "Use PERFECT INFINITIVE for past actions!", remember: "Very formal - use in writing, not casual conversation!", next: "Practice transforming active statements to both passive forms!" }
+    ]
+  },
+
   speakingPractice: [
     { question: "It is said that Istanbul never sleeps. Do you agree?", answer: "Absolutely. Istanbul is believed to be one of those cities that are constantly alive — full of energy, lights, and people, even at 3 a.m." },
     { question: "It is believed that social media has changed how we think. What's your view?", answer: "I think that's true. It is thought to have reshaped our attention span, our communication style, and even our sense of reality." },
@@ -102,6 +149,51 @@ All I want is peace and quiet.
 Why I love this job is the freedom it gives me.
 Why he failed was his lack of preparation.`,
 
+  table: {
+    title: "📋 Cleft Sentences (Emphasis Through Structure)",
+    data: [
+      { category: "What are Cleft Sentences?", explanation: "Sentences split into two clauses to emphasize specific information", purpose: "Draw attention to particular elements by restructuring the sentence", turkish: "Bölünmüş cümleler - vurgu yapmak için cümleyi ikiye böl", function: "Dramatic effect, emphasis, contrast, clarification", note: "Common in both spoken and written English for emphasis" },
+
+      { category: "Main Types", what_cleft: "What-cleft: What + clause + be + focus", it_cleft: "It-cleft: It + be + focus + who/that + clause", examples: "What I like is chocolate. (what-cleft) / It was John who broke it. (it-cleft)", note: "Two different structures, same purpose - emphasis!" },
+
+      { category: "WHAT-CLEFT Structure", pattern: "What + subject + verb + be + emphasized part", examples: "What I like is chocolate. / What he needs is a vacation. / What they want is freedom.", use: "Emphasize the OBJECT or result of an action", original: "I like chocolate. → What I like is chocolate.", note: "The 'what' clause replaces the object" },
+
+      { category: "What-Cleft: Subject Position", structure: "What + clause + BE + complement", examples: "What surprises me is his patience. / What matters most is honesty. / What bothers me is hypocrisy.", emphasis: "The emphasized part comes AFTER the BE verb", original: "His patience surprises me. → What surprises me is his patience.", note: "Subject (the emphasized part) follows BE" },
+
+      { category: "What-Cleft: Object Position", structure: "What + subject + verb + BE + object", examples: "What I love is early mornings. / What she bought was a new car. / What we need is more time.", emphasis: "The object is emphasized", original: "I love early mornings. → What I love is early mornings.", note: "Most common type of what-cleft" },
+
+      { category: "IT-CLEFT Structure", pattern: "It + BE + emphasized part + who/that/which + rest of clause", examples: "It was John who broke the vase. / It's the weekends that I enjoy. / It is chocolate that I like.", use: "Emphasize ANY part of the sentence (subject, object, time, place)", note: "Very flexible - can emphasize almost anything!" },
+
+      { category: "It-Cleft: Emphasizing Subject", structure: "It + BE + SUBJECT + who/that + verb + object", examples: "It was Maria who called you. / It is the students who make teaching rewarding. / It was I who suggested the idea.", emphasis: "Focus on WHO did the action", original: "Maria called you. → It was Maria who called you.", note: "Use WHO for people, THAT for things" },
+
+      { category: "It-Cleft: Emphasizing Object", structure: "It + BE + OBJECT + that/which + subject + verb", examples: "It's chocolate that I like (not vanilla). / It was a car that he bought. / It is honesty that I value.", emphasis: "Focus on WHAT is involved", original: "I like chocolate. → It's chocolate that I like.", note: "Use THAT or WHICH for things" },
+
+      { category: "It-Cleft: Emphasizing Time/Place", time: "It was yesterday that I saw her. / It's in the morning that I feel most creative.", place: "It was in Istanbul that we met. / It's at the office that I work best.", emphasis: "Focus on WHEN or WHERE", note: "Very useful for clarification and correction", use: "Especially good for contrasting information" },
+
+      { category: "ALL-Cleft Sentences", structure: "All + (that) + subject + verb/need + BE + emphasized part", examples: "All I want is peace. / All she needs is rest. / All they did was complain.", meaning: "Emphasizes that ONLY this thing matters", note: "Common in everyday speech", pattern: "'All' at the beginning creates strong emphasis" },
+
+      { category: "THE-Cleft Sentences", structure: "The + noun + who/that + clause + BE + emphasized part", examples: "The person who helped me was Sarah. / The thing that surprised me was his reaction. / The reason I called was to apologize.", use: "Specify and emphasize using 'the + noun'", note: "More specific than it-cleft", common: "The reason..., The person..., The thing..., The way..." },
+
+      { category: "WHY-Cleft Sentences", structure: "Why/How/Where/When + clause + BE + emphasized part", examples: "Why I love this job is the freedom. / How he succeeded was through hard work. / Where I grew up was a small village.", use: "Emphasize the REASON, METHOD, PLACE, or TIME", note: "Less common but very emphatic", pattern: "Question word starts the sentence" },
+
+      { category: "Contrast & Correction", it_cleft_contrast: "It wasn't John who broke it, it was Peter. (correction)", what_cleft_contrast: "What I said was 'maybe', not 'yes'. (clarification)", use: "Correct misunderstandings or emphasize contrast", note: "Very useful in arguments or clarifications", emphasis: "Draw strong attention to the correct information" },
+
+      { category: "Formal vs Informal", formal_writing: "It is the government that should take responsibility. / What is required is immediate action.", spoken_informal: "What I love is sleeping in! / It's you that I wanted to see!", note: "Cleft sentences work in BOTH contexts", academic: "Common in essays for emphasis without exclamation marks", everyday: "Common in speech for dramatic effect" },
+
+      { category: "With Negatives", it_cleft_negative: "It's not the money that motivates me. / It wasn't me who said that.", what_cleft_negative: "What I don't understand is his attitude. / What she didn't do was apologize.", use: "Emphasize what something is NOT", note: "Very useful for clarification and denial" },
+
+      { category: "Time Reference", present: "What I like IS chocolate. / It IS John who helps.", past: "What I liked WAS chocolate. / It WAS John who helped.", future: "What I will need IS support. / It WILL BE John who helps.", note: "The BE verb changes tense", remember: "Match the tense to the time reference!" },
+
+      { category: "Common Mistakes", mistake_1: "Wrong word order in what-cleft", wrong_1: "Is chocolate what I like ✗", correct_1: "What I like is chocolate ✓", rule: "What-clause comes FIRST, BE comes SECOND", remember: "What + clause + BE + focus" },
+
+      { category: "Common Mistakes", mistake_2: "Using 'which' for people in it-cleft", wrong_2: "It was John which called ✗", correct_2: "It was John who called ✓ / It was John that called ✓", rule: "Use WHO or THAT for people, THAT/WHICH for things", remember: "Who = people, Which/That = things" },
+
+      { category: "Real-World Uses", emphasis: "What really matters is family. (emphasize importance)", correction: "It wasn't yesterday that I saw her, it was last week. (correct error)", clarification: "What I meant was that we need more time. (clarify meaning)", contrast: "It's not intelligence that defines success, it's persistence. (show contrast)", note: "Very versatile structures!" },
+
+      { category: "Key Takeaway", summary: "Cleft sentences split information into two clauses for emphasis", what_cleft: "What + clause + BE + focus (emphasize object/result)", it_cleft: "It + BE + focus + who/that + clause (emphasize any element)", all_cleft: "All + (that) + clause + BE + focus (only this matters)", the_cleft: "The + noun + who/that + clause + BE + focus (specify and emphasize)", why_cleft: "Why/How/Where/When + clause + BE + focus (emphasize reason/method/place/time)", use: "Emphasis, contrast, correction, clarification, dramatic effect", formal_informal: "Works in both academic writing and everyday speech", who_that: "WHO for people, THAT/WHICH for things", remember: "Restructure to emphasize - makes writing and speech more dynamic!", next: "Practice converting normal sentences to cleft sentences!" }
+    ]
+  },
+
   speakingPractice: [
     { question: "What I like about Istanbul is the mix of cultures. Do you agree?", answer: "Definitely. What fascinates me most is how East and West blend so naturally in that city." },
     { question: "What I can't stand is hypocrisy. What about you?", answer: "I'm with you on that. What annoys me the most is when people pretend to be someone they're not." },
@@ -167,6 +259,49 @@ Example: If it hadn't been for you, I would have given up.
 
 **4. "If not for" – More informal version**
 Example: If not for my family, I would be lost.`,
+
+  table: {
+    title: "📋 Advanced Conditional Patterns (But for / If it weren't for)",
+    data: [
+      { category: "What are Advanced Conditionals?", explanation: "Sophisticated structures expressing hypothetical causes and imagined alternatives", purpose: "Show what WOULD or WOULDN'T happen without a certain factor", turkish: "Gelişmiş koşul cümleleri - bir şey olmasaydı ne olurdu?", function: "Express gratitude, explain necessity, show dependence on factors", note: "Very common in reflective, philosophical discussions" },
+
+      { category: "Main Structures", but_for: "But for + noun/noun phrase (formal)", if_it_werent: "If it weren't for + noun/noun phrase (present/general)", if_it_hadnt_been: "If it hadn't been for + noun/noun phrase (past)", if_not_for: "If not for + noun/noun phrase (informal)", meaning: "All mean: 'Without this, something else would/wouldn't happen'", note: "Different levels of formality, same meaning" },
+
+      { category: "BUT FOR - Structure", pattern: "But for + noun, Subject + would/could/might + verb", examples: "But for your help, I couldn't have finished. / But for luck, we would have failed. / But for technology, life would be different.", meaning: "WITHOUT this thing, the result would be different", note: "Very formal - common in academic and literary writing", equivalent: "Same as 'If it weren't for' or 'If it hadn't been for'" },
+
+      { category: "IF IT WEREN'T FOR - Present/General", structure: "If it weren't for + noun, Subject + would/could/might + verb", examples: "If it weren't for my job, I would travel the world. / If it weren't for technology, we wouldn't connect globally. / If it weren't for coffee, I couldn't function.", use: "Present or GENERAL situations (habits, facts)", time: "Things that are currently true or generally true", note: "More common than 'but for' in everyday formal speech" },
+
+      { category: "IF IT HADN'T BEEN FOR - Past", structure: "If it hadn't been for + noun, Subject + would/could/might + have + past participle", examples: "If it hadn't been for you, I would have given up. / If it hadn't been for the pandemic, remote work wouldn't have evolved. / If it hadn't been for that mistake, I wouldn't have learned.", use: "PAST situations only", time: "Something that happened in the past", note: "Past hypothetical - imagining a different past", remember: "Use PAST PERFECT in the 'if' clause!" },
+
+      { category: "IF NOT FOR - Informal", structure: "If not for + noun, Subject + would/could/might + verb", examples: "If not for my family, I would be lost. / If not for music, life would be boring. / If not for my friends, I couldn't have survived.", use: "More casual, conversational", note: "Same meaning, less formal", context: "Use in speaking or informal writing" },
+
+      { category: "Present vs Past - Key Difference", present: "If it WEREN'T for coffee, I WOULD be tired. (general/habitual)", past: "If it HADN'T BEEN for coffee, I WOULD HAVE BEEN tired. (specific past event)", rule: "Present: weren't + would | Past: hadn't been + would have", critical: "DON'T confuse the two!", remember: "Match the time reference correctly!" },
+
+      { category: "With COULD and MIGHT", could: "But for your advice, I couldn't have succeeded. (ability)", might: "But for luck, we might have lost. (possibility)", would: "But for technology, we would still use letters. (certainty)", note: "All three modals work, with slightly different meanings", nuance: "COULD = ability | MIGHT = possibility | WOULD = certainty" },
+
+      { category: "Transformation from Normal Conditional", original_third: "If you hadn't helped me, I would have failed. (Third Conditional)", advanced: "If it hadn't been for your help, I would have failed. / But for your help, I would have failed.", difference: "Advanced form is more formal and sophisticated", note: "Use in academic writing or formal contexts", transformation: "Replace 'If + subject + hadn't + verb' with 'If it hadn't been for + noun'" },
+
+      { category: "Expressing Gratitude", structure: "Use these patterns to thank someone indirectly", examples: "But for your patience, I wouldn't be here. (= Thank you for your patience) / If it weren't for your support, I couldn't continue. (= Thank you for your support)", use: "Formal, sophisticated way to express thanks", note: "Common in speeches, formal letters, acknowledgments" },
+
+      { category: "Expressing Dependence", structure: "Show you rely on something/someone", examples: "If it weren't for technology, my business wouldn't exist. / But for my family's support, I couldn't have started this school.", meaning: "This factor is ESSENTIAL for the result", note: "Shows cause-and-effect relationship", use: "Explain what makes something possible" },
+
+      { category: "Expressing Regret or Relief", regret: "But for that mistake, I would still have my job. (regret - wish it hadn't happened)", relief: "If it hadn't been for the traffic, I would have been on that plane. (relief - glad it didn't happen)", note: "Context determines whether it's regret or relief", tone: "Your intonation or surrounding context shows your feeling" },
+
+      { category: "In Academic Writing", typical: "But for this discovery, modern medicine would not exist. / If it weren't for Newton's laws, physics would be very different.", use: "Discuss hypothetical scenarios, show importance of discoveries/events", note: "Very common in academic essays and research papers", formality: "Preferred over simpler conditional forms in formal writing" },
+
+      { category: "Common Mistakes", mistake_1: "Wrong tense in result clause", wrong_1: "If it weren't for you, I would have failed ✗ (mixing present/past)", correct_1: "If it weren't for you, I would fail ✓ (present) / If it hadn't been for you, I would have failed ✓ (past)", rule: "Match 'weren't' with 'would' and 'hadn't been' with 'would have'", remember: "Keep time reference consistent!" },
+
+      { category: "Common Mistakes", mistake_2: "Using 'was' instead of 'were'", wrong_2: "If it wasn't for you ✗", correct_2: "If it weren't for you ✓", rule: "Always use WEREN'T (subjunctive), not wasn't", note: "Even for singular subjects, use 'weren't' in this structure" },
+
+      { category: "Negative Form", structure: "Use to show what would happen WITHOUT the absence of something", examples: "But for the lack of funding, the project would have succeeded. / If it weren't for his laziness, he would be successful.", meaning: "The negative factor is the cause of the problem", note: "Less common but grammatically correct", use: "Show how negative factors affect outcomes" },
+
+      { category: "Formal vs Informal Comparison", formal: "But for divine intervention, we would have perished.", standard_formal: "If it hadn't been for luck, we wouldn't have survived.", informal: "If not for you, I'd be lost.", casual: "Without you, I'd be lost. (simplest)", note: "All express the same idea with different formality levels", remember: "Choose based on context!" },
+
+      { category: "Real-World Uses", gratitude_speeches: "But for your guidance, I wouldn't be standing here today.", academic_essays: "If it weren't for globalization, cultural exchange would be limited.", reflective_writing: "If it hadn't been for that experience, I wouldn't understand empathy.", business: "But for technological innovation, our company wouldn't exist.", note: "Versatile structure for many contexts!" },
+
+      { category: "Key Takeaway", summary: "Advanced conditionals show hypothetical causes - what would/wouldn't happen without something", structures: "But for (very formal) | If it weren't for (formal, present/general) | If it hadn't been for (formal, past) | If not for (informal)", present_general: "If it weren't for + noun, subject + would + verb", past: "If it hadn't been for + noun, subject + would have + past participle", use: "Gratitude, dependence, regret, relief, academic writing, formal contexts", meaning: "WITHOUT this factor, the result would be different", critical: "Always use WEREN'T (not wasn't)! Match tenses correctly!", formality: "But for (most formal) → If it weren't/hadn't been for (formal) → If not for (informal)", remember: "Very sophisticated structure - shows advanced English proficiency!", next: "Practice transforming third conditionals to these advanced forms!" }
+    ]
+  },
 
   speakingPractice: [
     { question: "If it weren't for your patience, how would your students learn?", answer: "Honestly, they wouldn't. But for understanding and empathy, teaching would be impossible." },
@@ -237,6 +372,51 @@ What matters most is honesty.
 Mean 'anything that' or 'no matter what.'
 Examples: You can choose whatever you like.
 Whatever you decide will be fine with me.`,
+
+  table: {
+    title: "📋 Nominal Clauses (that, what, whatever)",
+    data: [
+      { category: "What are Nominal Clauses?", explanation: "Dependent clauses that function as NOUNS in sentences", turkish: "İsim cümlecikleri - cümle içinde isim gibi işlev gören yan cümleler", function: "Act as subjects, objects, or complements in sentences", note: "Very common in formal and academic English", also_called: "Noun clauses" },
+
+      { category: "Three Main Types", that_clause: "THAT-clauses: I think that this is important.", what_clause: "WHAT-clauses: What you did was wrong. (the thing which)", whatever_clause: "WHATEVER-clauses: Whatever you decide is fine. (anything that)", note: "Each type has different meanings and uses" },
+
+      { category: "THAT-Clauses - Basic Structure", pattern: "Subject + verb + THAT + full clause", examples: "I think that this idea is brilliant. / She knows that I'm right. / We believe that education matters.", function: "Introduce statements, beliefs, thoughts, facts", note: "THAT can often be omitted in informal speech", omission: "I think (that) it's good. - both correct!" },
+
+      { category: "THAT-Clauses: After Reporting Verbs", common_verbs: "think, believe, know, say, feel, hope, expect, understand, realize, suppose", examples: "I believe that success requires effort. / She thinks that climate change is serious. / They know that grammar is important.", use: "Express opinions, beliefs, knowledge", note: "Very common pattern in English!" },
+
+      { category: "THAT-Clauses: After Adjectives", pattern: "Subject + BE + adjective + THAT + clause", examples: "I'm happy that you came. / It's obvious that he's lying. / She's certain that it will work.", common_adjectives: "happy, sad, glad, sure, certain, obvious, clear, important, essential, surprising", use: "Express emotional reactions or certainty", note: "THAT cannot be omitted after adjectives!" },
+
+      { category: "THAT-Clauses: After Nouns", pattern: "Noun + THAT + clause", examples: "The fact that he apologized surprised me. / The idea that money buys happiness is false. / The claim that he's innocent is doubtful.", common_nouns: "fact, idea, belief, claim, news, rumor, possibility, chance, hope, fear", use: "Add information about abstract nouns", note: "More formal, common in academic writing" },
+
+      { category: "WHAT-Clauses - Meaning", meaning: "'The thing which' or 'the fact that'", examples: "What you did was irresponsible. (= The thing which you did...) / What matters most is honesty. (= The thing which matters...) / I understand what you mean. (= the thing which you mean)", note: "WHAT always functions as subject or object within the clause", difference: "WHAT ≠ THAT! What has meaning ('the thing which'), that is just a connector" },
+
+      { category: "WHAT-Clauses: As Subject", structure: "WHAT + clause + verb (+ complement)", examples: "What surprises me is his patience. / What he needs is a vacation. / What matters most is family.", use: "The whole what-clause is the subject of the main verb", note: "Very common in emphatic statements", emphasis: "Puts focus on the result or conclusion" },
+
+      { category: "WHAT-Clauses: As Object", structure: "Subject + verb + WHAT + clause", examples: "I know what you mean. / She understands what I'm saying. / They discovered what was wrong.", use: "The what-clause is the object of the main verb", note: "Common in everyday speech", remember: "WHAT has meaning - it refers to something specific" },
+
+      { category: "WHATEVER-Clauses - Meaning", meaning: "'Anything that' or 'no matter what'", examples: "You can choose whatever you like. (= anything that you like) / Whatever you decide will be fine. (= No matter what you decide) / I'll support whatever choice you make.", use: "Show flexibility, acceptance, or lack of restriction", note: "Shows openness to all possibilities" },
+
+      { category: "WHATEVER: All Possibilities", structure: "WHATEVER + clause", examples: "Whatever happens, we'll be okay. / You can say whatever you want. / Whatever she chooses will be expensive.", meaning: "ALL options are acceptable, NO restrictions", note: "Sometimes shows indifference: 'I don't care what'", tone: "Can be positive (flexible) or negative (indifferent)" },
+
+      { category: "Other Nominal Clause Words", whoever: "whoever (= anyone who): Whoever arrives first can start.", whichever: "whichever (= any one which): Choose whichever you prefer.", wherever: "wherever (= any place where): Sit wherever you like.", whenever: "whenever (= any time when): Come whenever you want.", however: "however (= in whatever way): However you do it is fine.", note: "All function as nominal clauses!" },
+
+      { category: "Formal vs Informal - THAT Omission", formal_written: "I believe that education is crucial. (keep THAT)", informal_spoken: "I think it's good. (omit THAT)", rule: "Can omit THAT after thinking/saying verbs in casual speech", cannot_omit: "NEVER omit after adjectives or nouns: I'm glad that... ✓ (NOT: I'm glad X)", note: "Academic writing = keep THAT | Casual speech = can omit" },
+
+      { category: "Word Order in WHAT-Clauses", correct_order: "WHAT + subject + verb", examples: "What he said was true. / What you need is rest. / I know what she wants.", wrong_order: "NOT: What said he ✗ / What need you ✗", rule: "Normal statement word order AFTER what", remember: "WHAT + subject + verb (NOT: what + verb + subject)" },
+
+      { category: "THAT vs WHAT - Critical Difference", that_clause: "THAT = connector only, no meaning by itself", example_that: "I know that you're right. (that = connector)", what_clause: "WHAT = 'the thing which', has meaning", example_what: "I know what you mean. (what = the thing which)", wrong: "I know what you're right ✗ (wrong meaning!)", correct: "I know that you're right ✓ / I know what you said ✓", remember: "THAT connects ideas | WHAT refers to things" },
+
+      { category: "Common Mistakes", mistake_1: "Confusing THAT and WHAT", wrong_1: "I think what it's good ✗", correct_1: "I think that it's good ✓ / I know what it is ✓", rule: "THAT for statements/beliefs | WHAT for identifying things", remember: "What you think (the content) vs. that you think (the fact)" },
+
+      { category: "Common Mistakes", mistake_2: "Wrong word order in what-clauses", wrong_2: "What is your problem? (question) vs. I know what is your problem ✗ (clause)", correct_2: "I know what your problem is ✓", rule: "In nominal clauses, use STATEMENT word order, not question order", remember: "WHAT + subject + verb (statement order)" },
+
+      { category: "In Academic Writing", common_use: "It is believed that... / The fact that... / What is important is that...", examples: "The fact that climate change is real cannot be denied. / What research shows is that education reduces poverty. / It is clear that action is needed.", note: "Very common in essays, research papers, formal reports", formality: "Nominal clauses make writing more sophisticated" },
+
+      { category: "Real-World Uses", expressing_beliefs: "I think that this is important. / I believe that we can succeed.", identifying_things: "What I need is time. / I understand what you mean.", showing_flexibility: "Whatever you decide is fine with me. / I'll do whatever it takes.", reporting_facts: "The fact that he lied shocked everyone.", note: "Essential for clear, sophisticated communication!" },
+
+      { category: "Key Takeaway", summary: "Nominal clauses function as nouns within sentences", that_clauses: "THAT-clauses: I think that... (connector, express beliefs/facts)", what_clauses: "WHAT-clauses: What I need is... ('the thing which', identify things)", whatever_clauses: "WHATEVER-clauses: Whatever you choose... ('anything that', show flexibility)", functions: "Subject: What matters is... | Object: I know what... | After adjectives: I'm glad that...", omission: "Can omit THAT after verbs (informal) | Cannot omit after adjectives/nouns", word_order: "WHAT + subject + verb (statement order, not question order)", that_vs_what: "THAT = connector (no meaning) | WHAT = 'the thing which' (has meaning)", formality: "Essential for academic writing and formal communication", remember: "Mastering nominal clauses = sophisticated English!", next: "Practice identifying and creating nominal clauses in your writing!" }
+    ]
+  },
 
   speakingPractice: [
     { question: "What do you think is the biggest problem in modern education?", answer: "I believe that the system focuses too much on exams rather than creativity." },
@@ -322,6 +502,53 @@ Participle clauses are reduced subordinate clauses that use participles (verb fo
 ⚠️ The subject of both clauses must be the same
 ⚠️ Mostly used in formal/academic writing
 ⚠️ Cannot use in spoken casual conversation (sounds unnatural)`,
+
+  table: {
+    title: "📋 Participle Clauses (Advanced Sentence Reduction)",
+    data: [
+      { category: "What are Participle Clauses?", explanation: "Reduced subordinate clauses using participles (verb forms) instead of full clauses", purpose: "Make writing more concise and sophisticated", turkish: "Ortaç cümlecikleri - cümleyi kısaltmak için fiil çekimleri kullanma", function: "Show time, reason, result, or give additional information", note: "VERY formal - used in academic writing, NOT casual speech" },
+
+      { category: "Three Types", present_participle: "Present Participle (-ing): Walking down the street, I saw...", past_participle: "Past Participle (-ed/irregular): Written in 1999, the book...", perfect_participle: "Perfect Participle (having + pp): Having finished, she left.", note: "Each type shows different time relationships and voice", critical: "The subject of BOTH clauses must be the SAME!" },
+
+      { category: "PRESENT PARTICIPLE (-ing)", form: "Verb-ing + rest of clause", meaning: "Shows SIMULTANEOUS action or ACTIVE voice", examples: "Walking down the street, I saw an old friend. / Being a vegetarian, she doesn't eat meat. / Living in Istanbul, I experience diverse cultures.", use: "Actions happening at the same time OR reasons", note: "Most common type of participle clause" },
+
+      { category: "Present Participle: Time (Simultaneous)", structure: "-ing clause + main clause", examples: "Arriving at the station, we bought tickets. (= When we arrived...) / Crossing the street, he dropped his phone. (= While crossing...)", meaning: "Two actions happening at the SAME TIME", transformation: "When/While + full clause → -ing clause", note: "Shows actions occurring together" },
+
+      { category: "Present Participle: Reason/Cause", structure: "-ing clause + main clause", examples: "Being tired, I went to bed early. (= Because I was tired...) / Knowing the risks, they decided to proceed. (= Because they knew...) / Having no money, he couldn't buy food. (= Because he had...)", meaning: "Explains WHY something happened", transformation: "Because/Since/As + full clause → -ing clause", note: "Very common pattern for expressing reasons" },
+
+      { category: "PAST PARTICIPLE (-ed/irregular)", form: "Past participle (pp) + rest of clause", meaning: "Shows PASSIVE voice or COMPLETED action", examples: "Written in simple language, the book was easy to understand. (= Because it was written...) / Shocked by the news, he couldn't speak. (= Because he was shocked...) / Built in 1850, the house is very old.", use: "When the subject RECEIVES the action (passive)", note: "Subject must be able to be acted upon" },
+
+      { category: "Past Participle: Passive Voice", structure: "pp clause + main clause", examples: "Painted blue, the room looks bigger. (= The room was painted blue, so...) / Taken twice daily, this medicine works well. (= If it is taken...) / Located in the city center, the hotel is convenient.", meaning: "Subject is PASSIVE (receives the action)", transformation: "Because/When it was + pp → pp clause", note: "Common with descriptions and instructions" },
+
+      { category: "PERFECT PARTICIPLE (having + pp)", form: "Having + past participle + rest of clause", meaning: "Shows action COMPLETED BEFORE another action", examples: "Having finished her work, she went home. (= After she finished...) / Having been warned, they were careful. (= Because they had been warned...) / Having lived there for years, I know it well.", use: "Make the time sequence CLEAR", note: "Emphasizes that first action is COMPLETELY FINISHED before second" },
+
+      { category: "Perfect Participle: Active vs Passive", active: "Having finished (= After I finished) - I did it", passive: "Having been finished (= After it was finished) - Someone else did it", examples_active: "Having eaten dinner, we watched TV.", examples_passive: "Having been told the truth, she forgave him.", note: "Active: having + pp | Passive: having been + pp", choose: "Active if subject does action | Passive if subject receives action" },
+
+      { category: "When to Use Participle Clauses", time: "Show when: Arriving home, I called you.", reason: "Show why: Being tired, I slept early.", result: "Show result: The storm destroyed the city, leaving thousands homeless.", additional_info: "Give extra info: The woman sitting by the door is my teacher.", note: "Very versatile structure!", formality: "ONLY use in formal/academic writing, NOT speech" },
+
+      { category: "Subject Must Be the Same!", correct: "Walking home, I saw John. (I walked, I saw - same subject ✓)", wrong: "Walking home, John was seen by me. ✗ (I walked, but John was seen - different!)", rule: "The subject of the participle clause and main clause MUST be identical", critical: "This is the most common error with participle clauses!", remember: "Same subject in both clauses!" },
+
+      { category: "Transformation: Full Clause → Participle", original: "When I walked down the street, I saw an old friend.", step_1: "Identify same subject in both clauses (I)", step_2: "Remove subject from first clause", step_3: "Change verb to -ing form", result: "Walking down the street, I saw an old friend.", note: "Only works if subjects are identical!" },
+
+      { category: "Participle at End of Sentence", structure: "Main clause + participle clause (result)", examples: "The company went bankrupt, leaving 500 employees without jobs. / He passed the exam, surprising everyone. / She left the room, slamming the door.", use: "Show RESULT or consequence of the main action", note: "Participle clause comes AFTER to show what happened as a result", position: "Beginning (time/reason) vs. End (result)" },
+
+      { category: "With Conjunctions (Less Common)", structure: "Conjunction + participle", examples: "While walking home, I met John. / After finishing work, she relaxed. / Before leaving, check everything.", note: "Can keep conjunctions for extra clarity", use: "Less concise but clearer time reference", formality: "Still formal, but slightly less formal than pure participle clauses" },
+
+      { category: "Negative Participle Clauses", structure: "NOT + -ing/pp", examples: "Not knowing the answer, I stayed quiet. / Not having studied, he failed the exam. / Not wanting to disturb her, I left silently.", use: "Show negative reason or condition", note: "NOT comes BEFORE the participle", remember: "Not -ing / Not having + pp" },
+
+      { category: "Common Mistakes", mistake_1: "Different subjects (Dangling Participle)", wrong_1: "Driving to work, the accident happened. ✗ (Who was driving? The accident? No!)", correct_1: "Driving to work, I saw an accident. ✓ (I drove, I saw - same subject)", rule: "Subject of both clauses must match", critical: "This creates confusion and is grammatically wrong!" },
+
+      { category: "Common Mistakes", mistake_2: "Using in casual speech", wrong_context: "Saying this in conversation: 'Being tired, I went home.' ✗ (sounds unnatural!)", correct_context: "Normal speech: 'I was tired, so I went home.' ✓", rule: "Participle clauses are for FORMAL WRITING only", remember: "Don't use in everyday conversation - sounds awkward!" },
+
+      { category: "Formal vs Informal", formal_written: "Having completed the survey, participants received compensation. (academic paper)", informal_spoken: "After they completed the survey, participants got paid. (natural speech)", use_formal: "Essays, research papers, reports, formal business writing", use_informal: "Conversations, emails to friends, casual writing", note: "Know your audience and context!" },
+
+      { category: "Academic Writing Examples", typical: "Having analyzed the data, researchers concluded that... / Located in Southeast Asia, Vietnam has a rich history. / Published in 2020, the study examined...", use: "Make academic writing more concise and professional", note: "EXTREMELY common in research papers and essays", benefit: "Reduces word count while maintaining clarity" },
+
+      { category: "Real-World Uses", academic_papers: "Having reviewed the literature, we propose... / Conducted over three years, the study showed...", business_reports: "Facing financial difficulties, the company restructured. / Being the market leader, we have responsibilities.", news_writing: "Elected in 2020, the president faces challenges. / Located downtown, the building attracts visitors.", note: "Highly valued in professional and academic contexts!", remember: "NOT for casual emails or conversations!" },
+
+      { category: "Key Takeaway", summary: "Participle clauses reduce subordinate clauses to make writing concise and sophisticated", types: "Present (-ing): simultaneous/active | Past (pp): passive/completed | Perfect (having + pp): completed before", use: "Time: Arriving home... | Reason: Being tired... | Result: ...leaving chaos | Additional info: The woman sitting...", critical_rule: "Subject of BOTH clauses must be THE SAME (avoid dangling participles!)", formality: "VERY FORMAL - use in academic writing, business reports, NOT casual speech!", transformation: "When/Because + full clause → participle clause (remove subject, change verb form)", negative: "Not + -ing / Not having + pp", position: "Beginning (time/reason) | End (result)", remember: "Master this = sound like an academic expert! But don't overuse or use in wrong context!", next: "Practice transforming full clauses to participle clauses in formal writing!" }
+    ]
+  },
   speakingPractice: [
     {
       question: "Knowing that traffic would be heavy, how do you usually plan your morning commute?",
