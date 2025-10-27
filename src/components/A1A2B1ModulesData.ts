@@ -7451,6 +7451,25 @@ const MODULE_116_DATA = {
 
 Yapı: will + be + V3 (past participle)`,
   tip: "Use future passive to describe actions that will be done by someone in the future",
+
+  table: {
+    title: "📋 Passive Voice: Future Simple",
+    data: [
+      { form: "Affirmative", structure: "will + be + V3", example: "The house will be painted tomorrow.", usage: "Future action, doer unimportant" },
+      { form: "Negative", structure: "won't + be + V3", example: "The meeting won't be held today.", usage: "Future action that won't happen" },
+      { form: "Question", structure: "Will + subject + be + V3?", example: "Will the report be finished by Friday?", usage: "Asking about future completion" },
+      { active_to_passive: "Active", example: "They will open the store.", focus: "Who will do it (they)", subject: "Doer" },
+      { active_to_passive: "Passive", example: "The store will be opened.", focus: "What will be done (store)", subject: "Receiver of action" },
+      { when_to_use: "Future plans/predictions", example: "A new bridge will be built next year.", reason: "Focus on what will happen", context: "Construction, projects" },
+      { when_to_use: "Scheduled events", example: "The ceremony will be held at noon.", reason: "Time/event more important than doer", context: "Events, meetings" },
+      { when_to_use: "Promises/assurances", example: "The issue will be resolved soon.", reason: "Focus on resolution, not who", context: "Customer service, guarantees" },
+      { when_to_use: "Announcements", example: "The results will be announced tomorrow.", reason: "Professional/formal tone", context: "Official communications" },
+      { with_by: "Mentioning doer", structure: "will be V3 + by + doer", example: "The painting will be completed by the artist next week.", usage: "When doer needs mention" },
+      { time_expressions: "Common future markers", expressions: "tomorrow, next week/month/year, soon, in the future, by [date]", examples: "The work will be done by Monday / The store will be opened next month", note: "Same time words as active future" },
+      { comparison: "Active vs Passive", active: "We will announce the winner (emphasis on 'we')", passive: "The winner will be announced (emphasis on 'winner')", key: "Choose based on focus" }
+    ]
+  },
+
   speakingPractice: [
     { question: "They will paint the house.", answer: "The house will be painted." },
     { question: "She will bake a cake.", answer: "A cake will be baked." },
@@ -7506,6 +7525,27 @@ const MODULE_117_DATA = {
 🔹 2. Conditional – Hayali durumlar (şimdi/gelecek): If + past simple, would + V1
 🔹 3. Conditional – Geçmişe dair hayali durumlar: If + past perfect, would have + V3`,
   tip: "Each conditional type expresses different levels of reality and time references",
+
+  table: {
+    title: "📋 Conditionals Review: All Four Types",
+    data: [
+      { type: "Zero Conditional", structure: "If + present simple, present simple", use: "General truths, facts", example: "If you heat ice, it melts.", reality: "100% real (always true)", time: "Any time" },
+      { type: "First Conditional", structure: "If + present simple, will + base verb", use: "Real future possibility", example: "If it rains, I will stay home.", reality: "Possibly real (likely to happen)", time: "Future" },
+      { type: "Second Conditional", structure: "If + past simple, would + base verb", use: "Unreal present/future", example: "If I were rich, I would travel.", reality: "Unreal (imaginary/unlikely)", time: "Present or future" },
+      { type: "Third Conditional", structure: "If + past perfect, would have + V3", use: "Unreal past situation", example: "If I had studied, I would have passed.", reality: "Impossible (didn't happen)", time: "Past" },
+      { aspect: "Zero - When to use", situation: "Scientific facts, habits, general truths", examples: "If water boils, it evaporates / If I'm late, my boss gets angry", key: "Always the same result" },
+      { aspect: "First - When to use", situation: "Real conditions about future", examples: "If she comes, we'll start / If you study, you'll pass", key: "Likely to happen" },
+      { aspect: "Second - When to use", situation: "Hypothetical/unlikely present", examples: "If I had wings, I would fly / If he knew, he would tell us", key: "Contrary to present reality" },
+      { aspect: "Third - When to use", situation: "Regrets, past criticism", examples: "If you had called, I would have helped / If they had left early, they wouldn't have missed it", key: "Changing past (impossible)" },
+      { negatives: "Zero", form: "If... don't/doesn't..., don't/doesn't...", example: "If you don't water plants, they die." },
+      { negatives: "First", form: "If... don't/doesn't..., won't...", example: "If she doesn't study, she won't pass." },
+      { negatives: "Second", form: "If... didn't..., wouldn't...", example: "If I didn't work, I wouldn't earn money." },
+      { negatives: "Third", form: "If... hadn't..., wouldn't have...", example: "If he hadn't lied, we wouldn't have been angry." },
+      { modal_variations: "Second Conditional", could_might: "could/might instead of would", example: "If I won, I might buy a house", meaning: "Less certain result" },
+      { modal_variations: "Third Conditional", could_might_perfect: "could/might have + V3", example: "If she had tried, she could have succeeded", meaning: "Past possibility" }
+    ]
+  },
+
   speakingPractice: [
     { question: "If you heat ice, what happens?", answer: "It melts." },
     { question: "What will you do if it rains tomorrow?", answer: "I will stay home." },
@@ -7558,6 +7598,26 @@ const MODULE_118_DATA = {
 
 ✅ If + past perfect, would have + V3`,
   tip: "Use third conditional to express regrets and hypothetical past situations",
+
+  table: {
+    title: "📋 Third Conditional Structure & Usage",
+    data: [
+      { structure: "If clause", form: "If + had + V3 (past perfect)", example: "If I had studied", meaning: "Past unreal condition", note: "The action didn't happen" },
+      { structure: "Main clause", form: "would have + V3", example: "I would have passed", meaning: "Past unreal result", note: "The result didn't happen" },
+      { form: "Affirmative", full_structure: "If + subject + had + V3, subject + would have + V3", example: "If she had come, we would have started", usage: "Past regret or criticism" },
+      { form: "Negative (if clause)", structure: "If + subject + hadn't + V3", example: "If he hadn't left, he would have met her", meaning: "Condition: didn't not leave = he left" },
+      { form: "Negative (main clause)", structure: "would not have + V3 / wouldn't have + V3", example: "If I had known, I wouldn't have done it", meaning: "Result: didn't do" },
+      { use: "Regrets", situation: "Wishing the past was different", examples: "If I had studied harder, I would have passed / If we had left earlier, we wouldn't have missed the train", emotion: "Disappointment" },
+      { use: "Criticism", situation: "Blaming past actions", examples: "If you had listened, you wouldn't have made that mistake / If they had prepared, they would have succeeded", tone: "Negative judgment" },
+      { use: "Hypothetical past", situation: "Imagining different past", examples: "If I had been born rich, I would have traveled the world / If she had known, she would have helped", key: "Impossible to change" },
+      { modal_variations: "could have", meaning: "Past possibility/ability", example: "If I had tried, I could have won", nuance: "Less certain than 'would'" },
+      { modal_variations: "might have", meaning: "Past possibility (weaker)", example: "If we had called, they might have come", nuance: "Very uncertain result" },
+      { contractions: "Common forms", had_to_d: "I'd / he'd / they'd", would_have_to_would_ve: "would have → would've", example: "If I'd known, I would've helped", note: "Common in speech" },
+      { word_order: "Inversion (formal)", without_if: "Had + subject + V3...", example: "Had I known, I would have acted differently", usage: "Very formal, written English", equivalent: "= If I had known..." },
+      { time_reference: "Important", if_clause_time: "Past", main_clause_time: "Past", key: "Both refer to past", contrast: "Different from 2nd conditional (present/future)" }
+    ]
+  },
+
   speakingPractice: [
     { question: "If I had seen the sign, what would I have done?", answer: "You would have stopped." },
     { question: "If she had listened, what would have happened?", answer: "She wouldn't have made the mistake." },
@@ -7612,6 +7672,26 @@ const MODULE_119_DATA = {
 1. Geçmiş neden → şu anki sonuç: If + past perfect, would + V1
 2. Şimdiki neden → geçmiş sonuç: If + past simple, would have + V3`,
   tip: "Mix different time references to show cause and effect across time periods",
+
+  table: {
+    title: "📋 Mixed Conditionals: Crossing Time",
+    data: [
+      { type: "Type 1: Past → Present", structure: "If + past perfect, would + base verb", time: "Past condition → Present result", example: "If I had studied harder, I would be a doctor now.", meaning: "Past action affects present" },
+      { type: "Type 2: Present → Past", structure: "If + past simple, would have + V3", time: "Present condition → Past result", example: "If I were smarter, I would have solved it.", meaning: "Present quality affects past" },
+      { type_1_use: "Past action, present consequence", situation: "Past decision affecting now", examples: "If she had accepted the job, she would be living in Paris / If we had saved money, we would have enough now", key: "Regret about past choice" },
+      { type_1_breakdown: "If clause", form: "If + had + V3 (past perfect)", time_ref: "Past (didn't happen)", example: "If I had learned Spanish" },
+      { type_1_breakdown: "Main clause", form: "would + base verb (2nd cond. result)", time_ref: "Present/now", example: "I would speak it now" },
+      { type_2_use: "Present characteristic, past effect", situation: "Permanent quality affecting past", examples: "If I were taller, I would have joined the team / If he weren't lazy, he would have finished yesterday", key: "Hypothetical quality" },
+      { type_2_breakdown: "If clause", form: "If + past simple (were/was)", time_ref: "Present (unreal quality)", example: "If I were braver" },
+      { type_2_breakdown: "Main clause", form: "would have + V3 (3rd cond. result)", time_ref: "Past", example: "I would have spoken up" },
+      { comparison: "Type 1 vs Regular 3rd", mixed: "If I had studied (past), I would be ready now (present)", third: "If I had studied (past), I would have passed (past)", key: "Mixed crosses time periods" },
+      { comparison: "Type 2 vs Regular 2nd", mixed: "If I were stronger (present), I would have lifted it (past)", second: "If I were stronger (present), I would lift it (present/future)", key: "Mixed looks back to past" },
+      { common_phrases: "Type 1 examples", phrases: "If I had known..., I would be... now / If we had left..., we would be... already / If she had gone..., she would have... today", pattern: "Past perfect → present/now" },
+      { common_phrases: "Type 2 examples", phrases: "If I were..., I would have... / If he weren't so..., he would have... / If they were more..., they would have...", pattern: "Present quality → past event" },
+      { time_markers: "Help identify type", type_1_markers: "now, today, at the moment, currently", type_2_markers: "yesterday, last year, then, at that time", key: "Markers show which time each clause refers to" }
+    ]
+  },
+
   speakingPractice: [
     { question: "If she had studied more, what would she be doing now?", answer: "She would be attending university." },
     { question: "If I were more organized, what would I have done?", answer: "You would have finished on time." },
@@ -7665,6 +7745,25 @@ const MODULE_120_DATA = {
 ✅ Yapı: Wish / If only + past simple
 Bu yapı, şu anda gerçek olmayan veya hayal ettiğimiz bir durumu anlatmak için kullanılır.`,
   tip: "Use wish/if only + past simple to express regrets about present situations",
+
+  table: {
+    title: "📋 Wish / If only + Past Simple (Present Regrets)",
+    data: [
+      { structure: "wish", form: "Subject + wish + subject + past simple", example: "I wish I had a car.", meaning: "I don't have a car (I want one)", usage: "Polite regret" },
+      { structure: "if only", form: "If only + subject + past simple", example: "If only I had a car!", meaning: "I don't have a car (strong desire)", usage: "Stronger emotion" },
+      { difference: "wish vs if only", wish_tone: "Polite, mild regret", if_only_tone: "Dramatic, strong emotion", example: "I wish I were rich (mild) / If only I were rich! (dramatic)", key: "if only = more emphatic" },
+      { verb_be: "Special case", form: "wish/if only + were (NOT was)", example: "I wish I were taller / If only he were here", rule: "Always use 'were' for all subjects", note: "Even for I/he/she/it" },
+      { with_have: "Possession/state", reality: "I don't have → I wish I had", examples: "I wish I had a dog / I wish I had more time / I wish I had her number", meaning: "Want to possess something" },
+      { with_be: "Characteristics", reality: "I'm not → I wish I were", examples: "I wish I were smarter / I wish I were taller / If only she were here", meaning: "Want different quality/state" },
+      { with_other_verbs: "Actions/abilities", reality: "I don't → I wish I did", examples: "I wish I lived here / I wish I knew the answer / I wish I spoke Spanish", meaning: "Want different situation" },
+      { with_could: "Ability", structure: "wish + could + base verb", examples: "I wish I could fly / I wish I could sing / If only I could help", meaning: "Want ability I don't have" },
+      { negatives: "Negative wishes", structure: "wish + didn't/weren't/couldn't", examples: "I wish I weren't so busy / I wish it didn't rain / If only he didn't smoke", meaning: "Want to stop/change current situation" },
+      { time_reference: "Important", time: "Present or general situation", contrast: "NOT about past events", example: "I wish I had money (now) ≠ I wish I had saved money (past)", key: "Past simple refers to present" },
+      { common_mistakes: "Don't say", wrong: "I wish I have / I wish I am / I wish I can", correct: "I wish I had / I wish I were / I wish I could", rule: "Must use past forms" },
+      { expressing_annoyance: "About others' behavior", structure: "wish + would", example: "I wish he would stop talking / I wish it would stop raining", meaning: "Want someone/something to change", note: "For actions that annoy us" }
+    ]
+  },
+
   speakingPractice: [
     { question: "You don't have a car. What do you say?", answer: "I wish I had a car." },
     { question: "You are not tall. What do you say?", answer: "If only I were taller." },
