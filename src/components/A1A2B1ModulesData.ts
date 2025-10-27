@@ -4865,12 +4865,51 @@ Kullanışlı Sorular:
 • Do you have any brothers or sisters? (Kardeşin var mı?)
 • How many people are there in your family? (Ailende kaç kişi var?)`,
   tip: "Use possessive forms to show relationships: 'my father', 'her sister', 'his brother'",
-  
-  table: [
-    { question: "Who is your mother's mother?", answer: "She is my grandmother.", usage: "Family relationships" },
-    { question: "Do you have any cousins?", answer: "Yes, I do.", usage: "Yes/No questions" },
-    { question: "How many people are there in your family?", answer: "There are five people.", usage: "Counting family" }
-  ],
+
+  table: {
+    title: "📋 Family Members Vocabulary (Aile Üyeleri)",
+    data: [
+      { category: "What is a Family?", explanation: "People related to you by blood or marriage", turkish: "Aile - kan bağı veya evlilik yoluyla akrabalık", function: "Talk about relatives and family relationships", questions: "Who is...? / Do you have...? / How many...?", note: "Family is one of the most important topics in daily conversation!" },
+
+      { category: "Immediate Family (Nuclear Family)", parents: "parents (ebeveynler) - mother and father together", mother_mom: "mother / mom (anne) - female parent", father_dad: "father / dad (baba) - male parent", son: "son (oğul) - male child", daughter: "daughter (kız evlat) - female child", brother: "brother (erkek kardeş) - male sibling", sister: "sister (kız kardeş) - female sibling", note: "Closest family members you live with" },
+
+      { category: "Grandparents (Büyük Ebeveynler)", grandparents: "grandparents (büyük anne ve büyük baba) - parents' parents", grandmother_grandma: "grandmother / grandma (büyükanne/anneanne/babaanne) - mother's or father's mother", grandfather_grandpa: "grandfather / grandpa (büyükbaba/dede) - mother's or father's father", grandson: "grandson (erkek torun) - son's or daughter's son", granddaughter: "granddaughter (kız torun) - son's or daughter's daughter", note: "Your parents' parents" },
+
+      { category: "Extended Family - Parents' Siblings", uncle: "uncle (amca/dayı/enişte) - parent's brother OR aunt's husband", aunt: "aunt (hala/teyze/yenge) - parent's sister OR uncle's wife", specific_turkish: "amca (father's brother), dayı (mother's brother), enişte (aunt's husband)", specific_turkish_2: "hala (father's sister), teyze (mother's sister), yenge (uncle's wife)", note: "English has only 2 words, Turkish has 6!" },
+
+      { category: "Cousins, Nieces, Nephews", cousin: "cousin (kuzen) - aunt's or uncle's child (male OR female)", nephew: "nephew (erkek yeğen) - brother's or sister's son", niece: "niece (kız yeğen) - brother's or sister's daughter", note: "'Cousin' is the same word for both male and female in English!", difference: "In Turkish: kuzen, yeğen distinguish gender more clearly" },
+
+      { category: "Marriage & Spouse", husband: "husband (koca, eş) - married man", wife: "wife (eş, karı) - married woman", spouse: "spouse (eş) - neutral word for husband or wife", married: "married (evli) - She is married. / They are married.", single: "single (bekar) - not married", note: "Marriage vocabulary" },
+
+      { category: "In-Laws (Kayın Akrabalar)", father_in_law: "father-in-law (kayınpeder) - spouse's father", mother_in_law: "mother-in-law (kayınvalide) - spouse's mother", brother_in_law: "brother-in-law (kayınbirader/enişte) - spouse's brother OR sister's husband", sister_in_law: "sister-in-law (görümce/baldız) - spouse's sister OR brother's wife", son_in_law: "son-in-law (damat) - daughter's husband", daughter_in_law: "daughter-in-law (gelin) - son's wife", note: "Family by marriage, not by blood" },
+
+      { category: "Step Family & Half Siblings", stepmother: "stepmother (üvey anne) - father's new wife (not biological mother)", stepfather: "stepfather (üvey baba) - mother's new husband (not biological father)", stepbrother: "stepbrother (üvey erkek kardeş) - stepparent's son", stepsister: "stepsister (üvey kız kardeş) - stepparent's daughter", half_brother: "half-brother (öz kardeş - one parent same) - same mother OR father", half_sister: "half-sister (öz kardeş - one parent same) - same mother OR father", note: "Family from remarriage or blended families" },
+
+      { category: "Possessive Forms (My, Your, His, Her)", my: "my father, my mother, my brother, my sister", your: "your father, your mother, your brother, your sister", his: "his father, his mother, his brother, his sister (for males)", her: "her father, her mother, her brother, her sister (for females)", our: "our father, our mother (shared family)", their: "their father, their mother", note: "ALWAYS use possessives with family members!", remember: "MY father (NOT the father or father only)" },
+
+      { category: "Asking About Family", who_is: "Who is your mother? → She is my mom.", do_you_have: "Do you have any brothers or sisters? → Yes, I have one brother.", how_many: "How many siblings do you have? → I have two sisters.", whats_his_name: "What's your brother's name? → His name is Ali.", how_old: "How old is your sister? → She is 16 years old.", note: "Common family questions" },
+
+      { category: "Singular vs Plural", singular: "child (çocuk) - one child", plural: "children (çocuklar) - two or more kids", note: "IRREGULAR plural: child → children (NOT childs!)", remember: "Do you have children? (plural) / I have one child. (singular)" },
+
+      { category: "Siblings", sibling: "sibling (kardeş) - brother or sister (neutral word)", siblings: "siblings (kardeşler) - brothers and/or sisters (plural)", only_child: "only child (tek çocuk) - no brothers or sisters", examples: "I have three siblings. / I'm an only child. / My siblings are older than me.", note: "'Sibling' is a gender-neutral word" },
+
+      { category: "Family Size", small_family: "small family (küçük aile) - 3-4 people", big_family: "big family (kalabalık aile) - 5+ people", nuclear_family: "nuclear family (çekirdek aile) - parents + children only", extended_family: "extended family (geniş aile) - includes grandparents, aunts, uncles, cousins", note: "Describing family size and type" },
+
+      { category: "Describing Family", close_family: "close family (yakın aile) - we spend a lot of time together", get_along: "get along (anlaşmak) - have a good relationship", look_like: "look like (benzemek) - similar appearance", examples: "We are a close family. / I get along with my sister. / I look like my father.", note: "Talking about family relationships" },
+
+      { category: "Age & Birth Order", older: "older (daha büyük) - My brother is older than me.", younger: "younger (daha küçük) - My sister is younger.", oldest: "oldest (en büyük) - I'm the oldest child.", youngest: "youngest (en küçük) - She's the youngest in the family.", middle_child: "middle child (ortanca) - between oldest and youngest", note: "Birth order and age comparisons" },
+
+      { category: "Common Questions & Answers", q1: "Do you have any brothers or sisters? → Yes, I have one brother and one sister. / No, I'm an only child.", q2: "How many people are there in your family? → There are five people in my family.", q3: "Do you live with your parents? → Yes, I do. / No, I live alone.", q4: "Who do you look like? → I look like my mother.", q5: "Is your family big? → Yes, I have many cousins and uncles.", note: "Practice these common family conversations!" },
+
+      { category: "Common Mistakes", mistake_1: "Forgetting possessives", wrong_1: "Father is a doctor ✗ / Sister is 10 years old ✗", correct_1: "MY father is a doctor ✓ / MY sister is 10 years old ✓", rule: "ALWAYS use possessive (my, your, his, her) with family members", remember: "My father, your mother, his brother, her sister" },
+      { category: "Common Mistakes", mistake_2: "Using wrong plural for 'child'", wrong_2: "I have two childs ✗", correct_2: "I have two children ✓", rule: "IRREGULAR plural: child → children", remember: "One child, two children" },
+      { category: "Common Mistakes", mistake_3: "Confusing 'older' and 'elder'", older: "older - used in comparisons (older THAN)", elder: "elder - used before noun (my elder brother)", correct: "She is older than me ✓ / My elder sister ✓", note: "'Elder' is formal, 'older' is more common" },
+
+      { category: "Real-World Uses", introductions: "This is my mother. Her name is Fatma. This is my father, Mehmet.", talking_about_family: "I have a big family. I have two brothers and one sister. My grandparents live with us.", family_events: "We visit our relatives on holidays. My uncle lives in Istanbul.", general: "Essential for introducing people and talking about your life!" },
+
+      { category: "Key Takeaway", summary: "Family vocabulary helps you talk about relatives and relationships", immediate: "mother, father, brother, sister, son, daughter", grandparents: "grandmother, grandfather, grandson, granddaughter", extended: "uncle, aunt, cousin, nephew, niece", marriage: "husband, wife, father-in-law, mother-in-law", possessives: "ALWAYS use: my father, your mother, his brother, her sister", questions: "Who is...? / Do you have...? / How many...? / What's...name?", irregular: "child → children (NOT childs!)", remember: "Use possessives! Know immediate and extended family! Practice family questions!", next: "Introduce your family members and describe your family!" }
+    ]
+  },
   
   speakingPractice: [
     { question: "Do you have any brothers or sisters?", answer: "Yes, I have one sister." },
@@ -4933,12 +4972,47 @@ const MODULE_47_DATA = {
 Şehirdeki yaygın yerler:
 bank (banka), supermarket (market), hospital (hastane), school (okul), post office (postane), police station (karakol), bus stop (otobüs durağı), park (park), restaurant (restoran), hotel (otel)`,
   tip: "Use prepositions like 'next to', 'opposite', 'between' to describe locations",
-  
-  table: [
-    { question: "Where is the …?", example: "Where is the bank?", usage: "Asking for location" },
-    { question: "How can I get to …?", example: "How can I get to the post office?", usage: "Asking for directions" },
-    { answer: "It's next to … / It's opposite … / It's between …", example: "It's next to the supermarket.", usage: "Giving location" }
-  ],
+
+  table: {
+    title: "📋 Directions and Places Vocabulary (Yön Tarifi ve Yerler)",
+    data: [
+      { category: "What are Directions?", explanation: "Instructions to help someone find a place or location", turkish: "Yön tarifi - birine bir yeri nasıl bulacağını anlatmak", function: "Give and understand directions to navigate a town or city", key_phrases: "Where is...? / How can I get to...? / Turn left/right / Go straight", note: "Essential for traveling and finding places!" },
+
+      { category: "Direction Verbs (Yön Fiilleri)", turn_left: "turn left (sola dön) - change direction to the left", turn_right: "turn right (sağa dön) - change direction to the right", go_straight: "go straight (düz git) - continue in the same direction, don't turn", go_past: "go past (geç) - continue beyond a place without stopping", cross: "cross (karşıya geç) - go from one side to the other (cross the street, cross the bridge)", note: "Basic movement verbs for giving directions" },
+
+      { category: "Asking for Directions", where_is: "Where is the bank? (Banka nerede?)", how_can_i_get: "How can I get to the post office? (Postaneye nasıl gidebilirim?)", is_there_near: "Is there a hospital near here? (Yakında hastane var mı?)", excuse_me: "Excuse me, where is the nearest supermarket? (Affedersiniz, en yakın market nerede?)", can_you_tell: "Can you tell me the way to the station? (Bana istasyonun yolunu tarif edebilir misiniz?)", note: "Polite ways to ask for help" },
+
+      { category: "Giving Simple Directions", go_straight: "Go straight. (Düz gidin.)", turn_left_at: "Turn left at the traffic lights. (Trafikte sola dönün.)", turn_right_at: "Turn right at the corner. (Köşede sağa dönün.)", its_on_the_left: "It's on the left. (Solda.)", its_on_the_right: "It's on the right. (Sağda.)", note: "Basic direction responses" },
+
+      { category: "Prepositions of Place", next_to: "next to (yanında) - beside, at the side of", opposite: "opposite (karşısında) - across from, facing", between: "between (arasında) - in the middle of two things", behind: "behind (arkasında) - at the back of", in_front_of: "in front of (önünde) - before, at the front of", near: "near (yakınında) - close to", note: "Describe exact locations" },
+
+      { category: "Using Prepositions Examples", example_1: "The bank is next to the supermarket. (Banka marketin yanında.)", example_2: "The school is opposite the park. (Okul parkın karşısında.)", example_3: "The hotel is between the restaurant and the café. (Otel restoranla kafenin arasında.)", example_4: "The post office is behind the library. (Postane kütüphanenin arkasında.)", example_5: "The bus stop is in front of the hospital. (Otobüs durağı hastanenin önünde.)", note: "Practice using prepositions to describe locations!" },
+
+      { category: "Landmarks & Reference Points", at_the_corner: "at the corner (köşede) - where two streets meet", traffic_lights: "at the traffic lights (trafikte, ışıklarda) - intersection with lights", roundabout: "at the roundabout (dönel kavşakta) - circular intersection", bridge: "bridge (köprü) - cross the bridge", crossroads: "at the crossroads (kavşakta) - where two roads cross", note: "Reference points for navigation" },
+
+      { category: "Common Places in a Town/City", bank: "bank (banka) - where you get money, open accounts", post_office: "post office (postane) - send letters and packages", hospital: "hospital (hastane) - medical care, emergency", pharmacy: "pharmacy (eczane) - buy medicine", supermarket: "supermarket (market, süpermarket) - buy food and groceries", police_station: "police station (polis karakolu) - for police help", note: "Essential services" },
+      { category: "More City Places", school: "school (okul) - where children study", library: "library (kütüphane) - borrow books", park: "park (park) - green space, playground", bus_stop: "bus stop (otobüs durağı) - wait for the bus", train_station: "train station (tren istasyonu) - catch trains", airport: "airport (havalimanı) - fly to other cities", note: "Public places and transportation" },
+      { category: "Shops & Services", restaurant: "restaurant (restoran) - eat meals", café_coffee_shop: "café / coffee shop (kafe) - drink coffee, snacks", hotel: "hotel (otel) - accommodation for travelers", bakery: "bakery (fırın) - buy bread and pastries", bookshop: "bookshop (kitapçı) - buy books", shopping_mall: "shopping mall (alışveriş merkezi) - large indoor shopping center", note: "Commercial and service places" },
+
+      { category: "Distance & Time Expressions", its_close: "It's close. / It's near. (Yakın.)", its_far: "It's far. (Uzak.)", its_5_minutes_away: "It's 5 minutes away. (5 dakika uzaklıkta.)", you_can_walk: "You can walk. (Yürüyebilirsiniz.)", take_a_bus: "You need to take a bus/taxi. (Otobüs/taksi almanız gerek.)", just_past: "It's just past the supermarket. (Marketin hemen ötesinde.)", note: "Describe how far a place is" },
+
+      { category: "Street & Road Vocabulary", street_road: "street / road (sokak, cadde)", avenue: "avenue (bulvar, cadde) - wide street", lane: "lane (şerit, dar sokak)", block: "block (blok) - buildings between streets", sidewalk: "sidewalk (kaldırım) - path for walking", intersection: "intersection (kavşak) - where streets meet", note: "Parts of the road system" },
+
+      { category: "Complete Direction Example", full_directions: "Excuse me, where is the bank? → Go straight down this street. Turn right at the traffic lights. Go past the supermarket. The bank is on your left, next to the pharmacy. It's about 5 minutes away.", breakdown: "1. Go straight (direction), 2. Turn right (turn), 3. Go past (landmark), 4. On the left (location), 5. Next to (preposition)", note: "Multi-step directions with landmarks!" },
+
+      { category: "Understanding Directions - Key Words", listen_for: "LEFT, RIGHT, STRAIGHT, PAST, AT, CORNER, LIGHTS", prepositions: "NEXT TO, OPPOSITE, BETWEEN, BEHIND, IN FRONT OF", distance: "CLOSE, FAR, MINUTES AWAY, WALK", confirmation: "Can you repeat that? / Is it far? / On the left or right?", note: "Pay attention to these key words when listening!" },
+
+      { category: "Polite Responses", thank_you: "Thank you! / Thanks a lot! (Teşekkür ederim!)", youre_welcome: "You're welcome. (Bir şey değil.)", sorry_dont_know: "Sorry, I don't know. I'm not from here. (Üzgünüm, bilmiyorum. Ben bu civarda değilim.)", let_me_show: "Let me show you on the map. (Haritada göstereyim.)", note: "Be polite when asking and helping!" },
+
+      { category: "Common Mistakes", mistake_1: "Confusing left and right", tip: "Use your hands to check! Left hand = L shape", practice: "Point as you say: 'Turn left' (point left), 'Turn right' (point right)", remember: "LEFT = sol | RIGHT = sağ" },
+      { category: "Common Mistakes", mistake_2: "Saying 'in' instead of 'at' with corners", wrong_2: "Turn left in the corner ✗", correct_2: "Turn left AT the corner ✓", rule: "Use AT with specific points (corner, traffic lights)", remember: "AT the corner, AT the lights, AT the crossroads" },
+      { category: "Common Mistakes", mistake_3: "Forgetting articles with places", wrong_3: "Go to bank ✗ / It's next to hospital ✗", correct_3: "Go to THE bank ✓ / It's next to THE hospital ✓", rule: "Use THE with specific places", remember: "Always 'the bank', 'the hospital', 'the school'" },
+
+      { category: "Real-World Uses", tourists: "Excuse me, where is the train station? / How can I get to the museum?", locals_helping: "Go straight and turn left at the second street. It's on your right.", using_maps: "According to the map, the café is opposite the library.", emergency: "Where is the nearest hospital? / Is there a pharmacy near here?", general: "Essential for navigating cities and helping others!" },
+
+      { category: "Key Takeaway", summary: "Directions vocabulary helps you navigate and find places", asking: "Where is...? / How can I get to...? / Is there a...near here?", giving: "Go straight / Turn left/right / Go past / It's on the left/right", prepositions: "next to, opposite, between, behind, in front of, near", places: "bank, hospital, school, park, restaurant, bus stop, train station", distance: "close, far, 5 minutes away, you can walk", landmarks: "at the corner, at the traffic lights, at the roundabout", remember: "Listen for LEFT, RIGHT, STRAIGHT, PAST! Use THE with places! Practice with maps!", next: "Practice giving and following directions!" }
+    ]
+  },
   
   speakingPractice: [
     { question: "Where is the nearest bank?", answer: "It's next to the supermarket." },
@@ -4997,12 +5071,51 @@ Kullanışlı ifadeler:
 • It's going to rain. (Yağmur yağacak.)
 • It was very cold yesterday. (Dün hava çok soğuktu.)`,
   tip: "Use 'What's the weather like?' to ask about weather and 'It's...' to describe it",
-  
-  table: [
-    { question: "What's the weather like?", answer: "It's sunny today.", usage: "Asking about weather" },
-    { question: "Is it raining?", answer: "Yes, it is. / No, it isn't.", usage: "Yes/No questions" },
-    { structure: "It's going to + weather word", example: "It's going to snow tomorrow.", usage: "Future weather" }
-  ],
+
+  table: {
+    title: "📋 Weather Vocabulary (Hava Durumu)",
+    data: [
+      { category: "What is Weather?", explanation: "Atmospheric conditions - what it's like outside", turkish: "Hava durumu - dışarıdaki atmosferik koşullar", function: "Describe current weather, talk about forecasts, plan activities", key_question: "What's the weather like? (Hava nasıl?)", note: "One of the most common small talk topics!" },
+
+      { category: "Weather Conditions (Hava Koşulları)", sunny: "sunny (güneşli) - bright sun, clear sky", cloudy: "cloudy (bulutlu) - sky covered with clouds", rainy: "rainy (yağmurlu) - raining, wet", snowy: "snowy (karlı) - snowing, covered with snow", windy: "windy (rüzgarlı) - a lot of wind blowing", foggy: "foggy (sisli) - low visibility, mist", stormy: "stormy (fırtınalı) - thunder, lightning, heavy rain/wind", note: "Main weather conditions" },
+
+      { category: "Temperature Words", hot: "hot (sıcak) - very warm, uncomfortable heat", warm: "warm (ılık) - pleasantly hot", cool: "cool (serin) - pleasantly cold", cold: "cold (soğuk) - low temperature, need warm clothes", freezing: "freezing (dondurucu soğuk) - extremely cold", mild: "mild (ılıman) - neither hot nor cold, comfortable", note: "Describing temperature" },
+
+      { category: "Asking About Weather", whats_the_weather_like: "What's the weather like? (Hava nasıl?) - MOST COMMON", hows_the_weather: "How's the weather? (Hava nasıl?)", is_it_raining: "Is it raining? / Is it snowing? (Yağmur yağıyor mu? / Kar yağıyor mu?)", whats_the_temperature: "What's the temperature? (Sıcaklık kaç derece?)", will_it_rain: "Will it rain tomorrow? (Yarın yağmur yağacak mı?)", note: "Common weather questions" },
+
+      { category: "Describing Weather with IT'S", structure: "It's + adjective", examples: "It's sunny. / It's rainy. / It's cold. / It's hot. / It's windy.", pattern: "Always use IT'S (not 'The weather is' in casual speech)", turkish: "Hava + sıfat", note: "Simple and natural way to describe weather", remember: "It's sunny (NOT The weather is sunny - though grammatically correct, less common)" },
+
+      { category: "Present Continuous for Weather", structure: "It's + verb-ing", examples: "It's raining. (Yağmur yağıyor.) / It's snowing. (Kar yağıyor.)", use: "For weather happening RIGHT NOW", note: "More specific than just 'rainy' or 'snowy'", rain: "It's raining. (happening now) vs. It's rainy. (general condition)", snow: "It's snowing. (happening now) vs. It's snowy. (general condition)" },
+
+      { category: "Weather Verbs", rain: "rain (yağmur yağmak) - It's raining. / It rained yesterday.", snow: "snow (kar yağmak) - It's snowing. / It snowed last night.", shine: "shine (parlamak) - The sun is shining. (Güneş parlıyor.)", blow: "blow (esmek) - The wind is blowing. (Rüzgar esiyor.)", note: "Actions of weather elements" },
+
+      { category: "Weather Nouns", rain: "rain (yağmur) - There's a lot of rain today.", snow: "snow (kar) - The snow is beautiful.", sun: "sun (güneş) - The sun is out!", wind: "wind (rüzgar) - The wind is strong.", cloud: "cloud (bulut) - Look at the clouds.", storm: "storm (fırtına) - There's a storm coming.", note: "Weather as things/objects" },
+
+      { category: "Extreme Weather", thunder: "thunder (gök gürültüsü) - loud sound in storm", lightning: "lightning (şimşek) - bright flash in storm", hurricane: "hurricane (kasırga) - very strong storm", flood: "flood (sel) - too much water", blizzard: "blizzard (kar fırtınası) - heavy snow with strong wind", heatwave: "heatwave (sıcak hava dalgası) - very hot period", note: "Dangerous or unusual weather" },
+
+      { category: "What to Wear in Weather", sunny_hot: "In sunny/hot weather: shorts, T-shirt, sunglasses, sunscreen", rainy: "In rainy weather: raincoat, umbrella, boots", cold_snowy: "In cold/snowy weather: coat, gloves, scarf, hat, warm clothes", windy: "In windy weather: jacket, secure your hat!", note: "Practical vocabulary for planning!" },
+
+      { category: "Weather and Activities", sunny: "Sunny weather: go to the beach, have a picnic, play outside", rainy: "Rainy weather: stay inside, watch movies, read books", snowy: "Snowy weather: make a snowman, go skiing", hot: "Hot weather: swim, drink cold water, stay in the shade", cold: "Cold weather: drink hot tea, wear warm clothes", note: "What to do in different weather!" },
+
+      { category: "Past Tense - Yesterday's Weather", structure: "It WAS + adjective", examples: "It was sunny yesterday. / It was cold last week.", raining: "It was raining. (Past continuous)", rained: "It rained. (Simple past)", note: "Use WAS (not is) for past weather", remember: "It was sunny (yesterday) | It is sunny (today) | It will be sunny (tomorrow)" },
+
+      { category: "Future Tense - Tomorrow's Weather", structure: "It WILL BE + adjective OR It's GOING TO + verb", examples: "It will be sunny tomorrow. / It's going to rain tonight.", forecast: "The forecast says it will snow. (Hava tahmini kar yağacağını söylüyor.)", note: "Talking about future weather", remember: "It will be sunny | It's going to be sunny (both correct)" },
+
+      { category: "Seasons & Weather", spring: "Spring (İlkbahar) - warm, rainy, flowers bloom", summer: "Summer (Yaz) - hot, sunny, dry", autumn_fall: "Autumn/Fall (Sonbahar) - cool, windy, leaves fall", winter: "Winter (Kış) - cold, snowy, short days", note: "Typical weather in each season", pattern: "In + season: In summer, it's hot. In winter, it's cold." },
+
+      { category: "Checking Weather Forecast", weather_forecast: "weather forecast (hava tahmini) - prediction of future weather", check_weather: "I check the weather every morning. (Her sabah havayı kontrol ederim.)", weather_app: "weather app (hava durumu uygulaması) - phone app for weather", whats_the_forecast: "What's the forecast for tomorrow? (Yarının tahmini nasıl?)", note: "Modern weather vocabulary" },
+
+      { category: "Common Weather Expressions", nice_weather: "nice weather (güzel hava) - pleasant conditions", bad_weather: "bad weather (kötü hava) - unpleasant conditions", beautiful_day: "What a beautiful day! (Ne güzel bir gün!)", terrible_weather: "The weather is terrible today. (Hava bugün berbat.)", love_this_weather: "I love this weather! / I hate this weather!", note: "Expressing opinions about weather" },
+
+      { category: "Common Mistakes", mistake_1: "Using 'The weather' instead of 'It'", wrong_1: "The weather is raining ✗", correct_1: "It's raining ✓ OR The weather is rainy ✓", rule: "It's raining (verb-ing) OR It's rainy (adjective)", remember: "It's + verb-ing for action!" },
+      { category: "Common Mistakes", mistake_2: "Saying 'it have' instead of 'there is'", wrong_2: "It has rain ✗", correct_2: "It's raining ✓ / There is rain ✓", rule: "Use IT'S for weather, not IT HAS", remember: "It's raining, not 'it has rain'" },
+      { category: "Common Mistakes", mistake_3: "Confusing 'cold' and 'cool'", cold: "cold (soğuk) - need a coat, uncomfortable", cool: "cool (serin) - pleasant, light jacket", wrong_3: "It's cool in winter ✗ (winter is COLD!)", correct_3: "It's cold in winter ✓ / It's cool in autumn ✓", remember: "Cold = uncomfortable | Cool = pleasant" },
+
+      { category: "Real-World Uses", small_talk: "Nice weather today, isn't it? / It's so cold!", planning: "What's the weather like tomorrow? Should I bring an umbrella?", travel: "What's the weather like in Paris in June? / I heard it's very hot there.", complaints: "I hate this rainy weather. / I can't wait for summer!", general: "Weather is the #1 small talk topic worldwide!" },
+
+      { category: "Key Takeaway", summary: "Weather vocabulary describes atmospheric conditions", question: "What's the weather like? (most common question)", answer_its: "It's sunny / rainy / snowy / cloudy / hot / cold / windy / foggy", present_continuous: "It's raining / It's snowing (happening now)", conditions: "sunny, rainy, snowy, cloudy, windy, foggy, stormy", temperature: "hot, warm, cool, cold, freezing, mild", past: "It was sunny yesterday. / It was raining.", future: "It will be sunny tomorrow. / It's going to rain.", seasons: "Spring - warm, rainy | Summer - hot, sunny | Autumn - cool, windy | Winter - cold, snowy", remember: "Use IT'S (not 'the weather is')! It's raining (verb-ing) vs. It's rainy (adjective)!", next: "Practice describing today's weather and making predictions!" }
+    ]
+  },
   
   speakingPractice: [
     { question: "What's the weather like today?", answer: "It's sunny and warm." },
@@ -5059,12 +5172,55 @@ Kullanışlı sorular:
 • I'm wearing a blue shirt. (Mavi bir gömlek giyiyorum.)
 • What do you wear in winter? (Kışın ne giyersin?)`,
   tip: "Use 'What are you wearing?' for current clothes and 'What do you wear?' for general habits",
-  
-  table: [
-    { question: "What are you wearing?", answer: "I'm wearing jeans.", usage: "Current clothing" },
-    { structure: "He/She is wearing + clothing item", example: "She is wearing a red dress.", usage: "Describing others" },
-    { question: "Do you wear + clothing item?", answer: "Do you wear a jacket in winter?", usage: "General habits" }
-  ],
+
+  table: {
+    title: "📋 Clothes Vocabulary (Kıyafetler, Giysiler)",
+    data: [
+      { category: "What are Clothes?", explanation: "Items we wear on our body for protection, warmth, and style", turkish: "Giysiler, kıyafetler - vücudumuza giydiğimiz şeyler", function: "Talk about what you're wearing, describe outfits, discuss fashion", key_questions: "What are you wearing? / What do you wear...? / Do you like...?", note: "Essential for shopping, daily life, and describing people!" },
+
+      { category: "Basic Top Clothing", shirt: "shirt (gömlek) - formal top with collar and buttons", t_shirt: "T-shirt (tişört) - casual top, short sleeves", blouse: "blouse (bluz) - women's shirt", sweater: "sweater (kazak, süveter) - warm knitted top", jacket: "jacket (ceket) - light outer clothing", coat: "coat (mont, palto) - heavy outer clothing for winter", note: "Upper body clothing" },
+
+      { category: "Bottom Clothing", pants_trousers: "pants / trousers (pantolon) - long leg covering", jeans: "jeans (kot pantolon) - blue denim pants", shorts: "shorts (şort) - short pants (above knee)", skirt: "skirt (etek) - women's bottom clothing (not pants)", leggings: "leggings (tayt) - tight stretchy pants", note: "Lower body clothing" },
+
+      { category: "Dresses & Full Outfits", dress: "dress (elbise) - one-piece women's clothing (top + bottom together)", suit: "suit (takım elbise) - formal matching jacket and pants/skirt", uniform: "uniform (üniforma) - special clothes for work or school", pajamas: "pajamas / pyjamas (pijama) - clothes for sleeping", note: "Complete outfits" },
+
+      { category: "Footwear (Ayakkabılar)", shoes: "shoes (ayakkabı) - general foot covering", boots: "boots (bot, çizme) - tall shoes (cover ankles)", sandals: "sandals (sandalet) - open shoes for warm weather", sneakers: "sneakers (spor ayakkabı) - athletic shoes", high_heels: "high heels (topuklu ayakkabı) - women's formal shoes", slippers: "slippers (terlik) - comfortable shoes for home", note: "Things you wear on feet" },
+
+      { category: "Accessories - Head & Hands", hat: "hat (şapka) - cover for head", cap: "cap (şapka, kasket) - baseball cap style", scarf: "scarf (atkı, eşarp) - wrap around neck or head", gloves: "gloves (eldiven) - cover for hands (fingers separate)", mittens: "mittens (eldivenler) - cover for hands (fingers together)", note: "Extras to keep warm or look good" },
+
+      { category: "More Accessories", belt: "belt (kemer) - worn around waist to hold pants", tie: "tie (kravat) - formal cloth around neck", socks: "socks (çorap) - foot covering under shoes", sunglasses: "sunglasses (güneş gözlüğü) - protect eyes from sun", watch: "watch (saat) - tell time on wrist", jewelry: "jewelry (takı, mücevher) - rings, necklaces, earrings, bracelets", note: "Complete the outfit!" },
+
+      { category: "WEAR vs PUT ON vs TAKE OFF", wear: "wear (giymek - üzerinde olmak) - have clothes ON your body", example_wear: "I wear jeans every day. / She's wearing a dress.", put_on: "put on (giymek - eylem) - the ACTION of dressing", example_put_on: "Put on your coat! It's cold. (Montunu giy!)", take_off: "take off (çıkarmak) - remove clothes", example_take_off: "Take off your shoes inside. (Ayakkabılarını çıkar.)", note: "WEAR = state | PUT ON = action (dressing) | TAKE OFF = action (undressing)" },
+
+      { category: "What Are You Wearing? (Present Continuous)", structure: "What are you wearing? (Şu anda ne giyiyorsun?)", use: "Asking about clothes RIGHT NOW", examples: "I'm wearing jeans and a T-shirt. / She's wearing a blue dress. / They're wearing uniforms.", pattern: "Subject + am/is/are + wearing + clothes", note: "Use Present Continuous for current clothing!" },
+
+      { category: "What Do You Wear? (Present Simple)", structure: "What do you wear...? (Genelde ne giyersin?)", use: "Asking about HABITS, general situations", examples: "What do you wear to school? / What do you wear in winter? / What do you wear to bed?", pattern: "What do/does + subject + wear + (situation)?", note: "Use Present Simple for habits and routines!" },
+
+      { category: "Describing Others' Clothes", structure: "He/She is wearing + clothing", examples: "He's wearing a black suit. / She's wearing a red dress. / They're wearing jeans.", describing_people: "The man in the blue shirt... / The woman wearing sunglasses...", note: "Use to identify or describe people" },
+
+      { category: "Colors with Clothes", pattern: "a/an + COLOR + clothing item", examples: "a white shirt, a black jacket, blue jeans, red shoes", note: "Color comes BEFORE the clothing item", order: "ALWAYS: article + color + noun (a red dress, NOT a dress red)", turkish: "mavi bir gömlek (order is same in Turkish)", remember: "Color adjective goes before the noun!" },
+
+      { category: "Do You Have...? / Do You Like...?", do_you_have: "Do you have a black jacket? → Yes, I do. / No, I don't.", do_you_like: "Do you like wearing dresses? → Yes, I do. / No, I don't.", do_you_prefer: "Do you prefer skirts or pants? → I prefer pants.", note: "Questions about ownership and preferences" },
+
+      { category: "Shopping for Clothes", can_i_try: "Can I try this on? (Bunu deneyebilir miyim?)", what_size: "What size are you? (Beden kaç? / What size do you wear?)", does_it_fit: "Does it fit? → Yes, it fits. / No, it's too small/big.", how_much: "How much is this shirt? → It's 50 dollars.", too_expensive: "It's too expensive. (Çok pahalı.)", ill_take_it: "I'll take it. (Bunu alacağım.)", note: "Essential shopping phrases!" },
+
+      { category: "Formal vs Casual Clothes", formal: "formal clothes (resmi giysiler) - suit, tie, dress shoes, dress", casual: "casual clothes (gündelik giysiler) - jeans, T-shirt, sneakers", examples: "I wear formal clothes to work. / I wear casual clothes on weekends.", note: "Know when to dress formally or casually!" },
+
+      { category: "Weather & Clothes", hot_weather: "Hot weather: shorts, T-shirt, sandals, light colors", cold_weather: "Cold weather: coat, sweater, boots, gloves, scarf, hat", rainy_weather: "Rainy weather: raincoat, boots, umbrella", note: "Choose clothes based on weather!" },
+
+      { category: "Special Occasions", wedding: "Wedding: suit, dress, formal shoes", gym_sports: "Gym/Sports: sneakers, T-shirt, shorts, athletic wear", beach: "Beach: swimsuit, sandals, sunglasses, hat", job_interview: "Job interview: suit, dress, formal clothes", party: "Party: nice dress, stylish clothes", note: "Different events need different clothes!" },
+
+      { category: "Common Mistakes", mistake_1: "Saying 'I wear jeans now' for current clothing", wrong_1: "I wear jeans now ✗ (sounds like a habit)", correct_1: "I'm wearing jeans now ✓ (Present Continuous for NOW)", rule: "Present Continuous for CURRENT clothes | Present Simple for HABITS", remember: "What are you wearing NOW? | What do you wear (in general)?" },
+      { category: "Common Mistakes", mistake_2: "Wrong word order with colors", wrong_2: "a dress red ✗ / jeans blue ✗", correct_2: "a red dress ✓ / blue jeans ✓", rule: "Color comes BEFORE the noun", pattern: "a/an + COLOR + clothing", remember: "Color adjective before noun!" },
+      { category: "Common Mistakes", mistake_3: "Saying 'wear' instead of 'put on'", wrong_3: "Wear your coat! ✗ (sounds awkward)", correct_3: "Put on your coat! ✓ (action of dressing)", rule: "WEAR = have on body | PUT ON = action of putting clothes on", remember: "Put on (action) vs Wear (state)" },
+
+      { category: "Singular vs Plural", always_plural: "jeans, pants, shorts, glasses, sunglasses, gloves, socks, shoes (ALWAYS plural!)", examples: "I'm wearing jeans. / My pants are blue. / Where are my socks?", note: "These are ALWAYS plural, even if it's one item!", verb: "Use plural verb: My jeans ARE new (NOT is new)", remember: "Jeans are..., Pants are..., Shoes are..." },
+
+      { category: "Real-World Uses", daily: "I'm wearing jeans and a T-shirt today. / She always wears black.", shopping: "I need to buy new shoes. / Do you have this in a medium size?", describing: "The man wearing a blue suit is my boss. / She's the one in the red dress.", compliments: "I like your shirt! / Those shoes look great!", weather: "It's cold - put on your jacket! / Don't forget your umbrella.", general: "Essential for daily conversation, shopping, and describing people!" },
+
+      { category: "Key Takeaway", summary: "Clothes vocabulary describes what people wear", top_clothing: "shirt, T-shirt, sweater, jacket, coat, blouse", bottom_clothing: "pants, jeans, shorts, skirt", footwear: "shoes, boots, sandals, sneakers", accessories: "hat, scarf, gloves, belt, tie, socks, sunglasses", current_clothes: "What are you wearing? → I'm wearing... (Present Continuous)", habits: "What do you wear...? → I wear... (Present Simple)", wear_put_take: "WEAR (state) | PUT ON (dress) | TAKE OFF (undress)", colors: "a red dress, blue jeans (color before noun)", plural: "jeans, pants, shorts, shoes, socks (always plural!)", remember: "Present Continuous for NOW! Present Simple for habits! Color before noun! Know singular vs plural!", next: "Describe your outfit and practice shopping phrases!" }
+    ]
+  },
   
   speakingPractice: [
     { question: "What are you wearing today?", answer: "I'm wearing jeans and a white T-shirt." },
@@ -5123,13 +5279,57 @@ Kullanışlı Sorular:
 • Do you have any hobbies? (Hobin var mı?)
 • I like reading books and playing the guitar. (Kitap okumayı ve gitar çalmayı severim.)`,
   tip: "Use 'like + verb-ing' or 'enjoy + verb-ing' to talk about hobbies and interests",
-  
-  table: [
-    { structure: "I like + verb-ing", example: "I like reading.", usage: "Expressing likes" },
-    { structure: "I enjoy + verb-ing", example: "I enjoy cooking.", usage: "Expressing enjoyment" },
-    { question: "Do you + verb …?", answer: "Do you play video games?", usage: "Yes/No questions" },
-    { question: "What's your favorite hobby?", answer: "My favorite hobby is painting.", usage: "Asking about preferences" }
-  ],
+
+  table: {
+    title: "📋 Hobbies and Free Time Vocabulary (Hobiler ve Boş Zaman)",
+    data: [
+      { category: "What are Hobbies?", explanation: "Activities you do in your free time for fun and enjoyment", turkish: "Hobiler, boş zaman aktiviteleri - zevk için yaptığınız şeyler", function: "Talk about interests, free time, what you do for fun", key_questions: "What do you do in your free time? / Do you have any hobbies? / What's your favorite hobby?", note: "Great conversation topic for making friends!" },
+
+      { category: "Creative Hobbies", reading: "reading (okuma) - books, magazines, articles", writing: "writing (yazma) - stories, diary, blog", drawing: "drawing (çizim) - with pencil, pen, on paper", painting: "painting (resim yapma) - with brush and colors", photography: "photography (fotoğrafçılık) - taking photos", crafts: "crafts / doing crafts (el sanatları) - making things by hand", note: "Artistic and creative activities" },
+
+      { category: "Physical Hobbies & Sports", playing_sports: "playing sports (spor yapmak) - football, basketball, tennis, etc.", swimming: "swimming (yüzme) - in pool or sea", running_jogging: "running / jogging (koşma) - for exercise", cycling: "cycling (bisiklet sürme) - riding a bike", hiking: "hiking (doğa yürüyüşü) - walking in nature", dancing: "dancing (dans etme) - moving to music", note: "Active physical activities" },
+
+      { category: "Musical Hobbies", playing_instrument: "playing an instrument (enstrüman çalmak) - guitar, piano, violin, etc.", playing_guitar: "playing the guitar (gitar çalmak) - THE + instrument", singing: "singing (şarkı söyleme) - using your voice", listening_to_music: "listening to music (müzik dinleme) - passive enjoyment", note: "Music-related activities", remember: "Play THE guitar, THE piano (use THE with instruments!)" },
+
+      { category: "Home & Indoor Activities", watching_TV: "watching TV (TV izleme) - series, movies, shows", watching_movies: "watching movies (film izleme) - at home or cinema", playing_video_games: "playing video games (video oyunu oynama) - on computer or console", cooking: "cooking (yemek yapma) - preparing food", baking: "baking (fırında pişirme) - bread, cakes, cookies", gardening: "gardening (bahçecilik) - growing plants and flowers", note: "Things you do at home" },
+
+      { category: "Social Activities", meeting_friends: "meeting friends (arkadaşlarla buluşma) - spending time together", going_out: "going out (dışarı çıkma) - to cafés, restaurants, movies", shopping: "shopping (alışveriş yapma) - buying things", traveling: "traveling (seyahat etme) - visiting new places", hanging_out: "hanging out (takılmak) - informal time with friends", chatting: "chatting (sohbet etme) - talking with friends online or in person", note: "Activities with other people" },
+
+      { category: "Collecting & Learning", collecting: "collecting (koleksiyon yapma) - stamps, coins, cards, etc.", learning_languages: "learning languages (dil öğrenme) - studying new languages", studying: "studying (ders çalışma) - learning new things", puzzles: "doing puzzles (bulmaca çözme) - jigsaw puzzles, crosswords", board_games: "playing board games (masa oyunu oynama) - chess, Monopoly, etc.", note: "Mental and educational activities" },
+
+      { category: "Nature & Outdoor Activities", fishing: "fishing (balık tutma) - catching fish", camping: "camping (kamp yapma) - sleeping outdoors in a tent", walking: "walking / going for a walk (yürüyüş yapma) - strolling", picnicking: "having a picnic (piknik yapma) - eating outdoors", bird_watching: "bird watching (kuş gözlemi) - observing birds", note: "Outdoor leisure activities" },
+
+      { category: "LIKE + VERB-ING", structure: "I like + verb-ing", examples: "I like reading. / I like swimming. / I like playing football.", use: "Express general preference or enjoyment", turkish: "Bir şeyi yapmayı sevmek", note: "Very common pattern for hobbies!", remember: "Add -ING to the verb!" },
+
+      { category: "ENJOY + VERB-ING", structure: "I enjoy + verb-ing", examples: "I enjoy cooking. / I enjoy listening to music. / I enjoy traveling.", use: "Express enjoyment (similar to 'like' but slightly stronger)", note: "More formal than 'like'", same_meaning: "I like reading = I enjoy reading (almost the same)", remember: "Enjoy + verb-ING (not enjoy to read!)" },
+
+      { category: "LOVE + VERB-ING / HATE + VERB-ING", love: "I LOVE + verb-ing (really like, enthusiastic)", examples_love: "I love dancing! / I love playing video games!", hate: "I HATE + verb-ing (really dislike)", examples_hate: "I hate running. / I hate doing homework.", note: "Express strong feelings", scale: "hate < don't like < like < love" },
+
+      { category: "Questions About Hobbies", what_do_you_do: "What do you do in your free time? → I read books.", do_you_have: "Do you have any hobbies? → Yes, I enjoy painting.", whats_your_favorite: "What's your favorite hobby? → My favorite hobby is playing the guitar.", do_you_like: "Do you like cooking? → Yes, I do. / No, I don't.", how_often: "How often do you play football? → I play twice a week.", note: "Essential questions for learning about people!" },
+
+      { category: "Frequency with Hobbies", every_day: "I read every day. (her gün)", twice_a_week: "I play tennis twice a week. (haftada iki kez)", on_weekends: "I go hiking on weekends. (hafta sonları)", in_my_free_time: "I play video games in my free time. (boş zamanımda)", when_i_have_time: "I cook when I have time. (vaktim olduğunda)", note: "Talk about how often you do hobbies" },
+
+      { category: "GO + VERB-ING for Activities", structure: "GO + verb-ing", examples: "go swimming, go shopping, go fishing, go hiking, go dancing, go running", use: "For activities you 'go' somewhere to do", note: "Common pattern for sports and outdoor activities!", remember: "Go swimming (NOT go to swim!)" },
+
+      { category: "PLAY vs DO vs GO", play: "PLAY + sports with balls or games: play football, play chess, play the guitar", do: "DO + activities without equipment: do yoga, do homework, do exercise", go: "GO + -ing activities: go swimming, go shopping, go running", note: "Different verbs for different activity types!", remember: "Play sports | Do activities | Go + -ing" },
+
+      { category: "Talking About Skills", good_at: "I'm good at drawing. (İyi yapıyorum)", bad_at: "I'm bad at singing. (Kötü yapıyorum)", can: "I can play the piano. (Beceriyorum)", cant: "I can't swim. (Yapamıyorum)", learning: "I'm learning to play the guitar. (Öğreniyorum)", note: "Describe your ability level" },
+
+      { category: "Invitations & Suggestions", do_you_want_to: "Do you want to go to the movies? (Film izlemeye gitmek ister misin?)", would_you_like_to: "Would you like to play tennis? (Tenis oynamak ister misin?)", lets: "Let's go shopping! (Hadi alışverişe gidelim!)", how_about: "How about going for a walk? (Yürüyüşe çıkmaya ne dersin?)", note: "Invite friends to do activities together!" },
+
+      { category: "Why Do You Like It?", its_fun: "It's fun! (Eğlenceli!)", its_relaxing: "It's relaxing. (Rahatlatıcı)", its_exciting: "It's exciting. (Heyecan verici)", its_interesting: "It's interesting. (İlginç)", it_keeps_me_fit: "It keeps me fit. (Formda tutuyor)", i_meet_new_people: "I meet new people. (Yeni insanlarla tanışıyorum)", note: "Explain why you enjoy your hobbies" },
+
+      { category: "I Want to Learn...", structure: "I want to learn + to verb OR I want to learn + how to verb", examples: "I want to learn to play the piano. / I want to learn how to cook. / I want to learn photography.", note: "Talk about future hobbies or skills", dream_hobby: "I'd love to learn surfing one day! (Bir gün sörf öğrenmeyi çok isterim!)" },
+
+      { category: "Common Mistakes", mistake_1: "Forgetting -ING after like/enjoy", wrong_1: "I like read ✗ / I enjoy cook ✗", correct_1: "I like reading ✓ / I enjoy cooking ✓", rule: "Like/Enjoy + verb-ING", remember: "Always add -ING!" },
+      { category: "Common Mistakes", mistake_2: "Forgetting THE with instruments", wrong_2: "I play guitar ✗ / She plays piano ✗", correct_2: "I play THE guitar ✓ / She plays THE piano ✓", rule: "Play THE + instrument", remember: "THE is required with musical instruments!" },
+      { category: "Common Mistakes", mistake_3: "Using wrong verb: play/do/go", wrong_3: "I do football ✗ / I play yoga ✗ / I go to swim ✗", correct_3: "I play football ✓ / I do yoga ✓ / I go swimming ✓", rule: "PLAY sports | DO activities | GO + -ing", remember: "Learn which verb goes with each activity!" },
+
+      { category: "Real-World Uses", making_friends: "What do you do in your free time? → I like playing basketball. Me too! Let's play together!", online_profiles: "Hobbies: reading, traveling, photography", dating_apps: "I love hiking and trying new restaurants!", job_interviews: "What do you do in your free time? → I enjoy learning new languages and playing chess.", general: "Essential for conversations and getting to know people!" },
+
+      { category: "Key Takeaway", summary: "Hobbies vocabulary helps you talk about interests and free time", question: "What do you do in your free time? / Do you have any hobbies?", like_enjoy: "I like/enjoy + verb-ING (reading, swimming, cooking)", love_hate: "I love/hate + verb-ING (strong feelings)", creative: "reading, writing, drawing, painting, photography", physical: "playing sports, swimming, running, cycling, dancing", musical: "playing THE guitar/piano, singing, listening to music", home: "watching TV, cooking, playing video games, gardening", outdoor: "hiking, fishing, camping, going for a walk", verbs: "PLAY sports/games | DO activities | GO + -ing", frequency: "every day, twice a week, on weekends, in my free time", skills: "I'm good at... / I can... / I'm learning...", remember: "Like/Enjoy + verb-ING! Play THE instrument! Learn play/do/go patterns!", next: "Talk about your hobbies and ask others about theirs!" }
+    ]
+  },
   
   speakingPractice: [
     { question: "What do you do in your free time?", answer: "I read books or listen to music." },
