@@ -89,7 +89,12 @@
       "Bash(timeout 15 npm run dev)",
       "Bash(tasklist)",
       "Bash(do grep -q \"^const MODULE_$i_DATA = {\" \"C:\\Users\\Mohammad\\Downloads\\tomass-main\\src\\components\\B2ModulesData.ts\")",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "Bash(test:*)",
+      "Bash(xargs cat:*)",
+      "Bash(do wc -c \"$file\")",
+      "Bash(gh pr create:*)",
+      "Bash(git remote get-url:*)"
     ],
     "deny": [],
     "ask": []
