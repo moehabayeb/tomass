@@ -2213,3 +2213,647 @@ This module develops your ability to hear not just what is said, but how it's sa
     { question: "Why essential for global communication?", answer: "It fosters empathy, prevents conflict, and builds understanding." }
   ]
 };
+
+export const MODULE_281_DATA = {
+  title: "Module 281 - Identifying Bias in Texts and Speech",
+  description: "Master the recognition of lexical, structural, and contextual forms of bias in communication.",
+  intro: `📘 Lesson Objectives
+
+At the C2 level, bias detection means **recognizing how language subtly reflects ideology, emotion, or perspective**.
+
+✅ **Lexical, structural, and contextual bias**
+✅ **Critical analysis** of written and spoken communication
+✅ **Independent, objective understanding** of information
+
+This module trains you to identify bias and ensure critical, independent interpretation of all communication.`,
+  table: {
+    title: "📋 Core Dimensions of Bias",
+    data: [
+      { type_of_bias: "Lexical Bias", description: "Word choice reveals attitude", example: "Freedom fighters vs terrorists." },
+      { type_of_bias: "Framing Bias", description: "Narrative structure influencing interpretation", example: "Tax relief implies burden; reform implies progress." },
+      { type_of_bias: "Omission Bias", description: "Excluding opposing or balancing facts", example: "Reporting only one side of a conflict." },
+      { type_of_bias: "Confirmation Bias", description: "Favoring information that supports prior beliefs", example: "Reading only articles that match your opinions." },
+      { type_of_bias: "Tone Bias", description: "Using irony or emotionally charged adjectives", example: "So-called experts claim..." },
+      { type_of_bias: "Source Bias", description: "Relying on selective or partisan sources", example: "Using only government or industry reports." },
+      { type_of_bias: "Cultural Bias", description: "Projecting one culture's norms as universal", example: "Calling local customs 'strange' or 'primitive.'" }
+    ]
+  },
+  speakingPractice: [
+    { question: "What is bias?", answer: "A tendency to favor one perspective or interpretation over others." },
+    { question: "Why identify bias?", answer: "It ensures critical, independent understanding of information." },
+    { question: "How does word choice reveal bias?", answer: "Through emotionally loaded or evaluative adjectives." },
+    { question: "Difference between fact and opinion?", answer: "Facts are verifiable; opinions express interpretation." },
+    { question: "How does omission distort meaning?", answer: "Leaving out evidence creates false balance or exaggeration." },
+    { question: "Why is neutrality rare?", answer: "All language carries implicit cultural or emotional framing." },
+    { question: "What is framing bias?", answer: "Presenting facts within a specific interpretive context." },
+    { question: "How does repetition affect bias?", answer: "Repeated ideas feel more valid regardless of accuracy." },
+    { question: "Why is balance crucial?", answer: "To represent multiple perspectives fairly and avoid manipulation." },
+    { question: "What is loaded language?", answer: "Emotionally charged vocabulary that influences perception." },
+    { question: "How does tone bias appear?", answer: "Sarcasm, exaggeration, or disdain towards a viewpoint." },
+    { question: "Cultural bias example?", answer: "Labeling non-Western societies as 'backward' or 'exotic.'" },
+    { question: "Pronouns and bias?", answer: "'We' vs 'they' divides audiences into insiders and outsiders." },
+    { question: "Metaphors as bias?", answer: "They frame issues—e.g., 'invasion' vs 'migration.'" },
+    { question: "Statistics and bias?", answer: "Selective presentation of numbers misleads without full context." },
+    { question: "Visual bias?", answer: "Image choice influencing emotional response." },
+    { question: "Irony as bias?", answer: "Mocking tone undermines legitimacy of opposing views." },
+    { question: "Why are headlines biased?", answer: "They oversimplify or dramatize to attract attention." },
+    { question: "Propaganda vs bias?", answer: "Propaganda is intentional manipulation; bias may be unconscious." },
+    { question: "Why study bias academically?", answer: "It builds awareness and analytical thinking." },
+    { question: "Signs of bias in academic writing?", answer: "Selective evidence or emotive evaluation of sources." },
+    { question: "Signs in journalism?", answer: "Unbalanced sources and emotionally loaded wording." },
+    { question: "Detecting omission?", answer: "Compare multiple sources and check missing data." },
+    { question: "Passive voice and bias?", answer: "'Mistakes were made' hides responsibility." },
+    { question: "Balance vs neutrality?", answer: "Equal treatment of false and true claims can mislead." },
+    { question: "Humor and bias?", answer: "Satire may ridicule rather than inform." },
+    { question: "Emotional storytelling risk?", answer: "It appeals to empathy at the expense of accuracy." },
+    { question: "Citation bias?", answer: "Referencing only ideologically aligned authors." },
+    { question: "Selection bias?", answer: "Highlighting specific stories while ignoring others." },
+    { question: "Why verify sources?", answer: "To ensure reliability and motive transparency." },
+    { question: "Global impact of bias?", answer: "It fuels stereotypes and cross-cultural misunderstanding." },
+    { question: "Role of self-awareness?", answer: "Recognizing personal bias improves interpretation." },
+    { question: "What is confirmation bias?", answer: "Seeking information that reinforces existing beliefs." },
+    { question: "Education's role?", answer: "It promotes balanced judgment through exposure to perspectives." },
+    { question: "Tone in political speeches?", answer: "Shapes how audiences view opponents and allies." },
+    { question: "Biased facts?", answer: "Selection and order of facts frame perception." },
+    { question: "Social media bias?", answer: "Algorithms amplify sensational or polarizing content." },
+    { question: "Ethical journalism?", answer: "Transparency and fact-checking reduce distortion." },
+    { question: "Goal of bias analysis?", answer: "Reveal hidden assumptions in discourse." },
+    { question: "Mastery definition?", answer: "Understanding not only messages but motives and framing behind them." }
+  ]
+};
+
+export const MODULE_282_DATA = {
+  title: "Module 282 - Advanced Paraphrasing and Summarizing",
+  description: "Master the art of restating ideas faithfully, concisely, and ethically with precision and control.",
+  intro: `📘 Lesson Objectives
+
+At the C2 level, paraphrasing and summarizing require **interpretation, precision, and nuance control**.
+
+✅ **Restate ideas faithfully** while changing structure
+✅ **Concise summarization** preserving core meaning
+✅ **Ethical communication** with proper attribution
+
+This module trains you to paraphrase and summarize with clarity, originality, and academic integrity.`,
+  table: {
+    title: "📋 Core Principles",
+    data: [
+      { skill: "Semantic Retention", description: "Keep meaning while changing structure", example: "The results were inconclusive. → The findings did not lead to a clear conclusion." },
+      { skill: "Structural Variety", description: "Use different grammatical forms", example: "Global warming affects agriculture. → Agriculture is influenced by climate change." },
+      { skill: "Condensation", description: "Summarize long ideas into core meaning", example: "Condensing 300 words into two sentences." },
+      { skill: "Emphasis Shift", description: "Change focus without altering meaning", example: "Students failed the exam. → The exam was too difficult for students." },
+      { skill: "Tone Consistency", description: "Maintain academic or neutral tone", example: "Avoid emotional or biased phrasing." },
+      { skill: "Avoiding Plagiarism", description: "Credit sources even when paraphrasing", example: "Use citations and quotations correctly." }
+    ]
+  },
+  speakingPractice: [
+    { question: "What is paraphrasing?", answer: "Restating information in a new form while keeping the original meaning." },
+    { question: "Why is paraphrasing vital?", answer: "It shows comprehension and prevents plagiarism." },
+    { question: "Paraphrasing vs summarizing?", answer: "Paraphrasing rewords; summarizing condenses." },
+    { question: "What makes paraphrasing advanced?", answer: "Capturing subtle nuance and tone accurately." },
+    { question: "How to stay accurate?", answer: "Verify meaning before changing structure or vocabulary." },
+    { question: "Over-paraphrasing risk?", answer: "Distorting or misrepresenting original intent." },
+    { question: "Role of tone?", answer: "It maintains professional and academic consistency." },
+    { question: "First step to paraphrase?", answer: "Comprehend meaning, purpose, and audience fully." },
+    { question: "Caution with synonyms?", answer: "Wrong synonym changes nuance or accuracy." },
+    { question: "Benefit for language learning?", answer: "Expands grammar range and precision." },
+    { question: "What is syntactic transformation?", answer: "Changing grammar—active to passive, noun to verb, etc." },
+    { question: "Combining sentences?", answer: "Improves flow and coherence while rephrasing." },
+    { question: "What is chunking?", answer: "Breaking complex sentences into smaller parts before rewriting." },
+    { question: "Paraphrasing as understanding?", answer: "It proves conceptual rather than surface comprehension." },
+    { question: "Role of connectors?", answer: "Ensure logical flow: 'however,' 'although,' etc." },
+    { question: "Avoiding patchwriting?", answer: "Rebuild ideas fully, not word-for-word substitution." },
+    { question: "Essay improvement through paraphrase?", answer: "Integrates ideas smoothly without over-quoting." },
+    { question: "Ethical paraphrase?", answer: "Accurate restatement with proper credit." },
+    { question: "Figurative language handling?", answer: "Explain metaphors in literal terms if necessary." },
+    { question: "Why paraphrase instead of quote?", answer: "To preserve flow and show understanding." },
+    { question: "Good summary definition?", answer: "Briefly captures key points without extra detail." },
+    { question: "How to find key ideas?", answer: "Focus on thesis, arguments, and conclusion." },
+    { question: "Why keep neutrality?", answer: "Opinion alters author's meaning." },
+    { question: "What is compression?", answer: "Condensing a text while keeping logical order." },
+    { question: "Summaries in academia?", answer: "They condense research into concise insight." },
+    { question: "Maintain proportion?", answer: "Avoid overemphasis on minor points." },
+    { question: "Ensure clarity?", answer: "Use direct, simple language without redundancy." },
+    { question: "Weak summary indicator?", answer: "Too close to original or too vague." },
+    { question: "How summarizing aids comprehension?", answer: "Encourages synthesis and retention." },
+    { question: "Why transitions matter?", answer: "They preserve logical flow after reduction." },
+    { question: "Paraphrasing and plagiarism?", answer: "Ethical paraphrasing avoids copying structure or wording." },
+    { question: "Why in diplomacy/business?", answer: "Restates sensitive ideas tactfully." },
+    { question: "Link to translation?", answer: "Both convert meaning between linguistic forms." },
+    { question: "Summarizing benefit?", answer: "Trains focus on essential ideas and logic." },
+    { question: "Paraphrasing for emphasis?", answer: "Rewording to highlight critical ideas." },
+    { question: "Paraphrase + citation?", answer: "Combines understanding with respect for source." },
+    { question: "Paraphrasing and voice?", answer: "Shows independence and mastery of expression." },
+    { question: "AI tools in paraphrasing?", answer: "Useful but require human verification for nuance." },
+    { question: "Why conciseness in summary?", answer: "It enhances readability and comprehension." },
+    { question: "What defines mastery?", answer: "Restating ideas clearly, naturally, and elegantly." }
+  ]
+};
+
+export const MODULE_283_DATA = {
+  title: "Module 283 - Mastering Long and Complex Sentences",
+  description: "Build and understand complex sentence structures with precision, flow, and elegance.",
+  intro: `📘 Lesson Objectives
+
+At the C2 level, mastering long and complex sentences means **balancing subordination, coordination, and punctuation**.
+
+✅ **Create clarity and elegance** in complex structures
+✅ **Achieve academic and stylistic control**
+✅ **Balance depth with readability**
+
+This module teaches you to construct sentences that are sophisticated yet comprehensible—hallmarks of C2 mastery.`,
+  table: {
+    title: "📋 Core Principles of Complex Sentence Mastery",
+    data: [
+      { concept: "Coordination", description: "Linking equal clauses", example: "She wanted to travel, and he preferred to stay home." },
+      { concept: "Subordination", description: "Adding dependent clauses", example: "Although she was tired, she continued working." },
+      { concept: "Parallelism", description: "Keeping grammatical patterns consistent", example: "He likes swimming, hiking, and reading." },
+      { concept: "Embedding", description: "Including one clause inside another", example: "The book that you gave me yesterday is fascinating." },
+      { concept: "Nominalization", description: "Turning verbs/adjectives into nouns", example: "Decide → Decision; Strong → Strength." },
+      { concept: "Punctuation Control", description: "Using punctuation to guide meaning", example: "He waited patiently; the result never came." },
+      { concept: "Balance & Rhythm", description: "Creating clarity and flow in long forms", example: "Despite the rain, the crowd gathered and celebrated." }
+    ]
+  },
+  speakingPractice: [
+    { question: "What defines a complex sentence?", answer: "It contains a main clause and one or more subordinate clauses connected by conjunctions." },
+    { question: "Difference from compound sentence?", answer: "Compound joins equal clauses; complex adds dependence." },
+    { question: "Why are long sentences challenging?", answer: "They require logic, punctuation, and rhythm to stay readable." },
+    { question: "Benefit of complexity?", answer: "Adds depth, nuance, and elegance to ideas." },
+    { question: "Why control length?", answer: "Too long sentences risk confusion or fatigue." },
+    { question: "Role of subordination?", answer: "Shows relationships like cause, contrast, and condition." },
+    { question: "Punctuation's importance?", answer: "Guides readers through meaning and structure." },
+    { question: "Coordination?", answer: "Combines equal clauses—'and,' 'but,' 'or.'" },
+    { question: "Balanced sentence?", answer: "Has symmetry and parallel structure for rhythm." },
+    { question: "Flow vs complexity?", answer: "Flow ensures readability; complexity adds richness." },
+    { question: "Subordinating conjunctions?", answer: "Words like 'although,' 'since,' 'because' create dependence." },
+    { question: "Embedded clause?", answer: "A clause placed within another: 'The man who smiled left.'" },
+    { question: "Participle clause?", answer: "Shortened structure: 'Having finished, she rested.'" },
+    { question: "Nominalization benefit?", answer: "Condenses actions into nouns for conciseness." },
+    { question: "Parallelism function?", answer: "Creates rhythm and clarity through repetition." },
+    { question: "Semicolon use?", answer: "Connects related ideas without using a conjunction." },
+    { question: "Relative clause?", answer: "Adds detail about a noun: 'The student who studied succeeded.'" },
+    { question: "Comma clarity?", answer: "Separates ideas and prevents misreading." },
+    { question: "Avoid over-nesting?", answer: "Too many embedded clauses reduce clarity." },
+    { question: "Conditional structure?", answer: "Expresses hypothetical or cause-effect: 'If I had known, I'd act.'" },
+    { question: "Elegant long sentences?", answer: "Use rhythm, punctuation, and concise clauses." },
+    { question: "Pauses in speech?", answer: "Reflect punctuation for listener clarity." },
+    { question: "Cumulative style?", answer: "Main clause first, then layers: 'She opened the door, smiling, breathing deeply.'" },
+    { question: "Periodic sentence?", answer: "Main clause delayed for effect or suspense." },
+    { question: "Inversion purpose?", answer: "Emphasizes by reversing order: 'Never have I seen this.'" },
+    { question: "Appositive clause?", answer: "Renames noun: 'London, the capital of England, is vast.'" },
+    { question: "Repetition in rhythm?", answer: "Unifies thought and emphasizes meaning." },
+    { question: "Modifier role?", answer: "Adds description; placement affects clarity." },
+    { question: "Sentence variety?", answer: "Prevents monotony and engages the reader." },
+    { question: "Emphasis shifting?", answer: "Key information appears at sentence end." },
+    { question: "Clarity in length?", answer: "Keep logical flow, punctuation, and focus." },
+    { question: "Academic preference?", answer: "Shows relationships and structured reasoning." },
+    { question: "Syntactic rhythm?", answer: "Balance of clauses creates musicality." },
+    { question: "Editing role?", answer: "Breaks or merges clauses for balance." },
+    { question: "Non-defining clause?", answer: "Adds extra info: 'Paris, which I love, is vibrant.'" },
+    { question: "Conjunction tone?", answer: "'Although' softens; 'but' contrasts sharply." },
+    { question: "Clarity vs compression?", answer: "Clarity prioritizes understanding; compression saves space." },
+    { question: "Word economy?", answer: "Remove redundancy, maintain elegance." },
+    { question: "Practice for fluency?", answer: "Frequent exposure and rewriting of complex texts." },
+    { question: "Definition of mastery?", answer: "Precision, rhythm, and clarity in long, elegant sentences." }
+  ]
+};
+
+export const MODULE_284_DATA = {
+  title: "Module 284 - Language of Storytelling and Narration",
+  description: "Master narrative perspective, tone, and structure to create engaging, vivid, and coherent stories.",
+  intro: `📘 Lesson Objectives
+
+At the C2 level, storytelling becomes an **art of language, rhythm, and emotion**.
+
+✅ **Narrative perspective** and voice
+✅ **Tone, structure, and pacing**
+✅ **Creating atmosphere** through vivid language
+
+This module helps you craft stories that captivate, move, and resonate with readers—storytelling as linguistic art.`,
+  table: {
+    title: "📋 Core Elements of Storytelling Language",
+    data: [
+      { element: "Point of View", description: "Perspective from which a story is told", example: "I walked through the rain. / She walked alone." },
+      { element: "Narrative Voice", description: "Tone and personality of the storyteller", example: "Calm, ironic, humorous, nostalgic." },
+      { element: "Chronology & Flashback", description: "Manipulating time for dramatic effect", example: "Years later, he would remember that night..." },
+      { element: "Imagery", description: "Creating atmosphere through sensory language", example: "The wind scraped against the old shutters." },
+      { element: "Symbolism", description: "Objects or actions representing deeper meaning", example: "The broken clock stood for lost time." },
+      { element: "Dialogue", description: "Revealing character and tension through speech", example: "You're late again, she whispered." },
+      { element: "Pacing", description: "Controlling rhythm and emotional tempo", example: "Short sentences create tension; long ones evoke reflection." }
+    ]
+  },
+  speakingPractice: [
+    { question: "Storytelling vs description?", answer: "Storytelling shows progression; description captures a static scene." },
+    { question: "Why point of view matters?", answer: "It defines emotional distance and reader connection." },
+    { question: "Narrative voice meaning?", answer: "The personality or tone through which the story is told." },
+    { question: "Tense choice effect?", answer: "Present creates immediacy; past provides reflection." },
+    { question: "Pacing definition?", answer: "The speed of action and description shaping emotion." },
+    { question: "Dialogue's role?", answer: "Reveals character through word choice and rhythm." },
+    { question: "Importance of imagery?", answer: "Immerses readers by appealing to senses." },
+    { question: "Flashback function?", answer: "Adds background or motive without breaking flow." },
+    { question: "Use of transitions?", answer: "Smoothly connects shifts in time or setting." },
+    { question: "Compelling opening?", answer: "Starts with conflict, curiosity, or emotion." },
+    { question: "Showing vs telling?", answer: "Showing evokes; telling explains directly." },
+    { question: "Symbolism purpose?", answer: "Adds layers of meaning through objects or actions." },
+    { question: "Sentence variation use?", answer: "Creates rhythm and emotional intensity." },
+    { question: "First-person effect?", answer: "Adds intimacy but limits perspective." },
+    { question: "Omniscient narration?", answer: "Allows access to multiple minds and settings." },
+    { question: "Tone's narrative role?", answer: "Defines emotional atmosphere—humor, tension, nostalgia." },
+    { question: "Metaphor's function?", answer: "Transforms abstract emotion into imagery." },
+    { question: "Narrative distance?", answer: "Closeness between narrator and story events." },
+    { question: "Rhythm mirrors emotion?", answer: "Fast = tension; slow = calm or reflection." },
+    { question: "Voice consistency?", answer: "Maintains credibility and immersion." },
+    { question: "Framing technique?", answer: "A story within a story adds depth or context." },
+    { question: "Contrast for depth?", answer: "Juxtaposing opposites enhances emotional effect." },
+    { question: "Unreliable narrator?", answer: "Creates ambiguity and reader engagement." },
+    { question: "Foreshadowing?", answer: "Hints future events to build suspense." },
+    { question: "Circular structure?", answer: "Ends where it begins, symbolizing reflection." },
+    { question: "Diction and setting?", answer: "Word choice mirrors mood and time period." },
+    { question: "Subtext in dialogue?", answer: "Reveals hidden feelings beneath words." },
+    { question: "Stream of consciousness?", answer: "Captures inner thoughts fluidly and spontaneously." },
+    { question: "Time manipulation?", answer: "Non-linear order maintains curiosity." },
+    { question: "Irony in storytelling?", answer: "Adds humor, depth, or critique." },
+    { question: "Perspective and empathy?", answer: "Shapes how readers emotionally connect." },
+    { question: "Theme's importance?", answer: "Provides unity and meaning beyond events." },
+    { question: "Mood vs tone?", answer: "Mood = reader's feeling; tone = narrator's attitude." },
+    { question: "Repetition purpose?", answer: "Creates emphasis or rhythm." },
+    { question: "Conflict in storytelling?", answer: "Drives emotion, action, and transformation." },
+    { question: "Resolution meaning?", answer: "Brings closure and insight." },
+    { question: "Setting as character?", answer: "Interacts symbolically with plot and emotion." },
+    { question: "Authenticity need?", answer: "Readers connect to genuine emotional truth." },
+    { question: "Engaging modern audiences?", answer: "Blend relatability, tension, and emotion." },
+    { question: "Storytelling mastery?", answer: "Balancing voice, structure, and emotion seamlessly." }
+  ]
+};
+
+export const MODULE_285_DATA = {
+  title: "Module 285 - Multimodal Communication (Visual, Verbal, Non-Verbal)",
+  description: "Master the integration of visual, verbal, and non-verbal cues to create meaning across media and cultures.",
+  intro: `📘 Lesson Objectives
+
+At the C2 level, communication **extends beyond words**.
+
+✅ **Multimodal integration**: visual, verbal, non-verbal
+✅ **Cross-media communication** competence
+✅ **Cultural and digital fluency**
+
+This module explores how tone, gesture, design, and language interact to inform, persuade, and connect in modern communication.`,
+  table: {
+    title: "📋 Core Modes of Communication",
+    data: [
+      { mode: "Verbal", description: "Spoken or written language conveying meaning", example: "Speeches, debates, articles" },
+      { mode: "Visual", description: "Images, color, layout, and symbols", example: "Infographics, slide design" },
+      { mode: "Non-Verbal", description: "Body language, facial expression, posture", example: "Eye contact, gestures, stance" },
+      { mode: "Aural", description: "Tone, pitch, and rhythm in sound", example: "Voice inflection, music, audio cues" },
+      { mode: "Spatial", description: "Arrangement of people or elements in space", example: "Seating layout, proximity" },
+      { mode: "Digital Multimodality", description: "Integration of all modes through technology", example: "Video presentations, interactive websites" }
+    ]
+  },
+  speakingPractice: [
+    { question: "What is multimodal communication?", answer: "It integrates verbal, visual, and non-verbal modes to convey meaning." },
+    { question: "Why is it essential today?", answer: "Because modern communication happens across multimedia platforms." },
+    { question: "How do visuals improve messages?", answer: "They simplify data and evoke emotion." },
+    { question: "Role of body language?", answer: "It communicates confidence, emotion, and sincerity." },
+    { question: "How does tone affect interpretation?", answer: "It influences emotional response and clarity." },
+    { question: "Digital environments need multimodality because?", answer: "They combine text, visuals, and sound in real-time." },
+    { question: "What happens when cues contradict?", answer: "Audiences feel confused or distrustful." },
+    { question: "Verbal vs non-verbal?", answer: "Words convey content; gestures and expressions add emotion." },
+    { question: "Professional relevance?", answer: "Mastery improves clarity and cross-cultural understanding." },
+    { question: "Presentation benefit?", answer: "Aligning tone, design, and body language increases impact." },
+    { question: "How do visuals simplify ideas?", answer: "They make complex data instantly understandable." },
+    { question: "Visual hierarchy meaning?", answer: "Arrangement guides attention through size and color." },
+    { question: "Color psychology role?", answer: "Colors influence mood—blue = trust, red = energy." },
+    { question: "Typography effect?", answer: "Fonts suggest tone: formal, playful, or modern." },
+    { question: "White space use?", answer: "Creates focus and avoids clutter." },
+    { question: "Consistency importance?", answer: "Maintains professionalism and cognitive flow." },
+    { question: "Captions' function?", answer: "They add context to visuals." },
+    { question: "Video as multimodal?", answer: "It merges audio, visual, and verbal channels." },
+    { question: "Layout's impact?", answer: "Defines how readers process and prioritize information." },
+    { question: "Visual metaphors?", answer: "Link abstract ideas to relatable imagery." },
+    { question: "Posture influence?", answer: "Straight posture conveys confidence; slouching weakens message." },
+    { question: "Eye contact power?", answer: "Builds connection and credibility." },
+    { question: "Gesture reinforcement?", answer: "Supports and visualizes key ideas." },
+    { question: "What is proxemics?", answer: "Study of how physical space communicates meaning." },
+    { question: "Cultural variation in gestures?", answer: "Same gesture may mean different things in each culture." },
+    { question: "Facial expression importance?", answer: "Instantly communicates emotion and tone." },
+    { question: "Paralanguage definition?", answer: "Vocal cues like pitch, speed, and emphasis." },
+    { question: "Silence's role?", answer: "Conveys respect, thought, or tension depending on context." },
+    { question: "Online cue loss?", answer: "Lack of facial or vocal cues leads to misinterpretation." },
+    { question: "Emojis' function?", answer: "They replicate emotional tone visually in digital text." },
+    { question: "Branding and multimodality?", answer: "Consistent tone and visuals build identity." },
+    { question: "Social media's effect?", answer: "Combines image, video, and text dynamically." },
+    { question: "Infographics in academia?", answer: "They visualize data and support research clarity." },
+    { question: "Audience analysis need?", answer: "Tailors tone and design for maximum relevance." },
+    { question: "Multimodal vs digital literacy?", answer: "Multimodal = how forms interact; digital = how tools work." },
+    { question: "Leadership communication?", answer: "Alignment of tone, words, and gestures inspires trust." },
+    { question: "Ethical concern?", answer: "Avoid manipulating audiences with misleading visuals." },
+    { question: "Multimodality in education?", answer: "Combines text, visuals, and interaction for deeper learning." },
+    { question: "AI's role?", answer: "AI integrates and interprets multimodal signals for richer communication." },
+    { question: "Definition of mastery?", answer: "Coordinating all communicative modes into persuasive harmony." }
+  ]
+};
+
+export const MODULE_286_DATA = {
+  title: "Module 286 - Persuasive Speech Techniques at Expert Level",
+  description: "Master the art of persuasive speech using ethos, pathos, and logos strategically to create impactful messages.",
+  intro: `📘 Lesson Objectives
+
+At the C2 level, persuasive speech involves precision, charisma, and emotional intelligence. This module teaches how to use ethos, pathos, and logos strategically, creating impactful messages that motivate action and inspire audiences.`,
+  table: {
+    title: "📋 Core Elements of Persuasive Speech",
+    data: [
+      { element: "Ethos (Credibility)", description: "Builds trust through expertise and reliability", example: "As a surgeon with 20 years of experience..." },
+      { element: "Pathos (Emotion)", description: "Appeals to empathy and values", example: "Imagine a child going to bed hungry tonight." },
+      { element: "Logos (Logic)", description: "Supports arguments with reasoning and evidence", example: "Studies show a 30% increase in efficiency." },
+      { element: "Kairos (Timing)", description: "Delivering messages at the right moment", example: "Making an appeal during a relevant crisis." },
+      { element: "Tone & Rhythm", description: "Controlling voice for emphasis and emotion", example: "Pauses and repetition for dramatic impact." },
+      { element: "Rhetorical Devices", description: "Figurative tools that amplify persuasion", example: "Metaphor, repetition, anaphora, triads." }
+    ]
+  },
+  speakingPractice: [
+    { question: "What defines expert persuasion?", answer: "A blend of logic, emotion, and credibility for maximum influence." },
+    { question: "Importance of ethos?", answer: "It builds trust and authority with the audience." },
+    { question: "Pathos in persuasion?", answer: "Engages emotions to motivate empathy and action." },
+    { question: "Logos function?", answer: "Grounds arguments in reason and evidence." },
+    { question: "Meaning of kairos?", answer: "Choosing the perfect time to deliver a message." },
+    { question: "Tone's influence?", answer: "A confident tone enhances credibility and engagement." },
+    { question: "Why storytelling?", answer: "Humanizes data and connects emotionally." },
+    { question: "Speech structure?", answer: "Clear intro, body, and conclusion maintain flow." },
+    { question: "Role of pauses?", answer: "Creates rhythm and draws attention to key ideas." },
+    { question: "Power of repetition?", answer: "Reinforces central themes and aids memorability." },
+    { question: "What is anaphora?", answer: "Repetition at the beginning of phrases: 'We will fight. We will endure.'" },
+    { question: "Metaphor effect?", answer: "Makes abstract concepts vivid and relatable." },
+    { question: "Antithesis use?", answer: "Contrasts opposites for dramatic emphasis." },
+    { question: "Alliteration's role?", answer: "Adds rhythm and sound appeal." },
+    { question: "Why triads work?", answer: "Three elements sound complete and memorable." },
+    { question: "Rhetorical question?", answer: "Invites reflection rather than an answer." },
+    { question: "Parallelism purpose?", answer: "Creates balance and clarity in arguments." },
+    { question: "Amplification?", answer: "Building intensity by layering stronger ideas." },
+    { question: "Analogy purpose?", answer: "Links complex ideas to familiar experiences." },
+    { question: "Call to action?", answer: "Direct invitation for the audience to act." },
+    { question: "Intonation control?", answer: "Shapes emotional delivery and emphasis." },
+    { question: "Speech pacing?", answer: "Fast = excitement; slow = gravity or sincerity." },
+    { question: "Role of silence?", answer: "Amplifies suspense and impact." },
+    { question: "Gestures in persuasion?", answer: "Reinforce meaning and energy of speech." },
+    { question: "Authenticity value?", answer: "Builds genuine connection and trust." },
+    { question: "Humor's effect?", answer: "Relaxes listeners and increases receptivity." },
+    { question: "Confidence vs arrogance?", answer: "Confidence attracts; arrogance repels." },
+    { question: "Strategic empathy?", answer: "Reflects audience's feelings and values." },
+    { question: "Vocal emphasis?", answer: "Highlights critical words and phrases." },
+    { question: "Emotional control?", answer: "Conveys authority through composure." },
+    { question: "Structural logic?", answer: "Organizes ideas for clarity and persuasion." },
+    { question: "Selective evidence?", answer: "Supports argument without overwhelming listeners." },
+    { question: "Contrast technique?", answer: "Highlights choice and urgency." },
+    { question: "Moral appeal?", answer: "Connects argument to ethics and shared values." },
+    { question: "Inclusive language?", answer: "Creates unity through 'we' and 'us' language." },
+    { question: "Memorable endings?", answer: "Close with emotional or visionary statement." },
+    { question: "Feedback role?", answer: "Improves clarity and effectiveness through audience cues." },
+    { question: "Self-awareness?", answer: "Keeps persuasion balanced and ethical." },
+    { question: "Audience analysis?", answer: "Adapts tone and argument to listener expectations." },
+    { question: "Definition of mastery?", answer: "Seamless integration of logic, emotion, and charisma." }
+  ]
+};
+
+export const MODULE_287_DATA = {
+  title: "Module 287 - Advanced Research and Presentation Skills",
+  description: "Master research methodology, academic integrity, and persuasive presentation strategies to communicate complex ideas effectively.",
+  intro: `📘 Lesson Objectives
+
+At the C2 level, advanced research and presentation require mastery of synthesis, clarity, and delivery. This module integrates critical research methodology, academic integrity, and persuasive presentation strategies to communicate complex ideas effectively.`,
+  table: {
+    title: "📋 Core Components of Advanced Research and Presentation",
+    data: [
+      { component: "Research Question", description: "Defines scope and purpose", example: "How does bilingualism affect cognitive flexibility?" },
+      { component: "Data Collection", description: "Gathering quantitative or qualitative data", example: "Surveys, experiments, fieldwork" },
+      { component: "Critical Evaluation", description: "Judging credibility and bias", example: "Peer-reviewed sources vs. social media posts" },
+      { component: "Synthesis", description: "Integrating ideas into coherent structure", example: "Combining multiple academic viewpoints" },
+      { component: "Structure", description: "Organized narrative with clarity", example: "Introduction, analysis, conclusion" },
+      { component: "Visual Support", description: "Use of infographics or slides", example: "Charts clarifying statistics" },
+      { component: "Delivery Skills", description: "Verbal and non-verbal performance", example: "Eye contact, pacing, and tone" }
+    ]
+  },
+  speakingPractice: [
+    { question: "What defines a strong research question?", answer: "It is focused, clear, and answerable through systematic investigation." },
+    { question: "Why is source credibility vital?", answer: "Because it ensures that conclusions are grounded in trustworthy evidence." },
+    { question: "Primary vs secondary sources?", answer: "Primary = original data; Secondary = interpretation or analysis of that data." },
+    { question: "Purpose of literature review?", answer: "To identify what is known and where gaps exist." },
+    { question: "Why combine qualitative and quantitative?", answer: "To balance numerical trends with human insights." },
+    { question: "How does bias harm research?", answer: "It distorts truth and weakens credibility." },
+    { question: "What is triangulation?", answer: "Using multiple methods or data sources for validation." },
+    { question: "Why cite sources?", answer: "To maintain integrity and avoid plagiarism." },
+    { question: "Data visualization role?", answer: "Transforms complex data into accessible visual meaning." },
+    { question: "Academic rigor meaning?", answer: "Precision, consistency, and logic in research process." },
+    { question: "Critical analysis vs summary?", answer: "Analysis interprets; summary only restates." },
+    { question: "Why use evidence hierarchies?", answer: "To prioritize stronger, more reliable data sources." },
+    { question: "Avoiding confirmation bias?", answer: "Seek opposing evidence and alternative interpretations." },
+    { question: "Inductive reasoning?", answer: "Drawing general principles from specific observations." },
+    { question: "Deductive reasoning?", answer: "Applying universal principles to specific cases." },
+    { question: "Counterarguments' role?", answer: "Demonstrates fairness and strengthens persuasion." },
+    { question: "What is synthesis?", answer: "Integrating diverse sources into one cohesive argument." },
+    { question: "Importance of transitions?", answer: "They connect ideas smoothly and ensure coherence." },
+    { question: "Academic tone value?", answer: "Maintains objectivity and professionalism." },
+    { question: "How does language choice affect clarity?", answer: "Precision and conciseness prevent misinterpretation." },
+    { question: "Strong opening in presentations?", answer: "A quote, statistic, or question that hooks attention." },
+    { question: "Importance of structure?", answer: "Guides listeners logically from start to finish." },
+    { question: "Why use visuals?", answer: "They increase comprehension and retention." },
+    { question: "Tone's role in delivery?", answer: "Shapes audience perception and engagement." },
+    { question: "Ideal slide-text ratio?", answer: "Minimal text complemented by powerful visuals." },
+    { question: "Rehearsal benefit?", answer: "Builds fluency, confidence, and timing control." },
+    { question: "Audience adaptation?", answer: "Tailoring content to knowledge and interest improves engagement." },
+    { question: "Gestures' function?", answer: "Support emphasis and natural delivery." },
+    { question: "Role of pacing?", answer: "Steady pacing ensures clarity and focus." },
+    { question: "Why use storytelling?", answer: "It transforms data into relatable narrative context." },
+    { question: "Feedback use?", answer: "Helps identify weak points in structure or tone." },
+    { question: "Confidence in delivery?", answer: "Enhances authority and credibility." },
+    { question: "Handling nervousness?", answer: "Practice, breathing, and visualization techniques." },
+    { question: "Technology integration?", answer: "Adds interactivity and visual depth." },
+    { question: "Managing questions?", answer: "Stay calm, acknowledge, and respond concisely." },
+    { question: "Academic vs corporate style?", answer: "Academic = analysis; corporate = persuasion." },
+    { question: "Ethical design?", answer: "Avoid misleading graphs or selective data." },
+    { question: "Strong conclusion?", answer: "Summarizes findings and calls for reflection or action." },
+    { question: "Why professional language?", answer: "Builds global respect and comprehension." },
+    { question: "Definition of mastery?", answer: "Turning complex data into compelling, ethical communication." }
+  ]
+};
+
+export const MODULE_288_DATA = {
+  title: "Module 288 - Expressing Philosophical and Abstract Ideas",
+  description: "Develop the ability to articulate complex, conceptual thoughts about existence, morality, and perception with precision.",
+  intro: `📘 Lesson Objectives
+
+At the C2 level, expressing philosophical and abstract ideas involves clarity, logic, and depth. Learners develop the ability to articulate complex, conceptual thoughts about existence, morality, and perception with precision and balance between emotion and reason.`,
+  table: {
+    title: "📋 Core Strategies for Abstract Expression",
+    data: [
+      { strategy: "Conceptual Framing", description: "Define abstract notions before analysis", example: "Freedom can mean absence of restraint or inner self-control." },
+      { strategy: "Analogical Reasoning", description: "Explaining through comparison", example: "Consciousness is like a mirror reflecting itself." },
+      { strategy: "Qualification", description: "Acknowledging limits or nuances", example: "In one sense this holds true, but in another, it is incomplete." },
+      { strategy: "Metaphoric Language", description: "Using imagery to clarify concepts", example: "Hope is the candle in the dark." },
+      { strategy: "Balanced Argumentation", description: "Exploring multiple perspectives", example: "Determinism limits free will, yet gives order to human behavior." },
+      { strategy: "Nominalization", description: "Turning qualities into nouns", example: "Justice, truth, perception, and existence." }
+    ]
+  },
+  speakingPractice: [
+    { question: "What makes a statement philosophical?", answer: "It challenges assumptions and explores universal principles." },
+    { question: "Why is abstract thinking vital?", answer: "It enables deeper reflection beyond immediate reality." },
+    { question: "How to keep abstract ideas clear?", answer: "By defining terms and linking theory to examples." },
+    { question: "Conceptualization meaning?", answer: "Turning experiences into structured mental concepts." },
+    { question: "Why metaphors help abstraction?", answer: "They make intangible ideas vivid and relatable." },
+    { question: "Role of logic?", answer: "It ensures reasoning remains consistent and valid." },
+    { question: "Philosophy vs opinion?", answer: "Philosophy is reasoned and analytical; opinion is subjective." },
+    { question: "Why use ambiguity?", answer: "To reflect the depth and complexity of ideas." },
+    { question: "How context shapes meaning?", answer: "Interpretation depends on culture and perspective." },
+    { question: "What is linguistic abstraction?", answer: "Generalizing specific experiences into universal ideas." },
+    { question: "How to express abstraction coherently?", answer: "By defining concepts and illustrating with analogies." },
+    { question: "What is dialectical reasoning?", answer: "Finding truth through opposing arguments." },
+    { question: "Why nominalize ideas?", answer: "To transform actions into discussable entities like 'truth' or 'justice'." },
+    { question: "Syntax and tone?", answer: "Long, balanced sentences evoke depth and contemplation." },
+    { question: "Function of concessions?", answer: "Show intellectual honesty and complexity." },
+    { question: "Abstraction vs vagueness?", answer: "Abstraction refines; vagueness confuses." },
+    { question: "Need for precision?", answer: "Prevents misinterpretation in theoretical language." },
+    { question: "Conceptual hierarchy?", answer: "Organizing from general to specific ideas." },
+    { question: "Tone's role?", answer: "Reflective tone invites thought and interpretation." },
+    { question: "Why define assumptions?", answer: "Unclear premises undermine logical argument." },
+    { question: "Purpose of rhetorical questions?", answer: "Stimulate reflection rather than provide answers." },
+    { question: "Paradox use?", answer: "Reveals contradictions that deepen understanding." },
+    { question: "Comparative structures?", answer: "Clarify relations between abstract concepts." },
+    { question: "Metaphor and truth?", answer: "Expresses truth emotionally, not literally." },
+    { question: "Role of personification?", answer: "Gives life to abstract entities like justice or time." },
+    { question: "Philosophical vs academic tone?", answer: "Philosophical = exploratory; academic = structured." },
+    { question: "Value of ambiguity?", answer: "Encourages open interpretation and discussion." },
+    { question: "Language of paradox?", answer: "Expresses truth through contradiction: 'Freedom can enslave.'" },
+    { question: "Need for humility in thought?", answer: "Acknowledges uncertainty in abstract reasoning." },
+    { question: "Modal verbs in philosophy?", answer: "Indicate possibility or doubt: might, could, must." },
+    { question: "Engaging abstract ideas?", answer: "Use relatable metaphors and emotional resonance." },
+    { question: "Emotion in abstraction?", answer: "Connects logic with human experience." },
+    { question: "Balancing clarity and complexity?", answer: "Layer ideas but explain them accessibly." },
+    { question: "What is transcendence?", answer: "Exploring meaning beyond material limits." },
+    { question: "How philosophy builds empathy?", answer: "Encourages understanding of diverse perspectives." },
+    { question: "Use of abstract vocabulary?", answer: "Captures deep concepts like 'being' or 'essence'." },
+    { question: "Link between philosophy and science?", answer: "Both rely on precision and logical structure." },
+    { question: "Reflective language power?", answer: "Promotes introspection and awareness." },
+    { question: "Minimalist expression?", answer: "Few words can express profound truths—'I think, therefore I am.'" },
+    { question: "Mastery definition?", answer: "Expressing profound ideas with precision, elegance, and depth." }
+  ]
+};
+
+export const MODULE_289_DATA = {
+  title: "Module 289 - Language for Humanitarian and NGO Work",
+  description: "Master advocacy, report writing, intercultural dialogue, and ethical storytelling for humanitarian communication.",
+  intro: `📘 Lesson Objectives
+
+At the C2 level, humanitarian and NGO professionals must communicate with clarity, empathy, and professionalism. This module focuses on advocacy, report writing, intercultural dialogue, and ethical storytelling, helping learners express compassion without bias.`,
+  table: {
+    title: "📋 Core Competencies in NGO and Humanitarian English",
+    data: [
+      { competency: "Empathetic Communication", description: "Balancing professionalism with compassion", example: "We recognize the resilience of affected families." },
+      { competency: "Formal Reporting", description: "Objective and data-driven language", example: "The initiative reached 1,200 beneficiaries." },
+      { competency: "Advocacy Language", description: "Promoting justice and equality ethically", example: "Every individual deserves access to clean water." },
+      { competency: "Intercultural Awareness", description: "Adapting tone across diverse audiences", example: "Avoiding idioms that may not translate culturally." },
+      { competency: "Conflict Sensitivity", description: "Neutral language in political contexts", example: "All parties require humanitarian access." },
+      { competency: "Proposal Writing", description: "Presenting measurable goals and outcomes", example: "This project aims to provide food security for 300 households." }
+    ]
+  },
+  speakingPractice: [
+    { question: "What defines humanitarian communication?", answer: "It merges factual clarity with empathy and cultural sensitivity." },
+    { question: "Why must tone remain neutral?", answer: "Neutral tone avoids political or emotional bias." },
+    { question: "Empathy vs emotion?", answer: "Empathy understands; emotion may distort objectivity." },
+    { question: "Why is clarity crucial?", answer: "Ambiguity can harm coordination and outcomes." },
+    { question: "Addressing suffering?", answer: "Use dignified, non-sensational language." },
+    { question: "Evidence-based language?", answer: "Builds accountability and trust." },
+    { question: "What is neutrality?", answer: "Avoiding political or ideological alignment." },
+    { question: "Expressing gratitude?", answer: "Strengthens partnerships and goodwill." },
+    { question: "Why inclusive language?", answer: "Reflects equality and professionalism." },
+    { question: "NGO vs corporate tone?", answer: "NGO emphasizes mission, ethics, and impact." },
+    { question: "What makes a good proposal?", answer: "Clear goals, measurable results, and transparency." },
+    { question: "Writing needs assessments?", answer: "Use verified data and local consultation." },
+    { question: "Plain English importance?", answer: "Ensures comprehension across language levels." },
+    { question: "Goal vs objective?", answer: "Goal = broad vision; Objective = specific target." },
+    { question: "Describing impact?", answer: "Combine data with human perspective." },
+    { question: "Avoiding jargon?", answer: "Simplifies understanding for global audiences." },
+    { question: "Visual support use?", answer: "Charts clarify numbers and results." },
+    { question: "Accountability tone?", answer: "Shows transparency: 'We tracked and evaluated progress.'" },
+    { question: "Local voices role?", answer: "Authenticates narrative and fosters inclusion." },
+    { question: "Expressing limitations?", answer: "Diplomatically acknowledge obstacles." },
+    { question: "Advocacy writing?", answer: "Persuasive, ethical promotion of humanitarian causes." },
+    { question: "Cultural bias?", answer: "Occurs when assuming one worldview as universal." },
+    { question: "Gender-sensitive language?", answer: "Prevents exclusion or stereotyping." },
+    { question: "Conflict-sensitive writing?", answer: "Avoid blame, emphasize shared needs." },
+    { question: "Global frameworks?", answer: "Citing UN SDGs or conventions strengthens legitimacy." },
+    { question: "Diplomatic tone?", answer: "Focuses on cooperation over criticism." },
+    { question: "Ethical storytelling?", answer: "Shows agency and dignity of subjects." },
+    { question: "Social media use?", answer: "Raise awareness respectfully, avoid exploitation." },
+    { question: "Translation accuracy?", answer: "Prevents cultural or political misinterpretation." },
+    { question: "Responding to criticism?", answer: "Be transparent, corrective, and polite." },
+    { question: "Leadership communication?", answer: "Uses inclusive, empowering tone." },
+    { question: "Humility in leadership?", answer: "Encourages trust and collaboration." },
+    { question: "Establishing credibility?", answer: "Use verified data and references." },
+    { question: "Keynote structure?", answer: "Clear message, compelling narrative, moral call." },
+    { question: "Storytelling in advocacy?", answer: "Makes statistics relatable and human." },
+    { question: "Stakeholder adaptation?", answer: "Simplify for communities, formalize for donors." },
+    { question: "Intercultural negotiation?", answer: "Respectful tone using 'We appreciate your perspective.'" },
+    { question: "Inclusive pronouns?", answer: "'We' unites; 'they' divides." },
+    { question: "Long-term focus?", answer: "Promotes sustainability beyond short-term aid." },
+    { question: "Mastery of NGO English?", answer: "Communicating with empathy, clarity, and global awareness." }
+  ]
+};
+
+export const MODULE_290_DATA = {
+  title: "Module 290 - Editing and Proofreading Skills",
+  description: "Refine advanced writing for clarity, accuracy, and elegance across academic, business, and creative contexts.",
+  intro: `📘 Lesson Objectives
+
+At the C2 level, editing and proofreading focus on refining advanced writing for clarity, accuracy, and elegance. This module develops professional editing skills for academic, business, and creative writing contexts, ensuring cohesion, precision, and stylistic coherence.`,
+  table: {
+    title: "📋 Core Areas of Editing and Proofreading",
+    data: [
+      { skill: "Grammar Correction", description: "Ensuring grammatical and punctuation accuracy", example: "He have worked → He has worked." },
+      { skill: "Clarity and Brevity", description: "Eliminating redundancy and ambiguity", example: "Due to the fact that → Because" },
+      { skill: "Consistency", description: "Maintaining uniform spelling and formatting", example: "'E-mail' vs 'email'" },
+      { skill: "Style and Tone", description: "Adapting text to audience expectations", example: "Formal for reports, casual for blogs" },
+      { skill: "Cohesion and Flow", description: "Ensuring logical connection between ideas", example: "Using connectors: However, Therefore, Moreover" },
+      { skill: "Formatting Accuracy", description: "Applying layout and citation standards", example: "APA, MLA, or Chicago formatting" }
+    ]
+  },
+  speakingPractice: [
+    { question: "What is the main goal of editing?", answer: "To improve clarity and quality without changing meaning." },
+    { question: "Editing vs proofreading?", answer: "Editing improves content and flow; proofreading checks surface errors." },
+    { question: "Why adjust tone?", answer: "To match purpose and audience expectations." },
+    { question: "Over-editing issue?", answer: "It may erase the writer's personal voice." },
+    { question: "Mechanical accuracy?", answer: "Correct grammar, punctuation, and capitalization." },
+    { question: "Sentence variety?", answer: "Enhances rhythm and reader engagement." },
+    { question: "Function of transitions?", answer: "To connect ideas and maintain coherence." },
+    { question: "Why remove redundancy?", answer: "To increase conciseness and readability." },
+    { question: "Clarity vs simplicity?", answer: "Clarity is precision; simplicity is accessibility." },
+    { question: "Peer review benefit?", answer: "Brings new perspective and detects missed issues." },
+    { question: "Detecting subject-verb errors?", answer: "Check if singular/plural subjects agree with verbs." },
+    { question: "Dangling modifiers?", answer: "Ambiguous modifiers: 'Running fast, the gate was reached.'" },
+    { question: "Correcting parallelism?", answer: "Keep grammatical patterns consistent: 'to run, to swim, to jump.'" },
+    { question: "Comma splice fix?", answer: "Use semicolon or conjunction between clauses." },
+    { question: "Punctuation importance?", answer: "It defines rhythm and prevents confusion." },
+    { question: "Tense consistency?", answer: "Ensure all verbs align logically in time." },
+    { question: "Style vs grammar editing?", answer: "Grammar follows rules; style follows preference." },
+    { question: "Standardizing spelling?", answer: "Ensures uniformity (British vs American)." },
+    { question: "Reducing nominalization?", answer: "Turn verbs back from nouns for directness: 'make a decision' → 'decide.'" },
+    { question: "Passive voice limits?", answer: "Can weaken focus by hiding the subject." },
+    { question: "Macro-editing?", answer: "Revising structure and content organization." },
+    { question: "Micro-editing?", answer: "Correcting wording, syntax, and sentence detail." },
+    { question: "Maintaining consistency?", answer: "Use checklists and style guides." },
+    { question: "Stylistic coherence?", answer: "Uniform tone and vocabulary throughout." },
+    { question: "Readability tools?", answer: "Help measure sentence and word complexity." },
+    { question: "Track changes use?", answer: "To transparently review edits with authors." },
+    { question: "Avoiding bias?", answer: "Maintain fairness and neutrality in tone." },
+    { question: "Editor's ethics?", answer: "Preserve author's intent without distortion." },
+    { question: "Why conciseness matters?", answer: "It sharpens focus and enhances comprehension." },
+    { question: "Improving cohesion?", answer: "Ensure logical flow and pronoun clarity." },
+    { question: "Purpose of style guides?", answer: "Maintain uniform rules (APA, MLA, Chicago)." },
+    { question: "Handling disagreement?", answer: "Explain reasoning diplomatically and professionally." },
+    { question: "Proofreading in publishing?", answer: "Final check for layout and minor errors." },
+    { question: "Fresh eyes strategy?", answer: "Resting before proofreading improves detection." },
+    { question: "Revising vs editing?", answer: "Revision changes content; editing polishes form." },
+    { question: "Multilingual text editing?", answer: "Preserve meaning while adjusting structure." },
+    { question: "Fact-checking?", answer: "Verify factual claims for accuracy." },
+    { question: "Consequence of typos?", answer: "Reduces credibility and professionalism." },
+    { question: "Version control?", answer: "Tracks document changes across revisions." },
+    { question: "Mastery definition?", answer: "Balancing clarity, precision, and elegance without loss of meaning." }
+  ]
+};
