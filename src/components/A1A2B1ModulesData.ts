@@ -6020,28 +6020,39 @@ Rain - Yağmur
 Sunshine - Güneş ışığı`,
   tip: "Practice using these words in context to remember them better.",
 
-  table: [
-    { en: "Nature", tr: "Doğa" },
-    { en: "Environment", tr: "Çevre" },
-    { en: "Forest", tr: "Orman" },
-    { en: "Mountain", tr: "Dağ" },
-    { en: "River", tr: "Nehir" },
-    { en: "Lake", tr: "Göl" },
-    { en: "Ocean", tr: "Okyanus" },
-    { en: "Beach", tr: "Sahil" },
-    { en: "Desert", tr: "Çöl" },
-    { en: "Island", tr: "Ada" },
-    { en: "Tree", tr: "Ağaç" },
-    { en: "Plant", tr: "Bitki" },
-    { en: "Animal", tr: "Hayvan" },
-    { en: "Wildlife", tr: "Vahşi yaşam" },
-    { en: "Pollution", tr: "Kirlilik" },
-    { en: "Recycling", tr: "Geri dönüşüm" },
-    { en: "Climate", tr: "İklim" },
-    { en: "Global warming", tr: "Küresel ısınma" },
-    { en: "Rain", tr: "Yağmur" },
-    { en: "Sunshine", tr: "Güneş ışığı" },
-  ],
+  table: {
+    title: "📋 Nature and Environment Vocabulary",
+    data: [
+      { category: "Core Concepts", word: "nature", turkish: "doğa", example: "I love spending time in nature.", usage: "General natural world", phrase: "enjoy nature" },
+      { category: "Core Concepts", word: "environment", turkish: "çevre", example: "We need to protect the environment.", usage: "Natural surroundings", phrase: "protect the environment" },
+
+      { category: "Natural Landscapes", word: "forest", turkish: "orman", example: "We went hiking in the forest.", description: "Large area with many trees", common_phrase: "walk through the forest" },
+      { category: "Natural Landscapes", word: "mountain", turkish: "dağ", example: "The mountain is covered with snow.", description: "Very high natural elevation", common_phrase: "climb a mountain" },
+      { category: "Natural Landscapes", word: "river", turkish: "nehir", example: "The river flows into the ocean.", description: "Water flowing to the sea", common_phrase: "swim in the river" },
+      { category: "Natural Landscapes", word: "lake", turkish: "göl", example: "There's a beautiful lake near my town.", description: "Water surrounded by land", common_phrase: "go to the lake" },
+      { category: "Natural Landscapes", word: "ocean", turkish: "okyanus", example: "The Pacific Ocean is huge.", description: "Very large body of salt water", common_phrase: "across the ocean" },
+      { category: "Natural Landscapes", word: "beach", turkish: "sahil", example: "We played volleyball on the beach.", description: "Sandy shore by the sea", common_phrase: "at the beach" },
+      { category: "Natural Landscapes", word: "desert", turkish: "çöl", example: "The Sahara is a famous desert.", description: "Dry, sandy area with little rain", common_phrase: "in the desert" },
+      { category: "Natural Landscapes", word: "island", turkish: "ada", example: "Cyprus is a beautiful island.", description: "Land surrounded by water", common_phrase: "on an island" },
+
+      { category: "Flora & Fauna", word: "tree", turkish: "ağaç", example: "That oak tree is over 100 years old.", description: "Tall plant with trunk and branches", common_phrase: "climb a tree" },
+      { category: "Flora & Fauna", word: "plant", turkish: "bitki", example: "I have many plants in my garden.", description: "Living organism that grows", common_phrase: "water the plants" },
+      { category: "Flora & Fauna", word: "animal", turkish: "hayvan", example: "Dogs and cats are common animals.", description: "Living creature that moves", common_phrase: "wild animals" },
+      { category: "Flora & Fauna", word: "wildlife", turkish: "vahşi yaşam", example: "We saw amazing wildlife on safari.", description: "Wild animals in their habitat", common_phrase: "observe wildlife" },
+
+      { category: "Environmental Issues", word: "pollution", turkish: "kirlilik", example: "Air pollution is a serious problem.", description: "Harmful substances in environment", types: "air, water, noise pollution" },
+      { category: "Environmental Issues", word: "recycling", turkish: "geri dönüşüm", example: "We recycle plastic and paper.", description: "Reusing materials", common_phrase: "recycling bin" },
+      { category: "Environmental Issues", word: "climate", turkish: "iklim", example: "The climate is changing rapidly.", description: "Weather patterns over time", common_phrase: "climate change" },
+      { category: "Environmental Issues", word: "global warming", turkish: "küresel ısınma", example: "Global warming affects everyone.", description: "Earth getting warmer", cause: "greenhouse gases" },
+
+      { category: "Weather Related", word: "rain", turkish: "yağmur", example: "We need rain for the plants.", usage: "noun or verb", phrases: "It's raining. / heavy rain" },
+      { category: "Weather Related", word: "sunshine", turkish: "güneş ışığı", example: "Plants need sunshine to grow.", description: "Light from the sun", common_phrase: "enjoy the sunshine" },
+
+      { category: "Common Phrases", phrase: "protect the environment", turkish: "çevreyi korumak", usage: "Environmental action", example: "We should all protect the environment." },
+      { category: "Common Phrases", phrase: "save the planet", turkish: "gezegeni kurtarmak", usage: "Environmental activism", example: "Let's work together to save the planet." },
+      { category: "Common Phrases", phrase: "endangered species", turkish: "nesli tükenmekte olan türler", usage: "Conservation", example: "Pandas are an endangered species." },
+    ]
+  },
 
   speakingPractice: [
     { question: "What does \"Nature\" mean in Turkish?", answer: "It means \"Doğa\"." },
@@ -6116,28 +6127,40 @@ Guitar - Gitar
 Piano - Piyano`,
   tip: "Practice using these words in context to remember them better.",
 
-  table: [
-    { en: "Movie", tr: "Film" },
-    { en: "Film", tr: "Film" },
-    { en: "Actor", tr: "Erkek oyuncu" },
-    { en: "Actress", tr: "Kadın oyuncu" },
-    { en: "Director", tr: "Yönetmen" },
-    { en: "Scene", tr: "Sahne" },
-    { en: "Genre", tr: "Tür" },
-    { en: "Comedy", tr: "Komedi" },
-    { en: "Drama", tr: "Drama" },
-    { en: "Action", tr: "Aksiyon" },
-    { en: "Horror", tr: "Korku" },
-    { en: "Soundtrack", tr: "Film müziği" },
-    { en: "Concert", tr: "Konser" },
-    { en: "Song", tr: "Şarkı" },
-    { en: "Singer", tr: "Şarkıcı" },
-    { en: "Musician", tr: "Müzisyen" },
-    { en: "Band", tr: "Grup" },
-    { en: "Instrument", tr: "Enstrüman" },
-    { en: "Guitar", tr: "Gitar" },
-    { en: "Piano", tr: "Piyano" },
-  ],
+  table: {
+    title: "📋 Entertainment Vocabulary (Movies & Music)",
+    data: [
+      { category: "Movies - General", word: "movie / film", turkish: "film", example: "I watched a great movie last night.", note: "Both words mean the same", common_phrase: "go to the movies" },
+      { category: "Movies - General", word: "scene", turkish: "sahne", example: "The opening scene was exciting.", usage: "Part of a movie", phrase: "my favorite scene" },
+      { category: "Movies - General", word: "genre", turkish: "tür", example: "What genre of movies do you like?", usage: "Type/category of film", types: "action, comedy, drama, horror..." },
+      { category: "Movies - General", word: "soundtrack", turkish: "film müziği", example: "The soundtrack was beautiful.", description: "Music from the movie", phrase: "listen to the soundtrack" },
+
+      { category: "Movie People", word: "actor", turkish: "erkek oyuncu", example: "He's a famous actor.", note: "Male performer in movies", phrase: "favorite actor" },
+      { category: "Movie People", word: "actress", turkish: "kadın oyuncu", example: "She won an award as best actress.", note: "Female performer in movies", phrase: "talented actress" },
+      { category: "Movie People", word: "director", turkish: "yönetmen", example: "The director made a great film.", description: "Person who directs the movie", phrase: "famous director" },
+
+      { category: "Movie Genres", word: "comedy", turkish: "komedi", example: "I love watching comedies.", description: "Funny movies", phrase: "romantic comedy" },
+      { category: "Movie Genres", word: "drama", turkish: "drama", example: "It's a serious drama about family.", description: "Serious, emotional films", phrase: "family drama" },
+      { category: "Movie Genres", word: "action", turkish: "aksiyon", example: "Action movies have exciting fights.", description: "Movies with fights, chases", phrase: "action-packed film" },
+      { category: "Movie Genres", word: "horror", turkish: "korku", example: "I don't like horror movies - too scary!", description: "Scary, frightening films", phrase: "horror film" },
+
+      { category: "Music - General", word: "concert", turkish: "konser", example: "We went to a concert last weekend.", description: "Live music performance", phrase: "go to a concert" },
+      { category: "Music - General", word: "song", turkish: "şarkı", example: "This is my favorite song!", description: "Piece of music with words", phrase: "listen to a song" },
+      { category: "Music - General", word: "instrument", turkish: "enstrüman", example: "Can you play any instruments?", description: "Tool to make music", examples: "guitar, piano, drums" },
+
+      { category: "Music People", word: "singer", turkish: "şarkıcı", example: "She's an amazing singer.", description: "Person who sings", phrase: "famous singer" },
+      { category: "Music People", word: "musician", turkish: "müzisyen", example: "He's a talented musician.", description: "Person who plays music", note: "More general than 'singer'" },
+      { category: "Music People", word: "band", turkish: "grup", example: "My favorite band is performing tonight.", description: "Group of musicians", phrase: "rock band" },
+
+      { category: "Musical Instruments", word: "guitar", turkish: "gitar", example: "I'm learning to play the guitar.", type: "String instrument", phrase: "play guitar" },
+      { category: "Musical Instruments", word: "piano", turkish: "piyano", example: "She plays the piano beautifully.", type: "Keyboard instrument", phrase: "piano lessons" },
+
+      { category: "Common Phrases", phrase: "What's playing?", turkish: "Ne gösteriliyor?", usage: "Asking about movies", context: "At the cinema" },
+      { category: "Common Phrases", phrase: "Let's watch a movie", turkish: "Film izleyelim", usage: "Suggesting entertainment", response: "Sure! What genre?" },
+      { category: "Common Phrases", phrase: "turn up the volume", turkish: "sesi aç", usage: "Making music louder", example: "Can you turn up the volume?" },
+      { category: "Common Phrases", phrase: "sold out show", turkish: "biletleri tükenen gösteri", usage: "No tickets left", example: "The concert is sold out." },
+    ]
+  },
 
   speakingPractice: [
     { question: "What does \"Movie\" mean in Turkish?", answer: "It means \"Film\"." },
@@ -6212,28 +6235,40 @@ Rude - Kaba
 Creative - Yaratıcı`,
   tip: "Practice using these words in context to remember them better.",
 
-  table: [
-    { en: "Tall", tr: "Uzun boylu" },
-    { en: "Short", tr: "Kısa boylu" },
-    { en: "Slim", tr: "Zayıf" },
-    { en: "Fat", tr: "Şişman" },
-    { en: "Young", tr: "Genç" },
-    { en: "Old", tr: "Yaşlı" },
-    { en: "Beautiful", tr: "Güzel" },
-    { en: "Handsome", tr: "Yakışıklı" },
-    { en: "Pretty", tr: "Hoş, sevimli" },
-    { en: "Friendly", tr: "Arkadaş canlısı" },
-    { en: "Shy", tr: "Utangaç" },
-    { en: "Funny", tr: "Komik" },
-    { en: "Serious", tr: "Ciddi" },
-    { en: "Kind", tr: "Nazik" },
-    { en: "Smart", tr: "Zeki" },
-    { en: "Lazy", tr: "Tembel" },
-    { en: "Hard-working", tr: "Çalışkan" },
-    { en: "Polite", tr: "Kibar" },
-    { en: "Rude", tr: "Kaba" },
-    { en: "Creative", tr: "Yaratıcı" },
-  ],
+  table: {
+    title: "📋 Describing People (Appearance & Personality)",
+    data: [
+      { category: "Physical - Height & Build", word: "tall", turkish: "uzun boylu", opposite: "short", example: "He's very tall - about 2 meters!", usage: "Height description" },
+      { category: "Physical - Height & Build", word: "short", turkish: "kısa boylu", opposite: "tall", example: "She's quite short.", usage: "Height description" },
+      { category: "Physical - Height & Build", word: "slim", turkish: "zayıf", opposite: "fat", example: "She's slim and athletic.", note: "Polite word", alternatives: "thin, slender" },
+      { category: "Physical - Height & Build", word: "fat", turkish: "şişman", opposite: "slim", note: "⚠️ Can be rude! Better: 'overweight', 'heavy'", polite_alternatives: "a bit heavy, overweight" },
+
+      { category: "Physical - Age", word: "young", turkish: "genç", opposite: "old", example: "They're a young couple.", usage: "Age description", phrase: "young people" },
+      { category: "Physical - Age", word: "old", turkish: "yaşlı", opposite: "young", example: "My grandfather is quite old.", note: "Better: 'elderly' for politeness", polite_form: "elderly" },
+
+      { category: "Physical - Beauty/Looks", word: "beautiful", turkish: "güzel", usage: "For women, things, places", example: "She's a beautiful woman.", note: "General beauty, elegance" },
+      { category: "Physical - Beauty/Looks", word: "handsome", turkish: "yakışıklı", usage: "For men", example: "He's a handsome man.", note: "Masculine beauty" },
+      { category: "Physical - Beauty/Looks", word: "pretty", turkish: "hoş, sevimli", usage: "For women (less formal than beautiful)", example: "She's a pretty girl.", note: "Softer, more casual" },
+
+      { category: "Personality - Positive", word: "friendly", turkish: "arkadaş canlısı", opposite: "unfriendly", example: "My neighbors are very friendly.", meaning: "Easy to talk to, warm" },
+      { category: "Personality - Positive", word: "kind", turkish: "nazik", opposite: "mean", example: "She's a kind person - always helps others.", meaning: "Caring, helpful, gentle" },
+      { category: "Personality - Positive", word: "smart", turkish: "zeki", opposite: "stupid", example: "He's a smart student.", alternatives: "intelligent, clever, bright" },
+      { category: "Personality - Positive", word: "hard-working", turkish: "çalışkan", opposite: "lazy", example: "She's a hard-working employee.", meaning: "Works a lot, diligent" },
+      { category: "Personality - Positive", word: "polite", turkish: "kibar", opposite: "rude", example: "He's always polite to everyone.", meaning: "Well-mannered, respectful" },
+      { category: "Personality - Positive", word: "creative", turkish: "yaratıcı", example: "She's a creative artist.", meaning: "Imaginative, inventive" },
+      { category: "Personality - Positive", word: "funny", turkish: "komik", opposite: "serious", example: "He's so funny - he makes everyone laugh!", meaning: "Humorous, makes jokes" },
+
+      { category: "Personality - Negative", word: "lazy", turkish: "tembel", opposite: "hard-working", example: "He's lazy - never does homework.", meaning: "Doesn't want to work" },
+      { category: "Personality - Negative", word: "rude", turkish: "kaba", opposite: "polite", example: "Don't be rude to your teacher!", meaning: "Impolite, disrespectful" },
+
+      { category: "Personality - Social Traits", word: "shy", turkish: "utangaç", opposite: "outgoing", example: "She's shy and doesn't talk much.", meaning: "Nervous around people" },
+      { category: "Personality - Social Traits", word: "serious", turkish: "ciddi", opposite: "funny", example: "He's a serious person - rarely smiles.", meaning: "Not playful, formal" },
+
+      { category: "Common Phrases", phrase: "What does he look like?", turkish: "Nasıl görünüyor?", usage: "Asking about appearance", answer_example: "He's tall and slim." },
+      { category: "Common Phrases", phrase: "What's she like?", turkish: "Nasıl biri?", usage: "Asking about personality", answer_example: "She's friendly and funny." },
+      { category: "Common Phrases", phrase: "She looks like her mother", turkish: "Annesine benziyor", usage: "Similarity in appearance", note: "look like = physical similarity" },
+    ]
+  },
 
   speakingPractice: [
     { question: "What does \"Tall\" mean in Turkish?", answer: "It means \"Uzun boylu\"." },
@@ -6308,28 +6343,42 @@ Beach - Sahil
 Lake - Göl`,
   tip: "Practice using these words in context to remember them better.",
 
-  table: [
-    { en: "City", tr: "Şehir" },
-    { en: "Town", tr: "Kasaba" },
-    { en: "Village", tr: "Köy" },
-    { en: "Modern", tr: "Modern" },
-    { en: "Historic", tr: "Tarihi" },
-    { en: "Crowded", tr: "Kalabalık" },
-    { en: "Quiet", tr: "Sessiz" },
-    { en: "Beautiful", tr: "Güzel" },
-    { en: "Ugly", tr: "Çirkin" },
-    { en: "Clean", tr: "Temiz" },
-    { en: "Dirty", tr: "Kirli" },
-    { en: "Safe", tr: "Güvenli" },
-    { en: "Dangerous", tr: "Tehlikeli" },
-    { en: "Park", tr: "Park" },
-    { en: "Building", tr: "Bina" },
-    { en: "Street", tr: "Cadde" },
-    { en: "Mountain", tr: "Dağ" },
-    { en: "River", tr: "Nehir" },
-    { en: "Beach", tr: "Sahil" },
-    { en: "Lake", tr: "Göl" },
-  ],
+  table: {
+    title: "📋 Describing Places (Towns, Cities, Nature)",
+    data: [
+      { category: "Types of Places", word: "city", turkish: "şehir", description: "Large populated area", example: "Istanbul is a big city.", size: "Large, many people" },
+      { category: "Types of Places", word: "town", turkish: "kasaba", description: "Smaller than a city", example: "I live in a small town.", size: "Medium-sized" },
+      { category: "Types of Places", word: "village", turkish: "köy", description: "Small rural area", example: "My grandmother lives in a village.", size: "Very small, countryside" },
+
+      { category: "Describing - Age & Style", word: "modern", turkish: "modern", opposite: "historic", example: "It's a modern building with glass walls.", meaning: "New style, contemporary" },
+      { category: "Describing - Age & Style", word: "historic", turkish: "tarihi", opposite: "modern", example: "Rome is a historic city.", meaning: "Old, with important history" },
+
+      { category: "Describing - Atmosphere", word: "crowded", turkish: "kalabalık", opposite: "quiet", example: "The shopping mall is crowded on weekends.", meaning: "Many people, busy" },
+      { category: "Describing - Atmosphere", word: "quiet", turkish: "sessiz", opposite: "crowded/noisy", example: "I prefer quiet places to relax.", meaning: "Peaceful, not much noise", alternatives: "peaceful, calm" },
+
+      { category: "Describing - Appearance", word: "beautiful", turkish: "güzel", opposite: "ugly", example: "Paris is a beautiful city.", usage: "Positive description", phrase: "beautiful scenery" },
+      { category: "Describing - Appearance", word: "ugly", turkish: "çirkin", opposite: "beautiful", example: "That building is really ugly.", note: "Strong negative word", politer_form: "not very attractive" },
+
+      { category: "Describing - Cleanliness", word: "clean", turkish: "temiz", opposite: "dirty", example: "The streets are very clean here.", meaning: "No dirt, well-maintained" },
+      { category: "Describing - Cleanliness", word: "dirty", turkish: "kirli", opposite: "clean", example: "This beach is dirty - there's trash everywhere.", meaning: "Not clean, polluted" },
+
+      { category: "Describing - Safety", word: "safe", turkish: "güvenli", opposite: "dangerous", example: "This neighborhood is safe at night.", meaning: "No danger, secure", phrase: "feel safe" },
+      { category: "Describing - Safety", word: "dangerous", turkish: "tehlikeli", opposite: "safe", example: "That area is dangerous after dark.", meaning: "Risky, unsafe", note: "⚠️ Be careful!" },
+
+      { category: "Place Features", word: "park", turkish: "park", example: "There's a nice park near my house.", description: "Green area for recreation", activities: "walk, play, relax" },
+      { category: "Place Features", word: "building", turkish: "bina", example: "That building is 50 floors high.", description: "Structure with walls and roof", types: "office building, apartment building" },
+      { category: "Place Features", word: "street", turkish: "cadde", example: "I live on Main Street.", description: "Road in a city/town", phrase: "walk down the street" },
+
+      { category: "Natural Features", word: "mountain", turkish: "dağ", example: "The mountains are covered with snow.", usage: "Large natural elevation", activity: "climbing, hiking" },
+      { category: "Natural Features", word: "river", turkish: "nehir", example: "The city is next to a beautiful river.", usage: "Flowing water", phrase: "by the river" },
+      { category: "Natural Features", word: "beach", turkish: "sahil", example: "We spent the day at the beach.", usage: "Sandy shore by the sea", activities: "swimming, sunbathing" },
+      { category: "Natural Features", word: "lake", turkish: "göl", example: "There's a lake in the middle of town.", usage: "Body of water", phrase: "swim in the lake" },
+
+      { category: "Common Phrases", phrase: "What's it like?", turkish: "Nasıl bir yer?", usage: "Asking about a place", answer_example: "It's beautiful and quiet." },
+      { category: "Common Phrases", phrase: "I love the atmosphere", turkish: "Atmosferi seviyorum", usage: "Describing general feeling of place", context: "Restaurants, cities, cafes" },
+      { category: "Common Phrases", phrase: "It's worth visiting", turkish: "Ziyaret etmeye değer", usage: "Recommendation", example: "Venice is worth visiting!" },
+    ]
+  },
 
   speakingPractice: [
     { question: "What does \"City\" mean in Turkish?", answer: "It means \"Şehir\"." },
@@ -6404,28 +6453,39 @@ Ask for help - Yardım iste
 Instructions - Talimatlar`,
   tip: "Practice using these words in context to remember them better.",
 
-  table: [
-    { en: "Turn left", tr: "Sola dön" },
-    { en: "Turn right", tr: "Sağa dön" },
-    { en: "Go straight", tr: "Dümdüz git" },
-    { en: "Cross the street", tr: "Sokağı geç" },
-    { en: "Traffic light", tr: "Trafik ışığı" },
-    { en: "Intersection", tr: "Kavşak" },
-    { en: "Next to", tr: "Yanında" },
-    { en: "Opposite", tr: "Karşısında" },
-    { en: "Behind", tr: "Arkasında" },
-    { en: "In front of", tr: "Önünde" },
-    { en: "Near", tr: "Yakınında" },
-    { en: "Between", tr: "Arasında" },
-    { en: "At the corner", tr: "Köşede" },
-    { en: "Go past", tr: "Geç" },
-    { en: "Stop", tr: "Dur" },
-    { en: "Follow", tr: "Takip et" },
-    { en: "Take the first left", tr: "İlk soldan dön" },
-    { en: "Take the second right", tr: "İkinci sağdan dön" },
-    { en: "Ask for help", tr: "Yardım iste" },
-    { en: "Instructions", tr: "Talimatlar" },
-  ],
+  table: {
+    title: "📋 Giving Directions and Instructions",
+    data: [
+      { category: "Basic Directions", phrase: "turn left", turkish: "sola dön", example: "Turn left at the traffic light.", when_to_use: "Changing direction to the left", gesture: "👈" },
+      { category: "Basic Directions", phrase: "turn right", turkish: "sağa dön", example: "Turn right at the corner.", when_to_use: "Changing direction to the right", gesture: "👉" },
+      { category: "Basic Directions", phrase: "go straight", turkish: "dümdüz git", example: "Go straight for 200 meters.", when_to_use: "Continue in same direction", alternatives: "go straight ahead, keep going" },
+
+      { category: "Movement Actions", phrase: "cross the street", turkish: "sokağı geç", example: "Cross the street at the pedestrian crossing.", action: "Go to the other side", safety: "Use crosswalk!" },
+      { category: "Movement Actions", phrase: "go past", turkish: "geç", example: "Go past the bank and turn left.", meaning: "Continue beyond something", note: "Don't stop at it" },
+      { category: "Movement Actions", phrase: "stop", turkish: "dur", example: "Stop at the traffic light.", when: "Reaching destination or obstacle", imperative: "Command form" },
+      { category: "Movement Actions", phrase: "follow", turkish: "takip et", example: "Follow this road for 1 km.", meaning: "Continue on this path", usage: "Roads, signs, people" },
+
+      { category: "Prepositions of Place", phrase: "next to", turkish: "yanında", example: "The cafe is next to the bank.", meaning: "Beside, right by", position: "Adjacent" },
+      { category: "Prepositions of Place", phrase: "opposite", turkish: "karşısında", example: "The shop is opposite the post office.", meaning: "Across from, facing", position: "On the other side" },
+      { category: "Prepositions of Place", phrase: "behind", turkish: "arkasında", example: "The parking lot is behind the building.", meaning: "At the back of", opposite: "in front of" },
+      { category: "Prepositions of Place", phrase: "in front of", turkish: "önünde", example: "There's a statue in front of the museum.", meaning: "At the front of", opposite: "behind" },
+      { category: "Prepositions of Place", phrase: "near", turkish: "yakınında", example: "The hotel is near the station.", meaning: "Close to, not far from", alternatives: "close to" },
+      { category: "Prepositions of Place", phrase: "between", turkish: "arasında", example: "The bank is between the cafe and the shop.", meaning: "In the middle of two things", note: "Requires two reference points" },
+      { category: "Prepositions of Place", phrase: "at the corner", turkish: "köşede", example: "Turn right at the corner.", meaning: "Where two streets meet", usage: "Intersections" },
+
+      { category: "Location References", word: "traffic light", turkish: "trafik ışığı", example: "Wait at the traffic light.", description: "Red/yellow/green lights", usage: "Common reference point" },
+      { category: "Location References", word: "intersection", turkish: "kavşak", example: "Turn left at the intersection.", description: "Where roads cross", alternative: "junction, crossroads" },
+
+      { category: "Specific Instructions", phrase: "take the first left", turkish: "ilk soldan dön", example: "Take the first left after the bridge.", pattern: "Ordinal + direction", variants: "first/second/third + left/right" },
+      { category: "Specific Instructions", phrase: "take the second right", turkish: "ikinci sağdan dön", example: "Take the second right.", pattern: "Ordinal + direction", note: "Count the turns!" },
+
+      { category: "Common Direction Phrases", phrase: "How do I get to...?", turkish: "...nasıl giderim?", usage: "Asking for directions", example: "How do I get to the train station?" },
+      { category: "Common Direction Phrases", phrase: "Is it far?", turkish: "Uzak mı?", usage: "Asking about distance", common_response: "It's about 5 minutes walk." },
+      { category: "Common Direction Phrases", phrase: "Can you show me on the map?", turkish: "Haritada gösterebilir misin?", usage: "Requesting visual help", note: "Very useful!" },
+      { category: "Common Direction Phrases", phrase: "You can't miss it", turkish: "Gözden kaçırmak imkansız", usage: "Saying it's easy to find", meaning: "Very obvious/visible" },
+      { category: "Common Direction Phrases", phrase: "ask for help", turkish: "yardım iste", example: "If you get lost, ask for help.", advice: "Don't be shy!", phrase_form: "Can you help me?" },
+    ]
+  },
 
   speakingPractice: [
     { question: "What does \"Turn left\" mean in Turkish?", answer: "It means \"Sola dön\"." },
