@@ -4187,11 +4187,28 @@ Making Polite Requests: Would you help me, please?
 Responses: Yes, please. That would be great. / No, thank you. I'm fine.`,
   tip: "Use 'Would you like...?' for offers and 'Would you...?' for polite requests. Always be polite in responses.",
   
-  table: [
-    { sentenceType: "Offer", structure: "Would you like + noun/verb (to)", example: "Would you like a drink?" },
-    { sentenceType: "Polite Request", structure: "Would you + base verb", example: "Would you help me, please?" },
-    { sentenceType: "Response", structure: "Yes/No + polite reply", example: "Yes, please. / No, thank you." }
-  ],
+  table: {
+    title: "📋 Offers & Polite Requests with 'Would'",
+    data: [
+      { function: "Making Offers", structure: "Would you like + noun?", example: "Would you like some tea?", response_accept: "Yes, please. / That would be great.", response_decline: "No, thank you. / I'm fine, thanks.", note: "Offering something to someone", usage: "Very polite, common in hospitality" },
+      { function: "Offering Activities", structure: "Would you like + to + V1?", example: "Would you like to sit down?", response_accept: "Yes, I'd love to. / Sure, thanks.", response_decline: "No, thank you. I'm okay standing.", note: "Inviting someone to do something", usage: "Polite invitation" },
+      { function: "Polite Requests", structure: "Would you + V1 + (please)?", example: "Would you help me, please?", response_accept: "Of course. / Sure, no problem.", response_decline: "I'm sorry, I can't right now.", note: "Asking someone to do something", usage: "Very polite, not commanding" },
+      { function: "Polite Requests (formal)", structure: "Would you mind + V-ing?", example: "Would you mind closing the door?", response_accept: "Not at all. / Of course not.", response_decline: "I'm sorry, but...", note: "Very polite way to ask", critical: "Answer 'Not at all' = Yes, I'll do it!" },
+      { offer_type: "Food/Drink", offer_example: "Would you like a cup of coffee?", accept: "Yes, please. That sounds nice.", decline: "No, thank you. I just had one.", note: "Most common context for offers", tip: "Always respond politely" },
+      { offer_type: "Help/Assistance", offer_example: "Would you like me to carry that bag?", accept: "Yes, please. That's very kind.", decline: "No, thanks. I can manage.", note: "Offering to help someone", response_note: "Express gratitude even when declining" },
+      { request_type: "Asking for Help", request_example: "Would you show me how to use this?", response: "Sure, let me show you.", alternative: "Could you show me...? (also polite)", note: "Asking someone to teach/show", tip: "Use 'please' to be extra polite" },
+      { request_type: "Asking for Action", request_example: "Would you open the window, please?", response: "Of course. / Right away.", alternative: "Can you...? / Could you...?", note: "Asking someone to do something", comparison: "'Would' is more polite than 'can'" },
+      { common_mistake: "Using 'like' in requests", wrong: "Would you like help me?", correct: "Would you help me? / Would you like to help me?", rule: "Offers: 'like + noun/to V', Requests: NO 'like'", explanation: "Don't confuse offers with requests!", critical: "Very common error!" },
+      { common_mistake: "Wrong response to 'mind'", wrong: "Q: Would you mind helping? A: Yes. (= I'll help)", correct: "Q: Would you mind helping? A: Not at all. (= I'll help)", rule: "'Not at all' = I don't mind = I'll do it", explanation: "'mind' means 'feel bothered by'", note: "Opposite logic in English!" },
+      { phrase: "Would you like some...?", context: "Offering countable plural or uncountable", example: "Would you like some cookies? / some water?", note: "Use 'some' in offers", pattern: "'some' in questions (offers only)" },
+      { phrase: "I'd like...", meaning: "I want (polite)", structure: "I'd (I would) like + noun/to V", example: "I'd like a coffee, please.", note: "Polite way to order or request", usage: "Restaurants, shops, formal situations" },
+      { phrase: "Would you prefer...?", meaning: "Asking about preference", structure: "Would you prefer A or B?", example: "Would you prefer tea or coffee?", response: "I'd prefer tea, please.", note: "Offering a choice", comparison: "More specific than 'like'" },
+      { response_accepting: "Accepting offers politely", examples: "Yes, please. / That would be great. / I'd love to. / Thank you, that's very kind.", note: "Show appreciation", tone: "Warm and grateful" },
+      { response_declining: "Declining offers politely", examples: "No, thank you. / I'm fine, thanks. / That's very kind, but I'm okay.", note: "Always thank, even when declining", tone: "Polite and grateful" },
+      { context: "Formal situations", examples: "Would you like to take a seat? / Would you follow me, please?", note: "Very common in business, hotels, restaurants", level: "Professional politeness" },
+      { context: "Everyday situations", examples: "Would you like a biscuit? / Would you pass me the salt?", note: "Daily use with family, friends, strangers", level: "Standard politeness" }
+    ]
+  },
   
   speakingPractice: [
     { question: "Would you like some coffee?", answer: "Yes, please. I'd love some." },
@@ -4251,14 +4268,32 @@ Will (instant decisions / predictions / offers): I will help you. / I think it w
 Be going to (plans / evidence-based predictions): I am going to visit my aunt. / Look at the clouds. It's going to rain.`,
   tip: "Use 'will' for spontaneous decisions and predictions. Use 'be going to' for planned actions and evidence-based predictions.",
   
-  table: [
-    { tense: "Will (Aff.)", structure: "Subject + will + verb", example: "She will call you." },
-    { tense: "Will (Neg.)", structure: "Subject + will not (won't) + verb", example: "He won't come." },
-    { tense: "Will (Ques.)", structure: "Will + subject + verb?", example: "Will you help me?" },
-    { tense: "Be Going To (Aff.)", structure: "Subject + be + going to + verb", example: "I'm going to study." },
-    { tense: "Be Going To (Neg.)", structure: "Subject + be + not + going to + V", example: "We're not going to travel." },
-    { tense: "Be Going To (Ques.)", structure: "Be + subject + going to + verb?", example: "Are you going to eat?" }
-  ],
+  table: {
+    title: "📋 Be Going To vs Will: Future Forms Compared",
+    data: [
+      { use: "Will - Spontaneous Decisions", when: "Decisions made at the moment of speaking", example: "The phone is ringing. I'll answer it.", note: "Decision made NOW, not planned", turkish: "Ani kararlar", context: "No previous plan" },
+      { use: "Be Going To - Planned Actions", when: "Decisions/plans made before speaking", example: "I'm going to visit my aunt tomorrow. (I decided yesterday)", note: "Already planned before now", turkish: "Önceden planlanmış", context: "Decision was made earlier" },
+      { use: "Will - Predictions (no evidence)", when: "Future predictions based on opinion/belief", example: "I think it will rain tomorrow.", note: "Opinion, no visible evidence", turkish: "Tahmin (kanıt yok)", signal_words: "I think, probably, maybe, I hope" },
+      { use: "Be Going To - Predictions (evidence)", when: "Predictions based on present evidence", example: "Look at those clouds! It's going to rain.", note: "You can SEE the evidence NOW", turkish: "Tahmin (kanıt var)", signal_words: "Look!, based on present situation" },
+      { use: "Will - Offers", when: "Offering to do something", example: "I'll help you carry that bag.", note: "Spontaneous offer", turkish: "Teklif", pattern: "I'll + verb" },
+      { use: "Will - Promises", when: "Making promises or guarantees", example: "I promise I'll call you tonight.", note: "Giving your word", turkish: "Söz verme", pattern: "I promise I'll..." },
+      { use: "Will - Threats/Warnings", when: "Warning about future consequences", example: "If you don't study, you'll fail the exam.", note: "Conditional warning", pattern: "If..., will..." },
+      { will_formation: "Affirmative", structure: "Subject + will + V1", examples: "I/You/He/She/It/We/They will go", short_form: "I'll, you'll, he'll, she'll, we'll, they'll", note: "Same form for all subjects" },
+      { will_formation: "Negative", structure: "Subject + will not + V1", examples: "I will not (won't) go", short_form: "won't = will not", note: "Use won't in speech" },
+      { will_formation: "Question", structure: "Will + subject + V1?", examples: "Will you go? / Will she come?", answer: "Yes, I will. / No, I won't.", note: "Inversion for questions" },
+      { going_to_formation: "Affirmative", structure: "Subject + be + going to + V1", examples: "I am going to study. / He is going to travel.", note: "'be' changes with subject", pattern: "am/is/are + going to + V1" },
+      { going_to_formation: "Negative", structure: "Subject + be + not + going to + V1", examples: "I'm not going to go. / She isn't going to come.", short_form: "isn't, aren't", note: "'be' negative" },
+      { going_to_formation: "Question", structure: "Be + subject + going to + V1?", examples: "Are you going to study? / Is he going to come?", answer: "Yes, I am. / No, I'm not.", note: "Inversion of 'be'" },
+      { common_mistake: "Using 'will' for planned actions", wrong: "I will visit my friend tomorrow. (if already planned)", correct: "I'm going to visit my friend tomorrow.", rule: "Planned = use 'going to'", explanation: "'will' = spontaneous, 'going to' = planned" },
+      { common_mistake: "Using 'going to' for spontaneous decisions", wrong: "Phone rings → I'm going to answer it.", correct: "Phone rings → I'll answer it.", rule: "Spontaneous decision at the moment = 'will'", explanation: "No plan before, so use 'will'" },
+      { common_mistake: "Confusing evidence-based predictions", wrong: "Look at the sky! It will rain. (when you SEE clouds)", correct: "Look at the sky! It's going to rain.", rule: "Evidence you can see NOW = 'going to'", explanation: "Visible evidence = going to" },
+      { situation: "At a restaurant (spontaneous)", customer: "I'll have the chicken, please.", note: "Decided at the moment = will", alternative: "NOT: I'm going to have..." },
+      { situation: "Planned trip", speaker: "I'm going to study abroad next year.", note: "Already decided/planned = going to", alternative: "NOT: I will study abroad (unless spontaneous)" },
+      { situation: "Making an offer", speaker: "You look tired. I'll make you some tea.", note: "Spontaneous offer = will", alternative: "NOT: I'm going to make..." },
+      { situation: "Future fact/certainty", speaker: "I will be 30 next year.", note: "Will for facts", also_correct: "I'm going to be 30 next year.", explanation: "Both okay for personal facts" },
+      { time_clause_rule: "After time words", structure: "When/After/Before + present (NOT will/going to)", example: "When I see her, I'll tell her. (NOT: when I will see)", note: "No future in time clauses!", critical: "Very important rule!", pattern: "After I finish, I'll go home." }
+    ]
+  },
   
   speakingPractice: [
     { question: "What are you going to do this weekend?", answer: "I'm going to visit my grandparents." },
@@ -4322,11 +4357,32 @@ Yapı: Subject + will be + verb-ing
 Örnek: I will be working.`,
   tip: "Use Future Continuous for actions that will be in progress at a specific time in the future: will be + verb-ing.",
   
-  table: [
-    { tense: "Future Cont.", exampleAff: "I will be working.", exampleNeg: "I will not be working.", exampleQuestion: "Will you be working?" },
-    { tense: "", exampleAff: "She will be sleeping.", exampleNeg: "She will not be sleeping.", exampleQuestion: "Will she be sleeping?" },
-    { tense: "", exampleAff: "They will be traveling.", exampleNeg: "They will not be traveling.", exampleQuestion: "Will they be traveling?" }
-  ],
+  table: {
+    title: "📋 Future Continuous: Actions in Progress in the Future",
+    data: [
+      { formation: "Structure", pattern: "Subject + will be + V-ing", example: "I will be working at 10 PM.", note: "Action in progress at a specific future time", turkish: "Gelecekte devam eden eylem", usage: "Describing ongoing future actions" },
+      { use: "Specific time in future", when: "Action happening at an exact future moment", example: "At 8 PM tomorrow, I'll be watching a movie.", note: "The action will be IN PROGRESS at that time", time_markers: "at 10 PM, this time tomorrow, at noon", context: "Talking about what you'll be doing at a specific time" },
+      { use: "Duration around future time", when: "Action continuing for a period in the future", example: "I'll be studying all evening.", note: "Continuous action over a time period", time_markers: "all day, all night, all week", context: "Extended future activity" },
+      { use: "Polite inquiries about plans", when: "Asking about someone's plans (polite)", example: "Will you be using the car tonight?", note: "More polite than 'Will you use...?'", comparison: "Less direct than simple future", tone: "Softer, less demanding" },
+      { use: "Predictions about present/future", when: "Guessing what's happening now or will happen", example: "She'll be working now. (I guess)", note: "Making assumptions", context: "When you don't know for sure", pattern: "Used for logical guesses" },
+      { use: "Background action in future", when: "Setting scene for future events", example: "This time next week, I'll be lying on a beach.", note: "Describing future situation/atmosphere", context: "Imagining future scenarios", feeling: "Often dreamy or anticipatory" },
+      { formation_aff: "Affirmative", structure: "Subject + will be + V-ing", examples: "I/You/He/She/We/They will be sleeping", short_form: "I'll be, you'll be, he'll be, etc.", note: "Same for all subjects" },
+      { formation_neg: "Negative", structure: "Subject + will not be + V-ing", examples: "I will not (won't) be working", short_form: "won't be + V-ing", note: "won't be = will not be" },
+      { formation_q: "Yes/No Questions", structure: "Will + subject + be + V-ing?", example: "Will you be attending the meeting?", answer: "Yes, I will. / No, I won't.", note: "Inversion of will + subject" },
+      { formation_wh: "Wh- Questions", structure: "Wh- + will + subject + be + V-ing?", examples: "What will you be doing? / Where will she be staying?", note: "Question word + will + subject + be + V-ing", pattern: "Asking for details about future ongoing actions" },
+      { time_expression: "At + specific time", examples: "at 10 PM, at noon, at midnight", sentence: "At 10 PM, I'll be having dinner.", note: "Exact time point in future" },
+      { time_expression: "This time + period", examples: "this time tomorrow, this time next week/month/year", sentence: "This time next year, I'll be living in Paris.", note: "Same time in a future period" },
+      { time_expression: "All + time period", examples: "all day, all night, all week", sentence: "I'll be working all day tomorrow.", note: "Continuous throughout the period" },
+      { time_expression: "When + present simple", examples: "when you arrive, when she calls", sentence: "When you arrive, I'll be cooking dinner.", note: "Background action when another happens", rule: "Use present simple after 'when', NOT future!" },
+      { comparison: "Future Simple vs Future Continuous", simple: "I will work tomorrow. (fact, decision)", continuous: "I will be working at 3 PM. (in progress at that time)", difference: "Simple = whole action, Continuous = in progress", note: "Continuous emphasizes the ongoing nature" },
+      { common_mistake: "Forgetting 'be'", wrong: "I will working at 10 PM.", correct: "I will be working at 10 PM.", rule: "Must use 'will + be + V-ing'", explanation: "'be' is essential for continuous form!" },
+      { common_mistake: "Using future after 'when'", wrong: "When I will arrive, I'll be tired.", correct: "When I arrive, I'll be tired.", rule: "Present simple after time words (when, after, before)", explanation: "No future tense in time clauses!", critical: "Very common mistake!" },
+      { common_mistake: "Confusing with 'going to be'", wrong: "I'm going to be working. (for specific time)", correct: "I will be working at 8 PM.", rule: "Use 'will be + V-ing' for Future Continuous", note: "Standard form is 'will be', not 'going to be'" },
+      { polite_usage: "Polite question about plans", direct: "Will you use the car tonight?", polite: "Will you be using the car tonight?", difference: "Continuous = more polite, less direct", note: "Sounds less like asking permission", context: "Checking plans without imposing" },
+      { context: "Making plans around others", example: "Will you be going to the supermarket? (If yes, can you buy milk?)", note: "Asking to coordinate activities", usage: "Checking availability or plans" },
+      { context: "Describing future routines", example: "I'll be working from home on Fridays.", note: "Regular future activity", usage: "Describing future habits/schedules" }
+    ]
+  },
   
   speakingPractice: [
     { question: "What will you be doing at 10 PM tonight?", answer: "I will be watching a documentary." },
@@ -4387,11 +4443,31 @@ Yapı: Subject + have/has + V3 (fiilin 3. hali)
 Örnek: I have never flown in a helicopter. (Hiç helikoptere binmedim.)`,
   tip: "Use 'ever' in questions about life experiences. Use 'never' in negative statements about things you haven't done.",
   
-  table: [
-    { tense: "Present Perfect", affirmative: "I have visited London.", negative: "I have never visited London.", question: "Have you ever visited London?" },
-    { tense: "", affirmative: "She has tried sushi.", negative: "She has never tried sushi.", question: "Has she ever tried sushi?" },
-    { tense: "", affirmative: "They have seen that movie.", negative: "They have never seen that movie.", question: "Have they ever seen that movie?" }
-  ],
+  table: {
+    title: "📋 Present Perfect with Ever/Never: Life Experiences",
+    data: [
+      { formation: "Structure", pattern: "Subject + have/has + V3 (past participle)", example: "I have visited London.", note: "Past action with connection to present", turkish: "Geçmiş deneyim (şimdiye etkisi var)", usage: "Talking about life experiences" },
+      { use: "Life experiences (ever)", when: "Asking if someone has done something in their life", structure: "Have/Has + subject + ever + V3?", example: "Have you ever eaten sushi?", note: "'ever' = at any time in your life", meaning: "Hiç ... yaptın mı? (hayatında)", context: "General life experience, no specific time" },
+      { use: "Life experiences (never)", when: "Saying you haven't done something in your life", structure: "Subject + have/has + never + V3", example: "I have never eaten sushi.", note: "'never' = not at any time", meaning: "Hiç ... yapmadım (hayatımda)", context: "Negative life experience" },
+      { use: "Affirmative experiences", when: "Stating experiences without 'ever'", structure: "Subject + have/has + V3", example: "I have visited Paris three times.", note: "Confirming experience happened", context: "Can add frequency: once, twice, many times", pattern: "Simple statement of experience" },
+      { ever_usage: "Position of 'ever'", placement: "Between have/has and V3", examples: "Have you ever been...? / Has she ever tried...?", note: "ONLY in questions about experiences", critical: "Never use 'ever' in affirmative statements!", wrong: "I have ever been to Paris. ✗" },
+      { never_usage: "Position of 'never'", placement: "Between have/has and V3", examples: "I have never been... / She has never tried...", note: "ONLY in negative statements", meaning: "Never = not ever", alternative: "I haven't been (without 'never') is less emphatic" },
+      { formation_subj: "Subject variations", I_you_we_they: "have + V3", he_she_it: "has + V3", examples: "I/You/We/They have done | He/She/It has done", short_forms: "I've, you've, we've, they've | he's, she's, it's", note: "Have vs Has depends on subject" },
+      { common_v3: "Common irregular V3 forms", examples: "go → gone, see → seen, eat → eaten, be → been, do → done, have → had, make → made", note: "Must memorize irregular forms!", reference: "Check irregular verb list", critical: "NOT: goed, seed, eated!" },
+      { common_v3_2: "More irregular V3", examples: "take → taken, give → given, write → written, break → broken, speak → spoken, drive → driven", pattern: "Many end in -en", note: "Very common in experience questions" },
+      { question_formation: "Ever questions", structure: "Have/Has + subject + ever + V3?", examples: "Have you ever climbed a mountain? / Has he ever driven a car?", answer_yes: "Yes, I have. / Yes, he has.", answer_no: "No, I haven't. / No, he hasn't.", note: "Short answers use have/has" },
+      { negative_formation: "Never statements", structure: "Subject + have/has + never + V3", examples: "I have never seen snow. / She has never flown in a plane.", note: "Never = strong negative", alternative: "I haven't seen snow. (less emphatic)", meaning: "'Never' emphasizes 'not even once'" },
+      { common_mistake: "Using Past Simple for experiences", wrong: "Did you ever go to Paris?", correct: "Have you ever been to Paris?", rule: "Life experiences = Present Perfect", explanation: "No specific time, just asking about life", note: "Past Simple needs specific time" },
+      { common_mistake: "Using 'ever' in affirmative", wrong: "I have ever been to London.", correct: "I have been to London. (NO 'ever')", rule: "'Ever' ONLY in questions, NEVER in affirmative", explanation: "'Ever' is for asking, not telling" },
+      { common_mistake: "Using V2 instead of V3", wrong: "I have went to Paris.", correct: "I have gone to Paris.", rule: "Must use V3 (past participle), NOT V2 (past simple)", critical: "went = V2, gone = V3", note: "Very common error!" },
+      { common_mistake: "Double negative with 'never'", wrong: "I haven't never been there.", correct: "I have never been there. OR I haven't been there.", rule: "Don't use 'never' + 'not' together", explanation: "Choose one: 'never' OR 'haven't'", note: "Double negative is wrong in English!" },
+      { comparison: "Present Perfect vs Past Simple", present_perfect: "Have you ever been to London? (life experience, no time)", past_simple: "Did you go to London last year? (specific time)", difference: "PP = anytime in life, PS = specific time", signal_words_pp: "ever, never, before", signal_words_ps: "yesterday, last week, in 2020" },
+      { response_patterns: "Answering 'ever' questions - Yes", question: "Have you ever eaten octopus?", short_answer: "Yes, I have.", full_answer: "Yes, I have. I tried it in Greece.", note: "Can add details about the experience", context: "Where, when, how it was" },
+      { response_patterns: "Answering 'ever' questions - No", question: "Have you ever ridden a horse?", short_answer: "No, I haven't. / No, never.", full_answer: "No, I have never ridden a horse.", note: "Can use 'never' for emphasis", alternative: "No, but I'd like to. (expressing interest)" },
+      { context: "Asking about experiences", purpose: "Getting to know someone, checking if they've done something", examples: "Have you ever tried Turkish food? / Has she ever lived abroad?", usage: "Conversations, interviews, surveys", tone: "Curious, interested in life experiences" },
+      { time_markers: "No specific time mentioned", characteristic: "Don't mention WHEN it happened", examples: "Have you ever been to Paris? ✓", wrong: "Have you ever been to Paris last year? ✗", rule: "If you mention specific time, use Past Simple", correct: "Did you go to Paris last year?" }
+    ]
+  },
   
   speakingPractice: [
     { question: "Have you ever climbed a mountain?", answer: "Yes, I have climbed Mount Erciyes." },
@@ -4453,12 +4529,31 @@ Yapı:
 • Question: Have/Has + S + V3 + yet? → Have you done your homework yet?`,
   tip: "Use 'just' for very recent actions, 'already' for earlier than expected completion, and 'yet' only in questions and negatives.",
   
-  table: [
-    { type: "just", structure: "have/has + just + V3", example: "I have just finished my homework." },
-    { type: "already", structure: "have/has + already + V3", example: "She has already eaten lunch." },
-    { type: "yet (question)", structure: "Have/Has + S + V3 + yet?", example: "Have you finished yet?" },
-    { type: "yet (negative)", structure: "haven't/hasn't + V3 + yet", example: "I haven't seen it yet." }
-  ],
+  table: {
+    title: "📋 Present Perfect with just/already/yet: Recent Actions & Completion",
+    data: [
+      { adverb: "just", meaning: "Very recently / a short time ago", turkish: "Az önce, yeni", when: "Action completed a very short time ago", example: "I have just finished my homework.", note: "Emphasizes recency", timeframe: "Seconds, minutes ago", feeling: "Fresh, immediate" },
+      { adverb: "already", meaning: "Sooner than expected / before now", turkish: "Zaten, çoktan", when: "Action completed earlier than anticipated", example: "She has already left. (We thought she'd still be here)", note: "Emphasizes completion happened before expected", context: "Surprise or earlier than planned", feeling: "Ahead of schedule" },
+      { adverb: "yet", meaning: "Up to now / by this time", turkish: "Henüz (questions & negatives only)", when: "Asking if action is complete OR saying it's not complete", example_q: "Have you finished yet?", example_neg: "I haven't finished yet.", note: "ONLY in questions and negatives!", critical: "NEVER in affirmative statements!" },
+      { just_position: "Position of 'just'", placement: "Between have/has and V3", structure: "Subject + have/has + just + V3", examples: "I have just arrived. / She has just called.", note: "Always in this position", alternative: "I've just... (contraction common)" },
+      { already_position: "Position of 'already'", placement: "Between have/has and V3 (or at end)", structure: "Subject + have/has + already + V3", examples: "I have already eaten. / I have eaten already.", note: "Mid-sentence is more common", preference: "Middle position preferred in British English" },
+      { yet_position: "Position of 'yet'", placement: "At the END of the sentence", structure_q: "Have/Has + S + V3 + yet?", structure_neg: "S + haven't/hasn't + V3 + yet", examples: "Have you done it yet? / I haven't done it yet.", note: "Always at the end!", critical: "NEVER in the middle!" },
+      { just_use: "Using 'just' - Very recent", context: "Something happened moments ago", examples: "I've just woken up. / He's just left the room. / They've just arrived.", feeling: "Action is very fresh, still relevant", timeframe: "Usually within last few minutes", note: "Speaker wants to emphasize how recent it is" },
+      { already_use: "Using 'already' - Sooner than expected", context: "Completion happened before anticipated time", examples: "It's only 7 AM and she has already finished! / Have you already done your homework? (surprised)", surprise: "Often expresses surprise", comparison: "Earlier than normal/expected", note: "Can be in questions to express surprise" },
+      { yet_use_q: "Using 'yet' - Questions", context: "Asking if something is complete", examples: "Have you eaten yet? / Has he called yet? / Have they arrived yet?", meaning: "Is it done by now?", expectation: "Asking about completion up to this moment", tone: "Neutral or slightly impatient" },
+      { yet_use_neg: "Using 'yet' - Negatives", context: "Action not completed up to now", examples: "I haven't eaten yet. / She hasn't called yet. / They haven't arrived yet.", meaning: "Not done by this time, but might happen soon", expectation: "Action is still expected to happen", implication: "But it will happen later" },
+      { common_mistake: "Using 'yet' in affirmative", wrong: "I have yet finished my homework. ✗", correct: "I have already finished my homework. ✓", rule: "'Yet' NEVER in affirmative statements!", explanation: "Use 'already' for affirmative", critical: "Very common error by Turkish speakers!" },
+      { common_mistake: "Using 'already' in negatives", wrong: "I haven't already eaten. ✗", correct: "I haven't eaten yet. ✓", rule: "'Already' NOT in negatives, use 'yet'", explanation: "Negatives need 'yet', not 'already'", note: "Or simply: I haven't eaten. (without 'yet')" },
+      { common_mistake: "Wrong position of 'yet'", wrong: "I yet haven't finished. ✗", correct: "I haven't finished yet. ✓", rule: "'Yet' goes at the END of sentence", explanation: "Never put 'yet' in the middle", critical: "Must be final position!" },
+      { common_mistake: "Wrong position of 'just'", wrong: "I have finished just. ✗", correct: "I have just finished. ✓", rule: "'Just' goes BETWEEN have/has and V3", explanation: "Middle position, not at the end" },
+      { comparison: "just vs already", just: "I've just finished. (very recent, emphasis on recency)", already: "I've already finished. (earlier than expected)", difference: "'just' = time focus, 'already' = completion focus", note: "'just' = when it happened, 'already' = that it's done" },
+      { comparison: "already vs yet", already: "I have already done it. (affirmative - it's done)", yet: "I haven't done it yet. (negative - not done)", rule: "'Already' = affirmative, 'yet' = negative/question", context: "Different sentence types" },
+      { short_answers_yet: "Answering 'yet' questions", question: "Have you finished yet?", answer_yes: "Yes, I have. / Yes, I've just finished.", answer_no: "No, not yet. / No, I haven't.", note: "'Not yet' is very common", alternative: "Almost! / Nearly!" },
+      { time_context: "Time perspective", just: "Points to the immediate past", already: "Points to completion status", yet: "Points to present moment (has it happened up to now?)", note: "Different time focus", context: "All three show different aspects of the same present perfect time frame" },
+      { spoken_patterns: "Common spoken phrases", examples: "I've just... / I've already... / Not yet! / Already? (surprise) / Just now!", note: "Very common in daily speech", contractions: "I've, you've, he's, she's, we've, they've", usage: "Contractions are standard in speech" },
+      { context_surprise: "Expressing surprise with 'already'", examples: "You've already finished? But you just started! / Have you already eaten all the cookies?", tone: "Surprised, sometimes impressed", note: "Question with 'already' = surprise", pattern: "Have you already...? (expressing surprise)" }
+    ]
+  },
   
   speakingPractice: [
     { question: "Have you already finished your homework?", answer: "Yes, I have already finished my homework." },
