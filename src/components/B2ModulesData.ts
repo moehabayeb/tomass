@@ -3347,6 +3347,17 @@ const MODULE_196_DATA = {
 ✅ Learn to summarize texts effectively by identifying main ideas
 ✅ Master paraphrasing techniques to express ideas in your own words
 ✅ Improve academic writing, comprehension, and avoid plagiarism`,
+  table: {
+    title: "📋 Summarizing and Paraphrasing Techniques",
+    data: [
+      { skill: "Summarizing", definition: "Expressing main ideas in fewer words", example: "The study shows clear economic benefits" },
+      { skill: "Paraphrasing", definition: "Restating info in different words", example: "Social media influences teen behavior" },
+      { skill: "Key phrase - summarizing", expression: "To sum up...", usage: "Introduces summary of main points" },
+      { skill: "Key phrase - paraphrasing", expression: "In other words...", usage: "Introduces reworded statement" },
+      { skill: "What to avoid - summarizing", tip: "Don't include too many details", example: "Keep it brief - 1/3 of original" },
+      { skill: "What to avoid - paraphrasing", tip: "Don't copy original phrases", example: "Change structure and use synonyms" }
+    ]
+  },
   speakingPractice: [
     { question: "What does it mean to summarize?", answer: "To summarize means to express the main ideas of a text in fewer words." },
     { question: "What does it mean to paraphrase?", answer: "To paraphrase means to restate information using different words but the same meaning." },
@@ -3398,6 +3409,17 @@ const MODULE_197_DATA = {
 ✅ Understand how to read between the lines and make inferences
 ✅ Interpret tone, context, and implied meanings
 ✅ Improve reading comprehension and critical thinking`,
+  table: {
+    title: "📋 Making Inferences - Key Concepts",
+    data: [
+      { concept: "Inference", definition: "Logical guess from clues", example: "He clenched fists → He's angry" },
+      { concept: "Imply vs Infer", difference: "Writer implies, reader infers", example: "Writer hints, reader interprets" },
+      { concept: "Reading between lines", meaning: "Understanding unstated meaning", example: "She avoided calls → She's upset" },
+      { concept: "Key phrase", expression: "It suggests that...", usage: "Introduces your inference" },
+      { concept: "Context clues", importance: "Surrounding words help", example: "Tone + situation = meaning" },
+      { concept: "Tone indicators", examples: "Sarcasm, hesitation, firmness", inference: "Shows true emotion/intent" }
+    ]
+  },
   speakingPractice: [
     { question: "What does 'reading between the lines' mean?", answer: "It means understanding what is implied but not directly stated." },
     { question: "What is an inference?", answer: "An inference is a logical guess based on clues from the text or situation." },
@@ -3449,6 +3471,17 @@ const MODULE_198_DATA = {
 ✅ Understand how culture influences communication styles
 ✅ Learn about direct vs. indirect communication
 ✅ Use language appropriately in different cultural contexts`,
+  table: {
+    title: "📋 Cultural Communication Differences",
+    data: [
+      { aspect: "Communication style", direct: "Americans - Say exactly what you mean", indirect: "British - Use polite hints/phrases" },
+      { aspect: "Disagreeing", direct: "I disagree", indirect: "I'm not sure I'd agree with that" },
+      { aspect: "Refusing", direct: "No, I can't", indirect: "That would be great (meaning 'no' politely)" },
+      { aspect: "Small talk topics", safe: "Weather, travel, work, hobbies", avoid: "Politics, money, religion, personal life" },
+      { aspect: "Humor style", British: "Ironic, subtle, self-deprecating", American: "Direct, expressive, storytelling" },
+      { aspect: "Politeness", key_phrase: "Could you please...? / Would you mind...?", purpose: "Soften requests" }
+    ]
+  },
   speakingPractice: [
     { question: "What is cultural awareness?", answer: "Cultural awareness is understanding how culture affects the way people communicate and behave." },
     { question: "Why is cultural awareness important in language learning?", answer: "Because it helps you communicate appropriately and avoid misunderstandings." },
@@ -3500,6 +3533,18 @@ const MODULE_199_DATA = {
 ✅ Learn to deliver formal presentations with confidence
 ✅ Master appropriate language, structure, and tone for professional settings
 ✅ Use signposting and transitions effectively`,
+  table: {
+    title: "📋 Formal Presentation Language",
+    data: [
+      { purpose: "Opening", phrase: "Good morning, my name is... and today I'll be talking about...", example: "Introduces you and topic" },
+      { purpose: "Signposting", phrase: "First of all... secondly... finally...", example: "Guides audience through structure" },
+      { purpose: "Transition", phrase: "Moving on to the next point...", example: "Connects sections smoothly" },
+      { purpose: "Emphasizing", phrase: "I'd like to highlight... / It's important to note that...", example: "Draws attention to key points" },
+      { purpose: "Referencing visuals", phrase: "As you can see from the chart...", example: "Explains graphs/slides" },
+      { purpose: "Summarizing", phrase: "To sum up, we have covered...", example: "Reviews main points" },
+      { purpose: "Closing", phrase: "Thank you for your time. Are there any questions?", example: "Ends professionally" }
+    ]
+  },
   speakingPractice: [
     { question: "Why is structure important in a presentation?", answer: "Because it helps the audience follow your ideas easily and keeps your message clear." },
     { question: "What's the purpose of an introduction?", answer: "To grab the audience's attention and explain what the presentation will cover." },
@@ -3551,6 +3596,18 @@ const MODULE_200_DATA = {
 ✅ Develop advanced listening comprehension skills
 ✅ Master effective note-taking techniques for academic and professional contexts
 ✅ Learn to identify main ideas, supporting points, and organizational cues`,
+  table: {
+    title: "📋 Advanced Listening and Note-Taking Strategies",
+    data: [
+      { strategy: "Focus on main ideas", tip: "Don't write every word", example: "Capture key points only" },
+      { strategy: "Use abbreviations", examples: "w/ = with, b/c = because, info = information", benefit: "Write faster" },
+      { strategy: "Listen for signal words", examples: "Firstly, however, in conclusion", purpose: "Show structure and relationships" },
+      { strategy: "Cornell method", description: "Notes, cues, summary sections", benefit: "Organized review" },
+      { strategy: "Symbols", examples: "→ (causes), ↑ (increase), ∴ (therefore)", benefit: "Quick visual notation" },
+      { strategy: "Identify organizational cues", examples: "On the other hand, As a result", benefit: "Track argument flow" },
+      { strategy: "Review immediately", tip: "Revise while memory is fresh", benefit: "Consolidates understanding" }
+    ]
+  },
   speakingPractice: [
     { question: "What does advanced listening mean?", answer: "It means understanding not only the words but also the implied meaning, tone, and organization of speech." },
     { question: "Why is note-taking important?", answer: "Because it helps capture key ideas efficiently and improves memory and comprehension." },
