@@ -1988,6 +1988,18 @@ Today we're learning how to talk about the future — not just what we plan, but
 • She COULD arrive early. (possibility)
 • They're LIKELY TO win the match. (probable)
 • I doubt it will happen. (unlikely)`,
+  table: {
+    title: "📋 Modal Verbs for Future Speculation",
+    data: [
+      { expression: "will", certainty: "Strong (90%+)", meaning: "Definite prediction", example: "It will rain tomorrow" },
+      { expression: "probably will", certainty: "High (70-80%)", meaning: "Very likely", example: "She'll probably pass the exam" },
+      { expression: "likely to / be likely to", certainty: "High (70-80%)", meaning: "Probable", example: "They're likely to win the match" },
+      { expression: "might / may / could", certainty: "Medium (50%)", meaning: "Possible", example: "It might snow tonight" },
+      { expression: "may not / might not", certainty: "Medium (50%)", meaning: "Possibly won't", example: "He might not come" },
+      { expression: "unlikely to", certainty: "Low (20-30%)", meaning: "Probably won't", example: "It's unlikely to happen" },
+      { expression: "won't / will not", certainty: "Strong (90%+)", meaning: "Definite negative", example: "They won't finish on time" }
+    ]
+  },
   speakingPractice: [
     { question: "What does it mean to speculate about the future?", answer: "It means making guesses or predictions about what might happen, even if we're not 100% sure." },
     { question: "Which modal verb shows strong certainty about the future?", answer: "'Will' — for example, 'I think it will rain tomorrow.'" },
@@ -2052,6 +2064,17 @@ IF + past perfect, WOULD HAVE + past participle
 • If she had left earlier, she wouldn't have missed the bus.
 • If they had known, they might have come.
 • He could have won if he had trained more.`,
+  table: {
+    title: "📋 Third Conditional Structure and Usage",
+    data: [
+      { structure: "If + past perfect, would have + past participle", usage: "Main third conditional", example: "If I had studied, I would have passed" },
+      { structure: "If + past perfect, wouldn't have + past participle", usage: "Negative result", example: "If she had left earlier, she wouldn't have been late" },
+      { structure: "If + past perfect, might have + past participle", usage: "Uncertain result", example: "If they had known, they might have come" },
+      { structure: "If + past perfect, could have + past participle", usage: "Possible result", example: "If he had trained, he could have won" },
+      { structure: "Subject + could have + past participle + if...", usage: "Alternative word order", example: "He could have won if he had trained more" },
+      { structure: "Had + subject + past participle... (without if)", usage: "Formal inversion", example: "Had I known, I would have helped" }
+    ]
+  },
   speakingPractice: [
     { question: "What is a hypothetical situation in the past?", answer: "It's something that didn't actually happen, but we imagine what would have happened if it had." },
     { question: "What is the structure of the third conditional?", answer: "If + past perfect, would have + past participle." },
@@ -2116,6 +2139,21 @@ You'll learn how to talk about companies, markets, profit, competition, investme
 • INFLATION: when prices rise and money loses value
 • INVESTMENT: putting money into something expecting profit
 • ENTREPRENEUR: someone who starts and runs a business`,
+  table: {
+    title: "📋 Essential Business and Economics Vocabulary",
+    data: [
+      { term: "Revenue", definition: "Total money earned", example: "The company's revenue increased by 20%" },
+      { term: "Profit", definition: "Money after expenses", example: "They made a profit of $1 million" },
+      { term: "Market share", definition: "% of total market", example: "Apple has 15% market share in smartphones" },
+      { term: "Inflation", definition: "Rising prices", example: "Inflation reached 8% last year" },
+      { term: "Investment", definition: "Money put in for return", example: "She made a wise investment in property" },
+      { term: "Entrepreneur", definition: "Business starter", example: "He's a successful entrepreneur" },
+      { term: "GDP", definition: "Total value of production", example: "The country's GDP grew by 3%" },
+      { term: "Recession", definition: "Economic slowdown", example: "During the recession, many lost jobs" },
+      { term: "Stock market", definition: "Where shares are traded", example: "The stock market crashed yesterday" },
+      { term: "Interest rate", definition: "Cost of borrowing", example: "Interest rates rose to 5%" }
+    ]
+  },
   speakingPractice: [
     { question: "What is revenue in business?", answer: "Revenue is the total amount of money a company earns before subtracting any costs." },
     { question: "What is the difference between profit and revenue?", answer: "Revenue is all the money a company makes, while profit is what remains after expenses are subtracted." },
@@ -2181,6 +2219,21 @@ You'll learn how to use scientific and technical terms naturally — not just me
 • ARTIFICIAL INTELLIGENCE (AI): machines designed to think like humans
 • AUTOMATION: using machines to perform tasks automatically
 • ROBOTICS: the technology dealing with robots`,
+  table: {
+    title: "📋 Science and Technology Vocabulary",
+    data: [
+      { term: "Innovation", definition: "Creating something new/improved", example: "The smartphone was a major innovation" },
+      { term: "Invention", definition: "Creating something completely new", example: "The invention of electricity changed the world" },
+      { term: "Artificial Intelligence (AI)", definition: "Machines that think like humans", example: "AI helps diagnose diseases now" },
+      { term: "Automation", definition: "Machines doing tasks automatically", example: "Automation has replaced many factory workers" },
+      { term: "Robotics", definition: "Technology of building robots", example: "Robotics is used in manufacturing" },
+      { term: "Virtual Reality (VR)", definition: "Digital simulation experience", example: "VR is used for gaming and training" },
+      { term: "Renewable energy", definition: "Sustainable power sources", example: "Solar and wind are renewable energy sources" },
+      { term: "Biotechnology", definition: "Using living organisms for products", example: "Biotechnology helps develop vaccines" },
+      { term: "Breakthrough", definition: "Major important discovery", example: "The vaccine was a scientific breakthrough" },
+      { term: "Cloud computing", definition: "Internet-based data storage", example: "We store all files in cloud computing" }
+    ]
+  },
   speakingPractice: [
     { question: "What is innovation?", answer: "Innovation means creating new ideas, methods, or products that make life easier or more efficient." },
     { question: "What is the difference between innovation and invention?", answer: "Invention is creating something completely new, while innovation improves something that already exists." },
@@ -2247,6 +2300,21 @@ Health and medicine vocabulary helps you talk about illnesses, treatments, healt
 • CHRONIC: health problem that lasts a long time
 • MENTAL HEALTH: emotional and psychological well-being
 • PREVENTIVE CARE: actions to avoid getting sick`,
+  table: {
+    title: "📋 Health and Medicine Vocabulary",
+    data: [
+      { term: "Symptom", definition: "Sign of illness", example: "Fever is a symptom of flu" },
+      { term: "Diagnosis", definition: "Identifying the illness", example: "The doctor gave a diagnosis of pneumonia" },
+      { term: "Treatment", definition: "Medical care to cure", example: "The treatment lasted two weeks" },
+      { term: "Prescription", definition: "Doctor's medicine instruction", example: "I need to fill my prescription" },
+      { term: "Vaccination", definition: "Injection to prevent disease", example: "I got my flu vaccination yesterday" },
+      { term: "Infection", definition: "Illness from bacteria/virus", example: "The wound developed an infection" },
+      { term: "Chronic", definition: "Long-lasting condition", example: "Diabetes is a chronic disease" },
+      { term: "Mental health", definition: "Emotional well-being", example: "Mental health is as important as physical health" },
+      { term: "Recovery", definition: "Process of healing", example: "Her recovery took three months" },
+      { term: "Preventive care", definition: "Actions to avoid illness", example: "Regular check-ups are preventive care" }
+    ]
+  },
   speakingPractice: [
     { question: "What is a symptom?", answer: "A symptom is a sign that shows you may have an illness, like fever or cough." },
     { question: "What is a diagnosis?", answer: "A diagnosis is when a doctor finds out what illness you have after examining you." },
