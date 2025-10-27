@@ -4365,12 +4365,46 @@ Mustn't → yasak veya yapılmaması gereken bir şeyi gösterir.
 • You must wear a seatbelt. (Emniyet kemeri takmalısın.)
 • You mustn't talk during the exam. (Sınavda konuşmamalısın.)`,
   tip: "Use 'must' for strong necessity and 'mustn't' for prohibition (not allowed)",
-  
-  table: [
-    { form: "Positive", structure: "Subject + must + base verb", example: "I must finish my homework." },
-    { form: "Negative", structure: "Subject + mustn't + base verb", example: "You mustn't run here." },
-    { form: "Question", structure: "Must + subject + base verb?", example: "Must we leave now?" }
-  ],
+
+  table: {
+    title: "📋 Must / Mustn't (Necessity and Prohibition)",
+    data: [
+      { category: "What are Must and Mustn't?", explanation: "Modal verbs used to express strong necessity or prohibition", must: "MUST = necessary, required, very important to do", mustnt: "MUSTN'T = prohibited, forbidden, not allowed", turkish: "Must = gerekli, zorunlu | Mustn't = yasak", function: "Give strong advice, rules, laws, or prohibitions", note: "Very strong - stronger than 'should'" },
+
+      { category: "MUST - Structure", form: "Subject + MUST + BASE VERB", examples: "I must study. / You must listen. / She must go. / They must wait.", pattern: "must + base verb (no 'to', no -s, no -ing)", turkish: "Özne + must + fiil", same_all_subjects: "MUST never changes! (not musts, not musted)", note: "Must is a modal verb - it doesn't conjugate" },
+      { category: "When to Use MUST", use_1: "Necessity - something is very important or required", examples_1: "You must study for the exam. / I must finish this today. / We must arrive on time.", use_2: "Rules and laws", examples_2: "You must wear a seatbelt. / Students must do their homework. / Everyone must pay taxes.", use_3: "Strong advice", examples_3: "You must see this movie! (I really recommend it) / You must try this food!", turkish: "Gereklilik, kural, güçlü tavsiye", note: "Shows the speaker thinks it's very important!" },
+
+      { category: "MUSTN'T - Structure", form: "Subject + MUST NOT (mustn't) + BASE VERB", examples: "You mustn't smoke. / She mustn't be late. / They mustn't run.", contraction: "must not → mustn't (very common)", pattern: "mustn't + base verb", turkish: "Özne + mustn't + fiil", note: "Negative form of must" },
+      { category: "When to Use MUSTN'T", use: "Prohibition - something is NOT ALLOWED, forbidden", examples: "You mustn't smoke here. / Students mustn't cheat. / You mustn't touch that!", meaning: "It's against the rules / It's dangerous / It's forbidden", turkish: "Yasak, yapılmaması gereken", important: "MUSTN'T = prohibition (not allowed!) ≠ don't have to (not necessary)", remember: "Mustn't = DON'T do it (it's forbidden)!" },
+
+      { category: "MUST vs DON'T HAVE TO - Very Different!", must: "MUST = necessary (you need to do it)", example_must: "You must wear a helmet. (It's required for safety)", dont_have_to: "DON'T HAVE TO = not necessary (you can choose)", example_dont: "You don't have to wear a tie. (It's optional, your choice)", key_difference: "Must = required | Don't have to = optional", wrong: "You mustn't wear a tie ✗ (This means it's forbidden!)", correct: "You don't have to wear a tie ✓ (It's optional)", remember: "Mustn't ≠ don't have to!" },
+
+      { category: "MUSTN'T vs DON'T HAVE TO", mustnt: "MUSTN'T = prohibition (forbidden, not allowed)", example_mustnt: "You mustn't park here. (It's illegal/forbidden)", dont_have_to: "DON'T HAVE TO = not necessary (optional, your choice)", example_dont_have: "You don't have to park here. (You can park somewhere else if you want)", critical: "These have OPPOSITE meanings!", mustnt_meaning: "Mustn't = DON'T do it!", dont_have_meaning: "Don't have to = you don't need to (but you can)", remember: "Mustn't = forbidden | Don't have to = not necessary" },
+
+      { category: "Questions with MUST", form: "MUST + subject + BASE VERB?", examples: "Must I go? / Must we leave now? / Must she work today?", answers: "Yes, you must. / No, you don't have to. (not 'mustn't' for negative answers!)", pattern: "Invert must and subject", note: "Questions with must are less common - often we use 'Do I have to...?' instead", alternative: "Do I have to go? (more common than 'Must I go?')" },
+
+      { category: "Short Answers", yes_answer: "Yes, you must. / Yes, she must.", no_answer: "No, you don't have to. (NOT 'No, you mustn't'!)", important: "For negative answers, use 'don't have to' (not necessary), NOT 'mustn't' (forbidden)", example: "Must I finish this? → No, you don't have to. (It's not necessary)", wrong: "No, you mustn't ✗ (This means it's forbidden to finish!)", correct: "No, you don't have to ✓ (It's not necessary)", remember: "Mustn't is for prohibition, not for answering 'must' questions!" },
+
+      { category: "Common Uses of MUST", safety_rules: "You must wear a helmet. / You must wear a seatbelt.", school_work: "Students must do their homework. / I must study for the test.", laws: "You must have a license to drive. / Everyone must pay taxes.", health: "You must take your medicine. / You must see a doctor.", time_deadlines: "We must leave now. / I must finish this by 5 PM.", note: "Used for important rules, laws, and strong obligations" },
+
+      { category: "Common Uses of MUSTN'T", prohibitions: "You mustn't smoke in the hospital. / You mustn't run in the hallways.", safety_warnings: "You mustn't touch that wire! (It's dangerous) / You mustn't swim here!", rules: "Students mustn't cheat on exams. / You mustn't park here.", laws: "You mustn't drive without a license. / You mustn't steal.", note: "Used for things that are forbidden, dangerous, or against rules" },
+
+      { category: "Must for Deduction (Advanced)", use: "MUST can also mean 'I'm sure / I believe' (logical deduction)", examples: "She must be tired. (= I'm sure she's tired) / It must be expensive. (= I'm sure it's expensive) / He must know the answer.", meaning: "Strong belief based on evidence", note: "This is a more advanced use - focus on must/mustn't for rules first", difference: "You must go (necessity) vs She must be happy (deduction)" },
+
+      { category: "Common Mistakes", mistake_1: "Adding 'to' after must", wrong_1: "You must to go ✗ / She must to study ✗", correct_1: "You must go ✓ / She must study ✓", rule: "Must + BASE VERB (no 'to'!)", remember: "Modal verbs don't use 'to'" },
+      { category: "Common Mistakes", mistake_2: "Adding -s for he/she/it", wrong_2: "He musts go ✗ / She musts study ✗", correct_2: "He must go ✓ / She must study ✓", rule: "MUST never changes! Same for all subjects", remember: "Modal verbs don't add -s" },
+      { category: "Common Mistakes", mistake_3: "Using mustn't when you mean 'don't have to'", wrong_3: "You mustn't wear a tie ✗ (This means it's forbidden!)", correct_3: "You don't have to wear a tie ✓ (It's not necessary)", meaning: "Mustn't = prohibited | Don't have to = not necessary", remember: "Very different meanings!" },
+      { category: "Common Mistakes", mistake_4: "Using 'mustn't' in negative answers to 'must' questions", wrong_4: "Must I go? → No, you mustn't ✗ (This means it's forbidden to go!)", correct_4: "Must I go? → No, you don't have to ✓ (It's not necessary)", rule: "Answer with 'don't have to' for 'not necessary'", remember: "Mustn't = forbidden, not = not necessary" },
+
+      { category: "Must vs Have To", must: "MUST = speaker's opinion (I think it's important)", example_must: "You must see this film! (My opinion - I recommend it)", have_to: "HAVE TO = external rule/obligation (the rule says...)", example_have_to: "I have to wear a uniform. (School rule, not my choice)", difference: "Must = speaker's authority | Have to = external authority", note: "In practice, they're often interchangeable for obligation", both: "You must study / You have to study (both mean it's necessary)" },
+
+      { category: "Pronunciation", must: "must /mʌst/ (strong form)", weak_must: "must /məst/ (weak form - more common in speech)", mustnt: "mustn't /ˈmʌsnt/", note: "In fast speech, 'must' often sounds like 'məst'", example: "You /məst/ go. (weak form)", remember: "Native speakers usually use the weak form" },
+
+      { category: "Real-World Uses", signs: "You mustn't park here. / You must wear a mask.", school: "Students must arrive on time. / You mustn't use phones in class.", work: "Employees must sign in. / You mustn't share your password.", health: "You must wash your hands. / You mustn't smoke in the building.", general: "Essential for expressing rules, prohibitions, and strong obligations!" },
+
+      { category: "Key Takeaway", summary: "MUST and MUSTN'T express strong necessity and prohibition", must_meaning: "MUST = necessary, required, very important to do", mustnt_meaning: "MUSTN'T = prohibited, forbidden, not allowed to do", structure_positive: "Subject + must + BASE VERB", structure_negative: "Subject + mustn't + BASE VERB", no_changes: "Must never changes - same for all subjects (no -s, no -ed)", critical_difference: "MUSTN'T (forbidden) ≠ DON'T HAVE TO (not necessary)", must_vs_have_to: "Must = speaker's authority | Have to = external rule", common_mistakes: "No 'to' after must! No -s! Don't confuse mustn't with don't have to!", remember: "Must = you need to do it | Mustn't = don't do it (it's forbidden)!", next: "Practice with rules and prohibitions!" }
+    ]
+  },
   
   speakingPractice: [
     { question: "What must you do every day?", answer: "I must brush my teeth." },
@@ -4429,12 +4463,50 @@ const MODULE_42_DATA = {
 • I have to go to school every day. (Her gün okula gitmeliyim.)
 • She doesn't have to work on Sundays. (Pazar günleri çalışmak zorunda değil.)`,
   tip: "Use 'have to' for obligation and 'don't have to' for lack of necessity (not required)",
-  
-  table: [
-    { form: "Positive", structure: "Subject + have/has to + verb", example: "I have to finish my homework." },
-    { form: "Negative", structure: "Subject + don't/doesn't have to + verb", example: "You don't have to come." },
-    { form: "Question", structure: "Do/Does + subject + have to + verb?", example: "Do you have to wake up early?" }
-  ],
+
+  table: {
+    title: "📋 Have To / Don't Have To (Obligation and Lack of Necessity)",
+    data: [
+      { category: "What is Have To?", explanation: "Expression used to show obligation or necessity (similar to 'must')", have_to: "HAVE TO = necessary, required, obligation", dont_have_to: "DON'T HAVE TO = not necessary, optional, not required", turkish: "Have to = gerekli, zorunlu | Don't have to = gerekli değil", function: "Express external obligations and choices", note: "Have to is NOT a modal verb - it conjugates like a normal verb!" },
+
+      { category: "HAVE TO - Structure Positive", form: "Subject + HAVE/HAS TO + BASE VERB", i_you_we_they: "I have to / You have to / We have to / They have to", he_she_it: "He HAS to / She HAS to / It HAS to", examples: "I have to go to school. / She has to work today. / They have to study.", pattern: "have/has + to + base verb", turkish: "Özne + have/has to + fiil", important: "Add -s for he/she/it → HAS to!" },
+
+      { category: "DON'T HAVE TO - Structure Negative", form: "Subject + DON'T/DOESN'T + HAVE TO + BASE VERB", i_you_we_they: "I don't have to / You don't have to / We don't have to / They don't have to", he_she_it: "He DOESN'T have to / She DOESN'T have to / It DOESN'T have to", examples: "I don't have to work tomorrow. / She doesn't have to come. / They don't have to pay.", pattern: "don't/doesn't + have to + base verb", turkish: "Özne + don't/doesn't have to + fiil", important: "Use doesn't for he/she/it!" },
+
+      { category: "Questions with HAVE TO", form: "DO/DOES + subject + HAVE TO + BASE VERB?", examples: "Do you have to go? / Does she have to work? / Do they have to study?", answers: "Yes, I do. / No, I don't. / Yes, she does. / No, she doesn't.", pattern: "Do/Does + subject + have to + verb?", inversion: "Use do/does, not have/has, at the beginning!", turkish: "Do/Does + özne + have to + fiil?", remember: "Do you have to...? (NOT Have you to...?)" },
+
+      { category: "When to Use HAVE TO", use: "Express external obligation - rules, requirements, necessities not from the speaker", examples: "I have to wear a uniform. (School rule) / She has to work on Saturdays. (Job requirement) / We have to pay rent. (Legal obligation)", difference_from_must: "Have to = external rule (not speaker's choice) | Must = speaker's opinion", note: "Use have to when it's an external obligation, not your personal opinion", turkish: "Dış yükümlülükler - kurallar, gereklilikler" },
+
+      { category: "When to Use DON'T HAVE TO", use: "Express lack of necessity - something is NOT required, it's optional", examples: "You don't have to come. (It's optional) / She doesn't have to work tomorrow. (It's not required) / We don't have to hurry. (We have time)", meaning: "It's not necessary, but you CAN if you want", turkish: "Gerekli değil, zorunlu değil", important: "DON'T HAVE TO ≠ MUSTN'T! (Very different!)", remember: "Don't have to = not necessary (your choice) | Mustn't = forbidden (not allowed)!" },
+
+      { category: "CRITICAL: DON'T HAVE TO vs MUSTN'T", dont_have_to: "DON'T HAVE TO = not necessary, optional, your choice", example_dont: "You don't have to wear a tie. (It's optional - you can if you want)", mustnt: "MUSTN'T = prohibited, forbidden, not allowed", example_mustnt: "You mustn't smoke here. (It's against the rules - don't do it!)", difference: "Don't have to = you can choose | Mustn't = you can't do it", wrong: "You mustn't come ✗ (This means it's forbidden to come!)", correct: "You don't have to come ✓ (It's not necessary, but you can)", remember: "Completely different meanings!" },
+
+      { category: "Examples Comparing All Three", have_to: "You have to study. (It's necessary - external rule)", must: "You must study. (It's necessary - my opinion/advice)", dont_have_to: "You don't have to study. (It's not necessary - your choice)", mustnt: "You mustn't cheat. (It's forbidden - don't do it!)", key: "Have to & Must = necessary | Don't have to = not necessary | Mustn't = forbidden", practice: "Learn to distinguish these!" },
+
+      { category: "HAVE TO vs MUST - Subtle Difference", have_to: "HAVE TO = external obligation (rule, law, requirement)", must: "MUST = speaker's opinion, advice, or authority", example_have: "I have to wear a uniform. (School requires it)", example_must: "You must see this movie! (I think you should - my recommendation)", note: "In practice, they're often interchangeable for stating obligations", both_ok: "I have to study / I must study (both mean it's necessary)", formal: "In formal rules, 'must' is more common: 'Students must arrive on time.'" },
+
+      { category: "All Tenses of HAVE TO", present: "I have to go now. / She has to study.", past: "I HAD TO go yesterday. / She HAD TO work.", future: "I will have to go tomorrow. / She'll have to study.", note: "Have to can change tense - must cannot!", must_limitation: "Must is only present tense - use have to for past/future", examples_past: "I had to wake up early. (NOT 'I must woke up')", examples_future: "I'll have to leave soon. (NOT 'I must will leave')" },
+
+      { category: "Past: HAD TO", form: "Subject + HAD TO + base verb", examples: "I had to work yesterday. / She had to go to the doctor. / They had to wait.", negative: "Subject + DIDN'T HAVE TO + base verb", example_negative: "I didn't have to work yesterday. (It wasn't necessary)", question: "Did + subject + HAVE TO + verb?", example_question: "Did you have to wait? → Yes, I did. / No, I didn't.", note: "HAD TO for all subjects (not 'had to' for he/she/it)" },
+
+      { category: "Future: WILL HAVE TO", form: "Subject + WILL HAVE TO + base verb", examples: "I'll have to study tomorrow. / She'll have to work late. / They'll have to pay.", negative: "Subject + WON'T HAVE TO + base verb", example_negative: "You won't have to come. (It won't be necessary)", question: "Will + subject + HAVE TO + verb?", example_question: "Will you have to work? → Yes, I will. / No, I won't.", note: "Very useful for talking about future obligations!" },
+
+      { category: "Common Mistakes", mistake_1: "Forgetting -s for he/she/it", wrong_1: "She have to go ✗ / He have to study ✗", correct_1: "She HAS to go ✓ / He HAS to study ✓", rule: "Use HAS to (not have to) for he/she/it", remember: "Have to conjugates like a normal verb!" },
+      { category: "Common Mistakes", mistake_2: "Using 'have to' at the beginning of questions", wrong_2: "Have you to go? ✗ / Has she to work? ✗", correct_2: "Do you have to go? ✓ / Does she have to work? ✓", rule: "Use DO/DOES at the beginning of questions", remember: "Do you have to...? (NOT Have you to...?)" },
+      { category: "Common Mistakes", mistake_3: "Confusing don't have to with mustn't", wrong_3: "You mustn't come ✗ (when you mean it's not necessary)", correct_3: "You don't have to come ✓ (It's not necessary)", meaning: "Don't have to = not necessary | Mustn't = forbidden", remember: "Very different meanings!" },
+      { category: "Common Mistakes", mistake_4: "Adding 'to' twice", wrong_4: "I have to to go ✗ / She has to to work ✗", correct_4: "I have to go ✓ / She has to work ✓", rule: "The 'to' is already in 'have TO' - don't add another!", pattern: "have to + BASE VERB" },
+
+      { category: "Common Uses of HAVE TO", work_school: "I have to go to work. / She has to do her homework.", schedules: "We have to leave at 8. / They have to catch the bus.", rules: "Students have to wear uniforms. / You have to pay before entering.", health: "I have to take medicine. / He has to see a doctor.", daily_life: "I have to cook dinner. / She has to clean her room.", note: "Very common for daily obligations and requirements!" },
+
+      { category: "Common Uses of DON'T HAVE TO", optional_activities: "You don't have to come to the party. (But you can if you want)", no_requirement: "She doesn't have to work on Sundays. (It's her day off)", permissions: "You don't have to ask permission. (You're free to decide)", time: "We don't have to hurry. (We have plenty of time)", note: "Use when something is not necessary or required" },
+
+      { category: "Contractions in Speech", full: "I have to → I've gotta (very informal)", has: "He has to → He's gotta (very informal)", informal: "In casual speech, 'have to' can sound like 'hafta' /ˈhæftə/", example: "I hafta go. / She hasta work.", note: "'Gotta' is very informal - use 'have to' in formal situations", formal_writing: "Always write 'have to', not 'hafta' or 'gotta'" },
+
+      { category: "Real-World Uses", work: "I have to finish this report. / Do you have to work late?", school: "Students have to do homework. / She doesn't have to take that class.", rules_laws: "You have to wear a seatbelt. / Do I have to show my ID?", daily_routines: "I have to wake up at 6. / She has to pick up her kids.", permissions: "You don't have to wait. / He doesn't have to pay.", general: "Essential for talking about obligations and choices in everyday life!" },
+
+      { category: "Key Takeaway", summary: "HAVE TO expresses external obligation; DON'T HAVE TO shows lack of necessity", have_to_meaning: "HAVE TO = necessary, required, obligation (external rule)", dont_have_to_meaning: "DON'T HAVE TO = not necessary, optional, not required", structure_positive: "Subject + have/has to + BASE VERB", structure_negative: "Subject + don't/doesn't have to + BASE VERB", structure_question: "Do/Does + subject + have to + BASE VERB?", conjugation: "I/You/We/They have to | He/She/It HAS to", critical_difference: "DON'T HAVE TO (not necessary) ≠ MUSTN'T (forbidden)", have_to_vs_must: "Have to = external rule | Must = speaker's opinion", tenses: "Present: have to | Past: had to | Future: will have to", common_mistakes: "Add -s for he/she/it! Use do/does in questions! Don't confuse with mustn't!", remember: "Have to = you need to do it | Don't have to = you don't need to (but you can)!", next: "Practice distinguishing have to, don't have to, must, and mustn't!" }
+    ]
+  },
   
   speakingPractice: [
     { question: "Do you have to go to school today?", answer: "Yes, I have to go to school." },
@@ -4493,12 +4565,46 @@ Sıklık zarfları (frequency adverbs):
 • always (her zaman), usually (genellikle), often (sık sık), sometimes (bazen), never (asla).
 Örn: I usually have breakfast at 8. (Genellikle saat 8'de kahvaltı yaparım.)`,
   tip: "Use Present Simple for daily routines and frequency adverbs to show how often",
-  
-  table: [
-    { structure: "Subject + base verb (Present Simple)", example: "I wake up at 7.", note: "For daily routines" },
-    { structure: "Subject + frequency adverb + verb", example: "I usually eat breakfast at 8.", note: "With frequency adverbs" },
-    { structure: "For he/she/it: verb + -s", example: "She gets up at 7.", note: "Third person singular" }
-  ],
+
+  table: {
+    title: "📋 Daily Routines Vocabulary (Günlük Rutinler)",
+    data: [
+      { category: "What are Daily Routines?", explanation: "Activities you do every day regularly", turkish: "Günlük rutinler, alışkanlıklar", function: "Talk about your daily schedule and habits", tense: "Use Present Simple for routines", examples: "I wake up at 7. / She goes to school at 8. / We have dinner at 6.", note: "Essential vocabulary for daily life!" },
+
+      { category: "Morning Routines (Sabah Rutini)", wake_up: "wake up (uyanmak) - I wake up at 6:30.", get_up: "get up (kalkmak) - I get up immediately.", brush_teeth: "brush my teeth (dişlerimi fırçalamak) - I brush my teeth twice a day.", take_shower: "take a shower (duş yapmak) - I take a shower every morning.", wash_face: "wash my face (yüzümü yıkamak) - I wash my face with cold water.", get_dressed: "get dressed (giyinmek) - I get dressed quickly.", note: "Morning activities from waking to leaving home" },
+      { category: "Morning Routines continued", comb_hair: "comb my hair (saçımı taramak) - She combs her hair.", shave: "shave (tıraş olmak) - He shaves every day.", put_on_makeup: "put on makeup (makyaj yapmak) - She puts on makeup.", have_breakfast: "have breakfast (kahvaltı yapmak) - I have breakfast at 7:30.", make_bed: "make my bed (yatağımı toplamak) - I always make my bed.", leave_home: "leave home (evden çıkmak) - I leave home at 8.", note: "Complete your morning preparation!" },
+
+      { category: "Going to School/Work", go_to_school: "go to school (okula gitmek) - I go to school by bus.", go_to_work: "go to work (işe gitmek) - She goes to work every day.", take_the_bus: "take the bus (otobüse binmek) - I take the bus at 8:15.", walk: "walk (yürümek) - I walk to school.", drive: "drive (araba sürmek) - He drives to work.", arrive: "arrive (varmak) - I arrive at school at 8:30.", note: "Transportation and arrival" },
+
+      { category: "School/Work Activities", start_work: "start work (işe başlamak) - I start work at 9.", attend_classes: "attend classes (derslere katılmak) - I attend 5 classes.", have_lunch: "have lunch (öğle yemeği yemek) - We have lunch at 12.", take_a_break: "take a break (mola vermek) - I take a break at 10:30.", study: "study (çalışmak, ders çalışmak) - I study in the library.", finish_work: "finish work (işi bitirmek) - She finishes work at 5.", note: "During the day at school or work" },
+
+      { category: "Afternoon/Evening Routines", come_home: "come home / get home (eve gelmek) - I get home at 4.", do_homework: "do homework (ödev yapmak) - I do my homework after school.", watch_TV: "watch TV (TV izlemek) - I watch TV in the evening.", play_games: "play games (oyun oynamak) - He plays video games.", listen_to_music: "listen to music (müzik dinlemek) - I listen to music while studying.", relax: "relax (dinlenmek) - I relax after work.", note: "After school/work activities" },
+
+      { category: "Evening & Night Routines", have_dinner: "have dinner (akşam yemeği yemek) - We have dinner at 7.", cook_dinner: "cook dinner (akşam yemeği pişirmek) - My mom cooks dinner.", set_the_table: "set the table (sofrayı kurmak) - I set the table.", do_the_dishes: "do the dishes (bulaşık yıkamak) - I do the dishes after dinner.", take_a_bath: "take a bath (banyo yapmak) - She takes a bath at night.", brush_teeth: "brush my teeth (dişlerimi fırçalamak) - I brush my teeth before bed.", note: "Evening preparations" },
+      { category: "Bedtime Routines", go_to_bed: "go to bed (yatağa gitmek) - I go to bed at 10.", read_a_book: "read a book (kitap okumak) - I read before sleeping.", set_alarm: "set my alarm (alarmı kurmak) - I set my alarm for 6:30.", turn_off_lights: "turn off the lights (ışıkları kapatmak) - I turn off the lights.", fall_asleep: "fall asleep (uykuya dalmak) - I fall asleep quickly.", sleep: "sleep (uyumak) - I sleep 8 hours.", note: "Nighttime and sleep" },
+
+      { category: "Frequency Adverbs Position", rule: "Frequency adverbs usually go BEFORE the main verb", examples: "I always wake up early. / She usually has breakfast. / We often walk to school.", with_be: "With BE verb, put adverb AFTER be", examples_be: "I am always tired. / She is usually late.", remember: "After BE, before other verbs!", position: "Subject + frequency adverb + verb" },
+      { category: "Using Frequency Adverbs", always_100: "always (her zaman) - 100% - I always brush my teeth.", usually_90: "usually (genellikle) - 90% - I usually have breakfast.", often_70: "often (sık sık) - 70% - I often walk to school.", sometimes_50: "sometimes (bazen) - 50% - I sometimes watch TV.", rarely_10: "rarely/seldom (nadiren) - 10% - I rarely stay up late.", never_0: "never (asla) - 0% - I never skip breakfast.", note: "Show how often you do your routines!" },
+
+      { category: "Telling Time in Routines", at_time: "Use AT with specific times", examples: "I wake up at 7. / I have lunch at 12:30. / I go to bed at 10.", in_morning: "Use IN with parts of day", examples: "in the morning / in the afternoon / in the evening", at_night: "Use AT with 'night'", example: "at night", note: "Prepositions of time are important!", remember: "AT + time | IN + morning/afternoon/evening | AT + night" },
+
+      { category: "Present Simple for Routines", rule: "Use Present Simple tense for daily routines", pattern: "I/You/We/They + base verb | He/She/It + verb-s", examples: "I wake up. / She wakes up. / They go to school. / He goes to work.", why: "Routines are regular, repeated actions", note: "This is why we use Present Simple!", remember: "Add -s for he/she/it!" },
+
+      { category: "He/She/It Forms (Third Person)", rule: "Add -S to verbs for he/she/it", examples: "He wakes up. / She brushes her teeth. / He goes to school. / She watches TV.", irregular: "have → has | go → goes | do → does | watch → watches", note: "Don't forget the -s!", remember: "Third person singular needs -s" },
+
+      { category: "Questions About Routines", what_time: "What time do you wake up? → I wake up at 7.", when: "When do you have breakfast? → I have breakfast at 8.", do_you: "Do you walk to school? → Yes, I do. / No, I don't.", does_she: "Does she go to work? → Yes, she does. / No, she doesn't.", how_often: "How often do you exercise? → I exercise three times a week.", pattern: "Use do/does for questions", note: "Essential for asking about others' routines!" },
+
+      { category: "Common Mistakes", mistake_1: "Forgetting -s for he/she/it", wrong_1: "She wake up at 7 ✗ / He go to school ✗", correct_1: "She wakes up at 7 ✓ / He goes to school ✓", rule: "Add -s for third person singular", remember: "He/She/It needs -s!" },
+      { category: "Common Mistakes", mistake_2: "Wrong preposition with time", wrong_2: "I wake up in 7 o'clock ✗ / She sleeps on night ✗", correct_2: "I wake up at 7 o'clock ✓ / She sleeps at night ✓", rule: "Use AT with specific times and 'at night'", remember: "AT + time!" },
+      { category: "Common Mistakes", mistake_3: "Wrong frequency adverb position", wrong_3: "I wake up always early ✗ / She goes usually to school ✗", correct_3: "I always wake up early ✓ / She usually goes to school ✓", rule: "Put frequency adverb BEFORE main verb (but AFTER be)", remember: "Before the verb!" },
+
+      { category: "Talking About Your Day", describe: "I wake up at 7 and take a shower. Then I have breakfast at 7:30. I leave home at 8 and arrive at school at 8:30. I have lunch at 12. School finishes at 3. I get home at 4 and do my homework. I have dinner with my family at 7. I go to bed at 10.", use: "Connect your routines with time expressions", linking: "Use: then, after that, next, finally", note: "Tell your daily story!" },
+
+      { category: "Real-World Uses", introducing_yourself: "I wake up at 6 every day. I usually have breakfast at 7.", describing_others: "My sister goes to university. She studies every evening.", comparisons: "I wake up earlier than my brother. He sleeps late.", weekend_routines: "On weekends, I don't wake up early. I relax and watch TV.", general: "Essential for describing daily life and habits!" },
+
+      { category: "Key Takeaway", summary: "Daily routines vocabulary describes your regular daily activities", tense: "Use Present Simple for routines", structure: "Subject + verb (add -s for he/she/it)", time_prepositions: "AT + specific time | IN + morning/afternoon/evening | AT + night", frequency: "Use frequency adverbs (always, usually, often, sometimes, never)", position: "Frequency adverb goes BEFORE main verb (AFTER be)", question: "What time...? / When...? / How often...? / Do you...?", common_verbs: "wake up, get up, have breakfast, go to school, do homework, go to bed", remember: "Tell your daily routine with times and frequency!", next: "Practice describing your typical day!" }
+    ]
+  },
   
   speakingPractice: [
     { question: "What time do you wake up?", answer: "I wake up at 7 o'clock." },
@@ -4555,12 +4661,48 @@ Mesleklerle ilgili sorular:
 • What does he do? → He's a firefighter. (O ne iş yapıyor?)
 • Where does she work? → She works in a hospital. (O nerede çalışıyor?)`,
   tip: "Use 'What do you do?' to ask about someone's job and 'Where do you work?' for workplace",
-  
-  table: [
-    { question: "What do you do?", answer: "I'm a (job).", example: "I'm a teacher." },
-    { question: "What does he/she do?", answer: "He/She is a (job).", example: "She's a nurse." },
-    { question: "Where does he/she work?", answer: "He/She works in/at (place).", example: "He works in a hospital." }
-  ],
+
+  table: {
+    title: "📋 Jobs and Occupations Vocabulary (Meslekler)",
+    data: [
+      { category: "What are Jobs?", explanation: "The work people do to earn money", turkish: "Meslekler, işler", function: "Talk about professions and careers", questions: "What do you do? / What's your job? / Where do you work?", note: "Essential for introductions and conversations!" },
+
+      { category: "Asking About Jobs", what_do_you_do: "What do you do? → I'm a teacher. (En yaygın soru)", whats_your_job: "What's your job? → I'm a doctor.", what_does_he_do: "What does he do? → He's an engineer.", where_work: "Where do you work? → I work in a hospital / at a school.", use_a_an: "Use A/AN before the job: I'm A teacher / He's AN engineer", note: "The most polite way to ask is 'What do you do?'" },
+
+      { category: "Healthcare Jobs", doctor: "doctor (doktor) - works in hospital, treats patients", nurse: "nurse (hemşire) - helps doctors, cares for patients", dentist: "dentist (diş hekimi) - takes care of teeth", surgeon: "surgeon (cerrah) - performs operations", pharmacist: "pharmacist (eczacı) - sells medicine", vet_veterinarian: "vet / veterinarian (veteriner) - animal doctor", note: "Medical professions - very important!" },
+
+      { category: "Education Jobs", teacher: "teacher (öğretmen) - teaches students in school", professor: "professor (profesör) - teaches in university", tutor: "tutor (özel öğretmen) - gives private lessons", principal: "principal (müdür) - manages the school", instructor: "instructor (eğitmen) - teaches specific skills", note: "Education professionals" },
+
+      { category: "Public Service Jobs", police_officer: "police officer (polis) - protects people, enforces law", firefighter: "firefighter (itfaiyeci) - puts out fires", soldier: "soldier (asker) - serves in military", judge: "judge (hakim) - decides in court", lawyer: "lawyer (avukat) - represents people in law", note: "Serving and protecting the community" },
+
+      { category: "Technical & Professional Jobs", engineer: "engineer (mühendis) - designs buildings/machines/systems", architect: "architect (mimar) - designs buildings", programmer: "programmer (programcı) - writes computer code", scientist: "scientist (bilim insanı) - does research and experiments", accountant: "accountant (muhasebeci) - manages money and accounts", note: "Skilled professional careers" },
+
+      { category: "Service Jobs", waiter_waitress: "waiter/waitress (garson) - serves food in restaurant", chef_cook: "chef / cook (aşçı, şef) - prepares food", hairdresser: "hairdresser (kuaför) - cuts and styles hair", receptionist: "receptionist (resepsiyonist) - greets visitors at desk", cashier: "cashier (kasiyer) - handles money at checkout", cleaner: "cleaner (temizlikçi) - cleans buildings", note: "Service industry jobs" },
+
+      { category: "Transportation & Logistics", pilot: "pilot (pilot) - flies airplanes", driver: "driver (şoför) - drives vehicles", taxi_driver: "taxi driver (taksi şoförü) - drives taxi", bus_driver: "bus driver (otobüs şoförü) - drives bus", truck_driver: "truck driver (kamyon şoförü) - drives truck", sailor: "sailor (denizci) - works on ships", note: "Transportation professions" },
+
+      { category: "Creative & Arts Jobs", artist: "artist (sanatçı) - creates art (painting, drawing)", musician: "musician (müzisyansı) - plays music", singer: "singer (şarkıcı) - sings songs", actor_actress: "actor/actress (aktör/aktris) - performs in films/theatre", photographer: "photographer (fotoğrafçı) - takes pictures", writer: "writer (yazar) - writes books/articles", note: "Creative professions" },
+
+      { category: "Construction & Manual Jobs", builder: "builder (inşaatçı) - builds houses", carpenter: "carpenter (marangoz) - works with wood", plumber: "plumber (tesisatçı) - fixes pipes and water systems", electrician: "electrician (elektrikçi) - works with electricity", mechanic: "mechanic (tamirci, usta) - fixes cars/machines", farmer: "farmer (çiftçi) - grows crops, raises animals", note: "Skilled trades and manual work" },
+
+      { category: "Business & Office Jobs", manager: "manager (yönetici) - manages team/company", secretary: "secretary (sekreter) - assists boss, organizes office", salesperson: "salesperson (satış elemanı) - sells products", businessman_woman: "businessman/businesswoman (iş insanı) - runs business", employee: "employee (çalışan) - works for company", boss: "boss (patron) - leads the company/team", note: "Office and business roles" },
+
+      { category: "Using A/AN with Jobs", rule: "Use A before consonant sounds, AN before vowel sounds", a_jobs: "a teacher, a doctor, a pilot, a waiter, a driver", an_jobs: "an engineer, an artist, an actor, an accountant, an electrician", structure: "I'm A/AN + job", examples: "I'm a teacher. / She's an engineer. / He's a doctor.", note: "Always use a/an when talking about your job!" },
+
+      { category: "Where Do They Work?", hospital: "in a hospital: doctor, nurse, surgeon", school: "at a school: teacher, principal", office: "in an office: secretary, accountant, manager", restaurant: "in a restaurant: waiter, chef, cook", factory: "in a factory: worker, engineer", shop_store: "in a shop/store: salesperson, cashier", farm: "on a farm: farmer", home: "at home: work from home", note: "Use IN for enclosed places, AT for point locations, ON for surfaces" },
+
+      { category: "What Do They Do?", examples: "A doctor treats patients. / A teacher teaches students. / A chef cooks food. / A pilot flies planes. / A police officer protects people. / An artist creates art. / A driver drives vehicles. / A cleaner cleans buildings.", pattern: "A/An + job + verb + object", note: "Describe what each profession does!" },
+
+      { category: "Questions & Answers", q1: "Q: What do you do? → A: I'm a nurse.", q2: "Q: What does your father do? → A: He's an engineer.", q3: "Q: Where do you work? → A: I work in a hospital.", q4: "Q: Where does she work? → A: She works at a school.", q5: "Q: Do you like your job? → A: Yes, I love it! / No, not really.", q6: "Q: What do you want to be? → A: I want to be a doctor.", note: "Common conversations about jobs!" },
+
+      { category: "Common Mistakes", mistake_1: "Forgetting a/an", wrong_1: "I'm teacher ✗ / He's engineer ✗", correct_1: "I'm a teacher ✓ / He's an engineer ✓", rule: "Always use a/an with jobs!", remember: "I'm A/AN + job" },
+      { category: "Common Mistakes", mistake_2: "Using wrong article", wrong_2: "I'm an teacher ✗ / He's a engineer ✗", correct_2: "I'm a teacher ✓ / He's an engineer ✓", rule: "A before consonants, AN before vowels", remember: "Listen to the SOUND, not just the letter!" },
+
+      { category: "Real-World Uses", introductions: "Hi, I'm John. I'm a teacher. I work at a high school.", job_interviews: "I'm a programmer with 5 years of experience.", describing_family: "My father is a doctor. My mother is a teacher. My brother wants to be a pilot.", career_goals: "I want to be an engineer. I'm studying at university.", general: "Essential vocabulary for professional life!" },
+
+      { category: "Key Takeaway", summary: "Jobs vocabulary describes what people do for work", question: "What do you do? (most polite) / What's your job?", answer: "I'm A/AN + job (always use a/an!)", where: "Where do you work? → I work in/at + place", describe: "A + job + verb: A teacher teaches. A doctor treats patients.", categories: "Healthcare, Education, Service, Technical, Creative, Business, Construction", preposition: "IN hospital/office/restaurant | AT school/home | ON farm", remember: "Use a/an with jobs! Know the main job categories!", next: "Practice talking about jobs and workplaces!" }
+    ]
+  },
   
   speakingPractice: [
     { question: "What do you do?", answer: "I'm a teacher." },
@@ -4618,12 +4760,51 @@ Kullanışlı sorular:
 • What's your favorite food? (En sevdiğin yemek ne?)
 • What do you usually drink with dinner? (Akşam yemeğinde genelde ne içersin?)`,
   tip: "Use 'like' with food and drinks to express preferences and 'usually' for habits",
-  
-  table: [
-    { question: "What's your favorite food?", answer: "My favorite food is pizza.", usage: "For preferences" },
-    { question: "Do you like + food/drink?", answer: "Yes, I do. / No, I don't.", usage: "Yes/No questions" },
-    { question: "What do you usually eat/drink?", answer: "I usually eat eggs. / I usually drink water.", usage: "For habits" }
-  ],
+
+  table: {
+    title: "📋 Food and Drinks Vocabulary (Yiyecek ve İçecekler)",
+    data: [
+      { category: "What are Food and Drinks?", explanation: "Things we eat and drink every day", turkish: "Yiyecekler ve içecekler", function: "Talk about meals, preferences, and eating habits", questions: "What's your favorite food? / Do you like...? / What do you usually eat?", note: "Essential vocabulary for daily life and restaurants!" },
+
+      { category: "Meals of the Day", breakfast: "breakfast (kahvaltı) - first meal in the morning", lunch: "lunch (öğle yemeği) - midday meal", dinner_supper: "dinner / supper (akşam yemeği) - evening meal", snack: "snack (atıştırmalık) - small meal between main meals", examples: "I have breakfast at 7. / We eat lunch at 12. / Dinner is at 7 PM.", note: "Three main meals + snacks" },
+
+      { category: "Basic Food Categories", meat: "meat (et) - beef, chicken, pork, lamb", fish: "fish (balık) - salmon, tuna, etc.", vegetables: "vegetables (sebzeler) - carrots, tomatoes, etc.", fruit: "fruit (meyveler) - apples, bananas, etc.", dairy: "dairy (süt ürünleri) - milk, cheese, yogurt", grains: "grains (tahıllar) - bread, rice, pasta", note: "Six main food groups" },
+
+      { category: "Meat & Protein", chicken: "chicken (tavuk) - most common meat", beef: "beef (sığır eti) - from cows", pork: "pork (domuz eti) - from pigs", lamb: "lamb (kuzu eti) - from sheep", turkey: "turkey (hindi) - large bird", fish: "fish (balık) - seafood", eggs: "eggs (yumurta) - from chickens", note: "Protein sources" },
+
+      { category: "Vegetables", tomato: "tomato (domates)", potato: "potato (patates)", onion: "onion (soğan)", carrot: "carrot (havuç)", lettuce: "lettuce (marul) - for salads", pepper: "pepper (biber)", cucumber: "cucumber (salatalık)", note: "Common vegetables" },
+
+      { category: "Fruits", apple: "apple (elma)", banana: "banana (muz)", orange: "orange (portakal)", grape: "grapes (üzüm)", strawberry: "strawberry (çilek)", watermelon: "watermelon (karpuz)", lemon: "lemon (limon)", note: "Common fruits" },
+
+      { category: "Dairy Products", milk: "milk (süt) - from cows", cheese: "cheese (peynir) - many types", yogurt: "yogurt (yoğurt) - fermented milk", butter: "butter (tereyağı) - spread on bread", cream: "cream (krema) - thick milk", ice_cream: "ice cream (dondurma) - frozen dessert", note: "Made from milk" },
+
+      { category: "Grains & Carbohydrates", bread: "bread (ekmek) - baked from flour", rice: "rice (pirinç) - grain, cooked", pasta: "pasta (makarna) - Italian noodles", cereal: "cereal (tahıl gevreği) - breakfast food", flour: "flour (un) - powder from grain", noodles: "noodles (erişte) - long pasta", note: "Starchy foods" },
+
+      { category: "Drinks (Hot)", coffee: "coffee (kahve) - hot, caffeinated", tea: "tea (çay) - hot, many flavors", hot_chocolate: "hot chocolate (sıcak çikolata) - sweet drink", note: "Hot beverages" },
+      { category: "Drinks (Cold)", water: "water (su) - essential drink", milk: "milk (süt) - from dairy", juice: "juice (meyve suyu) - from fruit (orange juice, apple juice)", soda_pop: "soda / pop (gazlı içecek) - carbonated drink (Coke, Sprite)", lemonade: "lemonade (limonata) - lemon drink", note: "Cold beverages" },
+
+      { category: "Snacks & Fast Food", pizza: "pizza (pizza) - Italian bread with toppings", hamburger: "hamburger (hamburger) - meat in a bun", sandwich: "sandwich (sandviç) - bread with filling", chips: "chips / fries (patates kızartması, cips)", popcorn: "popcorn (patlamış mısır) - movie snack", cookies: "cookies (kurabiye) - sweet biscuits", note: "Quick foods and snacks" },
+
+      { category: "Desserts & Sweets", cake: "cake (kek, pasta) - birthday dessert", chocolate: "chocolate (çikolata) - sweet candy", candy: "candy (şeker) - sweets", pie: "pie (turta) - baked dessert", ice_cream: "ice cream (dondurma) - frozen sweet", note: "Sweet treats" },
+
+      { category: "Expressing Preferences", like: "I like pizza. (I enjoy pizza in general)", love: "I love chocolate! (I really like it)", dont_like: "I don't like onions. (I dislike them)", hate: "I hate spinach. (I really dislike it)", favorite: "My favorite food is pasta. (I like it the most)", prefer: "I prefer tea to coffee. (I like tea more)", note: "Use LIKE for general preferences" },
+
+      { category: "Questions About Food", whats_your_favorite: "What's your favorite food? → My favorite food is pizza.", do_you_like: "Do you like vegetables? → Yes, I do. / No, I don't.", what_do_you_usually: "What do you usually eat for breakfast? → I usually eat eggs and bread.", what_do_you_want: "What do you want to eat? → I want pasta.", would_you_like: "Would you like some coffee? → Yes, please. / No, thank you.", note: "Common food questions" },
+
+      { category: "Talking About Meals", breakfast_examples: "For breakfast, I usually have eggs, bread, and tea.", lunch_examples: "I eat lunch at school. I usually have a sandwich and fruit.", dinner_examples: "We have dinner together at 7. We eat chicken, rice, and salad.", pattern: "I have/eat + food + for + meal", note: "Describe your meals!" },
+
+      { category: "Countable vs Uncountable Food", countable: "Countable (use a/an, numbers): an apple, two eggs, three cookies", uncountable: "Uncountable (use some/any, no numbers): water, milk, rice, bread, cheese", some: "I'd like some water. / Can I have some cheese?", any: "Is there any milk? / I don't have any bread.", note: "Important grammar distinction!" },
+
+      { category: "At a Restaurant", ordering: "I'd like a pizza, please. / Can I have the chicken?", asking: "What would you like to eat/drink?", polite: "Could I have some water, please?", paying: "Can I have the bill/check, please?", note: "Restaurant vocabulary" },
+
+      { category: "Common Mistakes", mistake_1: "Using wrong verb with food", wrong_1: "I drink pizza ✗ / I eat water ✗", correct_1: "I eat pizza ✓ / I drink water ✓", rule: "EAT solid food | DRINK liquids", remember: "Eat food, drink liquids!" },
+      { category: "Common Mistakes", mistake_2: "Forgetting to use 'some' with uncountable", wrong_2: "I want water ✗ (sounds incomplete)", correct_2: "I want some water ✓", rule: "Use SOME/ANY with uncountable nouns", remember: "Some water, some milk, some rice" },
+
+      { category: "Real-World Uses", shopping: "I need to buy milk, bread, and eggs.", cooking: "I'm making pasta with tomato sauce and cheese.", restaurants: "I'd like the chicken with rice, please.", preferences: "I love Italian food. I don't like spicy food.", diet: "I eat a lot of fruit and vegetables. I don't eat much meat.", general: "Essential for daily life, shopping, and eating out!" },
+
+      { category: "Key Takeaway", summary: "Food and drinks vocabulary for daily eating and drinking", meals: "breakfast, lunch, dinner, snack", categories: "meat, fish, vegetables, fruit, dairy, grains", drinks: "water, tea, coffee, juice, milk, soda", preferences: "I like/love/don't like/hate + food", questions: "What's your favorite food? / Do you like...? / What do you usually eat?", countable: "an apple, two eggs (countable) | some water, some rice (uncountable)", verbs: "EAT solid food | DRINK liquids", remember: "Talk about your food preferences and eating habits!", next: "Practice ordering food and describing meals!" }
+    ]
+  },
   
   speakingPractice: [
     { question: "What's your favorite food?", answer: "My favorite food is pizza." },
