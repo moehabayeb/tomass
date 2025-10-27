@@ -9066,7 +9066,27 @@ Examples:
 - Initially, I was nervous. However, after a while, I felt confident.`,
   tip: "Vary your sequencing words to make stories more interesting - don't always use 'then'",
 
-  table: [],
+  table: {
+    title: "📋 Narratives: Sequencing Words for Storytelling",
+    data: [
+      { stage: "Beginning", words: "First / Firstly", example: "First, I woke up late.", use: "Starting a sequence", formality: "Neutral", note: "Most common starter" },
+      { stage: "Beginning (formal)", words: "Initially / At first / To begin with", example: "Initially, I was nervous. / To begin with, we need to understand...", use: "Starting narratives formally", formality: "Formal", context: "Written stories, presentations" },
+      { stage: "Middle (basic)", words: "Then / Next / After that", example: "Then, I had breakfast. / Next, I left the house.", use: "Continuing the sequence", formality: "Neutral", note: "Very common, but vary them!" },
+      { stage: "Middle (advanced)", words: "Subsequently / Afterwards / Following that", example: "Subsequently, we traveled to Paris.", use: "More sophisticated sequencing", formality: "Formal", context: "Academic, professional writing" },
+      { stage: "Middle (simultaneous)", words: "Meanwhile / At the same time / While", example: "Meanwhile, my brother was cooking. / At the same time, she was studying.", use: "Events happening together", function: "Parallel actions", note: "Shows two things at once" },
+      { stage: "End", words: "Finally / In the end / Eventually", example: "Finally, I arrived home. / In the end, everything worked out.", use: "Concluding the narrative", formality: "Neutral", note: "Common endings" },
+      { stage: "End (formal)", words: "Ultimately / Lastly", example: "Ultimately, she decided to stay. / Lastly, I want to thank everyone.", use: "Formal conclusions", formality: "Formal", context: "Presentations, formal writing" },
+      { time_expression: "as soon as", meaning: "Immediately after", example: "As soon as I woke up, I checked my phone.", use: "Instant sequence", note: "No delay between actions" },
+      { time_expression: "when", meaning: "At the moment that", example: "When I arrived, everyone was waiting.", use: "Simultaneous or immediate", note: "Most flexible time word" },
+      { time_expression: "before / after", meaning: "Earlier than / Later than", example: "Before I left, I locked the door. / After dinner, we watched TV.", use: "Showing order of events", note: "Clear time relationship" },
+      { time_expression: "while", meaning: "During the time that", example: "While I was cooking, she was reading.", use: "Two actions at the same time", function: "Simultaneous actions", note: "Usually with continuous tense" },
+      { time_expression: "until", meaning: "Up to the point that", example: "I waited until she arrived.", use: "Endpoint of an action", note: "Action continues to a specific time" },
+      { common_mistake: "Overusing 'then'", problem: "Then I... Then I... Then I...", solution: "First, I... After that, I... Later, I... Finally, I...", rule: "Vary your sequencing words!", explanation: "Repetitive 'then' sounds boring and childish", tip: "Use different words for variety" },
+      { story_structure: "Basic narrative pattern", beginning: "First / At first / Initially", middle: "Then / Next / After that / Meanwhile", end: "Finally / In the end / Eventually", example: "First, I packed. Then, I left. Finally, I arrived.", note: "Standard structure" },
+      { advanced_pattern: "Smooth transitions", examples: "Soon after... / Shortly afterwards... / A little later... / Some time later...", function: "Showing time passing smoothly", formality: "Neutral to formal", context: "Better storytelling", note: "More natural flow" },
+      { emphasis_timing: "Emphasizing time", expressions: "Immediately / Straight away / Right after / Just before", examples: "Immediately, I called the police. / Right after lunch, we left.", use: "Stressing quick timing", note: "Adds urgency or importance" }
+    ]
+  },
 
   speakingPractice: [
     { question: "What did you do first this morning?", answer: "First, I got out of bed." },
@@ -9128,7 +9148,27 @@ Examples:
 - Although it was raining, we went out.`,
   tip: "Use linking words to make your speech and writing more cohesive and professional",
 
-  table: [],
+  table: {
+    title: "📋 Linking Words: Connecting Ideas",
+    data: [
+      { function: "Contrast (simple)", words: "but", example: "I like coffee, but I prefer tea.", use: "Showing difference", formality: "Informal", position: "Between two clauses", note: "Most common" },
+      { function: "Contrast (formal)", words: "however", example: "She studied hard. However, she failed.", use: "Formal contrast", formality: "Formal", position: "Start of new sentence or after semicolon", punctuation: "Comma after 'however'" },
+      { function: "Contrast + clause", words: "although / even though", example: "Although it was raining, we went out. / We went out, although it was raining.", use: "Concession", formality: "Neutral", structure: "although + subject + verb", note: "Can start or end sentence" },
+      { function: "Contrast + noun", words: "despite / in spite of", example: "Despite the rain, we went out. / In spite of being tired, he finished.", use: "Concession with noun/-ing", formality: "Formal", structure: "despite/in spite of + noun/-ing", critical: "NOT followed by clause!" },
+      { function: "Contrast (comparing)", words: "whereas / while", example: "I like tea, whereas my sister prefers coffee.", use: "Comparing differences", formality: "Formal", note: "Shows two contrasting facts", context: "Comparisons" },
+      { common_mistake: "despite + clause (WRONG)", wrong: "Despite it was raining...", correct: "Although it was raining... / Despite the rain...", rule: "Despite/In spite of + noun/gerund ONLY", explanation: "Use 'although' for clauses, 'despite' for nouns", note: "Very common error!" },
+      { function: "Addition (simple)", words: "and / also", example: "I like tea and coffee. / I also like juice.", use: "Adding information", formality: "Neutral", note: "Basic addition", position: "'also' before main verb" },
+      { function: "Addition (formal)", words: "moreover / furthermore / in addition", example: "She is smart. Moreover, she is kind. / Furthermore, she works hard.", use: "Formal addition", formality: "Formal", position: "Start of sentence", punctuation: "Comma after word", context: "Essays, formal writing" },
+      { function: "Result (simple)", words: "so", example: "I was tired, so I went to bed.", use: "Showing result/consequence", formality: "Informal", position: "Between clauses", note: "Very common in speech" },
+      { function: "Result (formal)", words: "therefore / consequently / thus", example: "She studied hard; therefore, she passed. / He was ill; consequently, he stayed home.", use: "Formal result", formality: "Formal", position: "After semicolon or start sentence", punctuation: "Semicolon before, comma after" },
+      { function: "Result (phrase)", words: "as a result / for this reason", example: "It rained heavily. As a result, the match was canceled.", use: "Explaining outcome", formality: "Formal", position: "Start of sentence", note: "Clear cause-effect" },
+      { function: "Reason (simple)", words: "because", example: "I stayed home because I was sick. / Because I was sick, I stayed home.", use: "Giving reason", formality: "Neutral", structure: "because + subject + verb", note: "Most common for reasons" },
+      { function: "Reason (formal)", words: "since / as", example: "Since you're here, let's start. / As it was late, we left.", use: "Formal reason", formality: "Formal", position: "Usually at start", note: "Common in formal contexts", meaning: "Both mean 'because'" },
+      { function: "Reason (noun)", words: "due to / owing to / because of", example: "The flight was canceled due to bad weather. / Because of the storm, we stayed inside.", use: "Reason with noun", formality: "Formal", structure: "due to/because of + noun", critical: "NOT followed by clause!" },
+      { common_mistake: "due to + clause (WRONG)", wrong: "Due to it was raining...", correct: "Because it was raining... / Due to the rain...", rule: "Due to/because of + noun ONLY", explanation: "Use 'because' for clauses, 'due to' for nouns", note: "Common error like 'despite'" },
+      { punctuation_guide: "Punctuation rules", however_therefore: "Sentence 1; however, sentence 2. OR Sentence 1. However, sentence 2.", so_but: "Clause 1, so clause 2. / Clause 1, but clause 2.", although: "Although clause, main clause. OR Main clause, although clause.", rule: "Semicolon + formal linker OR comma + informal linker", note: "Important for writing!" }
+    ]
+  },
 
   speakingPractice: [
     { question: "It was raining. What did you do?", answer: "We went hiking, although it was raining." },
@@ -9193,7 +9233,27 @@ Useful language:
 - What struck me most was...`,
   tip: "Use a variety of past tenses and descriptive adjectives to make stories come alive",
 
-  table: [],
+  table: {
+    title: "📋 Describing Experiences: Elements & Language",
+    data: [
+      { element: "Setting (When)", expressions: "Last summer / A few years ago / When I was a child / Yesterday", examples: "Last summer, I went to Italy. / When I was ten, something amazing happened.", purpose: "Establish time context", note: "Start with time to orient listener" },
+      { element: "Setting (Where)", expressions: "In [place] / At [location] / On a beach / In the mountains", examples: "In Paris, we visited the Eiffel Tower. / On a beautiful beach, I learned to surf.", purpose: "Establish place context", note: "Helps listener visualize" },
+      { element: "Characters", expressions: "I was with... / I met... / My friend and I... / A stranger...", examples: "I was with my family. / I met an interesting person. / A stranger approached me.", purpose: "Introduce people", note: "Who was involved" },
+      { element: "Actions (main events)", tenses: "Past Simple, Past Continuous, Past Perfect", examples: "I was walking when I saw... / We had already eaten before... / She called and said...", purpose: "Tell what happened", note: "Use variety of past tenses", critical: "Mix tenses for dynamic storytelling" },
+      { element: "Feelings (emotions)", expressions: "I felt + adjective / I was + adjective", examples: "I felt excited. / I was nervous. / I felt like I was on top of the world.", purpose: "Show emotional state", adjectives: "happy, scared, amazed, disappointed, proud", note: "Make story personal" },
+      { element: "Outcome (ending)", expressions: "In the end... / Eventually... / Finally... / Luckily...", examples: "In the end, everything worked out. / Eventually, we found our way home.", purpose: "Conclude story", note: "Wrap up the narrative" },
+      { useful_phrase: "It was a... experience", pattern: "It was a(n) [adjective] experience", adjectives: "amazing, unforgettable, terrible, scary, wonderful, disappointing", examples: "It was an amazing experience. / It was a terrible day.", use: "Summarize overall feeling", note: "Common conclusion phrase" },
+      { useful_phrase: "The most memorable thing", pattern: "The most memorable thing was...", examples: "The most memorable thing was meeting famous people. / The most memorable moment was...", use: "Highlight key point", context: "Drawing attention to best part" },
+      { useful_phrase: "What struck me most", pattern: "What struck me most was + noun/that clause", examples: "What struck me most was the beauty. / What struck me most was that everyone was so kind.", use: "Emphasize impression", formality: "Formal", note: "Shows deep reflection" },
+      { descriptive_adjectives: "For experiences", positive: "incredible, fantastic, breathtaking, thrilling, delightful", negative: "awful, dreadful, frightening, disappointing, exhausting", neutral: "interesting, unusual, surprising, strange, ordinary", use: "Make descriptions vivid", note: "Vary adjectives!" },
+      { narrative_structure: "Story arc", beginning: "Set scene (when, where, who)", middle: "Build up (actions, challenges, events)", climax: "Key moment (main event)", end: "Resolution & reflection", example: "Last year [when], in Rome [where], I got lost [event]. I felt scared [feeling]. Eventually, a kind local helped me [resolution].", note: "Classic story structure" },
+      { adding_detail: "Sensory details", senses: "saw, heard, smelled, tasted, felt (physical)", examples: "I saw beautiful mountains. / I heard music playing. / The food smelled delicious. / It tasted amazing. / I felt the warm sand.", purpose: "Create vivid images", note: "Engages listener's imagination" },
+      { time_transitions: "Moving through story", expressions: "At first... / Then... / A few moments later... / Suddenly... / After a while...", examples: "At first, everything was fine. Then, suddenly, it started raining.", use: "Show progression of events", note: "Keeps story flowing" },
+      { dramatic_effect: "Creating suspense", techniques: "Suddenly / All of a sudden / Out of nowhere / Without warning", examples: "Suddenly, the lights went out. / All of a sudden, a dog appeared.", use: "Add excitement", note: "Makes stories engaging", context: "Key moments" },
+      { reflection_phrases: "Looking back", expressions: "Looking back... / In retrospect... / Now I realize... / I learned that...", examples: "Looking back, it was the best decision. / Now I realize how lucky I was.", use: "Add meaning/lesson", formality: "Thoughtful", note: "Shows personal growth" },
+      { common_mistake: "Too many details", problem: "Including every tiny detail (boring)", solution: "Focus on key events and interesting moments", rule: "Select what's important and interesting", tip: "Less is more - pick highlights", note: "Keep listener engaged" }
+    ]
+  },
 
   speakingPractice: [
     { question: "Have you ever been abroad?", answer: "Yes, I went to Italy last summer." },
@@ -9259,7 +9319,26 @@ Examples:
 - It was raining, so we canceled the picnic.`,
   tip: "'Because' is followed by a clause; 'because of' is followed by a noun",
 
-  table: [],
+  table: {
+    title: "📋 Cause and Effect: Expressing Relationships",
+    data: [
+      { type: "Cause (clause)", word: "because", structure: "because + subject + verb", example: "I stayed home because I was sick. / Because it was raining, we canceled.", use: "Giving reasons", formality: "Neutral", note: "Most common for causes", position: "Middle or beginning" },
+      { type: "Cause (clause, formal)", word: "since / as", structure: "since/as + subject + verb", example: "Since you're here, let's start. / As it was late, we left.", use: "Formal reason", formality: "Formal", note: "Often at beginning", meaning: "Both mean 'because'", context: "More formal situations" },
+      { type: "Cause (noun)", word: "because of", structure: "because of + noun/-ing", example: "Because of the rain, we stayed inside. / Because of being tired, I left early.", use: "Reason with noun", formality: "Neutral", critical: "Followed by NOUN, not clause!", note: "Very common mistake point" },
+      { type: "Cause (noun, formal)", word: "due to / owing to", structure: "due to/owing to + noun", example: "Due to bad weather, the flight was canceled. / Owing to illness, she resigned.", use: "Formal reason with noun", formality: "Formal", note: "Common in official contexts", context: "News, formal announcements" },
+      { type: "Cause (positive)", word: "thanks to", structure: "thanks to + noun", example: "Thanks to your help, I passed. / Thanks to technology, life is easier.", use: "Positive reason", formality: "Neutral", meaning: "Because of (positive result)", note: "Shows gratitude/positive outcome" },
+      { common_mistake: "because vs because of", wrong: "Because the rain... (noun) / Because of it was raining... (clause)", correct: "Because it was raining... / Because of the rain...", rule: "because + CLAUSE, because of + NOUN", explanation: "Most common cause/effect error", critical: "Learn this difference!" },
+      { type: "Effect (simple)", word: "so", structure: "Clause, so + clause", example: "I was tired, so I went to bed. / It was raining, so we stayed home.", use: "Showing result", formality: "Informal", position: "Middle (between two clauses)", punctuation: "Comma before 'so'", note: "Most common effect word" },
+      { type: "Effect (formal)", word: "therefore / thus / consequently", structure: "Clause; therefore, clause.", example: "She studied hard; therefore, she passed. / He was ill; consequently, he missed work.", use: "Formal result", formality: "Formal", position: "After semicolon or new sentence", punctuation: "Semicolon before, comma after" },
+      { type: "Effect (phrase)", word: "as a result / as a consequence", structure: "Sentence. As a result, sentence.", example: "It rained heavily. As a result, the match was canceled.", use: "Clear consequence", formality: "Formal", position: "Start of new sentence", note: "Shows direct outcome" },
+      { cause_effect_chain: "Connecting cause → effect", pattern: "Cause word + reason, effect word + result", examples: "Because it rained, we stayed home. Therefore, we watched movies. / Due to illness, she stayed home; as a result, she missed the exam.", use: "Longer explanations", note: "Combining multiple linkers" },
+      { question_forms: "Asking about cause", questions: "Why...? / What caused...? / What's the reason for...?", answers: "Because... / Due to... / Thanks to...", examples: "Why are you late? - Because I missed the bus. / What caused the accident? - Bad weather.", note: "Why = asking for cause" },
+      { question_forms_effect: "Asking about effect", questions: "What happened? / What was the result?", answers: "So... / As a result... / Consequently...", examples: "What happened? - So we had to cancel. / What was the result? - As a result, we lost.", note: "Asking for outcome" },
+      { multiple_causes: "Multiple causes", pattern: "Because of A, B, and C", example: "Because of the rain, traffic, and an accident, I was late.", use: "Several reasons", note: "List multiple causes with commas" },
+      { emphasis_cause: "Emphasizing cause", pattern: "The reason (why)... is because/that...", examples: "The reason I'm late is because I missed the bus. / The reason why she left is that she was unhappy.", use: "Highlighting main cause", formality: "Neutral", note: "Draws attention to reason" },
+      { comparison: "Cause vs Effect words", cause_words: "because, since, as, due to, owing to, thanks to, because of", effect_words: "so, therefore, thus, consequently, as a result", difference: "Cause = WHY, Effect = WHAT HAPPENED", rule: "Choose based on what you're explaining", note: "Opposite perspectives" }
+    ]
+  },
 
   speakingPractice: [
     { question: "Why did you stay home?", answer: "Because I was sick." },
@@ -9322,7 +9401,26 @@ Examples:
 - I saved money so that I could buy a car.`,
   tip: "'To + infinitive' is the most common way to express purpose in everyday English",
 
-  table: [],
+  table: {
+    title: "📋 Expressing Purpose: Structures & Usage",
+    data: [
+      { structure: "to + infinitive", form: "verb + to + base verb", example: "I went to the store to buy milk. / She studies to pass exams.", use: "Expressing purpose", formality: "Neutral", note: "Most common form", frequency: "Very frequent in speech" },
+      { structure: "in order to + infinitive", form: "in order to + base verb", example: "She studies hard in order to pass. / We arrived early in order to get good seats.", use: "Formal purpose", formality: "Formal", note: "More formal than 'to'", context: "Written English, formal speech" },
+      { structure: "so as to + infinitive", form: "so as to + base verb", example: "I left quietly so as not to wake anyone. / He worked hard so as to finish early.", use: "Formal purpose", formality: "Very formal", note: "Less common, very formal", context: "Academic, formal writing" },
+      { structure: "so that + clause", form: "so that + subject + can/could/will/would + verb", example: "I left early so that I wouldn't be late. / I saved money so that I could buy a car.", use: "Purpose with modal verb", formality: "Neutral", note: "When subject changes or need modal", structure_note: "Followed by CLAUSE (subject + verb)" },
+      { structure: "for + noun", form: "for + noun", example: "This tool is for cutting. / The money is for food. / I need a pen for writing.", use: "Purpose with noun", formality: "Neutral", note: "For objects/things", critical: "Only with NOUNS, not infinitives!" },
+      { structure: "for + -ing", form: "for + verb-ing", example: "This knife is for cutting bread. / That room is for studying. / It's used for cleaning.", use: "Purpose with gerund", formality: "Neutral", note: "Describing function", context: "What something is used for" },
+      { common_mistake: "for + infinitive (WRONG)", wrong: "I went there for to study. / This is for to cut.", correct: "I went there to study. / This is for cutting.", rule: "Use 'to + infinitive' OR 'for + -ing', NOT 'for to'", explanation: "Cannot combine 'for' + 'to'", note: "Very common error!" },
+      { comparison: "to vs in order to", to_form: "I study to learn. (simple, common)", in_order_to_form: "I study in order to learn. (formal, emphatic)", difference: "Same meaning, different formality", when_to_use: "'to' = everyday, 'in order to' = formal contexts", note: "Both correct, choose by context" },
+      { comparison_2: "to vs so that", to_form: "I called to invite him. (simple purpose)", so_that_form: "I called so that he could come. (purpose with ability/modal)", difference: "'so that' allows modal verbs", when_to_use: "Use 'so that' when you need can/could/will/would", example: "I spoke loudly so that everyone could hear." },
+      { negative_purpose: "Expressing negative purpose", to_avoid: "to + infinitive: to avoid, to prevent, to stop", in_order_not_to: "in order not to + verb", so_that_not: "so that... wouldn't/won't/couldn't", examples: "I left early to avoid traffic. / I whispered in order not to wake her. / I locked the door so that nobody could enter.", use: "Preventing something", note: "Three ways to express" },
+      { question_form: "Asking about purpose", questions: "Why...? / What for? / What's the purpose of...?", answer_patterns: "To + verb / In order to + verb / So that...", examples: "Why are you here? - To learn. / What's it for? - It's for opening bottles. / What's the purpose? - So that we can communicate.", note: "'Why' always asks purpose" },
+      { purpose_with_result: "Purpose vs Result", purpose: "I study to pass. (intention)", result: "I studied, so I passed. (outcome)", difference: "Purpose = goal/intention, Result = what happened", words: "Purpose: to, in order to, so that / Result: so, therefore, as a result", note: "Different concepts!" },
+      { everyday_examples: "Common purposes", daily_life: "to eat, to sleep, to work, to learn, to relax, to communicate, to exercise, to save money, to stay healthy, to have fun", examples: "I eat to stay healthy. / I work to earn money. / I exercise to stay fit.", note: "Very common in conversation" },
+      { object_purposes: "What things are for", pattern: "This [thing] is for [verb]-ing / for [noun]", examples: "This pen is for writing. / This knife is for cutting. / This room is for meetings.", use: "Describing function of objects", note: "Always use 'for' with objects" },
+      { advanced_pattern: "with the aim of + -ing", form: "with the aim of + verb-ing", example: "We launched the campaign with the aim of raising awareness.", use: "Very formal purpose", formality: "Very formal", context: "Business, academic writing", note: "Rare in speech" }
+    ]
+  },
 
   speakingPractice: [
     { question: "Why do you study?", answer: "To get good grades." },
