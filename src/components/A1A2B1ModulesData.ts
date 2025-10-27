@@ -6467,6 +6467,19 @@ I had been reading that book for weeks before I finished it.
 She had been feeling sick all day before she went to the doctor.
 We had been walking for miles when we finally found a café.`,
   tip: "Use had been + verb-ing for ongoing past actions before another past point",
+
+  table: {
+    title: "📋 Past Perfect Continuous Structure",
+    data: [
+      { form: "Positive", structure: "Subject + had been + V-ing", example: "I had been working all day" },
+      { form: "Negative", structure: "Subject + hadn't been + V-ing", example: "She hadn't been feeling well" },
+      { form: "Question", structure: "Had + subject + been + V-ing?", example: "Had you been waiting long?" },
+      { use: "Duration before past time", description: "Action over period before past event", example: "She had been studying for hours before the exam" },
+      { use: "Visible result", description: "Past action with visible effect", example: "Roads were muddy - it had been raining" },
+      { time_markers: "Common expressions", examples: "for hours, for months, since morning, all day", usage: "Show duration of past activity" }
+    ]
+  },
+
   speakingPractice: [
     { question: "What had you been doing before I arrived?", answer: "I had been cleaning the house." },
     { question: "Why were you tired last night?", answer: "I had been studying for five hours." },
@@ -6538,6 +6551,18 @@ You will have finished your homework before dinner.
 He will have left work by 6 p.m.
 We will have cleaned the house before the guests arrive.`,
   tip: "Use will have + past participle for actions completed before a future point",
+
+  table: {
+    title: "📋 Future Perfect Structure",
+    data: [
+      { form: "Positive", structure: "Subject + will have + V3", example: "I will have finished by Friday" },
+      { form: "Negative", structure: "Subject + won't have + V3", example: "She won't have arrived by then" },
+      { form: "Question", structure: "Will + subject + have + V3?", example: "Will you have completed it by tomorrow?" },
+      { use: "Completed before future time", description: "Action done before future point", example: "By 2026, I will have graduated" },
+      { time_markers: "Common expressions", examples: "by next week, by tomorrow, by the time..., before...", usage: "Indicate future deadline" }
+    ]
+  },
+
   speakingPractice: [
     { question: "Will you have finished the project by Friday?", answer: "Yes, I will have completed it by then." },
     { question: "What will you have done by the end of this year?", answer: "I will have traveled to three different countries." },
@@ -6607,6 +6632,21 @@ She will have completed the report by 3 p.m. (Future Perfect)
 They will be watching a movie at 9 p.m. (Future Continuous)
 They will have watched the movie by 11 p.m. (Future Perfect)`,
   tip: "Future Continuous for ongoing actions, Future Perfect for completed actions",
+
+  table: {
+    title: "📋 Future Continuous vs Future Perfect",
+    data: [
+      { tense: "Future Continuous", structure: "will be + V-ing", focus: "Ongoing at future time", example: "I will be working at 3 p.m." },
+      { tense: "Future Perfect", structure: "will have + V3", focus: "Completed before future time", example: "I will have finished by 3 p.m." },
+      { aspect: "Time reference", continuous: "At/during a specific time", perfect: "By/before a specific time", key: "Prepositions matter" },
+      { aspect: "Duration", continuous: "Emphasizes the ongoing nature", perfect: "Emphasizes completion", example: "He will be reading (action) vs He will have read (result)" },
+      { aspect: "Common time markers", continuous: "at 5 p.m., this time tomorrow, during", perfect: "by Friday, by the time..., before...", usage: "Indicates time relationship" },
+      { comparison: "Same situation", continuous: "She will be writing the report (in progress)", perfect: "She will have written the report (finished)", key: "Action vs result" },
+      { question_form: "Future Continuous", structure: "Will + subject + be + V-ing?", example: "Will you be working tomorrow?" },
+      { question_form: "Future Perfect", structure: "Will + subject + have + V3?", example: "Will you have finished by tomorrow?" }
+    ]
+  },
+
   speakingPractice: [
     { question: "What will you be doing at 8 a.m. tomorrow?", answer: "I will be having breakfast." },
     { question: "What will you have done by 8 a.m. tomorrow?", answer: "I will have finished my workout." },
@@ -6682,6 +6722,21 @@ They can't be home. The lights are off.
 You must be joking!
 This can't be the right address.`,
   tip: "Use must for certainty, might for possibility, can't for impossibility",
+
+  table: {
+    title: "📋 Modals of Deduction - Certainty Levels",
+    data: [
+      { modal: "must", certainty: "95-100%", meaning: "I'm almost certain", example: "He must be tired (I'm sure)", usage: "Strong positive deduction" },
+      { modal: "might / may / could", certainty: "50%", meaning: "It's possible", example: "She might be at home (maybe)", usage: "Uncertainty or possibility" },
+      { modal: "can't", certainty: "0-5%", meaning: "I'm sure it's not true", example: "That can't be right (impossible)", usage: "Strong negative deduction" },
+      { form: "Present deduction", structure: "modal + base verb", examples: "must be, might have, can't know", context: "About current situations" },
+      { form: "Past deduction", structure: "modal + have + V3", examples: "must have been, might have gone, can't have seen", context: "About past situations" },
+      { contrast: "must vs should", must: "Logical certainty (He must be home)", should: "Expectation (He should be home)", key: "Certainty vs expectation" },
+      { negatives: "Form", must_negative: "can't / couldn't (not mustn't)", might_negative: "might not / may not", note: "mustn't = prohibition, not deduction" },
+      { questions: "Form", structure: "Can/Could + subject + be...?", example: "Could he be the new manager?", note: "We don't use must/might in questions for deduction" }
+    ]
+  },
+
   speakingPractice: [
     { question: "Why is the room so quiet?", answer: "They must have gone out." },
     { question: "Where is your brother?", answer: "He might be in the garden." },
@@ -6759,6 +6814,23 @@ She might be working from home today.
 They may not know about the meeting.
 We could be wrong about the time.`,
   tip: "Use could/may/might to express different levels of possibility",
+
+  table: {
+    title: "📋 Modals of Probability - Usage Guide",
+    data: [
+      { modal: "could", formality: "Neutral", probability: "Possible", example: "It could rain tonight", usage: "General possibility" },
+      { modal: "may", formality: "Formal/Polite", probability: "Possible", example: "She may arrive soon", usage: "Formal contexts, predictions" },
+      { modal: "might", formality: "Neutral", probability: "Less certain", example: "He might be late", usage: "Weaker possibility than may" },
+      { structure: "Positive", form: "Subject + modal + base verb", examples: "I could go / She may come / They might stay", context: "Expressing possibility" },
+      { structure: "Negative", form: "Subject + modal + not + base verb", examples: "could not / may not / might not", note: "Contractions: couldn't, mightn't (rare)" },
+      { time: "Present possibility", structure: "modal + base verb", example: "He might be at home now", meaning: "Possible current situation" },
+      { time: "Future possibility", structure: "modal + base verb", example: "It may rain tomorrow", meaning: "Possible future event" },
+      { time: "Past possibility", structure: "modal + have + V3", examples: "could have been / may have gone / might have forgotten", meaning: "Possible past situation" },
+      { comparison: "could vs can", could: "Possibility (It could work)", can: "Ability or general truth (It can work)", key: "Possibility vs capability" },
+      { note: "Interchangeability", detail: "could/may/might often interchangeable", example: "She could/may/might call later", nuance: "might = slightly less certain" }
+    ]
+  },
+
   speakingPractice: [
     { question: "Where is Ali?", answer: "He could be in the library." },
     { question: "Will it rain today?", answer: "It might, but the sky looks clear now." },
