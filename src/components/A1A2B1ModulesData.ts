@@ -1428,12 +1428,39 @@ We watch TV at night.
 They go to school by bus.`,
   tip: "Use the base form of verbs with I, you, we, they to express habits, general facts, and routines.",
   
-  table: [
-    { subject: "I", verb: "play", example: "I play tennis every weekend." },
-    { subject: "You", verb: "like", example: "You like music." },
-    { subject: "We", verb: "watch", example: "We watch movies on Fridays." },
-    { subject: "They", verb: "go", example: "They go to the park every morning." }
-  ],
+  table: {
+    title: "📋 Simple Present: Positive Sentences (I, You, We, They)",
+    data: [
+      { category: "What is Simple Present?", explanation: "Describes habits, routines, facts, and general truths", turkish: "Geniş zaman", function: "Regular actions, permanent situations, general facts", usage: "Most basic and common tense in English!" },
+
+      { category: "Structure", subjects: "I, You, We, They", form: "subject + BASE VERB", example: "I play / You work / We study / They live", pattern: "Base verb (NO -s ending!)", rule: "Never add -s with these subjects" },
+      { category: "Structure", key_point: "Use BASE FORM of verb", examples: "play (not plays), work (not works), go (not goes)", note: "Save the -s for he/she/it ONLY!", common_mistake: "I plays ✗ → I play ✓" },
+
+      { category: "When to Use - Habits", usage: "Regular actions you repeat", examples: "I drink coffee every morning. / You exercise daily. / We eat dinner at 7 PM.", turkish: "Alışkanlıklar", time_words: "always, usually, often, sometimes, every day" },
+      { category: "When to Use - Facts", usage: "Permanent facts and truths", examples: "I live in Istanbul. / You speak English. / We work in an office.", turkish: "Kalıcı durumlar", note: "Things that stay true for a long time" },
+      { category: "When to Use - General Truths", usage: "Universal facts", examples: "Birds fly. / Dogs bark. / The sun rises in the east.", turkish: "Evrensel gerçekler", note: "Scientific facts, natural laws" },
+
+      { category: "With I", subject: "I", pattern: "I + base verb", examples: "I work / I play / I study / I like / I want", example_sentence: "I study English every day.", turkish: "Ben... (her gün/genellikle)", frequency: "I always help my friends." },
+      { category: "With You", subject: "You", pattern: "You + base verb", examples: "You work / You play / You study / You like / You want", example_sentence: "You speak Turkish very well.", turkish: "Sen.../Siz...", note: "Same form for singular and plural 'you'" },
+      { category: "With We", subject: "We", pattern: "We + base verb", examples: "We work / We play / We study / We like / We want", example_sentence: "We live in a big city.", turkish: "Biz...", group_action: "We often go to the cinema together." },
+      { category: "With They", subject: "They", pattern: "They + base verb", examples: "They work / They play / They study / They like / They want", example_sentence: "They teach at a university.", turkish: "Onlar...", note: "For groups of people, animals, or things" },
+
+      { category: "Time Expressions", frequency_100: "always (her zaman)", frequency_90: "usually (genellikle)", frequency_70: "often (sık sık)", frequency_50: "sometimes (bazen)", frequency_10: "rarely/seldom (nadiren)", frequency_0: "never (asla)", pattern: "Usually come BEFORE main verb" },
+      { category: "Time Expressions", daily: "every day (her gün)", weekly: "every week (her hafta)", monthly: "every month (her ay)", yearly: "every year (her yıl)", example: "I exercise every day.", position: "Usually at END of sentence" },
+      { category: "Time Expressions", examples: "I always wake up at 7 AM. / You usually drink tea. / We often visit friends. / They sometimes play football.", note: "Frequency words come BEFORE the verb!", rule: "always/usually/often + base verb" },
+
+      { category: "Common Verbs", daily_actions: "eat, drink, sleep, wake up, work, study", leisure: "play, watch, listen, read, go", preferences: "like, love, want, need, prefer", communication: "speak, talk, write, call", examples: "I work from home. / You listen to music. / We prefer tea." },
+
+      { category: "Common Mistakes", mistake: "Adding -s to I/You/We/They", wrong: "I works ✗ / You plays ✗ / We likes ✗ / They goes ✗", correct: "I work ✓ / You play ✓ / We like ✓ / They go ✓", rule: "NO -S with these subjects!", turkish_note: "Bu öznelerle -s eklemeyin!" },
+      { category: "Common Mistakes", mistake: "Forgetting time expressions", weak: "I play tennis. (When?)", better: "I play tennis every weekend. ✓", best: "I usually play tennis on Saturdays. ✓", tip: "Add time words for clarity!" },
+
+      { category: "Real-World Examples", daily_routine: "I wake up at 6 AM. / You go to work by bus. / We have lunch at noon.", hobbies: "I play guitar. / You read books. / They watch football.", work_study: "I work in IT. / You study medicine. / We teach English. / They run a business." },
+
+      { category: "Pronunciation Tips", base_verb_sounds: "/pleɪ/, /wɜːk/, /lɪv/", note: "Base verb = simplest form", examples: "play (not plays), work (not works), live (not lives)", reminder: "Save pronunciation of -s for he/she/it only!" },
+
+      { category: "Key Takeaway", summary: "I/You/We/They + BASE VERB (no -s!)", when: "Habits, routines, facts, general truths", time_words: "always, usually, often, sometimes, never, every day/week/year", remember: "The -s ending is ONLY for he/she/it!", next_step: "Learn he/she/it form in next module!" }
+    ]
+  },
   
   speakingPractice: [
     { question: "What do you do on Sundays?", answer: "I play football on Sundays." },
@@ -1495,12 +1522,42 @@ He / She / It özneleriyle fiile -s veya -es eklenir.
 - It works very well.`,
   tip: "Add -s or -es to verbs when using He, She, or It to express habits, general facts, and routines.",
   
-  table: [
-    { subject: "He", verb: "plays", example: "He plays tennis every weekend." },
-    { subject: "She", verb: "likes", example: "She likes music." },
-    { subject: "It", verb: "works", example: "It works perfectly." },
-    { subject: "He", verb: "watches", example: "He watches TV at night." }
-  ],
+  table: {
+    title: "📋 Simple Present: Positive Sentences (He, She, It)",
+    data: [
+      { category: "What is Simple Present with He/She/It?", explanation: "Same as I/You/We/They, BUT you ADD -s or -es to the verb", turkish: "Geniş zaman (3. tekil şahıs)", function: "Habits, routines, facts with he/she/it", key_difference: "MUST add -s or -es to verb!" },
+
+      { category: "The Basic Rule", structure: "He/She/It + verb + s/es", examples: "He works / She plays / It rains", rule: "Add -s or -es to the BASE verb", turkish: "Fiile -s/-es eklenir", important: "This is ONLY for he/she/it!" },
+      { category: "The Basic Rule", when_s: "Most verbs: just add -s", when_es: "Verbs ending in s/ss/sh/ch/x/o: add -es", when_ies: "Verbs ending in consonant + y: y → ies", example_s: "work → works", example_es: "watch → watches", example_ies: "study → studies" },
+
+      { category: "Rule 1: Add -s", rule: "Most verbs: add -s", examples: "play → plays, work → works, eat → eats, live → lives, run → runs", sentence_examples: "He plays football. / She works hard. / It eats grass.", turkish: "Çoğu fiilde sadece -s", pronunciation: "/s/ or /z/ sound" },
+      { category: "Rule 2: Add -es", rule: "Verbs ending in s, ss, sh, ch, x, o → add -es", examples: "pass → passes, wash → washes, watch → watches, fix → fixes, go → goes", sentence_examples: "He passes the ball. / She washes dishes. / It goes fast.", turkish: "s/ss/sh/ch/x/o ile bitenlere -es", pronunciation: "/ɪz/ sound" },
+      { category: "Rule 3: consonant + y → ies", rule: "If verb ends in consonant + y: remove y, add ies", examples: "study → studies, try → tries, fly → flies, cry → cries, carry → carries", sentence_examples: "He studies medicine. / She tries hard. / It flies high.", turkish: "Ünsüz+y ile bitenlerde y → ies", note: "NOT for vowel + y (play → plays)" },
+      { category: "Rule 4: vowel + y → ys", rule: "If verb ends in vowel + y: just add -s", examples: "play → plays, say → says, buy → buys, enjoy → enjoys", sentence_examples: "He plays tennis. / She says hello. / It buys time.", difference: "Vowel (a,e,i,o,u) + y = just -s", compare: "study → studies BUT play → plays" },
+
+      { category: "Irregular Verbs", verb_have: "have → HAS", verb_do: "do → DOES", verb_go: "go → GOES", note: "Must memorize these!", examples: "He has a car. / She does homework. / It goes well.", turkish: "Düzensiz fiiller - ezberlemek gerekir!" },
+
+      { category: "With He", subject: "He", pattern: "He + verb+s/es", examples: "He works / plays / studies / watches / has", example_sentence: "He drinks coffee every morning.", turkish: "O (erkek)...", common_use: "He always arrives early." },
+      { category: "With She", subject: "She", pattern: "She + verb+s/es", examples: "She works / plays / studies / watches / has", example_sentence: "She teaches English at school.", turkish: "O (kadın)...", common_use: "She usually cooks dinner." },
+      { category: "With It", subject: "It", pattern: "It + verb+s/es", examples: "It works / plays / sounds / looks / has", example_sentence: "It rains a lot in winter.", turkish: "O (hayvan/şey)...", common_use: "The dog barks. = It barks." },
+
+      { category: "Time Expressions", same_as_other: "Same time words as I/You/We/They!", frequency: "always, usually, often, sometimes, never", time_periods: "every day/week/month/year", examples: "He always wakes up early. / She usually drinks tea. / It sometimes rains." },
+
+      { category: "Common Mistakes", mistake: "Forgetting -s/-es ending", wrong: "He play ✗ / She work ✗ / It rain ✗", correct: "He plays ✓ / She works ✓ / It rains ✓", rule: "ALWAYS add -s/-es for he/she/it!", most_common_error: "This is the #1 mistake learners make!" },
+      { category: "Common Mistakes", mistake: "Wrong ending (-es vs -s)", wrong: "He watchs ✗ / She gos ✗", correct: "He watches ✓ / She goes ✓", rule: "s/ss/sh/ch/x/o → add -es (not just -s)", tip: "Listen for the /ɪz/ sound!" },
+      { category: "Common Mistakes", mistake: "Wrong irregular form", wrong: "He haves ✗ / She dos ✗", correct: "He has ✓ / She does ✓", rule: "have → has, do → does (irregular!)", note: "NOT 'haves' or 'dos'!" },
+
+      { category: "Pronunciation of -s/-es", sound_s: "/s/ after p, t, k, f sounds: stops, eats, works", sound_z: "/z/ after vowels and voiced sounds: plays, runs, lives", sound_iz: "/ɪz/ after s/ss/sh/ch/x/z sounds: passes, washes, watches", tip: "Listen to native speakers!", practice: "He plays /pleɪz/ vs He watches /wɒtʃɪz/" },
+
+      { category: "Real-World Examples", daily_routine: "He wakes up at 7. / She goes to work by car. / It starts at 9 AM.", work_school: "He works in a bank. / She studies law. / It takes 2 hours.", habits: "He drinks coffee daily. / She exercises often. / It rains in winter." },
+
+      { category: "Contrast I vs He", i_form: "I play / work / study / watch / have", he_form: "He plays / works / studies / watches / has", rule: "I = base verb | He = verb+s/es", remember: "The ONLY difference is the -s/-es ending!", practice: "I go → He goes | I try → He tries" },
+
+      { category: "Common Verbs with He/She/It", daily: "wakes up, gets up, goes, comes, leaves, arrives, eats, drinks", work: "works, studies, teaches, writes, reads, uses, needs", leisure: "plays, watches, listens, likes, loves, enjoys, prefers", states: "has, wants, knows, thinks, believes, lives" },
+
+      { category: "Key Takeaway", summary: "He/She/It + verb+S/ES", rules: "Most verbs: +s | s/ss/sh/ch/x/o: +es | consonant+y: ies | vowel+y: ys", irregulars: "have → has, do → does, go → goes", remember: "ALWAYS add ending with he/she/it!", previous: "I/You/We/They use base verb (no -s)" }
+    ]
+  },
   
   speakingPractice: [
     { question: "What does he do on Sundays?", answer: "He plays football on Sundays." },
@@ -1562,10 +1619,43 @@ She doesn't play tennis.
 They don't watch TV at night.`,
   tip: "Use don't with I, you, we, they and doesn't with he, she, it to make negative sentences.",
   
-  table: [
-    { subject: "I / You / We / They", negativeForm: "don't + verb", example: "We don't eat meat." },
-    { subject: "He / She / It", negativeForm: "doesn't + verb", example: "She doesn't go to school on Sundays." }
-  ],
+  table: {
+    title: "📋 Simple Present: Negative Sentences (don't / doesn't)",
+    data: [
+      { category: "What is Simple Present Negative?", explanation: "To say you DON'T do something", turkish: "Olumsuz cümleler (-mam/-mem)", function: "Express actions you DON'T do habitually", structure: "subject + don't/doesn't + BASE VERB" },
+
+      { category: "Structure", with_i_you_we_they: "I/You/We/They + DON'T + base verb", with_he_she_it: "He/She/It + DOESN'T + base verb", key_rule: "Main verb is ALWAYS base form (no -s!)", examples: "I don't play / He doesn't play", turkish: "don't = do not, doesn't = does not" },
+      { category: "Structure", important: "The -s moves to DOESN'T!", explanation: "He plays → He doesn't play (NOT doesn't plays ✗)", rule: "Only the auxiliary (doesn't) gets -s, not the main verb!", remember: "One -s per sentence - either on verb OR on auxiliary!" },
+
+      { category: "With I/You/We/They", form: "don't + base verb", full_form: "do not", subjects: "I, you, we, they", examples: "I don't like / You don't work / We don't study / They don't play", example_sentence: "I don't drink coffee.", turkish: "-mam/-mem (Ben içmem)" },
+      { category: "With I/You/We/They", common_uses: "I don't understand. / You don't know. / We don't have time. / They don't live here.", note: "don't is MORE common than 'do not'", formality: "'do not' = formal, 'don't' = everyday speech" },
+
+      { category: "With He/She/It", form: "doesn't + base verb", full_form: "does not", subjects: "He, she, it", examples: "He doesn't like / She doesn't work / It doesn't study", example_sentence: "She doesn't eat meat.", turkish: "-maz/-mez (O yemez)" },
+      { category: "With He/She/It", common_uses: "He doesn't speak English. / She doesn't drive. / It doesn't work properly.", note: "doesn't is MORE common than 'does not'", formality: "'does not' = formal/emphatic, 'doesn't' = everyday" },
+
+      { category: "Full Forms vs Contractions", i_you_we_they: "do not = don't", he_she_it: "does not = doesn't", usage: "Contractions (don't/doesn't) used 90% of the time!", formal: "Use full forms in formal writing", spoken: "Use contractions in speech and informal writing" },
+
+      { category: "Pronunciation", dont: "don't /doʊnt/", doesnt: "doesn't /ˈdʌzənt/", tip: "Native speakers almost ALWAYS use contractions", common_reduction: "In fast speech: /doʊn/ (very casual)", practice: "I don't know /aɪ doʊnt noʊ/" },
+
+      { category: "Common Mistakes", mistake: "Keeping -s on main verb", wrong: "He doesn't plays ✗ / She doesn't goes ✗", correct: "He doesn't play ✓ / She doesn't go ✓", rule: "Main verb = ALWAYS base form!", explanation: "The -s is already on 'doesn't' - don't add it twice!" },
+      { category: "Common Mistakes", mistake: "Using wrong auxiliary", wrong: "He don't play ✗ / I doesn't like ✗", correct: "He doesn't play ✓ / I don't like ✓", rule: "I/You/We/They = don't | He/She/It = doesn't", tip: "Match the auxiliary to the subject!" },
+      { category: "Common Mistakes", mistake: "Using 'not' without do/does", wrong: "I not like ✗ / He not plays ✗", correct: "I don't like ✓ / He doesn't play ✓", rule: "Must use do/does before 'not'!", exception: "Only 'be' can use 'not' alone: I'm not, He isn't" },
+
+      { category: "Base Verb After don't/doesn't", rule: "ALWAYS use base form of verb", examples: "doesn't work (NOT works), don't go (NOT goes), doesn't have (NOT has)", even_irregular: "doesn't have (NOT doesn't has!)", remember: "Remove ALL endings from main verb!" },
+
+      { category: "With Time Expressions", same_as_positive: "Use same time words as positive sentences", examples: "I don't usually wake up early. / He doesn't always drink coffee. / We don't often go out.", frequency: "never, rarely, sometimes, often, usually, always", time: "every day/week, on Mondays, in the morning" },
+
+      { category: "Common Verbs in Negative", preferences: "don't like, don't want, don't need, don't love", abilities: "don't know, don't understand, don't speak, don't remember", actions: "don't go, don't eat, don't drink, don't play, don't work", ownership: "don't have, doesn't have", examples: "I don't like coffee. / He doesn't know English." },
+
+      { category: "Expressing Habits", negative_habits: "Things you DON'T do regularly", examples: "I don't smoke. / She doesn't drink alcohol. / We don't eat meat. / They don't watch TV.", turkish: "Alışkanlıklar (olmayan)", pattern: "subject + don't/doesn't + verb" },
+
+      { category: "Real-World Examples", daily_life: "I don't drink coffee. / She doesn't eat breakfast. / We don't use cars.", preferences: "He doesn't like spicy food. / They don't watch horror movies.", facts: "It doesn't rain much here. / She doesn't speak French. / We don't have a garden." },
+
+      { category: "Contrast: Positive vs Negative", positive: "I work / He works", negative: "I don't work / He doesn't work", positive_example: "She plays tennis.", negative_example: "She doesn't play tennis.", key: "Add don't/doesn't + change verb to base form" },
+
+      { category: "Key Takeaway", summary: "I/You/We/They + DON'T + base verb | He/She/It + DOESN'T + base verb", critical_rule: "Main verb is ALWAYS BASE FORM (no -s!)", remember: "doesn't plays ✗ → doesn't play ✓", contractions: "Use don't/doesn't (not 'do not'/'does not') in everyday speech", next: "Learn how to make questions in next modules!" }
+    ]
+  },
   
   speakingPractice: [
     { question: "Do you like coffee?", answer: "No, I don't like coffee." },
@@ -1632,14 +1722,42 @@ Does she like tea? → Yes, she does. / No, she doesn't.
 Do they work on Mondays? → Yes, they do. / No, they don't.`,
   tip: "Yes/No sorularda I/You/We/They için 'Do', He/She/It için 'Does' kullanın",
   
-  table: [
-    { structure: "Do + I/You/We/They + verb?", example: "Do you play football?" },
-    { structure: "Does + He/She/It + verb?", example: "Does she like coffee?" },
-    { structure: "Answer: Yes, I/you/we/they do.", example: "Yes, I do." },
-    { structure: "Answer: Yes, he/she/it does.", example: "Yes, she does." },
-    { structure: "Answer: No, I/you/we/they don't.", example: "No, they don't." },
-    { structure: "Answer: No, he/she/it doesn't.", example: "No, it doesn't." }
-  ],
+  table: {
+    title: "📋 Simple Present: Yes/No Questions (Do / Does)",
+    data: [
+      { category: "What are Yes/No Questions?", explanation: "Questions that can be answered with 'Yes' or 'No'", turkish: "Evet/Hayır soruları", function: "To ask if something is true or not", structure: "Do/Does + subject + base verb?" },
+
+      { category: "Structure", with_i_you_we_they: "Do + I/you/we/they + base verb?", with_he_she_it: "Does + he/she/it + base verb?", key_rule: "Put Do/Does at the BEGINNING!", examples: "Do you like? / Does she work?", turkish: "Do/Does cümle başına gelir" },
+      { category: "Structure", important: "Main verb is ALWAYS base form (no -s!)", explanation: "Does she play? (NOT Does she plays? ✗)", rule: "The -s is already on 'Does' - don't add to main verb!", remember: "Inversion: Do/Does moves to the front" },
+
+      { category: "Questions with I/You/We/They", form: "Do + subject + base verb?", examples: "Do I look tired? / Do you like pizza? / Do we need this? / Do they know?", turkish: "... mı/mi? (genel)", pattern: "Do + I/you/we/they + verb?", note: "Do NOT does!" },
+      { category: "Questions with He/She/It", form: "Does + subject + base verb?", examples: "Does he work here? / Does she like coffee? / Does it work?", turkish: "... mı/mi? (o için)", pattern: "Does + he/she/it + verb?", note: "Does NOT do!" },
+
+      { category: "Inversion", what_is_inversion: "Moving Do/Does to the FRONT", positive: "You like pizza. (statement)", question: "Do you like pizza? (question)", rule: "Flip the order: subject & do/does switch places!", turkish: "Soru yaparken sıra değişir", examples: "He plays → Does he play? / They work → Do they work?" },
+
+      { category: "Short Answers - Positive", with_do: "Yes, I/you/we/they do.", with_does: "Yes, he/she/it does.", examples: "Do you like coffee? → Yes, I do. / Does she work? → Yes, she does.", rule: "Use do/does in the answer!", never_say: "Never say just 'Yes' alone - add 'I do' / 'she does'" },
+      { category: "Short Answers - Negative", with_dont: "No, I/you/we/they don't.", with_doesnt: "No, he/she/it doesn't.", examples: "Do you smoke? → No, I don't. / Does he drive? → No, he doesn't.", rule: "Use don't/doesn't (contractions!)", note: "Can also say 'No, I do not' (formal)" },
+
+      { category: "Full vs Short Answers", full_answer: "Yes, I like coffee. (repeating the verb)", short_answer: "Yes, I do. (more common!)", rule: "Short answers are more natural in conversation!", when_full: "Use full answers when teaching or being very clear", when_short: "Use short answers 90% of the time!" },
+
+      { category: "Common Mistakes", mistake: "Keeping -s on main verb", wrong: "Does he plays? ✗ / Does she goes? ✗", correct: "Does he play? ✓ / Does she go? ✓", rule: "Main verb = ALWAYS base form!", explanation: "The -s is already on 'Does'!" },
+      { category: "Common Mistakes", mistake: "Using wrong auxiliary", wrong: "Does you like? ✗ / Do she work? ✗", correct: "Do you like? ✓ / Does she work? ✓", rule: "I/You/We/They = Do | He/She/It = Does", tip: "Match the auxiliary to the subject!" },
+      { category: "Common Mistakes", mistake: "Forgetting inversion", wrong: "You like pizza? ✗ (sounds very informal/surprised)", correct: "Do you like pizza? ✓", rule: "Must put Do/Does at the beginning!", note: "Without Do/Does, it's not a proper question!" },
+      { category: "Common Mistakes", mistake: "Wrong short answer", wrong: "Do you like coffee? → Yes, I like. ✗", correct: "Do you like coffee? → Yes, I do. ✓", rule: "Use 'do/does' in short answers (NOT the main verb!)", remember: "Yes, I do (NOT Yes, I like)" },
+
+      { category: "Intonation", rising_intonation: "Voice goes UP at the end ↗", example: "Do you like coffee? ↗", turkish: "Ses tonu yukarı çıkar", practice: "Does she work here? ↗", tip: "Rising tone shows it's a question!" },
+
+      { category: "Common Yes/No Questions", daily: "Do you work? / Do you like...? / Do you have...? / Do you want...?", about_others: "Does he know? / Does she live here? / Does it work?", we_they: "Do we need this? / Do they speak English?", preferences: "Do you prefer tea or coffee? (still yes/no structure)" },
+
+      { category: "Real-World Examples", asking_habits: "Do you drink coffee? / Does she exercise? / Do they eat meat?", asking_facts: "Do you live here? / Does he work in IT? / Do they speak Spanish?", asking_abilities: "Do you speak English? / Does she drive? / Do they know the answer?", asking_preferences: "Do you like this? / Does he want tea? / Do they need help?" },
+
+      { category: "With Time Expressions", examples: "Do you usually wake up early? / Does she always drink tea? / Do they often go out?", rule: "Time words come BETWEEN subject and verb", pattern: "Do you + always/usually/often + verb?", turkish: "Sıklık zarfları özne ile fiil arasında" },
+
+      { category: "Contrast: Statement vs Question", statement: "You like pizza.", question: "Do you like pizza?", statement_he: "He works here.", question_he: "Does he work here?", key_change: "Add Do/Does at beginning + use base verb", transformation: "Just flip the order!" },
+
+      { category: "Key Takeaway", summary: "Do/Does + subject + BASE VERB?", rules: "I/You/We/They = Do | He/She/It = Does", short_answers: "Yes, I do / No, I don't | Yes, she does / No, she doesn't", critical: "Main verb is ALWAYS base form (no -s!)", remember: "Does she play? ✓ (NOT Does she plays? ✗)", next: "Learn Wh- Questions (What, Where, When, etc.) in next module!" }
+    ]
+  },
   
   speakingPractice: [
     { question: "Do you play football?", answer: "Yes, I do." },
@@ -1707,12 +1825,50 @@ Who plays football?
 When do they study?`,
   tip: "Wh- sorularda I/You/We/They için 'do', He/She/It için 'does' kullanın",
   
-  table: [
-    { whWord: "What", questionForm: "What do/does + subject + verb?", example: "What do you do on Sundays?" },
-    { whWord: "Where", questionForm: "Where do/does + subject + verb?", example: "Where does she work?" },
-    { whWord: "Who", questionForm: "Who + verb (+s)?", example: "Who cooks dinner?" },
-    { whWord: "When", questionForm: "When do/does + subject + verb?", example: "When do they visit their grandparents?" }
-  ],
+  table: {
+    title: "📋 Simple Present: Wh- Questions (What, Where, When, Who, Why, How)",
+    data: [
+      { category: "What are Wh- Questions?", explanation: "Questions that ask for SPECIFIC information (not just yes/no)", turkish: "Soru kelimeleri ile sorular", function: "To get detailed answers", examples: "What do you like? Where does she live?", difference: "Cannot be answered with just 'yes' or 'no'!" },
+
+      { category: "The Wh- Words", what: "What (Ne?)", where: "Where (Nerede?)", when: "When (Ne zaman?)", who: "Who (Kim?)", why: "Why (Neden?)", how: "How (Nasıl?)", which: "Which (Hangi?)", whose: "Whose (Kimin?)", note: "These start your question!" },
+
+      { category: "Basic Structure", with_i_you_we_they: "Wh- + do + I/you/we/they + base verb?", with_he_she_it: "Wh- + does + he/she/it + base verb?", pattern: "Wh- word FIRST, then do/does, then subject, then base verb", examples: "What do you eat? / Where does she live?", rule: "Same as Yes/No questions, but add Wh- word at the start!" },
+      { category: "Basic Structure", important: "Main verb is ALWAYS base form (no -s!)", explanation: "Where does he work? (NOT works)", rule: "The -s is on 'does', not on the main verb!", remember: "Wh- + do/does + subject + BASE VERB" },
+
+      { category: "What - Asking about things/actions", form: "What + do/does + subject + verb?", meaning: "Ne? (şeyler, eylemler)", examples_do: "What do you eat? / What do they play?", examples_does: "What does she like? / What does he do?", common_uses: "What do you want? / What does it mean?", answers: "Full sentences: I eat pizza. / She likes music." },
+
+      { category: "Where - Asking about places", form: "Where + do/does + subject + verb?", meaning: "Nerede? (yerler)", examples_do: "Where do you live? / Where do they work?", examples_does: "Where does she study? / Where does it hurt?", common_uses: "Where do you go? / Where does he come from?", answers: "Full sentences: I live in Istanbul. / She works at a bank." },
+
+      { category: "When - Asking about time", form: "When + do/does + subject + verb?", meaning: "Ne zaman? (zaman)", examples_do: "When do you wake up? / When do they arrive?", examples_does: "When does she finish? / When does it start?", common_uses: "When do you study? / When does class begin?", answers: "Full sentences: I wake up at 7. / It starts at 9." },
+
+      { category: "Why - Asking about reasons", form: "Why + do/does + subject + verb?", meaning: "Neden? (sebepler)", examples_do: "Why do you like this? / Why do they study English?", examples_does: "Why does she go there? / Why does it cost so much?", common_uses: "Why do you think so? / Why does he work late?", answers: "Usually start with 'Because...': Because I like it. / Because it's important." },
+
+      { category: "How - Asking about manner/method", form: "How + do/does + subject + verb?", meaning: "Nasıl? (yöntem, tarz)", examples_do: "How do you go to work? / How do they know?", examples_does: "How does she cook this? / How does it work?", common_uses: "How do you feel? / How does he do it?", answers: "Full sentences: I go by bus. / It works automatically." },
+
+      { category: "Which - Asking about choice", form: "Which + do/does + subject + verb?", meaning: "Hangi? (seçenekler arasında)", examples_do: "Which do you prefer? / Which do they want?", examples_does: "Which does she like? / Which does it need?", usage: "Use when there are LIMITED options to choose from", answers: "Full sentences: I prefer the blue one. / She likes the first option." },
+
+      { category: "Whose - Asking about possession", form: "Whose + do/does + subject + verb?", meaning: "Kimin? (sahiplik)", examples_do: "Whose do you like? (less common)", examples_does: "Whose does she prefer?", more_common: "Usually: Whose book is this? (with noun)", note: "Whose + noun questions are more common than Whose alone" },
+
+      { category: "WHO - SPECIAL CASE!", explanation: "WHO as subject: NO do/does needed!", when_subject: "Who + verb(+s)? (NO do/does!)", examples: "Who plays tennis? / Who likes pizza? / Who works here?", pattern: "Who + verb+s (like he/she/it!)", why_special: "Who IS the subject, so no need for do/does!", contrast: "Who plays? ✓ (NOT Who does play? ✗)" },
+      { category: "WHO - As Object", explanation: "WHO as object: DO need do/does!", when_object: "Who + do/does + subject + verb?", examples: "Who do you like? / Who does she know? / Who do they call?", pattern: "Who + do/does + subject + base verb", difference: "Who do you call? (asking ABOUT someone, not asking who is doing the action)" },
+
+      { category: "Common Mistakes", mistake: "Keeping -s on main verb", wrong: "Where does he works? ✗ / What does she likes? ✗", correct: "Where does he work? ✓ / What does she like? ✓", rule: "Main verb = ALWAYS base form!", explanation: "The -s is already on 'does'!" },
+      { category: "Common Mistakes", mistake: "Using do/does with Who as subject", wrong: "Who does play tennis? ✗", correct: "Who plays tennis? ✓", rule: "When Who is the subject, NO do/does!", remember: "Who plays? (NOT Who does play?)" },
+      { category: "Common Mistakes", mistake: "Forgetting do/does", wrong: "Where you live? ✗ / What she likes? ✗", correct: "Where do you live? ✓ / What does she like? ✓", rule: "Must use do/does (except with Who as subject)", tip: "Wh- + do/does + subject + verb" },
+
+      { category: "Intonation", falling_intonation: "Voice goes DOWN at the end ↘", example: "Where do you live? ↘", turkish: "Ses tonu aşağı iner", difference_from_yesno: "Yes/No questions go UP ↗, Wh- questions go DOWN ↘", practice: "What does she do? ↘ (falling)" },
+
+      { category: "Answer Patterns", what_where_when: "Full sentence answers", examples: "What do you do? → I work in IT. / Where does she live? → She lives in London.", why_answers: "Use 'Because...'", why_example: "Why do you study English? → Because I need it for work.", how_answers: "Explain the method/manner", how_example: "How do you go to work? → I go by car." },
+
+      { category: "Real-World Examples", daily_questions: "What do you do? (job) / Where do you work? / When do you finish?", about_others: "What does he like? / Where does she live? / When does it close?", preferences: "Which do you prefer? / Why do you like this? / How do they travel?", common_combos: "What time do you wake up? / How often do you exercise?" },
+
+      { category: "Most Common Wh- Questions", everyday_1: "What do you do? (= What's your job?)", everyday_2: "Where do you live?", everyday_3: "What do you like?", everyday_4: "How do you spell that?", everyday_5: "When do you finish?", everyday_6: "Why do you ask?", everyday_7: "Who do you know here?" },
+
+      { category: "Contrast: Yes/No vs Wh-", yesno: "Do you like pizza? → Yes/No", wh: "What do you like? → I like pizza.", yesno_he: "Does he work? → Yes/No", wh_he: "Where does he work? → He works at a bank.", key: "Yes/No = limited answer | Wh- = detailed answer", intonation: "Yes/No ↗ (rising) | Wh- ↘ (falling)" },
+
+      { category: "Key Takeaway", summary: "Wh- word + do/does + subject + BASE VERB?", common_wh: "What, Where, When, Who, Why, How, Which, Whose", rules: "I/You/We/They = do | He/She/It = does", special_case: "Who as SUBJECT = NO do/does (Who plays?)", critical: "Main verb is ALWAYS base form (no -s!)", remember: "What does she like? ✓ (NOT likes ✗)", intonation: "Voice goes DOWN ↘ at the end" }
+    ]
+  },
   
   speakingPractice: [
     { question: "What do you eat for breakfast?", answer: "I eat eggs and bread for breakfast." },
