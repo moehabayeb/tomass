@@ -3770,13 +3770,28 @@ Use the past simple affirmative to describe actions that happened at a specific 
 • Regular verbs → verb + -ed (e.g. play → played)
 • Irregular verbs → second form (e.g. go → went, eat → ate)`,
   tip: "Use Past Simple for completed actions in the past. Regular verbs add -ed, irregular verbs have special forms.",
-  
-  table: [
-    { subject: "I", verb: "watched", rest: "a movie.", example: "I watched a movie." },
-    { subject: "She", verb: "went", rest: "to school.", example: "She went to school." },
-    { subject: "They", verb: "cooked", rest: "pasta.", example: "They cooked pasta." },
-    { subject: "We", verb: "cleaned", rest: "the room.", example: "We cleaned the room." }
-  ],
+
+  table: {
+    title: "📋 Past Simple Affirmative: Formation & Usage",
+    data: [
+      { structure: "Subject + V2 (past form)", function: "Completed past actions", example: "I visited my friend yesterday.", time_markers: "yesterday, last week, ago", note: "Action finished in the past" },
+      { verb_type: "Regular verbs", formation: "Base verb + -ed", examples: "play → played, watch → watched, clean → cleaned", rule: "Add -ed to base form", note: "Most verbs follow this pattern" },
+      { verb_type: "Irregular verbs", formation: "Special past forms (memorize)", examples: "go → went, eat → ate, see → saw, come → came", rule: "No pattern - must memorize", note: "Common verbs are often irregular", critical: "Check list of irregular verbs" },
+      { spelling_rule: "Verbs ending in -e", formation: "Add -d only", examples: "live → lived, dance → danced, arrive → arrived", explanation: "e + ed = ed (one 'd')", note: "Common spelling rule" },
+      { spelling_rule: "Verbs ending in consonant + y", formation: "Change y to i, add -ed", examples: "study → studied, cry → cried, try → tried", wrong: "studyed, cryed", note: "y → ied pattern" },
+      { spelling_rule: "One syllable: consonant + vowel + consonant", formation: "Double final consonant + -ed", examples: "stop → stopped, plan → planned, drop → dropped", explanation: "Protect vowel sound", note: "CVC pattern" },
+      { time_expressions: "Yesterday", usage: "I watched TV yesterday.", position: "Usually at end of sentence", note: "Specific past time", more_examples: "She called yesterday. / They arrived yesterday." },
+      { time_expressions: "Last + time", examples: "last night, last week, last year, last Monday", usage: "I traveled to Paris last summer.", note: "Recent past period", pattern: "last + [time period]" },
+      { time_expressions: "Ago", structure: "Number + time + ago", examples: "two days ago, a week ago, three hours ago", usage: "He left 10 minutes ago.", note: "Counts back from now", position: "At end of sentence" },
+      { time_expressions: "Specific times", examples: "in 2010, on Monday, at 5 pm, in May", usage: "I graduated in 2020.", note: "Exact date/time", pattern: "Use prepositions: in/on/at" },
+      { common_irregular: "Top irregular verbs", list: "be→was/were, have→had, do→did, say→said, make→made, get→got, see→saw, come→came, think→thought, take→took", note: "Most frequently used", importance: "Learn these first!", memorize: "Practice daily" },
+      { example_regular: "I visited my grandparents", analysis: "visit + ed = visited", subject: "I", time: "Completed past action", note: "Regular verb example" },
+      { example_irregular: "She went to the market", analysis: "go → went (irregular)", subject: "She", time: "Completed past action", note: "Irregular verb example" },
+      { negative_preview: "Making it negative", structure: "didn't + base verb", example: "I didn't watch TV. / She didn't go.", note: "Will learn in next module", pattern: "did not (didn't) + V1" },
+      { question_preview: "Making questions", structure: "Did + subject + base verb?", example: "Did you see the movie?", note: "Will learn in upcoming module", pattern: "Auxiliary 'did' + V1" },
+      { usage_note: "When to use Past Simple", situations: "1. Completed actions, 2. Past habits, 3. Historical events, 4. Series of past actions", examples: "I lived in London (completed). / Columbus discovered America (historical). / I woke up, ate breakfast, and left (series).", importance: "Most common past tense" }
+    ]
+  },
   
   speakingPractice: [
     { question: "What did you do last weekend?", answer: "I visited my grandparents." },
@@ -3835,17 +3850,37 @@ Yapı: Özne + V2 (fiilin 2. hali) + nesne/tümleç
 
 Past Simple affirmative is used to describe completed past actions. Irregular verbs do not follow a rule — each must be memorized in its V2 form.`,
   tip: "Irregular verbs have unique past forms that must be memorized: go→went, eat→ate, see→saw, etc.",
-  
-  table: [
-    { baseForm: "go", pastSimple: "went", turkish: "gitmek", example: "I went to the park." },
-    { baseForm: "eat", pastSimple: "ate", turkish: "yemek", example: "She ate an apple." },
-    { baseForm: "see", pastSimple: "saw", turkish: "görmek", example: "We saw a movie last night." },
-    { baseForm: "write", pastSimple: "wrote", turkish: "yazmak", example: "He wrote a letter." },
-    { baseForm: "take", pastSimple: "took", turkish: "almak", example: "They took the bus." },
-    { baseForm: "come", pastSimple: "came", turkish: "gelmek", example: "She came early." },
-    { baseForm: "drink", pastSimple: "drank", turkish: "içmek", example: "I drank coffee." },
-    { baseForm: "run", pastSimple: "ran", turkish: "koşmak", example: "He ran in the park." }
-  ],
+
+  table: {
+    title: "📋 Past Simple: Common Irregular Verbs",
+    data: [
+      { base: "be", past: "was/were", meaning: "olmak", example: "I was tired. / They were happy.", note: "Most common verb", rule: "was (I/he/she/it), were (we/you/they)" },
+      { base: "have", past: "had", meaning: "sahip olmak", example: "She had a car.", note: "Very common", pattern: "No 've' in past" },
+      { base: "do", past: "did", meaning: "yapmak", example: "I did my homework.", note: "Also used as auxiliary", usage: "Did you go?" },
+      { base: "go", past: "went", meaning: "gitmek", example: "We went to the park.", note: "Very common", pattern: "Completely different form" },
+      { base: "come", past: "came", meaning: "gelmek", example: "She came late.", note: "Common irregular", opposite: "go → went" },
+      { base: "see", past: "saw", meaning: "görmek", example: "I saw a movie yesterday.", note: "Sight verb", past_participle: "seen (different from past)" },
+      { base: "get", past: "got", meaning: "almak/elde etmek", example: "He got a new job.", note: "Very versatile verb", uses: "Many meanings" },
+      { base: "make", past: "made", meaning: "yapmak", example: "They made a cake.", note: "Create/produce", vs_do: "'make' creates something new" },
+      { base: "take", past: "took", meaning: "almak", example: "She took the bus.", note: "Common verb", usage: "take time, take a photo, take medicine" },
+      { base: "give", past: "gave", meaning: "vermek", example: "I gave her a gift.", note: "Transfer to someone", pattern: "give → gave → given" },
+      { base: "eat", past: "ate", meaning: "yemek", example: "We ate pizza.", note: "Food consumption", pronunciation: "ate /eɪt/" },
+      { base: "drink", past: "drank", meaning: "içmek", example: "He drank water.", note: "Beverage consumption", pattern: "drink → drank → drunk" },
+      { base: "write", past: "wrote", meaning: "yazmak", example: "She wrote a letter.", note: "Common verb", pattern: "write → wrote → written" },
+      { base: "read", past: "read", meaning: "okumak", example: "I read a book.", note: "Spelling same, pronunciation different", pronunciation: "read /red/ (past)" },
+      { base: "say", past: "said", meaning: "söylemek", example: "He said goodbye.", note: "Speaking verb", pronunciation: "said /sed/" },
+      { base: "tell", past: "told", meaning: "anlatmak", example: "She told me a story.", note: "Inform someone", vs_say: "'tell' needs object" },
+      { base: "know", past: "knew", meaning: "bilmek", example: "I knew the answer.", note: "Knowledge/awareness", silent: "'k' silent" },
+      { base: "think", past: "thought", meaning: "düşünmek", example: "We thought it was easy.", note: "Mental activity", pattern: "think → thought" },
+      { base: "buy", past: "bought", meaning: "satın almak", example: "They bought a house.", note: "Purchase", pattern: "buy → bought" },
+      { base: "find", past: "found", meaning: "bulmak", example: "I found my keys.", note: "Discover", opposite: "lose → lost" },
+      { base: "leave", past: "left", meaning: "ayrılmak/bırakmak", example: "He left at 5 pm.", note: "Depart", opposite: "arrive → arrived (regular)" },
+      { base: "meet", past: "met", meaning: "buluşmak/tanışmak", example: "I met my friend.", note: "Encounter", pattern: "meet → met" },
+      { base: "run", past: "ran", meaning: "koşmak", example: "She ran in the park.", note: "Fast movement", pattern: "run → ran → run" },
+      { base: "sit", past: "sat", meaning: "oturmak", example: "We sat on the bench.", note: "Position", opposite: "stand → stood" },
+      { base: "stand", past: "stood", meaning: "ayakta durmak", example: "They stood up.", note: "Upright position", pattern: "stand → stood" }
+    ]
+  },
   
   speakingPractice: [
     { question: "What did I write two days ago?", answer: "I wrote a book two days ago." },
@@ -3903,14 +3938,27 @@ Yapı: Özne + didn't + fiil (V1) + nesne/zarf
 In the past simple negative form, use "didn't" followed by the base verb (V1).
 Never use V2 in negative sentences.`,
   tip: "Use didn't + base verb (V1) for negative past simple sentences. Never use V2 with didn't.",
-  
-  table: [
-    { subject: "I", auxiliary: "didn't", verb: "eat", object: "dinner yesterday", example: "I didn't eat dinner yesterday." },
-    { subject: "You", auxiliary: "didn't", verb: "see", object: "the movie", example: "You didn't see the movie." },
-    { subject: "He", auxiliary: "didn't", verb: "write", object: "a letter", example: "He didn't write a letter." },
-    { subject: "She", auxiliary: "didn't", verb: "go", object: "to the park", example: "She didn't go to the park." },
-    { subject: "They", auxiliary: "didn't", verb: "take", object: "the test", example: "They didn't take the test." }
-  ],
+
+  table: {
+    title: "📋 Past Simple Negative: Formation & Rules",
+    data: [
+      { structure: "Subject + didn't + V1 (base verb)", function: "Negative past action", example: "I didn't go to school yesterday.", critical: "ALWAYS use V1 (base form), NEVER V2", note: "did + not = didn't" },
+      { full_form: "did not", short_form: "didn't", usage: "Both are correct", formal: "did not (more formal)", informal: "didn't (common in speech)", example: "I did not see him. / I didn't see him.", note: "Contracted form is more common" },
+      { common_mistake: "Using V2 instead of V1", wrong: "I didn't went to school.", correct: "I didn't go to school.", rule: "didn't + V1 (NOT V2!)", explanation: "'did' already shows past, so verb stays in base form", critical: "Very common error!" },
+      { all_subjects: "Same form for all subjects", pattern: "didn't + V1 for I/you/he/she/it/we/they", examples: "I didn't go. / She didn't go. / They didn't go.", note: "No changes needed", difference: "Unlike affirmative (went vs. went)" },
+      { regular_verb: "Regular verb example", affirmative: "I played football.", negative: "I didn't play football.", change: "played → didn't play", note: "Remove -ed, use base form" },
+      { irregular_verb: "Irregular verb example", affirmative: "She went home.", negative: "She didn't go home.", change: "went → didn't go", note: "Use base form, not past form", critical: "went → go (NOT went)" },
+      { be_verb: "Special case: verb 'be'", structure: "was/were + not (no 'did')", examples: "I wasn't tired. / They weren't ready.", note: "Different from other verbs!", rule: "'be' doesn't use 'did'" },
+      { example_1: "I didn't watch TV last night", analysis: "Subject (I) + didn't + watch (V1) + object", verb: "watch (base form)", time: "last night", note: "Standard negative structure" },
+      { example_2: "He didn't eat breakfast", analysis: "Subject (He) + didn't + eat (V1) + object", verb: "eat (V1), NOT ate (V2)", note: "Base form after didn't" },
+      { example_3: "They didn't come to the party", analysis: "Subject (They) + didn't + come (V1)", verb: "come (V1), NOT came (V2)", note: "Irregular verb in base form" },
+      { time_expressions: "Used with same time markers", examples: "yesterday, last week, ago", usage: "I didn't go yesterday. / She didn't call last week. / They didn't arrive two hours ago.", note: "Same as affirmative" },
+      { emphasis: "Emphasizing the negative", use_full_form: "I did NOT go there!", emphasis_word: "Stress 'not' when speaking", example: "She did NOT say that.", note: "For strong denial" },
+      { short_answers: "Answering yes/no questions", question: "Did you go?", negative_answer: "No, I didn't.", note: "Just 'didn't' is enough", avoid: "Don't say: No, I didn't go" },
+      { comparison: "Affirmative vs Negative", affirmative: "I went to the park. (V2: went)", negative: "I didn't go to the park. (V1: go)", key: "Affirmative uses V2, Negative uses V1", remember: "didn't + V1 ALWAYS" },
+      { never_pattern: "never + V2 (alternative negative)", structure: "Subject + never + V2", example: "I never went there. / She never said that.", note: "Stronger than didn't", meaning: "Not even once" }
+    ]
+  },
   
   speakingPractice: [
     { question: "What didn't they say this morning?", answer: "They didn't say anything this morning." },
@@ -3976,11 +4024,29 @@ Yapı: Wh- kelimesi + did + özne + fiil (V1)?
 • Wh- Questions: Wh- + did + subject + V1?
 → What did they eat? They ate lunch.`,
   tip: "Form questions with Did + subject + base verb for Yes/No questions, or Wh-word + did + subject + base verb for information questions.",
-  
-  table: [
-    { questionType: "Yes/No", structure: "Did + subject + V1 + ...?", example: "Did she write a letter?", answer: "Yes, she did. She wrote a letter." },
-    { questionType: "Wh-", structure: "Wh- + did + subject + V1 + ...?", example: "What did they eat?", answer: "They ate lunch." }
-  ],
+
+  table: {
+    title: "📋 Past Simple Questions: Yes/No & Wh- Questions",
+    data: [
+      { type: "Yes/No Question", structure: "Did + subject + V1 + ...?", answer_forms: "Yes, [subject] did. / No, [subject] didn't.", example_q: "Did you go to school?", example_a: "Yes, I did. / No, I didn't.", note: "Answered with did/didn't", function: "Asking for confirmation" },
+      { yes_no_example: "Did she call you?", answers: "Yes, she did. (affirmative) / No, she didn't. (negative)", structure: "Did + she + call (V1) + you?", verb: "call (base form)", note: "Simple yes/no response" },
+      { yes_no_rule: "Use V1 after 'did'", wrong: "Did you went?", correct: "Did you go?", explanation: "'did' shows past, so verb = V1", critical: "Common mistake!", remember: "did + V1 always" },
+      { short_answers: "Short answer patterns", positive: "Yes, I/you/he/she/it/we/they did.", negative: "No, I/you/he/she/it/we/they didn't.", note: "Don't repeat the main verb", avoid: "Yes, I did go. (too long)" },
+      { type: "Wh- Question", structure: "Wh-word + did + subject + V1 + ...?", wh_words: "What, Where, When, Who, Why, How", example_q: "What did you eat?", example_a: "I ate pizza.", note: "Asking for information", function: "Specific details" },
+      { what_question: "What did...", structure: "What + did + subject + V1?", example: "What did she buy?", answer: "She bought a dress.", use: "Asking about things/actions", note: "Most common wh- word" },
+      { where_question: "Where did...", structure: "Where + did + subject + V1?", example: "Where did they go?", answer: "They went to the park.", use: "Asking about place", note: "Location questions" },
+      { when_question: "When did...", structure: "When + did + subject + V1?", example: "When did you arrive?", answer: "I arrived at 5 pm.", use: "Asking about time", note: "Time questions" },
+      { who_question: "Who did...", structure: "Who + did + subject + V1?", example: "Who did you meet?", answer: "I met my teacher.", use: "Asking about people (object)", note: "Who as object", alternative: "Who came? (who as subject - no 'did')" },
+      { why_question: "Why did...", structure: "Why + did + subject + V1?", example: "Why did he leave?", answer: "He left because he was tired.", use: "Asking about reason", note: "Usually answered with 'because'", typical_answer: "because + clause" },
+      { how_question: "How did...", structure: "How + did + subject + V1?", example: "How did you learn English?", answer: "I learned at school.", use: "Asking about method/manner", note: "Process/way questions" },
+      { how_many: "How many/much did...", structure: "How many/much + did + subject + V1?", example: "How many people did you invite?", answer: "I invited 20 people.", use: "Asking about quantity", note: "Countable/uncountable" },
+      { what_time: "What time did...", structure: "What time + did + subject + V1?", example: "What time did the movie start?", answer: "It started at 7 pm.", use: "Asking specific time", note: "Precise time questions" },
+      { special_who: "Who as subject (no 'did')", structure: "Who + V2 (past)?", example: "Who called you?", answer: "John called me.", critical: "NO 'did' when Who = subject!", comparison: "Who did you call? (object) vs. Who called? (subject)", note: "Exception to 'did' rule" },
+      { be_verb_questions: "Questions with 'be'", structure: "Was/Were + subject + ...?", example: "Was she happy?", answer: "Yes, she was. / No, she wasn't.", note: "No 'did' with 'be'!", critical: "Different from other verbs" },
+      { intonation: "Question intonation", yes_no: "Rising intonation ↗", wh: "Falling intonation ↘", example: "Did you go? ↗ / Where did you go? ↘", note: "Important for pronunciation" },
+      { common_mistakes: "Common question errors", mistake_1: "Did you went? ❌", correct_1: "Did you go? ✓", mistake_2: "What you did eat? ❌", correct_2: "What did you eat? ✓", rule: "did + V1, correct word order" }
+    ]
+  },
   
   speakingPractice: [
     { question: "Did he see a friend a minute ago?", answer: "Yes, he did. He saw a friend a minute ago." },
@@ -4040,12 +4106,27 @@ Affirmative: I used to play football when I was a child.
 Negative: I didn't use to like vegetables.
 Question: Did you use to watch cartoons?`,
   tip: "Use 'used to' for past habits that don't happen anymore. In questions and negatives, use 'use to' (without 'd').",
-  
-  table: [
-    { sentenceType: "Affirmative", structure: "Subject + used to + V1", example: "I used to smoke." },
-    { sentenceType: "Negative", structure: "Subject + didn't use to + V1", example: "I didn't use to smoke." },
-    { sentenceType: "Question", structure: "Did + subject + use to + V1?", example: "Did you use to smoke?" }
-  ],
+
+  table: {
+    title: "📋 Used To: Past Habits & States",
+    data: [
+      { function: "Past habits (no longer true)", meaning: "Actions repeated in past, now stopped", example: "I used to play football every weekend.", now: "I don't play football anymore.", note: "Habit that ended", emphasis: "Was a habit, not anymore" },
+      { function: "Past states (no longer true)", meaning: "Situations that existed in past", example: "I used to live in Paris.", now: "I don't live in Paris now.", note: "Past situation that changed", types: "location, job, appearance, etc." },
+      { structure_affirmative: "Subject + used to + V1", formation: "used to + base verb", examples: "She used to smoke. / We used to travel a lot. / They used to have a dog.", note: "Always 'used to' (with 'd')", critical: "used to + V1 (base form)" },
+      { structure_negative: "Subject + didn't use to + V1", formation: "didn't use to + base verb", examples: "I didn't use to like coffee. / She didn't use to wear glasses. / They didn't use to study hard.", critical: "use to (NO 'd' after didn't!)", note: "didn't use to (not didn't used to)" },
+      { structure_question: "Did + subject + use to + V1?", formation: "Did + use to + base verb", examples: "Did you use to play tennis? / Did she use to work here? / Did they use to live nearby?", critical: "use to (NO 'd' in questions!)", note: "Did...use to (not Did...used to)" },
+      { common_mistake: "'used to' vs 'use to'", wrong: "I didn't used to like it. / Did you used to go?", correct: "I didn't use to like it. / Did you use to go?", rule: "Affirmative = used to, Negative/Question = use to (no 'd')", explanation: "'did' already shows past, so no 'd' needed", critical: "Very common error!" },
+      { short_answers: "Answering yes/no questions", question: "Did you use to smoke?", yes: "Yes, I used to. / Yes, I did.", no: "No, I didn't use to. / No, I didn't.", note: "Both forms acceptable" },
+      { vs_past_simple: "Used to vs Past Simple", used_to: "I used to play football. (repeated habit)", past_simple: "I played football yesterday. (one action)", difference: "'used to' = repeated habit, Past Simple = specific past action", when_used: "Use 'used to' for habits, not single events" },
+      { vs_would: "'used to' vs 'would'", used_to: "I used to go swimming. (can use for habits)", would: "I would go swimming. (only for actions, not states)", states: "I used to be shy. ✓ / I would be shy. ✗", note: "'used to' works for habits AND states", rule: "'would' only for repeated actions, not states" },
+      { time_markers: "When to use 'used to'", signals: "when I was young, in the past, years ago, before", example: "I used to read comic books when I was a child.", contrast: "...but now I don't.", note: "Shows change from past to present" },
+      { example_habit: "Past habit example", statement: "I used to play video games every day.", analysis: "Regular action in the past, not now", implication: "I don't play video games every day anymore.", type: "Repeated action", note: "Was a routine" },
+      { example_state: "Past state example", statement: "She used to be very shy.", analysis: "Character trait in the past, changed now", implication: "She isn't shy anymore.", type: "Personal state", note: "Personality/situation changed" },
+      { be_used_to: "Different: 'be used to' (accustomed)", meaning: "Be accustomed to / familiar with", structure: "be + used to + noun/-ing", example: "I'm used to waking up early. (= I'm accustomed to it)", note: "DIFFERENT meaning from 'used to'!", confusion: "Don't confuse with past habit 'used to'" },
+      { get_used_to: "Different: 'get used to' (become accustomed)", meaning: "Become familiar/comfortable with", structure: "get + used to + noun/-ing", example: "I'm getting used to the cold weather.", note: "Process of becoming accustomed", vs: "'used to' = past habit (different!)" },
+      { never_used_to: "Emphasizing negation", structure: "Subject + never used to + V1", example: "I never used to eat vegetables.", meaning: "Stronger than 'didn't use to'", note: "Not even once", emphasis: "Strong negative" }
+    ]
+  },
   
   speakingPractice: [
     { question: "Did you use to play with toys when you were a child?", answer: "Yes, I used to play with toys all the time." },
