@@ -7827,7 +7827,24 @@ Examples:
 - She wishes she had taken that job offer.`,
   tip: "Use 'wish/if only + had + past participle' to express regrets about past actions",
 
-  table: [],
+  table: {
+    title: "📋 Wish / If only + Past Perfect (Past Regrets)",
+    data: [
+      { structure: "wish (affirmative)", form: "Subject + wish + subject + had + V3", example: "I wish I had studied harder.", meaning: "I didn't study → I regret it", usage: "Regret about not doing" },
+      { structure: "wish (negative)", form: "Subject + wish + subject + hadn't + V3", example: "I wish I hadn't said that.", meaning: "I said it → I regret it", usage: "Regret about doing" },
+      { structure: "if only (affirmative)", form: "If only + subject + had + V3", example: "If only I had listened!", meaning: "I didn't listen → strong regret", usage: "Dramatic/emotional regret" },
+      { structure: "if only (negative)", form: "If only + subject + hadn't + V3", example: "If only I hadn't left early!", meaning: "I left → strong regret", usage: "Dramatic past regret" },
+      { difference: "wish vs if only", wish_tone: "Polite regret", if_only_tone: "Strong/dramatic regret", example: "I wish I had gone (mild) / If only I had gone! (strong)", key: "Same meaning, different intensity" },
+      { time_reference: "Past Perfect", time: "Past event (already happened)", contrast: "vs wish + past simple (present)", example: "I wish I had money (past) ≠ I wish I had a car (present)", key: "Past perfect = past regret" },
+      { common_regrets: "Didn't do something", structure: "wish + had + V3", examples: "I wish I had studied / I wish I had gone / I wish I had saved money", meaning: "Regret about inaction" },
+      { common_regrets: "Did something wrong", structure: "wish + hadn't + V3", examples: "I wish I hadn't lied / I wish I hadn't quit / I wish I hadn't eaten so much", meaning: "Regret about action" },
+      { with_could: "Ability in past", structure: "wish + could have + V3", example: "I wish I could have helped you.", meaning: "I wasn't able to help (regret)", note: "Emphasis on inability" },
+      { reality_check: "Important", fact: "Past cannot be changed", wish: "Express regret only", example: "I wish I had studied (but I didn't, can't change now)", key: "Impossible to fix" },
+      { common_mistakes: "Don't say", wrong: "I wish I studied / I wish I go / I wish I had went", correct: "I wish I had studied / I wish I had gone / I wish I had gone", rule: "Must use past perfect (had + V3)" },
+      { comparison: "2nd vs 3rd conditional connection", second_cond: "If I had money, I would buy it (present)", wish_present: "I wish I had money (present)", third_cond: "If I had saved, I would have bought it (past)", wish_past: "I wish I had saved (past)" },
+      { emotion: "Expressing regret", mild: "I wish I had...", strong: "If only I had...!", very_strong: "I really wish I had...", with_now: "I wish I had studied. Now I failed.", context: "Add consequences for emphasis" }
+    ]
+  },
 
   speakingPractice: [
     { question: "You didn't study for the exam. What do you say?", answer: "I wish I had studied for the exam." },
@@ -7892,7 +7909,26 @@ Examples:
 - I'm getting used to my new job. (becoming accustomed)`,
   tip: "Remember: 'used to' is about the past, 'be used to' is about current state, 'get used to' is about transition",
 
-  table: [],
+  table: {
+    title: "📋 Used to / Be used to / Get used to",
+    data: [
+      { structure: "used to", form: "used to + base verb", meaning: "Past habit/state (no longer true)", example: "I used to smoke.", time: "Past only", note: "NOT about present" },
+      { structure: "be used to", form: "be + used to + noun/V-ing", meaning: "Be accustomed/familiar (now)", example: "I'm used to cold weather.", time: "Present state", note: "Already comfortable" },
+      { structure: "get used to", form: "get + used to + noun/V-ing", meaning: "Become accustomed (process)", example: "I'm getting used to the noise.", time: "Transition/change", note: "Adapting now" },
+      { used_to_details: "Structure", positive: "used to + verb", negative: "didn't use to + verb", question: "Did you use to...?", example: "I used to play / I didn't use to play / Did you use to play?" },
+      { used_to_details: "Meaning", about: "Past habits or states", no_longer: "Not true now", examples: "I used to live in Paris / She used to have long hair / We used to meet every week", key: "Changed situation" },
+      { be_used_to_details: "Structure", present: "am/is/are used to + noun/V-ing", past: "was/were used to + noun/V-ing", future: "will be used to + noun/V-ing", example: "I am used to / I was used to / I will be used to" },
+      { be_used_to_details: "Meaning", about: "Accustomed/familiar", comfortable: "Not strange anymore", examples: "I'm used to hot weather / He's used to working nights / They're used to the noise", key: "Current comfort level" },
+      { get_used_to_details: "Structure", present: "am/is/are getting used to + noun/V-ing", past: "got used to + noun/V-ing", future: "will get used to + noun/V-ing", example: "I'm getting used to / I got used to / I'll get used to" },
+      { get_used_to_details: "Meaning", about: "Process of adapting", gradual: "Takes time", examples: "I'm getting used to my new job / She got used to living alone / You'll get used to it", key: "Ongoing adjustment" },
+      { comparison: "Time focus", used_to: "Past (was true, not anymore)", be_used_to: "Present/now (already comfortable)", get_used_to: "Transition (becoming comfortable)", example: "I used to smoke / I'm used to noise / I'm getting used to early mornings" },
+      { comparison: "After 'to'", used_to: "Base verb (infinitive)", be_get_used_to: "Noun or V-ing (gerund)", examples: "used to work (✓) / used to working (✗) vs be used to working (✓) / be used to work (✗)", key: "Different grammar!" },
+      { common_mistakes: "Don't confuse", wrong: "I'm used to wake up early / I used to working nights", correct: "I'm used to waking up early / I used to work nights", rule: "'used to' + base verb, 'be/get used to' + V-ing/noun" },
+      { negatives: "used to", form: "didn't use to + base verb", example: "I didn't use to like coffee.", note: "NOT 'didn't used to'" },
+      { negatives: "be used to", form: "am/is/are not used to + V-ing/noun", example: "I'm not used to waking up early.", meaning: "Not accustomed" },
+      { negatives: "get used to", form: "don't/doesn't get used to + V-ing/noun", example: "He can't get used to the cold.", meaning: "Can't adapt" }
+    ]
+  },
 
   speakingPractice: [
     { question: "You played the guitar when you were younger. What do you say?", answer: "I used to play the guitar." },
@@ -7956,7 +7992,26 @@ Examples:
 - We need to have the house painted. (We'll pay someone to paint it)`,
   tip: "Use 'have/get + object + past participle' when describing services done by others",
 
-  table: [],
+  table: {
+    title: "📋 Causative: Have/Get Something Done",
+    data: [
+      { structure: "have", form: "have + object + past participle (V3)", meaning: "Someone does service for you", example: "I had my car repaired.", context: "Neutral, planned service" },
+      { structure: "get", form: "get + object + past participle (V3)", meaning: "Someone does service for you", example: "I got my car repaired.", context: "Informal, more active" },
+      { difference: "have vs get", have_tone: "More formal, passive", get_tone: "More informal, active effort", example: "I had my hair cut (routine) / I got my hair cut (made it happen)", key: "Slight nuance difference" },
+      { tense: "Present Simple", have_form: "have/has + object + V3", get_form: "get/gets + object + V3", example: "I have my car serviced monthly / She gets her nails done weekly", usage: "Regular services" },
+      { tense: "Past Simple", have_form: "had + object + V3", get_form: "got + object + V3", example: "I had my roof fixed yesterday / She got her car washed last week", usage: "Completed service" },
+      { tense: "Present Continuous", have_form: "am/is/are having + object + V3", get_form: "am/is/are getting + object + V3", example: "I'm having my house painted / He's getting his teeth cleaned", usage: "Service happening now" },
+      { tense: "Future", have_form: "will have + object + V3", get_form: "will get + object + V3", example: "I'll have it checked tomorrow / We'll get the door fixed next week", usage: "Planned service" },
+      { tense: "Present Perfect", have_form: "have/has had + object + V3", get_form: "have/has got + object + V3", example: "I've had my hair cut / She's got her car repaired", usage: "Recently completed" },
+      { meaning_key: "Important", you_dont_do_it: "Someone else does the action", you_arrange: "You pay/arrange the service", examples: "I had my car repaired (mechanic did it) ≠ I repaired my car (I did it)", contrast: "Causative vs Direct action" },
+      { common_services: "Typical examples", personal: "hair cut, nails done, teeth cleaned, photo taken", home: "house painted, roof fixed, windows cleaned, garden maintained", tech: "car repaired, laptop fixed, phone screen replaced", note: "Services you pay for" },
+      { questions: "have", form: "Do you have + object + V3?", example: "Do you have your car serviced regularly?", answer: "Yes, I have it serviced every 6 months." },
+      { questions: "get", form: "Did you get + object + V3?", example: "Did you get your hair cut?", answer: "Yes, I got it cut yesterday." },
+      { negatives: "have", form: "don't/doesn't/didn't have + object + V3", example: "I didn't have my car washed.", meaning: "Service didn't happen" },
+      { negatives: "get", form: "don't/doesn't/didn't get + object + V3", example: "She didn't get her dress altered.", meaning: "Service didn't happen" },
+      { modals: "With modals", structure: "modal + have/get + object + V3", examples: "I should have my eyes tested / You need to get your passport renewed / I must have this checked", usage: "Obligation/necessity" }
+    ]
+  },
 
   speakingPractice: [
     { question: "You paid someone to fix your roof. What do you say?", answer: "I had my roof fixed." },
@@ -8020,7 +8075,26 @@ Examples:
 - Paris, which is the capital of France, is beautiful. (non-defining)`,
   tip: "Use commas for non-defining clauses that add extra (non-essential) information",
 
-  table: [],
+  table: {
+    title: "📋 Relative Clauses: Defining vs Non-defining",
+    data: [
+      { type: "Defining", meaning: "Essential information", commas: "NO commas", example: "The book that I bought is great.", function: "Identifies which one", note: "Remove it → sentence unclear" },
+      { type: "Non-defining", meaning: "Extra information", commas: "WITH commas", example: "My car, which is red, is very fast.", function: "Adds bonus info", note: "Remove it → sentence still clear" },
+      { pronoun: "who", use: "People (subject/object)", defining_ex: "The woman who lives next door is a doctor.", non_defining_ex: "My sister, who lives in Paris, is visiting.", note: "Most common for people" },
+      { pronoun: "which", use: "Things/animals", defining_ex: "The car which I bought is blue.", non_defining_ex: "My house, which was built in 1990, needs repairs.", note: "For non-human subjects" },
+      { pronoun: "that", use: "People/things (defining ONLY)", defining_ex: "The book that I read was amazing.", non_defining_ex: "NOT USED (use who/which instead)", note: "Cannot use in non-defining!" },
+      { pronoun: "whose", use: "Possession", defining_ex: "The man whose car broke down is here.", non_defining_ex: "John, whose father is a pilot, wants to fly.", note: "Shows ownership" },
+      { pronoun: "where", use: "Places", defining_ex: "This is the house where I was born.", non_defining_ex: "Paris, where I lived for years, is beautiful.", note: "Location reference" },
+      { pronoun: "when", use: "Time", defining_ex: "I remember the day when we met.", non_defining_ex: "1999, when I graduated, was a great year.", note: "Time reference" },
+      { key_difference: "Essential vs Extra", defining: "Can't remove → meaning lost", non_defining: "Can remove → meaning stays", example: "The students who studied passed (which students?) vs My students, who studied, passed (all of them)", test: "Try removing clause" },
+      { commas_rule: "Defining", rule: "NO commas EVER", wrong: "The man, who called, is here.", correct: "The man who called is here.", key: "No pause" },
+      { commas_rule: "Non-defining", rule: "MUST have commas", wrong: "My brother who lives abroad is visiting.", correct: "My brother, who lives abroad, is visiting.", key: "Pause on both sides" },
+      { omitting_pronoun: "Defining clauses", can_omit: "Object pronouns (who, which, that)", example: "The book (which/that) I read = The book I read", cannot_omit: "Subject pronouns", note: "Only when pronoun is object" },
+      { omitting_pronoun: "Non-defining clauses", can_omit: "NEVER", example: "My car, which is red... (must keep 'which')", rule: "Always need the pronoun", key: "No omission allowed" },
+      { that_vs_which: "In defining clauses", that_usage: "More common in speech", which_usage: "More formal", example: "The book that I read = The book which I read", preference: "Both correct, 'that' more casual" },
+      { that_vs_which: "In non-defining", that_usage: "WRONG ✗", which_usage: "CORRECT ✓", example: "My book, which is red... (NOT 'that')", rule: "Only 'which' in non-defining", key: "Important rule!" }
+    ]
+  },
 
   speakingPractice: [
     { question: "Who is the man? He is talking to your sister.", answer: "The man who is talking to your sister is my uncle." },
@@ -8082,7 +8156,26 @@ Examples:
 - It's important to exercise. (infinitive after adjective)`,
   tip: "Some verbs change meaning: stop doing (quit) vs stop to do (pause for purpose)",
 
-  table: [],
+  table: {
+    title: "📋 Gerunds and Infinitives Review",
+    data: [
+      { category: "Verbs + Gerund only", verbs: "enjoy, finish, mind, avoid, suggest, keep, practice", structure: "verb + V-ing", examples: "I enjoy swimming / She finished working / He avoids talking", rule: "Must use gerund" },
+      { category: "Verbs + Infinitive only", verbs: "want, hope, decide, plan, promise, agree, refuse, manage", structure: "verb + to + base verb", examples: "I want to go / She decided to stay / They promised to help", rule: "Must use infinitive" },
+      { category: "Verbs + Both (same meaning)", verbs: "like, love, hate, prefer, begin, start, continue", structure: "verb + V-ing OR to + verb", examples: "I like reading = I like to read / She loves dancing = She loves to dance", note: "Meaning doesn't change" },
+      { category: "Verbs + Both (different meaning)", verb: "stop", gerund: "stop doing = quit doing it", infinitive: "stop to do = pause to do something", examples: "He stopped smoking (quit) vs He stopped to smoke (had a break)", key: "Completely different!" },
+      { category: "Verbs + Both (different meaning)", verb: "remember", gerund: "remember doing = recall past action", infinitive: "remember to do = not forget", examples: "I remember locking the door (I recall) vs I remembered to lock it (I didn't forget)", key: "Past vs Future focus" },
+      { category: "Verbs + Both (different meaning)", verb: "forget", gerund: "forget doing = don't recall past", infinitive: "forget to do = didn't do it", examples: "I forgot meeting him (don't recall) vs I forgot to meet him (didn't go)", key: "Memory vs Action" },
+      { category: "Verbs + Both (different meaning)", verb: "try", gerund: "try doing = experiment", infinitive: "try to do = attempt/make effort", examples: "Try eating less (as experiment) vs Try to eat less (make effort)", key: "Experiment vs Effort" },
+      { after_prepositions: "Always gerund", rule: "preposition + V-ing", examples: "interested in learning, good at swimming, tired of waiting, before leaving", prepositions: "in, at, of, about, for, by, after, before", key: "Never infinitive after preposition!" },
+      { after_adjectives: "Usually infinitive", rule: "adjective + to + verb", examples: "It's difficult to learn / It's important to study / He's happy to help", common_adj: "easy, difficult, important, hard, nice, good, happy, sad, excited", note: "Describes the infinitive action" },
+      { as_subject: "Gerund as subject", structure: "V-ing + verb", examples: "Swimming is fun / Smoking is bad / Learning English takes time", usage: "Activity as noun", note: "Can use infinitive but gerund more common" },
+      { go_activities: "go + V-ing", activities: "swimming, shopping, fishing, skiing, running", structure: "go + gerund", examples: "Let's go swimming / I went shopping / They go running every day", note: "Common with activities" },
+      { expressions: "Common patterns", gerund_after: "can't help, it's no use, it's worth, look forward to, be used to", examples: "I can't help laughing / It's worth trying / I look forward to seeing you", rule: "Fixed expressions + gerund" },
+      { expressions: "Common patterns", infinitive_after: "would like, would love, would prefer, need, have to", examples: "I'd like to go / You need to study / We have to leave", rule: "Fixed expressions + infinitive" },
+      { common_mistakes: "Don't say", wrong: "I enjoy to swim / I want swimming / interested to learn", correct: "I enjoy swimming / I want to swim / interested in learning", rule: "Follow verb/preposition patterns" },
+      { tip: "Learning strategy", method: "Learn verbs in categories", practice: "Make example sentences", remember: "Some verbs change meaning", test: "Can you use both? Does meaning change?" }
+    ]
+  },
 
   speakingPractice: [
     { question: "You like playing chess. What do you say?", answer: "I enjoy playing chess." },
