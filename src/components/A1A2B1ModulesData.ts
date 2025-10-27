@@ -6996,6 +6996,25 @@ We should leave early to avoid traffic.
 They must not be late for the meeting.
 You don't have to come if you're busy.`,
   tip: "Use must for strong obligations, have to for external requirements, and should for advice",
+
+  table: {
+    title: "📋 Modals of Obligation Comparison",
+    data: [
+      { modal: "must", meaning: "Strong obligation", source: "Speaker's authority/rules", example: "You must be quiet in the library", formality: "Formal" },
+      { modal: "have to", meaning: "Necessity", source: "External circumstances", example: "I have to go to work tomorrow", formality: "Neutral" },
+      { modal: "should", meaning: "Advice/recommendation", source: "Opinion/suggestion", example: "You should eat more vegetables", formality: "Polite" },
+      { form: "must - negative", structure: "must not / mustn't", meaning: "Prohibition (don't do it!)", example: "You mustn't smoke here", note: "Different meaning from 'don't have to'" },
+      { form: "have to - negative", structure: "don't/doesn't have to", meaning: "No obligation (not necessary)", example: "You don't have to wear a tie", note: "Different meaning from 'mustn't'" },
+      { form: "should - negative", structure: "shouldn't", meaning: "Advice against", example: "You shouldn't eat too much sugar", note: "Soft advice" },
+      { tense: "Past of must", form: "had to", example: "I had to leave early yesterday", note: "must has no past form" },
+      { tense: "Past of have to", form: "had to", example: "She had to work last weekend", note: "Regular past" },
+      { tense: "Past of should", form: "should have + V3", example: "You should have studied harder", meaning: "Past advice/regret" },
+      { questions: "must", form: "Must I...?", example: "Must I bring anything?", usage: "Very formal, rare in modern English" },
+      { questions: "have to", form: "Do I have to...?", example: "Do I have to come?", usage: "Common in questions" },
+      { questions: "should", form: "Should I...?", example: "Should I call her?", usage: "Asking for advice" }
+    ]
+  },
+
   speakingPractice: [
     { question: "Do I have to finish this today?", answer: "Yes, it's the deadline." },
     { question: "Must I pay in cash?", answer: "No, you can use a credit card too." },
@@ -7069,6 +7088,25 @@ We mustn't forget to lock the door.
 He can't bring food into the lab.
 Visitors mustn't feed the animals.`,
   tip: "Use mustn't for strict prohibitions and can't for lack of permission",
+
+  table: {
+    title: "📋 Modals of Prohibition",
+    data: [
+      { modal: "mustn't", meaning: "Prohibition", strength: "Strong", example: "You mustn't smoke here", context: "Rules, laws, safety" },
+      { modal: "can't", meaning: "Not allowed / Not permitted", strength: "Strong", example: "You can't park there", context: "Permission, regulations" },
+      { structure: "mustn't", form: "Subject + must not + base verb", examples: "I mustn't / She mustn't / They mustn't", note: "No contraction variation" },
+      { structure: "can't", form: "Subject + cannot/can't + base verb", examples: "I can't / He can't / We can't", note: "Cannot = more formal" },
+      { comparison: "mustn't vs don't have to", mustn't: "Prohibition (don't do it!)", dont_have_to: "No obligation (not necessary)", key: "Very different meanings!" },
+      { example_contrast: "You mustn't leave", meaning: "You are not allowed to leave (prohibited)", alternative: "You don't have to leave = You can stay if you want (optional)" },
+      { usage: "mustn't", when: "Internal rules, personal authority", examples: "You mustn't tell anyone / Students mustn't cheat", tone: "Direct, strong" },
+      { usage: "can't", when: "External rules, official permission", examples: "You can't enter without a ticket / Visitors can't use the staff area", tone: "Official, regulatory" },
+      { negative_questions: "mustn't", rare: "Mustn't I...?", common_alternative: "Am I not allowed to...?", note: "Questions with mustn't are uncommon" },
+      { negative_questions: "can't", form: "Can't I...?", example: "Can't I go out?", meaning: "Am I not allowed to...?" },
+      { past_form: "mustn't", no_past: "Use 'wasn't allowed to' or 'couldn't'", example: "I wasn't allowed to leave = I couldn't leave", note: "mustn't has no past" },
+      { past_form: "can't", past: "couldn't", example: "Yesterday, we couldn't enter the building", note: "Regular past form" }
+    ]
+  },
+
   speakingPractice: [
     { question: "Can I smoke in this room?", answer: "No, you mustn't. It's a non-smoking area." },
     { question: "Can students use their phones during the test?", answer: "No, they can't. It's against the rules." },
@@ -7150,6 +7188,25 @@ const MODULE_113_DATA = {
 "Turn off the lights." → She told me to turn off the lights.
 "Don't go outside." → My mom told me not to go outside.`,
   tip: "Use 'tell' for commands and 'ask' for requests. Add 'not to' for negative commands.",
+
+  table: {
+    title: "📋 Reported Speech: Requests & Commands",
+    data: [
+      { type: "Command (affirmative)", direct: "\"Close the door.\"", reported: "She told me to close the door.", structure: "tell + person + to + verb", usage: "Orders, instructions" },
+      { type: "Command (negative)", direct: "\"Don't be late.\"", reported: "He told me not to be late.", structure: "tell + person + not to + verb", usage: "Prohibitions, warnings" },
+      { type: "Request (polite)", direct: "\"Please help me.\"", reported: "She asked me to help her.", structure: "ask + person + to + verb", usage: "Polite requests" },
+      { type: "Request (negative)", direct: "\"Please don't tell anyone.\"", reported: "He asked me not to tell anyone.", structure: "ask + person + not to + verb", usage: "Polite negative requests" },
+      { verb: "tell", usage: "Commands, orders", formality: "Direct, authoritative", example: "The boss told me to finish the report", note: "More forceful" },
+      { verb: "ask", usage: "Requests, favors", formality: "Polite, softer", example: "She asked me to close the window", note: "More polite" },
+      { verb: "order", usage: "Strong commands", formality: "Very formal/military", example: "The officer ordered the soldier to stand still", note: "Very authoritative" },
+      { verb: "advise", usage: "Suggestions, advice", formality: "Professional", example: "The doctor advised him to rest", note: "Recommendations" },
+      { verb: "warn", usage: "Warnings", formality: "Serious", example: "She warned me not to touch the wire", note: "Danger/consequences" },
+      { verb: "remind", usage: "Reminders", formality: "Neutral", example: "He reminded me to buy milk", note: "Help remember" },
+      { pronoun_changes: "Direct to reported", rule: "me → him/her, you → I/we, my → his/her", example: "\"Help me\" → He asked her to help him", key: "Perspective shifts" },
+      { time_place_changes: "Common shifts", here_there: "here → there", this_that: "this → that", now_then: "now → then", example: "\"Come here\" → He told me to go there" }
+    ]
+  },
+
   speakingPractice: [
     { question: "Open your books.", answer: "The teacher told the students to open their books." },
     { question: "Don't touch that.", answer: "The mother told the child not to touch that." },
@@ -7226,6 +7283,27 @@ Dolaylı anlatımda (reported speech) soru cümleleri aktarılırken:
 "Where did you go?" → She asked where I had gone.
 "Can you help me?" → He asked if I could help him.`,
   tip: "Change question word order to statement order and use 'if' for Yes/No questions",
+
+  table: {
+    title: "📋 Reported Speech: Questions",
+    data: [
+      { type: "Yes/No Question", direct: "\"Do you like tea?\"", reported: "He asked if I liked tea.", structure: "asked + if/whether + statement", keyword: "if/whether" },
+      { type: "WH- Question", direct: "\"Where do you work?\"", reported: "She asked where I worked.", structure: "asked + wh-word + statement", keyword: "WH-word stays" },
+      { type: "Modal Question", direct: "\"Can you swim?\"", reported: "He asked if I could swim.", structure: "asked + if + modal + statement", note: "Modal changes (can → could)" },
+      { type: "Present Simple Question", direct: "\"Do you live here?\"", reported: "She asked if I lived there.", tense_shift: "Present Simple → Past Simple", example: "do/does → did" },
+      { type: "Past Simple Question", direct: "\"Did you see it?\"", reported: "He asked if I had seen it.", tense_shift: "Past Simple → Past Perfect", example: "did → had" },
+      { type: "Present Perfect Question", direct: "\"Have you finished?\"", reported: "She asked if I had finished.", tense_shift: "Present Perfect → Past Perfect", example: "have → had" },
+      { word_order: "Key change", direct_order: "Auxiliary + subject + verb?", reported_order: "Subject + verb (statement)", example: "Are you → if you were", rule: "Question becomes statement" },
+      { reporting_verb: "asked", usage: "Most common", example: "She asked if I was ready", note: "Neutral, polite" },
+      { reporting_verb: "wanted to know", usage: "Emphasis on curiosity", example: "He wanted to know where I lived", note: "More emphasis" },
+      { reporting_verb: "wondered", usage: "Internal questioning", example: "She wondered if he would come", note: "Thinking to oneself" },
+      { reporting_verb: "inquired", usage: "Very formal", example: "The officer inquired whether I had a passport", note: "Official contexts" },
+      { if_vs_whether: "Difference", if_usage: "More common in speech", whether_usage: "More formal, can use with 'or not'", example: "whether or not he agreed", note: "Often interchangeable" },
+      { time_changes: "Common shifts", today_that_day: "today → that day", tomorrow_the_next_day: "tomorrow → the next day", yesterday_the_previous_day: "yesterday → the previous day", now_then: "now → then" },
+      { pronoun_changes: "Perspective shifts", you_I_we: "you → I/we", I_he_she: "I → he/she", my_his_her: "my → his/her", example: "\"Are you ready?\" → He asked if I was ready" }
+    ]
+  },
+
   speakingPractice: [
     { question: "Do you like coffee?", answer: "She asked if I liked coffee." },
     { question: "Where do you work?", answer: "He asked where I worked." },
@@ -7302,6 +7380,25 @@ The package has been delivered.
 The invitations have been sent out.
 The report has been completed.`,
   tip: "Use passive voice when the doer is unknown or unimportant",
+
+  table: {
+    title: "📋 Passive Voice: Present Perfect",
+    data: [
+      { form: "Affirmative", structure: "has/have + been + V3", example: "The book has been read.", usage: "Completed action, result visible" },
+      { form: "Negative", structure: "hasn't/haven't + been + V3", example: "The work hasn't been finished.", usage: "Incomplete action" },
+      { form: "Question", structure: "Has/Have + subject + been + V3?", example: "Has the letter been sent?", usage: "Asking about completion" },
+      { active_to_passive: "Active", example: "They have cleaned the room.", focus: "Who did it (they)", note: "Subject = doer" },
+      { active_to_passive: "Passive", example: "The room has been cleaned.", focus: "What was done (room)", note: "Subject = receiver" },
+      { when_to_use: "Doer unknown", example: "My phone has been stolen.", reason: "We don't know who did it", context: "Crime, accidents" },
+      { when_to_use: "Doer unimportant", example: "The house has been painted.", reason: "Who painted doesn't matter", context: "Result matters more" },
+      { when_to_use: "Doer obvious", example: "The homework has been submitted.", reason: "Obviously students submitted", context: "Clear from context" },
+      { when_to_use: "Formal writing", example: "The data has been analyzed.", reason: "More professional tone", context: "Reports, academic" },
+      { with_by: "Mentioning doer", structure: "has/have been V3 + by + doer", example: "The song has been written by Taylor Swift.", usage: "When doer is important/famous" },
+      { time_expressions: "Common with Present Perfect Passive", expressions: "recently, just, already, yet, so far, up to now", examples: "The package has just been delivered / The work hasn't been done yet", note: "Same time words as active" },
+      { irregular_verbs: "V3 forms matter", examples: "written (not writed), done (not doed), sent (not sended), built (not builded)", rule: "Must use correct V3", key: "Memorize irregular forms" }
+    ]
+  },
+
   speakingPractice: [
     { question: "They have repaired the road.", answer: "The road has been repaired." },
     { question: "She has written three poems.", answer: "Three poems have been written." },
