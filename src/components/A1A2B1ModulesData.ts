@@ -4614,12 +4614,30 @@ Yapı:
 • Question: Have/Has + S + V3 + for/since? → Have you worked here since 2020?`,
   tip: "Use 'for' with periods of time (for 3 years). Use 'since' with starting points in time (since 2020).",
   
-  table: [
-    { timeWord: "for", usage: "+ period of time", example: "I have lived here for 10 years." },
-    { timeWord: "since", usage: "+ starting point", example: "She has worked here since 2015." },
-    { timeWord: "for", usage: "+ duration", example: "They have been married for 5 years." },
-    { timeWord: "since", usage: "+ specific time", example: "We have known each other since childhood." }
-  ],
+  table: {
+    title: "📋 Present Perfect: for / since - Duration vs Starting Point",
+    data: [
+      { preposition: "for", meaning: "Period of time / Duration", turkish: "Süre boyunca", usage: "How LONG something has lasted", examples: "for 3 years, for 2 months, for a week, for a long time", sentence: "I have lived here for 10 years.", note: "Answer to 'How long?'" },
+      { preposition: "since", meaning: "Starting point in time", turkish: "Beri, -den beri", usage: "WHEN something started", examples: "since 2020, since Monday, since childhood, since yesterday", sentence: "She has worked here since 2015.", note: "Answer to 'Since when?'" },
+      { difference: "for vs since", for_rule: "'for' + LENGTH of time", since_rule: "'since' + POINT in time", for_ex: "for 5 hours (duration)", since_ex: "since 8 AM (starting time)", key: "'for' = how long, 'since' = when it started", critical: "Don't confuse!" },
+      { formation: "Structure with for/since", pattern: "Subject + have/has + V3 + for/since + time", examples: "I have studied English for 3 years. / I have studied English since 2021.", note: "Both use Present Perfect", context: "Action started in past, continues until now" },
+      { for_examples: "Common 'for' expressions", durations: "for minutes, hours, days, weeks, months, years, decades, centuries", examples: "for 10 minutes, for 2 hours, for a few days, for several weeks, for many years", note: "Countable periods of time", pattern: "for + NUMBER + time unit" },
+      { since_examples: "Common 'since' expressions", points: "since + specific date/time/event", examples: "since 2010, since Monday, since morning, since last week, since I was a child", note: "Specific starting points", pattern: "since + TIME/EVENT when it started" },
+      { question_how_long: "Asking about duration", question: "How long + have/has + S + V3?", examples: "How long have you lived here? / How long has she worked there?", answer_for: "For 5 years. / For a long time.", answer_since: "Since 2018. / Since last summer.", note: "Can answer with 'for' or 'since'" },
+      { for_time_units: "Time units with 'for'", common: "for a minute, for an hour, for a day, for a week, for a month, for a year", longer: "for ages, for a long time, for years, for decades", shorter: "for a moment, for a while, for a second", note: "Any duration, long or short" },
+      { since_time_types: "Time types with 'since'", dates: "since 2020, since January, since 2015", days: "since Monday, since yesterday, since last Friday", times: "since 8 AM, since noon, since this morning", life_periods: "since childhood, since I was young, since graduation", note: "Always a specific point" },
+      { common_mistake: "Using 'since' with duration", wrong: "I have lived here since 10 years. ✗", correct: "I have lived here for 10 years. ✓", rule: "Duration (10 years) = 'for', NOT 'since'", explanation: "'Since' needs a specific point, not a duration", critical: "Very common error!" },
+      { common_mistake: "Using 'for' with starting point", wrong: "She has worked here for 2020. ✗", correct: "She has worked here since 2020. ✓", rule: "Specific year/date = 'since', NOT 'for'", explanation: "'For' needs duration, not a point in time", critical: "Must use 'since' with dates!" },
+      { common_mistake: "Confusing 'for' with 'ago'", wrong: "I came here for 5 years. ✗", correct: "I came here 5 years ago. (Past Simple) / I have been here for 5 years. (Present Perfect)", rule: "'ago' = Past Simple (finished), 'for' = Present Perfect (continues)", difference: "'ago' points to past moment, 'for' shows duration until now" },
+      { since_clause: "'Since' + time clause", structure: "since + subject + past simple verb", examples: "I haven't seen him since he moved away. / She has been happy since she started her new job.", note: "'Since' can introduce a clause", pattern: "since + S + V2 (past simple)", usage: "Event that marks the starting point" },
+      { time_still_continues: "Duration continues to now", concept: "Action started in past, still true now", examples: "I have lived here for 10 years. (still living here) / I have known her since 2015. (still know her)", contrast: "NOT finished!", vs_past: "Past Simple = finished action", note: "That's why we use Present Perfect" },
+      { negative_for_since: "Negatives with for/since", structure: "haven't/hasn't + V3 + for/since", examples: "I haven't eaten for 6 hours. / She hasn't called since Monday.", meaning: "Action has NOT happened during this time", note: "Time period without the action", context: "Absence of action for duration/since point" },
+      { short_answers: "Short answers to 'How long?'", question: "How long have you studied English?", answer_for: "For 3 years.", answer_since: "Since 2021.", note: "Both are correct answers", can_combine: "For 3 years, since 2021. (both together)" },
+      { present_perfect_continuous: "Also works with Continuous", structure: "have/has been + V-ing + for/since", examples: "I've been working here for 5 years. / He's been sleeping since noon.", note: "Present Perfect Continuous also uses for/since", difference: "Continuous emphasizes ongoing action" },
+      { context_lifelong: "Lifelong experiences", examples: "I've known her since childhood. / I've lived here for my whole life. / I've been a teacher for 20 years.", note: "Long-term situations", feeling: "Emphasizes permanence or long duration" },
+      { context_recent: "Recent durations", examples: "I haven't slept for 24 hours. / I've been awake since 6 AM. / I've been waiting for an hour.", note: "Shorter, more immediate durations", feeling: "Often shows frustration or tiredness" }
+    ]
+  },
   
   speakingPractice: [
     { question: "How long have you known your best friend?", answer: "I have known my best friend since 2010." },
@@ -4680,12 +4698,31 @@ Past Simple için zaman ifadeleri: yesterday, last year, in 2020, two days ago, 
 – I ate lunch at 12. → Past Simple (Zaman belli.)`,
   tip: "Use Present Perfect when time is not specified or continues to now. Use Past Simple when time is specified and finished.",
   
-  table: [
-    { tense: "Present Perfect", example: "I have seen that movie before.", explanation: "Zaman belirtilmemiş" },
-    { tense: "Past Simple", example: "I saw that movie last week.", explanation: "Belirli zaman var" },
-    { tense: "Present Perfect", example: "She has worked here for five years.", explanation: "Hala çalışıyor" },
-    { tense: "Past Simple", example: "She worked here in 2010.", explanation: "Geçmişte tamamlanmış" }
-  ],
+  table: {
+    title: "📋 Present Perfect vs Past Simple: The Critical Difference",
+    data: [
+      { aspect: "Time perspective", present_perfect: "Connection to NOW", past_simple: "Finished time in the PAST", pp_focus: "Result affects present", ps_focus: "Action in completed past", key: "PP = now matters, PS = then matters" },
+      { aspect: "When to use", present_perfect: "Time NOT specified or still relevant", past_simple: "Specific time in the past", pp_example: "I have eaten lunch. (anytime before now)", ps_example: "I ate lunch at 1 PM. (specific time)", note: "Time specification is the key!" },
+      { use_pp: "Present Perfect - Unspecified time", when: "No specific time mentioned", examples: "I have visited Paris. / She has seen that movie. / They have tried sushi.", meaning: "It happened, but WHEN is not important", focus: "The experience or result", context: "Life experiences, news, recent events" },
+      { use_ps: "Past Simple - Specific time", when: "Specific time is mentioned", examples: "I visited Paris in 2020. / She saw that movie yesterday. / They tried sushi last week.", meaning: "It happened at a SPECIFIC past time", focus: "The past action itself", context: "Historical events, completed actions" },
+      { signal_words_pp: "Present Perfect signals", words: "ever, never, just, already, yet, recently, lately, so far, up to now, for, since", examples: "Have you ever been there? / I've just arrived. / She hasn't called yet.", note: "These words suggest connection to now", context: "Time period continues to present" },
+      { signal_words_ps: "Past Simple signals", words: "yesterday, last (week/month/year), ago, in (2020), when I was..., at (specific time)", examples: "I went there yesterday. / She called last week. / We met 5 years ago.", note: "These words specify finished past time", context: "Completed time period" },
+      { duration_pp: "Present Perfect - Continuing duration", when: "Action started in past, continues now", structure: "have/has + V3 + for/since", examples: "I have lived here for 10 years. (still live here)", meaning: "Started in past, STILL TRUE now", key: "Action not finished!", note: "Use 'for' or 'since'" },
+      { duration_ps: "Past Simple - Finished duration", when: "Action started and finished in past", structure: "V2 + time expression", examples: "I lived there for 10 years. (don't live there anymore)", meaning: "Started and ENDED in the past", key: "Action is finished!", note: "Past action with no present connection" },
+      { comparison_same_action: "Same action, different meaning", present_perfect: "I've lost my keys. (I don't have them NOW)", past_simple: "I lost my keys. (but I found them / past event)", difference: "PP = problem now, PS = past event", note: "PP emphasizes present result", ps_note: "PS just reports past fact" },
+      { comparison_recently: "Recent past", present_perfect: "I've just finished. (very recently, still relevant)", past_simple: "I finished 5 minutes ago. (specific time)", both_recent: "Both are recent, but...", difference: "PP = no time / relevance to now, PS = specific time given" },
+      { common_mistake: "Using PS with 'just/already/yet'", wrong: "I just finished. ✗ / I already ate. ✗ / Did you finish yet? ✗", correct: "I've just finished. ✓ / I've already eaten. ✓ / Have you finished yet? ✓", rule: "'just/already/yet' = ALWAYS Present Perfect", explanation: "These words show connection to present", critical: "Very common American English mistake!" },
+      { common_mistake: "Using PP with specific past time", wrong: "I have visited Paris last year. ✗ / She has seen him yesterday. ✗", correct: "I visited Paris last year. ✓ / She saw him yesterday. ✓", rule: "Specific past time = ALWAYS Past Simple", explanation: "'last year', 'yesterday' = finished time", critical: "Cannot mix PP with past time words!" },
+      { common_mistake: "Continuing action with PS", wrong: "I live here for 5 years. ✗ (if you still live there)", correct: "I have lived here for 5 years. ✓", rule: "Still true now = Present Perfect", explanation: "PS means finished, PP means continuing" },
+      { question_pp: "Present Perfect questions", focus: "General experience or recent action", examples: "Have you ever been to Japan? / Has she called? / Have they finished?", answer: "Yes, I have. / No, she hasn't.", note: "No specific time in question", context: "Checking if something happened" },
+      { question_ps: "Past Simple questions", focus: "Specific past event", examples: "Did you go to Japan in 2020? / Did she call yesterday? / When did they finish?", answer: "Yes, I did. / No, she didn't. / They finished at 5.", note: "Specific time mentioned or implied", context: "Asking about past circumstances" },
+      { today_this_week: "Special case: 'today', 'this week' (unfinished)", time_not_over: "If the time period is not finished yet", use_pp: "I have seen him twice today. (today not finished)", use_ps: "I saw him twice yesterday. (yesterday finished)", rule: "Unfinished period = PP, Finished period = PS", note: "'this morning' = PP (if morning) or PS (if afternoon/evening)" },
+      { news_events: "News and recent events", present_perfect: "Have you heard the news? / The president has resigned. / A new study has shown...", past_simple: "The president resigned yesterday. / Columbus discovered America in 1492.", difference: "PP = recent/relevant news, PS = historical facts", pattern: "News starts with PP, continues with PS details" },
+      { conversation_pattern: "Typical conversation flow", start_pp: "Have you ever been to Italy? (PP - experience question)", continue_ps: "Yes, I went there in 2019. (PS - specific time) It was amazing. (PS - past fact)", pattern: "PP introduces topic → PS gives details", note: "Very common pattern in English!" },
+      { result_vs_action: "Result (PP) vs Action (PS)", present_perfect: "I've broken my arm. (result: arm is broken NOW)", past_simple: "I broke my arm last year. (action: happened then, healed now)", focus: "PP = current state, PS = past event", key: "PP emphasizes NOW situation" },
+      { time_quiz: "Choose the right tense", if_time_specified: "Use Past Simple", if_time_unspecified: "Use Present Perfect", if_continues_now: "Use Present Perfect", if_finished_past: "Use Past Simple", rule: "Time connection = the deciding factor!" }
+    ]
+  },
   
   speakingPractice: [
     { question: "Have you ever visited London?", answer: "Yes, I have visited London before." },
@@ -4746,12 +4783,30 @@ Enough → Yeterli miktarda anlamına gelir. Olumlu veya olumsuz olabilir.
 • Örnek: We have enough chairs. (Yeterince sandalyemiz var.)`,
   tip: "Use 'too' before adjectives/adverbs to show excess. Use 'enough' after adjectives or before nouns to show sufficiency.",
   
-  table: [
-    { structure: "too + adjective", example: "This coffee is too hot.", turkish: "Bu kahve çok sıcak." },
-    { structure: "adjective + enough", example: "He isn't fast enough to win.", turkish: "Kazanacak kadar hızlı değil." },
-    { structure: "enough + noun", example: "We don't have enough chairs.", turkish: "Yeterince sandalyemiz yok." },
-    { structure: "too + adjective + to", example: "The bag is too heavy to carry.", turkish: "Çanta taşımak için çok ağır." }
-  ],
+  table: {
+    title: "📋 Too / Enough: Expressing Excess & Sufficiency",
+    data: [
+      { word: "too", meaning: "Excessive / more than needed", turkish: "Fazla, gereğinden çok", connotation: "NEGATIVE - problem", usage: "Something is MORE than acceptable/good", example: "This coffee is too hot. (I can't drink it)", note: "Usually indicates a problem" },
+      { word: "enough", meaning: "Sufficient / as much as needed", turkish: "Yeterli, yeterince", connotation: "Neutral or POSITIVE", usage: "The right amount", example: "This coffee is hot enough. (I can drink it)", note: "The amount/degree is satisfactory" },
+      { structure_too_adj: "too + adjective/adverb", pattern: "too + adj/adv", examples: "too hot, too expensive, too difficult, too slowly, too fast", sentence: "The soup is too salty. (I can't eat it)", note: "'too' always BEFORE adj/adv", meaning: "Exceeds the acceptable level" },
+      { structure_adj_enough: "adjective/adverb + enough", pattern: "adj/adv + enough", examples: "tall enough, fast enough, good enough, carefully enough", sentence: "He isn't tall enough to reach the shelf.", note: "'enough' always AFTER adj/adv", meaning: "Reaches the required level (or doesn't)" },
+      { structure_enough_noun: "enough + noun", pattern: "enough + noun", examples: "enough time, enough money, enough chairs, enough water", sentence: "We have enough chairs for everyone.", note: "'enough' always BEFORE nouns", meaning: "The required quantity", contrast: "Different position than with adjectives!" },
+      { too_infinitive: "too + adj/adv + to + infinitive", structure: "too + adj/adv + to + V1", examples: "too hot to eat, too tired to work, too expensive to buy", sentence: "The coffee is too hot to drink.", meaning: "So excessive that something is impossible", note: "Explains the consequence of 'too'" },
+      { enough_infinitive: "adj/adv + enough + to + infinitive", structure: "adj/adv + enough + to + V1", examples: "tall enough to reach, fast enough to win, strong enough to carry", sentence: "He is tall enough to reach the shelf.", meaning: "Sufficient to do something", note: "Explains what is possible because of sufficiency" },
+      { too_for_person: "too + adj + for + person/thing", structure: "too + adj + for + sb/sth", examples: "too difficult for me, too heavy for her, too fast for us", sentence: "This exercise is too difficult for children.", meaning: "Excessive in relation to someone/something", note: "Specifies who it's too much for" },
+      { not_enough: "not + adj/adv + enough", pattern: "not + adj/adv + enough", examples: "not tall enough, not fast enough, not warm enough", sentence: "You're not old enough to drive. (too young)", meaning: "Below the required level", opposite: "Lack of sufficiency", note: "Often the opposite of 'too'" },
+      { enough_alone: "'enough' as pronoun", pattern: "enough (alone, without noun)", examples: "Is this enough? / That's enough! / We don't have enough.", sentence: "Is there enough for everyone? - Yes, there's enough.", meaning: "Sufficient amount (noun understood)", note: "Can stand alone without naming the thing" },
+      { common_mistake: "Wrong position of 'enough' with adjective", wrong: "He is enough tall. ✗", correct: "He is tall enough. ✓", rule: "'enough' comes AFTER adjectives", explanation: "English word order: adj + enough", critical: "Very common mistake!" },
+      { common_mistake: "Wrong position of 'enough' with noun", wrong: "We have chairs enough. ✗", correct: "We have enough chairs. ✓", rule: "'enough' comes BEFORE nouns", explanation: "English word order: enough + noun", critical: "Opposite of adjective position!" },
+      { common_mistake: "Using 'too' when meaning 'very'", wrong: "This movie is too good! (if you mean it's great) ✗", correct: "This movie is very good! / so good! ✓", rule: "'too' = negative problem, 'very/so' = positive emphasis", explanation: "'too good' means it's a problem!", note: "'too' always implies excess/problem" },
+      { common_mistake: "Confusing 'too much/many'", rule: "too much + uncountable, too many + countable", examples: "too much water / too many chairs", wrong: "too many water ✗ / too much chairs ✗", note: "Different from 'too + adjective'" },
+      { comparison: "too vs very", too: "The coffee is too hot. (problem, can't drink)", very: "The coffee is very hot. (just description, can still drink)", difference: "'too' = excess problem, 'very' = high degree (no problem)", key: "'too' = negative implication" },
+      { comparison: "not enough vs too", not_enough: "It's not warm enough. (insufficient warmth)", too: "It's too cold. (excessive coldness)", meaning: "Often express similar ideas from opposite angles", note: "Both indicate a problem", example: "not fast enough = too slow" },
+      { enough_for_person: "enough + noun + for + person", structure: "enough + noun + for + sb", examples: "enough food for everyone, enough time for the test, enough chairs for the guests", sentence: "We don't have enough cups for all the guests.", note: "Specifies who/what it's sufficient for" },
+      { too_much_many: "'too much' / 'too many' (quantifiers)", too_much: "too much + uncountable noun (too much sugar, water, time)", too_many: "too many + countable noun (too many people, chairs, cars)", usage: "Excessive quantity, not quality", difference: "Different from 'too + adjective'" },
+      { context_complaints: "Using 'too' for complaints", examples: "It's too expensive! / This is too difficult! / You're too slow!", tone: "Complaining about problems", usage: "Very common in everyday complaints", note: "'too' emphasizes the problem" }
+    ]
+  },
   
   speakingPractice: [
     { question: "Why didn't she eat the soup?", answer: "Because it was too salty." },
@@ -4810,12 +4865,30 @@ Such → Bir isimle birlikte kullanılır, genellikle önünde sıfat olur.
 • Örnek: It was such a beautiful day. (O kadar güzel bir gündü ki.)`,
   tip: "Use 'so' before adjectives and adverbs. Use 'such' before nouns (usually with adjectives).",
   
-  table: [
-    { structure: "so + adjective", example: "He is so tall.", turkish: "O çok uzun boylu." },
-    { structure: "so + adverb", example: "They arrived so early.", turkish: "Çok erken geldiler." },
-    { structure: "such + adj + noun", example: "It was such a cold night.", turkish: "O kadar soğuk bir geceydi ki." },
-    { structure: "such + adj + noun", example: "She has such nice friends.", turkish: "Çok hoş arkadaşları var." }
-  ],
+  table: {
+    title: "📋 So / Such: Intensifiers for Strong Emphasis",
+    data: [
+      { word: "so", function: "Intensifier for adjectives & adverbs", usage: "To emphasize degree/extent", meaning: "Very / extremely", turkish: "O kadar, çok", pattern: "so + adj/adv", example: "She is so beautiful!", note: "Makes adjectives/adverbs stronger" },
+      { word: "such", function: "Intensifier for nouns (with adjective)", usage: "To emphasize quality of a thing", meaning: "What a... / very", turkish: "Öyle, o kadar", pattern: "such + (adj) + noun", example: "She is such a beautiful girl!", note: "Emphasizes the noun" },
+      { structure_so_adj: "so + adjective", pattern: "so + adj", examples: "so beautiful, so difficult, so expensive, so happy", sentence: "The movie was so interesting!", note: "Emphasizes the quality", usage: "Very common in speech", feeling: "Strong emotion/reaction" },
+      { structure_so_adv: "so + adverb", pattern: "so + adv", examples: "so quickly, so well, so badly, so slowly, so fast", sentence: "He drives so fast!", note: "Emphasizes how something is done", usage: "Manner or degree", comparison: "Like 'so' + adjective" },
+      { structure_such_noun: "such + (adjective) + noun", pattern: "such + (adj) + noun", examples: "such a nice day, such beautiful flowers, such good friends, such an interesting book", sentence: "It was such a wonderful experience!", note: "Can have adjective or not", optional_adj: "such fun (no adjective), such a big house (with adjective)" },
+      { difference: "so vs such - Key difference", so_rule: "'so' modifies adjectives/adverbs", such_rule: "'such' modifies nouns", so_ex: "so tall (adj), so quickly (adv)", such_ex: "such a tall man (noun), such quick service (noun)", key: "What word type follows determines so/such!" },
+      { so_that: "'so...that' - Result clause", structure: "so + adj/adv + that + result", examples: "It was so hot that we stayed inside. / He ran so fast that he won.", meaning: "Such a degree that it caused a result", note: "'that' introduces the consequence", common: "Very common in expressing cause & effect" },
+      { such_that: "'such...that' - Result clause", structure: "such + (adj) + noun + that + result", examples: "It was such a hot day that we stayed inside. / He is such a good player that everyone wants him.", meaning: "Such quality/type that it caused a result", note: "'that' shows the consequence", pattern: "Emphasizes noun's quality leading to result" },
+      { so_many_much: "so + many/much (quantifiers)", pattern: "so much + uncountable / so many + countable", examples: "so much water, so much time, so many people, so many cars", sentence: "There were so many people at the concert!", note: "For quantities, not qualities", usage: "Emphasizing large amounts" },
+      { such_a_an: "'such a/an' with singular countable", pattern: "such + a/an + (adj) + singular noun", examples: "such a nice person, such an interesting story, such a beautiful day", sentence: "He's such a good teacher!", note: "Must use 'a/an' with singular countable", critical: "Don't forget the article!" },
+      { such_plural_uncountable: "'such' with plural/uncountable (no article)", pattern: "such + (adj) + plural/uncountable", examples: "such beautiful flowers (plural), such good advice (uncountable), such nice people", sentence: "They are such kind people!", note: "NO article with plural or uncountable", critical: "Don't add 'a/an'!" },
+      { common_mistake: "Using 'so' with noun", wrong: "He is so good teacher. ✗ / It was so beautiful day. ✗", correct: "He is such a good teacher. ✓ / It was such a beautiful day. ✓", rule: "Noun = 'such', NOT 'so'", explanation: "'so' can't go directly before nouns", critical: "Very common mistake!" },
+      { common_mistake: "Using 'such' with adjective alone", wrong: "She is such beautiful. ✗ / The movie was such good. ✗", correct: "She is so beautiful. ✓ / The movie was so good. ✓", rule: "Adjective alone = 'so', NOT 'such'", explanation: "'such' needs a noun after", critical: "Must have noun for 'such'!" },
+      { common_mistake: "Forgetting article with 'such a/an'", wrong: "He is such good teacher. ✗", correct: "He is such a good teacher. ✓", rule: "Singular countable needs 'a/an' with 'such'", explanation: "'such' + singular countable = must have article!", critical: "Don't forget a/an!" },
+      { comparison: "so vs such - Same meaning", so: "The test was so difficult!", such: "It was such a difficult test!", meaning: "Both express same degree of difficulty", difference: "so + adj vs such + noun", note: "Choose based on what you're emphasizing" },
+      { emphasis_surprise: "Expressing surprise/emotion", so_emotion: "It's so beautiful! / You're so kind! / This is so good!", such_emotion: "What a beautiful view! / You're such a kind person! / This is such good food!", usage: "Both express strong reactions", note: "Very common in exclamations", feeling: "Surprise, admiration, strong opinion" },
+      { so_adjective_that: "so + adjective + that clause", examples: "It's so cold that I can't go out. / She was so tired that she fell asleep immediately.", pattern: "High degree → result", note: "Shows cause and effect relationship" },
+      { such_noun_that: "such + (adj) + noun + that clause", examples: "It's such a cold day that I can't go out. / She was such a good student that she got a scholarship.", pattern: "Quality/type → result", note: "Emphasizes noun's quality causing result" },
+      { formal_informal: "Register differences", informal: "'so' and 'such' very common in speech", examples: "That's so cool! / She's such a good friend!", formal_alternative: "Can use 'very', 'extremely', 'remarkably' in formal writing", note: "'so/such' = conversational, emotional", context: "Perfect for everyday speech" }
+    ]
+  },
   
   speakingPractice: [
     { question: "What kind of teacher is she?", answer: "She is such a good teacher." },
@@ -4879,12 +4952,31 @@ Yapı:
 • Question: Should + S + base verb? → Should we go now?`,
   tip: "Use 'should' and 'ought to' to give advice. 'Should' is more common in everyday conversation.",
   
-  table: [
-    { type: "Affirmative", structure: "S + should/ought to + base verb", example: "You should rest." },
-    { type: "Negative", structure: "S + shouldn't + base verb", example: "He shouldn't drive so fast." },
-    { type: "Question", structure: "Should + S + base verb?", example: "Should we go now?" },
-    { type: "Ought to", structure: "S + ought to + base verb", example: "You ought to apologize." }
-  ],
+  table: {
+    title: "📋 Modal Verbs: should / ought to - Giving Advice & Recommendations",
+    data: [
+      { modal: "should", meaning: "Advisable / recommended", turkish: "-meli, -malı", function: "Giving advice or recommendations", strength: "Moderate suggestion", example: "You should see a doctor.", note: "Most common for advice", usage: "Everyday advice, opinions" },
+      { modal: "ought to", meaning: "Advisable / recommended (stronger)", turkish: "-meli, -malı", function: "Giving advice (more formal)", strength: "Stronger than 'should'", example: "You ought to see a doctor.", note: "More formal, less common", usage: "Formal advice, moral obligation" },
+      { formation_aff: "Affirmative", structure: "Subject + should/ought to + V1 (base verb)", examples: "You should study. / He ought to apologize. / We should leave.", note: "No 'to' with should, YES 'to' with ought", pattern: "Modal + base verb (infinitive without 'to' for should)" },
+      { formation_neg: "Negative with 'should'", structure: "Subject + should not (shouldn't) + V1", examples: "You shouldn't smoke. / He shouldn't drive so fast. / They shouldn't be late.", short_form: "shouldn't = should not", note: "Advice NOT to do something", usage: "Warning against actions" },
+      { formation_neg_ought: "Negative with 'ought to' (rare)", structure: "Subject + ought not to + V1", examples: "You ought not to smoke. (very formal/rare)", note: "Very uncommon in modern English!", alternative: "Use 'shouldn't' instead", usage: "Mostly found in formal/literary contexts" },
+      { formation_q: "Questions with 'should'", structure: "Should + subject + V1?", examples: "Should I go? / Should we tell her? / Should they wait?", answer: "Yes, you should. / No, you shouldn't.", note: "Asking for advice or opinion", usage: "Very common for asking advice" },
+      { formation_q_ought: "Questions with 'ought to' (rare)", structure: "Ought + subject + to + V1?", examples: "Ought I to go? (very formal/rare)", note: "Extremely rare in modern English!", alternative: "Always use 'should' for questions", usage: "Avoid this form, use 'should' instead" },
+      { use_advice: "Giving advice", when: "Recommending what someone should do", examples: "You should eat more vegetables. / You should study harder. / You should get more sleep.", context: "Health, work, life advice", tone: "Helpful, caring", note: "Most common use of 'should'" },
+      { use_recommendation: "Making recommendations", when: "Suggesting things to do/try/see", examples: "You should watch that movie. / You should visit Paris. / You should try the pasta here.", context: "Movies, places, food, activities", tone: "Enthusiastic suggestion", note: "Sharing positive experiences" },
+      { use_opinion: "Expressing opinion", when: "Saying what you think is right/best", examples: "The government should reduce taxes. / People should be more honest. / Schools should teach life skills.", context: "General opinions, social issues", tone: "Personal belief", note: "What you believe should happen" },
+      { use_expectation: "Expectations", when: "Something is expected or likely", examples: "He should be here soon. / The package should arrive tomorrow. / It should be easy.", meaning: "Probably will happen / logical expectation", context: "Predictions based on logic", note: "Different meaning: probability, not advice!" },
+      { should_vs_ought: "should vs ought to - Difference", should: "More common, neutral, everyday", ought_to: "More formal, stronger moral sense", frequency: "'should' used 95% of the time", when_ought: "Use 'ought to' for moral obligations or formal situations", preference: "Always safe to use 'should'" },
+      { should_vs_must: "should vs must", should: "Advice / recommendation (not obligatory)", must: "Obligation / requirement (necessary)", should_ex: "You should exercise. (good idea)", must_ex: "You must wear a seatbelt. (law, required)", difference: "'should' = advice, 'must' = obligation", strength: "'must' is much stronger" },
+      { common_mistake: "Using 'to' with should", wrong: "You should to go. ✗ / He should to study. ✗", correct: "You should go. ✓ / He should study. ✓", rule: "NO 'to' after 'should'!", explanation: "'should' + base verb (no 'to')", critical: "Very common mistake!" },
+      { common_mistake: "Wrong negative form", wrong: "You don't should go. ✗ / He doesn't should eat. ✗", correct: "You shouldn't go. ✓ / He shouldn't eat. ✓", rule: "Use 'shouldn't', NOT 'don't should'", explanation: "Modal negatives use 'not', not 'do'", critical: "Modal verbs don't use 'do/does'" },
+      { common_mistake: "Adding -s to verb after should", wrong: "He should goes. ✗ / She should studies. ✗", correct: "He should go. ✓ / She should study. ✓", rule: "Base verb (V1) after modal, NO -s", explanation: "Modal + base form (infinitive without 'to')", critical: "Never add -s after modals!" },
+      { context_health: "Health advice", examples: "You should drink more water. / You should quit smoking. / You should exercise regularly.", common: "Very common context for 'should'", note: "Doctors, fitness advice", tone: "Caring, helpful" },
+      { context_work_study: "Work/Study advice", examples: "You should finish your homework. / You should prepare for the meeting. / You should ask for a raise.", context: "Professional and academic situations", note: "Practical advice", tone: "Supportive" },
+      { context_social: "Social situations", examples: "You should call your mother. / You should apologize to her. / You should thank them.", context: "Relationships, manners, etiquette", note: "Interpersonal advice", tone: "Guiding behavior" },
+      { polite_softeners: "Softening advice (more polite)", structure: "Maybe you should... / I think you should... / Perhaps you ought to...", examples: "Maybe you should rest. / I think you should talk to him. / Perhaps you ought to reconsider.", note: "Less direct = more polite", context: "When you don't want to sound bossy", usage: "Tactful advice" }
+    ]
+  },
   
   speakingPractice: [
     { question: "What should I do if I'm sick?", answer: "You should see a doctor." },
