@@ -2367,6 +2367,21 @@ const MODULE_181_DATA = {
 ✅ Build vocabulary for discussing art and literature
 ✅ Describe creative works and artistic expression
 ✅ Talk about genres, authors, and cultural themes naturally`,
+  table: {
+    title: "📋 Art and Literature Vocabulary",
+    data: [
+      { term: "Masterpiece", definition: "Artist's best work", example: "The Mona Lisa is a masterpiece" },
+      { term: "Genre", definition: "Category/style", example: "Romance is my favorite genre" },
+      { term: "Novel", definition: "Long fictional story", example: "I'm reading a historical novel" },
+      { term: "Poetry", definition: "Artistic written expression", example: "She writes beautiful poetry" },
+      { term: "Plot", definition: "Main storyline", example: "The plot was very surprising" },
+      { term: "Theme", definition: "Central message/idea", example: "The theme is love and loss" },
+      { term: "Symbolism", definition: "Objects representing ideas", example: "The dove symbolizes peace" },
+      { term: "Portrait", definition: "Picture of a person", example: "He painted her portrait" },
+      { term: "Abstract art", definition: "Non-realistic art", example: "I don't understand abstract art" },
+      { term: "Exhibition", definition: "Art display event", example: "There's an exhibition at the museum" }
+    ]
+  },
   speakingPractice: [
     { question: "What is artwork?", answer: "Artwork is any creative visual expression like a painting, drawing, or sculpture." },
     { question: "What is a masterpiece?", answer: "A masterpiece is an artist's best or most famous work." },
@@ -2419,6 +2434,21 @@ const MODULE_182_DATA = {
 ✅ Understand political and social vocabulary
 ✅ Discuss governments, elections, and leadership
 ✅ Express opinions on social justice and human rights`,
+  table: {
+    title: "📋 Politics and Society Vocabulary",
+    data: [
+      { term: "Democracy", definition: "Citizens vote for leaders", example: "We live in a democracy" },
+      { term: "Election", definition: "Voting to choose leaders", example: "The election is next month" },
+      { term: "Government", definition: "Group that runs country", example: "The government made new laws" },
+      { term: "Human rights", definition: "Universal freedoms", example: "Everyone deserves human rights" },
+      { term: "Equality", definition: "Same rights for all", example: "We fight for equality" },
+      { term: "Freedom of speech", definition: "Right to express opinions", example: "Freedom of speech is protected" },
+      { term: "Corruption", definition: "Dishonest use of power", example: "Corruption weakens governments" },
+      { term: "Protest", definition: "Public demonstration", example: "They organized a peaceful protest" },
+      { term: "Social justice", definition: "Fairness for all", example: "She campaigns for social justice" },
+      { term: "Discrimination", definition: "Unfair treatment", example: "Discrimination is illegal" }
+    ]
+  },
   speakingPractice: [
     { question: "What is democracy?", answer: "Democracy is a system of government where citizens have the power to vote and influence decisions." },
     { question: "What is an election?", answer: "An election is when people vote to choose their leaders or representatives." },
@@ -2471,6 +2501,21 @@ const MODULE_183_DATA = {
 ✅ Learn vocabulary for global challenges
 ✅ Discuss climate change, poverty, and human rights
 ✅ Express solutions and opinions on world issues`,
+  table: {
+    title: "📋 Global Issues Vocabulary",
+    data: [
+      { term: "Climate change", definition: "Long-term weather shifts", example: "Climate change threatens the planet" },
+      { term: "Global warming", definition: "Rising Earth temperature", example: "Global warming melts ice caps" },
+      { term: "Pollution", definition: "Harmful substances in environment", example: "Air pollution causes health problems" },
+      { term: "Deforestation", definition: "Cutting down forests", example: "Deforestation destroys habitats" },
+      { term: "Poverty", definition: "Lacking basic needs", example: "Poverty affects millions globally" },
+      { term: "Inequality", definition: "Unequal opportunities", example: "Inequality divides societies" },
+      { term: "Refugee", definition: "Person fleeing danger", example: "Refugees need safe shelter" },
+      { term: "Sustainability", definition: "Protecting resources for future", example: "Sustainability is crucial for survival" },
+      { term: "Renewable energy", definition: "Non-depleting power sources", example: "Solar is renewable energy" },
+      { term: "Globalization", definition: "Countries becoming connected", example: "Globalization affects trade" }
+    ]
+  },
   speakingPractice: [
     { question: "What is climate change?", answer: "Climate change refers to long-term shifts in temperature and weather patterns caused by human activity." },
     { question: "What is global warming?", answer: "Global warming means the rise in the Earth's average temperature due to greenhouse gases." },
@@ -2523,6 +2568,21 @@ const MODULE_184_DATA = {
 ✅ Learn vocabulary for sports and fitness
 ✅ Discuss hobbies, competitions, and recreation
 ✅ Talk about healthy lifestyles naturally`,
+  table: {
+    title: "📋 Sports and Leisure Vocabulary",
+    data: [
+      { term: "Athlete", definition: "Sports competitor", example: "She's a professional athlete" },
+      { term: "Competition", definition: "Event to win prize", example: "He won the competition" },
+      { term: "Teamwork", definition: "Working together", example: "Teamwork leads to success" },
+      { term: "Coach", definition: "Sports trainer", example: "The coach improved our skills" },
+      { term: "Fitness", definition: "Physical health/strength", example: "Regular exercise improves fitness" },
+      { term: "Leisure", definition: "Free time for fun", example: "I read books in my leisure time" },
+      { term: "Hobby", definition: "Regular fun activity", example: "Painting is my hobby" },
+      { term: "Tournament", definition: "Multi-match competition", example: "The tennis tournament starts tomorrow" },
+      { term: "Champion", definition: "First place winner", example: "She's the world champion" },
+      { term: "Training", definition: "Regular practice to improve", example: "Training every day is important" }
+    ]
+  },
   speakingPractice: [
     { question: "Who is an athlete?", answer: "An athlete is someone who trains and competes in sports events." },
     { question: "What is a competition?", answer: "A competition is an event where people or teams try to win a prize." },
@@ -2575,6 +2635,19 @@ const MODULE_185_DATA = {
 ✅ Express agreement and disagreement effectively
 ✅ Use polite and persuasive language in debates
 ✅ Sound professional and respectful in discussions`,
+  table: {
+    title: "📋 Expressing Agreement and Disagreement",
+    data: [
+      { level: "Strong Agreement", expression: "I completely agree", example: "I completely agree that education is important" },
+      { level: "Agreement", expression: "I agree / That's true", example: "I agree with your point about health" },
+      { level: "Partial Agreement", expression: "I agree to some extent", example: "I agree to some extent, but there are exceptions" },
+      { level: "Partial Agreement", expression: "I see your point, but...", example: "I see your point, but I think differently" },
+      { level: "Neutral/Acknowledge", expression: "I see what you mean", example: "I see what you mean about technology" },
+      { level: "Partial Disagreement", expression: "I'm not convinced", example: "I'm not convinced that's the best solution" },
+      { level: "Disagreement", expression: "I'm afraid I disagree", example: "I'm afraid I disagree with that idea" },
+      { level: "Strong Disagreement", expression: "I completely disagree", example: "I completely disagree with banning books" }
+    ]
+  },
   speakingPractice: [
     { question: "Do you agree that money can buy happiness?", answer: "I'm afraid I disagree. Money can bring comfort, but true happiness comes from emotional fulfillment." },
     { question: "Do you think social media does more harm than good?", answer: "I agree to some extent. It connects people, but it also causes stress and misinformation." },
