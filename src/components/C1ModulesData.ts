@@ -757,6 +757,45 @@ who, whom, whose, which, that, where, when, why
 ✅ Use complex sentences to show relationships between ideas
 ✅ Avoid excessive subordination (too many clauses)
 ✅ Ensure logical connections between clauses`,
+
+  table: {
+    title: "📋 Complex Sentences - Combining Multiple Clauses",
+    data: [
+      { category: "What are Complex Sentences?", explanation: "Sentences with one independent clause + at least one dependent clause", purpose: "Show relationships between ideas, create sophisticated writing", turkish: "Karmaşık cümleler - bağımsız ve bağımlı cümlelerin birleşimi", function: "Express cause-effect, contrast, conditions, time relationships", note: "Essential for academic and professional writing" },
+
+      { category: "Four Sentence Types", simple: "Simple: One independent clause (I love reading.)", compound: "Compound: Two+ independent clauses with FANBOYS (I love reading, and she loves writing.)", complex: "Complex: Independent + dependent clause(s) (Although I'm busy, I love reading.)", compound_complex: "Compound-Complex: Multiple independent + dependent clauses", note: "Vary types for better writing flow!" },
+
+      { category: "Subordinating Conjunctions - Time", time_words: "when, while, as, before, after, until, since, once, whenever", examples: "When I arrived, they had left. / I'll wait until you finish. / Before you go, call me.", use: "Show time relationships between actions", note: "Very common in storytelling and instructions" },
+
+      { category: "Subordinating Conjunctions - Cause/Effect", cause_words: "because, since, as, so that, in order that", examples: "I studied hard because I wanted to pass. / Since it was raining, we stayed home. / She works overtime so that she can save money.", use: "Explain WHY something happens", note: "Because = most common for cause", remember: "So that = purpose (NOT just 'so'!)" },
+
+      { category: "Subordinating Conjunctions - Contrast", contrast_words: "although, though, even though, whereas, while", examples: "Although I'm tired, I'll continue. / She loves tea, whereas he prefers coffee. / Even though it's expensive, it's worth it.", use: "Show contrast or unexpected results", difference: "Although/Though = unexpected | Whereas/While = simple contrast", note: "Very useful for presenting both sides!" },
+
+      { category: "Subordinating Conjunctions - Condition", condition_words: "if, unless, provided that, as long as, in case", examples: "If you study, you'll pass. / Unless you hurry, we'll be late. / You can go, provided that you finish your work.", use: "Express conditions and requirements", note: "If = most common | Unless = if not", remember: "Unless = negative condition!" },
+
+      { category: "FANBOYS - Compound Sentences", fanboys: "For, And, Nor, But, Or, Yet, So", structure: "Independent clause + comma + FANBOYS + independent clause", examples: "I was tired, so I went home. / She studied hard, but she failed. / Do you want tea, or would you prefer coffee?", note: "Use comma BEFORE FANBOYS with two independent clauses", remember: "FANBOYS connect EQUAL clauses (both independent)!" },
+
+      { category: "Complex Sentence Patterns", pattern_1: "Dependent, Independent. (Although I'm busy, I love reading.)", pattern_2: "Independent + dependent. (I love reading because it relaxes me.)", note: "Comma when dependent comes first, usually no comma when it comes second", exception: "Always comma with contrast words (although, though, even though)" },
+
+      { category: "Compound-Complex Sentences", structure: "Multiple independent + one or more dependent clauses", example: "Although I'm busy, I love reading, and my sister loves writing because it's creative.", breakdown: "Dependent (Although I'm busy) + Independent (I love reading) + FANBOYS (and) + Independent (my sister loves writing) + Dependent (because it's creative)", use: "Very sophisticated - shows mastery", note: "Don't overuse - can be confusing!" },
+
+      { category: "Avoiding Run-On Sentences", run_on: "Wrong: I was tired I went home ✗ (two independent clauses, no connector)", correct_1: "I was tired, so I went home. ✓ (comma + FANBOYS)", correct_2: "I was tired; I went home. ✓ (semicolon)", correct_3: "Because I was tired, I went home. ✓ (subordinating conjunction)", rule: "Can't just connect two independent clauses without punctuation or conjunction!", remember: "Need connector or punctuation!" },
+
+      { category: "Avoiding Comma Splices", comma_splice: "Wrong: I was tired, I went home ✗ (comma alone can't connect independent clauses)", correct: "I was tired, so I went home. ✓ (need FANBOYS or change structure)", rule: "Comma alone is NOT enough to connect independent clauses", fix: "Add FANBOYS, use semicolon, or make one clause dependent" },
+
+      { category: "Using Semicolons", structure: "Independent; independent. (closely related ideas)", examples: "I love reading; my sister loves writing. / It was expensive; however, it was worth it.", with_conjunctive_adverbs: "Use with however, therefore, moreover, nevertheless, furthermore", note: "Semicolon = stronger than comma, weaker than period", remember: "Only between INDEPENDENT clauses!" },
+
+      { category: "Varying Sentence Length", principle: "Mix short, medium, and long sentences for better flow", short: "Simple sentences for emphasis (3-8 words)", medium: "Compound/complex for detail (10-20 words)", long: "Compound-complex for relationships (20+ words)", example: "I left. Although I was tired, I needed to finish the project, so I continued working. Success requires effort.", note: "Variety creates rhythm and maintains interest!" },
+
+      { category: "Common Mistakes", mistake_1: "Sentence fragments (incomplete sentences)", wrong_1: "Because I was tired. ✗ (dependent clause alone)", correct_1: "Because I was tired, I went home. ✓ (add independent clause)", rule: "Every sentence needs at least one independent clause", remember: "Dependent clauses can't stand alone!" },
+
+      { category: "Common Mistakes", mistake_2: "Comma with 'because' clause at end", wrong_2: "I went home, because I was tired. ✗", correct_2: "I went home because I was tired. ✓ (no comma when dependent comes second)", exception: "DO use comma when dependent comes first: Because I was tired, I went home. ✓", remember: "Comma before, no comma after (usually)!" },
+
+      { category: "Real-World Uses", storytelling: "When I arrived at the station, I realized that I had forgotten my ticket, so I had to buy another one.", arguments: "Although some people believe X, evidence suggests Y because studies have shown Z.", explanations: "The project failed because we lacked resources, even though the team worked hard.", note: "Show cause-effect and time relationships clearly!" },
+
+      { category: "Key Takeaway", summary: "Complex sentences combine independent and dependent clauses to show relationships", types: "Simple (1 independent) | Compound (2+ independent, FANBOYS) | Complex (1 independent + dependent) | Compound-Complex (2+ independent + dependent)", subordinating: "Time: when, while, before, after | Cause: because, since | Contrast: although, whereas | Condition: if, unless", fanboys: "For, And, Nor, But, Or, Yet, So (connect independent clauses with comma)", patterns: "Dependent, Independent. (comma) | Independent + dependent. (usually no comma)", avoid: "Run-ons (no connector) | Comma splices (comma alone) | Fragments (no independent clause)", variety: "Mix short, medium, long sentences for better flow", remember: "Show relationships between ideas! Vary structure! Avoid errors!", next: "Practice combining simple sentences into complex ones!" }
+    ]
+  },
   speakingPractice: [
     {
       question: "Although technology has made life easier, what are some drawbacks that concern you?",
@@ -958,28 +997,51 @@ const MODULE_207_DATA = {
 
 **Common Formal Transitions:**
 Furthermore, Moreover, Nevertheless, Consequently, Subsequently, Accordingly, Hence, Thus, Therefore`,
-  table: [
-    { english: "Informal: get better", turkish: "iyileşmek", example: "Formal: improve, enhance" },
-    { english: "Informal: look into", turkish: "araştırmak", example: "Formal: investigate, examine" },
-    { english: "Informal: find out", turkish: "öğrenmek", example: "Formal: discover, ascertain" },
-    { english: "Informal: show", turkish: "göstermek", example: "Formal: demonstrate, illustrate" },
-    { english: "Informal: big", turkish: "büyük", example: "Formal: substantial, significant" },
-    { english: "Informal: a lot of", turkish: "çok fazla", example: "Formal: numerous, considerable" },
-    { english: "Informal: get", turkish: "almak/elde etmek", example: "Formal: obtain, acquire" },
-    { english: "Informal: ask for", turkish: "istemek", example: "Formal: request, solicit" },
-    { english: "Informal: talk about", turkish: "hakkında konuşmak", example: "Formal: discuss, address" },
-    { english: "Informal: think about", turkish: "düşünmek", example: "Formal: consider, contemplate" },
-    { english: "Informal: go up", turkish: "artmak", example: "Formal: increase, escalate" },
-    { english: "Informal: go down", turkish: "azalmak", example: "Formal: decrease, decline" },
-    { english: "Informal: but", turkish: "ama", example: "Formal: however, nevertheless" },
-    { english: "Informal: so", turkish: "bu yüzden", example: "Formal: therefore, consequently" },
-    { english: "Informal: also", turkish: "ayrıca", example: "Formal: furthermore, moreover" },
-    { english: "Informal: really important", turkish: "çok önemli", example: "Formal: crucial, essential" },
-    { english: "Informal: help", turkish: "yardım etmek", example: "Formal: assist, facilitate" },
-    { english: "Informal: use", turkish: "kullanmak", example: "Formal: utilize, employ" },
-    { english: "Informal: end", turkish: "son", example: "Formal: conclusion, termination" },
-    { english: "Informal: start", turkish: "başlamak", example: "Formal: commence, initiate" }
-  ],
+
+  table: {
+    title: "📋 Formal and Academic Writing Style",
+    data: [
+      { category: "What is Formal/Academic Writing?", explanation: "Professional and scholarly writing with objective, precise, complex language", purpose: "Communicate research, arguments, analyses in academic and professional contexts", turkish: "Resmi ve akademik yazı - profesyonel ve bilimsel bağlamlarda kullanılan dil", function: "Essays, research papers, reports, formal correspondence, academic journals", note: "Very different from conversational English!" },
+
+      { category: "Key Characteristics", objectivity: "Based on evidence, not personal opinion", precision: "Specific, technical vocabulary", complexity: "Sophisticated sentence structures", impersonality: "Avoid first/second person (I, you)", formality: "No contractions, phrasal verbs, slang", note: "All five characteristics are essential!" },
+
+      { category: "Phrasal Verbs → Latin-based Verbs", informal_1: "look into → investigate, examine (araştırmak)", informal_2: "find out → discover, ascertain (öğrenmek)", informal_3: "get better → improve, enhance (iyileşmek)", informal_4: "go up → increase, escalate (artmak)", informal_5: "go down → decrease, decline (azalmak)", rule: "Replace phrasal verbs with single Latin-based verbs", note: "Phrasal verbs = informal | Latin verbs = formal" },
+
+      { category: "More Informal → Formal Verbs", show_demonstrate: "show → demonstrate, illustrate (göstermek)", get_obtain: "get → obtain, acquire (almak, elde etmek)", ask_request: "ask for → request, solicit (istemek)", talk_discuss: "talk about → discuss, address (hakkında konuşmak)", think_consider: "think about → consider, contemplate (düşünmek)", help_assist: "help → assist, facilitate (yardım etmek)", use_utilize: "use → utilize, employ (kullanmak)", start_commence: "start → commence, initiate (başlamak)", end_conclude: "end → conclude, terminate (son, bitirmek)", note: "Latin-based verbs sound more formal and academic" },
+
+      { category: "Informal → Formal Adjectives", big_substantial: "big → substantial, significant (büyük)", a_lot_numerous: "a lot of → numerous, considerable (çok fazla)", really_important: "really important → crucial, essential (çok önemli)", good_beneficial: "good → beneficial, advantageous (iyi)", bad_detrimental: "bad → detrimental, adverse (kötü)", note: "Use precise, sophisticated adjectives" },
+
+      { category: "Informal → Formal Conjunctions/Transitions", but_however: "but → however, nevertheless, nonetheless (ama)", so_therefore: "so → therefore, consequently, thus (bu yüzden)", also_furthermore: "also → furthermore, moreover, additionally (ayrıca)", anyway_regardless: "anyway → regardless, nevertheless (her neyse)", because_since: "because → since, given that, due to the fact that", note: "Formal transitions make writing flow better" },
+
+      { category: "Avoid Contractions", dont_do_not: "don't → do not", cant_cannot: "can't → cannot", wont_will_not: "won't → will not", its_it_is: "it's → it is", theyre_they_are: "they're → they are", rule: "NEVER use contractions in formal writing", note: "Write out full forms always!", remember: "Contractions = casual, informal!" },
+
+      { category: "Impersonality - Avoid I/You", informal_i: "I think climate change is bad.", formal_passive: "It is believed that climate change poses significant challenges.", formal_one: "One can observe that climate change affects ecosystems.", formal_research: "Research indicates that climate change is problematic.", note: "Remove personal pronouns when possible", when_ok: "OK to use 'I' when describing your methodology or acknowledging limitations" },
+
+      { category: "Hedging Language", purpose: "Show caution, avoid absolute claims", examples: "may, might, could, appear to, seem to, suggest, indicate, tend to, generally", sentences: "Research suggests that... / The data may indicate... / This appears to be...", note: "Shows scholarly caution, not uncertainty!", important: "Academic writing rarely makes absolute claims" },
+
+      { category: "Formal Discourse Markers - Addition", addition: "Furthermore, Moreover, Additionally, In addition, Besides", use: "Add more information to support argument", example: "The economy is improving. Furthermore, unemployment rates are declining.", note: "Link ideas smoothly", remember: "Stronger than just 'also'!" },
+
+      { category: "Formal Discourse Markers - Contrast", contrast: "However, Nevertheless, Nonetheless, Conversely, On the contrary, In contrast", use: "Show opposing or contrasting ideas", example: "Technology improves efficiency. However, it also creates dependency.", note: "Essential for balanced arguments" },
+
+      { category: "Formal Discourse Markers - Cause/Effect", cause_effect: "Therefore, Consequently, Thus, Hence, Accordingly, As a result", use: "Show logical results or conclusions", example: "The data is inconclusive. Therefore, further research is necessary.", note: "Show logical progression of ideas" },
+
+      { category: "Passive Voice in Formal Writing", use: "Emphasize action/result rather than actor", examples: "The experiment was conducted... / The data were analyzed... / It is believed that...", note: "Very common in academic writing", when: "Especially in methodology sections and impersonal statements", remember: "Passive = more formal and objective" },
+
+      { category: "Avoid Informal Expressions", avoid: "kind of, sort of, stuff, things, guy, a bit, pretty (as adverb), lots of", replace_kind: "kind of/sort of → somewhat, rather", replace_stuff: "stuff/things → elements, factors, aspects", replace_lots: "lots of → many, numerous, considerable", note: "These weaken academic writing!", remember: "Be specific and precise!" },
+
+      { category: "Precision & Technical Vocabulary", vague: "The economy is getting better.", precise: "Economic indicators demonstrate a 3% GDP growth rate.", principle: "Use specific numbers, technical terms, exact descriptions", note: "Precision shows expertise", examples: "approximately 15%, substantial increase, marginal decline, statistically significant" },
+
+      { category: "Common Mistakes", mistake_1: "Using contractions", wrong_1: "It's important to note that the data doesn't support this. ✗", correct_1: "It is important to note that the data do not support this. ✓", rule: "No contractions in formal writing!", remember: "Write out full forms!" },
+
+      { category: "Common Mistakes", mistake_2: "Using first person unnecessarily", wrong_2: "I think this research shows... ✗", correct_2: "This research demonstrates... ✓ / It can be argued that... ✓", rule: "Avoid 'I think' in formal writing", when_ok: "OK: 'I conducted...' (methodology) or 'I acknowledge...' (limitations)" },
+
+      { category: "Formal Email/Letter Phrases", opening: "I am writing to inquire... / I would appreciate... / I am pleased to inform you...", requesting: "I would be grateful if you could... / Could you please provide...", closing: "Thank you for your consideration. / I look forward to hearing from you.", note: "Essential for professional communication", remember: "Polite, deferential tone!" },
+
+      { category: "Real-World Uses", essays: "Academic essays require formal language throughout", research_papers: "Methodology: 'The experiment was conducted...' | Results: 'The data indicate that...'", business_reports: "The market analysis demonstrates... / Profits increased substantially...", formal_emails: "I am writing to request clarification regarding...", note: "Know your audience and context!" },
+
+      { category: "Key Takeaway", summary: "Formal writing is objective, precise, complex, impersonal, and formal", avoid: "Contractions, phrasal verbs, I/you, slang, vague language, informal expressions", use: "Latin-based verbs, precise vocabulary, passive voice, hedging, formal transitions, complex sentences", transitions: "Furthermore, Moreover, However, Nevertheless, Therefore, Consequently, Thus", hedging: "may, might, suggest, indicate, appear to (shows caution)", impersonal: "It is believed that... / Research indicates... / One can observe...", formality_levels: "Most formal: academic papers | Formal: business reports | Semi-formal: professional emails", remember: "Match formality to context! Practice formal vocabulary!", next: "Transform informal texts to formal academic style!" }
+    ]
+  },
   speakingPractice: [
     {
       question: "In formal writing, why is it important to avoid first-person pronouns, and when might they be acceptable?",
@@ -1188,28 +1250,47 @@ Hedging is the use of cautious language to express claims with appropriate uncer
 ❌ "This causes unemployment." (too direct)
 ✅ "This may contribute to unemployment." (hedged)
 ✅ "Evidence suggests this could contribute to unemployment." (more hedged)`,
-  table: [
-    { english: "Direct: This causes...", turkish: "Bu neden olur", example: "Hedged: This may cause / tends to cause / could cause" },
-    { english: "Direct: The results prove...", turkish: "Sonuçlar kanıtlıyor", example: "Hedged: The results suggest / indicate / appear to show" },
-    { english: "Direct: All students need...", turkish: "Tüm öğrenciler ihtiyaç duyar", example: "Hedged: Most students may need / Students tend to need" },
-    { english: "Direct: This is the best method", turkish: "Bu en iyi yöntem", example: "Hedged: This appears to be an effective method / This might be among the most effective methods" },
-    { english: "Direct: It's impossible", turkish: "İmkansız", example: "Hedged: It seems unlikely / It appears improbable" },
-    { english: "Direct: Everyone knows", turkish: "Herkes biliyor", example: "Hedged: It is generally accepted that / There is broad consensus" },
-    { english: "Direct: This always happens", turkish: "Bu her zaman olur", example: "Hedged: This frequently occurs / This tends to happen" },
-    { english: "Direct: The data shows", turkish: "Veri gösteriyor", example: "Hedged: The data suggests / appears to indicate" },
-    { english: "Direct: It is certain", turkish: "Kesin", example: "Hedged: It is highly probable / It seems likely" },
-    { english: "Direct: This never works", turkish: "Bu asla işe yaramaz", example: "Hedged: This rarely proves effective / This seldom succeeds" },
-    { english: "Direct: The only solution", turkish: "Tek çözüm", example: "Hedged: A potential solution / One possible approach" },
-    { english: "Direct: Obviously", turkish: "Açıkça", example: "Hedged: Evidently / Apparently / It would seem" },
-    { english: "Direct: Clearly demonstrates", turkish: "Açıkça gösteriyor", example: "Hedged: Appears to demonstrate / Tends to suggest" },
-    { english: "Direct: Will definitely", turkish: "Kesinlikle olacak", example: "Hedged: May likely / Could potentially / Might probably" },
-    { english: "Direct: Must be", turkish: "Olmak zorunda", example: "Hedged: Seems to be / Appears to be / Could be" },
-    { english: "Direct: Completely wrong", turkish: "Tamamen yanlış", example: "Hedged: Somewhat problematic / Questionable / Perhaps inaccurate" },
-    { english: "Direct: No doubt", turkish: "Şüphesiz", example: "Hedged: Quite possibly / Very probably / It seems reasonable to assume" },
-    { english: "Direct: It is obvious", turkish: "Belli", example: "Hedged: It seems apparent / It appears evident" },
-    { english: "Direct: Proves conclusively", turkish: "Kesin kanıtlıyor", example: "Hedged: Provides support for / Offers evidence suggesting" },
-    { english: "Direct: Cannot be", turkish: "Olamaz", example: "Hedged: Seems unlikely to be / Appears improbable" }
-  ],
+
+  table: {
+    title: "📋 Hedging and Softening Statements",
+    data: [
+      { category: "What is Hedging?", explanation: "Cautious language expressing claims with appropriate uncertainty", purpose: "Show scholarly caution, avoid overstating, acknowledge limitations", turkish: "Yumuşatma dili - iddiaları ihtiyatla ifade etme", function: "Demonstrate academic integrity and intellectual humility", note: "Essential for academic credibility!" },
+
+      { category: "Why Use Hedging?", reason_1: "Shows awareness of research limitations", reason_2: "Avoids overstating claims", reason_3: "Demonstrates scholarly caution", reason_4: "Protects against definitive statements that may be disproven", reason_5: "Makes strong claims more diplomatic and acceptable", note: "Knowledge is provisional - hedging acknowledges this!", remember: "Hedging ≠ weakness, it = scholarly responsibility" },
+
+      { category: "Modal Verbs (Certainty Scale)", strongest: "will (100% certain) - It will rain tomorrow.", strong: "would, should (very likely) - This should work.", medium: "can, may (possible) - This may help.", weak: "could, might (less certain) - This might work.", use: "Choose modal based on your confidence level", note: "The weaker the modal, the more hedged", remember: "Modal verbs = most common hedging device!" },
+
+      { category: "Hedging Verbs", verbs: "appear, seem, suggest, indicate, tend to, assume, imply, propose", examples: "The data suggest... / Results indicate... / This appears to show... / Evidence tends to support...", use: "Replace definitive verbs (prove, show, demonstrate) with hedging verbs", note: "Make claims more tentative", remember: "Suggest/indicate = safer than prove/show!" },
+
+      { category: "Probability Adverbs", high: "certainly, definitely, clearly (very likely)", medium: "probably, likely, presumably (fairly certain)", low: "possibly, perhaps, maybe (less certain)", very_low: "apparently, seemingly (based on appearance)", use: "Modify verbs to show degree of certainty", examples: "This probably affects... / This possibly contributes... / This apparently causes...", note: "Adverbs soften the strength of claims" },
+
+      { category: "Quantifying Hedges", general: "in general, generally, typically, normally, usually, often, frequently", some: "some, many, most, a majority of, a number of, certain", avoid_all: "Avoid: all, every, always, never, none (too absolute!)", examples: "In general, students prefer... / Many researchers believe... / This often occurs...", note: "Avoid absolute quantifiers!", remember: "Most/many/some = safer than all/every!" },
+
+      { category: "Limiting Phrases", extent: "to a certain extent, to some degree, in some cases, in certain circumstances", examples: "This is true to a certain extent. / In some cases, this method works. / To some degree, the theory applies.", use: "Limit the scope of your claim", note: "Shows you're not making universal claims", remember: "Acknowledge exceptions and boundaries!" },
+
+      { category: "Impersonal Constructions", it_is: "It is possible that... / It appears that... / It seems that... / It is likely that...", there: "There seems to be... / There appears to be... / There tends to be...", examples: "It is possible that climate change affects migration. / There appears to be a connection between X and Y.", use: "More formal and cautious than direct statements", note: "Very common in academic writing!" },
+
+      { category: "Direct → Hedged Transformations", this_causes: "This causes → This may cause / could cause / tends to cause (Bu neden olur)", results_prove: "Results prove → Results suggest / indicate / appear to show (Sonuçlar kanıtlıyor)", all_students: "All students need → Most students may need / Students tend to need (Tüm öğrenciler)", best_method: "This is the best → This appears to be effective / might be among the most effective (En iyi)", impossible: "It's impossible → It seems unlikely / appears improbable (İmkansız)", note: "Always hedge strong claims!" },
+
+      { category: "More Direct → Hedged Examples", everyone_knows: "Everyone knows → It is generally accepted / There is broad consensus (Herkes biliyor)", always_happens: "This always happens → This frequently occurs / tends to happen (Her zaman)", data_shows: "Data shows → Data suggests / appears to indicate (Gösteriyor)", certain: "It is certain → It is highly probable / seems likely (Kesin)", never_works: "Never works → Rarely proves effective / seldom succeeds (Asla işe yaramaz)", only_solution: "The only solution → A potential solution / One possible approach (Tek çözüm)" },
+
+      { category: "Hedging with Adjectives", reduce_certainty: "possible, probable, likely, potential, apparent, seeming, alleged, claimed", examples: "a possible explanation / a probable cause / a likely outcome / potential benefits", use: "Make nouns less definitive", note: "Adjectives soften noun phrases", remember: "Possible/potential = hedged versions of definite!" },
+
+      { category: "Softening Criticism", direct_wrong: "This is wrong. ✗ (too harsh)", hedged_wrong: "This appears problematic. / This seems questionable. / This may be inaccurate. ✓", diplomatic: "While X presents an interesting perspective, alternative interpretations warrant consideration.", note: "Especially important when disagreeing!", remember: "Academic discourse should be respectful!" },
+
+      { category: "Common Mistakes", mistake_1: "Over-hedging (too cautious)", wrong_1: "It might possibly perhaps seem that this could potentially suggest... ✗ (too weak!)", correct_1: "This suggests that... / Evidence indicates that... ✓ (appropriately hedged)", rule: "Use ONE hedging device per claim, not multiple", remember: "Don't weaken claims too much!" },
+
+      { category: "Common Mistakes", mistake_2: "Hedging objective facts", wrong_2: "Water might freeze at 0°C ✗ (this is a fact!)", correct_2: "Water freezes at 0°C ✓ (no hedging needed for established facts)", rule: "Only hedge interpretations, predictions, and claims - not established facts", remember: "Facts don't need hedging!" },
+
+      { category: "Hedging in Different Sections", introduction: "Research suggests... / Studies indicate... (set up your argument)", methodology: "This approach tends to be effective... (justify your methods)", results: "The data appear to show... / There seems to be a correlation... (present findings)", discussion: "These findings might suggest... / This could indicate... (interpret results)", conclusion: "Evidence suggests that... / It seems reasonable to conclude... (final claims)", note: "Hedging throughout, but especially in interpretations!" },
+
+      { category: "Balancing Confidence & Caution", too_direct: "This proves the theory is correct. ✗", appropriately_hedged: "This evidence supports the theory. ✓ / This lends credibility to the theory. ✓", balance: "Show confidence in your work, but acknowledge limitations", note: "Strong evidence = less hedging needed | Weak evidence = more hedging needed", remember: "Match hedging to strength of evidence!" },
+
+      { category: "Real-World Uses", academic_papers: "Research suggests... / Data indicate... / Results appear to show...", thesis_defense: "Evidence tends to support... / Findings seem to suggest...", peer_review: "The author's claims might be strengthened by... / This interpretation appears problematic...", grant_proposals: "This approach could potentially lead to... / Results may demonstrate...", note: "Hedging = professional academic communication!" },
+
+      { category: "Key Takeaway", summary: "Hedging uses cautious language to express claims with appropriate uncertainty", why: "Shows scholarly caution, avoids overstating, acknowledges provisional nature of knowledge", modal_verbs: "will (certain) → would, should → can, may → could, might (uncertain)", hedging_verbs: "suggest, indicate, appear, seem, tend to (instead of prove, show)", adverbs: "probably, possibly, perhaps, apparently (modify certainty)", quantifiers: "most, many, some (avoid all, every, always, never)", phrases: "to a certain extent, in some cases, to some degree", impersonal: "It is possible that... / There appears to be... / It seems that...", balance: "Use ONE hedging device per claim - don't over-hedge!", remember: "Hedge interpretations and claims, NOT established facts! Match hedging to evidence strength!", next: "Practice hedging direct statements appropriately!" }
+    ]
+  },
   speakingPractice: [
     {
       question: "Why is hedging considered essential in academic discourse rather than a sign of weakness?",
@@ -1421,28 +1502,51 @@ Euphemisms are polite or indirect expressions used instead of harsh, blunt, or o
 ✅ Avoid causing offense or discomfort
 ✅ Maintain professionalism in difficult conversations
 ✅ Navigate cultural expectations around taboo topics`,
-  table: [
-    { english: "Passed away / departed", turkish: "Vefat etti", example: "My grandmother passed away last year. (Instead of: died)" },
-    { english: "Let go / laid off", turkish: "İşten çıkarıldı", example: "He was let go due to restructuring. (Instead of: fired)" },
-    { english: "Between jobs", turkish: "İşsiz", example: "I'm currently between jobs. (Instead of: unemployed)" },
-    { english: "Senior citizen", turkish: "Yaşlı", example: "Many senior citizens enjoy this program. (Instead of: old people)" },
-    { english: "Restroom / facilities", turkish: "Tuvalet", example: "Excuse me, where are the facilities? (Instead of: toilet)" },
-    { english: "Economically disadvantaged", turkish: "Yoksul", example: "Programs for economically disadvantaged families. (Instead of: poor)" },
-    { english: "Pre-owned / previously loved", turkish: "İkinci el", example: "I bought a pre-owned vehicle. (Instead of: used)" },
-    { english: "Correctional facility", turkish: "Hapishane", example: "He's in a correctional facility. (Instead of: prison)" },
-    { english: "Expecting / with child", turkish: "Hamile", example: "She's expecting in June. (Instead of: pregnant)" },
-    { english: "Adult beverages", turkish: "Alkollü içecekler", example: "We serve adult beverages. (Instead of: alcohol)" },
-    { english: "Indisposed / under the weather", turkish: "Hasta", example: "I'm feeling under the weather. (Instead of: sick)" },
-    { english: "Passed gas / broke wind", turkish: "Gaz çıkarmak", example: "Excuse me, I passed gas. (Instead of: farted)" },
-    { english: "Powder room", turkish: "Tuvalet", example: "May I use your powder room? (Instead of: bathroom)" },
-    { english: "Perspiring", turkish: "Terlemek", example: "I'm perspiring from the heat. (Instead of: sweating)" },
-    { english: "Misspoke / misremembered", turkish: "Yanlış söylemek", example: "I misspoke earlier. (Instead of: lied)" },
-    { english: "Comfort station", turkish: "Umumi tuvalet", example: "There's a comfort station ahead. (Instead of: public toilet)" },
-    { english: "Sanitation worker", turkish: "Çöpçü", example: "He works as a sanitation worker. (Instead of: garbage man)" },
-    { english: "Massage parlor", turkish: "Genelev (kapalı anlamı)", example: "That's not a legitimate massage parlor. (Euphemism for brothel)" },
-    { english: "Collateral damage", turkish: "Sivil kayıplar", example: "The military minimized collateral damage. (Instead of: civilian deaths)" },
-    { english: "Downsize / right-size", turkish: "İşçi çıkarmak", example: "The company is downsizing. (Instead of: firing workers)" }
-  ],
+
+  table: {
+    title: "📋 Euphemisms and Taboo Language",
+    data: [
+      { category: "What are Euphemisms?", explanation: "Polite or indirect expressions replacing harsh, blunt, or offensive language", purpose: "Soften uncomfortable topics, show respect, maintain professionalism", turkish: "Örtmece - rahatsız edici konuları yumuşatmak için kibar ifadeler", function: "Navigate sensitive topics diplomatically", note: "Essential for professional and social situations!" },
+
+      { category: "Why Use Euphemisms?", reason_1: "Show respect and sensitivity to others' feelings", reason_2: "Avoid causing offense or discomfort unnecessarily", reason_3: "Maintain professionalism in difficult conversations", reason_4: "Navigate cultural expectations around taboo topics", reason_5: "Make difficult news easier to deliver and receive", note: "Balance honesty with kindness", remember: "Euphemisms = diplomatic, not deceptive!" },
+
+      { category: "Death & Dying", direct: "died, dead, killed", euphemisms: "passed away, departed, lost someone, is no longer with us, at rest", examples: "My grandmother passed away peacefully. / We lost him last year. / She's no longer with us.", turkish: "vefat etti, aramızdan ayrıldı", note: "Very important to be sensitive about death", remember: "'Passed away' = most common and respectful" },
+
+      { category: "Unemployment & Job Termination", direct: "fired, sacked, unemployed, jobless", euphemisms: "let go, laid off, between jobs, made redundant, terminated, position eliminated", examples: "He was let go due to restructuring. / I'm currently between jobs. / Her position was eliminated.", turkish: "işten çıkarıldı, işsiz", note: "Soften the stigma of job loss", remember: "'Let go' and 'laid off' are most common" },
+
+      { category: "Age & Aging", direct: "old, elderly, ancient", euphemisms: "senior citizen, mature, golden years, advanced age, seasoned, experienced", examples: "Many senior citizens enjoy this program. / In her golden years... / He's getting on in years.", turkish: "yaşlı, kıdemli vatandaş", note: "Show respect for older people", remember: "'Senior citizen' is formal and respectful" },
+
+      { category: "Bathrooms & Bodily Functions", direct: "toilet, bathroom, pee, poop, fart", euphemisms: "restroom, facilities, powder room, washroom, comfort station | use the bathroom, passed gas, broke wind", examples: "Where are the facilities? / May I use the powder room? / I need to freshen up. / Excuse me, I passed gas.", turkish: "tuvalet, umumi tuvalet", note: "Very taboo in many cultures!", remember: "'Restroom' and 'facilities' are most polite" },
+
+      { category: "Money & Poverty", direct: "poor, broke, penniless", euphemisms: "financially challenged, economically disadvantaged, underprivileged, lower-income, humble beginnings", examples: "Programs for economically disadvantaged families. / They come from humble beginnings. / We're experiencing financial difficulties.", turkish: "yoksul, parasız", note: "Reduce stigma around poverty", remember: "'Economically disadvantaged' is formal" },
+
+      { category: "Physical Appearance & Weight", direct: "fat, obese, overweight, ugly", euphemisms: "plus-sized, full-figured, carrying extra weight, larger build, differently proportioned", examples: "Plus-sized clothing section. / He has a larger build. / She's carrying some extra weight.", turkish: "kilolu, büyük beden", note: "VERY sensitive topic - be careful!", remember: "Often best to avoid commenting on weight at all!" },
+
+      { category: "Pregnancy & Childbirth", direct: "pregnant", euphemisms: "expecting, with child, in the family way, has a bun in the oven (informal)", examples: "She's expecting in June. / They're expecting their first child. / When are you due?", turkish: "hamile", note: "Pregnancy itself isn't taboo, but direct terms can feel blunt", remember: "'Expecting' is most common and polite" },
+
+      { category: "Alcohol & Substances", direct: "alcohol, drugs, drunk, high", euphemisms: "adult beverages, social drinking, under the influence, substance use, impaired", examples: "We serve adult beverages. / He overindulges in adult beverages. / Driving while impaired.", turkish: "alkollü içecekler, madde kullanımı", note: "Especially important in professional contexts" },
+
+      { category: "Illness & Health", direct: "sick, diseased, disabled, crazy, insane", euphemisms: "under the weather, feeling poorly, indisposed | special needs, differently abled, physically challenged | mental health challenges", examples: "I'm feeling under the weather. / She has special needs. / He's dealing with mental health challenges.", turkish: "hasta, engelli, ruh sağlığı", note: "Use person-first language!", remember: "'Person with disability' not 'disabled person'" },
+
+      { category: "Lying & Deception", direct: "lied, lying, cheating", euphemisms: "misspoke, misremembered, being economical with the truth, stretching the truth, not entirely accurate", examples: "I misspoke earlier. / He was being economical with the truth. / That's not entirely accurate.", turkish: "yalan söylemek", note: "Euphemisms often used for politicians!", remember: "Can sometimes hide serious dishonesty" },
+
+      { category: "Crime & Punishment", direct: "prison, jail, criminal, stealing", euphemisms: "correctional facility, detention center, person who committed a crime, unauthorized acquisition", examples: "He's in a correctional facility. / Serving time at a detention center. / The person who committed the offense.", turkish: "hapishane, suçlu", note: "Official/legal language often uses euphemisms" },
+
+      { category: "Professions (Less Prestigious)", direct: "garbage man, maid, janitor", euphemisms: "sanitation worker, housekeeping professional, facilities maintenance specialist, custodial services", examples: "He works in sanitation services. / She's a housekeeping professional. / Custodial staff.", turkish: "çöpçü, hizmetçi, temizlikçi", note: "Show respect for all professions!", remember: "Everyone's work deserves respect" },
+
+      { category: "Business & Corporate", direct: "firing workers, spying on customers, propaganda", euphemisms: "downsizing, right-sizing, restructuring | consumer research, data collection | public relations, messaging", examples: "The company is downsizing. / Market research strategies. / Strategic communications.", turkish: "işten çıkarma, küçülme", note: "Corporate world full of euphemisms!", remember: "'Downsizing' = firing many people" },
+
+      { category: "War & Military", direct: "killing civilians, bombing, torture", euphemisms: "collateral damage, surgical strikes, enhanced interrogation techniques, neutralizing targets", examples: "Minimizing collateral damage. / Precision strikes. / Enhanced interrogation.", turkish: "sivil kayıplar, işkence", note: "VERY controversial - euphemisms can hide atrocities!", remember: "Be aware these can mask serious harm" },
+
+      { category: "Used/Second-Hand Items", direct: "used, second-hand, old, worn", euphemisms: "pre-owned, previously loved, vintage, gently used, pre-enjoyed", examples: "Pre-owned vehicle in excellent condition. / Previously loved furniture. / Vintage clothing.", turkish: "ikinci el, kullanılmış", note: "Marketing uses euphemisms extensively!" },
+
+      { category: "Common Mistakes", mistake_1: "Over-using euphemisms (being unclear)", wrong_1: "He's no longer with the company and is exploring new opportunities in the marketplace. ✗ (just say: He was laid off)", balance: "Use euphemisms for sensitivity, but don't obscure meaning", note: "Clarity matters too!", remember: "Euphemisms should soften, not confuse!" },
+
+      { category: "Real-World Uses", funerals_condolences: "I'm so sorry for your loss. / She passed away peacefully. / He's in a better place now.", professional_settings: "We're letting you go. / The position has been eliminated. / She's between opportunities.", medical_contexts: "The patient didn't make it. / She's experiencing some discomfort. / He has a growth.", social_situations: "Where's the restroom? / I need to powder my nose. / He's had some work done (plastic surgery).", note: "Context determines which euphemisms are appropriate!" },
+
+      { category: "Key Takeaway", summary: "Euphemisms are indirect expressions replacing harsh or offensive language", purpose: "Show respect, avoid offense, maintain professionalism, navigate taboo topics", common_categories: "Death (passed away), Jobs (let go, laid off), Age (senior citizen), Bathrooms (restroom, facilities), Money (economically disadvantaged)", important: "Balance sensitivity with clarity - don't obscure meaning!", cultural: "Euphemisms vary by culture and change over time", person_first: "Use person-first language for disabilities (person with disability, not disabled person)", professional: "Business and military use many euphemisms (downsize, collateral damage)", remember: "Euphemisms = diplomatic communication, but can sometimes hide truth!", next: "Practice using euphemisms appropriately in different contexts!" }
+    ]
+  },
   speakingPractice: [
     { question: "How would you inform someone that their relative passed away?", answer: "I'm very sorry to tell you this, but your uncle passed away peacefully last night. He was surrounded by family, and he didn't suffer." },
     { question: "How would you diplomatically say someone was fired from their job?", answer: "Unfortunately, David was let go last month due to company restructuring. He's currently exploring new opportunities." },
@@ -1529,28 +1633,47 @@ Advanced idioms are sophisticated figurative expressions that go beyond basic ph
 ⚠️ Some idioms are culturally specific
 ⚠️ Context determines appropriateness
 ⚠️ Overusing idioms can seem forced`,
-  table: [
-    { english: "Move the needle", turkish: "Önemli etki yaratmak", example: "This initiative will really move the needle on customer satisfaction." },
-    { english: "Bite the bullet", turkish: "Zor kararı vermek", example: "We need to bite the bullet and cut the budget." },
-    { english: "Throw in the towel", turkish: "Pes etmek", example: "After years of trying, he finally threw in the towel." },
-    { english: "Hit it out of the park", turkish: "Büyük başarı kazanmak", example: "Your presentation really hit it out of the park!" },
-    { english: "Miss the boat", turkish: "Fırsatı kaçırmak", example: "If we don't invest now, we'll miss the boat." },
-    { english: "Bark up the wrong tree", turkish: "Yanlış kapıya gitmek", example: "If you think I took your keys, you're barking up the wrong tree." },
-    { english: "Cut to the chase", turkish: "Konuya gelmek", example: "Let's cut to the chase—what's your final offer?" },
-    { english: "Read between the lines", turkish: "Satır aralarını okumak", example: "If you read between the lines, she's actually not happy about it." },
-    { english: "On thin ice", turkish: "Tehlikeli durumda", example: "After that mistake, you're on thin ice with the boss." },
-    { english: "Jump the gun", turkish: "Aceleci davranmak", example: "Don't jump the gun—wait for all the facts first." },
-    { english: "Burn bridges", turkish: "Köprüleri atmak", example: "Don't burn bridges; you might need those contacts later." },
-    { english: "Pull strings", turkish: "Torpil kullanmak", example: "He pulled some strings to get her the interview." },
-    { english: "Rock the boat", turkish: "Karışıklık çıkarmak", example: "I don't want to rock the boat by questioning the decision." },
-    { english: "Spill the beans", turkish: "Sırrı açığa vurmak", example: "Don't spill the beans about the surprise party!" },
-    { english: "Let the cat out of the bag", turkish: "Sırrı ifşa etmek", example: "Sorry, I let the cat out of the bag about your promotion." },
-    { english: "Back to the drawing board", turkish: "Başa dönmek", example: "The prototype failed, so it's back to the drawing board." },
-    { english: "Get the ball rolling", turkish: "İşe başlamak", example: "Let's get the ball rolling on this project." },
-    { english: "In the same boat", turkish: "Aynı durumda olmak", example: "We're all in the same boat—nobody got a raise." },
-    { english: "The elephant in the room", turkish: "Görmezden gelinen sorun", example: "Let's address the elephant in the room: our declining sales." },
-    { english: "Take with a grain of salt", turkish: "Şüpheyle karşılamak", example: "Take his advice with a grain of salt; he's not an expert." }
-  ],
+
+  table: {
+    title: "📋 Advanced Idioms",
+    data: [
+      { category: "What are Advanced Idioms?", explanation: "Sophisticated figurative expressions adding color, nuance, and cultural depth", purpose: "Signal native-like fluency, express complex ideas concisely", turkish: "Gelişmiş deyimler - mecazi ifadeler", function: "Add sophistication to communication, show cultural knowledge", note: "Idioms make English sound natural and fluent!" },
+
+      { category: "Business & Professional Idioms", move_the_needle: "move the needle = make significant impact (Önemli etki yaratmak)", touch_base: "touch base = make contact, check in (İletişime geçmek)", run_up_flagpole: "run it up the flagpole = present idea for feedback (Görüşlere sunmak)", examples: "This will really move the needle on sales. / Let's touch base next week. / Run it up the flagpole and see what they think.", note: "Common in corporate environments!" },
+
+      { category: "Decision Making Idioms", on_the_fence: "on the fence = undecided (Kararsız)", cross_that_bridge: "cross that bridge when we come to it = deal with problems as they arise (Zamanı gelince halletmek)", bite_the_bullet: "bite the bullet = face something difficult courageously (Zor kararı vermek)", examples: "I'm on the fence about the offer. / We'll cross that bridge when we come to it. / We need to bite the bullet and make cuts.", note: "Useful for discussing choices!" },
+
+      { category: "Success & Failure Idioms", hit_out_of_park: "hit it out of the park = achieve great success (Büyük başarı kazanmak)", miss_the_boat: "miss the boat = miss an opportunity (Fırsatı kaçırmak)", back_to_drawing_board: "back to the drawing board = start over (Başa dönmek)", throw_in_towel: "throw in the towel = give up (Pes etmek)", examples: "Your presentation hit it out of the park! / If we wait, we'll miss the boat. / The plan failed - back to the drawing board.", note: "Express results vividly!" },
+
+      { category: "Communication Idioms", read_between_lines: "read between the lines = understand hidden meaning (Satır aralarını okumak)", beat_around_bush: "beat around the bush = avoid saying something directly (Lafı dolandırmak)", cut_to_chase: "cut to the chase = get straight to the point (Konuya gelmek)", spill_beans: "spill the beans = reveal a secret (Sırrı açığa vurmak)", let_cat_out: "let the cat out of the bag = accidentally reveal a secret (Sırrı ifşa etmek)", examples: "Read between the lines - she's not happy. / Stop beating around the bush! / Let's cut to the chase. / Don't spill the beans about the party!", note: "How we talk about talking!" },
+
+      { category: "Risk & Danger Idioms", on_thin_ice: "on thin ice = in a risky/dangerous situation (Tehlikeli durumda)", burn_bridges: "burn bridges = damage relationships irreparably (Köprüleri atmak)", rock_the_boat: "rock the boat = cause problems/disruption (Karışıklık çıkarmak)", jump_the_gun: "jump the gun = act too hastily (Aceleci davranmak)", examples: "After that error, you're on thin ice. / Don't burn bridges - you might need them later. / I don't want to rock the boat. / Don't jump the gun - wait for confirmation.", note: "Warn about consequences!" },
+
+      { category: "Starting & Progress Idioms", get_ball_rolling: "get the ball rolling = start something (İşe başlamak)", from_scratch: "start from scratch = start from the very beginning (Sıfırdan başlamak)", hit_the_ground_running: "hit the ground running = start energetically (Hızlı başlamak)", in_full_swing: "in full swing = at peak activity (Tam hızında)", examples: "Let's get the ball rolling. / We had to start from scratch. / The new hire hit the ground running. / The project is in full swing now.", note: "Describe beginnings and momentum!" },
+
+      { category: "Problem & Obstacle Idioms", elephant_in_room: "elephant in the room = obvious problem everyone ignores (Görmezden gelinen büyük sorun)", bark_up_wrong_tree: "bark up the wrong tree = pursue wrong course/accuse wrong person (Yanlış kapıya gitmek)", tip_of_iceberg: "tip of the iceberg = small visible part of larger problem (Buzun görünen kısmı)", can_of_worms: "open a can of worms = create complicated problems (Arapsaçı yaratmak)", examples: "Let's address the elephant in the room. / You're barking up the wrong tree - I didn't take it. / This is just the tip of the iceberg. / Don't open that can of worms.", note: "Identify and discuss problems!" },
+
+      { category: "Shared Situation Idioms", in_same_boat: "in the same boat = in the same difficult situation (Aynı durumda)", on_same_page: "on the same page = have same understanding (Aynı fikirde, uyumlu)", on_same_wavelength: "on the same wavelength = think similarly (Aynı dalga boyunda)", examples: "We're all in the same boat - nobody got raises. / Let's make sure we're on the same page. / We're on the same wavelength about this.", note: "Express unity or shared experience!" },
+
+      { category: "Influence & Power Idioms", pull_strings: "pull strings = use influence/connections (Torpil kullanmak)", call_the_shots: "call the shots = make the decisions (Kararları vermek)", have_upper_hand: "have the upper hand = be in control/advantaged position (Avantajlı olmak)", examples: "He pulled some strings to get the interview. / She calls the shots around here. / After that deal, we have the upper hand.", note: "Talk about power dynamics!" },
+
+      { category: "Skepticism & Caution Idioms", take_with_grain_salt: "take with a grain of salt = be skeptical (Şüpheyle karşılamak)", too_good_to_be_true: "too good to be true = seems suspicious (İnanılmaz derecede iyi)", red_flag: "red flag = warning sign (Uyarı işareti)", devil_in_details: "the devil is in the details = problems lie in small things (Sorun ayrıntılarda)", examples: "Take his promises with a grain of salt. / That offer seems too good to be true. / That's a red flag. / The devil is in the details.", note: "Express doubt and caution!" },
+
+      { category: "Time & Urgency Idioms", in_nick_of_time: "in the nick of time = just before it's too late (Tam zamanında)", at_eleventh_hour: "at the eleventh hour = at the last minute (Son dakika)", beat_the_clock: "beat the clock = finish just in time (Zamanı yakalamak)", long_run: "in the long run = eventually, over time (Uzun vadede)", examples: "We arrived in the nick of time! / He submitted it at the eleventh hour. / Can we beat the clock? / In the long run, it's worth it.", note: "Discuss timing!" },
+
+      { category: "Effort & Work Idioms", go_extra_mile: "go the extra mile = make extra effort (Ekstra çaba göstermek)", pull_weight: "pull your weight = do your share of work (Üzerine düşeni yapmak)", work_fingers_to_bone: "work your fingers to the bone = work very hard (Çok çalışmak)", examples: "She really went the extra mile on this project. / Everyone needs to pull their weight. / I've been working my fingers to the bone.", note: "Talk about work ethic!" },
+
+      { category: "Understanding & Clarity Idioms", piece_of_cake: "piece of cake = very easy (Çok kolay)", clear_as_mud: "clear as mud = very confusing (Hiç anlaşılmaz)", get_hang_of_it: "get the hang of it = learn how to do something (Alışmak, öğrenmek)", over_my_head: "over my head = too difficult to understand (Anlamakta zorlanmak)", examples: "This task is a piece of cake! / His explanation was clear as mud. / I'm getting the hang of it now. / That discussion was over my head.", note: "Express difficulty levels!" },
+
+      { category: "Common Mistakes", mistake_1: "Mixing up idioms", wrong_1: "Let's get the ball rolling out of the park ✗ (mixing two idioms!)", correct_1: "Let's get the ball rolling ✓ OR Hit it out of the park ✓ (choose one)", rule: "Don't combine different idioms", remember: "Each idiom is a complete expression!" },
+
+      { category: "Common Mistakes", mistake_2: "Using idioms in very formal writing", wrong_2: "The defendant threw in the towel (in legal brief) ✗", correct_2: "The defendant conceded ✓", rule: "Many idioms are too informal for academic/legal writing", remember: "Know your audience and context!" },
+
+      { category: "Real-World Uses", business_meetings: "Let's move the needle on this. / We need to get the ball rolling. / I'm on the fence about this approach.", casual_conversation: "That presentation hit it out of the park! / We're in the same boat. / Let's cut to the chase.", negotiations: "Don't burn bridges. / Let's make sure we're on the same page. / Take that with a grain of salt.", storytelling: "We arrived in the nick of time! / It was back to the drawing board. / I was barking up the wrong tree.", note: "Idioms make English natural and colorful!" },
+
+      { category: "Key Takeaway", summary: "Advanced idioms are figurative expressions adding sophistication and cultural depth", business: "move the needle, touch base, bite the bullet, get ball rolling", success_failure: "hit out of park, miss the boat, throw in towel, back to drawing board", communication: "read between lines, cut to chase, spill beans, let cat out of bag", risk: "on thin ice, burn bridges, rock the boat, jump the gun", problems: "elephant in room, bark up wrong tree, tip of iceberg, can of worms", context: "Many idioms informal - not for academic writing!", overuse: "Don't overuse - sounds forced and unnatural!", cultural: "Some idioms culturally specific - not universal!", remember: "Learn idioms in context! Use sparingly! Know when appropriate!", next: "Practice using idioms naturally in conversation!" }
+    ]
+  },
   speakingPractice: [
     { question: "Have you ever had to bite the bullet and make a difficult decision?", answer: "Yes, I had to bite the bullet last year and leave a comfortable job to pursue my passion. It was scary, but I knew I had to do it." },
     { question: "Can you describe a time when someone really hit it out of the park?", answer: "My colleague absolutely hit it out of the park with her presentation to the board. Everyone was impressed, and she got promoted shortly after." },
