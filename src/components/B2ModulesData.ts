@@ -744,6 +744,24 @@ In English, when a verb follows a preposition, it must be in the gerund form (-i
 
 ⏰ Common Prepositions
 after, before, by, in, on, about, for, of, to, without`,
+  table: {
+    title: "📋 Common Preposition + Gerund Combinations",
+    data: [
+      { preposition: "interested in", example: "I'm interested in learning Spanish" },
+      { preposition: "good at", example: "She's good at solving problems" },
+      { preposition: "afraid of", example: "He's afraid of flying" },
+      { preposition: "tired of", example: "I'm tired of waiting" },
+      { preposition: "apologize for", example: "She apologized for being late" },
+      { preposition: "succeed in", example: "They succeeded in completing the project" },
+      { preposition: "think about", example: "I'm thinking about changing jobs" },
+      { preposition: "look forward to", example: "We're looking forward to seeing you" },
+      { preposition: "thank someone for", example: "He thanked me for helping" },
+      { preposition: "by (method)", example: "I learn by practicing every day" },
+      { preposition: "after", example: "Call me after finishing work" },
+      { preposition: "before", example: "Think carefully before making a decision" },
+      { preposition: "without", example: "He left without saying goodbye" }
+    ]
+  },
   speakingPractice: [
     { question: "What are you interested in doing this weekend?", answer: "I'm interested in going hiking with my friends." },
     { question: "Are you good at cooking?", answer: "Yes, I'm quite good at making Italian dishes." },
@@ -810,6 +828,22 @@ Collocations are natural combinations of words that are often used together. Adv
 • I made an effort to arrive early.
 • We had heavy rain last night.
 • She takes full responsibility for the mistake.`,
+  table: {
+    title: "📋 Common Advanced Collocations",
+    data: [
+      { type: "Verb + Noun", collocation: "make an effort", example: "I made an effort to arrive on time" },
+      { type: "Verb + Noun", collocation: "catch a cold", example: "I caught a cold last week" },
+      { type: "Verb + Noun", collocation: "make a promise", example: "She made a promise to help" },
+      { type: "Verb + Noun", collocation: "take a break", example: "Let's take a short break" },
+      { type: "Verb + Noun", collocation: "pay attention", example: "Please pay close attention" },
+      { type: "Adjective + Noun", collocation: "heavy rain", example: "We had heavy rain yesterday" },
+      { type: "Adjective + Noun", collocation: "strong coffee", example: "I need a strong coffee" },
+      { type: "Adjective + Noun", collocation: "heavy traffic", example: "I was stuck in heavy traffic" },
+      { type: "Verb + Expression", collocation: "break the ice", example: "A joke can break the ice" },
+      { type: "Verb + Expression", collocation: "keep in touch", example: "Let's keep in touch" },
+      { type: "Verb + Expression", collocation: "take for granted", example: "Don't take your health for granted" }
+    ]
+  },
   speakingPractice: [
     { question: "Have you ever made an effort to improve your health?", answer: "Yes, I made a real effort to eat healthier last year." },
     { question: "What do you usually do during heavy rain?", answer: "I usually stay indoors when there's heavy rain." },
@@ -876,6 +910,21 @@ Advanced phrasal verbs are common in everyday English and are essential for soun
 • She brought up an interesting topic during the meeting.
 • I'm trying to cut down on sugar.
 • We need to look into the issue more closely.`,
+  table: {
+    title: "📋 Common Advanced Phrasal Verbs",
+    data: [
+      { phrasal_verb: "bring up", meaning: "mention a topic", example: "She brought up the issue in the meeting" },
+      { phrasal_verb: "cut down on", meaning: "reduce consumption", example: "I'm trying to cut down on sugar" },
+      { phrasal_verb: "come across", meaning: "find or meet by chance", example: "I came across an old friend yesterday" },
+      { phrasal_verb: "take up", meaning: "start a hobby or activity", example: "I've taken up yoga recently" },
+      { phrasal_verb: "turn down", meaning: "refuse or reject", example: "He turned down the job offer" },
+      { phrasal_verb: "put off", meaning: "postpone or delay", example: "I put off the meeting until next week" },
+      { phrasal_verb: "carry out", meaning: "perform or complete", example: "They carried out the experiment" },
+      { phrasal_verb: "look into", meaning: "investigate", example: "We'll look into the problem" },
+      { phrasal_verb: "run out of", meaning: "have no more left", example: "We've run out of milk" },
+      { phrasal_verb: "go over", meaning: "review or check", example: "Let's go over the report together" }
+    ]
+  },
   speakingPractice: [
     { question: "Have you ever brought up a sensitive topic in a meeting?", answer: "Yes, I once brought up salary issues during a team meeting." },
     { question: "Is there anything you're trying to cut down on?", answer: "Yes, I'm trying to cut down on caffeine." },
@@ -943,6 +992,22 @@ Idioms and expressions are phrases that have a figurative meaning different from
 • You hit the nail on the head with your analysis.
 • I'm feeling a bit under the weather today.
 • He let the cat out of the bag about the surprise party.`,
+  table: {
+    title: "📋 Common English Idioms and Their Meanings",
+    data: [
+      { idiom: "hit the nail on the head", meaning: "to be exactly right", example: "You hit the nail on the head with that comment" },
+      { idiom: "under the weather", meaning: "feeling sick", example: "I'm feeling under the weather today" },
+      { idiom: "break the ice", meaning: "start a conversation", example: "A joke can break the ice" },
+      { idiom: "let the cat out of the bag", meaning: "reveal a secret", example: "He let the cat out of the bag about the party" },
+      { idiom: "once in a blue moon", meaning: "very rarely", example: "I eat fast food once in a blue moon" },
+      { idiom: "over the moon", meaning: "extremely happy", example: "She was over the moon about the news" },
+      { idiom: "spill the beans", meaning: "reveal secret information", example: "Don't spill the beans about the surprise" },
+      { idiom: "cost an arm and a leg", meaning: "very expensive", example: "This watch cost me an arm and a leg" },
+      { idiom: "hit the sack", meaning: "go to bed", example: "I'm tired, I'm going to hit the sack" },
+      { idiom: "bite the bullet", meaning: "do something difficult", example: "I had to bite the bullet and apologize" },
+      { idiom: "by the skin of your teeth", meaning: "barely succeed", example: "I passed the exam by the skin of my teeth" }
+    ]
+  },
   speakingPractice: [
     { question: "Have you ever hit the nail on the head in a discussion?", answer: "Yes, during a meeting, I hit the nail on the head with my suggestion." },
     { question: "What do you do when you feel under the weather?", answer: "I usually rest and drink lots of fluids when I'm under the weather." },
@@ -1017,6 +1082,21 @@ Expressing certainty and doubt is important in everyday communication to show ho
 • I'm sure that she will come to the party.
 • I doubt that he knows the answer.
 • There's no doubt that this is the right decision.`,
+  table: {
+    title: "📋 Expressing Certainty and Doubt",
+    data: [
+      { level: "High Certainty", expression: "I'm sure that...", example: "I'm sure that she'll arrive soon" },
+      { level: "High Certainty", expression: "There's no doubt that...", example: "There's no doubt that he's qualified" },
+      { level: "High Certainty", expression: "I'm convinced that...", example: "I'm convinced that this is the right choice" },
+      { level: "High Certainty", expression: "It's obvious that...", example: "It's obvious that she's talented" },
+      { level: "Moderate Certainty", expression: "I'm fairly certain that...", example: "I'm fairly certain it'll work" },
+      { level: "Moderate Certainty", expression: "I think that...", example: "I think we're on the right track" },
+      { level: "Moderate Doubt", expression: "I'm not sure that...", example: "I'm not sure that's a good idea" },
+      { level: "Moderate Doubt", expression: "I have my doubts about...", example: "I have my doubts about the plan" },
+      { level: "High Doubt", expression: "I doubt that...", example: "I doubt that he'll show up" },
+      { level: "High Doubt", expression: "It's unlikely that...", example: "It's unlikely that we'll finish on time" }
+    ]
+  },
   speakingPractice: [
     { question: "Are you sure about your decision?", answer: "Yes, I'm completely sure that this is the right choice." },
     { question: "Do you think the weather will be good tomorrow?", answer: "I'm not sure, but it looks like it might rain." },
