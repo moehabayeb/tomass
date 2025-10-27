@@ -5037,12 +5037,31 @@ Yapı (Structure): Özne + could + fiil
 (Not: Bu modülde "could" sadece olasılık anlamında kullanılır.)`,
   tip: "Use 'could' to express possibility when you're not certain about something.",
   
-  table: [
-    { subject: "I", could: "could", baseVerb: "win", exampleSentence: "I could win the game." },
-    { subject: "She", could: "could", baseVerb: "be", exampleSentence: "She could be late." },
-    { subject: "We", could: "could", baseVerb: "go", exampleSentence: "We could go to the cinema." },
-    { subject: "They", could: "could", baseVerb: "arrive", exampleSentence: "They could arrive early." }
-  ],
+  table: {
+    title: "📋 Modal Verb 'could': Expressing Possibility & Uncertainty",
+    data: [
+      { meaning: "Possibility / maybe", turkish: "Olabilir, mümkün", function: "Expressing that something is possible but not certain", strength: "Moderate possibility (50-70%)", example: "It could rain tomorrow.", note: "Not sure, but it's possible", usage: "Uncertain situations" },
+      { formation: "Structure", pattern: "Subject + could + V1 (base verb)", examples: "I could win. / She could be late. / They could arrive early.", note: "Same form for all subjects", rule: "Modal + base verb (no 'to', no -s)", critical: "Never add -s or 'to'!" },
+      { use_possibility: "Future possibility", when: "Something might happen in the future", examples: "It could rain tomorrow. / She could call you later. / We could go to the beach this weekend.", note: "Maybe it will happen, maybe not", certainty: "Not very certain", context: "Making predictions with uncertainty" },
+      { use_present_guess: "Present guess / assumption", when: "Guessing about the current situation", examples: "He could be at home now. / She could be sleeping. / They could be in a meeting.", note: "Logical guess about NOW", certainty: "Uncertain, but possible", context: "When you don't know for sure" },
+      { use_suggestion: "Polite suggestion", when: "Suggesting possibilities or options", examples: "We could watch a movie. / You could try calling her. / We could meet at 3 PM.", note: "Softer than 'should'", tone: "Gentle suggestion, not strong advice", context: "Offering ideas, not commanding" },
+      { use_conditional: "Conditional possibility", when: "Result depends on a condition", examples: "If we hurry, we could catch the train. / If you study, you could pass the exam.", note: "Possibility under certain conditions", pattern: "If + condition, could + result", context: "Conditional sentences" },
+      { could_past_ability: "Note: Past ability (different meaning!)", structure: "could = was/were able to (past)", examples: "I could swim when I was young. (ability in past)", note: "THIS MODULE: possibility, NOT past ability!", distinction: "could = possibility (this module) vs could = past ability (different topic)", warning: "Don't confuse the two meanings!" },
+      { negative_form: "Negative: could not / couldn't", structure: "Subject + could not (couldn't) + V1", examples: "It couldn't be true. / He couldn't be lying. / She couldn't finish it.", meaning: "Not possible / impossible", note: "Expressing impossibility", usage: "Strong doubt or impossibility" },
+      { question_form: "Questions with could", structure: "Could + subject + V1?", examples: "Could it rain? / Could she be at work? / Could they win?", answer: "Yes, it could. / No, it couldn't.", note: "Asking about possibility", usage: "Checking if something is possible" },
+      { could_vs_can: "could vs can (possibility)", could: "Less certain possibility", can: "More theoretical possibility or ability", could_ex: "It could rain. (maybe 50%)", can_ex: "It can rain in summer. (general fact)", difference: "'could' = specific uncertain situation, 'can' = general ability/possibility" },
+      { could_vs_might: "could vs might", could: "Moderate possibility (~50-70%)", might: "Lower possibility (~30-50%)", both: "Often interchangeable in modern English", difference: "'could' slightly more likely than 'might'", note: "In practice, very similar" },
+      { could_vs_will: "could vs will", could: "Possible, but uncertain", will: "Certain, definite future", could_ex: "It could rain. (maybe)", will_ex: "It will rain. (definitely)", difference: "'could' = uncertain, 'will' = certain" },
+      { could_politeness: "Polite requests (different use!)", examples: "Could you help me? / Could I use your phone? / Could you open the door?", note: "This is a DIFFERENT meaning (politeness, not possibility)", context: "Asking politely for help or permission", warning: "Not covered in detail in this module" },
+      { common_mistake: "Adding 'to' after could", wrong: "It could to rain. ✗ / She could to be late. ✗", correct: "It could rain. ✓ / She could be late. ✓", rule: "NO 'to' after 'could'!", explanation: "'could' + base verb (no 'to')", critical: "Modal verbs never use 'to'!" },
+      { common_mistake: "Adding -s to verb", wrong: "He could wins. ✗ / She could goes. ✗", correct: "He could win. ✓ / She could go. ✓", rule: "Base verb after modal, NO -s", explanation: "Modal + V1 (base form)", critical: "Never add -s after modals!" },
+      { common_mistake: "Confusing with past ability", wrong: "Yesterday, I could finish it. (if you mean you did finish)", correct: "Yesterday, I was able to finish it. / I finished it.", rule: "For completed past ability, use 'was able to' or simple past", explanation: "'could' for past ability = general ability, not specific achievement", note: "Different meaning from possibility!" },
+      { time_expressions: "Common time words with could", future: "tomorrow, later, next week, soon, in the future", present: "now, at the moment, currently", examples: "It could rain tomorrow. / She could be sleeping now.", note: "Can be used with present or future time" },
+      { context_weather: "Weather predictions (uncertain)", examples: "It could rain tomorrow. / It could snow tonight. / It could be sunny.", note: "When you're not sure about the weather", certainty: "Less certain than 'will'" },
+      { context_plans: "Uncertain plans or possibilities", examples: "We could go to the cinema. / I could visit my friend. / They could come to dinner.", note: "Possible plans, not decided yet", tone: "Exploring options" },
+      { spoken_emphasis: "Spoken emphasis", examples: "It COULD happen! (emphasizing possibility) / You COULD be right! (acknowledging possibility)", note: "Stress on 'could' shows emphasis", usage: "Admitting possibility reluctantly or with surprise" }
+    ]
+  },
   
   speakingPractice: [
     { question: "Could it rain tomorrow?", answer: "Yes, it could." },
@@ -5107,12 +5126,32 @@ Yapı (Structure): Özne + may/might + fiil
 • She might come to the party. → Partiye gelebilir.`,
   tip: "Use 'may' and 'might' to express possibility. 'May' suggests slightly higher probability than 'might'.",
   
-  table: [
-    { subject: "I", modal: "may", baseVerb: "go", exampleSentence: "I may go home early." },
-    { subject: "She", modal: "might", baseVerb: "be", exampleSentence: "She might be at work." },
-    { subject: "They", modal: "may", baseVerb: "visit", exampleSentence: "They may visit us tomorrow." },
-    { subject: "He", modal: "might", baseVerb: "call", exampleSentence: "He might call you." }
-  ],
+  table: {
+    title: "📋 Modal Verbs 'may' & 'might': Expressing Different Levels of Possibility",
+    data: [
+      { modal: "may", meaning: "Possibility (moderate)", turkish: "-ebilir, -abilir", probability: "~40-60% chance", example: "It may rain tomorrow.", note: "Slightly more likely than 'might'", usage: "When something has a decent chance" },
+      { modal: "might", meaning: "Possibility (lower)", turkish: "-ebilir, -abilir", probability: "~30-50% chance", example: "It might rain tomorrow.", note: "Slightly less likely than 'may'", usage: "When something is less certain" },
+      { reality_check: "In modern English...", truth: "May and might are often used interchangeably!", practice: "Native speakers often use them with no difference in meaning", note: "The probability difference is subtle and often ignored", advice: "Don't worry too much about the difference!" },
+      { formation_may: "Structure with may", pattern: "Subject + may + V1 (base verb)", examples: "I may go. / She may call. / They may visit.", note: "Same for all subjects", rule: "No 'to', no -s", affirmative: "Subject + may + V1" },
+      { formation_might: "Structure with might", pattern: "Subject + might + V1 (base verb)", examples: "I might go. / She might call. / They might visit.", note: "Same for all subjects", rule: "No 'to', no -s", affirmative: "Subject + might + V1" },
+      { use_possibility: "Expressing possibility", when: "Talking about future possibilities", examples: "It may/might rain later. / She may/might come to the party. / They may/might buy a new car.", note: "Both mean 'maybe, possibly'", context: "Uncertain predictions" },
+      { use_present_guess: "Present guesses", when: "Guessing about current situations", examples: "He may/might be at home now. / She may/might be sleeping. / They may/might be busy.", note: "Making assumptions about NOW", certainty: "Not sure, just guessing" },
+      { negative_may: "Negative with may", structure: "Subject + may not + V1", examples: "It may not rain. / She may not come. / They may not agree.", note: "Possibility that it WON'T happen", short_form: "NO contraction! (can't say 'mayn't')", critical: "Must use 'may not' (2 words)" },
+      { negative_might: "Negative with might", structure: "Subject + might not (mightn't) + V1", examples: "It might not rain. / She might not come. / They might not agree.", note: "Possibility that it WON'T happen", short_form: "might not = mightn't (rare)", usage: "'might not' more common than 'mightn't'" },
+      { question_may: "Questions with may (less common)", structure: "May + subject + V1?", examples: "May I come in? / May she join us?", note: "Often sounds formal or old-fashioned for possibility", modern: "More common for asking permission!", usage: "Questions about possibility are rare with 'may'" },
+      { question_might: "Questions with might (rare)", structure: "Might + subject + V1?", examples: "Might it rain? / Might she call?", note: "Very formal, almost never used!", modern: "Use 'Will it...?' or 'Could it...?' instead", advice: "Avoid questions with 'might' - sounds archaic!" },
+      { may_permission: "May = Permission (different meaning!)", structure: "May I + verb?", examples: "May I come in? / May I use your phone? / May I ask a question?", meaning: "Asking for permission (NOT possibility!)", formality: "Formal/polite", note: "This is a DIFFERENT use of 'may'!" },
+      { may_vs_might_history: "Historical difference", old_rule: "'may' was present, 'might' was past of 'may'", modern_reality: "Now both are used for present/future possibility", example: "Old: He said it might rain. (past) / Modern: It may/might rain. (both present/future)", change: "The distinction has largely disappeared" },
+      { probability_scale: "Probability scale comparison", will: "100% - certain", may: "~40-60% - possible", might: "~30-50% - less likely", could: "~50-70% - moderate possibility", might_be: "Least certain of the three", note: "Subtle differences in practice" },
+      { may_might_interchangeable: "Interchangeable in most contexts", truth: "You can usually swap may/might without changing meaning!", examples: "It may rain. = It might rain. / She may call. = She might call.", modern_usage: "Difference is minimal in everyday speech", freedom: "Feel free to use either one!" },
+      { common_mistake: "Adding 'to' after may/might", wrong: "It may to rain. ✗ / She might to call. ✗", correct: "It may rain. ✓ / She might call. ✓", rule: "NO 'to' after may/might!", explanation: "Modal + base verb (no 'to')" },
+      { common_mistake: "Adding -s to verb", wrong: "He may goes. ✗ / She might calls. ✗", correct: "He may go. ✓ / She might call. ✓", rule: "Base verb (V1) after modal, NO -s", critical: "Never conjugate verb after modals!" },
+      { common_mistake: "Wrong contraction for 'may not'", wrong: "It mayn't rain. ✗ (doesn't exist!)", correct: "It may not rain. ✓", rule: "'may not' has NO contraction in modern English", note: "'mayn't' is archaic/obsolete" },
+      { context_weather: "Weather predictions", examples: "It may/might rain tomorrow. / It may/might be sunny. / It may/might snow tonight.", note: "Very common use for uncertain weather", usage: "When you're not confident about the forecast" },
+      { context_future_plans: "Uncertain future plans", examples: "I may/might go to the party. / We may/might travel next summer. / She may/might change jobs.", note: "Plans that aren't decided yet", tone: "Keeping options open" },
+      { polite_tone: "Softening statements", examples: "That may/might be a problem. / This might not work. / You might be right.", note: "Sounds more polite and less direct", usage: "Diplomatic language", tone: "Gentle, non-confrontational" }
+    ]
+  },
   
   speakingPractice: [
     { question: "May I use your phone?", answer: "Yes, you may." },
@@ -5181,23 +5220,34 @@ I'm just looking. - Sadece bakıyorum.
 Can I get a refund? - Para iadesi alabilir miyim?`,
   tip: "Practice using these words in context to remember them better.",
 
-  table: [
-    { en: "price", tr: "fiyat" },
-    { en: "cheap", tr: "ucuz" },
-    { en: "expensive", tr: "pahalı" },
-    { en: "discount", tr: "indirim" },
-    { en: "cashier", tr: "kasiyer" },
-    { en: "receipt", tr: "fiş" },
-    { en: "try on", tr: "denemek" },
-    { en: "size", tr: "beden" },
-    { en: "fit", tr: "uymak" },
-    { en: "refund", tr: "para iadesi" },
-    { en: "How much is this?", tr: "Bu ne kadar?" },
-    { en: "Do you have this in medium?", tr: "Bunun medium'u var mı?" },
-    { en: "Can I try this on?", tr: "Bunu deneyebilir miyim?" },
-    { en: "I'm just looking.", tr: "Sadece bakıyorum." },
-    { en: "Can I get a refund?", tr: "Para iadesi alabilir miyim?" },
-  ],
+  table: {
+    title: "📋 Shopping Vocabulary & Essential Phrases",
+    data: [
+      { category: "Price & Payment", word: "price", turkish: "fiyat", example: "What's the price of this shirt?", usage: "Asking about cost", note: "Very common word" },
+      { category: "Price & Payment", word: "cheap", turkish: "ucuz", example: "This is very cheap!", usage: "Describing low prices", opposite: "expensive", note: "Positive for shoppers!" },
+      { category: "Price & Payment", word: "expensive", turkish: "pahalı", example: "This dress is too expensive.", usage: "Describing high prices", opposite: "cheap", note: "Often used with 'too'" },
+      { category: "Price & Payment", word: "discount", turkish: "indirim", example: "Is there a discount on this?", usage: "Price reduction", phrase: "on sale = indirimde", note: "Shoppers love discounts!" },
+      { category: "Price & Payment", word: "cashier", turkish: "kasiyer", example: "Where is the cashier?", usage: "Person who takes payment", also: "checkout = kasa", note: "Where you pay" },
+      { category: "Price & Payment", word: "receipt", turkish: "fiş, makbuz", example: "Can I have a receipt?", usage: "Proof of purchase", important: "Needed for returns!", note: "Keep it safe" },
+      { category: "Trying & Fitting", word: "try on", turkish: "denemek", example: "Can I try this on?", usage: "Testing clothes before buying", place: "fitting room / changing room", note: "Important before buying!" },
+      { category: "Trying & Fitting", word: "size", turkish: "beden, numara", example: "Do you have this in a larger size?", usage: "Dimensions of clothing/shoes", sizes: "Small (S), Medium (M), Large (L), XL", note: "Sizes vary by country!" },
+      { category: "Trying & Fitting", word: "fit", turkish: "uymak", example: "These shoes don't fit me.", usage: "How well something matches size", phrases: "too big / too small / just right", note: "Important for comfort" },
+      { category: "Returns & Refunds", word: "refund", turkish: "para iadesi", example: "Can I get a refund?", usage: "Money back for returned items", verb: "to refund = para iade etmek", note: "Check store policy!" },
+      { category: "Returns & Refunds", word: "exchange", turkish: "değiştirmek", example: "I'd like to exchange this for a smaller size.", usage: "Swap for different item", note: "Alternative to refund", common: "Size exchanges" },
+      { category: "Returns & Refunds", word: "return", turkish: "iade etmek", example: "I'd like to return this item.", usage: "Bring back unwanted purchase", note: "Usually need receipt", time: "Check return period!" },
+      { category: "Store Areas", word: "fitting room / changing room", turkish: "deneme kabini", example: "Where is the fitting room?", usage: "Place to try on clothes", note: "Ask staff to find it", british: "changing room", american: "fitting room" },
+      { category: "Store Areas", word: "sale / on sale", turkish: "indirim, indirimli", example: "Is this on sale?", usage: "Items with reduced prices", phrase: "50% off = %50 indirim", note: "Great for savings!" },
+      { category: "Common Phrases", phrase: "How much is this?", turkish: "Bu ne kadar?", usage: "Asking price", alternatives: "What's the price? / How much does this cost?", note: "Most useful phrase!", essential: "Yes!" },
+      { category: "Common Phrases", phrase: "Do you have this in medium?", turkish: "Bunun medium'u var mı?", usage: "Asking for different size", variations: "in small / in large / in blue / in red", note: "Use 'in' for sizes and colors" },
+      { category: "Common Phrases", phrase: "Can I try this on?", turkish: "Bunu deneyebilir miyim?", usage: "Requesting to test clothes", polite: "Yes, very polite!", response: "Sure, the fitting room is over there.", essential: "Yes!" },
+      { category: "Common Phrases", phrase: "I'm just looking.", turkish: "Sadece bakıyorum.", usage: "When sales assistant asks if you need help", situation: "Browsing without buying yet", note: "Polite way to decline help", alternative: "I'm just browsing." },
+      { category: "Common Phrases", phrase: "Can I get a refund?", turkish: "Para iadesi alabilir miyim?", usage: "Requesting money back", alternative: "I'd like a refund, please.", note: "Bring receipt!", required: "Receipt usually needed" },
+      { category: "Additional Useful Words", word: "bargain", turkish: "pazarlık, kelepir", example: "This is a real bargain!", meaning: "Very good deal / cheap price", note: "Exciting for shoppers!" },
+      { category: "Additional Useful Words", word: "brand", turkish: "marka", example: "What brand is this?", usage: "Manufacturer name", examples: "Nike, Adidas, Zara", note: "Quality indicator" },
+      { category: "Additional Useful Words", word: "quality", turkish: "kalite", example: "The quality is excellent.", usage: "How good something is", phrases: "high quality / low quality / good quality", note: "Affects price" },
+      { category: "Additional Useful Words", word: "warranty", turkish: "garanti", example: "Does this have a warranty?", usage: "Guarantee for product", note: "Important for electronics", time: "Usually 1-2 years" }
+    ]
+  },
 
   speakingPractice: [
     { question: "Ask the price of a jacket.", answer: "How much is this?" },
@@ -5267,23 +5317,34 @@ go to the doctor - doktora git
 stay in bed - yatakta kal`,
   tip: "Practice using these words in context to remember them better.",
 
-  table: [
-    { en: "headache", tr: "baş ağrısı" },
-    { en: "stomachache", tr: "karın ağrısı" },
-    { en: "sore throat", tr: "boğaz ağrısı" },
-    { en: "cough", tr: "öksürük" },
-    { en: "fever", tr: "ateş" },
-    { en: "cold", tr: "soğuk algınlığı" },
-    { en: "flu", tr: "grip" },
-    { en: "backache", tr: "sırt ağrısı" },
-    { en: "toothache", tr: "diş ağrısı" },
-    { en: "runny nose", tr: "burun akıntısı" },
-    { en: "take some medicine", tr: "ilaç al" },
-    { en: "drink lots of water", tr: "bol su iç" },
-    { en: "get some rest", tr: "biraz dinlen" },
-    { en: "go to the doctor", tr: "doktora git" },
-    { en: "stay in bed", tr: "yatakta kal" },
-  ],
+  table: {
+    title: "📋 Health Problems & Solutions Vocabulary",
+    data: [
+      { category: "Head & Face Problems", problem: "headache", turkish: "baş ağrısı", symptoms: "Pain in the head", solution: "Take a painkiller / rest / drink water", common_phrase: "I have a headache.", note: "Very common!" },
+      { category: "Head & Face Problems", problem: "sore throat", turkish: "boğaz ağrısı", symptoms: "Pain when swallowing", solution: "Drink warm tea / gargle with salt water / take throat lozenges", common_phrase: "I have a sore throat.", note: "Common with colds" },
+      { category: "Head & Face Problems", problem: "toothache", turkish: "diş ağrısı", symptoms: "Pain in tooth or gums", solution: "See a dentist / take painkillers / use ice", common_phrase: "I have a toothache.", urgent: "See dentist!" },
+      { category: "Stomach & Digestive", problem: "stomachache", turkish: "karın ağrısı", symptoms: "Pain in stomach area", solution: "Avoid heavy food / drink herbal tea / rest", common_phrase: "I have a stomachache.", note: "Be careful with food" },
+      { category: "Respiratory Problems", problem: "cough", turkish: "öksürük", symptoms: "Repeated coughing", solution: "Take cough medicine / drink warm liquids / avoid cold air", common_phrase: "I have a cough." , verb: "to cough = öksürmek" },
+      { category: "Respiratory Problems", problem: "runny nose", turkish: "burun akıntısı", symptoms: "Liquid coming from nose", solution: "Use tissues / take antihistamines / rest", common_phrase: "I have a runny nose.", note: "Common with colds" },
+      { category: "Respiratory Problems", problem: "cold", turkish: "soğuk algınlığı", symptoms: "Sneezing, cough, runny nose, sore throat", solution: "Rest / drink lots of fluids / take vitamin C", common_phrase: "I have a cold.", duration: "Usually 7-10 days" },
+      { category: "Respiratory Problems", problem: "flu (influenza)", turkish: "grip", symptoms: "Fever, body aches, fatigue, cough", solution: "Rest / drink fluids / take fever medicine / see doctor", common_phrase: "I have the flu.", note: "More serious than cold" },
+      { category: "Body Temperature", problem: "fever", turkish: "ateş", symptoms: "Body temperature above normal (38°C/100.4°F)", solution: "Take fever medicine / drink water / rest / cool compress", common_phrase: "I have a fever.", urgent: "High fever → see doctor!" },
+      { category: "Body Aches", problem: "backache / back pain", turkish: "sırt ağrısı", symptoms: "Pain in back area", solution: "Rest / gentle stretching / use heat/ice / see doctor if severe", common_phrase: "I have a backache.", note: "Very common problem" },
+      { category: "Solutions - Verbs", solution: "take medicine / take some medicine", turkish: "ilaç almak", usage: "Swallow pills or drink liquid medicine", examples: "Take painkillers / Take cough medicine", note: "Most common solution", phrase: "I should take some medicine." },
+      { category: "Solutions - Verbs", solution: "drink lots of water / drink fluids", turkish: "bol su içmek", usage: "Stay hydrated", examples: "Drink water / Drink warm tea / Drink orange juice", note: "Important for most illnesses", phrase: "You should drink lots of water." },
+      { category: "Solutions - Verbs", solution: "get some rest / rest", turkish: "dinlenmek", usage: "Sleep and relax", examples: "Get some rest / Take a nap / Sleep early", note: "Body needs rest to heal", phrase: "You need to get some rest." },
+      { category: "Solutions - Verbs", solution: "go to the doctor / see a doctor", turkish: "doktora gitmek", usage: "Visit medical professional", when: "If symptoms are serious or don't improve", note: "Don't hesitate if needed!", phrase: "You should see a doctor." },
+      { category: "Solutions - Verbs", solution: "stay in bed", turkish: "yatakta kalmak", usage: "Remain in bed all day", when: "When feeling very ill", note: "Complete rest", phrase: "You should stay in bed today.", severe: "For serious illness" },
+      { category: "Additional Problems", problem: "feel sick / feel ill", turkish: "hasta hissetmek", symptoms: "General feeling of unwellness", usage: "General term", common_phrase: "I feel sick.", note: "Not specific illness" },
+      { category: "Additional Problems", problem: "feel dizzy", turkish: "baş dönmesi", symptoms: "Feeling of spinning or losing balance", solution: "Sit down / drink water / see doctor if continues", common_phrase: "I feel dizzy.", warning: "Could be serious!" },
+      { category: "Additional Problems", problem: "tired / exhausted / fatigue", turkish: "yorgun", symptoms: "Lack of energy", solution: "Get more sleep / eat well / exercise / manage stress", common_phrase: "I feel tired.", note: "Everyone's complaint!" },
+      { category: "Useful Phrases", phrase: "I don't feel well.", turkish: "İyi hissetmiyorum.", usage: "Saying you feel sick", note: "Very common", alternative: "I feel unwell." },
+      { category: "Useful Phrases", phrase: "What's wrong?", turkish: "Neyin var? / Ne oldu?", usage: "Asking what the problem is", response: "I have a headache. / I don't feel well.", note: "Showing concern" },
+      { category: "Useful Phrases", phrase: "You should see a doctor.", turkish: "Doktora gitmelisin.", usage: "Giving advice", pattern: "You should + advice", note: "Caring suggestion" },
+      { category: "Useful Phrases", phrase: "Get well soon!", turkish: "Geçmiş olsun!", usage: "Wishing someone recovery", note: "Very common expression!", use: "To sick people", alternative: "Feel better soon!" },
+      { category: "Useful Phrases", phrase: "I hope you feel better.", turkish: "Umarım iyileşirsin.", usage: "Expressing sympathy", note: "Kind words", tone: "Caring and supportive" }
+    ]
+  },
 
   speakingPractice: [
     { question: "You have a headache. What do you do?", answer: "I have a headache. I should take some medicine." },
@@ -5356,26 +5417,34 @@ check-in - giriş işlemi
 boarding pass - biniş kartı`,
   tip: "Practice using these words in context to remember them better.",
 
-  table: [
-    { en: "car", tr: "araba" },
-    { en: "bus", tr: "otobüs" },
-    { en: "train", tr: "tren" },
-    { en: "plane", tr: "uçak" },
-    { en: "taxi", tr: "taksi" },
-    { en: "bicycle", tr: "bisiklet" },
-    { en: "subway / underground", tr: "metro" },
-    { en: "tram", tr: "tramvay" },
-    { en: "ferry", tr: "feribot" },
-    { en: "motorbike", tr: "motosiklet" },
-    { en: "ticket", tr: "bilet" },
-    { en: "platform", tr: "peron" },
-    { en: "delay", tr: "gecikme" },
-    { en: "departure", tr: "kalkış" },
-    { en: "arrival", tr: "varış" },
-    { en: "luggage / baggage", tr: "bagaj" },
-    { en: "check-in", tr: "giriş işlemi" },
-    { en: "boarding pass", tr: "biniş kartı" },
-  ],
+  table: {
+    title: "📋 Travel & Transport Vocabulary",
+    data: [
+      { category: "Land Transport", vehicle: "car", turkish: "araba", usage: "Private road vehicle", phrase: "by car = arabayla", verb: "drive a car", note: "Most common transport", advantage: "Convenient, private" },
+      { category: "Land Transport", vehicle: "bus", turkish: "otobüs", usage: "Public road transport", phrase: "by bus = otobüsle", verb: "take a bus / catch a bus", note: "Affordable option", types: "City bus, intercity bus" },
+      { category: "Land Transport", vehicle: "train", turkish: "tren", usage: "Rail transport", phrase: "by train = trenle", verb: "take a train / catch a train", note: "Fast for long distances", types: "Local, express, high-speed" },
+      { category: "Land Transport", vehicle: "taxi", turkish: "taksi", usage: "Hired car with driver", phrase: "by taxi = taksiyle", verb: "take a taxi / hail a taxi / call a taxi", note: "Convenient but expensive", tip: "Know fare before riding" },
+      { category: "Land Transport", vehicle: "bicycle / bike", turkish: "bisiklet", usage: "Human-powered two-wheel", phrase: "by bike = bisikletle", verb: "ride a bike", note: "Healthy & eco-friendly", also: "e-bike = elektrikli bisiklet" },
+      { category: "Land Transport", vehicle: "motorbike / motorcycle", turkish: "motosiklet", usage: "Motorized two-wheel", phrase: "by motorbike", verb: "ride a motorbike", note: "Faster than bicycle", safety: "Wear helmet!" },
+      { category: "Land Transport", vehicle: "tram", turkish: "tramvay", usage: "Electric rail vehicle on streets", phrase: "by tram = tramvayla", verb: "take a tram", note: "Common in cities", region: "Popular in Europe" },
+      { category: "Underground Transport", vehicle: "subway (US) / underground (UK) / metro", turkish: "metro", usage: "Underground rail system", phrase: "by subway/metro", verb: "take the subway/metro", note: "Fast in big cities", also: "tube (London)" },
+      { category: "Air Transport", vehicle: "plane / airplane / aircraft", turkish: "uçak", usage: "Air travel", phrase: "by plane = uçakla", verb: "take a plane / fly / catch a flight", note: "Fastest for long distances", types: "Commercial, private" },
+      { category: "Water Transport", vehicle: "ferry / ferryboat", turkish: "feribot", usage: "Boat for passengers & vehicles", phrase: "by ferry = feribot ile", verb: "take a ferry / catch a ferry", note: "For crossing water", example: "Istanbul ferries" },
+      { category: "Travel Documents & Items", word: "ticket", turkish: "bilet", usage: "Permission to travel", examples: "bus ticket, train ticket, plane ticket", verb: "buy a ticket / book a ticket", note: "Essential for travel!", types: "One-way, return, e-ticket" },
+      { category: "Travel Documents & Items", word: "boarding pass", turkish: "biniş kartı", usage: "Document to board plane", when: "After check-in", verb: "print boarding pass / show boarding pass", note: "For flights", digital: "Mobile boarding pass" },
+      { category: "Travel Documents & Items", word: "luggage / baggage", turkish: "bagaj, bavul", usage: "Bags for travel", types: "Carry-on luggage, checked luggage, hand luggage", verb: "pack luggage / check luggage", note: "Weight limits apply!", phrase: "excess baggage = fazla bagaj" },
+      { category: "Station & Airport Areas", word: "platform", turkish: "peron", usage: "Where you wait for trains", examples: "Platform 1, Platform 2", phrase: "The train departs from platform 5.", note: "Railway stations", announcement: "Check departure board" },
+      { category: "Station & Airport Areas", word: "check-in (desk)", turkish: "check-in, giriş işlemi", usage: "Registration before flight", when: "At airport before flight", verb: "check in / do check-in", note: "Get boarding pass here", online: "Online check-in available" },
+      { category: "Station & Airport Areas", word: "gate", turkish: "kapı (havaalanı)", usage: "Where you board plane", examples: "Gate A12, Gate B5", phrase: "Boarding at gate 23.", note: "After security check", listen: "Listen for announcements" },
+      { category: "Travel Times", word: "departure", turkish: "kalkış", usage: "When transport leaves", verb: "depart = kalkmak", opposite: "arrival", examples: "Departure time: 10:00 AM", note: "Be there early!" },
+      { category: "Travel Times", word: "arrival", turkish: "varış", usage: "When transport arrives", verb: "arrive = varmak", opposite: "departure", examples: "Arrival time: 2:30 PM", note: "End of journey" },
+      { category: "Travel Times", word: "delay", turkish: "gecikme", usage: "Later than scheduled", verb: "be delayed = gecikmek", examples: "The flight is delayed. / 30-minute delay", note: "Frustrating!", announcement: "Check for updates" },
+      { category: "Useful Phrases", phrase: "How do I get to...?", turkish: "...e nasıl giderim?", usage: "Asking for directions", examples: "How do I get to the airport? / How do I get to the station?", note: "Very useful!", response: "Take bus number 5." },
+      { category: "Useful Phrases", phrase: "Where can I buy a ticket?", turkish: "Bileti nereden alabilirim?", usage: "Finding ticket office", response: "At the ticket machine. / At the counter.", note: "Essential question", also: "online, from kiosk" },
+      { category: "Useful Phrases", phrase: "What time does it leave/arrive?", turkish: "Saat kaçta kalkıyor/varıyor?", usage: "Asking schedule", examples: "What time does the train leave? / What time do we arrive?", note: "Planning journey", check: "Departure/arrival boards" },
+      { category: "Useful Phrases", phrase: "Is this seat taken?", turkish: "Bu koltuk dolu mu?", usage: "Asking if seat is available", response: "No, it's free. / Yes, someone is sitting here.", note: "Polite question", alternative: "Is anyone sitting here?" }
+    ]
+  },
 
   speakingPractice: [
     { question: "Say how you go to school every day.", answer: "I go to school by bus every day." },
