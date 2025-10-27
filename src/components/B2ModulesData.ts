@@ -1569,6 +1569,23 @@ INFORMAL: I think → FORMAL: In my opinion
 INFORMAL: Really big → FORMAL: Significant / Substantial
 INFORMAL: A lot of → FORMAL: Many / Much
 INFORMAL: Get → FORMAL: Receive / Obtain`,
+  table: {
+    title: "📋 Formal vs Informal Register Comparison",
+    data: [
+      { informal: "Hi / Hey", formal: "Hello / Good morning", example: "Hey! → Good morning, Mr. Smith" },
+      { informal: "What's up?", formal: "How are you?", example: "What's up? → How are you today?" },
+      { informal: "Thanks / Thanks a lot", formal: "Thank you very much", example: "Thanks! → Thank you very much for your help" },
+      { informal: "Sorry", formal: "I apologize", example: "Sorry → I apologize for the inconvenience" },
+      { informal: "Can you...?", formal: "Could you please...?", example: "Can you help? → Could you please assist me?" },
+      { informal: "I think", formal: "In my opinion", example: "I think it's good → In my opinion, it's excellent" },
+      { informal: "a lot of", formal: "many / much", example: "a lot of people → many people" },
+      { informal: "get", formal: "receive / obtain", example: "get a letter → receive a letter" },
+      { informal: "buy", formal: "purchase", example: "buy a ticket → purchase a ticket" },
+      { informal: "help", formal: "assist", example: "help me → assist me" },
+      { informal: "kids", formal: "children", example: "my kids → my children" },
+      { informal: "boss", formal: "supervisor / manager", example: "my boss → my supervisor" }
+    ]
+  },
   speakingPractice: [
     { question: "What's the difference between formal and informal English?", answer: "Formal English is polite and professional, while informal English is relaxed and used with friends." },
     { question: "When do people use formal English?", answer: "People use formal English in business meetings, official emails, or academic writing." },
@@ -1650,6 +1667,19 @@ In everyday English, we often switch from direct to indirect when retelling stor
   - yesterday → the day before
   - here → there
   - this → that`,
+  table: {
+    title: "📋 Direct to Indirect Speech Transformations",
+    data: [
+      { direct_speech: "\"I am happy\"", indirect_speech: "She said she was happy", change: "am → was" },
+      { direct_speech: "\"I will help you\"", indirect_speech: "He said he would help me", change: "will → would, you → me" },
+      { direct_speech: "\"I can swim\"", indirect_speech: "She said she could swim", change: "can → could" },
+      { direct_speech: "\"I have finished\"", indirect_speech: "He said he had finished", change: "have → had" },
+      { direct_speech: "\"I don't like this\"", indirect_speech: "She said she didn't like that", change: "don't → didn't, this → that" },
+      { direct_speech: "\"I saw him yesterday\"", indirect_speech: "He said he had seen him the day before", change: "saw → had seen, yesterday → the day before" },
+      { direct_speech: "\"I will come tomorrow\"", indirect_speech: "She said she would come the next day", change: "will → would, tomorrow → the next day" },
+      { direct_speech: "\"I'm studying today\"", indirect_speech: "He said he was studying that day", change: "I'm → he was, today → that day" }
+    ]
+  },
   speakingPractice: [
     { question: "What is direct speech?", answer: "Direct speech is when we repeat someone's exact words, like He said, \"I'm hungry.\"" },
     { question: "What is indirect speech?", answer: "Indirect speech is when we report what someone said without quoting exactly, like He said he was hungry." },
@@ -1719,6 +1749,20 @@ Politeness is very important in English-speaking cultures. Even when people disa
 • Apologize when interrupting: "I'm sorry to interrupt, but..."
 • Use tentative language: "Maybe we could...", "I was wondering if..."
 • Show appreciation: "That's very kind of you."`,
+  table: {
+    title: "📋 Politeness Strategies in English",
+    data: [
+      { situation: "Making a request", direct: "Give me that pen", polite: "Could you please pass me the pen?" },
+      { situation: "Asking for help", direct: "Help me", polite: "Would you mind giving me a hand?" },
+      { situation: "Refusing", direct: "No, I can't", polite: "I'd love to, but I'm afraid I can't make it" },
+      { situation: "Disagreeing", direct: "You're wrong", polite: "I see your point, but I think there's another side" },
+      { situation: "Interrupting", direct: "Wait, I want to say something", polite: "I'm sorry to interrupt, but may I add something?" },
+      { situation: "Suggesting", direct: "Do it this way", polite: "Maybe we could try a different approach" },
+      { situation: "Correcting", direct: "That's wrong", polite: "Actually, I think it might be..." },
+      { situation: "Asking permission", direct: "I'll open the window", polite: "Would it be okay if I opened the window?" },
+      { situation: "Asking to repeat", direct: "What?", polite: "Sorry, could you say that again, please?" }
+    ]
+  },
   speakingPractice: [
     { question: "What does \"being polite\" mean in English?", answer: "It means showing respect and kindness through your words and tone." },
     { question: "Why is politeness important?", answer: "Because it helps you sound friendly, respectful, and professional in conversations." },
@@ -1792,6 +1836,18 @@ DESCRIBING PLACES:
 • The city buzzes with energy day and night.
 • The beach was breathtaking, with golden sand and turquoise water.
 • It's a charming little café tucked away on a quiet street.`,
+  table: {
+    title: "📋 Advanced Descriptive Vocabulary",
+    data: [
+      { category: "People - Appearance", basic: "tall", advanced: "tall and lean with sharp features", example: "He's tall and athletic, with striking blue eyes" },
+      { category: "People - Personality", basic: "nice", advanced: "down-to-earth and easy to talk to", example: "She's warm, approachable, and has a great sense of humor" },
+      { category: "People - Energy", basic: "active", advanced: "bursting with enthusiasm", example: "She's full of energy — you feel happier just being around her" },
+      { category: "Places - Atmosphere", basic: "nice", advanced: "buzzing with energy / peaceful and calm", example: "The city buzzes with life day and night" },
+      { category: "Places - Visual", basic: "pretty", advanced: "breathtaking / charming", example: "The beach was breathtaking, with golden sand and turquoise water" },
+      { category: "Places - Sensory", basic: "good smell", advanced: "smells like freshly baked bread", example: "The café is cozy and smells like cinnamon and coffee" },
+      { category: "Places - Size/Style", basic: "small", advanced: "charming little / tucked away", example: "A charming little café tucked away on a quiet street" }
+    ]
+  },
   speakingPractice: [
     { question: "How would you describe your best friend's personality?", answer: "He's kind, reliable, and has a great sense of humor — the type of person you can always count on." },
     { question: "How would you describe someone who inspires you?", answer: "She's incredibly passionate and hardworking — her energy motivates everyone around her." },
@@ -1859,6 +1915,17 @@ We use modal verbs + have + past participle to express degrees of certainty:
 • She might have left already.
 • They could have taken a taxi instead.
 • He can't have done it alone.`,
+  table: {
+    title: "📋 Modal Verbs for Speculating About the Past",
+    data: [
+      { modal: "must have + past participle", certainty: "Almost sure (90%+)", meaning: "Strong logical conclusion", example: "He must have been tired after the long trip" },
+      { modal: "might have + past participle", certainty: "Possible (50%)", meaning: "Maybe it happened", example: "She might have forgotten to call" },
+      { modal: "may have + past participle", certainty: "Possible (50%)", meaning: "Maybe it happened", example: "They may have left already" },
+      { modal: "could have + past participle", certainty: "Possible (50%)", meaning: "It was possible", example: "It could have been a mistake" },
+      { modal: "can't have + past participle", certainty: "Almost impossible (10%-)", meaning: "Sure it didn't happen", example: "He can't have done it alone" },
+      { modal: "couldn't have + past participle", certainty: "Almost impossible (10%-)", meaning: "Sure it didn't happen", example: "She couldn't have known about it" }
+    ]
+  },
   speakingPractice: [
     { question: "Why do we use modal verbs with 'have' when talking about the past?", answer: "Because they help us guess or speculate about what happened when we're not completely sure." },
     { question: "What does 'must have' mean?", answer: "It means you are almost certain something happened. For example, 'He must have been tired after the flight.'" },
