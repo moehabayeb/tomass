@@ -9483,7 +9483,27 @@ Examples:
 - A nurse helps patients in a hospital.`,
   tip: "Use 'at' for specific buildings (at school, at a hospital), 'in' for general locations (in an office, in a restaurant)",
 
-  table: [],
+  table: {
+    title: "📋 Work Vocabulary: Roles, Tasks & Workplaces",
+    data: [
+      { role: "Teacher", workplace: "at a school / in a classroom", tasks: "teaches students, prepares lessons, grades homework, explains subjects", preposition: "at/in", example: "A teacher works at a school and teaches in a classroom.", note: "Education sector" },
+      { role: "Doctor", workplace: "at a hospital / in a clinic", tasks: "examines patients, diagnoses illnesses, prescribes medicine, performs surgery", preposition: "at/in", example: "A doctor works at a hospital.", note: "Healthcare sector" },
+      { role: "Nurse", workplace: "at a hospital / in a clinic", tasks: "helps patients, gives medicine, takes temperature, assists doctors", preposition: "at/in", example: "A nurse works at a hospital and helps patients.", note: "Healthcare sector" },
+      { role: "Chef", workplace: "in a restaurant / in a kitchen", tasks: "prepares food, cooks meals, creates menus, supervises kitchen staff", preposition: "in", example: "A chef works in a restaurant and prepares delicious food.", note: "Food service" },
+      { role: "Waiter/Waitress", workplace: "in a restaurant / at a café", tasks: "serves food and drinks, takes orders, cleans tables, brings the bill", preposition: "in/at", example: "A waiter serves customers in a restaurant.", note: "Food service" },
+      { role: "Manager", workplace: "in an office", tasks: "leads teams, makes decisions, attends meetings, plans projects, supervises employees", preposition: "in", example: "A manager works in an office and leads the team.", note: "Business/office" },
+      { role: "Engineer", workplace: "in an office / on construction sites", tasks: "designs systems, solves technical problems, builds structures, manages projects", preposition: "in/on", example: "An engineer designs buildings and bridges.", note: "Technical/construction" },
+      { role: "Mechanic", workplace: "at a garage / in a workshop", tasks: "fixes cars, repairs engines, changes oil, checks brakes", preposition: "at/in", example: "A mechanic works at a garage and fixes cars.", note: "Automotive" },
+      { role: "Police Officer", workplace: "at a police station / on patrol", tasks: "protects people, enforces laws, investigates crimes, patrols streets", preposition: "at/on", example: "A police officer works at a police station.", note: "Law enforcement" },
+      { role: "Cashier", workplace: "at a supermarket / in a store", tasks: "takes payments, gives change, scans items, helps customers", preposition: "at/in", example: "A cashier works at a supermarket and takes payments.", note: "Retail" },
+      { role: "Secretary/Receptionist", workplace: "in an office / at reception", tasks: "answers phones, writes emails, schedules meetings, greets visitors", preposition: "in/at", example: "A secretary answers phones and schedules meetings.", note: "Office/admin" },
+      { role: "Driver", workplace: "on the road / at a bus terminal", tasks: "drives vehicles, transports people/goods, follows traffic rules", preposition: "on/at", example: "A bus driver drives a bus and takes passengers to work.", note: "Transportation" },
+      { role: "Construction Worker", workplace: "on a construction site", tasks: "builds buildings, carries materials, operates equipment, follows plans", preposition: "on", example: "Construction workers work on construction sites.", note: "Construction" },
+      { role: "Factory Worker", workplace: "in a factory", tasks: "makes products, operates machines, assembles parts, packs goods", preposition: "in", example: "Factory workers make products in a factory.", note: "Manufacturing" },
+      { preposition_rule: "at vs in", at_usage: "Specific buildings/institutions (at school, at a hospital, at the office)", in_usage: "General locations/types of places (in an office, in a restaurant, in a factory)", examples: "She works at the hospital (specific) / She works in a hospital (general type)", note: "Important distinction!", tip: "'at' = specific, 'in' = general" },
+      { common_tasks: "General workplace tasks", office: "answer phones, write emails, attend meetings, use computers, file documents", retail: "serve customers, handle money, stock shelves, open/close store", manual: "lift heavy objects, use tools, follow safety rules, wear protective equipment", note: "Vary by sector" }
+    ]
+  },
 
   speakingPractice: [
     { question: "Where does a teacher work?", answer: "A teacher works at a school." },
@@ -9548,7 +9568,31 @@ Examples:
 - She received a scholarship for academic performance.`,
   tip: "Say 'tuition fees' (not tuition money), 'academic performance' (not academic results), 'graduate from' (not graduate in)",
 
-  table: [],
+  table: {
+    title: "📋 Education Vocabulary: Schools & Universities (B2 Level)",
+    data: [
+      { term: "Curriculum", definition: "The subjects and content taught at school/university", example: "Our curriculum includes science, math, and foreign languages.", usage: "What's in the curriculum?", collocations: "national curriculum, school curriculum, design a curriculum", note: "What you study" },
+      { term: "Assignment", definition: "A piece of work given to students", example: "We have weekly assignments in most subjects.", usage: "Submit/complete an assignment", collocations: "homework assignment, written assignment, group assignment", note: "Task to complete" },
+      { term: "Lecture", definition: "A formal talk to a large group of students", example: "I attended a psychology lecture last week.", usage: "Attend/give a lecture", collocations: "lecture hall, lecture notes, guest lecture", note: "Large group teaching", context: "University mainly" },
+      { term: "Seminar", definition: "A small interactive class with discussion", example: "Seminars are more interactive than lectures.", usage: "Participate in a seminar", collocations: "seminar room, seminar discussion, lead a seminar", note: "Small group, interactive", difference: "Smaller than lecture" },
+      { term: "Thesis", definition: "A long research paper (for degree)", example: "I submitted my thesis last month.", usage: "Write/submit/defend a thesis", collocations: "master's thesis, doctoral thesis, thesis supervisor", note: "Major research paper", level: "Postgraduate mainly" },
+      { term: "Faculty", definition: "A department or division at university", example: "I'm in the Faculty of Engineering.", usage: "Faculty of [subject]", collocations: "faculty member, faculty building, join a faculty", note: "Academic department", meaning_2: "Also means 'teaching staff'" },
+      { term: "Degree", definition: "A qualification after completing university", example: "I'm studying for a bachelor's degree in economics.", usage: "Get/earn/complete a degree", types: "bachelor's degree, master's degree, doctoral degree (PhD)", note: "University qualification" },
+      { term: "Undergraduate", definition: "A student studying for a bachelor's degree", example: "I'm an undergraduate student in my second year.", usage: "Undergraduate student/course/program", opposite: "Postgraduate", note: "First university degree", context: "Before master's" },
+      { term: "Postgraduate", definition: "A student studying for master's or PhD", example: "I'm a postgraduate student doing my master's.", usage: "Postgraduate studies/degree/student", synonym: "Graduate student (US)", note: "After bachelor's degree", context: "Advanced study" },
+      { term: "Scholarship", definition: "Financial aid for students based on merit", example: "I have a full scholarship for academic performance.", usage: "Receive/win/apply for a scholarship", types: "full scholarship, partial scholarship, merit scholarship", note: "Free money for study", difference: "Based on achievement" },
+      { term: "Tuition fees", definition: "Money paid to attend school/university", example: "Tuition fees are high, especially for international students.", usage: "Pay/cover tuition fees", collocations: "high tuition fees, affordable tuition fees, tuition fee waiver", critical: "Say 'tuition fees' NOT 'tuition money'", note: "Cost of education" },
+      { term: "Graduate (verb)", definition: "To successfully complete a degree", example: "I graduated two years ago.", usage: "Graduate FROM [university]", collocations: "graduate with honors, graduate in [subject]", critical: "graduate FROM, not graduate IN", note: "Finish university", noun: "Also a noun = someone who graduated" },
+      { term: "Enroll", definition: "To register officially at school/university", example: "I enrolled at the beginning of the semester.", usage: "Enroll in/at [institution]", collocations: "enroll in a course, enrollment deadline, student enrollment", note: "Register/sign up", spelling: "UK: enrol, US: enroll" },
+      { term: "Drop out", definition: "To leave before completing a course", example: "Two students dropped out due to personal reasons.", usage: "Drop out of [school/course]", collocations: "high dropout rate, drop out of university", note: "Quit before finishing", negative: "Usually negative connotation" },
+      { term: "Internship", definition: "Work experience as part of studies", example: "We must complete a summer internship.", usage: "Do/complete an internship", collocations: "paid internship, summer internship, internship program", note: "Practical work experience", synonym: "Work placement (UK)" },
+      { term: "Academic performance", definition: "How well a student does academically", example: "My academic performance is good. I have a GPA of 3.6.", usage: "Academic performance/achievement", collocations: "improve academic performance, assess academic performance", critical: "Say 'academic performance' NOT 'academic results'", note: "Student's success level" },
+      { term: "Campus", definition: "The grounds and buildings of a university", example: "The campus is large and modern.", usage: "On campus / Off campus", collocations: "campus life, campus facilities, university campus", note: "University area", examples: "live on campus, campus events" },
+      { term: "Extracurricular activities", definition: "Activities outside of regular classes", example: "I play in the university orchestra as an extracurricular activity.", usage: "Join/participate in extracurricular activities", types: "sports, clubs, music, volunteering", note: "Non-academic activities", benefit: "Develops skills beyond academics" },
+      { term: "Distance learning", definition: "Education done remotely (online)", example: "During the pandemic, we used distance learning.", usage: "Distance learning/education", collocations: "online courses, remote learning, virtual classroom", note: "Study from anywhere", synonym: "Online learning, remote education" },
+      { term: "Exam-oriented", definition: "Focused mainly on exams and tests", example: "The system is exam-oriented - it focuses on grades.", usage: "Exam-oriented system/approach", note: "Heavy focus on testing", criticism: "Sometimes considered too rigid" }
+    ]
+  },
 
   speakingPractice: [
     { question: "What is the curriculum like at your school?", answer: "It includes science, math, and foreign languages." },
@@ -9612,7 +9656,31 @@ Examples:
 - I install software updates to avoid bugs and improve security.`,
   tip: "Say 'cloud computing' (not cloud storage), 'Wi-Fi connection' (not WiFi internet), 'software update' (not program update)",
 
-  table: [],
+  table: {
+    title: "📋 Technology Vocabulary: Gadgets & Internet (B1+)",
+    data: [
+      { category: "Devices", term: "Smartphone", definition: "A mobile phone with advanced features", usage: "Use/check/charge a smartphone", collocations: "smartphone app, smartphone screen, charge your smartphone", example: "I use my smartphone for messaging and navigation.", note: "Most common device" },
+      { category: "Devices", term: "Tablet", definition: "A portable touchscreen computer", usage: "Use a tablet for reading/watching", collocations: "tablet computer, iPad, touchscreen tablet", example: "I prefer using a tablet for reading e-books.", note: "Between phone and laptop size" },
+      { category: "Devices", term: "Laptop", definition: "A portable personal computer", usage: "Work on/use a laptop", collocations: "laptop computer, laptop battery, portable laptop", example: "I use my laptop for work and studying.", note: "More powerful than tablet" },
+      { category: "Accessories", term: "Charger", definition: "Device that provides power to recharge batteries", usage: "Plug in/use a charger", types: "phone charger, wireless charger, fast charger", example: "I forgot my charger at home.", note: "Essential accessory" },
+      { category: "Accessories", term: "Headphones", definition: "Device worn on ears to listen to audio", usage: "Wear/use headphones", types: "wireless headphones, Bluetooth headphones, noise-canceling headphones", example: "I use wireless headphones when commuting.", alternative: "Earbuds (smaller)" },
+      { category: "Storage", term: "USB drive", definition: "Small portable data storage device", usage: "Save files on/transfer with a USB drive", collocations: "USB flash drive, USB stick, plug in a USB", example: "I save my documents on a USB drive.", synonym: "Flash drive, thumb drive", note: "Portable storage" },
+      { category: "Internet", term: "Wi-Fi connection", definition: "Wireless internet network", usage: "Connect to Wi-Fi, Wi-Fi connection", collocations: "strong Wi-Fi, Wi-Fi password, connect to Wi-Fi", example: "The Wi-Fi connection is slow today.", critical: "Say 'Wi-Fi connection' NOT 'WiFi internet'", note: "Wireless internet access" },
+      { category: "Internet", term: "Cloud computing", definition: "Storing and accessing data online (not locally)", usage: "Use cloud computing/cloud services", services: "Google Drive, iCloud, Dropbox, OneDrive", example: "I use cloud computing to back up my photos.", critical: "Say 'cloud computing' NOT 'cloud storage'", benefit: "Access data from anywhere" },
+      { category: "Internet", term: "Search engine", definition: "Tool for finding information online", usage: "Use a search engine, search on...", examples: "Google, Bing, Yahoo", example: "I use Google as my main search engine.", function: "Finding information online", note: "Google is most popular" },
+      { category: "Internet", term: "Social media platform", definition: "Website/app for social networking", usage: "Use/scroll through social media", examples: "Facebook, Instagram, Twitter, TikTok", example: "Social media platforms can be addictive.", concern: "Privacy, time management", note: "For social interaction" },
+      { category: "Internet", term: "Streaming", definition: "Playing media online without downloading", usage: "Stream videos/music", types: "video streaming, music streaming, live streaming", example: "I stream movies on Netflix.", services: "Netflix, Spotify, YouTube", note: "Watch/listen online" },
+      { category: "Safety", term: "Online privacy", definition: "Protecting personal information online", usage: "Protect online privacy, privacy settings", concerns: "data collection, personal information, tracking", example: "I'm concerned about my online privacy.", actions: "Use strong passwords, clear cookies, use VPN", note: "Important concern" },
+      { category: "Safety", term: "Cybersecurity", definition: "Protecting systems from digital attacks", usage: "Cybersecurity measures/threats", threats: "hacking, viruses, phishing, malware", example: "Cybersecurity is essential for protecting financial information.", actions: "Use antivirus, update software, strong passwords", note: "Digital security" },
+      { category: "Safety", term: "Software update", definition: "New version of software fixing bugs/adding features", usage: "Install/download a software update", collocations: "system update, app update, security update", example: "I install software updates to improve security.", critical: "Say 'software update' NOT 'program update'", benefit: "Fixes bugs, improves security" },
+      { category: "Actions", term: "Download", definition: "Transfer data FROM the internet TO your device", usage: "Download files/apps/music", opposite: "Upload", example: "I downloaded a new app yesterday.", note: "Internet → Device", icon: "⬇️" },
+      { category: "Actions", term: "Upload", definition: "Transfer data FROM your device TO the internet", usage: "Upload photos/videos/files", opposite: "Download", example: "I uploaded my photos to Instagram.", note: "Device → Internet", icon: "⬆️" },
+      { category: "Features", term: "Touchscreen", definition: "Screen that responds to touch", usage: "Touchscreen display/device", types: "capacitive touchscreen, multitouch", example: "Most smartphones have a touchscreen.", benefit: "Direct interaction", note: "Standard on phones/tablets" },
+      { category: "Features", term: "Bluetooth", definition: "Wireless technology for short-range connection", usage: "Connect via Bluetooth, Bluetooth connection", uses: "headphones, speakers, file transfer, keyboards", example: "I connected my Bluetooth headphones to my phone.", range: "About 10 meters", note: "Wireless connectivity" },
+      { category: "Smart Tech", term: "Smart home device", definition: "Internet-connected home appliances", usage: "Control smart home devices", examples: "smart speaker, smart thermostat, smart lights, smart locks", example: "I use smart home devices to control my lights.", benefit: "Convenience, automation", concern: "Privacy, cost" },
+      { category: "Storage", term: "Data storage", definition: "Saving digital information", usage: "Data storage solutions/options", types: "local storage, cloud storage, external hard drive", example: "I use both cloud and local data storage for backup.", measurement: "GB (gigabytes), TB (terabytes)", note: "Keeping data safe" }
+    ]
+  },
 
   speakingPractice: [
     { question: "What kind of gadgets do you use daily?", answer: "I usually use my smartphone, smartwatch, and wireless earbuds." },
@@ -9686,28 +9754,31 @@ const MODULE_144_DATA = {
 • extinction - yok olma`,
   tip: "Use environmental vocabulary to discuss global issues and propose solutions. Remember: 'renewable energy' not 'renewable power', 'carbon footprint' not 'carbon trace'",
 
-  table: [
-    { en: "climate change", tr: "iklim değişikliği" },
-    { en: "global warming", tr: "küresel ısınma" },
-    { en: "pollution", tr: "kirlilik" },
-    { en: "deforestation", tr: "ormansızlaşma" },
-    { en: "greenhouse gases", tr: "sera gazları" },
-    { en: "carbon footprint", tr: "karbon ayak izi" },
-    { en: "renewable energy", tr: "yenilenebilir enerji" },
-    { en: "sustainable", tr: "sürdürülebilir" },
-    { en: "recycling", tr: "geri dönüşüm" },
-    { en: "biodiversity", tr: "biyolojik çeşitlilik" },
-    { en: "environmentally friendly", tr: "çevre dostu" },
-    { en: "overconsumption", tr: "aşırı tüketim" },
-    { en: "eco-friendly products", tr: "çevre dostu ürünler" },
-    { en: "waste management", tr: "atık yönetimi" },
-    { en: "conservation", tr: "koruma" },
-    { en: "natural resources", tr: "doğal kaynaklar" },
-    { en: "energy-efficient", tr: "enerji verimli" },
-    { en: "landfill", tr: "çöp alanı" },
-    { en: "water scarcity", tr: "su kıtlığı" },
-    { en: "extinction", tr: "yok olma" }
-  ],
+  table: {
+    title: "📋 Environment Vocabulary: Problems & Solutions (B1+)",
+    data: [
+      { term: "Climate change", definition: "Long-term change in Earth's temperature and weather patterns", problem: "Causes extreme weather, droughts, floods", causes: "Greenhouse gas emissions, deforestation", example: "Climate change is affecting agriculture worldwide.", critical: "Major global issue", note: "Broader than global warming" },
+      { term: "Global warming", definition: "Increase in Earth's average temperature", problem: "Ice melts, sea levels rise, ecosystems damaged", causes: "CO₂ and other greenhouse gases", example: "Global warming is melting polar ice caps.", note: "Part of climate change", related: "Greenhouse effect" },
+      { term: "Pollution", definition: "Harmful substances in air, water, or land", types: "Air pollution, water pollution, plastic pollution, noise pollution", problem: "Health issues, ecosystem damage", example: "Air pollution causes respiratory problems.", solutions: "Reduce emissions, use public transport, recycle", note: "Major environmental problem" },
+      { term: "Deforestation", definition: "Cutting down forests on a large scale", problem: "Loss of habitat, biodiversity loss, more CO₂", causes: "Logging, agriculture, urbanization", example: "Deforestation destroys animal habitats.", impact: "Reduces oxygen, increases CO₂", solutions: "Reforestation, protect forests" },
+      { term: "Greenhouse gases", definition: "Gases that trap heat in the atmosphere", examples: "Carbon dioxide (CO₂), methane (CH₄), nitrous oxide (N₂O)", problem: "Cause global warming", sources: "Burning fossil fuels, agriculture, industry", example: "Greenhouse gas emissions are increasing every year.", note: "Main cause of climate change" },
+      { term: "Carbon footprint", definition: "Total greenhouse gases produced by our actions", usage: "Reduce your carbon footprint", measured_in: "Tons of CO₂ equivalent per year", example: "Flying increases your carbon footprint.", critical: "Say 'carbon footprint' NOT 'carbon trace'", ways_to_reduce: "Drive less, use less electricity, eat local food" },
+      { term: "Renewable energy", definition: "Energy from sources that don't run out", types: "Solar, wind, hydroelectric, geothermal, biomass", opposite: "Fossil fuels (coal, oil, gas)", example: "Renewable energy is better for the environment.", critical: "Say 'renewable energy' NOT 'renewable power'", benefit: "Clean, sustainable, infinite" },
+      { term: "Sustainable", definition: "Able to continue without harming the environment", usage: "Sustainable development, sustainable practices, sustainable agriculture", example: "We need sustainable solutions for the future.", meaning: "Can last long-term", note: "Balance present needs & future needs", collocations: "sustainable lifestyle, sustainable growth" },
+      { term: "Recycling", definition: "Processing waste materials to make new products", benefits: "Saves resources, reduces waste, saves energy", materials: "Paper, plastic, glass, metal", example: "Recycling helps conserve natural resources.", symbols: "♻️ recycling symbol", action: "Sort waste, use recycling bins" },
+      { term: "Biodiversity", definition: "Variety of living species in an ecosystem", importance: "Ecosystem balance, food security, medicine", threat: "Habitat loss, pollution, climate change", example: "Biodiversity is essential for healthy ecosystems.", note: "More species = healthier ecosystem", concern: "Many species facing extinction" },
+      { term: "Environmentally friendly", definition: "Not harmful to the environment", synonym: "Eco-friendly, green", examples: "Environmentally friendly products, transportation, practices", example: "Electric cars are more environmentally friendly than petrol cars.", note: "Better for nature", usage: "Choose environmentally friendly options" },
+      { term: "Overconsumption", definition: "Using more resources than necessary", problem: "Resource depletion, waste, environmental damage", causes: "Consumer culture, cheap products, waste", example: "Overconsumption leads to more waste and pollution.", solution: "Buy less, reuse more, choose quality", note: "Using too much" },
+      { term: "Eco-friendly products", definition: "Products made with minimal environmental harm", features: "Sustainable materials, biodegradable, recyclable", examples: "Bamboo products, reusable bags, organic cotton", example: "I try to buy eco-friendly products when possible.", benefit: "Less pollution, less waste", note: "Better for planet" },
+      { term: "Waste management", definition: "Collection, transport, processing, and disposal of waste", includes: "Recycling, composting, landfills, incineration", importance: "Prevents pollution, protects health", example: "Good waste management reduces environmental impact.", stages: "Reduce, reuse, recycle, dispose", note: "Handling trash properly" },
+      { term: "Conservation", definition: "Protection and preservation of natural resources", types: "Wildlife conservation, forest conservation, water conservation", actions: "Protect habitats, create reserves, enforce laws", example: "Conservation programs help protect endangered species.", goal: "Save nature for future", importance: "Prevents extinction" },
+      { term: "Natural resources", definition: "Materials from nature used by humans", examples: "Water, forests, minerals, oil, soil", types: "Renewable (water, forests) & Non-renewable (oil, coal)", problem: "Depletion, overuse", example: "We must conserve natural resources for future generations.", note: "What nature provides us" },
+      { term: "Energy-efficient", definition: "Using less energy to do the same task", examples: "LED bulbs, energy-efficient appliances, insulation", benefits: "Save money, reduce emissions, less waste", example: "Energy-efficient devices lower electricity bills.", label: "Energy rating (A+++)", action: "Choose energy-efficient products" },
+      { term: "Landfill", definition: "Area where waste is buried in the ground", problem: "Pollution, methane emissions, space", alternative: "Recycling, composting, waste reduction", example: "Most plastic waste ends up in landfills.", concern: "Takes centuries to decompose", solution: "Reduce, reuse, recycle first" },
+      { term: "Water scarcity", definition: "Lack of sufficient clean water", causes: "Drought, pollution, overuse, population growth", impact: "Agriculture fails, health problems, conflicts", example: "Water scarcity is a growing problem in many regions.", solutions: "Save water, improve infrastructure, rainwater harvesting", note: "Not enough water" },
+      { term: "Extinction", definition: "Complete disappearance of a species", causes: "Habitat loss, hunting, pollution, climate change", examples: "Dinosaurs, dodo bird, many species at risk", example: "Many animals are threatened with extinction.", concern: "Permanent loss", prevention: "Conservation, habitat protection, laws" }
+    ]
+  },
 
   speakingPractice: [
     { question: "What are the main causes of climate change?", answer: "Mainly greenhouse gas emissions from burning fossil fuels." },
@@ -9781,28 +9852,31 @@ const MODULE_145_DATA = {
 • objective reporting - tarafsız haber yapma`,
   tip: "Use 'breaking news' for urgent stories, 'headline' for the main title, and 'go viral' when content spreads rapidly online",
 
-  table: [
-    { en: "headline", tr: "manşet" },
-    { en: "breaking news", tr: "son dakika haberi" },
-    { en: "reporter", tr: "muhabir" },
-    { en: "journalist", tr: "gazeteci" },
-    { en: "editor", tr: "editör" },
-    { en: "news anchor", tr: "haber sunucusu" },
-    { en: "article", tr: "makale" },
-    { en: "interview", tr: "röportaj" },
-    { en: "broadcast", tr: "yayın" },
-    { en: "live coverage", tr: "canlı yayın" },
-    { en: "press", tr: "basın" },
-    { en: "media outlet", tr: "medya kuruluşu" },
-    { en: "fake news", tr: "sahte haber" },
-    { en: "source", tr: "kaynak" },
-    { en: "tabloid", tr: "magazin gazetesi" },
-    { en: "mainstream media", tr: "ana akım medya" },
-    { en: "social media", tr: "sosyal medya" },
-    { en: "go viral", tr: "hızla yayılmak" },
-    { en: "subscribe", tr: "abone olmak" },
-    { en: "objective reporting", tr: "tarafsız haber yapma" }
-  ],
+  table: {
+    title: "📋 News and Media Vocabulary (B1+)",
+    data: [
+      { term: "Headline", definition: "The main title of a news story", purpose: "Attracts attention, summarizes content", example: "The headline reads: 'Economy Shows Strong Growth'", usage: "Read/write a headline", location: "Top of article/page", note: "Usually large, bold text", tip: "Should be brief and catchy" },
+      { term: "Breaking news", definition: "Urgent, unexpected news reported immediately", usage: "Breaking news just in...", characteristics: "Urgent, important, immediate", example: "Breaking news: Major earthquake hits city.", context: "TV interruptions, news alerts", note: "Interrupts regular programming", synonym: "Flash news, latest news" },
+      { term: "Reporter", definition: "Person who gathers news and reports from the field", role: "Investigates, interviews, reports events", workplace: "On location, field work", example: "The reporter interviewed witnesses at the scene.", difference: "Goes to the event location", skills: "Research, interviewing, writing" },
+      { term: "Journalist", definition: "Professional who researches and writes news", role: "Writes articles, investigates stories", workplace: "Newsroom, field, office", example: "The journalist wrote an article about climate change.", note: "Broader than reporter", types: "Investigative, political, sports journalist" },
+      { term: "Editor", definition: "Person who checks and prepares content for publication", role: "Ensures accuracy, quality, grammar, style", workplace: "Newsroom, office", example: "The editor reviewed the article before publishing.", responsibility: "Final approval, fact-checking", note: "Quality control person" },
+      { term: "News anchor", definition: "Person who presents news on TV/radio", role: "Reads news, introduces reports, interviews", workplace: "TV/radio studio", example: "The news anchor announced the election results.", skills: "Clear speaking, professional presence", synonym: "News presenter, newscaster", note: "On-camera/on-air" },
+      { term: "Article", definition: "Written piece in newspaper, magazine, or online", types: "News article, opinion article, feature article", parts: "Headline, byline, body, conclusion", example: "I read an interesting article about technology.", length: "Usually 500-1500 words", usage: "Write/read/publish an article" },
+      { term: "Interview", definition: "Conversation to gather information or opinions", types: "Face-to-face, phone, video, email interview", purpose: "Get facts, opinions, personal stories", example: "The journalist conducted an interview with the mayor.", verb: "Interview someone / give an interview", note: "Q&A format" },
+      { term: "Broadcast", definition: "Transmission of TV or radio program", usage: "Broadcast news/programs", types: "TV broadcast, radio broadcast, live broadcast", example: "The game was broadcast on national television.", verb: "To broadcast = to transmit", time: "Can be live or recorded" },
+      { term: "Live coverage", definition: "Broadcasting an event as it happens in real time", characteristics: "Real-time, unedited, immediate", usage: "Live coverage of [event]", example: "We watched live coverage of the royal wedding.", benefits: "Immediate, authentic", events: "Sports, elections, emergencies, ceremonies" },
+      { term: "Press", definition: "News media collectively (newspapers, journalists)", usage: "The press, freedom of the press", example: "The press criticized the government's decision.", collocations: "press conference, press release, press freedom", note: "Collective term for media", importance: "Essential in democracy" },
+      { term: "Media outlet", definition: "Organization that produces and distributes news", examples: "BBC, CNN, The New York Times, Reuters", types: "TV, radio, newspaper, online news", example: "Which media outlet do you trust most?", note: "News organization", plural: "Media outlets" },
+      { term: "Fake news", definition: "False information presented as real news", problem: "Spreads misinformation, causes confusion", characteristics: "Misleading, fabricated, sensational", example: "Fake news spreads quickly on social media.", concern: "Major problem online", solution: "Check sources, verify facts, media literacy" },
+      { term: "Source", definition: "Origin of information; person providing info", importance: "Credibility depends on reliable sources", types: "Primary source (witness), secondary source (report)", example: "Always check your sources before believing news.", usage: "Reliable source, credible source, cite sources", note: "Where info comes from" },
+      { term: "Tabloid", definition: "Newspaper focused on sensational/celebrity news", characteristics: "Sensational, gossip, less serious", opposite: "Broadsheet (serious news)", example: "Tabloids often focus on celebrity scandals.", format: "Smaller size, lots of pictures", note: "Entertainment-focused", quality: "Less rigorous journalism" },
+      { term: "Mainstream media", definition: "Major, widely-consumed traditional media", examples: "Major TV networks, national newspapers", characteristics: "Large audience, established, traditional", example: "Do you trust mainstream media?", abbreviation: "MSM", alternative: "Independent media, alternative media" },
+      { term: "Social media", definition: "Online platforms for sharing content and interaction", examples: "Facebook, Twitter, Instagram, TikTok", uses: "News sharing, communication, discussion", example: "Many people get news from social media now.", concern: "Fake news, echo chambers, misinformation", benefit: "Fast, accessible, interactive" },
+      { term: "Go viral", definition: "Content spreads rapidly online", usage: "Something goes viral", characteristics: "Rapid spread, wide reach, popular", example: "The video went viral and got millions of views.", platform: "Social media, YouTube", factors: "Emotional, funny, shocking, relatable" },
+      { term: "Subscribe", definition: "Sign up to receive regular content/updates", usage: "Subscribe to a channel/newspaper/service", types: "Email subscription, paid subscription, free subscription", example: "I subscribe to The Guardian online.", benefit: "Regular updates, access to content", verb: "Subscribe / noun: subscription, subscriber" },
+      { term: "Objective reporting", definition: "Presenting facts without personal bias or opinion", characteristics: "Fair, balanced, fact-based, neutral", opposite: "Biased reporting, opinion piece", example: "Good journalism requires objective reporting.", importance: "Builds trust, informs accurately", challenge: "Complete objectivity is difficult", synonym: "Impartial reporting, unbiased reporting" }
+    ]
+  },
 
   speakingPractice: [
     { question: "Do you read the news every day?", answer: "Yes, I usually check news apps every morning." },
