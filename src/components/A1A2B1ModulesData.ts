@@ -3366,12 +3366,44 @@ Olumsuz:
 • I don't like doing homework. (Ödev yapmayı sevmem.)
 • He doesn't love running. (O koşmayı sevmez.)`,
   tip: "Use verb + -ing after like, love, and hate",
-  
-  table: [
-    { verb: "like", structure: "Subject + like + verb-ing", example: "I like reading books." },
-    { verb: "love", structure: "Subject + love + verb-ing", example: "She loves cooking." },
-    { verb: "hate", structure: "Subject + hate + verb-ing", example: "They hate waking up early." }
-  ],
+
+  table: {
+    title: "📋 Preference Verbs + Gerund (-ing) - Expressing Likes & Dislikes",
+    data: [
+      { category: "What are Preference Verbs?", explanation: "Verbs that express how you feel about activities", turkish: "Tercih fiilleri", function: "Say what you like, love, or hate doing", examples: "I like swimming. / She loves dancing. / They hate waiting.", note: "These verbs show your feelings about activities!" },
+      { category: "The Preference Scale", love_it: "Love (en çok sevmek) - Strongest positive feeling", like_it: "Like (sevmek, hoşlanmak) - Positive feeling", dont_mind: "Don't mind (aldırmamak) - Neutral", dont_like: "Don't like (sevmemek) - Negative feeling", hate_it: "Hate (nefret etmek) - Strongest negative feeling", note: "From most positive to most negative" },
+
+      { category: "Structure", form: "Subject + like/love/hate/enjoy/prefer + VERB-ING", pattern: "Preference verb + gerund (-ing form)", rule: "After these verbs, ALWAYS use -ing form", turkish: "Özne + tercih fiili + fiil-ing", examples: "I like reading. / She loves cooking. / We hate cleaning. / They enjoy swimming." },
+      { category: "All Preference Verbs", verb_1: "Like (sevmek, hoşlanmak)", example_1: "I like playing football.", verb_2: "Love (çok sevmek)", example_2: "She loves watching movies.", verb_3: "Hate (nefret etmek)", example_3: "He hates doing homework.", verb_4: "Enjoy (keyif almak, hoşlanmak)", example_4: "We enjoy listening to music.", verb_5: "Prefer (tercih etmek)", example_5: "They prefer walking to running." },
+
+      { category: "LIKE Structure", positive: "Subject + like + verb-ing", example_positive: "I like eating pizza. / You like playing games.", negative: "Subject + don't/doesn't + like + verb-ing", example_negative: "I don't like waking up early. / She doesn't like cleaning.", question: "Do/Does + subject + like + verb-ing?", example_question: "Do you like swimming? / Does he like reading?" },
+      { category: "LOVE Structure", positive: "Subject + love + verb-ing", example_positive: "I love traveling. / She loves cooking.", negative: "Subject + don't/doesn't + love + verb-ing", example_negative: "I don't love exercising. / He doesn't love studying.", note: "'Don't love' is weaker than 'hate'", turkish: "Çok sevmemek ≠ nefret etmek", remember: "You can say 'I don't like' but 'I don't love' is less common" },
+      { category: "HATE Structure", positive: "Subject + hate + verb-ing", example_positive: "I hate waiting. / They hate doing dishes.", negative: "Subject + don't/doesn't + hate + verb-ing", example_negative: "I don't hate it. / She doesn't hate cleaning.", question: "Do/Does + subject + hate + verb-ing?", example_question: "Do you hate studying? / Does she hate running?", note: "Strong negative feeling!" },
+
+      { category: "How to Add -ING (Review)", rule_1: "Most verbs: add -ing", examples_1: "play → playing, read → reading, cook → cooking, eat → eating", rule_2: "Verbs ending in -e: drop e, add -ing", examples_2: "dance → dancing, write → writing, make → making, have → having", rule_3: "Short verbs (CVC): double last consonant + -ing", examples_3: "run → running, swim → swimming, shop → shopping, stop → stopping" },
+
+      { category: "Common Activities to Talk About", hobbies: "reading, writing, drawing, painting, singing, dancing", sports: "swimming, running, playing football, cycling, hiking, skiing", daily_tasks: "cooking, cleaning, washing dishes, doing homework, studying", entertainment: "watching TV, listening to music, playing games, going to the cinema", other: "traveling, shopping, eating out, talking on the phone, sleeping" },
+
+      { category: "Using ENJOY", structure: "Subject + enjoy + verb-ing", examples: "I enjoy reading books. / She enjoys cooking. / They enjoy playing tennis.", turkish: "Keyif almak, hoşlanmak", note: "ENJOY is always followed by -ing (no 'to'!)", wrong: "I enjoy to read ✗", correct: "I enjoy reading ✓", difference: "Enjoy = get pleasure from doing something" },
+      { category: "Using PREFER", structure: "Subject + prefer + verb-ing + to + verb-ing", examples: "I prefer walking to running. / She prefers tea to coffee. / They prefer staying home to going out.", turkish: "Tercih etmek", meaning: "Like one thing MORE than another thing", pattern: "prefer A to B (A'yı B'ye tercih etmek)", note: "Shows comparison between two options" },
+
+      { category: "Subject-Verb Agreement", rule: "Remember: He/She/It needs -s on the preference verb!", correct_examples: "I like / You like / We like / They like", correct_he_she_it: "He likes / She likes / It likes (add -s!)", wrong: "He like swimming ✗ / She love dancing ✗", correct: "He likes swimming ✓ / She loves dancing ✓", remember: "-s on preference verb for he/she/it, but gerund stays the same!" },
+
+      { category: "Negative Forms", dont_like: "I don't like waking up early.", doesnt_like: "She doesn't like doing homework.", dont_love: "We don't love cleaning. (= We don't really like it)", dont_hate: "He doesn't hate it. (= It's not so bad)", pattern: "don't/doesn't + preference verb + verb-ing", note: "The -ing form never changes in negatives!" },
+
+      { category: "Question Forms", do_question: "Do you like reading?", does_question: "Does she love cooking?", what_question: "What do you like doing? → I like playing football.", who_question: "Who likes swimming? → My brother likes swimming.", pattern: "Do/Does + subject + preference verb + verb-ing?", remember: "Invert do/does in questions!" },
+
+      { category: "Common Mistakes", mistake_1: "Using 'to' instead of -ing", wrong_1: "I like to read ✗ (simple form can work but -ing is more natural for general preferences)", correct_1: "I like reading ✓", note_1: "In American English 'like to do' is acceptable, but 'like doing' is universal", better: "Like doing = general preference | Like to do = specific occasion" },
+      { category: "Common Mistakes", mistake_2: "Forgetting -s for he/she/it", wrong_2: "He like playing ✗ / She love dancing ✗", correct_2: "He likes playing ✓ / She loves dancing ✓", rule: "Add -s to the preference verb, not to the gerund!", remember: "likes playing (NOT like playing)" },
+      { category: "Common Mistakes", mistake_3: "Using wrong -ing form", wrong_3: "I like swimeing ✗ / She loves runing ✗", correct_3: "I like swimming ✓ / She loves running ✓", rule: "Follow the -ing rules correctly!", review: "swim → swimming (double m) / run → running (double n)" },
+
+      { category: "Expressing Intensity", very_strong: "I absolutely love playing football! (çok çok seviyorum)", strong: "I really like reading. (gerçekten seviyorum)", moderate: "I quite like cooking. (oldukça seviyorum)", weak: "I don't mind cleaning. (aldırmıyorum, fena değil)", negative: "I really don't like waiting. (gerçekten sevmiyorum)", very_negative: "I absolutely hate waking up early! (çok nefret ediyorum)" },
+
+      { category: "Real-World Uses", introduce_yourself: "I like traveling and meeting new people.", talk_about_hobbies: "I love playing the guitar. I enjoy reading books.", daily_conversations: "What do you like doing in your free time? → I like watching movies.", express_dislikes: "I hate doing housework, but I don't mind cooking.", job_interviews: "I enjoy working with people and solving problems." },
+
+      { category: "Key Takeaway", summary: "Preference verbs + verb-ING express likes and dislikes", structure: "like/love/hate/enjoy/prefer + VERB-ING", scale: "Love (strongest +) > Like > Don't mind > Don't like > Hate (strongest -)", rule_1: "Always -ing after these verbs (gerund)", rule_2: "Add -s for he/she/it on preference verb", common_verbs: "like, love, hate, enjoy, prefer", remember: "The -ing form shows activities you have feelings about!", next: "Practice talking about your hobbies and preferences!" }
+    ]
+  },
   
   speakingPractice: [
     { question: "Do you like reading books?", answer: "Yes, I like reading books." },
@@ -3429,13 +3461,47 @@ const MODULE_32_DATA = {
 Yakın için → this / these
 Uzak için → that / those`,
   tip: "This/these for near, that/those for far",
-  
-  table: [
-    { demonstrative: "This", use: "Singular, near", example: "This is my phone." },
-    { demonstrative: "That", use: "Singular, far", example: "That is my car." },
-    { demonstrative: "These", use: "Plural, near", example: "These are my pencils." },
-    { demonstrative: "Those", use: "Plural, far", example: "Those are my books." }
-  ],
+
+  table: {
+    title: "📋 Demonstratives (This, That, These, Those) - Pointing to Things",
+    data: [
+      { category: "What are Demonstratives?", explanation: "Words used to point to and identify specific people, animals, or things", turkish: "İşaret sıfatları / İşaret zamirleri", function: "Show which one(s) you're talking about", examples: "This is my phone. / That is your car. / These are my books. / Those are their shoes.", note: "Used to indicate distance (near or far) and number (singular or plural)" },
+
+      { category: "The Four Demonstratives", this: "THIS (bu) - Singular, near", that: "THAT (şu, o) - Singular, far", these: "THESE (bunlar) - Plural, near", those: "THOSE (şunlar, onlar) - Plural, far", rule: "Choose based on: 1) How many? (singular/plural) 2) How far? (near/far)", remember: "THIS/THESE = near | THAT/THOSE = far" },
+
+      { category: "THIS - Singular, Near", use: "One thing/person close to you", turkish: "Bu (tekil, yakın)", structure: "This + is + noun / adjective", examples: "This is my pen. / This is expensive. / This book is interesting.", with_noun: "This book / This car / This teacher / This idea", distance: "Something you can touch or is very close", gesture: "Point to something near you" },
+      { category: "THAT - Singular, Far", use: "One thing/person away from you", turkish: "Şu, o (tekil, uzak)", structure: "That + is + noun / adjective", examples: "That is your house. / That is beautiful. / That mountain is high.", with_noun: "That building / That tree / That person / That shop", distance: "Something you can see but it's not close", gesture: "Point to something far away" },
+
+      { category: "THESE - Plural, Near", use: "Two or more things/people close to you", turkish: "Bunlar (çoğul, yakın)", structure: "These + are + noun / adjective", examples: "These are my keys. / These are new. / These shoes are comfortable.", with_noun: "These books / These students / These apples / These chairs", distance: "Multiple things you can touch or are very close", gesture: "Point to multiple things near you", note: "Always use ARE (not is) with these!" },
+      { category: "THOSE - Plural, Far", use: "Two or more things/people away from you", turkish: "Şunlar, onlar (çoğul, uzak)", structure: "Those + are + noun / adjective", examples: "Those are their bags. / Those are old. / Those cars are fast.", with_noun: "Those buildings / Those children / Those birds / Those clouds", distance: "Multiple things you can see but they're not close", gesture: "Point to multiple things far away", note: "Always use ARE (not is) with those!" },
+
+      { category: "Quick Reference Chart", singular_near: "THIS is (bu)", singular_far: "THAT is (şu, o)", plural_near: "THESE are (bunlar)", plural_far: "THOSE are (şunlar, onlar)", rule_1: "Singular (one) → This/That + IS", rule_2: "Plural (many) → These/Those + ARE", remember: "Near → This/These | Far → That/Those" },
+
+      { category: "With BE Verb", this_is: "This is my friend. / This is important.", that_is: "That is his car. / That is correct.", these_are: "These are my photos. / These are beautiful.", those_are: "Those are your shoes. / Those are expensive.", rule: "This/That + IS | These/Those + ARE", important: "Never say 'These is' or 'Those is' - always ARE!" },
+
+      { category: "Questions with Demonstratives", what_this: "What is this? → This is a book.", what_that: "What is that? → That is a mountain.", what_these: "What are these? → These are my pencils.", what_those: "What are those? → Those are clouds.", who: "Who is this? / Who are these?", pattern: "What/Who + is/are + demonstrative?", inversion: "Use 'is' with this/that, 'are' with these/those" },
+
+      { category: "Before Nouns (as Adjectives)", this_noun: "This book is good. / This car is new.", that_noun: "That house is big. / That man is my teacher.", these_noun: "These books are mine. / These apples are fresh.", those_noun: "Those dogs are cute. / Those people are students.", pattern: "Demonstrative + noun + verb", note: "Demonstrative describes WHICH book/house/apples/dogs" },
+
+      { category: "Alone (as Pronouns)", this_alone: "This is mine. / Is this your bag?", that_alone: "That is expensive. / I don't like that.", these_alone: "These are yours. / Can I have these?", those_alone: "Those are beautiful. / I want those.", pattern: "Demonstrative + verb (no noun after)", note: "The demonstrative replaces the noun completely" },
+
+      { category: "Yes/No Questions", is_this: "Is this your phone? → Yes, it is. / No, it isn't.", is_that: "Is that your car? → Yes, that's my car. / No, that's not mine.", are_these: "Are these your keys? → Yes, they are. / No, they aren't.", are_those: "Are those your books? → Yes, those are mine. / No, those are Sarah's.", pattern: "Is/Are + demonstrative + noun?", short_answers: "Yes, it is. / Yes, they are. / No, it isn't. / No, they aren't." },
+
+      { category: "Whose Questions", whose_this: "Whose is this? → This is mine. / This is John's.", whose_that: "Whose is that? → That is his. / That's my father's.", whose_these: "Whose are these? → These are ours. / These are the teacher's.", whose_those: "Whose are those? → Those are theirs. / Those are my sister's.", pattern: "Whose + is/are + demonstrative?", use: "Ask about ownership of things you're pointing to" },
+
+      { category: "Distance Examples", near_touch: "This is my cup. (in my hand) / These are my shoes. (on my feet)", near_vision: "This building is tall. (we're inside it) / These trees are beautiful. (right next to us)", far_vision: "That mountain is high. (we can see it far away) / Those birds are flying. (up in the sky)", far_elsewhere: "That restaurant is good. (talking about one across town) / Those shops are closed. (not here)", remember: "Near = can touch it | Far = can see it but it's away" },
+
+      { category: "Common Mistakes", mistake_1: "Using 'is' with these/those", wrong_1: "These is my books. ✗ / Those is their cars. ✗", correct_1: "These are my books. ✓ / Those are their cars. ✓", rule: "These/Those always need ARE (plural)", remember: "Plural → are (not is)" },
+      { category: "Common Mistakes", mistake_2: "Confusing singular and plural", wrong_2: "This are good. ✗ / That are expensive. ✗", correct_2: "This is good. ✓ / That is expensive. ✓", rule: "This/That = singular → IS | These/Those = plural → ARE", tip: "Check: one thing or many things?" },
+      { category: "Common Mistakes", mistake_3: "Wrong distance choice", wrong_3: "Using 'these' for things far away / Using 'those' for things you're holding", correct_3: "These = close to me / Those = far from me", example: "These books (in my hand) ✓ / Those books (on the shelf far away) ✓", remember: "Think about distance: Can I touch it? → this/these | Can I see it but it's far? → that/those" },
+
+      { category: "Polite Requests", this_one: "Can I have this one? / I'd like this, please.", that_one: "Could you give me that one? / I want that, please.", these_ones: "May I try these on? / I'll take these, please.", those_ones: "Could you show me those? / Can I see those, please?", shopping: "Very common when shopping or choosing items", note: "Polite way to point to what you want" },
+
+      { category: "Real-World Uses", introductions: "This is my friend, Anna. / These are my parents.", shopping: "How much is this? / I like those shoes.", phone_calls: "Hello, this is John speaking. (identify yourself on phone)", presentations: "This chart shows... / These results indicate...", general: "Point to things, ask questions, make choices, introduce people" },
+
+      { category: "Key Takeaway", summary: "Demonstratives point to specific things based on distance and number", chart: "THIS (one, near) | THAT (one, far) | THESE (many, near) | THOSE (many, far)", verbs: "This/That + IS | These/Those + ARE", distance: "THIS/THESE = close (yakın) | THAT/THOSE = far (uzak)", number: "THIS/THAT = singular (tekil) | THESE/THOSE = plural (çoğul)", remember: "Choose based on: How many? (one or many) + How far? (near or far)", next: "Practice pointing to things around you and using demonstratives!" }
+    ]
+  },
   
   speakingPractice: [
     { question: "What is this?", answer: "This is my phone." },
@@ -3490,11 +3556,46 @@ const MODULE_33_DATA = {
 Örn: Whose book is this? → It's Anna's book.
 That is the teacher's pen. → Bu öğretmenin kalemi.`,
   tip: "Use whose to ask about possession, use 's to show ownership",
-  
-  table: [
-    { form: "Whose + noun", use: "Ask about possession", example: "Whose car is this?" },
-    { form: "Noun + 's", use: "Show possession", example: "This is my friend's house." }
-  ],
+
+  table: {
+    title: "📋 Whose & Possessive 's - Asking About and Showing Ownership",
+    data: [
+      { category: "What is WHOSE?", explanation: "Question word used to ask about ownership or possession", turkish: "Kimin (soru sözcüğü)", function: "Ask 'Who owns this?'", examples: "Whose car is this? / Whose books are these? / Whose phone is ringing?", note: "Answers usually use possessive 's or possessive pronouns" },
+      { category: "What is Possessive 's?", explanation: "Apostrophe + s added to a noun to show ownership", turkish: "İyelik eki (kimin)", function: "Show that something belongs to someone", examples: "Anna's book / My father's car / The teacher's desk / John's phone", note: "Shows 'X belongs to Y' → Y's X" },
+
+      { category: "WHOSE - Question Structure", structure: "Whose + noun + is/are + this/that/these/those?", examples: "Whose bag is this? / Whose keys are these? / Whose car is that?", pattern: "Whose + noun + verb", turkish: "Kimin + isim + fiil", singular: "Whose book is this? (kimin kitabı bu?)", plural: "Whose pens are these? (kimin kalemleri bunlar?)" },
+      { category: "WHOSE - Answering", answer_with_s: "It's Anna's. / It's my friend's. / It's the teacher's.", answer_with_pronoun: "It's mine. / It's his. / It's hers. / It's theirs.", full_answer: "This is John's bag. / That's my sister's car.", short_answer: "John's. / My sister's. / The teacher's.", pattern: "Name/'s or possessive pronoun", note: "You can answer with 's or with possessive pronouns" },
+
+      { category: "Possessive 's - Basic Rule", rule: "Add 's to the owner (person/animal)", pattern: "OWNER + 's + THING OWNED", examples: "Sarah's phone (Sarah'nın telefonu) / My dad's car (babamın arabası) / The cat's toy (kedinin oyuncağı)", structure: "Person's + noun", turkish: "Kişi + 's + nesne", remember: "The 's goes on the OWNER, not the thing!" },
+      { category: "Possessive 's - Regular Nouns", rule: "Add 's to singular nouns and names", examples: "Tom's book / Maria's house / The teacher's desk / My friend's dog / The student's notebook", pattern: "Singular noun + 's", note: "This works for most singular nouns", turkish: "Tekil isim + 's" },
+      { category: "Possessive 's - Names Ending in -s", rule: "Add 's (most common) OR just ' (less common)", examples_1: "James's car / Chris's phone / Thomas's idea (recommended)", examples_2: "James' car / Chris' phone / Thomas' idea (also acceptable)", modern_rule: "Most style guides now recommend 's even after -s", pronunciation: "James's = /ˈdʒeɪmzɪz/ (say the extra syllable)", choose: "Both are correct, but 's is more common now" },
+
+      { category: "Possessive 's - Plural Nouns Ending in -s", rule: "Add only ' (apostrophe) after -s", examples: "The students' books (öğrencilerin kitapları) / My parents' house (ebeveynlerimin evi) / The teachers' room (öğretmenler odası)", pattern: "Plural noun ending in -s + '", why: "The -s is already there for plural, so just add '", contrast: "One student's book (one student) vs The students' books (many students)" },
+      { category: "Possessive 's - Irregular Plural Nouns", rule: "Add 's to irregular plurals (not ending in -s)", examples: "The children's toys / The men's room / The women's shoes / The people's choice", pattern: "Irregular plural + 's", why: "These plurals don't end in -s, so add 's normally", turkish: "Düzensiz çoğullar + 's" },
+
+      { category: "Whose vs Who's - DON'T CONFUSE!", whose: "WHOSE = possession (kimin)", whose_example: "Whose book is this? (Kimin kitabı bu?)", whos: "WHO'S = who is / who has (contraction)", whos_example: "Who's that? = Who is that? / Who's got a pen? = Who has got a pen?", rule: "Whose = ownership question | Who's = who is/has", mistake: "Don't write 'Who's book' ✗", correct: "Whose book ✓", tip: "If you can replace it with 'who is', use who's. Otherwise, use whose!" },
+
+      { category: "Using WHOSE in Questions", whose_noun: "Whose phone is ringing? / Whose turn is it?", whose_alone: "Whose is this? / Whose are those?", with_demonstratives: "Whose book is this? / Whose keys are these?", with_be: "Whose car is that? / Whose idea was it?", pattern: "Whose (+ noun) + verb", answer: "It's mine. / It's Sarah's. / It's the teacher's." },
+
+      { category: "Possessive 's with Family", family_examples: "My mother's job / My father's car / My sister's room / My brother's friend / My grandmother's house / My uncle's shop", pattern: "Family member + 's + noun", use: "Very common to talk about family possessions", turkish: "Aile bireylerinin eşyaları", note: "We use 's (not 'of') with people in family relationships" },
+      { category: "Possessive 's with Time", time_examples: "Today's news / Yesterday's game / Tomorrow's meeting / This week's homework / Last year's winner / Next month's plan", pattern: "Time word + 's + noun", use: "Show that something belongs to a time period", turkish: "Zaman + 's + nesne", note: "Yes, you can use 's with time expressions!" },
+
+      { category: "Double Possessive", pattern: "A/An + noun + of + possessive", examples: "A friend of mine / A book of Sarah's / A student of my teacher's / An idea of his", meaning: "One of several things someone owns", explanation: "Combines 'a/an' + 'of' + possessive form", use: "When emphasizing 'one of many'", note: "Common in everyday English" },
+
+      { category: "Two Owners", shared_ownership: "Anna and Tom's house (they share ONE house)", separate_ownership: "Anna's and Tom's houses (they have SEPARATE houses)", rule: "One 's = shared | Two 's = separate", shared_example: "John and Mary's car (one car they both own)", separate_example: "John's and Mary's cars (they each have their own car)", pattern: "Name1 and Name2's (shared) | Name1's and Name2's (separate)" },
+
+      { category: "With Pronouns - Use Possessive Pronouns Instead", dont_use_s: "You can't add 's to pronouns!", wrong: "I's book ✗ / you's car ✗ / he's phone ✗ (this means 'he is'!)", correct: "my book ✓ / your car ✓ / his phone ✓", possessive_pronouns: "my, your, his, her, its, our, their", note: "Pronouns have special possessive forms - no 's needed!", remember: "his book (NOT he's book), her car (NOT she's car)" },
+
+      { category: "Common Mistakes", mistake_1: "Using 's on pronouns", wrong_1: "This is she's book. ✗ / That's they's car. ✗", correct_1: "This is her book. ✓ / That's their car. ✓", rule: "Use possessive pronouns, not pronoun + 's", remember: "Pronouns don't take 's!" },
+      { category: "Common Mistakes", mistake_2: "Confusing whose and who's", wrong_2: "Who's book is this? ✗", correct_2: "Whose book is this? ✓", test: "Can you say 'who is book'? No! → Use whose", rule: "Whose = possession | Who's = who is" },
+      { category: "Common Mistakes", mistake_3: "Wrong placement of 's", wrong_3: "The book's Sarah. ✗ / The car's my dad. ✗", correct_3: "Sarah's book. ✓ / My dad's car. ✓", rule: "'s goes on the OWNER, then the thing owned", pattern: "OWNER's + THING (not THING's + OWNER)" },
+      { category: "Common Mistakes", mistake_4: "Plural 's confusion", wrong_4: "My parent's are doctors. ✗ (this says 'my parent is')", correct_4: "My parents are doctors. ✓ (no apostrophe for simple plural)", rule: "-s = plural | 's = possession", examples: "Books = plural / Book's = belonging to the book / Books' = belonging to the books" },
+
+      { category: "Real-World Uses", introductions: "This is my friend's house. / That's my teacher's car.", finding_owners: "Whose phone is this? / Whose bag is on the chair?", describing_relationships: "She's my sister's best friend. / He's my father's colleague.", talking_about_belongings: "I like Sarah's dress. / Do you have Tom's number?", general: "Essential for showing ownership and asking about it!" },
+
+      { category: "Key Takeaway", whose_summary: "WHOSE = question word for ownership (kimin)", whose_use: "Whose + noun + verb? → It's [owner]'s", possessive_s_summary: "Possessive 's = shows ownership", possessive_pattern: "OWNER + 's + THING", singular_rule: "Add 's to singular nouns and names", plural_regular: "Add ' to plural nouns ending in -s", plural_irregular: "Add 's to irregular plurals", remember: "'s goes on the OWNER | Whose asks about ownership | Who's = who is (different!)", next: "Practice asking whose and answering with 's!" }
+    ]
+  },
   
   speakingPractice: [
     { question: "Whose bag is this?", answer: "It's my sister's bag." },
@@ -3552,15 +3653,51 @@ const MODULE_34_DATA = {
 • Why → sebep (Why are you late?)
 • How → nasıl/şekil (How are you?)`,
   tip: "Question word + auxiliary verb + subject + main verb",
-  
-  table: [
-    { word: "Who", asks: "Person", example: "Who is your best friend?" },
-    { word: "What", asks: "Thing/Information", example: "What is your favorite color?" },
-    { word: "Where", asks: "Place", example: "Where do you live?" },
-    { word: "When", asks: "Time", example: "When is your birthday?" },
-    { word: "Why", asks: "Reason", example: "Why are you sad?" },
-    { word: "How", asks: "Manner/Way", example: "How are you?" }
-  ],
+
+  table: {
+    title: "📋 Question Words (Who, What, Where, When, Why, How) - The 5 W's + How",
+    data: [
+      { category: "What are Question Words?", explanation: "Special words that begin questions to get specific information", turkish: "Soru sözcükleri", function: "Ask about people, things, places, time, reasons, and manner", also_called: "Wh- words (because most start with 'wh')", examples: "Who are you? / What's this? / Where is it? / When do you start? / Why are you here? / How are you?", note: "Essential for getting information!" },
+
+      { category: "The 6 Main Question Words", who: "WHO - person (kim)", what: "WHAT - thing/information (ne)", where: "WHERE - place (nerede)", when: "WHEN - time (ne zaman)", why: "WHY - reason (neden)", how: "HOW - manner/way (nasıl)", remember: "5 W's + H", common: "These are the most common question words in English!" },
+
+      { category: "WHO - Asking About People", meaning: "Who = which person? (kim?)", use: "Ask about people's identity", examples: "Who is that? / Who are you? / Who is your teacher? / Who lives here?", structure: "Who + be verb / Who + auxiliary + subject + verb", answers: "A person's name or description", turkish: "Kim", note: "Use for identifying people" },
+      { category: "WHO - Common Questions", question_1: "Who is your best friend? → My best friend is Sarah.", question_2: "Who are they? → They are my classmates.", question_3: "Who teaches you English? → Mr. Brown teaches me.", question_4: "Who do you live with? → I live with my family.", question_5: "Who wants ice cream? → I do! / Everyone does!", pattern: "Who + verb OR Who + do/does + subject + verb", note: "Who can be subject or object of the question" },
+
+      { category: "WHAT - Asking About Things/Information", meaning: "What = which thing/information? (ne?)", use: "Ask about objects, actions, information, definitions", examples: "What is this? / What do you want? / What are you doing? / What's your name?", structure: "What + be verb / What + auxiliary + subject + verb", answers: "A thing, action, or piece of information", turkish: "Ne", note: "Very versatile - can ask about many things!" },
+      { category: "WHAT - Common Questions", question_1: "What is your name? → My name is Ali.", question_2: "What are you doing? → I'm studying.", question_3: "What do you like? → I like pizza.", question_4: "What time is it? → It's 3 o'clock.", question_5: "What color is it? → It's blue.", question_6: "What's your favorite food? → My favorite food is pasta.", pattern: "What + noun (What time/color/food)", note: "Can combine with nouns for specific questions" },
+
+      { category: "WHERE - Asking About Place/Location", meaning: "Where = in/at which place? (nerede?)", use: "Ask about locations, positions, places", examples: "Where are you? / Where do you live? / Where is the bank? / Where are my keys?", structure: "Where + be verb / Where + auxiliary + subject + verb", answers: "A place, location, or position", turkish: "Nerede, nereye, nereden", note: "Essential for asking about locations!" },
+      { category: "WHERE - Common Questions", question_1: "Where do you live? → I live in Istanbul.", question_2: "Where is your school? → It's near the park.", question_3: "Where are you from? → I'm from Turkey.", question_4: "Where do you work? → I work at a hospital.", question_5: "Where is the bathroom? → It's upstairs.", question_6: "Where are you going? → I'm going to the mall.", prepositions: "Often answered with: in, at, on, near, next to, etc.", note: "Answers usually include location words" },
+
+      { category: "WHEN - Asking About Time", meaning: "When = at what time? (ne zaman?)", use: "Ask about time, dates, moments, schedules", examples: "When is your birthday? / When do you start? / When is the meeting? / When did you arrive?", structure: "When + be verb / When + auxiliary + subject + verb", answers: "A time, date, day, or time expression", turkish: "Ne zaman", note: "For any time-related questions" },
+      { category: "WHEN - Common Questions", question_1: "When is your birthday? → My birthday is in July. / It's on July 15th.", question_2: "When do you get up? → I get up at 7 a.m.", question_3: "When is the exam? → The exam is next Monday.", question_4: "When do you go to bed? → I go to bed at 10 p.m.", question_5: "When did you arrive? → I arrived yesterday.", question_6: "When are you leaving? → I'm leaving tomorrow.", time_words: "Answers: today, tomorrow, yesterday, at 5, on Monday, in June, etc.", note: "Many different time expressions can answer 'when'" },
+
+      { category: "WHY - Asking About Reasons", meaning: "Why = for what reason? (neden?)", use: "Ask about reasons, causes, purposes", examples: "Why are you late? / Why do you study English? / Why is she crying? / Why did you do that?", structure: "Why + be verb / Why + auxiliary + subject + verb", answers: "Usually starts with 'because...'", turkish: "Neden, niçin", note: "Answers explain the reason or cause" },
+      { category: "WHY - Common Questions & Answers", question_1: "Why are you sad? → Because I lost my keys.", question_2: "Why do you study English? → Because I want to travel. / To improve my career.", question_3: "Why is he angry? → Because he missed the bus.", question_4: "Why are they late? → Because there was traffic.", question_5: "Why do you like summer? → Because I love swimming.", answer_pattern: "Because + reason OR To + purpose", note: "'Because' is the most common way to answer why", alternative: "Can also answer with 'to + verb' for purpose" },
+
+      { category: "HOW - Asking About Manner/Way/Degree", meaning: "How = in what way? to what degree? (nasıl?)", use: "Ask about manner, method, condition, degree", examples: "How are you? / How do you go to school? / How old are you? / How much is it?", structure: "How + be verb / How + auxiliary + subject + verb", answers: "A manner, method, feeling, or degree", turkish: "Nasıl", note: "Very versatile - can ask about many different things!" },
+      { category: "HOW - Common Questions", question_1: "How are you? → I'm fine, thank you.", question_2: "How do you spell your name? → A-L-I.", question_3: "How do you go to school? → I go by bus. / I walk.", question_4: "How is the weather? → It's sunny and warm.", question_5: "How does this work? → You press this button.", method: "How + do/does = asking about method", condition: "How + be = asking about condition/state", note: "How has many uses!" },
+
+      { category: "HOW + Adjective/Adverb", how_old: "How old are you? (Kaç yaşındasın?) → I'm 15 years old.", how_tall: "How tall are you? (Boy kaç?) → I'm 1.70 meters.", how_much: "How much is it? (Ne kadar?) → It's 50 lira.", how_many: "How many books? (Kaç kitap?) → Five books.", how_long: "How long is the film? (Film ne kadar uzun?) → It's 2 hours.", how_far: "How far is the airport? (Havaalanı ne kadar uzak?) → It's 30 km.", how_often: "How often do you exercise? (Ne sıklıkla?) → Twice a week.", pattern: "How + adjective/adverb asks about degree or quantity" },
+
+      { category: "Question Structure with BE Verb", pattern: "Question word + BE + subject?", who_be: "Who is that? / Who are they?", what_be: "What is this? / What are those?", where_be: "Where is the bank? / Where are my keys?", when_be: "When is your birthday? / When is the meeting?", how_be: "How are you? / How is the weather?", rule: "Put BE verb right after the question word", note: "No 'do/does' needed with BE verb!" },
+
+      { category: "Question Structure with Other Verbs", pattern: "Question word + DO/DOES/DID + subject + base verb?", who_do: "Who do you live with? / Who does she work for?", what_do: "What do you want? / What does he like?", where_do: "Where do you live? / Where does she work?", when_do: "When do you get up? / When does the class start?", why_do: "Why do you study English? / Why does he work hard?", how_do: "How do you go to school? / How does this work?", rule: "Use do/does/did + base verb (NOT -s on main verb!)", important: "The -s goes on 'does', not on the main verb!" },
+
+      { category: "Intonation", wh_questions: "Wh- questions usually have FALLING intonation ↘", examples: "Where are you from? ↘ / What's your name? ↘ / When do you start? ↘", sound: "Your voice goes DOWN at the end", contrast: "Yes/No questions have RISING intonation ↗", practice: "Listen to native speakers and imitate the falling tone!", note: "Falling intonation sounds natural and confident" },
+
+      { category: "Common Mistakes", mistake_1: "Wrong word order", wrong_1: "What you want? ✗ / Where you live? ✗", correct_1: "What do you want? ✓ / Where do you live? ✓", rule: "Use auxiliary verb (do/does) with main verbs", remember: "Question word + auxiliary + subject + verb" },
+      { category: "Common Mistakes", mistake_2: "Using -s on main verb after does", wrong_2: "What does he wants? ✗ / Where does she lives? ✗", correct_2: "What does he want? ✓ / Where does she live? ✓", rule: "After does/did, use BASE FORM (no -s!)", remember: "The -s is on 'does', not on the verb!" },
+      { category: "Common Mistakes", mistake_3: "Forgetting auxiliary verb", wrong_3: "What you do? ✗ / Where he go? ✗", correct_3: "What do you do? ✓ / Where does he go? ✓", rule: "Need do/does/did with main verbs (not BE)", exception: "Who/What as subject doesn't need auxiliary: 'Who wants coffee?' (not 'Who does want')" },
+
+      { category: "Short Answers to Wh- Questions", no_yes_no: "Wh- questions DON'T use yes/no answers!", wrong: "Where are you from? → Yes. ✗", correct: "Where are you from? → I'm from Turkey. ✓", pattern: "Give the specific information asked for", examples: "What's your name? → Ali. / Where do you live? → In Istanbul. / When is your birthday? → In May.", note: "Answer with the information, not yes/no!" },
+
+      { category: "Real-World Uses", introductions: "What's your name? / Where are you from? / What do you do?", daily_conversations: "How are you? / Where are you going? / What are you doing?", getting_information: "When does the bus arrive? / Where is the station? / How much is this?", problem_solving: "Why isn't it working? / How do I fix this? / What's wrong?", general: "Essential for communication and getting information!", note: "These are some of the most common questions in English!" },
+
+      { category: "Key Takeaway", summary: "Question words get specific information about people, things, places, time, reasons, and manner", six_words: "WHO (person) | WHAT (thing) | WHERE (place) | WHEN (time) | WHY (reason) | HOW (manner)", structure_be: "Question word + BE + subject (for BE verb)", structure_main: "Question word + DO/DOES/DID + subject + base verb (for other verbs)", intonation: "Wh- questions have falling intonation ↘", answers: "Give specific information (not yes/no!)", remember: "Master these 6 words and you can ask about anything!", next: "Practice asking questions about everything around you!" }
+    ]
+  },
   
   speakingPractice: [
     { question: "Who is your best friend?", answer: "My best friend is Ayşe." },
@@ -3616,13 +3753,53 @@ Soru yapıları:
 • What's the date today? → It's May 5th.
 • When is your birthday? → It's on the 12th of June.`,
   tip: "Use ordinal numbers for dates and positions",
-  
-  table: [
-    { number: "1st", ordinal: "first", example: "Today is the first of September." },
-    { number: "2nd", ordinal: "second", example: "Monday is the second day." },
-    { number: "3rd", ordinal: "third", example: "March is the third month." },
-    { number: "4th", ordinal: "fourth", example: "Thursday is the fourth day." }
-  ],
+
+  table: {
+    title: "📋 Ordinal Numbers (1st, 2nd, 3rd...) and Dates",
+    data: [
+      { category: "What are Ordinal Numbers?", explanation: "Numbers that show position, order, or sequence", turkish: "Sıra sayıları", function: "Show which position (first, second, third, etc.)", difference: "Cardinal = quantity (one, two, three) | Ordinal = position (first, second, third)", examples: "My birthday is on the 15th. / She came first in the race. / This is the third time.", use: "Dates, positions, rankings, floors, centuries" },
+
+      { category: "Formation Pattern", pattern: "Most numbers: add -TH to cardinal number", examples: "four → fourth (4th) / seven → seventh (7th) / ten → tenth (10th)", exceptions: "1st, 2nd, 3rd have special forms", rule: "After 3rd, add -th to the number", note: "Some spelling changes happen!" },
+
+      { category: "The First Three (Special Forms)", first: "1st = first (birinci)", second: "2nd = second (ikinci)", third: "3rd = third (üçüncü)", pattern: "These three are IRREGULAR - memorize them!", pronunciation: "first /fɜːrst/ | second /ˈsekənd/ | third /θɜːrd/", note: "All other ordinals end in -th", remember: "1st, 2nd, 3rd are special!" },
+
+      { category: "Numbers 4-10", fourth: "4th = fourth", fifth: "5th = fifth (note: f not v)", sixth: "6th = sixth", seventh: "7th = seventh", eighth: "8th = eighth (note: drop the t from eight)", ninth: "9th = ninth (note: drop the e from nine)", tenth: "10th = tenth", pattern: "Most add -th, but watch spelling changes!", spelling: "five → fifth (f) | eight → eighth (no t) | nine → ninth (no e)" },
+
+      { category: "Numbers 11-20", eleventh: "11th = eleventh", twelfth: "12th = twelfth (note: f not v)", thirteenth: "13th = thirteenth", fourteenth: "14th = fourteenth", fifteenth: "15th = fifteenth", sixteenth: "16th = sixteenth", seventeenth: "17th = seventeenth", eighteenth: "18th = eighteenth", nineteenth: "19th = nineteenth", twentieth: "20th = twentieth (note: y → ie)", spelling: "twelve → twelfth (f) | twenty → twentieth (y changes to ie)" },
+
+      { category: "Numbers 21-100", pattern: "For compound numbers: only change the last digit to ordinal", twenty_one: "21st = twenty-first (not twenty-oneth!)", thirty_second: "32nd = thirty-second", forty_third: "43rd = forty-third", fifty_fourth: "54th = fifty-fourth", ninety_ninth: "99th = ninety-ninth", rule: "Keep the tens digit as cardinal, make ones digit ordinal", examples: "25th = twenty-fifth | 61st = sixty-first | 82nd = eighty-second", remember: "Only the LAST part becomes ordinal!" },
+
+      { category: "Large Ordinals", thirtieth: "30th = thirtieth", fortieth: "40th = fortieth", fiftieth: "50th = fiftieth", sixtieth: "60th = sixtieth", seventieth: "70th = seventieth", eightieth: "80th = eightieth", ninetieth: "90th = ninetieth", one_hundredth: "100th = one hundredth", pattern: "When the number ends in 0, add -th to the whole number", note: "Forty has no 'u' (not fourty)!" },
+
+      { category: "Writing Ordinals - Two Ways", full_word: "Write the full word: first, second, third, fourth, etc.", abbreviation: "Write number + st/nd/rd/th: 1st, 2nd, 3rd, 4th, etc.", dates_written: "May 15th or May 15 or 15th May or 15 May", formal: "In formal writing, spell out: the fifteenth of May", informal: "In informal writing, use abbreviation: May 15th", both_ok: "Both ways are correct!" },
+
+      { category: "Abbreviations (st/nd/rd/th)", st_rule: "Use -st for: 1st, 21st, 31st, 41st, 51st, etc. (ends in 1)", nd_rule: "Use -nd for: 2nd, 22nd, 32nd, 42nd, 52nd, etc. (ends in 2)", rd_rule: "Use -rd for: 3rd, 23rd, 33rd, 43rd, 53rd, etc. (ends in 3)", th_rule: "Use -th for: 4th, 5th, 6th, 7th, 8th, 9th, 10th, 11th-20th, 24th-30th, etc.", pattern: "Look at the LAST DIGIT: 1→st, 2→nd, 3→rd, others→th", exceptions: "11th, 12th, 13th use -th (NOT 11st, 12nd, 13rd!)" },
+
+      { category: "Using Ordinals for DATES", structure: "The + ordinal + of + month OR Month + ordinal", british: "The 15th of May / The first of January", american: "May 15th / January 1st", both: "Both styles are used internationally", saying: "SAY: 'the fifteenth of May' or 'May fifteenth'", writing: "WRITE: May 15th / 15th May / May 15 / 15 May", note: "We always USE ordinals for dates, even if we sometimes write cardinal numbers!" },
+
+      { category: "Asking and Answering About Dates", question_1: "What's the date today? → It's the 10th of October. / It's October 10th.", question_2: "When is your birthday? → It's on the 22nd of July. / My birthday is July 22nd.", question_3: "What's today's date? → Today is the 5th.", preposition: "Use ON with specific dates: on the 15th, on May 3rd, on December 25th", pattern: "It's (on) the + ordinal + of + month", note: "You can drop 'on' in the answer, but it's correct to include it" },
+
+      { category: "Special Dates", new_year: "January 1st = New Year's Day (the first of January)", valentines: "February 14th = Valentine's Day (the fourteenth of February)", christmas: "December 25th = Christmas Day (the twenty-fifth of December)", turkey_republic: "October 29th = Turkish Republic Day (the twenty-ninth of October)", independence_usa: "July 4th = Independence Day (USA) (the fourth of July)", note: "Important dates are often written with ordinals", say_it: "We SAY the ordinal: 'the fourth of July' (not 'July four')" },
+
+      { category: "Ordinals for POSITIONS/RANKINGS", position: "She came first in the race. (1st place)", ranking: "He's the third tallest in the class.", floors: "My office is on the fifth floor. (5th floor)", order: "This is the second time I've been here.", line: "I'm the tenth person in line.", pattern: "Use ordinals to show position or order", note: "Very common in competitions, races, rankings" },
+
+      { category: "Ordinals with THE", rule: "Usually use THE before ordinals", examples: "the first day / the second time / the third floor / the tenth month", with_dates: "the 15th of May / the 1st of January", exception: "No 'the' in American date format: May 15th (not the May 15th)", pattern: "THE + ordinal (in most cases)", remember: "Almost always need 'the' with ordinals!" },
+
+      { category: "Days of the Week", monday: "Monday is the second day of the week. (if Sunday = 1st)", tuesday: "Tuesday is the third day.", wednesday: "Wednesday is the fourth day.", thursday: "Thursday is the fifth day.", friday: "Friday is the sixth day.", saturday: "Saturday is the seventh day.", sunday: "Sunday is the first day (or seventh, depending on culture)", note: "Different cultures start the week on different days!" },
+
+      { category: "Months of the Year", january: "January = 1st month", february: "February = 2nd month", march: "March = 3rd month", april: "April = 4th month", may: "May = 5th month", june: "June = 6th month", july: "July = 7th month", august: "August = 8th month", september: "September = 9th month", october: "October = 10th month", november: "November = 11th month", december: "December = 12th month", question: "What's the fifth month? → May is the fifth month." },
+
+      { category: "Centuries", pattern: "Use ordinals for centuries", examples: "the 21st century (we live in it now: 2000-2099) / the 20th century (1900-1999) / the 19th century (1800-1899)", note: "Add 1 to the first two digits: 2000s = 21st century", turkish: "21. yüzyıl", writing: "Write: 21st century or twenty-first century" },
+
+      { category: "Common Mistakes", mistake_1: "Using cardinal instead of ordinal for dates", wrong_1: "My birthday is May five. ✗ / Today is ten October. ✗", correct_1: "My birthday is May fifth / May 5th. ✓ / Today is the tenth of October. ✓", rule: "Always use ordinals for dates!", remember: "Say and write: the 15th (not the 15)" },
+      { category: "Common Mistakes", mistake_2: "Wrong abbreviation", wrong_2: "1th, 2th, 3th ✗ / 21th, 22th, 23th ✗", correct_2: "1st, 2nd, 3rd ✓ / 21st, 22nd, 23rd ✓", rule: "Look at the last digit: 1→st, 2→nd, 3→rd, others→th", exception: "11th, 12th, 13th (NOT 11st!)" },
+      { category: "Common Mistakes", mistake_3: "Spelling errors", wrong_3: "fith ✗ / nineth ✗ / twelth ✗", correct_3: "fifth ✓ / ninth ✓ / twelfth ✓", common: "fifth (not fith) | ninth (no e) | twelfth (f not v)", remember: "Check spelling carefully!" },
+
+      { category: "Real-World Uses", birthdays: "My birthday is on the 12th of June.", appointments: "Your appointment is on the 23rd.", schedules: "The meeting is on the 1st of every month.", historical: "World War II ended in the 20th century.", competitions: "She finished third in the marathon.", general: "Essential for dates, positions, and rankings!" },
+
+      { category: "Key Takeaway", summary: "Ordinal numbers show position, order, and sequence", special_three: "1st (first), 2nd (second), 3rd (third) - irregular", pattern: "Most others: number + TH (4th, 5th, 6th...)", abbreviations: "1→st | 2→nd | 3→rd | others→th (but 11th, 12th, 13th!)", dates: "Always use ordinals for dates: May 15th, the 3rd of January", positions: "Use for rankings, floors, order: first place, fifth floor, third time", with_the: "Usually use THE: the first, the second, the tenth", remember: "Ordinals show WHICH ONE in order, not HOW MANY", next: "Practice saying dates and talking about positions!" }
+    ]
+  },
   
   speakingPractice: [
     { question: "What's the date today?", answer: "It's the first of September." },
