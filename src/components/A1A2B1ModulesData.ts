@@ -943,11 +943,39 @@ Example Sentences:
 - There are many people in the park.`,
   tip: "Use 'There is' for singular nouns and 'There are' for plural nouns. 'There is' can also be used with uncountable nouns.",
   
-  table: [
-    { structure: "There is + singular", example: "There is a dog in the garden." },
-    { structure: "There are + plural", example: "There are flowers in the vase." },
-    { structure: "There is + uncountable", example: "There is water in the glass." }
-  ],
+  table: {
+    title: "📋 There is/There are: Positive Sentences",
+    data: [
+      { category: "Structure", positive_singular: "There is + singular noun", positive_plural: "There are + plural nouns", turkish: "Var (bir şey var/bulunuyor)", function: "To say something EXISTS" },
+
+      { category: "There is - Singular", form: "There is", pattern: "There is + a/an + singular noun", example: "There is a dog in the garden.", turkish: "Bahçede bir köpek var.", usage: "ONE thing exists" },
+      { category: "There is - Singular", structure: "There is + a/an + noun + location", examples: "There is a book. / There is an apple.", with_location: "There is a chair in the room.", note: "Use 'a/an' with countable singular" },
+      { category: "There is - Singular", contraction: "There's (informal)", contracted_example: "There's a book on the table.", full_form: "There is (more formal)", common_use: "There's" in speech },
+
+      { category: "There is - Uncountable", form: "There is", pattern: "There is + uncountable noun", example: "There is water in the glass.", turkish: "Bardakta su var.", note: "NO article (a/an) with uncountable!" },
+      { category: "There is - Uncountable", uncountable_examples: "There is milk. / There is time. / There is money.", common_uncountables: "water, milk, bread, time, money, coffee, tea", no_article: "NO 'a/an' before uncountable!" },
+
+      { category: "There are - Plural", form: "There are", pattern: "There are + plural noun", example: "There are flowers in the vase.", turkish: "Vazoda çiçekler var.", usage: "MULTIPLE things exist" },
+      { category: "There are - Plural", structure: "There are + number/some/many + plural noun", examples: "There are three cats. / There are some books.", with_numbers: "There are two cars in the garage.", with_quantifiers: "some, many, a few" },
+      { category: "There are - Plural", contraction: "There're (rare)", note: "Rarely used in speech", preferred: "Usually say 'There are' fully" },
+
+      { category: "With Numbers", singular: "There is one book.", plural: "There are two books. / There are five chairs.", note: "Number 1 = singular (is)", note2: "Numbers 2+ = plural (are)" },
+
+      { category: "With Quantifiers", with_is: "There is some milk. (uncountable)", with_are: "There are some apples. (plural)", common_quantifiers: "some, many, a few, a lot of", usage: "Show approximate amount" },
+
+      { category: "Common Mistakes", mistake: "Wrong verb for plural", wrong: "There is books. ✗", correct: "There are books. ✓", rule: "Plural nouns need 'are'!" },
+      { category: "Common Mistakes", mistake: "Article with uncountable", wrong: "There is a water. ✗", correct: "There is water. ✓", rule: "NO a/an with uncountable!" },
+      { category: "Common Mistakes", mistake: "Forgetting article with singular", wrong: "There is book. ✗", correct: "There is a book. ✓", rule: "Singular countable needs 'a/an'!" },
+
+      { category: "Positive → Negative", positive_singular: "There is a pen. →", negative_singular: "There isn't a pen.", positive_plural: "There are books. →", negative_plural: "There aren't books.", transformation: "Add 'not' after is/are" },
+
+      { category: "With Locations", pattern: "There is/are + noun + location", examples: "There is a pen on the desk. / There are books in the bag.", prepositions: "in, on, under, next to, behind, etc.", location_common: "Very common pattern!" },
+
+      { category: "Uses", use1: "Talk about existence", use2: "Describe what's in a place", use3: "List items", example_describe: "There's a sofa in the living room.", example_list: "There are apples, oranges, and bananas." },
+
+      { category: "Turkish vs English", turkish_structure: "In Turkish: subject + VAR", english_structure: "In English: THERE + is/are + subject", example_turkish: "Masa var.", example_english: "There is a table.", note: "English needs 'there' + verb!" },
+    ]
+  },
   
   speakingPractice: [
     { question: "What is on the table?", answer: "There is a book on the table." },
@@ -1018,14 +1046,40 @@ I saw three men at the park.
 Brush your teeth every day.`,
   tip: "Regular plurals add -s, -es, or change -y to -ies. Irregular plurals have special forms like man→men, child→children, tooth→teeth.",
   
-  table: [
-    { singular: "cat", plural: "cats", type: "Regular (+s)", example: "There are cats on the roof." },
-    { singular: "bus", plural: "buses", type: "Regular (+es)", example: "There are buses in the city." },
-    { singular: "baby", plural: "babies", type: "Regular (y→ies)", example: "The babies are sleeping." },
-    { singular: "man", plural: "men", type: "Irregular", example: "Three men are waiting." },
-    { singular: "child", plural: "children", type: "Irregular", example: "The children are playing outside." },
-    { singular: "tooth", plural: "teeth", type: "Irregular", example: "I brush my teeth every day." }
-  ],
+  table: {
+    title: "📋 Plural Nouns: Regular and Irregular Forms",
+    data: [
+      { category: "What are Plurals?", explanation: "More than one thing", turkish: "Çoğul isimler", function: "Show quantity > 1", usage: "Add -s or special ending" },
+
+      { category: "Regular: Add -s", rule: "Most nouns + s", examples: "cat → cats, dog → dogs, book → books", example_sentence: "There are three cats.", pattern: "noun + s", note: "Most common rule!" },
+      { category: "Regular: Add -s", more_examples: "car → cars, pen → pens, table → tables", usage: "99% of regular plurals", pronunciation: "/s/ or /z/ sound" },
+
+      { category: "Regular: Add -es", rule: "Nouns ending in s, ss, sh, ch, x, o", examples: "bus → buses, class → classes, dish → dishes", example_sentence: "There are buses in the city.", pattern: "noun + es", pronunciation: "/ɪz/ sound" },
+      { category: "Regular: Add -es", more_examples: "box → boxes, watch → watches, potato → potatoes", note: "Extra syllable added", exceptions: "Some -o words: photo → photos" },
+
+      { category: "Regular: y → ies", rule: "Consonant + y → ies", examples: "baby → babies, city → cities, story → stories", example_sentence: "The babies are sleeping.", pattern: "Remove y, add ies" },
+      { category: "Regular: y → ies", note: "If vowel + y, just add -s", vowel_y_examples: "boy → boys, toy → toys, day → days", rule_detail: "Consonant before y = change to ies" },
+
+      { category: "Regular: f/fe → ves", rule: "Some f/fe words → ves", examples: "knife → knives, wife → wives, leaf → leaves", example_sentence: "Autumn leaves are beautiful.", pattern: "Remove f/fe, add ves" },
+      { category: "Regular: f/fe → ves", note: "Not all f words!", exceptions: "roof → roofs, chief → chiefs", memorize: "Most common: knife, wife, life, leaf, half" },
+
+      { category: "Irregular: Vowel Change", type: "Irregular", examples: "man → men, woman → women, tooth → teeth", example_sentence: "Three men are waiting.", pattern: "Vowel changes inside word", note: "Must memorize!" },
+      { category: "Irregular: Vowel Change", more_examples: "foot → feet, goose → geese, mouse → mice", pronunciation_note: "Vowel sound changes", turkish_note: "No pattern - learn by heart!" },
+
+      { category: "Irregular: Completely Different", type: "Irregular", word: "child", plural: "children", example: "The children are playing outside.", note: "Completely different word!", turkish: "çocuk → çocuklar" },
+      { category: "Irregular: Completely Different", type: "Irregular", word: "person", plural: "people", example: "Many people are here.", note: "Most common irregular!", alternative: "persons (formal/legal only)" },
+
+      { category: "Irregular: No Change", type: "Irregular", examples: "sheep → sheep, fish → fish, deer → deer", example_sentence: "I saw three sheep.", note: "Same form for singular and plural!", usage: "One sheep / Two sheep" },
+
+      { category: "Common Mistakes", mistake: "Adding -s to irregular", wrong: "childs ✗, mans ✗, tooths ✗", correct: "children ✓, men ✓, teeth ✓", rule: "Irregular plurals don't take -s!" },
+      { category: "Common Mistakes", mistake: "Forgetting to change y", wrong: "babys ✗, citys ✗", correct: "babies ✓, cities ✓", rule: "Consonant + y = change to -ies!" },
+      { category: "Common Mistakes", mistake: "Double plural", wrong: "childrens ✗, peoples ✗", correct: "children ✓, people ✓", rule: "Don't add -s to already plural words!" },
+
+      { category: "Uncountable Nouns", note: "Some nouns have NO plural", examples: "water, milk, money, information, advice", usage: "Always singular form", verb: "Use singular verb (is, not are)" },
+
+      { category: "Always Plural", note: "Some nouns only plural", examples: "scissors, glasses, pants, jeans", verb: "Always use 'are'", usage: "a pair of scissors, two pairs of jeans" },
+    ]
+  },
   
   speakingPractice: [
     { question: "What are on the roof?", answer: "There are cats on the roof." },
@@ -1092,15 +1146,35 @@ She has got two sisters.
 We have got a big house.`,
   tip: "Use 'have got' with I, you, we, they and 'has got' with he, she, it to show possession.",
   
-  table: [
-    { subject: "I", verb: "have got", example: "I have got a car." },
-    { subject: "You", verb: "have got", example: "You have got a bike." },
-    { subject: "He", verb: "has got", example: "He has got a brother." },
-    { subject: "She", verb: "has got", example: "She has got a cat." },
-    { subject: "It", verb: "has got", example: "It has got four legs." },
-    { subject: "We", verb: "have got", example: "We have got a garden." },
-    { subject: "They", verb: "have got", example: "They have got a dog." }
-  ],
+  table: {
+    title: "📋 Have got/Has got: Positive Sentences (Possession)",
+    data: [
+      { category: "What is 'have got'?", explanation: "Shows possession/ownership", turkish: "Sahip olmak (-m var, -n var)", meaning: "To have, to own", british_note: "Very common in British English" },
+
+      { category: "With I/You/We/They", form: "have got", subjects: "I, you, we, they", example: "I have got a car.", turkish: "Benim bir arabam var.", contraction: "I've got, You've got, We've got, They've got" },
+      { category: "With I/You/We/They", more_examples: "You have got a bike. / We have got a garden. / They have got a dog.", pattern: "subject + have got + object", common_in_speech: "Contractions very common!" },
+
+      { category: "With He/She/It", form: "has got", subjects: "He, she, it", example: "He has got a brother.", turkish: "Onun bir erkek kardeşi var.", contraction: "He's got, She's got, It's got" },
+      { category: "With He/She/It", more_examples: "She has got a cat. / It has got four legs.", pattern: "subject + has got + object", note: "Third person singular uses 'has'!" },
+
+      { category: "Contractions", ive_got: "I've got = I have got", youve_got: "You've got = You have got", hes_got: "He's got = He has got", shes_got: "She's got = She has got", usage: "Very natural in speech!" },
+      { category: "Contractions", weve_got: "We've got = We have got", theyve_got: "They've got = They have got", its_got: "It's got = It has got", note: "Always contract in spoken English!" },
+
+      { category: "What You Can 'Have Got'", possessions: "I've got a car, a house, money", family: "She's got a brother, two sisters", physical_features: "He's got blue eyes, brown hair", health: "I've got a cold, a headache" },
+      { category: "What You Can 'Have Got'", time: "We've got time. / They've got a meeting.", abstract: "You've got a problem. / He's got an idea.", note: "Many different types of possession!" },
+
+      { category: "have got vs have", british: "'have got' (British English)", american: "'have' (American English)", example_brit: "I've got a car.", example_amer: "I have a car.", both_correct: "Both are correct!" },
+      { category: "have got vs have", present_only: "'have got' = present tense only", past: "For past: 'I had' (NOT 'I had got')", note: "Can't use 'have got' in past tense!" },
+
+      { category: "Common Mistakes", mistake: "Using 'have' with he/she/it", wrong: "He have got a car. ✗", correct: "He has got a car. ✓", rule: "He/She/It = HAS got!" },
+      { category: "Common Mistakes", mistake: "Confusing contractions", he_has: "He's got = He has got", he_is: "He's happy = He is happy", note: "'He's' can mean 'has' or 'is'!", check_context: "Look for 'got' to know it's 'has'" },
+      { category: "Common Mistakes", mistake: "Using in past tense", wrong: "I have got a car yesterday. ✗", correct: "I had a car yesterday. ✓", rule: "'have got' only for NOW!" },
+
+      { category: "Sentence Structure", positive: "Subject + have/has + got + object", example: "I have got a book.", word_order: "Fixed pattern", cant_separate: "Can't say 'I have a book got' ✗" },
+
+      { category: "Common Expressions", ive_got_it: "I've got it! (I understand!)", youve_got_to: "You've got to see this! (must)", what_have_you_got: "What have you got there?", note: "Very common in everyday speech!" },
+    ]
+  },
   
   speakingPractice: [
     { question: "What do you have?", answer: "I have got a new car." },
@@ -1164,15 +1238,37 @@ She hasn't got a sister.
 They haven't got any money.`,
   tip: "Use 'haven't got' with I, you, we, they and 'hasn't got' with he, she, it for negative possession.",
   
-  table: [
-    { subject: "I", verb: "haven't got", example: "I haven't got a bike." },
-    { subject: "You", verb: "haven't got", example: "You haven't got a dog." },
-    { subject: "He", verb: "hasn't got", example: "He hasn't got a brother." },
-    { subject: "She", verb: "hasn't got", example: "She hasn't got a car." },
-    { subject: "It", verb: "hasn't got", example: "It hasn't got a tail." },
-    { subject: "We", verb: "haven't got", example: "We haven't got a garden." },
-    { subject: "They", verb: "haven't got", example: "They haven't got a house." }
-  ],
+  table: {
+    title: "📋 Have got/Has got: Negative Sentences",
+    data: [
+      { category: "Structure", negative_form: "haven't got / hasn't got", function: "To say you DON'T have something", turkish: "Yok (-m yok, -n yok)", pattern: "haven't/hasn't + got + object" },
+
+      { category: "With I/You/We/They", form: "haven't got", full_form: "have not got", subjects: "I, you, we, they", example: "I haven't got a bike.", turkish: "Benim bisikletim yok.", contraction: "haven't (most common)" },
+      { category: "With I/You/We/They", more_examples: "You haven't got a dog. / We haven't got a garden. / They haven't got a house.", pattern: "subject + haven't got + object", note: "Always use 'haven't' for these subjects!" },
+
+      { category: "With He/She/It", form: "hasn't got", full_form: "has not got", subjects: "He, she, it", example: "He hasn't got a brother.", turkish: "Onun erkek kardeşi yok.", contraction: "hasn't (most common)" },
+      { category: "With He/She/It", more_examples: "She hasn't got a car. / It hasn't got a tail.", pattern: "subject + hasn't got + object", note: "Third person singular uses 'hasn't'!" },
+
+      { category: "Contractions", havent: "haven't = have not", hasnt: "hasn't = has not", usage: "Contractions very common!", formal_vs_informal: "Full forms more formal" },
+
+      { category: "With 'any'", usage: "Often use 'any' in negatives", examples: "I haven't got any money. / She hasn't got any brothers. / They haven't got any time.", meaning: "Not even one", pattern: "haven't/hasn't got any + plural/uncountable" },
+      { category: "With 'any'", with_singular: "I haven't got a car. (one specific thing)", with_any: "I haven't got any cars. (none at all)", note: "'any' emphasizes zero quantity" },
+
+      { category: "Positive → Negative", positive: "I have got a car. →", negative: "I haven't got a car.", positive_he: "He has got a brother. →", negative_he: "He hasn't got a brother.", transformation: "Add 'not' after have/has" },
+
+      { category: "Common Mistakes", mistake: "Using 'haven't' with he/she/it", wrong: "He haven't got a car. ✗", correct: "He hasn't got a car. ✓", rule: "He/She/It = HASN'T (not haven't)!" },
+      { category: "Common Mistakes", mistake: "Double negative", wrong: "I haven't got no money. ✗", correct: "I haven't got any money. ✓", rule: "Use 'any' not 'no' in negatives!" },
+      { category: "Common Mistakes", mistake: "Wrong word order", wrong: "I got haven't a car. ✗", correct: "I haven't got a car. ✓", rule: "haven't/hasn't + got (fixed order!)" },
+
+      { category: "Short Answers", question: "Have you got a car?", answer_no: "No, I haven't.", question_he: "Has he got a brother?", answer_no_he: "No, he hasn't.", note: "Don't repeat 'got' in short answers!" },
+
+      { category: "vs American English", british: "I haven't got a car. (British)", american: "I don't have a car. (American)", both_correct: "Both are correct!", note: "British prefer 'haven't got'" },
+
+      { category: "Common Uses", no_possessions: "I haven't got any money / a phone / a car", no_family: "She hasn't got any brothers / sisters", no_time: "We haven't got time / a meeting today", no_health: "I haven't got a cold / a headache" },
+
+      { category: "Emphasis", normal: "I haven't got a car.", emphatic: "I haven't got ANY car at all!", stressed: "I've got NO car!", note: "Can emphasize for strong negation" },
+    ]
+  },
   
   speakingPractice: [
     { question: "Do you have a car?", answer: "No, I haven't got a car." },
@@ -1235,10 +1331,41 @@ Has she got a brother?
 Have they got any money?`,
   tip: "Use 'Have' with I, you, we, they and 'Has' with he, she, it to ask questions about possession.",
   
-  table: [
-    { subject: "I/you/we/they", questionForm: "Have + subject + got?", example: "Have you got a pen?" },
-    { subject: "He/she/it", questionForm: "Has + subject + got?", example: "Has she got a car?" }
-  ],
+  table: {
+    title: "📋 Have got/Has got: Question Sentences",
+    data: [
+      { category: "Structure", question_form: "Have/Has + subject + got?", function: "To ask if someone has something", turkish: "Var mı? (-n var mı?)", pattern: "Invert: put have/has FIRST" },
+
+      { category: "With I/you/we/they", form: "Have ... got?", subjects: "I, you, we, they", example: "Have you got a pen?", turkish: "Senin kalemin var mı?", answer_yes: "Yes, I have.", answer_no: "No, I haven't." },
+      { category: "With I/you/we/they", more_examples: "Have you got time? / Have we got a meeting? / Have they got any books?", pattern: "Have + subject + got + object?", note: "Use 'Have' for these subjects!" },
+
+      { category: "With he/she/it", form: "Has ... got?", subjects: "He, she, it", example: "Has she got a car?", turkish: "Onun arabası var mı?", answer_yes: "Yes, she has.", answer_no: "No, she hasn't." },
+      { category: "With he/she/it", more_examples: "Has he got a brother? / Has it got a name?", pattern: "Has + subject + got + object?", note: "Third person uses 'Has'!" },
+
+      { category: "Statement → Question", statement: "You have got a bike. →", question: "Have you got a bike?", statement_he: "He has got a car. →", question_he: "Has he got a car?", transformation: "Move have/has to the START" },
+
+      { category: "Inversion", rule: "Put have/has BEFORE subject", wrong: "You have got a pen? ✗", correct: "Have you got a pen? ✓", pattern: "Have/Has + subject + got?", note: "Inversion creates question!" },
+
+      { category: "With 'any'", usage: "Common in questions", examples: "Have you got any money? / Has she got any sisters? / Have they got any time?", meaning: "Asking if there's at least one", pattern: "Have/Has + subject + got + any + plural/uncountable?" },
+
+      { category: "Short Answers - Positive", have_question: "Have you got a car?", answer_yes: "Yes, I have.", has_question: "Has he got a brother?", answer_yes_he: "Yes, he has.", note: "Don't repeat 'got' in short answers!" },
+      { category: "Short Answers - Negative", have_question: "Have you got a car?", answer_no: "No, I haven't.", has_question: "Has she got a car?", answer_no_she: "No, she hasn't.", note: "Use contraction in short negative answers!" },
+
+      { category: "Common Mistakes", mistake: "Not inverting", wrong: "You have got a pen? ✗", correct: "Have you got a pen? ✓", rule: "Must move have/has to front!" },
+      { category: "Common Mistakes", mistake: "Using 'Have' with he/she/it", wrong: "Have he got a car? ✗", correct: "Has he got a car? ✓", rule: "He/She/It = HAS (in questions too)!" },
+      { category: "Common Mistakes", mistake: "Including 'got' in short answer", wrong: "Yes, I have got. ✗", correct: "Yes, I have. ✓", rule: "Short answers: just 'have' or 'has'!" },
+
+      { category: "Wh- Questions", what: "What have you got?", where: "Where has she got her keys?", how_many: "How many brothers has he got?", who: "Who has got my pen?", note: "Wh- word comes FIRST!" },
+
+      { category: "Whose", question: "Whose book is this?", alternative: "Who has got this book?", meaning: "Asking about possession", pattern: "Whose + noun...?" },
+
+      { category: "vs American English", british: "Have you got a car? (British)", american: "Do you have a car? (American)", both_correct: "Both are correct!", note: "British prefer 'have you got'" },
+
+      { category: "Intonation", rising: "Voice goes UP at end", example: "Have you got a pen? ↗", natural: "Shows it's a question", compare: "Like 'var mı?' rising in Turkish" },
+
+      { category: "Common Questions", everyday: "Have you got the time? (What time is it?)", phone: "Have you got a pen? (Can you write?)", permission: "Have you got a minute? (Are you free?)", note: "Very common in daily life!" },
+    ]
+  },
   
   speakingPractice: [
     { question: "Have you got a bike?", answer: "Yes, I have got a bike." },
