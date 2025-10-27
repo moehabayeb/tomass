@@ -26,6 +26,17 @@ The Future Perfect Continuous tense is used to describe an action that will be i
 
 ⏰ Time Expressions
 for, by, by the time, when, before, until`,
+  table: {
+    title: "📋 Future Perfect Continuous Structure",
+    data: [
+      { form: "Positive", structure: "Subject + will have been + V-ing", example: "I will have been working here for 5 years by 2025." },
+      { form: "Negative", structure: "Subject + won't have been + V-ing", example: "She won't have been living here long by then." },
+      { form: "Question", structure: "Will + subject + have been + V-ing?", example: "Will they have been studying all night?" },
+      { form: "Time Expression", structure: "for, by, by the time, when", example: "By next year / for a decade / when she arrives" },
+      { form: "Usage", structure: "Duration before a future point", example: "Shows how long an action will continue up to a future time" },
+      { form: "Common Verbs", structure: "work, live, study, wait, train", example: "Actions that can continue for a duration" }
+    ]
+  },
   speakingPractice: [
     { question: "How long will you have been living in this city by the end of the year?", answer: "I will have been living in this city for five years by the end of the year." },
     { question: "Will you have been studying English for a long time by next summer?", answer: "Yes, I will have been studying English for almost three years by next summer." },
@@ -89,6 +100,19 @@ We often use passive voice in formal writing, reports, or when we want to highli
 ✅ Past Perfect Passive: Subject + had been + V3
 ✅ Future Perfect Passive: Subject + will have been + V3
 `,
+  table: {
+    title: "📋 Passive Voice Transformations",
+    data: [
+      { tense: "Past Perfect Passive", active: "They had completed the project", passive: "The project had been completed (by them)" },
+      { tense: "Past Perfect Passive", active: "Someone had stolen the car", passive: "The car had been stolen" },
+      { tense: "Past Perfect Passive Negative", active: "They hadn't sent the email", passive: "The email hadn't been sent" },
+      { tense: "Past Perfect Passive Question", active: "Had they finished the work?", passive: "Had the work been finished?" },
+      { tense: "Future Perfect Passive", active: "They will have built the bridge", passive: "The bridge will have been built (by them)" },
+      { tense: "Future Perfect Passive", active: "Someone will have signed the contract", passive: "The contract will have been signed" },
+      { tense: "Future Perfect Passive Negative", active: "They won't have completed it", passive: "It won't have been completed" },
+      { tense: "Future Perfect Passive Question", active: "Will they have repaired it?", passive: "Will it have been repaired?" }
+    ]
+  },
   speakingPractice: [
     { question: "Had the letter been sent before she arrived?", answer: "Yes, the letter had been sent before she arrived." },
     { question: "What had been done before the meeting started?", answer: "The reports had been printed and arranged on the table." },
@@ -154,8 +178,23 @@ Reported Speech is used to express what someone said without quoting their exact
 • Present Perfect → Past Perfect
 • Past Simple → Past Perfect
 • Future Simple (will) → would
-• “I’m tired.” → He said (that) he was tired.
+• "I'm tired." → He said (that) he was tired.
 `,
+  table: {
+    title: "📋 Reported Speech Tense Backshift",
+    data: [
+      { direct_speech: "Present Simple: 'I work here'", reported_speech: "Past Simple: He said he worked there" },
+      { direct_speech: "Present Continuous: 'I am watching'", reported_speech: "Past Continuous: She said she was watching" },
+      { direct_speech: "Present Perfect: 'I have finished'", reported_speech: "Past Perfect: He said he had finished" },
+      { direct_speech: "Past Simple: 'I went to Paris'", reported_speech: "Past Perfect: She said she had gone to Paris" },
+      { direct_speech: "Future Simple: 'I will call you'", reported_speech: "Would: They said they would call me" },
+      { direct_speech: "Can: 'I can help'", reported_speech: "Could: I said I could help" },
+      { direct_speech: "Must: 'I must leave'", reported_speech: "Had to: They said they had to leave" },
+      { direct_speech: "May: 'I may be late'", reported_speech: "Might: John said he might be late" },
+      { direct_speech: "Time: today / tomorrow / yesterday", reported_speech: "that day / the next day / the day before" },
+      { direct_speech: "Place: here / this", reported_speech: "there / that" }
+    ]
+  },
   speakingPractice: [
     { question: "She said, 'I am watching a movie.'", answer: "She said that she was watching a movie." },
     { question: "He said, 'I have finished my homework.'", answer: "He said that he had finished his homework." },
@@ -221,6 +260,19 @@ Inversion is a formal structure used for emphasis. It often places an auxiliary 
 • Only after the meeting did she realize the mistake.
 • Not until I read the letter did I understand the truth.
 `,
+  table: {
+    title: "📋 Inversion Patterns with Negative Adverbials",
+    data: [
+      { adverbial: "Never", normal_order: "I have never seen such beauty", inverted_order: "Never have I seen such beauty" },
+      { adverbial: "Rarely/Seldom", normal_order: "He rarely goes out at night", inverted_order: "Rarely does he go out at night" },
+      { adverbial: "Hardly ever", normal_order: "They hardly ever complain", inverted_order: "Hardly ever do they complain" },
+      { adverbial: "No sooner", normal_order: "I had no sooner arrived than it started raining", inverted_order: "No sooner had I arrived than it started raining" },
+      { adverbial: "Only after", normal_order: "She realized the mistake only after the meeting", inverted_order: "Only after the meeting did she realize the mistake" },
+      { adverbial: "Not until", normal_order: "I didn't understand not until I read it", inverted_order: "Not until I read it did I understand" },
+      { adverbial: "Under no circumstances", normal_order: "You should not reveal the secret under any circumstances", inverted_order: "Under no circumstances should you reveal the secret" },
+      { adverbial: "Not only", normal_order: "He not only arrived late", inverted_order: "Not only did he arrive late (but also left early)" }
+    ]
+  },
   speakingPractice: [
     { question: "Have you ever seen such a beautiful painting?", answer: "Never have I seen such a beautiful painting." },
     { question: "Do they rarely visit their grandparents?", answer: "Rarely do they visit their grandparents." },
@@ -280,6 +332,18 @@ Ellipsis means leaving out words that are understood from context. Substitution 
 • A: I don’t like sushi. B: Neither do I. (Agreement with 'neither')
 • A: Which hat do you want? B: The red one. (Substitution with 'one')
 `,
+  table: {
+    title: "📋 Ellipsis & Substitution Patterns",
+    data: [
+      { type: "Ellipsis - Verb", full_form: "A: Do you like coffee? B: Yes, I like coffee", ellipsis_form: "B: Yes, I do" },
+      { type: "Ellipsis - Phrase", full_form: "A: Can you play guitar? B: I can play guitar", ellipsis_form: "B: I can" },
+      { type: "Substitution - do/does/did", example: "A: He sings well. B: Yes, he sings well", substitution: "B: Yes, he does" },
+      { type: "Agreement - So", example: "A: I'm tired. B: I'm tired too", substitution: "B: So am I" },
+      { type: "Agreement - Neither", example: "A: I don't like sushi. B: I don't like sushi either", substitution: "B: Neither do I" },
+      { type: "Substitution - one", example: "A: Which hat? B: I want the red hat", substitution: "B: The red one" },
+      { type: "Substitution - ones", example: "A: Which shoes? B: I prefer the black shoes", substitution: "B: The black ones" }
+    ]
+  },
   speakingPractice: [
     { question: "Do you like jazz music?", answer: "Yes, I do. I listen to it often." },
     { question: "I think the new teacher is great. What about you?", answer: "So do I. She's very engaging." },
