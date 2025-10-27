@@ -21,15 +21,33 @@ She is happy.
 They are students.`,
   tip: "Use 'am' with I, 'is' with he/she/it, and 'are' with we/you/they",
   
-  table: [
-    { subject: "I", verb: "am", complement: "a student", example: "I am a student." },
-    { subject: "He", verb: "is", complement: "tired", example: "He is tired." },
-    { subject: "She", verb: "is", complement: "a doctor", example: "She is a doctor." },
-    { subject: "It", verb: "is", complement: "cold", example: "It is cold." },
-    { subject: "We", verb: "are", complement: "happy", example: "We are happy." },
-    { subject: "You", verb: "are", complement: "teachers", example: "You are teachers." },
-    { subject: "They", verb: "are", complement: "friends", example: "They are friends." }
-  ],
+  table: {
+    title: "📋 Verb To Be: Positive Sentences (am, is, are)",
+    data: [
+      { category: "Structure", rule: "Subject + am/is/are + complement", explanation: "Basic sentence structure", turkish: "Özne + fiil + tümleç", note: "Most basic English sentence!" },
+
+      { category: "With I", subject: "I", verb: "am", form: "I am", contraction: "I'm", example: "I am a student.", turkish: "Ben bir öğrenciyim.", usage: "Always use 'am' with I" },
+      { category: "With I", subject: "I", verb: "am", form: "I am", contraction: "I'm", example: "I am happy.", turkish: "Ben mutluyum.", note: "Adjective after 'am'" },
+      { category: "With I", subject: "I", verb: "am", form: "I am", contraction: "I'm", example: "I am from Turkey.", turkish: "Ben Türkiye'denim.", note: "Use 'from' for origin" },
+
+      { category: "With He/She/It", subject: "He", verb: "is", form: "He is", contraction: "He's", example: "He is tired.", turkish: "O yorgun.", usage: "Use 'is' with he/she/it" },
+      { category: "With He/She/It", subject: "She", verb: "is", form: "She is", contraction: "She's", example: "She is a doctor.", turkish: "O bir doktor.", note: "Profession without article in Turkish" },
+      { category: "With He/She/It", subject: "It", verb: "is", form: "It is", contraction: "It's", example: "It is cold.", turkish: "Hava soğuk.", usage: "Use 'it' for weather, things" },
+      { category: "With He/She/It", subject: "It", verb: "is", form: "It is", contraction: "It's", example: "It is a book.", turkish: "Bu bir kitap.", note: "Use 'it' for objects" },
+
+      { category: "With We/You/They", subject: "We", verb: "are", form: "We are", contraction: "We're", example: "We are happy.", turkish: "Biz mutluyuz.", usage: "Use 'are' with we/you/they" },
+      { category: "With We/You/They", subject: "You", verb: "are", form: "You are", contraction: "You're", example: "You are teachers.", turkish: "Siz öğretmensiniz.", note: "'You' = singular or plural" },
+      { category: "With We/You/They", subject: "They", verb: "are", form: "They are", contraction: "They're", example: "They are friends.", turkish: "Onlar arkadaş.", note: "Use for multiple people/things" },
+
+      { category: "Common Mistakes", mistake: "Using wrong form", wrong: "I is happy. ✗", correct: "I am happy. ✓", rule: "I = am (ALWAYS!)" },
+      { category: "Common Mistakes", mistake: "Using wrong form", wrong: "She are a doctor. ✗", correct: "She is a doctor. ✓", rule: "He/She/It = is (ALWAYS!)" },
+      { category: "Common Mistakes", mistake: "Using wrong form", wrong: "They is students. ✗", correct: "They are students. ✓", rule: "We/You/They = are (ALWAYS!)" },
+
+      { category: "Key Points", point: "Contractions", explanation: "Combine subject + verb", examples: "I'm, He's, She's, It's, We're, You're, They're", note: "Very common in spoken English!" },
+      { category: "Key Points", point: "Articles", explanation: "Use 'a/an' with jobs", example: "I am a teacher. (NOT I am teacher.)", turkish_note: "Turkish doesn't need article" },
+      { category: "Key Points", point: "Word order", explanation: "Subject → Verb → Complement", example: "I am happy. (NOT Happy am I.)", note: "English has strict word order!" },
+    ]
+  },
   
   speakingPractice: [
     { question: "Are you a teacher?", answer: "Yes, I am a teacher." },
@@ -93,15 +111,35 @@ She isn't happy.
 They aren't teachers.`,
   tip: "'To Be' fiilinin olumsuz hali 'not' eklenerek yapılır: I → am not, He/She/It → is not (isn't), We/You/They → are not (aren't)",
   
-  table: [
-    { subject: "I", verb: "am", not: "not", complement: "a student", example: "I am not a student." },
-    { subject: "He", verb: "is", not: "not", complement: "tired", example: "He is not tired." },
-    { subject: "She", verb: "is", not: "not", complement: "a doctor", example: "She isn't a doctor." },
-    { subject: "It", verb: "is", not: "not", complement: "cold", example: "It isn't cold." },
-    { subject: "We", verb: "are", not: "not", complement: "happy", example: "We aren't happy." },
-    { subject: "You", verb: "are", not: "not", complement: "teachers", example: "You aren't teachers." },
-    { subject: "They", verb: "are", not: "not", complement: "friends", example: "They aren't friends." }
-  ],
+  table: {
+    title: "📋 Verb To Be: Negative Sentences (am not, is not, are not)",
+    data: [
+      { category: "Structure", rule: "Subject + am/is/are + NOT + complement", explanation: "Add 'not' after the verb", turkish: "Fiilden sonra 'not' ekle", note: "Simple negation!" },
+
+      { category: "With I", subject: "I", full_form: "I am not", contraction: "I'm not", example: "I am not a student.", turkish: "Ben öğrenci değilim.", note: "NO contraction 'I amn't' ✗" },
+      { category: "With I", subject: "I", full_form: "I am not", contraction: "I'm not", example: "I'm not happy.", turkish: "Ben mutlu değilim.", usage: "Contraction more common" },
+      { category: "With I", subject: "I", full_form: "I am not", contraction: "I'm not", example: "I'm not from here.", turkish: "Ben buradan değilim.", note: "Always use 'not' after 'am'" },
+
+      { category: "With He/She/It", subject: "He", full_form: "He is not", contraction: "He isn't / He's not", example: "He is not tired.", turkish: "O yorgun değil.", note: "Two contraction options!" },
+      { category: "With He/She/It", subject: "She", full_form: "She is not", contraction: "She isn't / She's not", example: "She isn't a doctor.", turkish: "O doktor değil.", usage: "isn't = most common" },
+      { category: "With He/She/It", subject: "It", full_form: "It is not", contraction: "It isn't / It's not", example: "It isn't cold.", turkish: "Hava soğuk değil.", note: "Be careful: It's = It is (positive)" },
+      { category: "With He/She/It", subject: "It", full_form: "It is not", contraction: "It isn't", example: "It isn't expensive.", turkish: "Pahalı değil.", usage: "Common with adjectives" },
+
+      { category: "With We/You/They", subject: "We", full_form: "We are not", contraction: "We aren't / We're not", example: "We aren't happy.", turkish: "Biz mutlu değiliz.", note: "aren't = most common" },
+      { category: "With We/You/They", subject: "You", full_form: "You are not", contraction: "You aren't / You're not", example: "You aren't teachers.", turkish: "Siz öğretmen değilsiniz.", usage: "For singular or plural 'you'" },
+      { category: "With We/You/They", subject: "They", full_form: "They are not", contraction: "They aren't / They're not", example: "They aren't friends.", turkish: "Onlar arkadaş değil.", note: "Use for people or things" },
+
+      { category: "Common Mistakes", mistake: "Wrong contraction with I", wrong: "I amn't tired. ✗", correct: "I'm not tired. ✓", rule: "'amn't' doesn't exist!" },
+      { category: "Common Mistakes", mistake: "Forgetting 'not'", wrong: "He no is happy. ✗", correct: "He is not happy. ✓", rule: "Use 'not', not 'no'!" },
+      { category: "Common Mistakes", mistake: "Wrong word order", wrong: "He not is a student. ✗", correct: "He is not a student. ✓", rule: "'not' comes AFTER the verb" },
+
+      { category: "Contractions", form: "isn't", full: "is not", pronunciation: "/ˈɪzənt/", usage: "Very common in speech", example: "She isn't here." },
+      { category: "Contractions", form: "aren't", full: "are not", pronunciation: "/ɑːrnt/", usage: "Very common in speech", example: "We aren't ready." },
+
+      { category: "Key Points", point: "Two contraction styles", explanation: "is not → isn't OR → 's not", example: "He isn't happy. = He's not happy.", note: "Both correct! 'isn't'/'aren't' more common" },
+      { category: "Key Points", point: "Formal vs Informal", formal: "I am not a teacher.", informal: "I'm not a teacher.", context: "Full forms in writing, contractions in speech" },
+    ]
+  },
   
   speakingPractice: [
     { question: "Are you a teacher?", answer: "No, I am not a teacher." },
@@ -165,15 +203,36 @@ Is she happy?
 Are they students?`,
   tip: "How to form questions with 'To Be': Move the verb before the subject. Am I...? Is he/she/it...? Are we/you/they...?",
   
-  table: [
-    { verb: "Am", subject: "I", complement: "a student?", example: "Am I a student?" },
-    { verb: "Is", subject: "he", complement: "tired?", example: "Is he tired?" },
-    { verb: "Is", subject: "she", complement: "a doctor?", example: "Is she a doctor?" },
-    { verb: "Is", subject: "it", complement: "cold?", example: "Is it cold?" },
-    { verb: "Are", subject: "we", complement: "happy?", example: "Are we happy?" },
-    { verb: "Are", subject: "you", complement: "teachers?", example: "Are you teachers?" },
-    { verb: "Are", subject: "they", complement: "friends?", example: "Are they friends?" }
-  ],
+  table: {
+    title: "📋 Verb To Be: Question Sentences (Am/Is/Are...?)",
+    data: [
+      { category: "Structure", rule: "Am/Is/Are + subject + complement?", explanation: "Verb moves to the START", turkish: "Fiil cümlenin başına gelir", note: "Inversion = question!" },
+      { category: "Structure", transformation: "Statement → Question", statement: "I am happy.", question: "Am I happy?", change: "Swap verb and subject" },
+
+      { category: "With I", verb: "Am", subject: "I", form: "Am I", example: "Am I a student?", turkish: "Ben öğrenci miyim?", answer_yes: "Yes, you are.", answer_no: "No, you aren't." },
+      { category: "With I", verb: "Am", subject: "I", form: "Am I", example: "Am I late?", turkish: "Ben geç mi kaldım?", note: "Always start with 'Am' for I" },
+      { category: "With I", verb: "Am", subject: "I", form: "Am I", example: "Am I right?", turkish: "Ben haklı mıyım?", common_use: "Checking if you're correct" },
+
+      { category: "With He/She/It", verb: "Is", subject: "he", form: "Is he", example: "Is he tired?", turkish: "O yorgun mu?", answer_yes: "Yes, he is.", answer_no: "No, he isn't." },
+      { category: "With He/She/It", verb: "Is", subject: "she", form: "Is she", example: "Is she a doctor?", turkish: "O doktor mu?", note: "Use 'Is' with he/she/it" },
+      { category: "With He/She/It", verb: "Is", subject: "it", form: "Is it", example: "Is it cold?", turkish: "Hava soğuk mu?", usage: "Weather questions" },
+      { category: "With He/She/It", verb: "Is", subject: "it", form: "Is it", example: "Is it expensive?", turkish: "Pahalı mı?", common_use: "Asking about price" },
+
+      { category: "With We/You/They", verb: "Are", subject: "we", form: "Are we", example: "Are we happy?", turkish: "Biz mutlu muyuz?", answer_yes: "Yes, we are.", answer_no: "No, we aren't." },
+      { category: "With We/You/They", verb: "Are", subject: "you", form: "Are you", example: "Are you teachers?", turkish: "Siz öğretmen misiniz?", note: "Most common question form" },
+      { category: "With We/You/They", verb: "Are", subject: "they", form: "Are they", example: "Are they friends?", turkish: "Onlar arkadaş mı?", usage: "Asking about others" },
+
+      { category: "Common Mistakes", mistake: "Not inverting", wrong: "You are happy? ✗", correct: "Are you happy? ✓", rule: "Must swap subject and verb!" },
+      { category: "Common Mistakes", mistake: "Wrong verb form", wrong: "Is they students? ✗", correct: "Are they students? ✓", rule: "They = are (always!)" },
+      { category: "Common Mistakes", mistake: "Forgetting question mark", wrong: "Are you ready", correct: "Are you ready?", rule: "Questions NEED '?'!" },
+
+      { category: "Short Answers", question_type: "Yes/No Questions", short_yes: "Yes, I am. / Yes, he is. / Yes, we are.", short_no: "No, I'm not. / No, he isn't. / No, we aren't.", note: "DON'T repeat full sentence!" },
+      { category: "Short Answers", example_q: "Are you a student?", full_yes: "Yes, I am a student.", short_yes: "Yes, I am.", preferred: "Short answer (more natural)" },
+
+      { category: "Intonation", point: "Rising intonation", explanation: "Voice goes UP at end", example: "Are you ready? ↗", note: "Very important for questions!" },
+      { category: "Intonation", point: "Yes/No questions", pattern: "Start low → End HIGH", turkish_note: "Türkçede 'mı/mi/mu/mü' kullanırız", english_way: "Intonation shows it's a question" },
+    ]
+  },
   
   speakingPractice: [
     { question: "Am I a teacher?", answer: "Yes, you are a teacher." },
@@ -230,19 +289,38 @@ Use them as the subject of a sentence.
 Example sentences:
 
 I am a student.
-She is a teacher.  
+She is a teacher.
 They are friends.`,
   tip: "Subject pronouns replace the subject in a sentence. Use: I (for yourself), You (for the person you're talking to), He (for a male), She (for a female), It (for things/animals), We (for yourself and others), They (for other people or things).",
-  
-  table: [
-    { pronoun: "I", example: "I am a student." },
-    { pronoun: "You", example: "You are my friend." },
-    { pronoun: "He", example: "He is a doctor." },
-    { pronoun: "She", example: "She is happy." },
-    { pronoun: "It", example: "It is a book." },
-    { pronoun: "We", example: "We are teachers." },
-    { pronoun: "They", example: "They are at school." }
-  ],
+
+  table: {
+    title: "📋 Subject Pronouns (I, You, He, She, It, We, They)",
+    data: [
+      { category: "What are Subject Pronouns?", explanation: "Words that replace names as the subject", turkish: "Özne zamirleri", function: "Subject of the sentence", examples: "I, you, he, she, it, we, they" },
+
+      { category: "Singular Pronouns", pronoun: "I", person: "1st person", usage: "Talking about yourself", turkish: "Ben", example: "I am a student.", verb_to_be: "am", note: "Always CAPITAL 'I'!" },
+      { category: "Singular Pronouns", pronoun: "You", person: "2nd person", usage: "Talking TO someone", turkish: "Sen/Siz", example: "You are my friend.", verb_to_be: "are", note: "Singular OR plural!" },
+      { category: "Singular Pronouns", pronoun: "He", person: "3rd person", usage: "Male person", turkish: "O (erkek)", example: "He is a doctor.", verb_to_be: "is", note: "For males only" },
+      { category: "Singular Pronouns", pronoun: "She", person: "3rd person", usage: "Female person", turkish: "O (kadın)", example: "She is happy.", verb_to_be: "is", note: "For females only" },
+      { category: "Singular Pronouns", pronoun: "It", person: "3rd person", usage: "Things, animals, weather", turkish: "O (şey/hayvan)", example: "It is a book.", verb_to_be: "is", note: "NOT for people!" },
+
+      { category: "Plural Pronouns", pronoun: "We", person: "1st person plural", usage: "Yourself + others", turkish: "Biz", example: "We are teachers.", verb_to_be: "are", note: "Includes speaker" },
+      { category: "Plural Pronouns", pronoun: "You", person: "2nd person plural", usage: "Multiple people you're talking to", turkish: "Siz (çoğul)", example: "You are students.", verb_to_be: "are", note: "Same form as singular!" },
+      { category: "Plural Pronouns", pronoun: "They", person: "3rd person plural", usage: "Multiple people or things", turkish: "Onlar", example: "They are at school.", verb_to_be: "are", note: "For people OR things" },
+
+      { category: "Special Cases", pronoun: "It", special_use: "Weather", examples: "It is cold. / It is raining.", turkish: "Hava ile ilgili", note: "Turkish doesn't need subject" },
+      { category: "Special Cases", pronoun: "It", special_use: "Time", examples: "It is 5 o'clock. / It is Monday.", turkish: "Zaman ile ilgili", note: "Always use 'It' for time" },
+      { category: "Special Cases", pronoun: "It", special_use: "Distance", examples: "It is far. / It is 5 km.", turkish: "Mesafe ile ilgili", note: "English needs subject always" },
+
+      { category: "Common Mistakes", mistake: "Using name instead of pronoun", wrong: "Maria is happy. Maria is a teacher. ✗", correct: "Maria is happy. She is a teacher. ✓", rule: "Use pronoun to avoid repetition" },
+      { category: "Common Mistakes", mistake: "Wrong pronoun for things", wrong: "The book is good. He is interesting. ✗", correct: "The book is good. It is interesting. ✓", rule: "Use 'It' for things!" },
+      { category: "Common Mistakes", mistake: "Lowercase 'i'", wrong: "i am a student. ✗", correct: "I am a student. ✓", rule: "'I' is ALWAYS capital!" },
+
+      { category: "Verb Agreement", pronoun: "I", verb: "am", rule: "I am (NEVER I is or I are)" },
+      { category: "Verb Agreement", pronoun: "He/She/It", verb: "is", rule: "He is, She is, It is" },
+      { category: "Verb Agreement", pronoun: "We/You/They", verb: "are", rule: "We are, You are, They are" },
+    ]
+  },
   
   speakingPractice: [
     { question: "Who am I?", answer: "You are my teacher." },
@@ -302,16 +380,36 @@ I, You, He, She, It, We, They
 - She is a teacher.
 - They are friends.`,
   tip: "Subject Pronouns replace the subject in a sentence. Use: I (for yourself), You (for the person you're talking to), He (for a male), She (for a female), It (for things/animals), We (for yourself and others), They (for other people or things).",
-  
-  table: [
-    { pronoun: "I", example: "I am a student." },
-    { pronoun: "You", example: "You are my friend." },
-    { pronoun: "He", example: "He is a doctor." },
-    { pronoun: "She", example: "She is happy." },
-    { pronoun: "It", example: "It is a book." },
-    { pronoun: "We", example: "We are teachers." },
-    { pronoun: "They", example: "They are at school." }
-  ],
+
+  table: {
+    title: "📋 Subject Pronouns: Complete Reference Guide",
+    data: [
+      { category: "Purpose", explanation: "Replace nouns to avoid repetition", turkish: "İsimlerin yerini alır", example_before: "John is happy. John is a teacher.", example_after: "John is happy. He is a teacher.", benefit: "More natural!" },
+
+      { category: "I - First Person Singular", pronoun: "I", turkish: "Ben", usage: "The speaker", example: "I am a student.", with_verb: "I am / I'm", always_remember: "ALWAYS capital letter!" },
+      { category: "I - First Person Singular", pronoun: "I", position: "Subject only", example_subject: "I love pizza.", wrong_object: "Pizza loves I. ✗", correct_object: "Pizza loves me. ✓", note: "Use 'me' as object" },
+
+      { category: "You - Second Person", pronoun: "You", turkish: "Sen / Siz", usage: "Person/people you talk to", singular: "You are nice. (1 person)", plural: "You are nice. (many people)", unique: "Same form for both!" },
+      { category: "You - Second Person", pronoun: "You", with_verb: "You are / You're", example_singular: "You are my friend.", example_plural: "You are my friends.", note: "Verb always 'are'" },
+
+      { category: "He - Third Person Masculine", pronoun: "He", turkish: "O (erkek)", usage: "One male person", example: "He is a doctor.", with_verb: "He is / He's", refers_to: "Boys, men, male animals" },
+      { category: "He - Third Person Masculine", pronoun: "He", replacement: "Replaces male names", before: "Tom is kind. Tom helps me.", after: "Tom is kind. He helps me.", note: "Avoid repeating the name" },
+
+      { category: "She - Third Person Feminine", pronoun: "She", turkish: "O (kadın)", usage: "One female person", example: "She is happy.", with_verb: "She is / She's", refers_to: "Girls, women, female animals" },
+      { category: "She - Third Person Feminine", pronoun: "She", replacement: "Replaces female names", before: "Mary is smart. Mary studies hard.", after: "Mary is smart. She studies hard.", note: "More natural flow" },
+
+      { category: "It - Third Person Neutral", pronoun: "It", turkish: "O (şey)", usage: "Things, animals, concepts", examples: "It is a book. / It is my cat. / It is Monday.", with_verb: "It is / It's", important: "NOT for people!" },
+      { category: "It - Third Person Neutral", pronoun: "It", special_uses: "Weather, time, distance", weather: "It is sunny.", time: "It is 3 PM.", distance: "It is 5 km.", turkish_difference: "Türkçede özne gerekmez" },
+
+      { category: "We - First Person Plural", pronoun: "We", turkish: "Biz", usage: "Speaker + others", example: "We are students.", with_verb: "We are / We're", includes: "Always includes 'I'" },
+      { category: "We - First Person Plural", pronoun: "We", common_uses: "Groups including you", examples: "We love pizza. / We are happy. / We study English.", note: "You're part of the group" },
+
+      { category: "They - Third Person Plural", pronoun: "They", turkish: "Onlar", usage: "Multiple people or things", people: "They are students.", things: "They are books.", with_verb: "They are / They're" },
+      { category: "They - Third Person Plural", pronoun: "They", modern_use: "Gender-neutral singular", example: "Someone called. They left a message.", explanation: "When gender unknown", note: "Increasingly common" },
+
+      { category: "Summary Chart", all_pronouns: "I, You, He, She, It, We, They", with_am: "I am", with_is: "He is, She is, It is", with_are: "You are, We are, They are", remember: "Subject pronouns come BEFORE the verb" },
+    ]
+  },
   
   speakingPractice: [
     { question: "Who am I?", answer: "You are my teacher." },
