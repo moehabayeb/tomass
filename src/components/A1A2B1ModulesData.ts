@@ -2875,11 +2875,47 @@ const MODULE_26_DATA = {
 🔹 Daha kibar yapmak için please kullanılabilir → Please sit down. (Lütfen oturun.)`,
   tip: "Imperatives use base form of verb. Add please to be polite.",
   
-  table: [
-    { type: "Positive", form: "Base verb", example: "Open the window." },
-    { type: "Negative", form: "Don't + base verb", example: "Don't be late." },
-    { type: "Polite", form: "Please + base verb", example: "Please sit down." }
-  ],
+  table: {
+    title: "📋 Imperatives (Commands, Instructions, Requests)",
+    data: [
+      { category: "What are Imperatives?", explanation: "Commands, instructions, requests, or advice given to someone", turkish: "Emir, talimat, rica cümleleri", function: "Tell someone what to do (or not to do)", examples: "Sit down. / Don't run. / Please help me.", note: "Direct and simple - no subject needed!" },
+
+      { category: "Structure - Positive", form: "BASE VERB (that's it!)", examples: "Open / Close / Sit / Stand / Listen / Write", rule: "Just use the base form of the verb - nothing else!", turkish: "Fiilin yalın hali", pattern: "Verb + (object/complement)", no_subject: "No 'you' needed! The subject is understood" },
+      { category: "Structure - Positive", examples_full: "Open the door. / Close the window. / Sit down. / Stand up. / Listen carefully. / Write your name.", note: "Start directly with the verb!", remember: "No need for subject pronouns (I, you, he, etc.)" },
+
+      { category: "Structure - Negative", form: "DON'T + base verb", examples: "Don't run / Don't shout / Don't touch / Don't worry / Don't forget", rule: "Add 'Don't' before the base verb", turkish: "-me/-ma (yapma)", pattern: "Don't + verb", important: "Always use 'don't' (NOT doesn't)!" },
+      { category: "Structure - Negative", examples_full: "Don't run! / Don't shout! / Don't touch that! / Don't worry. / Don't forget your homework.", note: "Don't = Do not (informal)", formal: "Do not smoke. (more formal/signs)", remember: "Don't, NOT doesn't - even for he/she!" },
+
+      { category: "Making it Polite - PLEASE", form: "Please + verb OR verb + please", examples_beginning: "Please sit down. / Please open your books. / Please be quiet.", examples_end: "Sit down, please. / Open your books, please. / Be quiet, please.", turkish: "Lütfen...", note: "'Please' makes commands more polite and friendly!" },
+      { category: "Making it Polite - PLEASE", when_to_use: "Use 'please' when making requests or being polite", without_please: "Close the door. (command/instruction)", with_please: "Please close the door. (polite request)", tip: "Always use 'please' in formal situations!", position: "'Please' can go at the beginning or end (with comma)" },
+
+      { category: "Common Uses - Instructions", usage: "Giving step-by-step instructions", examples: "Open the book. / Turn to page 10. / Read the text. / Answer the questions.", context: "In class, following recipes, using manuals", pattern: "Sequential commands", turkish: "Talimatlar verme" },
+
+      { category: "Common Uses - Commands", usage: "Giving orders or strong directions", examples: "Stop! / Go! / Wait! / Run! / Be careful! / Watch out!", context: "Urgent situations, sports, military", pattern: "Short, direct, forceful", note: "Often with exclamation marks!" },
+
+      { category: "Common Uses - Requests", usage: "Asking someone to do something politely", examples: "Please help me. / Please pass the salt. / Please wait a moment.", context: "Daily conversations, asking for favors", pattern: "Usually with 'please'", turkish: "Rica etme, yardım isteme" },
+
+      { category: "Common Uses - Advice", usage: "Giving suggestions or recommendations", examples: "Don't worry. / Take your time. / Be patient. / Think carefully.", context: "Helping someone, giving tips", pattern: "Often negative imperatives or encouraging", note: "Softer tone than commands" },
+
+      { category: "Common Uses - Warnings", usage: "Alerting someone to danger", examples: "Don't touch! / Be careful! / Watch out! / Look out! / Stop!", context: "Dangerous situations", pattern: "Often with 'don't' or 'be careful'", turkish: "Uyarı" },
+
+      { category: "In the Classroom", teacher_to_students: "Open your books. / Listen carefully. / Write this down. / Don't talk. / Be quiet.", asking_permission: "May I go to the bathroom? (not imperative, but related)", instructions: "Read the text. / Answer the questions. / Work in pairs.", common: "Sit down. / Stand up. / Come to the board. / Go back to your seat." },
+
+      { category: "Let's (Inclusive Imperative)", form: "Let's + base verb", meaning: "Suggestion for 'us' (including speaker)", examples: "Let's go! / Let's eat. / Let's study. / Let's play.", turkish: "Hadi ... (beraber yapalım)", negative: "Let's not go. / Let's not wait.", note: "Includes the speaker in the action!" },
+
+      { category: "Common Imperatives - Daily Life", actions: "Open, Close, Turn on, Turn off, Take, Give, Put, Bring", movement: "Come, Go, Walk, Run, Stop, Wait, Sit, Stand", communication: "Listen, Speak, Talk, Ask, Answer, Read, Write, Tell", care: "Be careful, Watch out, Take care, Don't worry" },
+
+      { category: "Common Mistakes", mistake: "Adding subject 'you'", wrong: "You sit down. ✗ (sounds unnatural)", correct: "Sit down. ✓", rule: "No subject needed in imperatives!", note: "'You' is understood, not stated" },
+      { category: "Common Mistakes", mistake: "Using 'doesn't' in negative", wrong: "Doesn't run! ✗", correct: "Don't run! ✓", rule: "Always use 'don't' (NOT doesn't) for negative imperatives!", remember: "Don't = for all subjects in imperatives" },
+      { category: "Common Mistakes", mistake: "Using 'to' before the verb", wrong: "Please to sit down. ✗", correct: "Please sit down. ✓", rule: "No 'to' with imperatives!", remember: "Use base verb directly" },
+
+      { category: "Tone and Meaning", neutral: "Close the door. (simple instruction)", polite: "Please close the door. (polite request)", urgent: "Close the door! (command/urgent)", very_polite: "Could you please close the door? (very polite question, not imperative)", note: "Context and intonation change the meaning!" },
+
+      { category: "Real-World Examples", signs: "Push / Pull / Stop / No smoking / Keep off the grass", recipes: "Add sugar. / Mix well. / Bake for 20 minutes. / Serve hot.", directions: "Turn left. / Go straight. / Take the second right. / Stop at the light.", safety: "Don't touch. / Be careful. / Watch your step. / Mind the gap." },
+
+      { category: "Key Takeaway", summary: "Imperatives = Commands/Instructions/Requests", positive: "BASE VERB (Open the door.)", negative: "DON'T + base verb (Don't run!)", polite: "Add PLEASE (Please sit down.)", rules: "No subject | Use base verb | Always 'don't' (not doesn't) | No 'to'", remember: "Start with the verb! That's all you need!", usage: "Commands, instructions, requests, advice, warnings" }
+    ]
+  },
   
   speakingPractice: [
     { question: "What's an imperative for opening a door?", answer: "Open the door." },
@@ -2934,11 +2970,45 @@ const MODULE_27_DATA = {
 Örn: I am reading. (Ben okuyorum.) / They are playing. (Onlar oynuyorlar.)`,
   tip: "Use Present Continuous for actions happening now or temporary situations",
   
-  table: [
-    { subject: "I", form: "am + verb-ing", example: "I am studying." },
-    { subject: "He/She/It", form: "is + verb-ing", example: "She is watching TV." },
-    { subject: "We/You/They", form: "are + verb-ing", example: "They are playing football." }
-  ],
+  table: {
+    title: "📋 Present Continuous: Affirmative (Actions Happening NOW)",
+    data: [
+      { category: "What is Present Continuous?", explanation: "Tense for actions happening RIGHT NOW or temporary situations", turkish: "Şimdiki zaman", function: "Talk about what's happening at this moment", examples: "I am studying / She is cooking / They are playing", key_word: "NOW!" },
+
+      { category: "Structure", form: "Subject + AM/IS/ARE + verb-ING", pattern: "BE verb + verb-ing", rule: "Two parts: BE verb (am/is/are) + main verb with -ing", turkish: "Özne + am/is/are + fiil-ing", examples: "I am working / He is sleeping / We are eating" },
+      { category: "Structure", which_be: "I → am | He/She/It → is | You/We/They → are", key_rule: "Choose correct BE verb for the subject!", remember: "BE verb changes, but always add -ing to main verb!", note: "Both parts are essential!" },
+
+      { category: "With I", form: "I AM + verb-ing", contraction: "I'm + verb-ing", examples: "I am studying / I am reading / I am working", example_sentence: "I am learning English right now.", turkish: "Ben ... -iyorum/-ıyorum", contracted: "I'm studying (more common in speech)" },
+
+      { category: "With He/She/It", form: "He/She/It IS + verb-ing", contraction: "He's / She's / It's + verb-ing", examples: "He is sleeping / She is cooking / It is raining", example_sentences: "She is watching TV now. / It is working perfectly.", turkish: "O ... -iyor", contracted: "She's cooking (more common)" },
+
+      { category: "With You/We/They", form: "You/We/They ARE + verb-ing", contraction: "You're / We're / They're + verb-ing", examples: "You are talking / We are studying / They are playing", example_sentences: "We are having lunch. / They are running in the park.", turkish: "Sen.../Biz.../Onlar ... -iyor/-ıyor", contracted: "We're studying (more common)" },
+
+      { category: "How to Add -ING", rule_1: "Most verbs: just add -ing", examples_1: "play → playing, read → reading, do → doing, eat → eating, work → working", note_1: "Most common pattern", turkish: "Çoğu fiile -ing ekle" },
+      { category: "How to Add -ING", rule_2: "Verbs ending in -e: remove e, add -ing", examples_2: "write → writing, dance → dancing, make → making, come → coming, have → having", note_2: "Drop the 'e' first!", exception: "be → being (keep the e!)" },
+      { category: "How to Add -ING", rule_3: "Short verbs (CVC): double last letter + -ing", examples_3: "run → running, swim → swimming, sit → sitting, stop → stopping, get → getting", note_3: "Consonant-Vowel-Consonant pattern", explanation: "Double the final consonant to keep the vowel sound short" },
+
+      { category: "When to Use - NOW", usage: "Actions happening at this exact moment", examples: "I am typing now. / She is speaking at this moment. / Look! It's raining!", keywords: "now, at the moment, right now, at present, currently", turkish: "Şu anda olan eylemler", tip: "If you can see/hear it happening, use Present Continuous!" },
+
+      { category: "When to Use - Temporary", usage: "Temporary situations (not permanent)", examples: "I'm staying with my friend this week. / He's working at a café this month. / They're living in London temporarily.", temporary_vs_permanent: "Temporary: I'm living in a hotel (this week). | Permanent: I live in Istanbul (always).", turkish: "Geçici durumlar", note: "Actions that will change soon" },
+
+      { category: "Time Expressions", now_words: "now, right now, at the moment, at present, currently", today_this: "today, this week, this month, this year", look_listen: "Look! Listen! (to draw attention to something happening)", examples: "She's working right now. / They're studying this week. / Look! He's coming!" },
+
+      { category: "Contractions (Very Common!)", i_am: "I am → I'm", he_is: "He is → He's", she_is: "She is → She's", it_is: "It is → It's", we_are: "We are → We're", you_are: "You are → You're", they_are: "They are → They're", usage: "Always use contractions in spoken English!", examples: "I'm eating / She's reading / We're watching" },
+
+      { category: "Common Verbs in Continuous", actions: "doing, making, having, going, coming, leaving", work_study: "working, studying, learning, writing, reading, teaching", daily: "eating, drinking, sleeping, cooking, cleaning, washing", leisure: "playing, watching, listening, talking, sitting, standing", examples: "I'm eating lunch. / She's working. / They're playing football." },
+
+      { category: "Common Mistakes", mistake: "Forgetting BE verb", wrong: "I studying ✗ / She cooking ✗", correct: "I am studying ✓ / She is cooking ✓", rule: "Must have BE verb (am/is/are)!", remember: "BE + verb-ing (both needed!)" },
+      { category: "Common Mistakes", mistake: "Forgetting -ING", wrong: "I am study ✗ / She is cook ✗", correct: "I am studying ✓ / She is cooking ✓", rule: "Must add -ING to the verb!", remember: "BE verb + verb-ING" },
+      { category: "Common Mistakes", mistake: "Wrong BE verb", wrong: "I is studying ✗ / She are cooking ✗", correct: "I am studying ✓ / She is cooking ✓", rule: "I = am | He/She/It = is | You/We/They = are", remember: "Match BE verb to subject!" },
+
+      { category: "Present Continuous vs Simple", continuous_now: "I am studying now. (happening at this moment)", simple_habit: "I study every day. (regular habit)", continuous_temp: "She is living in London this month. (temporary)", simple_permanent: "She lives in Istanbul. (permanent)", key: "Continuous = NOW or TEMPORARY | Simple = ALWAYS or HABITUAL" },
+
+      { category: "Real-World Examples", right_now: "I'm writing an email. / She's talking on the phone. / They're having a meeting.", temporary: "I'm working on a new project this week. / He's staying with friends this month.", describing_scene: "Look! The children are playing in the park. / Listen! Someone is singing.", daily: "I'm cooking dinner. / She's watching TV. / We're doing homework." },
+
+      { category: "Key Takeaway", summary: "Present Continuous = Actions happening NOW or temporary situations", form: "Subject + AM/IS/ARE + verb-ING", be_verbs: "I am | He/She/It is | You/We/They are", ing_rules: "Most: +ing | -e verbs: drop e, +ing | CVC: double consonant, +ing", when: "Use for actions happening NOW or TEMPORARY situations", keywords: "now, at the moment, right now, this week/month, Look!, Listen!", remember: "Need BOTH: BE verb + verb-ING!", next: "Next: Learn negative and question forms!" }
+    ]
+  },
   
   speakingPractice: [
     { question: "What are you doing?", answer: "I am studying English." },
@@ -2998,11 +3068,45 @@ They aren't playing football. (Onlar futbol oynamıyor.)
 • are not → aren't`,
   tip: "Use contractions isn't and aren't in informal speech",
   
-  table: [
-    { subject: "I", form: "am not + verb-ing", example: "I'm not reading." },
-    { subject: "He/She/It", form: "is not/isn't + verb-ing", example: "She isn't studying." },
-    { subject: "We/You/They", form: "are not/aren't + verb-ing", example: "They aren't sleeping." }
-  ],
+  table: {
+    title: "📋 Present Continuous: Negative (NOT happening now)",
+    data: [
+      { category: "What is Present Continuous Negative?", explanation: "To say what is NOT happening right now", turkish: "Şimdiki zamanın olumsuz hali", function: "Express actions that are NOT occurring at this moment", examples: "I'm not working / She isn't eating / They aren't playing", opposite: "Opposite of affirmative Present Continuous" },
+
+      { category: "Structure", form: "Subject + AM/IS/ARE + NOT + verb-ING", pattern: "BE verb + not + verb-ing", rule: "Add 'NOT' after the BE verb, before verb-ing", turkish: "Özne + am/is/are + not + fiil-ing", examples: "I am not working / He is not sleeping / We are not eating" },
+      { category: "Structure", which_be: "I → am not | He/She/It → is not | You/We/They → are not", key_rule: "Same BE verb as affirmative, just add 'not'", remember: "NOT goes between BE and main verb!", note: "Main verb still has -ing!" },
+
+      { category: "With I", form: "I AM NOT + verb-ing", contraction: "I'm not + verb-ing", examples: "I am not studying / I am not reading / I am not working", example_sentence: "I'm not watching TV right now.", turkish: "Ben ... -miyorum/-mıyorum", note: "Only one contraction possible: I'm not (NOT I amn't)" },
+
+      { category: "With He/She/It", form: "He/She/It IS NOT + verb-ing", contractions: "isn't OR He's/She's/It's not", examples: "He is not sleeping / She is not cooking / It is not raining", example_sentences: "She isn't watching TV now. / It's not working.", turkish: "O ... -miyor/-mıyor", two_ways: "He isn't OR He's not (both correct!)" },
+
+      { category: "With You/We/They", form: "You/We/They ARE NOT + verb-ing", contractions: "aren't OR You're/We're/They're not", examples: "You are not talking / We are not studying / They are not playing", example_sentences: "We aren't having lunch. / They're not running.", turkish: "Sen.../Biz.../Onlar ... -miyor/-mıyor", two_ways: "We aren't OR We're not (both correct!)" },
+
+      { category: "Contractions - Two Ways!", is_not: "is not = isn't OR He's not", are_not: "are not = aren't OR We're not", am_not: "am not = I'm not (only one way)", most_common: "isn't and aren't are most common in speech", examples: "She isn't eating. / They aren't sleeping. / I'm not working.", choice: "Both ways are correct - choose what feels natural!" },
+
+      { category: "Full Forms", i_am_not: "I am not", he_is_not: "He/She/It is not", you_are_not: "You/We/They are not", usage: "Full forms used in formal writing or for emphasis", emphasis: "I am NOT going! (very strong)", normal: "I'm not going. (everyday)", tip: "Use contractions in everyday speech!" },
+
+      { category: "Common Negative Statements", right_now: "I'm not working right now. / She isn't eating at the moment.", denial: "I'm not lying! / He isn't joking!", explaining: "Sorry, I'm not listening. / She isn't coming today.", temporary: "We're not living there anymore. / They aren't staying long.", turkish: "Şu anda yapmadığın şeyler" },
+
+      { category: "With Time Expressions", now_words: "not... now, not... at the moment, not... right now", examples: "I'm not studying now. / She isn't working at the moment. / They aren't playing right now.", today_this: "not... today, not... this week, not... this month", examples_temp: "He isn't working today. / We're not traveling this month." },
+
+      { category: "Common Mistakes", mistake: "Wrong position of 'not'", wrong: "I not am studying ✗ / She not is cooking ✗", correct: "I am not studying ✓ / She is not cooking ✓", rule: "'Not' goes AFTER BE verb!", remember: "BE + not + verb-ing" },
+      { category: "Common Mistakes", mistake: "Forgetting -ing on main verb", wrong: "I'm not study ✗ / She isn't cook ✗", correct: "I'm not studying ✓ / She isn't cooking ✓", rule: "Main verb still needs -ing in negative!", remember: "NOT doesn't remove -ing!" },
+      { category: "Common Mistakes", mistake: "Using don't/doesn't", wrong: "I don't studying ✗ / She doesn't cooking ✗", correct: "I'm not studying ✓ / She isn't cooking ✓", rule: "Use 'not' with BE verb, NOT don't/doesn't!", remember: "Present Continuous uses BE + not" },
+
+      { category: "Answering Questions", question: "Are you watching TV?", negative_answer: "No, I'm not. / No, I'm not watching TV.", question_he: "Is he working?", negative_answer_he: "No, he isn't. / No, he's not working.", pattern: "No, + subject + am not/isn't/aren't (+ verb-ing)", short_answer: "Usually just: No, I'm not. / No, he isn't." },
+
+      { category: "Contrasting Affirmative and Negative", affirmative: "I am working. (happening now)", negative: "I'm not working. (not happening now)", affirmative_she: "She is eating.", negative_she: "She isn't eating.", affirmative_they: "They are playing.", negative_they: "They aren't playing.", key: "Just add 'not' after BE verb!" },
+
+      { category: "Real-World Examples", explaining: "Sorry, I'm not listening. / He isn't coming to the party. / We're not staying long.", right_now: "I'm not studying right now. / She isn't working today. / They aren't eating yet.", correcting: "I'm not sleeping! / He isn't lying! / We're not leaving!", temporary: "I'm not living there anymore. / She isn't working this week. / They're not studying English now." },
+
+      { category: "Common Negative Phrases", im_not: "I'm not sure. / I'm not ready. / I'm not joking. / I'm not kidding.", he_isnt: "He isn't here. / He isn't coming. / He isn't working. / He isn't feeling well.", they_arent: "They aren't home. / They aren't available. / They aren't listening. / They aren't ready.", note: "Very common in everyday conversation!" },
+
+      { category: "Present Simple Negative vs Present Continuous Negative", simple: "I don't work. (never/generally)", continuous: "I'm not working. (not right now)", simple_she: "She doesn't eat meat. (general habit)", continuous_she: "She isn't eating. (not at this moment)", key: "Simple = general/habit | Continuous = right now", remember: "Different structures: don't vs am not/isn't/aren't" },
+
+      { category: "Key Takeaway", summary: "Present Continuous Negative = NOT happening now", form: "Subject + AM/IS/ARE + NOT + verb-ING", contractions: "I'm not | isn't / He's not | aren't / We're not", position: "NOT goes after BE verb, before main verb", be_verbs: "I am not | He/She/It is not | You/We/They are not", remember: "Main verb still has -ING!", common: "Use contractions in everyday speech!", next: "Next: Learn question forms!" }
+    ]
+  },
   
   speakingPractice: [
     { question: "Are you watching TV?", answer: "No, I'm not watching TV." },
@@ -3061,11 +3165,49 @@ Yes, she is. / No, she isn't.
 Yes, they are. / No, they aren't.`,
   tip: "Use short answers with Yes/No questions in Present Continuous",
   
-  table: [
-    { question: "Are you + verb-ing?", example: "Are you studying?" },
-    { question: "Is he/she/it + verb-ing?", example: "Is she cooking?" },
-    { question: "What + be + subject + verb-ing?", example: "What are they doing?" }
-  ],
+  table: {
+    title: "📋 Present Continuous: Questions (Asking about NOW)",
+    data: [
+      { category: "What are Present Continuous Questions?", explanation: "Questions about what is happening RIGHT NOW", turkish: "Şimdiki zamanda soru cümleleri", function: "Ask about current actions or temporary situations", examples: "Are you studying? / Is she working? / What are they doing?", key: "Asking about NOW, not always!" },
+
+      { category: "Structure - Yes/No Questions", form: "AM/IS/ARE + subject + verb-ING?", pattern: "Inversion: BE verb moves to front", rule: "Put BE verb BEFORE the subject", turkish: "Am/Is/Are + özne + fiil-ing?", examples: "Are you working? / Is she cooking? / Are they playing?" },
+      { category: "Structure - Yes/No Questions", inversion_explained: "Statement: You are working. | Question: Are you working?", how: "Move the BE verb to the beginning!", remember: "Subject and BE verb switch places!", note: "Main verb still has -ing!" },
+
+      { category: "Yes/No Questions with I", form: "AM I + verb-ing?", examples: "Am I doing it right? / Am I talking too loud? / Am I sitting in your seat?", turkish: "... mı/mi yapıyorum?", note: "Not very common - usually ask about yourself less", usage: "Asking for confirmation or checking" },
+
+      { category: "Yes/No Questions with You", form: "ARE YOU + verb-ing?", examples: "Are you studying? / Are you working? / Are you listening? / Are you coming?", turkish: "... mı/mi yapıyorsun?", note: "Very common in daily conversation!", usage: "Asking what the other person is doing now" },
+
+      { category: "Yes/No Questions with He/She/It", form: "IS HE/SHE/IT + verb-ing?", examples: "Is he sleeping? / Is she cooking? / Is it raining? / Is he coming?", turkish: "... mı/mi yapıyor?", note: "Asking about someone/something else", usage: "Third person singular" },
+
+      { category: "Yes/No Questions with We/They", form: "ARE WE/THEY + verb-ing?", examples: "Are we leaving? / Are they playing? / Are we doing it right? / Are they coming?", turkish: "... mı/mi yapıyoruz/yapıyorlar?", note: "Plural subjects", usage: "Asking about groups" },
+
+      { category: "Short Answers - Positive", with_am: "Am I...? → Yes, you are.", with_are_you: "Are you...? → Yes, I am.", with_is: "Is he/she...? → Yes, he/she is.", with_are_they: "Are they...? → Yes, they are.", pattern: "Yes, + subject + am/is/are.", note: "Don't repeat the verb-ing in short answers!" },
+
+      { category: "Short Answers - Negative", with_am: "Am I...? → No, you aren't. / No, you're not.", with_are_you: "Are you...? → No, I'm not.", with_is: "Is he/she...? → No, he/she isn't. / No, he's/she's not.", with_are_they: "Are they...? → No, they aren't. / No, they're not.", pattern: "No, + subject + am not/isn't/aren't.", note: "Use contractions in speech!" },
+
+      { category: "Wh- Questions", form: "WH-word + AM/IS/ARE + subject + verb-ING?", pattern: "Wh- word at the very beginning", examples: "What are you doing? / Where is she going? / Why are they leaving?", turkish: "Ne yapıyorsun? / Nereye gidiyor? / Neden gidiyorlar?", note: "Most common type of question in Present Continuous!" },
+
+      { category: "Common Wh- Questions", what_doing: "What + be + subject + doing? (most common!)", examples_what: "What are you doing? / What is she doing? / What are they doing?", where: "Where + be + subject + going?", examples_where: "Where are you going? / Where is he going?", why: "Why + be + subject + verb-ing?", examples_why: "Why are you leaving? / Why is she crying?" },
+
+      { category: "More Wh- Questions", who: "Who + be + verb-ing?", examples_who: "Who is coming? / Who is calling? / Who is talking?", when: "When + be + subject + verb-ing?", examples_when: "When are you leaving? / When is he arriving?", how: "How + be + subject + verb-ing?", examples_how: "How are you doing? / How is it going?" },
+
+      { category: "Common Mistakes", mistake: "Forgetting inversion", wrong: "You are studying? ✗ (sounds like statement with rising tone)", correct: "Are you studying? ✓", rule: "Must put BE verb at the beginning!", note: "Without inversion, it's not a proper question" },
+      { category: "Common Mistakes", mistake: "Using do/does", wrong: "Do you studying? ✗ / Does she cooking? ✗", correct: "Are you studying? ✓ / Is she cooking? ✓", rule: "Present Continuous uses BE verb, NOT do/does!", remember: "BE verb + subject + verb-ing?" },
+      { category: "Common Mistakes", mistake: "Forgetting -ing", wrong: "Are you study? ✗ / Is she cook? ✗", correct: "Are you studying? ✓ / Is she cooking? ✓", rule: "Main verb still needs -ing in questions!", remember: "Question doesn't remove -ing!" },
+
+      { category: "Intonation", yes_no_questions: "Voice goes UP ↗ at the end", examples: "Are you working? ↗ / Is she coming? ↗", wh_questions: "Voice goes DOWN ↘ at the end", examples: "What are you doing? ↘ / Where is he going? ↘", tip: "Yes/No ↗ | Wh- ↘", remember: "Intonation helps show it's a question!" },
+
+      { category: "Real-World Examples", checking: "Are you listening? / Are you okay? / Is everything working?", location: "Where are you going? / Where is he sitting? / Where are they staying?", activity: "What are you doing? / What is she watching? / What are they playing?", time_plans: "When are you leaving? / When is he arriving? / When are they coming?" },
+
+      { category: "Common Daily Questions", right_now: "What are you doing? (most common!) / Are you busy? / Are you working?", location: "Where are you going? / Where are you? / Are you coming?", attention: "Are you listening? / Are you watching? / Are you paying attention?", status: "How are you doing? / Is everything going well? / Are things working out?" },
+
+      { category: "Answering Wh- Questions", what_doing: "What are you doing? → I'm studying English.", where_going: "Where are you going? → I'm going to the store.", why: "Why are you leaving? → I'm leaving because it's late.", full_sentence: "Answer with full sentence using Present Continuous!", pattern: "Subject + am/is/are + verb-ing..." },
+
+      { category: "Contrast: Statement → Question → Negative", statement: "You are working.", question: "Are you working?", negative: "You aren't working.", statement_she: "She is cooking.", question_she: "Is she cooking?", negative_she: "She isn't cooking.", key: "Three forms - all use same BE verb and verb-ing!" },
+
+      { category: "Key Takeaway", summary: "Present Continuous Questions = Asking about NOW", yes_no_form: "AM/IS/ARE + subject + verb-ING?", wh_form: "WH-word + AM/IS/ARE + subject + verb-ING?", inversion: "BE verb moves to the front (before subject)", short_answers: "Yes, I am / No, I'm not | Yes, she is / No, she isn't", remember: "Don't use do/does! | Main verb keeps -ing! | Invert BE and subject!", common: "What are you doing? (most common question!)", next: "Practice makes perfect!" }
+    ]
+  },
   
   speakingPractice: [
     { question: "Are you studying now?", answer: "Yes, I am." },
@@ -3124,10 +3266,48 @@ Present Simple → Özne + fiil (he/she/it → -s)
 Present Continuous → Özne + am/is/are + fiil-ing`,
   tip: "Present Simple = routine/habit/fact | Present Continuous = now/temporary",
   
-  table: [
-    { tense: "Present Simple", use: "Habits/Facts", example: "I go to school every day." },
-    { tense: "Present Continuous", use: "Now/Temporary", example: "I am studying now." }
-  ],
+  table: {
+    title: "📋 Present Simple vs Present Continuous (When to use each)",
+    data: [
+      { category: "The Big Difference", present_simple: "Habits, routines, permanent facts", present_continuous: "Actions happening NOW, temporary situations", key: "ALWAYS/REGULARLY vs NOW/TEMPORARY", simple: "I work every day. (habit)", continuous: "I'm working now. (at this moment)", remember: "Simple = general | Continuous = specific moment" },
+
+      { category: "Present Simple - WHEN to use", use_1: "Habits and routines (things you do regularly)", examples_1: "I go to work every day. / She drinks coffee every morning. / They play football on Sundays.", keywords_1: "every day/week, always, usually, often, sometimes, never", turkish_1: "Alışkanlıklar ve rutinler" },
+      { category: "Present Simple - WHEN to use", use_2: "Permanent situations and facts", examples_2: "I live in Istanbul. / She works in a bank. / They speak English.", keywords_2: "Permanent, long-term, unchanging", turkish_2: "Kalıcı durumlar ve gerçekler" },
+      { category: "Present Simple - WHEN to use", use_3: "General truths and scientific facts", examples_3: "The sun rises in the east. / Water boils at 100°C. / Birds fly.", keywords_3: "Always true, universal facts", turkish_3: "Genel doğrular" },
+
+      { category: "Present Continuous - WHEN to use", use_1: "Actions happening RIGHT NOW at this moment", examples_1: "I'm eating lunch now. / She's talking on the phone. / Look! It's raining!", keywords_1: "now, right now, at the moment, currently, Look!, Listen!", turkish_1: "Şu anda olan eylemler" },
+      { category: "Present Continuous - WHEN to use", use_2: "Temporary situations (will change soon)", examples_2: "I'm staying with my friend this week. / He's working at a café this month. / They're living in London temporarily.", keywords_2: "this week/month/year, temporarily, for now", turkish_2: "Geçici durumlar" },
+      { category: "Present Continuous - WHEN to use", use_3: "Changes and trends happening around now", examples_3: "The weather is getting colder. / My English is improving. / Prices are rising.", keywords_3: "Getting, becoming, changing, improving", turkish_3: "Değişen durumlar" },
+
+      { category: "Structure Comparison", simple_positive: "Subject + verb (+s for he/she/it)", simple_examples: "I work / She works / They work", continuous_positive: "Subject + am/is/are + verb-ing", continuous_examples: "I'm working / She's working / They're working", key: "Simple = base verb | Continuous = BE + verb-ing" },
+
+      { category: "Time Expressions - Simple", frequency: "always, usually, often, sometimes, rarely, never", time_periods: "every day/week/month/year", days: "on Mondays, on weekends", examples: "I always wake up at 7. / She usually drinks tea. / They play football on Sundays.", pattern: "Regular, repeated time expressions" },
+
+      { category: "Time Expressions - Continuous", right_now: "now, right now, at the moment, at present, currently", temporary: "today, this week, this month, this year", attention: "Look! Listen! (drawing attention)", examples: "I'm working now. / She's staying here this week. / Look! They're coming!", pattern: "Specific time, current moment" },
+
+      { category: "Common Contrasts", habit_vs_now: "I drink coffee (habit, always) ↔ I'm drinking coffee (right now, this moment)", permanent_vs_temp: "I live in Istanbul (permanent) ↔ I'm living in a hotel (temporary)", general_vs_specific: "She works at a bank (job, permanent) ↔ She's working on a project (current task)", always_vs_now: "They play football (regularly) ↔ They're playing football (at this moment)" },
+
+      { category: "Keywords that Signal Simple", words: "always, usually, often, sometimes, rarely, never, every, on Mondays, generally, normally, typically", sentence: "I usually eat breakfast at 8. → Simple!", rule: "Frequency words = Simple", turkish: "Sıklık zarfları genellikle Present Simple ile kullanılır" },
+
+      { category: "Keywords that Signal Continuous", words: "now, right now, at the moment, currently, at present, today, this week/month, Look!, Listen!", sentence: "I'm eating breakfast now. → Continuous!", rule: "Time words for 'now' = Continuous", turkish: "Şimdi belirten kelimeler genellikle Present Continuous ile kullanılır" },
+
+      { category: "Both in One Conversation!", example_1: "A: What do you do? (job/general) | B: I work in IT. (Present Simple)", example_2: "A: What are you doing? (right now) | B: I'm working on a report. (Present Continuous)", difference: "'What do you do?' = job/profession | 'What are you doing?' = current activity", note: "Same words, different meanings!" },
+
+      { category: "Stative Verbs (Usually Simple)", explanation: "Some verbs rarely use Continuous - they describe states, not actions", verbs: "know, understand, believe, like, love, hate, want, need, have (possession), be", wrong: "I'm knowing ✗ / She's wanting ✗ / They're having a car ✗", correct: "I know ✓ / She wants ✓ / They have a car ✓", note: "These verbs describe states that don't happen 'right now' - they just ARE!" },
+
+      { category: "Stative Verbs - Exceptions", have_action: "'Have' for actions CAN be continuous!", examples_action: "I'm having lunch. ✓ / She's having a shower. ✓ / We're having fun. ✓", have_possession: "'Have' for possession is ALWAYS simple!", examples_possession: "I have a car. ✓ (NOT I'm having a car ✗)", rule: "Action = Continuous possible | Possession/state = Simple only" },
+
+      { category: "Common Mistakes", mistake: "Using Continuous for habits", wrong: "I'm going to work every day. ✗", correct: "I go to work every day. ✓", rule: "'Every day' = habit = Simple!", remember: "Regular habits = Simple" },
+      { category: "Common Mistakes", mistake: "Using Simple for NOW", wrong: "I study now. ✗", correct: "I'm studying now. ✓", rule: "'Now' = happening at this moment = Continuous!", remember: "Right now = Continuous" },
+      { category: "Common Mistakes", mistake: "Continuous with stative verbs", wrong: "I'm knowing the answer. ✗ / She's wanting coffee. ✗", correct: "I know the answer. ✓ / She wants coffee. ✓", rule: "Stative verbs (know, want, like, etc.) use Simple!", remember: "States = Simple, not Continuous" },
+
+      { category: "Questions Comparison", simple_question: "Do you work? / Does she study? / What do they do?", simple_meaning: "General, habits, always", continuous_question: "Are you working? / Is she studying? / What are they doing?", continuous_meaning: "Right now, at this moment", key_difference: "Do/Does = general | Am/Is/Are = now" },
+
+      { category: "Real-World Scenarios", scenario_1: "Phone call: 'What are you doing?' → 'I'm watching TV.' (now, Continuous)", scenario_2: "Job interview: 'What do you do?' → 'I work in IT.' (job, Simple)", scenario_3: "Daily routine: 'I wake up at 7, eat breakfast, and go to work.' (habits, Simple)", scenario_4: "Current situation: 'I'm working from home this week.' (temporary, Continuous)" },
+
+      { category: "Key Takeaway", summary: "Present Simple vs Present Continuous - Choose based on WHEN", simple: "Present Simple = Habits, routines, facts, permanent, ALWAYS/REGULARLY", continuous: "Present Continuous = NOW, at this moment, temporary, CURRENTLY", simple_keywords: "always, usually, every day, on Mondays → Simple", continuous_keywords: "now, right now, this week, Look! → Continuous", rule: "REGULAR/ALWAYS → Simple | NOW/TEMPORARY → Continuous", remember: "Different time, different tense!", next: "Practice choosing the right tense!" }
+    ]
+  },
   
   speakingPractice: [
     { question: "Do you go to school every day?", answer: "Yes, I go to school every day." },
