@@ -8241,7 +8241,31 @@ Examples:
 - Don't get lost in the city!`,
   tip: "'Get' is very common in spoken English and often means 'become' or 'receive'",
 
-  table: [],
+  table: {
+    title: "📋 Common Expressions with Get",
+    data: [
+      { expression: "get ready", meaning: "prepare yourself", example: "I need to get ready for work.", usage: "Daily preparation", note: "Very common" },
+      { expression: "get tired", meaning: "become tired", example: "I get tired after running.", usage: "Physical/mental exhaustion", note: "= become tired" },
+      { expression: "get married", meaning: "marry someone", example: "They got married last year.", usage: "Wedding/marriage", note: "NOT 'marry with'" },
+      { expression: "get lost", meaning: "lose your way", example: "We got lost in the forest.", usage: "Navigation problems", note: "Can't find way" },
+      { expression: "get angry", meaning: "become angry", example: "He gets angry easily.", usage: "Emotion change", note: "State change" },
+      { expression: "get better", meaning: "improve, recover", example: "I hope you get better soon!", usage: "Health, skills improvement", note: "Positive change" },
+      { expression: "get worse", meaning: "deteriorate", example: "The weather is getting worse.", usage: "Negative change", note: "Opposite of get better" },
+      { expression: "get dressed", meaning: "put on clothes", example: "I got dressed quickly.", usage: "Daily routine", note: "Process of dressing" },
+      { expression: "get sick/ill", meaning: "become sick", example: "She got sick after the trip.", usage: "Health problem", note: "Falling ill" },
+      { expression: "get home", meaning: "arrive home", example: "What time did you get home?", usage: "Arriving at destination", note: "= arrive home" },
+      { expression: "get nervous", meaning: "become nervous", example: "I get nervous before exams.", usage: "Anxiety, stress", note: "Feeling state" },
+      { expression: "get excited", meaning: "become excited", example: "Kids get excited about Christmas.", usage: "Positive emotion", note: "Anticipation" },
+      { expression: "get hungry/thirsty", meaning: "become hungry/thirsty", example: "I'm getting hungry.", usage: "Physical needs", note: "Feeling developing" },
+      { expression: "get bored", meaning: "become bored", example: "I get bored easily.", usage: "Lack of interest", note: "Losing interest" },
+      { expression: "get confused", meaning: "become confused", example: "I got confused by the instructions.", usage: "Not understanding", note: "Mental state" },
+      { expression: "get rich/poor", meaning: "become wealthy/poor", example: "He got rich from investing.", usage: "Financial status change", note: "Economic change" },
+      { expression: "get old/older", meaning: "age, become older", example: "We're all getting older.", usage: "Aging process", note: "Time passing" },
+      { expression: "get dark/light", meaning: "become dark/light", example: "It's getting dark outside.", usage: "Light conditions", note: "Natural changes" },
+      { expression: "get cold/hot/warm", meaning: "temperature change", example: "It's getting cold.", usage: "Weather, temperature", note: "Feeling change" },
+      { pattern: "get + adjective", rule: "Means 'become' + adjective", examples: "get happy, get sad, get late, get early", usage: "State changes", key: "Very productive pattern" }
+    ]
+  },
 
   speakingPractice: [
     { question: "You're preparing to leave. What do you say?", answer: "I'm getting ready." },
@@ -8308,7 +8332,31 @@ Examples:
 - Can you take a photo of us?`,
   tip: "'Take' often combines with nouns to create common expressions in English",
 
-  table: [],
+  table: {
+    title: "📋 Common Expressions with Take",
+    data: [
+      { expression: "take a break", meaning: "rest, pause", example: "Let's take a break for 10 minutes.", usage: "Work, study pauses", note: "Short rest period" },
+      { expression: "take time", meaning: "require time", example: "Learning English takes time.", usage: "Duration needed", note: "It + takes + time" },
+      { expression: "take a photo/picture", meaning: "photograph", example: "Can you take a photo of us?", usage: "Photography", note: "= photograph" },
+      { expression: "take a shower/bath", meaning: "bathe", example: "I take a shower every morning.", usage: "Daily hygiene", note: "NOT 'make a shower'" },
+      { expression: "take medicine", meaning: "consume medicine", example: "Take this medicine twice a day.", usage: "Health, treatment", note: "NOT 'eat medicine'" },
+      { expression: "take care of", meaning: "look after, be responsible for", example: "She takes care of her elderly parents.", usage: "Responsibility, caring", note: "= look after" },
+      { expression: "take place", meaning: "happen, occur", example: "The meeting will take place at 3 PM.", usage: "Events happening", note: "= happen" },
+      { expression: "take part (in)", meaning: "participate", example: "I took part in the competition.", usage: "Joining activities", note: "= participate" },
+      { expression: "take notes", meaning: "write down information", example: "Students should take notes during the lecture.", usage: "Learning, meetings", note: "Recording information" },
+      { expression: "take a look (at)", meaning: "examine, check", example: "Take a look at this report.", usage: "Viewing, checking", note: "= look at" },
+      { expression: "take action", meaning: "do something, act", example: "We need to take action now.", usage: "Responding to situations", note: "= act" },
+      { expression: "take advantage (of)", meaning: "benefit from, use opportunity", example: "Take advantage of the discount!", usage: "Opportunities, benefits", note: "Can be positive or negative" },
+      { expression: "take responsibility", meaning: "accept accountability", example: "He took responsibility for the mistake.", usage: "Accountability", note: "Being accountable" },
+      { expression: "take a seat", meaning: "sit down", example: "Please take a seat.", usage: "Polite invitation to sit", note: "Formal" },
+      { expression: "take a chance/risk", meaning: "try something risky", example: "I'll take a chance and apply.", usage: "Risk-taking", note: "= risk it" },
+      { expression: "take turns", meaning: "alternate, do one after another", example: "Let's take turns using the computer.", usage: "Sharing, alternating", note: "= alternate" },
+      { expression: "take one's time", meaning: "don't rush", example: "Take your time, no need to hurry.", usage: "Not rushing", note: "Go at your own pace" },
+      { expression: "take seriously", meaning: "treat as important", example: "You should take this seriously.", usage: "Importance", note: "Not joking" },
+      { pattern: "take + a + noun", rule: "Creates action expressions", examples: "take a walk, take a nap, take a test, take a trip", usage: "Common pattern", key: "Very productive" },
+      { note: "Important", difference: "take (action/time) vs get (state change)", example: "take a shower (action) vs get ready (become)", key: "Different meanings" }
+    ]
+  },
 
   speakingPractice: [
     { question: "You joined a project. What do you say?", answer: "I took part in the project." },
@@ -8371,7 +8419,27 @@ Examples:
 - Note: With pronouns, separation is required: Pick it up (NOT: Pick up it)`,
   tip: "With pronouns, separable phrasal verbs MUST be separated: turn it on, pick it up",
 
-  table: [],
+  table: {
+    title: "📋 Phrasal Verbs: Separable vs Inseparable",
+    data: [
+      { type: "Separable", rule: "Object can go between or after", structure: "verb + object + particle OR verb + particle + object", example: "turn off the TV / turn the TV off", both_ok: "Both positions work" },
+      { type: "Inseparable", rule: "Object MUST go after", structure: "verb + particle + object ONLY", example: "look after the baby (NOT: look the baby after)", only_one: "Only one position" },
+      { separable_examples: "turn on/off", structure: "turn on the light / turn the light on", with_pronoun: "turn it on (MUST separate)", note: "Common separable verb" },
+      { separable_examples: "pick up", structure: "pick up the phone / pick the phone up", with_pronoun: "pick it up (MUST separate)", note: "Lift, collect" },
+      { separable_examples: "put on/take off", structure: "put on your coat / put your coat on", with_pronoun: "put it on / take it off", note: "Clothes, accessories" },
+      { separable_examples: "give back", structure: "give back the book / give the book back", with_pronoun: "give it back", note: "Return something" },
+      { separable_examples: "call off", structure: "call off the meeting / call the meeting off", with_pronoun: "call it off", note: "Cancel" },
+      { inseparable_examples: "look after", structure: "look after the children", with_pronoun: "look after them (NOT: look them after)", note: "Take care of" },
+      { inseparable_examples: "deal with", structure: "deal with the problem", with_pronoun: "deal with it", note: "Handle, manage" },
+      { inseparable_examples: "come across", structure: "come across an old photo", with_pronoun: "come across it", note: "Find by chance" },
+      { inseparable_examples: "get over", structure: "get over the illness", with_pronoun: "get over it", note: "Recover from" },
+      { inseparable_examples: "run into", structure: "run into a friend", with_pronoun: "run into him/her", note: "Meet by chance" },
+      { pronoun_rule: "CRITICAL with separable", must: "Pronoun MUST go between", correct: "turn it on, pick it up, put it on", wrong: "turn on it ✗, pick up it ✗, put on it ✗", key: "Mandatory separation!" },
+      { pronoun_rule: "With inseparable", must: "Pronoun goes after", correct: "look after it, deal with it, come across it", wrong: "look it after ✗, deal it with ✗", key: "No separation allowed" },
+      { how_to_know: "Learning strategy", test: "Try with pronoun 'it'", method: "If 'verb it particle' sounds natural → separable; If only 'verb particle it' works → inseparable", practice: "Memorize common ones" },
+      { three_word_phrasal: "Special case", rule: "Always inseparable", examples: "look forward to, get along with, put up with, run out of", structure: "verb + particle + preposition + object", note: "Three-part = inseparable" }
+    ]
+  },
 
   speakingPractice: [
     { question: "You stop the alarm. What do you say?", answer: "I turned off the alarm." },
@@ -8438,7 +8506,31 @@ Examples:
 - Please sit down and relax.`,
   tip: "Phrasal verbs are essential for natural-sounding English conversation",
 
-  table: [],
+  table: {
+    title: "📋 Common Everyday Phrasal Verbs",
+    data: [
+      { phrasal_verb: "get up", meaning: "rise from bed", example: "I get up at 7 every day.", usage: "Daily routine", note: "= wake up and leave bed" },
+      { phrasal_verb: "wake up", meaning: "stop sleeping", example: "I woke up early today.", usage: "Opening eyes", note: "Different from get up" },
+      { phrasal_verb: "go out", meaning: "leave home (for social activity)", example: "Let's go out for dinner.", usage: "Social activities", note: "Entertainment, dining" },
+      { phrasal_verb: "come back", meaning: "return", example: "I'll come back later.", usage: "Returning", note: "= return, go back" },
+      { phrasal_verb: "sit down", meaning: "take a seat", example: "Please sit down.", usage: "Taking seat", note: "Opposite: stand up" },
+      { phrasal_verb: "stand up", meaning: "rise to feet", example: "Stand up when the judge enters.", usage: "Rising from seat", note: "Opposite: sit down" },
+      { phrasal_verb: "turn on", meaning: "activate, switch on", example: "Turn on the lights.", usage: "Electronics, appliances", note: "Opposite: turn off" },
+      { phrasal_verb: "turn off", meaning: "deactivate, switch off", example: "Turn off your phone.", usage: "Electronics, appliances", note: "Opposite: turn on" },
+      { phrasal_verb: "look for", meaning: "search for", example: "I'm looking for my keys.", usage: "Searching", note: "= search for" },
+      { phrasal_verb: "look after", meaning: "take care of", example: "Can you look after my cat?", usage: "Caring, responsibility", note: "= take care of" },
+      { phrasal_verb: "find out", meaning: "discover information", example: "I found out the truth.", usage: "Learning information", note: "= discover" },
+      { phrasal_verb: "give up", meaning: "quit, stop trying", example: "Don't give up!", usage: "Quitting", note: "= quit, abandon" },
+      { phrasal_verb: "check in", meaning: "register arrival (hotel/airport)", example: "We checked in at 2 PM.", usage: "Hotels, airports", note: "Arrival registration" },
+      { phrasal_verb: "check out", meaning: "leave hotel/examine", example: "I checked out this morning.", usage: "Hotels, leaving", note: "= leave after staying" },
+      { phrasal_verb: "carry on", meaning: "continue", example: "Carry on with your work.", usage: "Continuing", note: "= continue" },
+      { phrasal_verb: "work out", meaning: "exercise / solve", example: "I work out three times a week.", usage: "Exercise or problem-solving", note: "Two meanings!" },
+      { phrasal_verb: "hang out", meaning: "spend time casually", example: "Let's hang out this weekend.", usage: "Casual socializing", note: "Informal" },
+      { phrasal_verb: "show up", meaning: "appear, arrive", example: "He didn't show up to the meeting.", usage: "Arriving/appearing", note: "Often unexpected" },
+      { phrasal_verb: "calm down", meaning: "relax, become calm", example: "Calm down and breathe.", usage: "Reducing stress/anger", note: "= relax, become peaceful" },
+      { phrasal_verb: "grow up", meaning: "become adult", example: "I grew up in London.", usage: "Childhood to adult", note: "Development process" }
+    ]
+  },
 
   speakingPractice: [
     { question: "You stop trying to lose weight. What do you say?", answer: "I gave up losing weight." },
@@ -8501,7 +8593,27 @@ Examples:
 - She made a lot of progress.`,
   tip: "Generally: 'make' = create/produce, 'do' = perform/complete. But learn fixed expressions!",
 
-  table: [],
+  table: {
+    title: "📋 Collocations with Make and Do",
+    data: [
+      { general_rule: "MAKE", concept: "Create, produce, build", examples: "make a cake, make a plan, make a decision", when: "Creating something new", note: "Production" },
+      { general_rule: "DO", concept: "Perform, complete tasks", examples: "do homework, do the dishes, do exercise", when: "Completing actions/tasks", note: "Execution" },
+      { make_collocations: "Decisions & plans", expressions: "make a decision, make a choice, make a plan, make arrangements", examples: "I need to make a decision / Let's make a plan", category: "Planning" },
+      { make_collocations: "Communication", expressions: "make a phone call, make a complaint, make a suggestion, make a comment", examples: "She made a phone call / He made a complaint", category: "Speaking" },
+      { make_collocations: "Mistakes & progress", expressions: "make a mistake, make an error, make progress, make an effort", examples: "I made a mistake / You're making good progress", category: "Improvement" },
+      { make_collocations: "Money & work", expressions: "make money, make a profit, make a living, make a fortune", examples: "They make a lot of money / He makes a living as a teacher", category: "Finance" },
+      { make_collocations: "Social & emotions", expressions: "make friends, make a joke, make a difference, make an impression, make noise", examples: "She makes friends easily / You made a good impression", category: "Social" },
+      { make_collocations: "Preparation", expressions: "make a reservation, make a booking, make an appointment, make the bed", examples: "I made a reservation / Make your bed!", category: "Organizing" },
+      { do_collocations: "Housework", expressions: "do the dishes, do the laundry, do the cleaning, do the ironing, do the shopping", examples: "I need to do the dishes / She did the laundry", category: "Chores" },
+      { do_collocations: "Work & study", expressions: "do homework, do a job, do work, do a task, do research", examples: "Have you done your homework? / He's doing research", category: "Tasks" },
+      { do_collocations: "Activities", expressions: "do exercise, do yoga, do sport, do karate, do gymnastics", examples: "I do yoga every morning / She does gymnastics", category: "Physical" },
+      { do_collocations: "Performance", expressions: "do your best, do well, do badly, do a good job, do a favor", examples: "Just do your best / Can you do me a favor?", category: "Quality" },
+      { do_collocations: "Business & personal", expressions: "do business, do damage, do harm, do good", examples: "We do business with them / Smoking does harm", category: "Impact" },
+      { confusing_pairs: "make vs do", make_ex: "make the bed (arrange)", do_ex: "do the dishes (clean)", key: "make = create, do = complete", note: "Fixed expressions" },
+      { common_mistakes: "Don't say", wrong: "do a mistake, do a decision, make homework, make exercise", correct: "make a mistake, make a decision, do homework, do exercise", rule: "Learn fixed collocations" },
+      { general_tip: "Learning strategy", make_general: "Creating/producing results", do_general: "Performing/completing activities", practice: "Memorize common collocations", test: "Does it create something? → make; Is it an activity/task? → do" }
+    ]
+  },
 
   speakingPractice: [
     { question: "You completed your homework. What do you say?", answer: "I did my homework." },
