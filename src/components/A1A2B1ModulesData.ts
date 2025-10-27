@@ -470,15 +470,41 @@ Example Sentences:
 - These are their friends.`,
   tip: "Possessive adjectives show who something belongs to. They always come before a noun and show ownership.",
   
-  table: [
-    { pronoun: "I", possessive: "my", example: "This is my house." },
-    { pronoun: "You", possessive: "your", example: "Your dog is cute." },
-    { pronoun: "He", possessive: "his", example: "His phone is on the table." },
-    { pronoun: "She", possessive: "her", example: "Her bag is blue." },
-    { pronoun: "It", possessive: "its", example: "The cat is licking its paw." },
-    { pronoun: "We", possessive: "our", example: "Our school is big." },
-    { pronoun: "They", possessive: "their", example: "Their children are playing." }
-  ],
+  table: {
+    title: "📋 Possessive Adjectives (my, your, his, her, its, our, their)",
+    data: [
+      { category: "What are Possessive Adjectives?", explanation: "Show ownership or possession", turkish: "İyelik sıfatları", function: "Come BEFORE a noun", rule: "Never change form (no plural!)" },
+
+      { category: "I → my", subject_pronoun: "I", possessive: "my", turkish: "benim", example: "This is my house.", pattern: "my + noun", note: "Never 'mines' ✗" },
+      { category: "I → my", usage: "Shows YOUR ownership", examples: "my book, my car, my friends", common: "my name is...", turkish_note: "Türkçede -im/-ım/-um/-üm" },
+
+      { category: "You → your", subject_pronoun: "You", possessive: "your", turkish: "senin/sizin", example: "Your dog is cute.", pattern: "your + noun", note: "Same for singular and plural!" },
+      { category: "You → your", usage: "Shows LISTENER's ownership", examples: "your pen, your house, your parents", question: "Is this your...?", common_phrase: "your turn" },
+
+      { category: "He → his", subject_pronoun: "He", possessive: "his", turkish: "onun (erkek)", example: "His phone is on the table.", pattern: "his + noun", note: "For males only" },
+      { category: "He → his", usage: "Shows HIS ownership (male)", examples: "his car, his job, his family", common: "his name is...", confusion: "NOT 'he's' (= he is)" },
+
+      { category: "She → her", subject_pronoun: "She", possessive: "her", turkish: "onun (kadın)", example: "Her bag is blue.", pattern: "her + noun", note: "For females only" },
+      { category: "She → her", usage: "Shows HER ownership (female)", examples: "her dress, her hair, her children", common: "her name is...", confusion: "NOT 'she's' (= she is)" },
+
+      { category: "It → its", subject_pronoun: "It", possessive: "its", turkish: "onun (şey)", example: "The cat is licking its paw.", pattern: "its + noun", warning: "⚠️ NO apostrophe!" },
+      { category: "It → its", usage: "Shows ownership (things/animals)", examples: "its color, its name, its tail", common_mistake: "it's = it is ✗", correct: "its = possessive ✓" },
+
+      { category: "We → our", subject_pronoun: "We", possessive: "our", turkish: "bizim", example: "Our school is big.", pattern: "our + noun", note: "Includes speaker + others" },
+      { category: "We → our", usage: "Shows OUR ownership (group)", examples: "our house, our teacher, our city", common: "our family", pronunciation: "/ˈaʊər/" },
+
+      { category: "They → their", subject_pronoun: "They", possessive: "their", turkish: "onların", example: "Their children are playing.", pattern: "their + noun", note: "For multiple people/things" },
+      { category: "They → their", usage: "Shows THEIR ownership (others)", examples: "their car, their books, their dog", confusion: "NOT 'there' (place) or 'they're' (they are)", homophones: "their/there/they're sound same!" },
+
+      { category: "Common Mistakes", mistake: "Confusing its/it's", wrong: "The dog wagged it's tail. ✗", correct: "The dog wagged its tail. ✓", rule: "its = possessive (NO apostrophe!)" },
+      { category: "Common Mistakes", mistake: "Adding -s for plural", wrong: "These are ours books. ✗", correct: "These are our books. ✓", rule: "Possessive adjectives NEVER change!" },
+      { category: "Common Mistakes", mistake: "Their/There/They're", their: "Their car (possession)", there: "Over there (place)", theyre: "They're happy (they are)" },
+
+      { category: "Key Points", point: "Always before noun", examples: "my book ✓ / book my ✗", rule: "Adjective + Noun order", note: "Can't say 'book my'" },
+      { category: "Key Points", point: "Never plural", wrong: "ours car ✗", correct: "our car ✓ / our cars ✓", explanation: "The NOUN can be plural, not the adjective" },
+      { category: "Key Points", point: "Question 'Whose?'", question: "Whose book is this?", answer: "It's my book.", usage: "To ask about ownership" },
+    ]
+  },
   
   speakingPractice: [
     { question: "Whose book is this?", answer: "It is my book." },
@@ -542,7 +568,38 @@ Konu Anlatımı:
 - These are our friends.
 - Those are their houses.`,
   tip: "Use 'This' and 'These' for things that are near you. Use 'That' and 'Those' for things that are far from you. 'This/That' are singular, 'These/Those' are plural.",
-  
+
+  table: {
+    title: "📋 Demonstratives: This, That, These, Those",
+    data: [
+      { category: "What are Demonstratives?", explanation: "Point to specific things", turkish: "İşaret sıfatları", function: "Show distance and number", usage: "Near vs Far, Singular vs Plural" },
+
+      { category: "This - Singular Near", word: "This", turkish: "Bu", distance: "Near (close to speaker)", number: "Singular (one thing)", example: "This is my book.", pattern: "This + singular noun" },
+      { category: "This - Singular Near", uses: "Pointing to close object", examples: "This pen, This chair, This house", with_verb: "This is... / This book is...", pronunciation: "/ðɪs/" },
+
+      { category: "That - Singular Far", word: "That", turkish: "Şu/O", distance: "Far (away from speaker)", number: "Singular (one thing)", example: "That is her car.", pattern: "That + singular noun" },
+      { category: "That - Singular Far", uses: "Pointing to distant object", examples: "That building, That tree, That mountain", with_verb: "That is... / That car is...", pronunciation: "/ðæt/" },
+
+      { category: "These - Plural Near", word: "These", turkish: "Bunlar", distance: "Near (close to speaker)", number: "Plural (multiple things)", example: "These are our friends.", pattern: "These + plural noun" },
+      { category: "These - Plural Near", uses: "Pointing to close objects", examples: "These books, These shoes, These people", with_verb: "These are... / These books are...", pronunciation: "/ðiːz/" },
+
+      { category: "Those - Plural Far", word: "Those", turkish: "Şunlar/Onlar", distance: "Far (away from speaker)", number: "Plural (multiple things)", example: "Those are their houses.", pattern: "Those + plural noun" },
+      { category: "Those - Plural Far", uses: "Pointing to distant objects", examples: "Those trees, Those cars, Those birds", with_verb: "Those are... / Those cars are...", pronunciation: "/ðoʊz/" },
+
+      { category: "Distance Comparison", near_singular: "This book (here)", far_singular: "That book (there)", near_plural: "These books (here)", far_plural: "Those books (there)", key: "Near vs Far" },
+
+      { category: "Common Mistakes", mistake: "Using singular verb with plural", wrong: "These is my books. ✗", correct: "These are my books. ✓", rule: "These/Those = plural (use 'are'!)" },
+      { category: "Common Mistakes", mistake: "Wrong number agreement", wrong: "This are books. ✗", correct: "These are books. ✓", rule: "This/That = singular, These/Those = plural" },
+      { category: "Common Mistakes", mistake: "Mixing distance", guidance: "This (near) ↔ These (near)", guidance2: "That (far) ↔ Those (far)", note: "Keep distance consistent" },
+
+      { category: "With Verbs", this_pattern: "This is + singular", that_pattern: "That is + singular", these_pattern: "These are + plural", those_pattern: "Those are + plural", remember: "is = singular, are = plural" },
+
+      { category: "Questions", question_this: "What is this?", question_that: "What is that?", question_these: "What are these?", question_those: "What are those?", usage: "Asking about identity" },
+
+      { category: "Practical Usage", phone_call: "This is John. (introducing yourself)", reference_past: "That was great! (referring to past event)", pointing: "Use gestures while speaking", turkish_note: "Turkish has more distance levels (bu/şu/o)" },
+    ]
+  },
+
   speakingPractice: [
     { question: "What is this?", answer: "This is my phone." },
     { question: "What is that?", answer: "That is a car." },
@@ -605,12 +662,38 @@ Example Sentences:
 - Those are their houses.`,
   tip: "Use 'This' and 'These' for things that are near you. Use 'That' and 'Those' for things that are far from you. 'This/That' are singular, 'These/Those' are plural.",
   
-  table: [
-    { word: "This", usage: "Near, singular", example: "This is a chair." },
-    { word: "That", usage: "Far, singular", example: "That is a tree." },
-    { word: "These", usage: "Near, plural", example: "These are my shoes." },
-    { word: "Those", usage: "Far, plural", example: "Those are birds." }
-  ],
+  table: {
+    title: "📋 Demonstratives: This, That, These, Those (Extended)",
+    data: [
+      { category: "The Four Demonstratives", overview: "Distance + Number", singular_near: "This", singular_far: "That", plural_near: "These", plural_far: "Those", key_concept: "2 distances × 2 numbers = 4 words" },
+
+      { category: "This", word: "This", distance: "Near", number: "Singular", example: "This is a chair.", usage: "One thing close to you", gesture: "Point nearby 👇" },
+      { category: "This", before_noun: "This book", standalone: "This is nice.", question: "Is this yours?", negative: "This isn't mine.", turkish: "Bu" },
+
+      { category: "That", word: "That", distance: "Far", number: "Singular", example: "That is a tree.", usage: "One thing away from you", gesture: "Point away 👉" },
+      { category: "That", before_noun: "That building", standalone: "That is expensive.", question: "Is that correct?", negative: "That isn't true.", turkish: "Şu/O" },
+
+      { category: "These", word: "These", distance: "Near", number: "Plural", example: "These are my shoes.", usage: "Multiple things close to you", gesture: "Indicate multiple near items" },
+      { category: "These", before_noun: "These books", standalone: "These are great.", question: "Are these new?", negative: "These aren't ready.", turkish: "Bunlar" },
+
+      { category: "Those", word: "Those", distance: "Far", number: "Plural", example: "Those are birds.", usage: "Multiple things away from you", gesture: "Indicate multiple far items" },
+      { category: "Those", before_noun: "Those mountains", standalone: "Those are beautiful.", question: "Are those yours?", negative: "Those aren't mine.", turkish: "Şunlar/Onlar" },
+
+      { category: "Verb Agreement", this_that: "This/That + is", these_those: "These/Those + are", wrong: "This are ✗ / These is ✗", correct: "This is ✓ / These are ✓", rule: "Match singular/plural!" },
+
+      { category: "As Adjectives", function: "Before nouns", examples: "this book, that car, these shoes, those trees", note: "Describe WHICH one(s)", pattern: "demonstrative + noun" },
+
+      { category: "As Pronouns", function: "Replace nouns", examples: "This is mine. That is yours. These are new. Those are old.", note: "Stand alone in sentence", pattern: "demonstrative + verb" },
+
+      { category: "Common Mistakes", mistake: "Wrong verb", wrong: "This are my book. ✗", correct: "This is my book. ✓", rule: "This/That = singular verb (is)" },
+      { category: "Common Mistakes", mistake: "Wrong verb", wrong: "These is books. ✗", correct: "These are books. ✓", rule: "These/Those = plural verb (are)" },
+      { category: "Common Mistakes", mistake: "Confusion with possessives", these: "These (demonstrative)", thesis: "Don't confuse with 'this is'" },
+
+      { category: "Distance Logic", near: "This/These = here (with me)", far: "That/Those = there (away)", metaphor: "Also time: 'those days' (past)", note: "Physical or conceptual distance" },
+
+      { category: "Special Uses", phone: "This is John speaking.", introduction: "This is my friend, Tom.", reference: "That was amazing!", idiom: "This and that (various things)" },
+    ]
+  },
   
   speakingPractice: [
     { question: "What is this?", answer: "This is my phone." },
@@ -673,11 +756,37 @@ Konu Anlatımı:
 - There aren't students in the classroom.`,
   tip: "Use 'There isn't' for singular and uncountable nouns, and 'There aren't' for plural nouns when making negative sentences.",
   
-  table: [
-    { structure: "There isn't + singular noun", example: "There isn't a dog in the garden." },
-    { structure: "There aren't + plural noun", example: "There aren't flowers in the vase." },
-    { structure: "There isn't + uncountable noun", example: "There isn't milk in the fridge." }
-  ],
+  table: {
+    title: "📋 There is/There are: Negative Sentences",
+    data: [
+      { category: "Structure", negative_singular: "There isn't + singular noun", negative_plural: "There aren't + plural noun", turkish: "Yok (bir şey bulunmuyor)", function: "To say something does NOT exist" },
+
+      { category: "There isn't - Singular", form: "There isn't", full_form: "There is not", contraction: "There isn't (more common)", example: "There isn't a dog in the garden.", turkish: "Bahçede köpek yok.", usage: "ONE thing doesn't exist" },
+      { category: "There isn't - Singular", pattern: "There isn't + a/an + singular noun", examples: "There isn't a book. / There isn't an apple.", note: "Use with COUNTABLE singular", with_location: "There isn't a chair in the room." },
+
+      { category: "There isn't - Uncountable", form: "There isn't", usage: "With uncountable nouns", example: "There isn't milk in the fridge.", turkish: "Buzdolabında süt yok.", note: "NO article (a/an) with uncountable!" },
+      { category: "There isn't - Uncountable", uncountable_examples: "There isn't water. / There isn't time. / There isn't money.", pattern: "There isn't + uncountable noun (NO a/an)", common_uncountables: "water, milk, bread, time, money" },
+
+      { category: "There aren't - Plural", form: "There aren't", full_form: "There are not", contraction: "There aren't (more common)", example: "There aren't flowers in the vase.", turkish: "Vazoda çiçek yok.", usage: "MULTIPLE things don't exist" },
+      { category: "There aren't - Plural", pattern: "There aren't (any) + plural noun", examples: "There aren't books. / There aren't any students.", note: "'any' optional but common", with_any: "There aren't any chairs." },
+
+      { category: "With 'any'", usage: "Often use 'any' in negatives", with_singular: "There isn't any milk.", with_plural: "There aren't any books.", turkish: "hiç (yok)", meaning: "Not even one" },
+      { category: "With 'any'", examples_any: "There isn't any water. / There aren't any people.", without_any: "Also correct without 'any'", preference: "'any' is more natural" },
+
+      { category: "Positive → Negative", positive_singular: "There is a book. →", negative_singular: "There isn't a book.", positive_plural: "There are books. →", negative_plural: "There aren't books.", transformation: "Add 'not' after is/are" },
+
+      { category: "Common Mistakes", mistake: "Wrong form for plural", wrong: "There isn't books. ✗", correct: "There aren't books. ✓", rule: "Plural nouns need 'aren't'!" },
+      { category: "Common Mistakes", mistake: "Article with uncountable", wrong: "There isn't a water. ✗", correct: "There isn't water. ✓", rule: "NO a/an with uncountable nouns!" },
+      { category: "Common Mistakes", mistake: "Using 'no' incorrectly", wrong: "There no is milk. ✗", correct: "There isn't any milk. ✓ / There is no milk. ✓", note: "Two correct ways" },
+
+      { category: "Alternative: 'no'", alternative_form: "There is no + noun", singular: "There is no book. (= There isn't a book.)", plural: "There are no books. (= There aren't any books.)", note: "Stronger, more emphatic" },
+      { category: "Alternative: 'no'", examples: "There is no time. / There are no students.", comparison: "There isn't = normal negative", comparison2: "'no' = emphatic negative", both_correct: "Both ways are fine!" },
+
+      { category: "With Locations", pattern: "There isn't/aren't + noun + location", examples: "There isn't a pen on the desk. / There aren't books in the bag.", prepositions: "in, on, under, next to, etc.", location_important: "Where something is NOT" },
+
+      { category: "Short Answers", question: "Is there a book?", answer_no: "No, there isn't.", question_plural: "Are there books?", answer_no_plural: "No, there aren't.", note: "Match the question form!" },
+    ]
+  },
   
   speakingPractice: [
     { question: "Is there a book on the table?", answer: "No, there isn't a book on the table." },
@@ -738,11 +847,40 @@ Is there a pen on the desk? (Masada bir kalem var mı?)
 Are there any books in your bag? (Çantanda kitap var mı?)`,
   tip: "Use 'Is there' with singular nouns and 'Are there' with plural nouns when asking questions about existence or location.",
   
-  table: [
-    { structure: "Is there a + singular noun?", example: "Is there a pen on the desk?" },
-    { structure: "Are there any + plural noun?", example: "Are there any books in your bag?" },
-    { structure: "Is there + uncountable noun?", example: "Is there water in the glass?" }
-  ],
+  table: {
+    title: "📋 There is/There are: Question Sentences",
+    data: [
+      { category: "Structure", question_singular: "Is there + singular noun?", question_plural: "Are there + plural nouns?", turkish: "Var mı? (bir şey var mı diye sormak)", function: "To ask if something exists" },
+
+      { category: "Is there - Singular", form: "Is there", pattern: "Is there + a/an + singular noun?", example: "Is there a pen on the desk?", turkish: "Masada kalem var mı?", usage: "Asking about ONE thing" },
+      { category: "Is there - Singular", structure: "Is there + a/an + noun + location?", examples: "Is there a book? / Is there an apple?", with_location: "Is there a chair in the room?", note: "Use 'a/an' with countable singular" },
+      { category: "Is there - Singular", short_answer_yes: "Yes, there is.", short_answer_no: "No, there isn't.", full_answer: "Yes, there is a pen on the desk.", answer_rule: "Match the question form!" },
+
+      { category: "Is there - Uncountable", form: "Is there", pattern: "Is there + uncountable noun?", example: "Is there water in the glass?", turkish: "Bardakta su var mı?", note: "NO a/an with uncountable!" },
+      { category: "Is there - Uncountable", uncountable_examples: "Is there milk? / Is there time? / Is there money?", common_uncountables: "water, milk, bread, time, money, coffee", answer_yes: "Yes, there is.", answer_no: "No, there isn't." },
+
+      { category: "Are there - Plural", form: "Are there", pattern: "Are there (any) + plural noun?", example: "Are there any books in your bag?", turkish: "Çantanda kitap var mı?", usage: "Asking about MULTIPLE things" },
+      { category: "Are there - Plural", structure: "Are there + plural noun + location?", examples: "Are there students? / Are there any chairs?", with_any: "'any' is very common in questions", note: "Makes question more natural" },
+      { category: "Are there - Plural", short_answer_yes: "Yes, there are.", short_answer_no: "No, there aren't.", full_answer: "Yes, there are books in my bag.", answer_rule: "Use 'are' for plural!" },
+
+      { category: "With 'any'", usage: "Very common in questions", singular_uncountable: "Is there any milk?", plural: "Are there any books?", meaning: "Asking if even ONE exists", note: "More natural than without 'any'" },
+      { category: "With 'any'", examples: "Is there any coffee? / Are there any students?", optional: "Can omit 'any' but less natural", preferred: "Usually include 'any' in questions" },
+
+      { category: "Statement → Question", positive: "There is a book. →", question: "Is there a book?", positive_plural: "There are books. →", question_plural: "Are there books?", transformation: "Move is/are to the START" },
+
+      { category: "Inversion", rule: "Verb comes BEFORE 'there'", wrong: "There is a book? ✗", correct: "Is there a book? ✓", pattern: "Is/Are + there + noun?", note: "Inversion creates question!" },
+
+      { category: "Common Mistakes", mistake: "Not inverting", wrong: "There is a pen? ✗", correct: "Is there a pen? ✓", rule: "Must move 'is/are' to front!" },
+      { category: "Common Mistakes", mistake: "Wrong verb for plural", wrong: "Is there books? ✗", correct: "Are there books? ✓", rule: "Plural nouns need 'Are'!" },
+      { category: "Common Mistakes", mistake: "Article with uncountable", wrong: "Is there a water? ✗", correct: "Is there water? ✓", rule: "NO a/an with uncountable!" },
+
+      { category: "How many?", follow_up: "If answer is yes, ask quantity", question: "How many books are there?", answer: "There are five books.", pattern: "How many + plural noun + are there?", note: "Asking for number" },
+
+      { category: "Rising Intonation", pronunciation: "Voice goes UP at end", example: "Is there a book? ↗", natural: "Shows it's a question", turkish_note: "Like 'var mı?' in Turkish" },
+
+      { category: "Practical Examples", at_home: "Is there food in the fridge?", at_school: "Are there students in the classroom?", at_work: "Is there a meeting today?", shopping: "Are there apples at the store?" },
+    ]
+  },
   
   speakingPractice: [
     { question: "Is there a pen on the desk?", answer: "Yes, there is a pen on the desk." },
