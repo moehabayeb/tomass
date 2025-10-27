@@ -3858,13 +3858,49 @@ Soru örnekleri:
 • What time is it? → Saat kaç?
 • When does the class start? → Ders ne zaman başlıyor?`,
   tip: "Use o'clock for exact hours, half past for 30 minutes, quarter past/to for 15 minutes",
-  
-  table: [
-    { time: "3:00", expression: "three o'clock", example: "It's 3 o'clock." },
-    { time: "4:30", expression: "half past four", example: "It's half past 4." },
-    { time: "7:15", expression: "quarter past seven", example: "It's quarter past 7." },
-    { time: "8:45", expression: "quarter to nine", example: "It's quarter to 9." }
-  ],
+
+  table: {
+    title: "📋 Telling the Time (o'clock, half past, quarter past/to)",
+    data: [
+      { category: "What is Telling the Time?", explanation: "Essential skill to say what time it is and when things happen", turkish: "Saati söylemek", function: "Answer 'What time is it?' and schedule activities", question: "What time is it? (Saat kaç?)", note: "One of the most common questions in daily life!" },
+
+      { category: "The Basic Question", question: "What time is it? (Saat kaç?)", also_ask: "What's the time? / Do you have the time?", answer_pattern: "It's + time expression", examples: "It's 3 o'clock. / It's half past four. / It's quarter to nine.", note: "Always start with 'It's' when telling the time" },
+
+      { category: "O'CLOCK - Exact Hours", use: "For exact hours only (1:00, 2:00, 3:00, etc.)", pattern: "It's + number + o'clock", examples: "It's 1 o'clock. / It's 5 o'clock. / It's 12 o'clock.", turkish: "Tam saat", meaning: "'O'clock' means 'of the clock'", when: "ONLY use o'clock when minutes = :00", wrong: "It's 3:15 o'clock ✗", correct: "It's 3 o'clock ✓ (only for 3:00)" },
+      { category: "O'CLOCK - Examples", one: "1:00 = It's one o'clock", three: "3:00 = It's three o'clock", seven: "7:00 = It's seven o'clock", ten: "10:00 = It's ten o'clock", twelve: "12:00 = It's twelve o'clock", note: "Don't say 'It's three o'clocks' - no -s!", remember: "O'clock is ONLY for :00 times!" },
+
+      { category: "HALF PAST - 30 Minutes", use: "When the time is :30 (30 minutes past the hour)", pattern: "It's half past + hour", examples: "It's half past 4. (4:30) / It's half past 7. (7:30) / It's half past 11. (11:30)", turkish: "Yarım geçe, buçuk", meaning: "30 minutes = half an hour, so 'half past'", visualization: "Think: halfway to the next hour", american: "Americans often say 'four thirty' instead" },
+      { category: "HALF PAST - Examples", four_thirty: "4:30 = It's half past four", six_thirty: "6:30 = It's half past six", nine_thirty: "9:30 = It's half past nine", twelve_thirty: "12:30 = It's half past twelve", note: "Say the hour BEFORE 30 minutes (not after)", wrong: "half past five (for 4:30) ✗", correct: "half past four (for 4:30) ✓" },
+
+      { category: "QUARTER PAST - 15 Minutes", use: "When the time is :15 (15 minutes past the hour)", pattern: "It's quarter past + hour", examples: "It's quarter past 3. (3:15) / It's quarter past 8. (8:15) / It's quarter past 10. (10:15)", turkish: "Çeyrek geçe", meaning: "15 minutes = quarter of an hour (1/4 = 25%)", visualization: "First quarter of the hour has passed", american: "Americans often say 'three fifteen' instead" },
+      { category: "QUARTER PAST - Examples", three_fifteen: "3:15 = It's quarter past three", seven_fifteen: "7:15 = It's quarter past seven", nine_fifteen: "9:15 = It's quarter past nine", eleven_fifteen: "11:15 = It's quarter past eleven", note: "Use 'quarter past' (not 'a quarter past' - though both are acceptable)", remember: "PAST = after the hour" },
+
+      { category: "QUARTER TO - 45 Minutes (15 to next hour)", use: "When the time is :45 (15 minutes to the next hour)", pattern: "It's quarter to + NEXT hour", examples: "It's quarter to 5. (4:45) / It's quarter to 9. (8:45) / It's quarter to 12. (11:45)", turkish: "Çeyrek kala", meaning: "15 minutes remain before the next hour", visualization: "Quarter of an hour left until the next hour", important: "Use the NEXT hour, not the current one!" },
+      { category: "QUARTER TO - Examples & IMPORTANT!", four_fortyfive: "4:45 = It's quarter to FIVE (not quarter to four!)", eight_fortyfive: "8:45 = It's quarter to NINE", eleven_fortyfive: "11:45 = It's quarter to TWELVE", wrong: "4:45 = quarter to four ✗", correct: "4:45 = quarter to five ✓", rule: "Always say the NEXT hour coming up!", remember: "TO = towards the next hour, so use next hour's number" },
+
+      { category: "Summary Chart", exact_hour: ":00 → o'clock (It's 3 o'clock)", fifteen_past: ":15 → quarter past (It's quarter past 3)", thirty_past: ":30 → half past (It's half past 3)", fortyfive_to: ":45 → quarter to [NEXT hour] (It's quarter to 4)", remember: "4 main time expressions to master!", note: "These are the most common ways to tell time in British English" },
+
+      { category: "Other Minutes (More Advanced)", pattern: "minutes + past/to + hour", past_examples: "5:10 = ten past five / 6:20 = twenty past six", to_examples: "4:50 = ten to five / 7:40 = twenty to eight", rule: "0-30 minutes: use PAST | 31-59 minutes: use TO", note: "For now, focus on o'clock, half past, quarter past/to", american: "Americans say '5:10' as 'five ten', '4:50' as 'four fifty'" },
+
+      { category: "AM vs PM", am: "AM (ante meridiem) = morning (12:00 midnight - 11:59 AM)", pm: "PM (post meridiem) = afternoon/evening/night (12:00 noon - 11:59 PM)", examples: "It's 8 o'clock in the morning. / It's 3 PM. / It's 7 o'clock in the evening.", morning: "7:00 AM = seven o'clock in the morning", evening: "7:00 PM = seven o'clock in the evening", note: "In conversation, add 'in the morning/afternoon/evening' for clarity" },
+
+      { category: "Asking About Scheduled Times", what_time: "What time does the bus arrive? → It arrives at quarter past 8.", when: "When is your appointment? → It's at half past 2.", at: "Use AT for specific times: at 3 o'clock, at half past 5, at quarter to 7", examples: "The class starts at 9 o'clock. / Lunch is at half past 12. / The movie begins at quarter to 8.", preposition: "Always use AT with times!" },
+
+      { category: "Common Daily Times", morning: "7:00 = wake up time / 8:00 = school/work starts", midday: "12:00 = noon, lunch time / 12:30 = half past twelve", afternoon: "3:00 = school finishes / 5:00 = evening starts", night: "7:00 = dinner time / 10:00 = bedtime / 12:00 = midnight", note: "These times vary by culture and person!" },
+
+      { category: "Digital vs Spoken Time", digital: "We write: 3:00, 4:30, 7:15, 8:45", spoken: "We say: three o'clock, half past four, quarter past seven, quarter to nine", note: "Digital uses numbers, spoken uses words", examples: "Clock shows 4:30 → Say 'It's half past four' / Clock shows 8:45 → Say 'It's quarter to nine'", remember: "When speaking, use the time expressions!" },
+
+      { category: "British vs American English", british: "Half past four / Quarter past seven / Quarter to nine", american: "Four thirty / Seven fifteen / Eight forty-five", both_understood: "Both styles are understood internationally", note: "This module teaches British style, but American is also common", tip: "Learn British first (half past, quarter past/to), then American is easy!" },
+
+      { category: "Common Mistakes", mistake_1: "Using o'clock with minutes", wrong_1: "It's 3:30 o'clock ✗ / It's quarter past 5 o'clock ✗", correct_1: "It's half past 3 ✓ / It's quarter past 5 ✓", rule: "O'clock ONLY for exact hours (:00)", remember: "No o'clock with half/quarter!" },
+      { category: "Common Mistakes", mistake_2: "Wrong hour with 'quarter to'", wrong_2: "8:45 = quarter to eight ✗", correct_2: "8:45 = quarter to NINE ✓", rule: "'To' means moving TOWARDS the next hour", remember: "8:45 is almost 9, so quarter to nine!" },
+      { category: "Common Mistakes", mistake_3: "Forgetting 'past' or 'to'", wrong_3: "It's half four ✗ / It's quarter seven ✗", correct_3: "It's half PAST four ✓ / It's quarter PAST seven ✓", rule: "Always include 'past' or 'to' in the expression", note: "In informal British, 'half four' is used, but learn the full form first!" },
+
+      { category: "Real-World Uses", daily_life: "What time is breakfast? → It's at 8 o'clock.", appointments: "My dentist appointment is at quarter past 2.", schedules: "The train leaves at half past 6.", asking: "What time does the class start? → It starts at 9 o'clock.", telling: "What time is it? → It's quarter to 5.", general: "Essential for scheduling, appointments, and daily routines!" },
+
+      { category: "Key Takeaway", summary: "Four main time expressions for telling the time", oclock: "O'CLOCK = exact hours (:00) → 3 o'clock", half_past: "HALF PAST = :30 → half past 4", quarter_past: "QUARTER PAST = :15 → quarter past 7", quarter_to: "QUARTER TO = :45 → quarter to 9 (NEXT hour!)", question: "What time is it? → It's + time expression", at: "Use AT for scheduled times: at 3 o'clock, at half past 5", remember: "Master these 4 expressions and you can tell most common times!", next: "Practice reading clocks and saying the time out loud!" }
+    ]
+  },
   
   speakingPractice: [
     { question: "What time is it?", answer: "It's 3 o'clock." },
@@ -3919,11 +3955,53 @@ const MODULE_37_DATA = {
 🔹 Uzun sıfatlar (2+ hece, -y ile bitmeyen): more + sıfat → more beautiful, more expensive.
 Örn: My house is bigger than yours. / This book is more interesting than that one.`,
   tip: "Short adjectives add -er, long adjectives use more",
-  
-  table: [
-    { type: "Short adjectives", rule: "adjective + -er + than", example: "She is taller than me." },
-    { type: "Long adjectives", rule: "more + adjective + than", example: "This book is more interesting." }
-  ],
+
+  table: {
+    title: "📋 Comparatives (-er / more) - Comparing Two Things",
+    data: [
+      { category: "What are Comparatives?", explanation: "Adjectives used to compare TWO people, animals, or things", turkish: "Karşılaştırma sıfatları", function: "Show that one thing has more/less of a quality than another", examples: "She is taller than me. / This book is more interesting than that one. / A car is faster than a bike.", note: "Always comparing TWO things!" },
+
+      { category: "The Pattern", rule: "Two ways to form comparatives based on adjective length", short_adjectives: "Short adjectives: add -ER + than", long_adjectives: "Long adjectives: MORE + adjective + than", key_word: "THAN (comparison word)", structure: "Subject + verb + comparative + THAN + object", remember: "Always use THAN when making comparisons!" },
+
+      { category: "Short Adjectives - Definition", what: "1-syllable adjectives (one beat when you say them)", examples: "tall, big, small, fast, slow, old, new, hot, cold, long, short", also_short: "2-syllable adjectives ending in -y", examples_y: "happy, easy, busy, funny, pretty, dirty, noisy, healthy, wealthy", rule: "Add -ER to make comparative", turkish: "Kısa sıfatlar + -er" },
+      { category: "Short Adjectives - Formation", rule: "Add -ER to the adjective", examples: "tall → taller / fast → faster / old → older / new → newer / cheap → cheaper / clean → cleaner", pattern: "adjective + -ER + than", sentences: "He is taller than me. / This car is faster than that one. / My phone is newer than yours.", note: "Simple pattern for 1-syllable words!" },
+
+      { category: "Long Adjectives - Definition", what: "2+ syllable adjectives (two or more beats)", examples: "beautiful, expensive, interesting, difficult, comfortable, important, dangerous, popular, exciting", not_y: "2-syllable adjectives NOT ending in -y", rule: "Use MORE before the adjective", turkish: "Uzun sıfatlar + more" },
+      { category: "Long Adjectives - Formation", rule: "Put MORE before the adjective", examples: "beautiful → more beautiful / expensive → more expensive / interesting → more interesting / difficult → more difficult", pattern: "MORE + adjective + than", sentences: "She is more beautiful than her sister. / This book is more interesting than that one.", note: "Don't add -ER to long adjectives!", wrong: "beautifuler ✗ / interestinger ✗", correct: "more beautiful ✓ / more interesting ✓" },
+
+      { category: "Spelling Rules - Adding -ER", rule_1: "Most adjectives: just add -er", examples_1: "tall → taller, fast → faster, old → older, new → newer, small → smaller", rule_2: "Adjectives ending in -e: add -r only", examples_2: "nice → nicer, large → larger, safe → safer, wide → wider", rule_3: "Adjectives ending in consonant-vowel-consonant: double last letter + -er", examples_3: "big → bigger, hot → hotter, fat → fatter, thin → thinner, wet → wetter", rule_4: "Adjectives ending in -y: change y to i + -er", examples_4: "happy → happier, easy → easier, busy → busier, funny → funnier, pretty → prettier" },
+
+      { category: "Irregular Comparatives - MEMORIZE!", good: "good → BETTER (NOT gooder ✗)", bad: "bad → WORSE (NOT badder ✗)", far: "far → FARTHER or FURTHER", much_many: "much/many → MORE", little: "little → LESS", note: "These don't follow the normal rules - you must memorize them!", examples: "This pizza is better than that one. / Today is worse than yesterday. / London is farther than Paris (from here).", important: "NEVER say 'more good' or 'more bad' - always 'better' and 'worse'!" },
+
+      { category: "Using THAN", rule: "THAN connects the two things being compared", pattern: "X is comparative + THAN + Y", examples: "I am taller than you. / She is smarter than him. / This is easier than that.", pronunciation: "THAN /ðæn/ (NOT 'then' which means 'after that')", note: "You can't make comparisons without THAN!", wrong: "I am taller you ✗ / She is better me ✗", correct: "I am taller than you ✓ / She is better than me ✓" },
+
+      { category: "Than + Object Pronouns", rule: "After THAN, use object pronouns (me, you, him, her, us, them)", examples: "She is taller than ME. / He is older than HER. / They are richer than US.", formal: "In very formal English, you can say: 'She is taller than I am.'", informal: "In everyday speech, say: 'She is taller than me.'", both_ok: "Both are correct, but 'than me' is more common!", note: "Don't worry too much - both forms are acceptable" },
+
+      { category: "Common Short Adjectives", one_syllable: "big → bigger, small → smaller, tall → taller, short → shorter, long → longer, fast → faster, slow → slower, high → higher, low → lower, young → younger, old → older, new → newer, hot → hotter, cold → colder, cheap → cheaper, clean → cleaner, dark → darker, light → lighter, strong → stronger, weak → weaker", two_syllable_y: "happy → happier, easy → easier, busy → busier, funny → funnier, pretty → prettier, ugly → uglier, dirty → dirtier, early → earlier, healthy → healthier" },
+
+      { category: "Common Long Adjectives", two_plus_syllables: "beautiful → more beautiful, expensive → more expensive, interesting → more interesting, difficult → more difficult, comfortable → more comfortable, important → more important, dangerous → more dangerous, popular → more popular, exciting → more exciting, boring → more boring, famous → more famous, careful → more careful, useful → more useful, modern → more modern, crowded → more crowded" },
+
+      { category: "Comparing People", examples: "John is taller than Mary. / My sister is younger than me. / He is more intelligent than his brother. / She is funnier than her friend.", note: "Very common to compare people's qualities!", topics: "age, height, appearance, personality, skills", remember: "Use comparatives to describe differences between people" },
+      { category: "Comparing Things", examples: "This car is faster than that one. / Summer is hotter than winter. / My phone is more expensive than yours. / This book is more interesting than that one.", note: "Compare objects, seasons, possessions, etc.", topics: "price, size, quality, features, performance", remember: "Than that one / than mine / than yours" },
+
+      { category: "Making Negative Comparisons", pattern: "X is less + adjective + than Y", examples: "This is less expensive than that. (= cheaper) / He is less tall than me. (= shorter) / This is less difficult than I thought. (= easier)", note: "LESS is the opposite of MORE", use: "Less common than using opposite adjectives", better: "Instead of 'less tall' → say 'shorter' | Instead of 'less hot' → say 'colder'" },
+
+      { category: "Comparing with Numbers/Measurements", with_number: "Add specific measurements to comparisons", examples: "She is 5 cm taller than me. / This car is 10% faster than that one. / My house is 20 years older than yours.", pattern: "comparative + specific amount + than", note: "Makes comparisons more precise!", useful: "Very useful for facts, data, and descriptions" },
+
+      { category: "Much/A lot + Comparative", rule: "Use MUCH or A LOT before comparatives for emphasis", examples: "This is MUCH better than that. / She is A LOT taller than me. / It's MUCH more expensive than I thought.", meaning: "Emphasizes the difference is big", pattern: "much/a lot + comparative + than", note: "Makes your comparison stronger!", wrong: "very bigger ✗ / very more expensive ✗", correct: "much bigger ✓ / much more expensive ✓" },
+
+      { category: "A bit/A little + Comparative", rule: "Use A BIT or A LITTLE before comparatives for small differences", examples: "This is A BIT better than that. / She is A LITTLE taller than me. / It's A LITTLE more expensive.", meaning: "Shows the difference is small", pattern: "a bit/a little + comparative + than", note: "Softens the comparison", use: "Polite way to make comparisons" },
+
+      { category: "Common Mistakes", mistake_1: "Using -er with long adjectives", wrong_1: "more beautifuler ✗ / expensiver ✗ / interestinger ✗", correct_1: "more beautiful ✓ / more expensive ✓ / more interesting ✓", rule: "Long adjectives use MORE, not -er", remember: "If it has 2+ syllables (not ending in -y), use MORE" },
+      { category: "Common Mistakes", mistake_2: "Forgetting to double consonant", wrong_2: "biger ✗ / hoter ✗ / thiner ✗", correct_2: "bigger ✓ / hotter ✓ / thinner ✓", rule: "CVC pattern = double last letter", check: "big = b (consonant) + i (vowel) + g (consonant) → double g!" },
+      { category: "Common Mistakes", mistake_3: "Using MORE with irregular comparatives", wrong_3: "more good ✗ / more bad ✗ / more better ✗", correct_3: "better ✓ / worse ✓ / much better ✓", rule: "Irregular comparatives don't use MORE", remember: "good → better | bad → worse (NOT more good/more bad)" },
+      { category: "Common Mistakes", mistake_4: "Forgetting THAN", wrong_4: "She is taller me ✗ / This is better that ✗", correct_4: "She is taller than me ✓ / This is better than that ✓", rule: "Must use THAN to compare!", remember: "comparative + THAN + second thing" },
+
+      { category: "Real-World Uses", shopping: "This dress is cheaper than that one. / This phone is better than my old one.", opinions: "I think summer is better than winter. / Football is more exciting than basketball.", descriptions: "My city is bigger than yours. / This test was easier than the last one.", decisions: "This option is more expensive but better quality.", general: "Essential for expressing preferences, making choices, and describing differences!" },
+
+      { category: "Key Takeaway", summary: "Comparatives compare TWO things using -er or more", short_rule: "Short adjectives (1 syllable, or 2 ending in -y) → add -ER", long_rule: "Long adjectives (2+ syllables, not -y) → use MORE", pattern: "comparative + THAN", irregulars: "good → better | bad → worse | far → farther/further", spelling: "Double consonant: big → bigger | Change y→i: happy → happier", emphasis: "much/a lot + comparative (big difference) | a bit/a little + comparative (small difference)", remember: "Always use THAN when comparing! Never say 'more good' - say 'better'!", next: "Practice comparing things around you!" }
+    ]
+  },
   
   speakingPractice: [
     { question: "Who is taller, you or your friend?", answer: "My friend is taller than me." },
@@ -3979,12 +4057,56 @@ const MODULE_38_DATA = {
 🔹 Düzensiz sıfatlar: good → the best, bad → the worst, far → the farthest
 Örn: She is the smartest student in the class. / This is the most interesting book I've ever read.`,
   tip: "Use 'the' before superlatives. Short adjectives add -est, long adjectives use 'most'",
-  
-  table: [
-    { type: "Short adjectives", rule: "the + adjective + -est", example: "She is the tallest girl in class." },
-    { type: "Long adjectives", rule: "the + most + adjective", example: "This is the most beautiful place." },
-    { type: "Irregular adjectives", rule: "Special forms", example: "He is the best player on the team." }
-  ],
+
+  table: {
+    title: "📋 Superlatives (the -est / the most) - The Extreme Degree",
+    data: [
+      { category: "What are Superlatives?", explanation: "Adjectives used to show the HIGHEST or LOWEST degree in a group of 3+ things", turkish: "Üstünlük derecesi", function: "Show that one thing is #1 (the best, the worst, the biggest, etc.) in a group", examples: "She is the tallest in the class. / This is the most beautiful city. / He's the best player on the team.", note: "Superlatives show the EXTREME - the maximum or minimum!" },
+
+      { category: "Comparatives vs Superlatives", comparative: "Compares TWO things: taller, more interesting", superlative: "Shows the EXTREME in a group (3+): the tallest, the most interesting", example_comp: "John is taller than Tom. (2 people)", example_super: "John is the tallest in the class. (one is #1 in a group)", key_difference: "Comparative = 2 things | Superlative = 1 is #1 in a group", remember: "Superlative always needs THE!" },
+
+      { category: "The Pattern", rule: "Two ways to form superlatives based on adjective length", short_adjectives: "Short adjectives: THE + adjective + -EST", long_adjectives: "Long adjectives: THE + MOST + adjective", key_word: "THE (always needed!)", structure: "Subject + verb + THE + superlative + in/of + group", remember: "Can't use superlatives without THE!" },
+
+      { category: "Short Adjectives - Formation", rule: "Add -EST to short adjectives (1 syllable or 2 ending in -y)", examples: "tall → THE tallest / big → THE biggest / fast → THE fastest / happy → THE happiest / easy → THE easiest", pattern: "THE + adjective + -EST", sentences: "He is THE tallest boy in the class. / This is THE biggest house on the street. / She is THE happiest person I know.", note: "Same adjectives that use -ER for comparatives use -EST for superlatives!" },
+
+      { category: "Long Adjectives - Formation", rule: "Use THE MOST before long adjectives (2+ syllables, not ending in -y)", examples: "beautiful → THE most beautiful / expensive → THE most expensive / interesting → THE most interesting / difficult → THE most difficult", pattern: "THE + MOST + adjective", sentences: "She is THE most beautiful woman in the world. / This is THE most expensive car.", note: "Don't add -EST to long adjectives!", wrong: "beautifulest ✗ / expensivest ✗", correct: "the most beautiful ✓ / the most expensive ✓" },
+
+      { category: "Spelling Rules - Adding -EST", rule_1: "Most adjectives: just add -est", examples_1: "tall → tallest, fast → fastest, old → oldest, new → newest, small → smallest", rule_2: "Adjectives ending in -e: add -st only", examples_2: "nice → nicest, large → largest, safe → safest, wide → widest", rule_3: "Adjectives ending in consonant-vowel-consonant: double last letter + -est", examples_3: "big → biggest, hot → hottest, fat → fattest, thin → thinnest, wet → wettest", rule_4: "Adjectives ending in -y: change y to i + -est", examples_4: "happy → happiest, easy → easiest, busy → busiest, funny → funniest, pretty → prettiest" },
+
+      { category: "Irregular Superlatives - MEMORIZE!", good: "good → THE BEST (NOT the goodest ✗)", bad: "bad → THE WORST (NOT the baddest ✗)", far: "far → THE FARTHEST or THE FURTHEST", much_many: "much/many → THE MOST", little: "little → THE LEAST", note: "Same irregulars as comparatives, but add THE!", examples: "This is THE best pizza I've ever had. / That was THE worst movie ever. / He lives THE farthest from school.", important: "NEVER say 'the most good' or 'the most best' - always 'THE BEST'!" },
+
+      { category: "Always Use THE", rule: "Superlatives MUST have THE before them", correct: "She is THE tallest. / This is THE most beautiful. / He is THE best.", wrong: "She is tallest ✗ / This is most beautiful ✗ / He is best ✗", why: "THE shows there's only ONE at the top of the group", exception: "Can drop THE in: 'My happiest day' (possessive), but usually keep it!", remember: "THE is not optional - it's required!" },
+
+      { category: "IN vs OF (After Superlatives)", in_rule: "Use IN with places, groups, categories", in_examples: "the tallest IN the class / the best IN the world / the fastest IN the city / the most beautiful IN Turkey", of_rule: "Use OF with plurals, quantities, 'all'", of_examples: "the tallest OF my friends / the best OF all / the most expensive OF the three / the oldest OF us", remember: "IN = place/group | OF = plural/quantity", both_ok: "Sometimes both work, but IN is more common with places" },
+
+      { category: "Common Short Adjectives - Superlative", one_syllable: "big → biggest, small → smallest, tall → tallest, short → shortest, long → longest, fast → fastest, slow → slowest, high → highest, low → lowest, young → youngest, old → oldest, new → newest, hot → hottest, cold → coldest, cheap → cheapest, rich → richest, poor → poorest, strong → strongest, weak → weakest", two_syllable_y: "happy → happiest, easy → easiest, busy → busiest, funny → funniest, pretty → prettiest, ugly → ugliest, dirty → dirtiest, early → earliest, healthy → healthiest, lucky → luckiest" },
+
+      { category: "Common Long Adjectives - Superlative", two_plus_syllables: "beautiful → most beautiful, expensive → most expensive, interesting → most interesting, difficult → most difficult, comfortable → most comfortable, important → most important, dangerous → most dangerous, popular → most popular, exciting → most exciting, boring → most boring, famous → most famous, delicious → most delicious, intelligent → most intelligent, successful → most successful" },
+
+      { category: "Superlatives with Possessives", pattern: "Possessive + superlative (THE is optional but can be kept)", examples: "my best friend / his worst enemy / our happiest moment / their most important decision", with_the: "my THE best friend (less common) | my best friend (more natural)", note: "With possessives (my/your/his/her/etc.), you usually drop THE", remember: "Possessive replaces THE in most cases" },
+
+      { category: "Ever + Present Perfect", pattern: "Superlative + I've/you've/he's + ever + past participle", examples: "This is THE best movie I've EVER seen. / She's THE kindest person I've EVER met. / That was THE worst experience I've EVER had.", meaning: "In all of my life/experience", structure: "superlative + ever + present perfect", note: "Very common pattern in English!", use: "Express personal records or lifetime extremes" },
+
+      { category: "One of the + Superlative + Plural", pattern: "One of the + superlative + PLURAL noun", examples: "She is one of THE best students. / This is one of THE most beautiful cities. / He's one of THE tallest players.", meaning: "Among the top group (not #1, but in the top group)", note: "Noun MUST be plural after 'one of the'!", wrong: "one of the best student ✗", correct: "one of the best students ✓", remember: "One of the... = plural noun!" },
+
+      { category: "Negative Superlatives - THE LEAST", rule: "Use THE LEAST for the opposite meaning", examples: "the LEAST expensive = the cheapest / the LEAST difficult = the easiest / the LEAST interesting = the most boring", pattern: "THE LEAST + adjective", note: "LEAST is the opposite of MOST", use: "Less common than using opposite adjectives", better: "Usually say 'the cheapest' instead of 'the least expensive'" },
+
+      { category: "Questions with Superlatives", pattern: "What/Who/Which + is + THE + superlative?", examples: "What is THE biggest country? / Who is THE oldest in your family? / Which is THE best option?", answers: "Give the specific example that's #1", answer_examples: "Russia is THE biggest country. / My grandma is THE oldest. / Option A is THE best.", note: "Questions ask about the #1 in a category" },
+
+      { category: "By far + Superlative", rule: "BY FAR emphasizes superlatives (much better than all others)", examples: "This is BY FAR THE best pizza. / She's BY FAR THE smartest student. / That was BY FAR THE worst game.", meaning: "Emphasizes there's a huge gap between #1 and #2", pattern: "by far + THE + superlative", note: "Makes the superlative even stronger!", position: "Can also say: THE best BY FAR" },
+
+      { category: "Common Mistakes", mistake_1: "Forgetting THE", wrong_1: "He is tallest ✗ / This is most expensive ✗ / She's best ✗", correct_1: "He is THE tallest ✓ / This is THE most expensive ✓ / She's THE best ✓", rule: "Must use THE with superlatives!", remember: "THE is not optional!" },
+      { category: "Common Mistakes", mistake_2: "Using -est with long adjectives", wrong_2: "beautifulest ✗ / expensivest ✗ / interestingest ✗", correct_2: "most beautiful ✓ / most expensive ✓ / most interesting ✓", rule: "Long adjectives use THE MOST, not -est", remember: "2+ syllables (not -y) = use MOST" },
+      { category: "Common Mistakes", mistake_3: "Using MOST with irregular superlatives", wrong_3: "the most good ✗ / the most bad ✗ / the most best ✗", correct_3: "the best ✓ / the worst ✓ / the best ✓", rule: "Irregular superlatives don't use MOST", remember: "good → the best | bad → the worst" },
+      { category: "Common Mistakes", mistake_4: "Singular noun after 'one of the'", wrong_4: "one of the best student ✗ / one of the tallest building ✗", correct_4: "one of the best students ✓ / one of the tallest buildings ✓", rule: "ONE OF THE + superlative + PLURAL noun", remember: "'One of the...' needs plural!" },
+
+      { category: "Real-World Uses", describing_records: "Mount Everest is the highest mountain in the world. / The cheetah is the fastest land animal.", opinions: "This is the best restaurant in town. / That was the worst movie I've ever seen.", rankings: "She's the smartest student in the class. / He's the tallest player on the team.", extreme_statements: "This is the most important decision of your life.", general: "Essential for expressing extremes, rankings, and personal records!" },
+
+      { category: "Comparison of All Three Forms", positive: "tall / expensive / good", comparative: "taller (than) / more expensive (than) / better (than)", superlative: "THE tallest / THE most expensive / THE best", use_positive: "She is tall. (no comparison)", use_comparative: "She is taller than me. (comparing 2)", use_superlative: "She is THE tallest in the class. (she's #1 in a group)", remember: "Positive → Comparative → Superlative" },
+
+      { category: "Key Takeaway", summary: "Superlatives show the EXTREME degree (the highest/lowest) in a group of 3+", short_rule: "Short adjectives (1 syllable, or 2 ending in -y) → THE + adjective + -EST", long_rule: "Long adjectives (2+ syllables, not -y) → THE + MOST + adjective", must_use_the: "Always use THE before superlatives!", irregulars: "good → THE best | bad → THE worst | far → THE farthest/furthest", in_of: "Use IN with places/groups | Use OF with plurals/quantities", pattern: "THE + superlative + IN/OF + group", one_of: "one of THE + superlative + PLURAL noun", remember: "THE is required! Never 'the most good' - say 'THE BEST'!", next: "Practice finding the #1 in different groups!" }
+    ]
+  },
   
   speakingPractice: [
     { question: "What's the tallest building in your city?", answer: "The tallest building is the Central Tower." },
@@ -4042,12 +4164,46 @@ const MODULE_39_DATA = {
 • They are going to play football tomorrow. (Onlar yarın futbol oynayacaklar.)
 "Be going to" genellikle önceden karar verilen planlar için kullanılır.`,
   tip: "Use 'be going to' for future plans and intentions that were decided before speaking",
-  
-  table: [
-    { form: "Positive", structure: "Subject + am/is/are + going to + verb", example: "I am going to eat. / She is going to study." },
-    { form: "Negative", structure: "Subject + am/is/are + not + going to + verb", example: "I'm not going to eat. / He isn't going to study." },
-    { form: "Question", structure: "Am/Is/Are + subject + going to + verb?", example: "Are you going to eat? / What are they going to do?" }
-  ],
+
+  table: {
+    title: "📋 Be Going To (Future Plans and Intentions)",
+    data: [
+      { category: "What is 'Be Going To'?", explanation: "Structure for talking about future plans and intentions", turkish: "Gelecek zaman planları", function: "Express what you plan to do in the future", examples: "I'm going to visit my friend tomorrow. / She's going to study medicine. / They're going to play football.", note: "Plans decided BEFORE the moment of speaking!" },
+
+      { category: "When to Use 'Be Going To'", use_1: "Future plans (decided before now)", examples_1: "I'm going to visit Paris next year. (I already decided)", use_2: "Intentions (what you want to do)", examples_2: "I'm going to start exercising. (My intention)", use_3: "Predictions based on evidence (you can see it will happen)", examples_3: "Look at those clouds! It's going to rain. (I see the clouds)", key: "Plans made BEFORE now, not spontaneous decisions!", remember: "If you already decided, use 'going to'" },
+
+      { category: "Structure - Positive", form: "Subject + AM/IS/ARE + going to + BASE VERB", examples: "I AM going to study. / She IS going to cook. / They ARE going to play.", pattern: "BE verb + going to + verb (infinitive without 'to')", turkish: "Özne + am/is/are + going to + fiil", note: "Three parts: BE + going to + verb", important: "Don't forget the BE verb!" },
+      { category: "Positive - All Persons", i: "I am going to eat. → I'm going to eat.", you: "You are going to study. → You're going to study.", he: "He is going to work. → He's going to work.", she: "She is going to travel. → She's going to travel.", it: "It is going to rain. → It's going to rain.", we: "We are going to visit. → We're going to visit.", they: "They are going to play. → They're going to play.", contractions: "Very common to use contractions!", remember: "AM/IS/ARE (not WAS/WERE - that's past!)" },
+
+      { category: "Structure - Negative", form: "Subject + AM/IS/ARE + NOT + going to + BASE VERB", examples: "I AM NOT going to study. / She IS NOT going to cook. / They ARE NOT going to play.", contractions: "I'm not / isn't / aren't + going to", pattern: "BE + NOT + going to + verb", turkish: "Özne + am/is/are + not + going to + fiil", note: "Add NOT after the BE verb" },
+      { category: "Negative - All Persons", i: "I am not going to eat. → I'm not going to eat.", you: "You are not going to study. → You're not / You aren't going to study.", he: "He is not going to work. → He's not / He isn't going to work.", she: "She is not going to travel. → She's not / She isn't going to travel.", we: "We are not going to visit. → We're not / We aren't going to visit.", they: "They are not going to play. → They're not / They aren't going to play.", note: "Two contraction options for you/he/she/we/they!", common: "I'm not (only option) | isn't / aren't (common)" },
+
+      { category: "Structure - Yes/No Questions", form: "AM/IS/ARE + subject + going to + BASE VERB?", examples: "ARE you going to study? / IS she going to cook? / ARE they going to play?", pattern: "Invert BE and subject", turkish: "Am/Is/Are + özne + going to + fiil?", inversion: "Statement: She IS going to... → Question: IS she going to...?", note: "Put BE before the subject for questions!" },
+      { category: "Yes/No Questions - Short Answers", question_answer: "Are you going to study? → Yes, I am. / No, I'm not.", question_answer_2: "Is she going to come? → Yes, she is. / No, she isn't.", pattern: "Yes, + subject + BE | No, + subject + BE + not", note: "Use the same BE verb as the question", no_going_to: "Don't repeat 'going to' in short answers!", wrong: "Yes, I'm going to ✗", correct: "Yes, I am ✓" },
+
+      { category: "Structure - Wh- Questions", form: "WH-word + AM/IS/ARE + subject + going to + BASE VERB?", examples: "WHAT are you going to do? / WHERE is she going to go? / WHEN are they going to arrive?", pattern: "Question word + BE + subject + going to + verb", answers: "Give specific information (not yes/no)", answer_examples: "What are you going to do? → I'm going to watch a movie.", note: "Question word comes first, then invert BE and subject" },
+      { category: "Common Wh- Questions", what: "What are you going to do tomorrow? → I'm going to visit my friend.", where: "Where are you going to go? → I'm going to go to the beach.", when: "When are you going to start? → I'm going to start next week.", who: "Who are you going to invite? → I'm going to invite my cousins.", why: "Why are you going to leave? → Because I have an appointment.", how: "How are you going to get there? → I'm going to take the bus." },
+
+      { category: "Going to + GO", note: "When the main verb is GO, you say 'going to go'", examples: "I'm going to GO to the market. / She's going to GO home.", sounds: "Yes, it sounds repetitive, but it's correct!", wrong: "I'm going to the market ✗ (missing 'go')", correct: "I'm going to GO to the market ✓", informal: "In informal speech, sometimes people drop one 'go': I'm gonna go / I'm going to the market", learn: "For now, use the full form: going to go" },
+
+      { category: "Common Future Time Expressions", tomorrow: "tomorrow (yarın)", tonight: "tonight (bu gece)", next: "next week / next month / next year (gelecek hafta/ay/yıl)", later: "later (sonra)", soon: "soon (yakında)", in: "in two days / in a week (iki gün/bir hafta içinde)", this: "this weekend / this evening (bu hafta sonu/bu akşam)", examples: "I'm going to visit him tomorrow. / She's going to travel next month.", note: "These time words show it's the future!" },
+
+      { category: "Be Going To vs Will", going_to: "Use for plans decided BEFORE now", going_to_example: "I'm going to study tonight. (I already decided)", will: "Use for spontaneous decisions (decide NOW)", will_example: "I'll help you! (deciding at this moment)", difference: "Going to = planned | Will = spontaneous", both_future: "Both talk about future, but different types!", for_now: "Focus on 'going to' for plans and intentions" },
+
+      { category: "Evidence-Based Predictions", use: "Use 'going to' when you can SEE evidence that something will happen", examples: "Look at those dark clouds! It's going to rain. (I see clouds) / Be careful! You're going to fall! (I see you're losing balance) / The bus is full. We're not going to get seats. (I see it's crowded)", pattern: "Present evidence → future result (going to)", note: "You can see/know the future result is coming!", turkish: "Kanıta dayalı tahminler" },
+
+      { category: "Gonna - Informal Pronunciation", spoken: "In casual speech, 'going to' sounds like 'gonna' /ˈɡɑnə/", examples_spoken: "I'm gonna eat. / She's gonna study. / They're gonna play.", note: "'Gonna' is NOT written in formal English!", formal_writing: "I am going to... / She is going to...", informal_speaking: "I'm gonna... / She's gonna...", learn: "Learn to recognize 'gonna' when you hear it, but write 'going to'!" },
+
+      { category: "Common Mistakes", mistake_1: "Forgetting BE verb", wrong_1: "I going to study ✗ / She going to cook ✗", correct_1: "I AM going to study ✓ / She IS going to cook ✓", rule: "Must have AM/IS/ARE before 'going to'", remember: "BE + going to!" },
+      { category: "Common Mistakes", mistake_2: "Using infinitive 'to' with the verb", wrong_2: "I'm going to to eat ✗ / She's going to to study ✗", correct_2: "I'm going to eat ✓ / She's going to study ✓", rule: "The 'to' is already in 'going TO' - don't add another!", pattern: "going to + BASE VERB (no 'to')" },
+      { category: "Common Mistakes", mistake_3: "Using wrong tense of BE", wrong_3: "I are going to ✗ / She am going to ✗ / They is going to ✗", correct_3: "I AM going to ✓ / She IS going to ✓ / They ARE going to ✓", rule: "Use correct BE verb: I am / you are / he-she-it is / we are / they are", remember: "Subject-verb agreement matters!" },
+      { category: "Common Mistakes", mistake_4: "Repeating 'going to' in short answers", wrong_4: "Are you going to come? → Yes, I'm going to ✗", correct_4: "Are you going to come? → Yes, I am ✓", rule: "Short answers use only BE verb (not 'going to')", pattern: "Yes/No + subject + BE" },
+
+      { category: "Real-World Uses", plans: "What are you going to do this weekend? → I'm going to visit my grandparents.", decisions: "I'm going to quit smoking. (My decision/intention)", schedules: "She's going to start university in September.", predictions: "It's going to rain soon. (I see dark clouds)", travel: "We're going to travel to Italy next summer.", general: "Essential for talking about future plans and intentions!" },
+
+      { category: "Key Takeaway", summary: "BE GOING TO expresses future plans and intentions decided before now", structure_positive: "Subject + AM/IS/ARE + going to + BASE VERB", structure_negative: "Subject + AM/IS/ARE + NOT + going to + BASE VERB", structure_question: "AM/IS/ARE + subject + going to + BASE VERB?", three_parts: "BE verb + going to + verb", use_for: "Plans (decided before) | Intentions | Predictions with evidence", time_words: "tomorrow, tonight, next week, later, soon", going_gonna: "'Going to' → spoken as 'gonna' (informal)", remember: "Don't forget BE! going to + BASE VERB (no 'to')! Short answers = BE only!", next: "Practice talking about your future plans!" }
+    ]
+  },
   
   speakingPractice: [
     { question: "What are you going to do tomorrow?", answer: "I'm going to visit my cousin." },
@@ -4104,12 +4260,53 @@ Yapı:
 • I would like + isim/fiil → I would like a coffee. / I would like to go.
 • I want + isim/fiil → I want a new phone. / I want to travel.`,
   tip: "Use 'would like' for polite requests and 'want' for direct statements of desire",
-  
-  table: [
-    { form: "Positive", structure: "I would like some tea. / She wants to watch a movie.", example: "I would like some water, please." },
-    { form: "Negative", structure: "I wouldn't like fish. / I don't want pizza.", example: "I wouldn't like fish for dinner." },
-    { form: "Question", structure: "Would you like a coffee? / What do you want to eat?", example: "Would you like to come with us?" }
-  ],
+
+  table: {
+    title: "📋 Would Like vs Want (Polite vs Direct Desires)",
+    data: [
+      { category: "What are Would Like and Want?", explanation: "Two ways to express desires, wishes, and requests", turkish: "İstek belirtmek", would_like: "WOULD LIKE = polite, formal, soft", want: "WANT = direct, casual, strong", function: "Say what you want or wish for", difference: "Same meaning, different politeness levels!" },
+
+      { category: "The Key Difference", would_like: "WOULD LIKE = polite, courteous, respectful (I would like...)", want: "WANT = direct, casual, informal (I want...)", when_would_like: "Use in formal situations, with strangers, in restaurants, at work", when_want: "Use with friends, family, in casual situations", example_polite: "Would you like some tea? (polite offer)", example_casual: "Do you want some tea? (casual offer)", remember: "Both correct, but different politeness!" },
+
+      { category: "WOULD LIKE - Structure Positive", form: "Subject + would like + NOUN / TO + VERB", examples_noun: "I would like some water. / She would like a coffee. / They would like pizza.", examples_verb: "I would like TO eat. / She would like TO go. / They would like TO stay.", pattern: "would like + noun OR would like + to + verb", turkish: "istiyorum (kibar şekilde)", note: "Two patterns: with noun or with 'to + verb'" },
+      { category: "WOULD LIKE - Contractions", full: "I would like → I'd like", all_persons: "I'd like / You'd like / He'd like / She'd like / We'd like / They'd like", very_common: "Contractions are very common in speech!", examples: "I'd like some tea. / He'd like to go home. / We'd like the menu, please.", note: "I'd = I would (NOT I had!)", remember: "In speech, almost always use 'd instead of 'would'" },
+
+      { category: "WOULD LIKE - Negative", form: "Subject + would not like + NOUN / TO + VERB", contraction: "would not → wouldn't", examples: "I wouldn't like fish. / She wouldn't like to go. / They wouldn't like that option.", turkish: "istemiyorum (kibar şekilde)", note: "Less common than positive - usually just say what you DO want!", alternative: "Instead of 'I wouldn't like fish', say 'I'd prefer chicken'" },
+
+      { category: "WOULD LIKE - Questions (Polite Offers)", form: "Would + subject + like + NOUN / TO + VERB?", examples_offer: "Would you like some coffee? / Would you like TO sit down? / Would they like dessert?", use: "Very polite way to offer something", answers: "Yes, please. / Yes, I'd love to. / No, thank you.", pattern: "Would + you/he/she/etc. + like...?", note: "Super polite - perfect for formal situations!" },
+
+      { category: "WANT - Structure Positive", form: "Subject + want/wants + NOUN / TO + VERB", examples_noun: "I want some water. / She wants a coffee. / They want pizza.", examples_verb: "I want TO eat. / She wants TO go. / They want TO stay.", pattern: "want + noun OR want + to + verb", turkish: "istiyorum", he_she_it: "Remember: He/She/It WANTS (add -s!)", note: "More direct than 'would like'" },
+
+      { category: "WANT - Negative", form: "Subject + don't/doesn't want + NOUN / TO + VERB", examples: "I don't want fish. / She doesn't want to go. / They don't want that option.", turkish: "istemiyorum", pattern: "don't/doesn't + want", note: "Direct way to say what you don't want", remember: "I/You/We/They don't | He/She/It doesn't" },
+
+      { category: "WANT - Questions", form: "Do/Does + subject + want + NOUN / TO + VERB?", examples: "Do you want some coffee? / Does she want TO sit down? / Do they want dessert?", answers: "Yes, I do. / No, I don't.", pattern: "Do/Does + subject + want...?", note: "More casual than 'Would you like...?'", remember: "Do/Does (not Would) for want questions!" },
+
+      { category: "Comparing Structures", would_like_positive: "I'd like a coffee. (polite)", want_positive: "I want a coffee. (direct)", would_like_question: "Would you like tea? (polite offer)", want_question: "Do you want tea? (casual offer)", would_like_negative: "I wouldn't like that. (polite)", want_negative: "I don't want that. (direct)", key: "Same meaning, different politeness level!" },
+
+      { category: "Common Uses - Would Like", restaurant: "I'd like the pasta, please. / We'd like to order.", shopping: "I'd like to try this on. / I'd like to see that, please.", formal_request: "I'd like to speak to the manager. / I'd like some information.", offers: "Would you like a drink? / Would you like to join us?", note: "Perfect for customer service, formal situations", remember: "Use when you want to be polite!" },
+
+      { category: "Common Uses - Want", friends_family: "I want pizza for dinner. / Do you want to watch a movie?", expressing_desires: "I want to travel the world. / She wants a new phone.", direct_questions: "What do you want to do? / Where do you want to go?", emphasis: "I really want this! / I don't want to go!", note: "More emotional, more direct", remember: "Use in casual situations!" },
+
+      { category: "Want + Object + To + Verb", pattern: "Subject + want + OBJECT + to + verb", examples: "I want YOU to come. / She wants HIM to help. / They want US to stay.", meaning: "You want someone else to do something", turkish: "Birinin bir şey yapmasını istemek", structure: "want + person + to + action", note: "Different from 'want to' - this is about wanting someone else to act!" },
+
+      { category: "I'd love to (Enthusiastic Yes)", use: "Enthusiastic way to accept an invitation", question_answer: "Would you like to come to my party? → Yes, I'd LOVE to!", meaning: "I'd love to = I'd like to (but more enthusiastic)", examples: "Would you like to join us? → I'd love to! / Would you like some cake? → I'd love some!", note: "'Love' instead of 'like' shows strong interest", remember: "Very positive and friendly response!" },
+
+      { category: "Would Like vs Like (Different!)", would_like: "WOULD LIKE = want (specific desire, now)", example_would: "I would like a coffee. (I want coffee now)", like: "LIKE = enjoy, have positive feelings about (general)", example_like: "I like coffee. (I enjoy coffee in general)", difference: "Would like = want | Like = enjoy", wrong: "I like a coffee ✗ (sounds strange)", correct: "I'd like a coffee ✓ (want coffee) | I like coffee ✓ (enjoy coffee)", remember: "Don't confuse 'would like' (want) with 'like' (enjoy)!" },
+
+      { category: "Responding to Offers", polite_yes: "Yes, please. / Yes, I'd love to. / That would be nice, thank you.", polite_no: "No, thank you. / No, thanks. / I'm fine, thanks.", maybe: "Maybe later, thanks. / I'm not sure.", note: "Always acknowledge the offer politely!", examples: "Would you like tea? → Yes, please. / No, thank you. / I'm fine, thanks.", remember: "Say 'thank you' even when declining!" },
+
+      { category: "Common Mistakes", mistake_1: "Using 'would want' instead of 'would like'", wrong_1: "I would want a coffee ✗", correct_1: "I would like a coffee ✓ OR I want a coffee ✓", rule: "Use 'would like' OR 'want', not 'would want'!", note: "'Would want' is not standard - avoid it" },
+      { category: "Common Mistakes", mistake_2: "Forgetting '-s' with he/she/it for 'want'", wrong_2: "He want coffee ✗ / She want to go ✗", correct_2: "He wants coffee ✓ / She wants to go ✓", rule: "He/She/It WANTS (add -s)", remember: "Want follows normal present simple rules!" },
+      { category: "Common Mistakes", mistake_3: "Using 'do/does' with 'would like' questions", wrong_3: "Do you would like tea? ✗ / Does she would like to go? ✗", correct_3: "Would you like tea? ✓ / Would she like to go? ✓", rule: "Would like questions start with WOULD (not do/does)", pattern: "Would + subject + like...?" },
+      { category: "Common Mistakes", mistake_4: "Confusing 'would like' with 'like'", wrong_4: "I like some tea ✗ (sounds like you enjoy tea in general, not that you want it now)", correct_4: "I'd like some tea ✓ (want tea now) OR I like tea ✓ (enjoy tea)", difference: "Would like = want (now) | Like = enjoy (general)", remember: "Would like = specific desire!" },
+
+      { category: "Politeness Comparison", most_polite: "I would like a coffee, please.", polite: "I'd like a coffee, please.", neutral: "Can I have a coffee, please?", casual: "I want a coffee.", direct: "Give me a coffee.", note: "All communicate the same desire, but VERY different politeness!", use_would_like: "Safest in formal situations", use_want: "Fine with friends and family" },
+
+      { category: "Real-World Uses", restaurant: "I'd like the chicken, please. / Would you like dessert?", shopping: "I'd like to try this on. / Do you want to pay by card?", invitations: "Would you like to come to dinner? / I'd love to!", expressing_needs: "I want a new phone. / I'd like some help, please.", casual_chat: "What do you want to do tonight? / I want to watch a movie.", general: "Essential for polite communication in all situations!" },
+
+      { category: "Key Takeaway", summary: "WOULD LIKE and WANT both express desires, but different politeness", would_like_use: "WOULD LIKE = polite, formal, courteous", want_use: "WANT = direct, casual, informal", would_like_structure: "Subject + would like + noun/to + verb", want_structure: "Subject + want/wants + noun/to + verb", would_like_question: "Would you like...? (polite offer)", want_question: "Do you want...? (casual offer)", contraction: "I would like → I'd like (very common!)", difference: "Would like ≠ Like! (would like = want | like = enjoy)", remember: "Use 'would like' to be polite! Use 'want' with friends. Never 'would want'!", next: "Practice making polite requests!" }
+    ]
+  },
   
   speakingPractice: [
     { question: "What would you like to eat?", answer: "I would like to eat pasta." },
