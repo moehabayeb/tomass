@@ -8679,7 +8679,26 @@ Examples:
 - Indirect: Do you know what time it starts?`,
   tip: "In indirect questions, use statement word order (subject + verb), not question order",
 
-  table: [],
+  table: {
+    title: "📋 Indirect Questions: Structure & Usage",
+    data: [
+      { purpose: "Politeness", direct: "Where is the station?", indirect: "Could you tell me where the station is?", use: "More polite", context: "Asking strangers, formal situations" },
+      { key_rule: "Word order change", direct_order: "Question word + auxiliary + subject + verb", indirect_order: "Question word + subject + verb (no auxiliary)", example: "where IS it → where it IS", critical: "Most important rule!" },
+      { pattern: "Could you tell me", structure: "Could you tell me + wh-word + subject + verb?", examples: "Could you tell me where he lives? / Could you tell me what time it is?", formality: "Very polite", note: "Common pattern" },
+      { pattern: "Do you know", structure: "Do you know + wh-word + subject + verb?", examples: "Do you know where she went? / Do you know how much it costs?", formality: "Polite", note: "Very common" },
+      { pattern: "Can you tell me", structure: "Can you tell me + wh-word + subject + verb?", examples: "Can you tell me when the bus arrives? / Can you tell me who he is?", formality: "Polite", note: "Less formal than 'could'" },
+      { pattern: "I wonder", structure: "I wonder + wh-word + subject + verb", examples: "I wonder why she's late. / I wonder what he wants.", formality: "Neutral", note: "Thinking aloud" },
+      { pattern: "I'd like to know", structure: "I'd like to know + wh-word + subject + verb", examples: "I'd like to know where the meeting is. / I'd like to know when it starts.", formality: "Formal", note: "Professional" },
+      { yes_no_questions: "With 'if/whether'", direct: "Is it open?", indirect: "Could you tell me if it's open?", rule: "Use 'if' or 'whether' for yes/no questions", examples: "Do you know if he's coming? / I wonder whether she knows." },
+      { wh_questions: "Where", direct: "Where is the bank?", indirect: "Could you tell me where the bank is?", change: "is the bank → the bank is", note: "Subject before verb" },
+      { wh_questions: "What time", direct: "What time does it start?", indirect: "Do you know what time it starts?", change: "does it start → it starts", note: "Remove 'does'" },
+      { wh_questions: "How much", direct: "How much does it cost?", indirect: "Can you tell me how much it costs?", change: "does it cost → it costs", note: "Remove 'does'" },
+      { wh_questions: "Why", direct: "Why is she angry?", indirect: "I wonder why she is angry.", change: "is she → she is", note: "No change in 'is' but order changes" },
+      { common_mistakes: "Don't say", wrong: "Could you tell me where is the station?", correct: "Could you tell me where the station is?", error: "Question word order in indirect", rule: "Use statement order!" },
+      { tense_note: "Tense doesn't change", present: "Where does he live? → Do you know where he lives?", past: "Where did she go? → Do you know where she went?", rule: "Keep the same tense", note: "Only word order changes" },
+      { question_tags: "Note", at_end: "Add '?' at the end", examples: "Could you tell me where it is? / Do you know when he left?", rule: "Still a question overall", punctuation: "Question mark needed" }
+    ]
+  },
 
   speakingPractice: [
     { question: "Where is the nearest bus stop?", answer: "Could you tell me where the nearest bus stop is?" },
@@ -8717,7 +8736,27 @@ Disagreeing politely:
 - That's a valid point, however ...`,
   tip: "Use softening phrases like 'I think' or 'in my opinion' to sound less direct",
 
-  table: [],
+  table: {
+    title: "📋 Giving Opinions & Responding",
+    data: [
+      { function: "Giving opinions (neutral)", expressions: "I think..., I believe..., In my opinion..., From my perspective...", examples: "I think it's a good idea. / In my opinion, it's too expensive.", formality: "Neutral", tone: "Standard" },
+      { function: "Giving opinions (strong)", expressions: "I'm certain that..., I'm convinced that..., I strongly believe...", examples: "I'm certain this will work. / I strongly believe we should wait.", formality: "Formal", tone: "Confident" },
+      { function: "Giving opinions (tentative)", expressions: "It seems to me..., I'd say..., I suppose..., I guess...", examples: "It seems to me that he's right. / I suppose we could try.", formality: "Informal", tone: "Uncertain" },
+      { function: "Strong agreement", expressions: "I completely agree, I couldn't agree more, Absolutely!, Exactly!, That's exactly what I think", examples: "I completely agree with you. / Absolutely! You're right.", formality: "Any", tone: "Enthusiastic" },
+      { function: "Moderate agreement", expressions: "I agree, That's true, You're right, I think so too, That makes sense", examples: "I agree with your point. / That's true, I hadn't thought of that.", formality: "Neutral", tone: "Supportive" },
+      { function: "Partial agreement", expressions: "I agree to some extent, That's partly true, I see what you mean, but..., You have a point, however...", examples: "I see what you mean, but I have some concerns. / That's partly true.", formality: "Polite", tone: "Diplomatic" },
+      { function: "Polite disagreement", expressions: "I'm not sure I agree, I see your point, but..., I'm afraid I don't agree, I don't think so", examples: "I'm not sure I agree with that. / I see your point, but I think differently.", formality: "Polite", tone: "Respectful" },
+      { function: "Strong disagreement", expressions: "I totally disagree, I don't agree at all, That's not true, I'm afraid that's wrong", examples: "I totally disagree with that statement. / I don't agree at all.", formality: "Direct", tone: "Firm" },
+      { function: "Softening disagreement", expressions: "I'm afraid..., I'm not sure that..., Maybe, but..., Perhaps, however...", examples: "I'm afraid I don't see it that way. / Maybe, but have you considered...?", formality: "Very polite", tone: "Gentle" },
+      { function: "Asking for opinions", expressions: "What do you think?, What's your opinion?, Do you agree?, How do you feel about...?", examples: "What do you think about this? / Do you agree with me?", formality: "Neutral", tone: "Open" },
+      { function: "Adding to discussion", expressions: "As far as I'm concerned..., The way I see it..., To my mind...", examples: "As far as I'm concerned, it's the best option. / The way I see it, we have no choice.", formality: "Formal", tone: "Assertive" },
+      { function: "Hedging (being cautious)", expressions: "I suppose..., I guess..., Maybe..., Perhaps..., Possibly...", examples: "I suppose you're right. / Maybe we should reconsider.", formality: "Cautious", tone: "Non-committal" },
+      { strategy: "Being diplomatic", approach: "Acknowledge first, then disagree", structure: "I see your point + but + your view", example: "I see your point, but I think we need more time.", benefit: "Maintains harmony" },
+      { strategy: "Staying neutral", approach: "Avoid strong words", structure: "Use 'might', 'could', 'perhaps'", example: "That might be true, but we should check.", benefit: "Avoids conflict" },
+      { common_mistakes: "Too direct", wrong: "You're wrong!, That's stupid!", correct: "I'm not sure I agree. / I see it differently.", note: "Be polite in disagreement" },
+      { cultural_note: "English politeness", tip: "Soften disagreements", methods: "Use 'I think', 'perhaps', 'maybe', acknowledge other view first", importance: "Maintains good relationships", key: "Being polite matters!" }
+    ]
+  },
 
   speakingPractice: [
     { question: "What do you think about this movie?", answer: "I think it's amazing!" },
@@ -8779,7 +8818,26 @@ Examples:
 - They can't be serious (I'm certain they're not).`,
   tip: "Use 'must' for strong deduction, 'might/may/could' for possibility, 'can't' for impossibility",
 
-  table: [],
+  table: {
+    title: "📋 Speculating & Expressing Possibility",
+    data: [
+      { certainty_level: "90-100% certain (positive)", modal: "must", meaning: "Strong deduction", example: "She must be tired (I'm almost certain).", usage: "Logical conclusion", note: "Very confident" },
+      { certainty_level: "90-100% certain (negative)", modal: "can't / couldn't", meaning: "Impossibility", example: "He can't be the manager (I'm sure he isn't).", usage: "Strong negative", note: "Very confident it's not true" },
+      { certainty_level: "50% certain", modal: "might / may / could", meaning: "Possibility", example: "She might be at home (maybe).", usage: "Uncertain", note: "Equal chance yes or no" },
+      { certainty_level: "Less than 50%", modal: "might not / may not", meaning: "Low possibility", example: "He might not come (probably not).", usage: "Probably not", note: "Unlikely but possible" },
+      { present_speculation: "must + be", structure: "must + be + adjective/noun", examples: "He must be hungry / She must be the teacher", meaning: "90% certain now", context: "Current deduction" },
+      { present_speculation: "might/may/could + be", structure: "might/may/could + be + adjective/noun", examples: "They might be lost / It could be expensive", meaning: "50% possible now", context: "Current possibility" },
+      { present_speculation: "can't + be", structure: "can't + be + adjective/noun", examples: "It can't be true / He can't be serious", meaning: "Impossible now", context: "Strong negative belief" },
+      { past_speculation: "must have + V3", structure: "must have + past participle", examples: "She must have forgotten / They must have left early", meaning: "90% certain (past)", context: "Past deduction" },
+      { past_speculation: "might/may/could have + V3", structure: "might/may/could have + past participle", examples: "He might have missed the bus / They could have gone home", meaning: "50% possible (past)", context: "Past possibility" },
+      { past_speculation: "can't have + V3", structure: "can't have + past participle", examples: "She can't have done it / They can't have forgotten", meaning: "Impossible (past)", context: "Past negative belief" },
+      { adverbs: "Adding certainty words", probably: "probably (70-80%)", possibly_maybe_perhaps: "possibly/maybe/perhaps (50%)", examples: "She's probably at home / Maybe he forgot / Perhaps they're busy", usage: "Show probability level" },
+      { expressions: "It's + adjective + that", structures: "It's likely that..., It's possible that..., It's unlikely that...", examples: "It's likely that she'll come / It's possible that he's right / It's unlikely that they forgot", formality: "More formal" },
+      { questions: "Speculating with questions", forms: "Could he be...?, Might she have...?, Do you think he...?", examples: "Could he be the manager? / Might she have left? / Do you think they're coming?", usage: "Asking for speculation" },
+      { common_mistakes: "Don't confuse", must_vs_have_to: "must (deduction) ≠ have to (obligation)", example: "She must be tired (probably is) vs She has to work (obligation)", key: "Different meanings!" },
+      { comparison: "Certainty scale", highest: "must / can't (90%+)", medium: "might / may / could (50%)", lowest: "might not / may not (under 50%)", usage: "Choose based on confidence level" }
+    ]
+  },
 
   speakingPractice: [
     { question: "Where is John?", answer: "He might be in the kitchen." },
@@ -8841,7 +8899,27 @@ Examples:
 - What would you do if you could fly?`,
   tip: "Use 'were' (not 'was') for all persons in formal hypothetical situations: If I were you...",
 
-  table: [],
+  table: {
+    title: "📋 Hypothetical Situations: Conditionals",
+    data: [
+      { type: "Second Conditional", structure: "If + past simple, would + base verb", meaning: "Unreal/imaginary present or future", example: "If I won the lottery, I would travel the world.", use: "Unlikely situations", probability: "Low" },
+      { type: "Second Conditional (negative)", structure: "If + didn't + base verb, would + base verb", meaning: "Negative condition", example: "If I didn't work, I would be bored.", use: "Imagining opposite of reality", note: "Present unreal situation" },
+      { key_rule: "Use 'were' not 'was'", structure: "If + I/he/she/it + were", explanation: "In formal hypothetical situations, use 'were' for all persons", examples: "If I were you... / If she were here... / If he were rich...", note: "'was' is informal", formality: "Formal = were" },
+      { common_phrase: "If I were you...", meaning: "Giving advice", full_example: "If I were you, I would study harder.", usage: "Very common for advice", context: "Friendly suggestions", note: "Most used hypothetical phrase" },
+      { type: "Second Conditional Question", structure: "What would you do if + past simple?", example: "What would you do if you saw a ghost?", answer_pattern: "I would + base verb", usage: "Discussing imaginary scenarios", note: "Common conversation starter" },
+      { type: "Mixed Conditional", structure: "If + past perfect, would + base verb", meaning: "Past condition → Present result", example: "If I had studied medicine, I would be a doctor now.", use: "Past action affecting present", note: "Links past to present" },
+      { mixed_conditional_example: "Past → Present result", pattern: "If I had [past action], I would [present state]", examples: "If I had saved money, I would be rich now. / If he had moved to Spain, he would speak Spanish now.", explanation: "Past choice affects current situation", time_focus: "Past cause, present effect" },
+      { comparison: "Second vs Mixed", second: "If I were rich (now), I would travel (now)", mixed: "If I had won the lottery (past), I would be traveling (now)", difference: "Second = unreal now, Mixed = past action affecting now", key: "Time reference matters" },
+      { modal_verbs: "Other modals in hypotheticals", alternatives: "might, could, should", examples: "If I won, I might buy a car. / If you asked, she could help. / If he tried, he should succeed.", meaning: "Different degrees of possibility/certainty", note: "Not just 'would'" },
+      { imaginary_situations: "Unlikely events", examples: "If I met a celebrity... / If I could fly... / If I lived on Mars...", pattern: "If + impossible/unlikely condition", usage: "Creative thinking, dreams, fantasies", context: "Fun hypothetical discussions" },
+      { polite_requests: "Hypothetical for politeness", examples: "Would you help me? / Would it be possible to...? / Would you mind if I...?", function: "Making polite requests", formality: "Polite/formal", note: "Softer than direct requests" },
+      { common_mistake: "Using 'will' instead of 'would'", wrong: "If I were rich, I will travel.", correct: "If I were rich, I would travel.", rule: "Use 'would' (not 'will') in Second Conditional", explanation: "'will' is for real future, 'would' for unreal situations" },
+      { common_mistake_2: "Mixing tenses", wrong: "If I win the lottery, I would travel.", correct: "If I won the lottery, I would travel.", rule: "Both parts must be hypothetical (past + would)", explanation: "Keep consistent hypothetical mood" },
+      { wishes_vs_hypotheticals: "Similar to 'wish'", wish: "I wish I were rich.", hypothetical: "If I were rich, I would...", difference: "Wish = desire only, If = desire + result", note: "Wish doesn't show consequence" },
+      { real_vs_unreal: "First vs Second Conditional", first_real: "If I have time, I will help you. (maybe I'll have time)", second_unreal: "If I had time, I would help you. (I don't have time)", key_difference: "First = possible/likely, Second = unlikely/unreal", choose_wisely: "Use Second when it's not true now" },
+      { advanced_pattern: "Second Conditional with 'unless'", structure: "Unless + past simple, would + base verb", example: "Unless I won the lottery, I wouldn't quit my job.", meaning: "If I didn't win = Unless I won", usage: "Negative condition", note: "Unless = if not" }
+    ]
+  },
 
   speakingPractice: [
     { question: "What would you do if you won the lottery?", answer: "I would buy a house and travel." },
@@ -8905,7 +8983,26 @@ Examples:
 - I'd rather have tea than coffee.`,
   tip: "Use 'would rather' + bare infinitive (without 'to'): I'd rather go, not I'd rather to go",
 
-  table: [],
+  table: {
+    title: "📋 Expressing Preferences: Structures & Usage",
+    data: [
+      { structure: "prefer + noun", form: "I prefer [noun]", example: "I prefer coffee. / I prefer swimming.", use: "Simple preference", formality: "Neutral", note: "Most basic form" },
+      { structure: "prefer + -ing", form: "I prefer [verb]-ing", example: "I prefer reading. / I prefer walking to work.", use: "Preference for activity", formality: "Neutral", note: "Gerund form required" },
+      { structure: "prefer A to B", form: "I prefer [A] to [B]", example: "I prefer tea to coffee. / I prefer reading to watching TV.", use: "Comparing two options", formality: "Neutral", critical: "Use 'to' NOT 'than'" },
+      { common_mistake: "prefer... than (WRONG)", wrong: "I prefer tea than coffee.", correct: "I prefer tea to coffee.", rule: "Always use 'TO' with prefer, never 'than'", explanation: "Common error - 'prefer' always takes 'to'", note: "Very important!" },
+      { structure: "would prefer to + infinitive", form: "I'd prefer to [verb]", example: "I'd prefer to stay home tonight. / I'd prefer to walk.", use: "Specific preference now", formality: "Polite", note: "With 'to' infinitive" },
+      { structure: "would rather + bare infinitive", form: "I'd rather [verb] (no 'to')", example: "I'd rather go. / I'd rather stay home.", use: "Strong preference", formality: "Informal", critical: "NO 'to' - bare infinitive only!" },
+      { common_mistake: "would rather to (WRONG)", wrong: "I'd rather to go.", correct: "I'd rather go.", rule: "NEVER use 'to' after 'would rather'", explanation: "Bare infinitive required", note: "Very common mistake!" },
+      { structure: "would rather... than", form: "I'd rather [verb] than [verb]", example: "I'd rather walk than drive. / I'd rather eat at home than go out.", use: "Choosing between two actions", formality: "Informal", note: "Both verbs are bare infinitives" },
+      { comparison: "prefer vs would rather", prefer: "I prefer coffee. (general)", would_rather: "I'd rather have coffee. (now)", difference: "prefer = general habit, would rather = specific situation", usage: "Choose based on context", note: "Different time focus" },
+      { polite_preference: "would prefer (polite)", examples: "I'd prefer to meet on Monday. / I'd prefer not to go.", function: "Polite way to state preference", formality: "Polite/formal", context: "Business, requests, suggestions", note: "More polite than 'would rather'" },
+      { strong_preference: "would rather (stronger)", examples: "I'd rather die than do that! / I'd rather not talk about it.", function: "Strong personal preference", formality: "Informal", emotion: "Strong feeling", note: "More emotional" },
+      { negative_forms: "Negative preferences", prefer: "I don't prefer / I prefer not to", would_rather: "I'd rather not", examples: "I'd rather not go. / I prefer not to talk about it.", usage: "Refusing politely", note: "Common for saying 'no' politely" },
+      { preference_questions: "Asking about preferences", structures: "Do you prefer...? / Would you prefer...? / Would you rather...?", examples: "Do you prefer tea or coffee? / Would you prefer to leave now? / Would you rather stay or go?", function: "Asking for choice", note: "All are common" },
+      { alternatives: "Other preference expressions", expressions: "I like [A] better than [B] / I favor / I'm more into", examples: "I like tea better than coffee. / I'm more into sports than music.", formality: "Casual", note: "Informal alternatives" },
+      { advanced_pattern: "prefer... rather than", form: "I prefer to [verb] rather than [verb]", example: "I prefer to walk rather than drive.", formality: "Formal", note: "More formal than other forms", usage: "Written English, formal speech" }
+    ]
+  },
 
   speakingPractice: [
     { question: "Do you prefer coffee or tea?", answer: "I prefer coffee to tea." },
