@@ -398,6 +398,21 @@ const MODULE_156_DATA = {
 • investigate → investigation
 • Original: The manager decided to reduce costs. → Nominalised: The manager made a decision to reduce costs.
 `,
+  table: {
+    title: "📋 Verb to Noun Transformations (Nominalisation)",
+    data: [
+      { verb: "decide", noun: "decision", suffix: "-ion", example: "The decision was made by the board" },
+      { verb: "explain", noun: "explanation", suffix: "-ation", example: "His explanation was clear" },
+      { verb: "investigate", noun: "investigation", suffix: "-ation", example: "The investigation revealed the truth" },
+      { verb: "recommend", noun: "recommendation", suffix: "-ation", example: "My recommendation is to wait" },
+      { verb: "react", noun: "reaction", suffix: "-ion", example: "Her reaction was surprising" },
+      { verb: "suggest", noun: "suggestion", suffix: "-ion", example: "Do you have any suggestions?" },
+      { verb: "improve", noun: "improvement", suffix: "-ment", example: "We saw significant improvement" },
+      { verb: "develop", noun: "development", suffix: "-ment", example: "The development of the app took months" },
+      { verb: "apply", noun: "application", suffix: "-ation", example: "Submit your application online" },
+      { verb: "conclude", noun: "conclusion", suffix: "-ion", example: "The conclusion was unexpected" }
+    ]
+  },
   speakingPractice: [
     { question: "What was the final decision about the project?", answer: "The final decision was to postpone the launch until next month." },
     { question: "Can you give an explanation for the delay?", answer: "The explanation is that the software needs more testing." },
@@ -452,6 +467,20 @@ const MODULE_157_DATA = {
 • The report was comprehensive. Furthermore, it provided practical recommendations.
 • The team worked hard. As a result, they finished the project early.
 `,
+  table: {
+    title: "📋 Advanced Linking Words and Their Functions",
+    data: [
+      { linking_word: "Nonetheless", function: "Contrast (formal)", example: "The weather was bad. Nonetheless, we went hiking." },
+      { linking_word: "Nevertheless", function: "Contrast (formal)", example: "It was risky. Nevertheless, it worked." },
+      { linking_word: "Furthermore", function: "Addition (formal)", example: "The product is good. Furthermore, it's affordable." },
+      { linking_word: "Moreover", function: "Addition (formal)", example: "She's qualified. Moreover, she's experienced." },
+      { linking_word: "Even so", function: "Contrast (informal)", example: "It was difficult. Even so, I enjoyed it." },
+      { linking_word: "As a result", function: "Result/Consequence", example: "They worked hard. As a result, they succeeded." },
+      { linking_word: "Consequently", function: "Result/Consequence", example: "He missed the bus. Consequently, he was late." },
+      { linking_word: "Therefore", function: "Result/Conclusion", example: "The data is clear. Therefore, we should act now." },
+      { linking_word: "In addition", function: "Addition", example: "The hotel is clean. In addition, it's near the beach." }
+    ]
+  },
   speakingPractice: [
     { question: "Why did you continue working despite the challenges?", answer: "It was difficult; nonetheless, I was determined to finish." },
     { question: "Can you give me more reasons to support the idea?", answer: "Yes, furthermore, it will save both time and money." },
@@ -503,8 +532,21 @@ const MODULE_158_DATA = {
   description: "Complex Conditionals (if…were to, if…should)",
   intro: `🧠 Example Sentences
 • If + subject + were to + base verb (hypothetical): If I were to move abroad, I’d choose Canada.
-• If + subject + should + base verb (possibility/polite): If you should need any help, don’t hesitate to ask.
+• If + subject + should + base verb (possibility/polite): If you should need any help, don't hesitate to ask.
 `,
+  table: {
+    title: "📋 Complex Conditional Structures",
+    data: [
+      { structure: "If...were to", meaning: "Hypothetical/Unlikely future", example: "If I were to move abroad, I'd choose Canada" },
+      { structure: "If...were to", meaning: "Formal suggestion", example: "If we were to expand, we'd need more staff" },
+      { structure: "If...were to", meaning: "Speculating about future", example: "If she were to resign, who would replace her?" },
+      { structure: "If...should", meaning: "Slight possibility", example: "If you should see Tom, tell him to call me" },
+      { structure: "If...should", meaning: "Polite conditional", example: "If you should need anything, don't hesitate to ask" },
+      { structure: "If...should", meaning: "Formal instruction", example: "If the alarm should sound, exit immediately" },
+      { structure: "Were + subject + to", meaning: "Inverted form (very formal)", example: "Were I to accept, I'd need more time" },
+      { structure: "Should + subject", meaning: "Inverted form (very formal)", example: "Should you have questions, contact us" }
+    ]
+  },
   speakingPractice: [
     { question: "If you were to live in another country, where would you go?", answer: "If I were to live abroad, I’d probably choose Japan." },
     { question: "If you should win the lottery, what would you do first?", answer: "If I should win, I’d buy a house for my family." },
@@ -557,6 +599,18 @@ const MODULE_159_DATA = {
 • I wish + subject + past simple (present regret): I wish I knew the answer.
 • If only + subject + past simple (stronger): If only I had more time.
 `,
+  table: {
+    title: "📋 Unreal Past for Present Situations",
+    data: [
+      { structure: "I wish + past simple", reality: "I don't know the answer", wish: "I wish I knew the answer" },
+      { structure: "I wish + past simple", reality: "I don't have more time", wish: "I wish I had more time" },
+      { structure: "I wish + were", reality: "I'm not tall", wish: "I wish I were taller" },
+      { structure: "I wish + could", reality: "I can't speak Spanish", wish: "I wish I could speak Spanish" },
+      { structure: "I wish + didn't", reality: "I work long hours", wish: "I wish I didn't work long hours" },
+      { structure: "If only + past simple", reality: "I don't live by the sea", wish: "If only I lived by the sea" },
+      { structure: "If only + were", reality: "The weather isn't nice", wish: "If only the weather were nicer" }
+    ]
+  },
   speakingPractice: [
     { question: "What do you wish you could do better?", answer: "I wish I spoke Spanish fluently." },
     { question: "Is there something you wish you were doing now?", answer: "Yes, I wish I were traveling the world." },
@@ -610,6 +664,18 @@ const MODULE_160_DATA = {
 • I wish + subject + had + past participle: I wish I had known about the meeting.
 • If only + subject + had + past participle: If only I had studied harder.
 `,
+  table: {
+    title: "📋 Unreal Past for Past Regrets",
+    data: [
+      { structure: "I wish + had + past participle", reality: "I didn't study more", regret: "I wish I had studied more" },
+      { structure: "I wish + had + past participle", reality: "I didn't take the job offer", regret: "I wish I had taken the job offer" },
+      { structure: "I wish + hadn't + past participle", reality: "I quit the course", regret: "I wish I hadn't quit the course" },
+      { structure: "I wish + had + past participle", reality: "I didn't save money", regret: "I wish I had saved money" },
+      { structure: "If only + had + past participle", reality: "I didn't listen to advice", regret: "If only I had listened to advice" },
+      { structure: "If only + hadn't + past participle", reality: "I wasted so much time", regret: "If only I hadn't wasted so much time" },
+      { structure: "I wish + had + past participle", reality: "I didn't say goodbye", regret: "I wish I had said goodbye" }
+    ]
+  },
   speakingPractice: [
     { question: "Is there something you wish you had done differently in school?", answer: "Yes, I wish I had studied more consistently." },
     { question: "Do you wish you had taken a different job?", answer: "I wish I had accepted the offer from that tech company." },
