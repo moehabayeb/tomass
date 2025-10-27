@@ -1162,6 +1162,17 @@ Hedging language helps us show that something looks a certain way but isn't a ha
 • The company appears to be losing money.
 • She seems to have forgotten about the meeting.
 • It appears to have rained last night.`,
+  table: {
+    title: "📋 Hedging Language Structures",
+    data: [
+      { structure: "seems to + verb", meaning: "Present appearance/opinion", example: "He seems to understand the topic" },
+      { structure: "appears to + verb", meaning: "Present appearance (formal)", example: "The company appears to be growing" },
+      { structure: "seems to + have + past participle", meaning: "Past appearance/opinion", example: "She seems to have left already" },
+      { structure: "appears to + have + past participle", meaning: "Past appearance (formal)", example: "They appear to have finished the work" },
+      { structure: "seems + adjective", meaning: "Present state description", example: "It seems difficult to solve" },
+      { structure: "appears + adjective", meaning: "Present state (formal)", example: "The situation appears serious" }
+    ]
+  },
   speakingPractice: [
     { question: "Why do you think John left the party early?", answer: "He seems to have had a bad day, so maybe he didn't feel like staying." },
     { question: "What do you think about the new manager?", answer: "She appears to be very professional and well-prepared." },
@@ -1204,6 +1215,18 @@ Use 'might/could have' for possibility or uncertainty; 'should have' for regret/
 • She must have left early to catch her flight.
 • He could have been more polite.
 • We shouldn't have ignored the warnings.`,
+  table: {
+    title: "📋 Past Modal Verbs and Their Meanings",
+    data: [
+      { modal: "might have + past participle", meaning: "Past possibility/uncertainty", example: "She might have forgotten the meeting" },
+      { modal: "could have + past participle", meaning: "Past ability/possibility", example: "You could have called me earlier" },
+      { modal: "should have + past participle", meaning: "Past advice/regret", example: "I should have studied harder" },
+      { modal: "shouldn't have + past participle", meaning: "Past criticism/regret", example: "He shouldn't have said that" },
+      { modal: "must have + past participle", meaning: "Past logical conclusion", example: "They must have arrived already" },
+      { modal: "can't have + past participle", meaning: "Past impossibility", example: "She can't have done it alone" },
+      { modal: "would have + past participle", meaning: "Past hypothetical", example: "I would have helped if I'd known" }
+    ]
+  },
   speakingPractice: [
     { question: "Why didn't Sarah come to the party?", answer: "She might have been busy with work." },
     { question: "Why did Ali fail the exam?", answer: "He should have studied more." },
@@ -1278,6 +1301,21 @@ Use formal opinion language to explore different points of view, support ideas, 
 🧠 Conclusion
 • In conclusion, ...
 • To sum up, ...`,
+  table: {
+    title: "📋 Opinion Language for Essays and Discussions",
+    data: [
+      { category: "Giving Opinion", expression: "In my opinion...", example: "In my opinion, climate change is the biggest challenge" },
+      { category: "Giving Opinion", expression: "I strongly believe that...", example: "I strongly believe that education should be free" },
+      { category: "Giving Opinion", expression: "From my perspective...", example: "From my perspective, technology has changed our lives" },
+      { category: "Agreement", expression: "I agree with the view that...", example: "I agree with the view that exercise is important" },
+      { category: "Disagreement", expression: "I completely disagree with...", example: "I completely disagree with banning video games" },
+      { category: "Contrast", expression: "On the one hand... On the other hand...", example: "On the one hand, it's convenient. On the other hand, it's expensive" },
+      { category: "Concession", expression: "While it is true that...", example: "While it is true that cars pollute, they are necessary" },
+      { category: "Concession", expression: "Although some people think...", example: "Although some people think exams are stressful, they are useful" },
+      { category: "Conclusion", expression: "In conclusion...", example: "In conclusion, we must act now to protect the environment" },
+      { category: "Conclusion", expression: "To sum up...", example: "To sum up, the benefits outweigh the drawbacks" }
+    ]
+  },
   speakingPractice: [
     { question: "Do you think social media has a positive impact on society?", answer: "In my opinion, social media has both positive and negative effects, but overall it helps people stay connected." },
     { question: "Should university education be free?", answer: "I strongly believe that university education should be free to ensure equal opportunities for everyone." },
@@ -1363,6 +1401,17 @@ When we describe trends, we often use verbs, nouns, and adverbs together to make
 • There was a gradual decrease in production.
 • Prices fluctuated slightly throughout the year.
 • The rate remained stable between 2019 and 2021.`,
+  table: {
+    title: "📋 Vocabulary for Describing Trends",
+    data: [
+      { trend_type: "Increase", verb: "rise / increase / grow / go up", noun: "a rise / an increase", adverb: "sharply / steadily / gradually" },
+      { trend_type: "Decrease", verb: "fall / drop / decrease / decline", noun: "a fall / a decrease / a decline", adverb: "dramatically / rapidly / slightly" },
+      { trend_type: "Fluctuation", verb: "fluctuate / vary", noun: "fluctuation / variation", adverb: "slightly / constantly / widely" },
+      { trend_type: "Stability", verb: "remain stable / stay constant", noun: "stability", adverb: "consistently" },
+      { trend_type: "Peak", verb: "reach a peak / peak", noun: "a peak / the highest point", example: "Sales peaked in December" },
+      { trend_type: "Bottom", verb: "hit bottom / reach the lowest point", noun: "the lowest point", example: "Prices hit bottom in March" }
+    ]
+  },
   speakingPractice: [
     { question: "How did the company's sales change last year?", answer: "The company's sales increased steadily throughout the year, especially after they launched a new product in the summer." },
     { question: "What does it mean when prices decrease slightly?", answer: "It means prices went down a little, not dramatically — maybe by 2% or 3%, which is not a major change." },
@@ -1434,6 +1483,21 @@ Let's make statistics sound natural and human, not robotic!
 
 🧠 Natural Examples
 • "Just under half of the students passed" sounds more natural than "48% of the students passed."`,
+  table: {
+    title: "📋 Expressing Percentages and Fractions Naturally",
+    data: [
+      { percentage: "100%", fraction: "all / everyone", natural_expression: "Everyone agreed" },
+      { percentage: "75%", fraction: "three quarters", natural_expression: "Three quarters of students passed" },
+      { percentage: "66%", fraction: "two thirds", natural_expression: "Two thirds of people voted yes" },
+      { percentage: "50%", fraction: "half", natural_expression: "Half of the class attended" },
+      { percentage: "33%", fraction: "one third", natural_expression: "One third of users are new" },
+      { percentage: "25%", fraction: "one quarter / a quarter", natural_expression: "A quarter of employees work remotely" },
+      { percentage: "20%", fraction: "one fifth", natural_expression: "One in five people disagree" },
+      { percentage: "10%", fraction: "one tenth", natural_expression: "One in ten customers complained" },
+      { percentage: "~90%", fraction: "the vast majority", natural_expression: "The vast majority support the plan" },
+      { percentage: "<50%", fraction: "the minority", natural_expression: "The minority disagreed" }
+    ]
+  },
   speakingPractice: [
     { question: "How many people in your country use the internet regularly?", answer: "I'd say almost everyone. These days, even elderly people use it daily — probably around ninety percent or more." },
     { question: "What percentage of your friends drink coffee every morning?", answer: "Hmm, maybe about seventy percent. The rest prefer tea or skip breakfast completely." },
