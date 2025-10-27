@@ -2700,6 +2700,19 @@ const MODULE_186_DATA = {
 ✅ Master persuasion techniques (ethos, pathos, logos)
 ✅ Use rhetorical devices and emotional appeal
 ✅ Speak persuasively in discussions and presentations`,
+  table: {
+    title: "📋 Persuasion Techniques and Appeals",
+    data: [
+      { technique: "Ethos", definition: "Credibility/trust", example: "As an expert, I recommend..." },
+      { technique: "Pathos", definition: "Emotional appeal", example: "Imagine how you'd feel if..." },
+      { technique: "Logos", definition: "Logic/facts", example: "Statistics show that..." },
+      { technique: "Rhetorical question", definition: "Question to make think", example: "Isn't it time for change?" },
+      { technique: "Repetition", definition: "Repeat key words", example: "We can. We will. We must." },
+      { technique: "Anecdote", definition: "Personal story", example: "When I was young..." },
+      { technique: "Call to action", definition: "Urge to act", example: "Join us today!" },
+      { technique: "Contrast", definition: "Show differences", example: "Choose progress, not regress" }
+    ]
+  },
   speakingPractice: [
     { question: "What is persuasion?", answer: "Persuasion is the art of convincing someone to believe or do something through communication." },
     { question: "What are the three main persuasive appeals?", answer: "They are ethos, pathos, and logos — credibility, emotion, and logic." },
@@ -2752,6 +2765,19 @@ const MODULE_187_DATA = {
 ✅ Make complaints politely and effectively
 ✅ Use diplomatic language in customer service situations
 ✅ Resolve issues professionally without sounding rude`,
+  table: {
+    title: "📋 Polite Complaint Phrases",
+    data: [
+      { situation: "Starting complaint", phrase: "I'm sorry to bother you, but...", example: "I'm sorry to bother you, but there's a problem" },
+      { situation: "Expressing issue", phrase: "I'm afraid there's been a...", example: "I'm afraid there's been a misunderstanding" },
+      { situation: "Describing problem", phrase: "The product doesn't work as expected", example: "The item I received doesn't match the description" },
+      { situation: "Requesting solution", phrase: "Could you please...", example: "Could you please replace this item?" },
+      { situation: "Showing understanding", phrase: "I understand, but...", example: "I understand these things happen, but..." },
+      { situation: "Softening complaint", phrase: "I know it's not your fault, but...", example: "I know it's not your fault, but I'd like this fixed" },
+      { situation: "Requesting refund", phrase: "Would it be possible to...", example: "Would it be possible to get a refund?" },
+      { situation: "Ending politely", phrase: "Thank you for your help", example: "Thank you for your help and understanding" }
+    ]
+  },
   speakingPractice: [
     { question: "How can you start a complaint politely?", answer: "You can start by saying, 'I'm sorry to bother you, but there seems to be a problem.'" },
     { question: "What should you avoid when making complaints?", answer: "Avoid shouting or blaming; focus on the problem, not the person." },
@@ -2804,6 +2830,19 @@ const MODULE_188_DATA = {
 ✅ Ask for clarification and repetition politely
 ✅ Confirm understanding and verify details
 ✅ Avoid misunderstandings in all situations`,
+  table: {
+    title: "📋 Clarifying and Confirming Phrases",
+    data: [
+      { purpose: "Ask to repeat", phrase: "Could you repeat that, please?", example: "Sorry, could you repeat that, please?" },
+      { purpose: "Check understanding", phrase: "So, if I understand correctly...", example: "So, if I understand correctly, you mean..." },
+      { purpose: "Ask for clarification", phrase: "I'm not sure I understood...", example: "I'm not sure I understood what you meant" },
+      { purpose: "Confirm details", phrase: "Just to confirm...", example: "Just to confirm, the meeting is at 2 p.m.?" },
+      { purpose: "Ask to slow down", phrase: "Could you speak more slowly?", example: "Could you speak a little more slowly, please?" },
+      { purpose: "Confirm spelling", phrase: "Could you spell that?", example: "Could you please spell your name for me?" },
+      { purpose: "Restate info", phrase: "So, what you're saying is...", example: "So, what you're saying is we start tomorrow?" },
+      { purpose: "Show understanding", phrase: "That makes sense now", example: "Right, that makes sense now, thank you" }
+    ]
+  },
   speakingPractice: [
     { question: "What does clarifying mean?", answer: "Clarifying means asking for more information to make something clear or easier to understand." },
     { question: "What does confirming mean?", answer: "Confirming means checking if the information you have is correct or understood correctly." },
@@ -2856,6 +2895,19 @@ const MODULE_189_DATA = {
 ✅ Interrupt politely when necessary
 ✅ Take turns effectively in conversations
 ✅ Keep discussions balanced and respectful`,
+  table: {
+    title: "📋 Managing Conversations - Key Phrases",
+    data: [
+      { purpose: "Polite interruption", phrase: "Sorry to interrupt, but...", example: "Sorry to interrupt, but may I add something?" },
+      { purpose: "Signal to speak", phrase: "Can I just jump in?", example: "Can I just jump in for a second?" },
+      { purpose: "Let others speak", phrase: "Go ahead, please", example: "Go ahead, please continue" },
+      { purpose: "If interrupted", phrase: "If I could just finish...", example: "If I could just finish my point, please" },
+      { purpose: "Add to discussion", phrase: "May I add something?", example: "May I add something to that point?" },
+      { purpose: "Resume after interruption", phrase: "As I was saying...", example: "As I was saying before..." },
+      { purpose: "Encourage others", phrase: "What do you think?", example: "What do you think about this?" },
+      { purpose: "Hand turn to someone", phrase: "I think you wanted to say...", example: "I think you wanted to say something, John?" }
+    ]
+  },
   speakingPractice: [
     { question: "What does turn-taking mean?", answer: "Turn-taking means knowing when it's your turn to speak and when to listen in a conversation." },
     { question: "Why is turn-taking important?", answer: "It keeps the conversation organized and prevents people from talking over each other." },
@@ -2908,6 +2960,19 @@ const MODULE_190_DATA = {
 ✅ Learn to write formal reports and proposals effectively
 ✅ Master structure, tone, and coherence in professional writing
 ✅ Use persuasive language and formal expressions naturally`,
+  table: {
+    title: "📋 Formal Phrases for Reports and Proposals",
+    data: [
+      { section: "Introduction", phrase: "The aim of this report is to...", example: "The aim of this report is to analyze sales trends" },
+      { section: "Presenting data", phrase: "The data indicates that...", example: "The data indicates that sales increased by 15%" },
+      { section: "Analysis", phrase: "This suggests that...", example: "This suggests that demand is growing" },
+      { section: "Findings", phrase: "The results of the study show...", example: "The results of the study show positive outcomes" },
+      { section: "Recommendations", phrase: "It is recommended that...", example: "It is recommended that we expand operations" },
+      { section: "Proposal intro", phrase: "This proposal aims to...", example: "This proposal aims to address budget concerns" },
+      { section: "Showing results", phrase: "As a result, we found...", example: "As a result, we found significant improvements" },
+      { section: "Conclusion", phrase: "In conclusion...", example: "In conclusion, the project was successful" }
+    ]
+  },
   speakingPractice: [
     { question: "What is the purpose of a report?", answer: "A report presents factual information clearly and objectively, usually for analysis or decision-making." },
     { question: "What is the purpose of a proposal?", answer: "A proposal aims to persuade the reader to accept or approve a plan or action." },
