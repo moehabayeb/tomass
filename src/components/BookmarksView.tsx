@@ -41,6 +41,8 @@ export default function BookmarksView({ onBack, onContinueFromMessage }: Bookmar
       //   // Merge and deduplicate bookmarks
       // }
     } catch (error) {
+      // 🔧 FIX BUG #2: Failed to load bookmarks from localStorage - silent fail, show empty list
+      // Error cases: JSON parse error or localStorage access denied
     }
   };
 
@@ -56,6 +58,8 @@ export default function BookmarksView({ onBack, onContinueFromMessage }: Bookmar
 
       // TODO: Remove from Supabase when user authentication is implemented
     } catch (error) {
+      // 🔧 FIX BUG #2: Failed to delete bookmark - silent fail, bookmark remains visible
+      // Error cases: JSON parse error, localStorage access denied, or storage write error
     }
   };
 

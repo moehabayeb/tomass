@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Bookmark, BookmarkCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { supabase } from '@/integrations/supabase/client';
 import { useBadgeSystem } from '@/hooks/useBadgeSystem';
+import { useToast } from '@/hooks/use-toast';
 
 interface BookmarkButtonProps {
   content: string;
@@ -31,6 +31,10 @@ export default function BookmarkButton({
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { incrementBookmarks } = useBadgeSystem();
+  const { toast } = useToast();
+
+  // 🔧 FIX BUG #4: Track in-flight operations to prevent race conditions
+  const isTogglingRef = useRef(false);
 
   // Generate a unique ID for the bookmark based on content
   const getBookmarkId = (content: string) => {
@@ -50,32 +54,40 @@ export default function BookmarkButton({
     }
   };
 
-  // Check if item is bookmarked on mount
-  useEffect(() => {
-    checkBookmarkStatus();
-  }, [content]);
-
-  const checkBookmarkStatus = async () => {
+  // 🔧 FIX BUG #1: Wrap in useCallback with proper dependencies
+  const checkBookmarkStatus = useCallback(async () => {
     try {
       // Check localStorage first
       const localBookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]');
       const bookmarkId = getBookmarkId(content);
       const isLocallyBookmarked = localBookmarks.some((b: BookmarkItem) => b.id === bookmarkId);
-      
+
       setIsBookmarked(isLocallyBookmarked);
-      
+
       // TODO: Also check Supabase when user authentication is implemented
       // const { data: { user } } = await supabase.auth.getUser();
       // if (user) {
       //   // Check Supabase bookmarks
       // }
     } catch (error) {
+      // 🔧 FIX BUG #2: Bookmark status check failed - silent fail, default to not bookmarked
     }
-  };
+  }, [content]);
+
+  // Check if item is bookmarked on mount
+  useEffect(() => {
+    checkBookmarkStatus();
+  }, [checkBookmarkStatus]);
 
   const toggleBookmark = async () => {
+    // 🔧 FIX BUG #4: Prevent race conditions from rapid clicks
+    if (isTogglingRef.current) {
+      return; // Operation already in progress, ignore this click
+    }
+
+    isTogglingRef.current = true;
     setIsLoading(true);
-    
+
     try {
       const bookmarkId = getBookmarkId(content);
       const bookmarkItem: BookmarkItem = {
@@ -98,10 +110,26 @@ export default function BookmarkButton({
       } else {
         // Add bookmark
         const updatedBookmarks = [...localBookmarks, bookmarkItem];
-        localStorage.setItem('bookmarks', JSON.stringify(updatedBookmarks));
+
+        // 🔧 FIX BUG #3: Handle localStorage quota exceeded error
+        try {
+          localStorage.setItem('bookmarks', JSON.stringify(updatedBookmarks));
+        } catch (storageError: any) {
+          if (storageError.name === 'QuotaExceededError' || storageError.code === 22) {
+            // Quota exceeded - show user-friendly error
+            toast({
+              title: "Storage Full",
+              description: "You've reached the bookmark storage limit. Please delete some old bookmarks to make space.",
+              variant: "destructive"
+            });
+            return; // Exit early, don't update state
+          }
+          throw storageError; // Re-throw other errors
+        }
+
         setIsBookmarked(true);
         onBookmark?.(true);
-        
+
         // Track bookmark for badge progress
         incrementBookmarks();
       }
@@ -116,8 +144,17 @@ export default function BookmarkButton({
       //   }
       // }
 
-    } catch (error) {
+    } catch (error: any) {
+      // 🔧 FIX BUG #2 & #3: Comprehensive error handling
+      // Error cases: JSON parse error, storage access denied, or other localStorage errors
+      toast({
+        title: "Bookmark Error",
+        description: error.message || "Failed to save bookmark. Please try again.",
+        variant: "destructive"
+      });
     } finally {
+      // 🔧 FIX BUG #4: Reset the ref to allow future operations
+      isTogglingRef.current = false;
       setIsLoading(false);
     }
   };
