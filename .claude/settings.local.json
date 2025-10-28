@@ -99,7 +99,8 @@
       "Bash(timeout 5 sleep:*)",
       "Bash(timeout 3 sleep:*)",
       "Bash(sort:*)",
-      "Bash(timeout 30 npx tsc:*)"
+      "Bash(timeout 30 npx tsc:*)",
+      "Bash(timeout 60 npx tsc:*)"
     ],
     "deny": [],
     "ask": []
