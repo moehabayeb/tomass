@@ -31,6 +31,51 @@ Academic texts are formal, objective pieces of writing that present research, an
 • **Question assumptions** – Is the logic sound?
 • **Synthesize** – Connect ideas across sections`,
 
+  table: {
+    title: "📋 Understanding Academic Texts (Akademik Metinleri Anlama)",
+    data: [
+      { category: "What Are Academic Texts?", explanation: "Formal, objective writing presenting research, analysis, or scholarly arguments", purpose: "Inform or persuade through evidence-based reasoning", audience: "Educated readers familiar with the field", turkish: "Akademik metinler - bilimsel yazılar", note: "Follow specific conventions and disciplinary standards" },
+
+      { category: "Key Feature - Formal Style", characteristics: "No contractions (don't → do not), no colloquialisms (stuff → material), no slang", tone: "Professional, impersonal, objective", avoid: "Casual language, personal pronouns (I, you), emotional language", examples: "Instead of 'I think this is bad' → 'The evidence suggests limitations' / Instead of 'a lot of' → 'substantial' or 'significant'", remember: "Academic = formal register throughout!" },
+
+      { category: "Key Feature - Objectivity", focus: "Facts, evidence, and logical reasoning (not personal opinions)", passive_voice: "Often used to emphasize results over researcher", examples: "The experiment was conducted... / The data were analyzed... / Results indicate...", avoid: "In my opinion, I believe, I feel, obviously, clearly (unless supported)", critical: "Present EVIDENCE, not just beliefs!", note: "Let the data speak, not your personal views" },
+
+      { category: "Key Feature - Clear Structure", intro: "Introduction: context, thesis statement, roadmap", body: "Body: paragraphs with topic sentences, evidence, analysis", conclusion: "Conclusion: summarize findings, implications, future research", signposting: "Use transitions: Furthermore, However, In contrast, Moreover", note: "Reader should be able to follow argument easily!" },
+
+      { category: "Key Feature - Citations & References", purpose_1: "Give credit to original authors (avoid plagiarism)", purpose_2: "Allow readers to verify sources and find original work", purpose_3: "Demonstrate engagement with existing research", formats: "APA, MLA, Chicago, Harvard - depends on field", examples: "According to Smith (2020)... / Research indicates (Jones, 2019). / Multiple studies support this (Lee, 2018; Chen, 2021).", critical: "ALWAYS cite! Not citing = plagiarism", note: "When in doubt, cite the source!" },
+
+      { category: "Key Feature - Technical Vocabulary", discipline_specific: "Each field has specialized terminology", precision: "Technical terms are more precise than everyday equivalents", examples: "Science: hypothesis, methodology, empirical / Psychology: cognition, affect, behavior / Economics: elasticity, equilibrium, inflation", learn: "Build vocabulary gradually through reading in your field", note: "Don't avoid technical terms - they add precision!" },
+
+      { category: "Key Feature - Hedging Language", what: "Cautious, tentative expressions avoiding overstatement", verbs: "suggest, indicate, appear to, seem to, may, might, could", adverbs: "possibly, perhaps, probably, likely, generally, typically", examples: "The data SUGGEST a relationship... / Results MAY indicate... / This COULD explain...", purpose: "Shows appropriate scientific caution and acknowledges uncertainty", critical: "Don't claim certainty without absolute proof!", remember: "Hedging = professional, not weak!" },
+
+      { category: "Reading Strategy 1 - Skimming", what: "Quickly reading to get general idea", how: "Read title, abstract, intro, headings, conclusion first", speed: "Don't read every word - identify main points", when: "Before detailed reading, when deciding if article is relevant", examples: "Skim abstract to see if study relates to your topic / Read conclusion to understand findings", note: "Skimming BEFORE reading saves time!" },
+
+      { category: "Reading Strategy 2 - Identifying Thesis", what: "The main argument or central claim of the text", where: "Usually at end of introduction paragraph", importance: "Everything else supports or develops the thesis", how_to_find: "Look for strong declarative statement about what will be argued", examples: "'This paper argues that...' / 'The evidence demonstrates...' / 'This study challenges the view that...'", remember: "Thesis = the 'so what?' of the paper" },
+
+      { category: "Reading Strategy 3 - Note Evidence", what: "Identify how author supports claims", types: "Research data, statistics, expert citations, examples, case studies", questions: "What evidence is provided? Is it sufficient? Is the source reliable?", strategy: "Underline key evidence, note page numbers for quotes", critical: "Strong arguments have MULTIPLE types of evidence!", note: "Evaluate quality of evidence, not just quantity" },
+
+      { category: "Reading Strategy 4 - Question Assumptions", critical_reading: "Don't accept claims passively - evaluate logic", questions: "What assumptions underlie this argument? Are they valid? / What's NOT being said? / Are there alternative explanations?", watch_for: "Logical fallacies, biased sources, overgeneralizations, unsupported leaps", examples: "Author assumes correlation = causation? / Sample size too small to generalize? / Conflicting evidence ignored?", note: "Critical reading = questioning, not accepting blindly!" },
+
+      { category: "Reading Strategy 5 - Synthesizing", what: "Combining information from different sources or sections to form new understanding", how: "Look for patterns, connections, contradictions across texts", examples: "Study A and Study B both find X, suggesting... / While Author 1 claims Y, Author 2's data contradicts this...", purpose: "Create coherent overall interpretation beyond individual sources", note: "Synthesis = going beyond summary to create new insights!" },
+
+      { category: "Understanding the Abstract", what: "Brief summary (150-250 words) of entire paper", includes: "Research question, methodology, key findings, conclusions", purpose: "Helps readers quickly assess relevance without reading full paper", strategy: "Read abstract first to decide if paper is worth full read", structure: "Background → Methods → Results → Conclusions", note: "Abstract is your roadmap to the paper!" },
+
+      { category: "Understanding Citations - In-Text", what: "Brief reference within text pointing to full citation in bibliography", formats: "APA: (Author, Year) / MLA: (Author Page) / Chicago: Footnotes", examples: "Research shows effectiveness (Smith, 2020). / According to Johnson (2019), ... / Multiple studies support this (Lee, 2018; Chen, 2021).", purpose: "Show where information came from without interrupting flow", note: "Every fact/idea from another source needs citation!" },
+
+      { category: "Understanding Citations - Reference List", what: "Complete bibliographic information at end of paper", includes: "Author(s), year, title, journal/publisher, DOI/URL", alphabetical: "Usually ordered alphabetically by author surname", purpose: "Allows readers to locate original sources", examples: "Smith, J. (2020). Title of article. Journal Name, 15(3), 45-62. https://doi.org/...", note: "Different fields use different citation styles!" },
+
+      { category: "Common Structures in Academic Writing", IMRAD: "Introduction, Methods, Results, And Discussion (science papers)", problem_solution: "Problem-Solution (identify issue, propose solution)", comparison: "Comparison-Contrast (analyze similarities and differences)", cause_effect: "Cause-Effect (explain why something happens)", chronological: "Chronological (historical development or process)", note: "Recognize structure to follow argument better!" },
+
+      { category: "Types of Academic Texts", research_article: "Research article - original empirical study", review_article: "Literature review - synthesizes existing research", theoretical: "Theoretical paper - develops conceptual framework", case_study: "Case study - in-depth analysis of specific example", meta_analysis: "Meta-analysis - statistical synthesis of multiple studies", note: "Different types require different reading approaches!" },
+
+      { category: "Common Mistakes - Students", mistake_1: "Reading word-by-word instead of strategically", mistake_2: "Not identifying thesis early", mistake_3: "Accepting claims without evaluating evidence", mistake_4: "Ignoring citations and references", mistake_5: "Not taking notes or highlighting key points", advice: "Read ACTIVELY, not passively - engage with the text!", remember: "Academic reading = critical thinking, not memorizing!" },
+
+      { category: "Active Reading Techniques", annotate: "Annotate: Write notes in margins, highlight key points", question: "Question: Write questions as you read", summarize: "Summarize: Write brief summary of each section", connect: "Connect: Link to other readings or your own knowledge", evaluate: "Evaluate: Assess strengths and weaknesses", note: "Active reading improves comprehension and retention!" },
+
+      { category: "Remember", takeaway_1: "Academic texts = formal, objective, evidence-based writing", takeaway_2: "Key features: formal style, citations, hedging language, clear structure", takeaway_3: "Reading strategies: skim first, identify thesis, note evidence, question assumptions, synthesize", takeaway_4: "Citations are REQUIRED - always acknowledge sources", takeaway_5: "Read ACTIVELY and CRITICALLY - don't accept claims passively", final_note: "Mastering academic texts is essential for university success - develop these skills through practice!" }
+    ]
+  },
+
   speakingPractice: [
     { question: "What is the main purpose of academic writing?", answer: "The main purpose is to inform or persuade through evidence-based reasoning, contribute to scholarly discourse, and advance knowledge in a particular field." },
     { question: "Why is objectivity important in academic texts?", answer: "Objectivity ensures that arguments are based on evidence rather than personal bias, making the research credible and allowing readers to evaluate claims independently." },
@@ -60,18 +105,48 @@ Proper punctuation clarifies meaning, controls pacing, and adds sophistication t
 
 **Advanced Punctuation Marks:**`,
 
-  table: [
-    { english: "Semicolon (;)", turkish: "Noktalı virgül", example: "She loves reading; her brother prefers sports." },
-    { english: "Colon (:)", turkish: "İki nokta", example: "He needed three things: patience, courage, and luck." },
-    { english: "Em Dash (—)", turkish: "Uzun tire", example: "The evidence—despite some controversy—supports the theory." },
-    { english: "En Dash (–)", turkish: "Kısa tire", example: "The 2020–2021 academic year was challenging." },
-    { english: "Parentheses ( )", turkish: "Parantez", example: "The conference (held annually) attracts global experts." },
-    { english: "Ellipsis (...)", turkish: "Üç nokta", example: "The report states that 'economic growth... remains uncertain.'" },
-    { english: "Quotation Marks (' ')", turkish: "Tırnak işareti", example: "She said, 'I'll consider the proposal carefully.'" },
-    { english: "Apostrophe (')", turkish: "Kesme işareti", example: "It's the student's responsibility to submit on time." },
-    { english: "Hyphen (-)", turkish: "Kısa çizgi", example: "She is a well-known author in the field." },
-    { english: "Brackets [ ]", turkish: "Köşeli parantez", example: "The author stated, 'This [phenomenon] is remarkable.'" }
-  ],
+  table: {
+    title: "📋 Advanced Punctuation and Style (İleri Noktalama İşaretleri)",
+    data: [
+      { category: "Why Punctuation Matters", clarity: "Clarifies meaning and prevents misinterpretation", pacing: "Controls reading rhythm and emphasis", sophistication: "Adds polish and professionalism to writing", examples: "Let's eat, Grandma! vs Let's eat Grandma! (comma saves Grandma!)", critical: "Misplaced punctuation can completely change meaning!", note: "Master punctuation for clear, professional writing" },
+
+      { category: "Semicolon (;) - Connecting Clauses", symbol: "Semicolon (;) - noktalı virgül", use: "Connects two closely related independent clauses", rule: "Both parts must be complete sentences (independent clauses)", examples: "She loves reading; her brother prefers sports. / The experiment succeeded; the hypothesis was confirmed.", not_for: "Don't use with dependent clauses or before conjunctions like 'because'", note: "Semicolon = stronger than comma, weaker than period" },
+
+      { category: "Semicolon (;) - Lists with Commas", use_2: "Separates complex list items that already contain commas", examples: "The conference includes speakers from Paris, France; Berlin, Germany; and Tokyo, Japan. / Team members: John Smith, CEO; Mary Johnson, CFO; and Bob Lee, CTO.", purpose: "Prevents confusion when list items have internal commas", remember: "Use semicolons to separate major list items!" },
+
+      { category: "Colon (:) - Introducing Information", symbol: "Colon (:) - iki nokta", use: "Introduces explanation, list, quote, or example", rule: "What comes BEFORE colon must be independent clause", examples: "He needed three things: patience, courage, and luck. / The solution is simple: work harder. / She said the following: 'Success requires effort.'", wrong: "She bought: milk, eggs, bread ✗ (no independent clause before colon)", correct: "She bought three items: milk, eggs, and bread ✓", note: "Colon = 'here's what I mean' or 'as follows'" },
+
+      { category: "Em Dash (—) - Adding Emphasis", symbol: "Em Dash (—) - uzun tire (longest dash)", use: "Adds emphasis, interruption, or aside", effect: "DRAWS ATTENTION to the inserted information", examples: "The evidence—despite some controversy—supports the theory. / She finally decided—after months of deliberation—to accept the offer.", vs_parentheses: "Dashes emphasize | Parentheses downplay", keyboard: "Type two hyphens -- (often auto-converts to em dash)", note: "Use dashes for dramatic emphasis!" },
+
+      { category: "En Dash (–) - Ranges and Connections", symbol: "En Dash (–) - kısa tire (medium length)", use: "Shows ranges, spans, or connections between words", examples: "The 2020–2021 academic year / Pages 45–67 / The New York–London flight / The pre–World War II era", rule: "No spaces around en dash in ranges", vs_hyphen: "En dash (–) for ranges | Hyphen (-) for compound words", note: "Think of en dash as 'to' or 'through'" },
+
+      { category: "Parentheses ( ) - Supplementary Info", symbol: "Parentheses ( ) - parantez", use: "Adds supplementary, less important information", effect: "DOWNPLAYS the inserted information", examples: "The conference (held annually) attracts global experts. / The study (n=500) showed significant results.", punctuation: "Period goes OUTSIDE parentheses if sentence continues: (like this). But inside if complete sentence. (Like this.)", note: "Parentheses = 'by the way' information" },
+
+      { category: "Ellipsis (...) - Omission", symbol: "Ellipsis (...) - üç nokta", use: "Shows words omitted from quotation or pause in thought", examples: "The report states that 'economic growth... remains uncertain.' / I was thinking... maybe we should reconsider.", rule: "Use three dots (...), or four if omitting end of sentence (....)", purpose: "In quotes: shows honest omission | In prose: shows hesitation", note: "Don't overuse ellipsis in formal writing!" },
+
+      { category: "Quotation Marks - Direct Speech", double_quotes: "Use \"double quotes\" for direct speech (American English)", single_quotes: "Use 'single quotes' for quotes within quotes", examples: "She said, \"I'll consider the proposal carefully.\" / He asked, \"Did she say 'yes' or 'no'?\"", british_vs_american: "British English reverses this: single outer, double inner", punctuation: "Periods and commas go INSIDE quotes (American) / Colons and semicolons go OUTSIDE", note: "Follow style guide for your region!" },
+
+      { category: "Quotation Marks - Titles and Irony", use_for_titles: "Short works: articles, poems, short stories, song titles, chapter titles", examples: "The article \"Climate Change\" appeared in Nature. / I read the poem \"The Road Not Taken.\"", use_for_irony: "Scare quotes show skepticism or irony", examples: "The so-called \"expert\" made several errors. / Their \"solution\" created more problems.", critical: "Don't overuse scare quotes - can seem sarcastic!", note: "Book titles, journals = italics | Articles, poems = quotes" },
+
+      { category: "Apostrophe (') - Possession", symbol: "Apostrophe (') - kesme işareti", singular_possession: "Add 's to singular nouns: the student's book, James's car", plural_possession: "Add only ' if plural already ends in s: the students' books", irregular_plural: "Add 's if plural doesn't end in s: children's toys, women's rights", examples: "It's the student's responsibility. / The dogs' owner (multiple dogs) / The dog's owner (one dog)", critical: "Its = possessive (no apostrophe!) | It's = it is (with apostrophe!)", remember: "If you can say 'it is', use it's. Otherwise, use its." },
+
+      { category: "Apostrophe (') - Contractions", use: "Shows missing letters in contractions", examples: "it's (it is), don't (do not), can't (cannot), won't (will not), they're (they are)", academic_writing: "Avoid contractions in formal academic writing!", spelling: "Write out full words: do not, cannot, will not", note: "Contractions = informal | Full words = formal" },
+
+      { category: "Hyphen (-) - Compound Adjectives", symbol: "Hyphen (-) - kısa çizgi (shortest)", use: "Joins words in compound adjectives BEFORE nouns", examples: "She is a well-known author. / A 10-year-old child. / A state-of-the-art facility.", rule: "Hyphenate compound adjectives BEFORE noun, not after", compare: "well-known author (before noun) vs The author is well known (after noun, no hyphen)", note: "Hyphens prevent confusion: small-business owner vs small business owner" },
+
+      { category: "Hyphen (-) - Numbers and Prefixes", numbers: "Hyphenate spelled-out numbers from twenty-one to ninety-nine", prefixes: "With prefixes before proper nouns: pre-COVID, anti-American, pro-European", examples: "Forty-five students attended. / The pre-2020 era. / An ex-president spoke.", note: "Most prefixes don't need hyphens unless before capitals" },
+
+      { category: "Brackets [ ] - Clarification in Quotes", symbol: "Brackets [ ] - köşeli parantez", use: "Insert clarification, correction, or editorial note in quoted material", examples: "The author stated, 'This [phenomenon] is remarkable.' / 'He [the president] announced new policies.' / 'It happened in 1918 [sic].'", sic: "[sic] means 'thus' - shows error is in original, not your mistake", purpose: "Helps readers understand context without changing original quote", note: "Brackets = your words inserted into someone else's quote" },
+
+      { category: "Common Mistakes - ITS vs IT'S", confusion: "Most common apostrophe error in English!", its_possessive: "ITS (no apostrophe) = possessive, belonging to it", its_contraction: "IT'S (with apostrophe) = it is OR it has", examples: "The dog wagged its tail. (possessive) / It's raining outside. (it is)", test: "Can you say 'it is'? → use IT'S. If not, use ITS.", remember: "Possessive pronouns NEVER have apostrophes: his, hers, its, ours, theirs" },
+
+      { category: "Common Mistakes - Comma Splices", error: "Using comma alone to join two independent clauses", wrong: "She studied hard, she passed the exam ✗", correct_options: "She studied hard; she passed the exam. ✓ (semicolon) / She studied hard, and she passed the exam. ✓ (comma + conjunction) / She studied hard. She passed the exam. ✓ (two sentences)", rule: "Comma ALONE can't join independent clauses!", remember: "Use semicolon, period, or comma + conjunction" },
+
+      { category: "Common Mistakes - Unnecessary Quotation Marks", error: "Using quotes for emphasis (wrong purpose!)", wrong: "Try our \"fresh\" fish ✗ (implies it's NOT actually fresh!)", correct: "Try our fresh fish ✓ (no quotes needed for emphasis)", use_italics: "Use italics or bold for emphasis, not quotes", note: "Quotes for irony imply opposite meaning - be careful!" },
+
+      { category: "Remember", takeaway_1: "Semicolon (;) connects related independent clauses", takeaway_2: "Colon (:) introduces lists, explanations, examples", takeaway_3: "Em dash (—) emphasizes | Parentheses ( ) downplay", takeaway_4: "ITS = possessive (its tail) | IT'S = it is (it's raining)", takeaway_5: "Hyphenate compound adjectives BEFORE nouns: well-known author", final_note: "Mastering punctuation = clearer, more professional, more sophisticated writing!" }
+    ]
+  },
 
   speakingPractice: [
     { question: "When should you use a semicolon instead of a period?", answer: "Use a semicolon to connect two closely related independent clauses that could stand alone as sentences but are conceptually linked, showing their relationship without creating separate sentences." },
@@ -115,6 +190,51 @@ Creative writing goes beyond conveying information—it evokes emotions, paints 
 • **Character arc** – Show how characters change and grow
 • **Resolution** – Provide satisfying (not necessarily happy) endings
 • **Theme** – Weave deeper meaning throughout the story`,
+
+  table: {
+    title: "📋 Creative Writing Techniques (Yaratıcı Yazma Teknikleri)",
+    data: [
+      { category: "Show, Don't Tell - The Golden Rule", tell_weak: "TELL (weak): She was nervous.", show_strong: "SHOW (strong): Her hands trembled as she reached for the doorknob. Sweat beaded on her forehead.", rule: "Demonstrate emotions through ACTIONS, SENSORY DETAILS, and BODY LANGUAGE instead of stating them", examples: "Tell: He was angry. ✗ / Show: His jaw clenched. His fists curled. ✓", critical: "Showing creates vivid scenes readers can experience!", remember: "Actions speak louder than adjectives!" },
+
+      { category: "Sensory Language - Five Senses", sight: "Sight: colors, shapes, movements, expressions", sound: "Sound: whisper, thunder, crackle, silence", smell: "Smell: pine, smoke, perfume, decay", taste: "Taste: bitter, sweet, metallic, sour", touch: "Touch: rough, smooth, cold, sticky", purpose: "Engage ALL senses to immerse readers in the scene", examples: "The bitter coffee burned her tongue. / Pine needles crunched underfoot. / Smoke stung his eyes.", note: "Don't rely only on sight - use all five senses!" },
+
+      { category: "Varied Sentence Structure - Rhythm", short_sentences: "Short sentences = tension, urgency, emphasis", examples_short: "He ran. The door slammed. Darkness.", long_sentences: "Long sentences = flowing, descriptive, contemplative", examples_long: "She wandered through the garden, pausing occasionally to admire the roses that climbed the weathered trellis, their petals still wet with morning dew.", mix: "MIX short and long for rhythm and impact!", critical: "All short = choppy | All long = monotonous | Mix = dynamic!", note: "Vary sentence length to control pacing" },
+
+      { category: "Strong Verbs - Power Words", weak: "Weak verbs need adverbs: walked slowly, said quietly", strong: "Strong verbs stand alone: strolled, sauntered, whispered, murmured", examples: "Weak: He went quickly ✗ / Strong: He sprinted, dashed, bolted ✓ / Weak: She looked angrily ✗ / Strong: She glared, scowled ✓", rule: "Choose PRECISE, VIVID verbs instead of generic verb + adverb", list: "Instead of: said → whispered, shouted, muttered, gasped / Instead of: walked → strode, crept, staggered, marched", remember: "One strong verb > verb + adverb!" },
+
+      { category: "Dialogue - Revealing Character", what_not_to_do: "Don't info-dump: 'As you know, Bob, we've been friends for 20 years...' ✗", what_to_do: "Reveal character, advance plot, create tension", natural: "People interrupt, use contractions, have speech patterns", examples: "'You coming?' he asked. (casual) vs 'Are you attending?' she inquired. (formal) / 'I... I don't know,' she stammered. (nervous)", subtext: "What's NOT said is often more important than what IS said", note: "Dialogue should sound NATURAL, not like a speech!" },
+
+      { category: "Dialogue Tags - Said is Not Dead", simple: "'Said' and 'asked' are often best - they're invisible", avoid: "Avoid fancy tags: exclaimed, ejaculated, pontificated", wrong: "'I'm leaving,' she hissed. (can't hiss words without S!) ✗", good: "'I'm leaving,' she said coldly. ✓", action_beats: "Or use action beats: 'I'm leaving.' She grabbed her coat.", note: "'Said' doesn't draw attention away from dialogue itself!" },
+
+      { category: "Literary Device - Metaphor", what: "States one thing IS another (direct comparison)", examples: "Her smile was sunshine. / Time is money. / The world is a stage.", effect: "Creates strong, memorable images", vs_simile: "Metaphor: Her smile was sunshine | Simile: Her smile was like sunshine", turkish: "Metafor - dolaylı benzetme", note: "Metaphors are more powerful than similes!" },
+
+      { category: "Literary Device - Simile", what: "Compares using 'like' or 'as'", examples: "Her smile was like sunshine. / He fought like a lion. / She runs as fast as the wind.", effect: "Makes comparisons clear and vivid", common_phrases: "Busy as a bee / Cold as ice / Strong as an ox", turkish: "Benzetme - 'gibi' veya 'kadar' ile", note: "Similes make abstract concepts concrete!" },
+
+      { category: "Literary Device - Personification", what: "Gives human qualities to non-human things", examples: "The wind whispered through the trees. / Time marches on. / The sun smiled down.", effect: "Makes descriptions more vivid and relatable", turkish: "Kişileştirme", note: "Personification brings the world to life!" },
+
+      { category: "Literary Device - Alliteration", what: "Repetition of initial consonant sounds", examples: "Peter Piper picked... / She sells seashells... / The fair breeze blew, the white foam flew.", effect: "Creates rhythm, emphasis, memorability", purpose: "Makes phrases musical and memorable", note: "Use sparingly - too much seems childish!" },
+
+      { category: "Literary Device - Foreshadowing", what: "Hints about future events", examples: "The clouds darkened. (storm coming) / She touched the knife absently. (will use it later) / 'This will end badly,' he muttered.", effect: "Creates anticipation, builds tension", subtle: "Best foreshadowing is subtle - readers notice on reread", note: "Plant seeds early that pay off later!" },
+
+      { category: "Pacing - Speed Up Action", techniques: "Short sentences, active verbs, present tense feel, minimal description", examples: "He ran. Footsteps behind. Closer. Turn left. Dead end.", purpose: "Creates urgency and tension during action scenes", avoid: "Don't slow down with long descriptions during action!", note: "Action = quick pacing, short sentences!" },
+
+      { category: "Pacing - Slow for Emotion", techniques: "Longer sentences, sensory details, internal thoughts, descriptive language", examples: "She sat by the window, watching raindrops trace lazy paths down the glass, each one a small world unto itself, and she wondered if anyone else felt as alone as she did in that moment.", purpose: "Allows readers to feel emotional weight", note: "Emotional moments need space to breathe!" },
+
+      { category: "Hook - Grabbing Attention", what: "Opening lines that make readers want more", techniques: "Start with action, intriguing question, vivid scene, surprising statement, compelling voice", examples: "It was a bright cold day in April, and the clocks were striking thirteen. (1984) / The sky above the port was the color of television, tuned to a dead channel. (Neuromancer)", avoid: "Don't start with waking up, weather descriptions, or backstory", critical: "First sentence is the most important!", note: "Hook readers or lose them!" },
+
+      { category: "Conflict - The Engine of Story", what: "Problems, obstacles, and tensions that drive narrative", types: "Character vs Character | Character vs Self | Character vs Society | Character vs Nature | Character vs Technology", examples: "Romeo vs Juliet's families / Hamlet vs his indecision / Winston vs Big Brother", no_conflict: "No conflict = no story!", escalate: "Conflict should escalate throughout the story", note: "Readers read to see characters overcome obstacles!" },
+
+      { category: "Character Arc - Growth and Change", what: "How character transforms from beginning to end", positive_arc: "Positive: Character grows, learns, overcomes flaw", negative_arc: "Negative: Character descends, fails, corruption", flat_arc: "Flat: Character stays same, but changes world around them", examples: "Ebenezer Scrooge: miserly → generous (positive) / Walter White: teacher → criminal (negative) / Superman: always heroic (flat)", critical: "Characters who don't change are boring!", note: "Arc = the character's journey of transformation" },
+
+      { category: "Resolution - Satisfying Endings", what: "How conflicts are resolved (not necessarily happily!)", satisfying: "Satisfying ending ties up major threads, feels earned", unsatisfying: "Unsatisfying: deus ex machina, everything a dream, sudden fix", examples: "Good: Harry defeats Voldemort after 7 books of preparation / Bad: And then he woke up. It was all a dream.", ambiguous: "Ambiguous endings can work if thematically appropriate", note: "Ending doesn't have to be happy, just satisfying!" },
+
+      { category: "Theme - Deeper Meaning", what: "Universal human truth or message woven throughout story", examples: "Love conquers all / Power corrupts / Coming of age / Good vs evil / Sacrifice", how_to_weave: "Don't state theme directly - show through plot, character actions, symbols", subtle: "Best themes emerge naturally, not forced", examples_story: "The Great Gatsby: American Dream corrupted / 1984: dangers of totalitarianism / To Kill a Mockingbird: racial injustice", note: "Theme gives story depth and resonance!" },
+
+      { category: "Point of View (POV) - Narrative Perspective", first_person: "First Person (I): intimate, limited perspective", examples_first: "'I walked into the room. I felt nervous.'", third_limited: "Third Limited (he/she): follows one character's thoughts", examples_third_limited: "'She walked into the room. She felt nervous.'", third_omniscient: "Third Omniscient: knows all characters' thoughts", examples_omniscient: "'She walked into the room, unaware that he was watching from the shadows, planning his next move.'", note: "Choose POV based on story needs!" },
+
+      { category: "Remember", takeaway_1: "Show, don't tell - demonstrate emotions through actions and sensory details", takeaway_2: "Engage all five senses to immerse readers in the scene", takeaway_3: "Vary sentence length for rhythm: short = tension | long = flowing", takeaway_4: "Strong verbs > weak verb + adverb (sprinted > walked quickly)", takeaway_5: "Dialogue should reveal character, advance plot, and sound natural", final_note: "Great creative writing combines all these techniques to transport readers into vivid, memorable worlds!" }
+    ]
+  },
 
   speakingPractice: [
     { question: "What does 'show, don't tell' mean in creative writing?", answer: "'Show, don't tell' means demonstrating emotions and situations through specific actions, sensory details, and dialogue rather than simply stating facts—for example, showing a character's nervousness through trembling hands rather than saying 'She was nervous.'" },
