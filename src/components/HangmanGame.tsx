@@ -99,7 +99,7 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
         try {
           addXP(xpEarned, `Hangman victory! 🎉 Streak: ${streak + 1}`);
         } catch (error) {
-          console.error('Failed to award XP:', error);
+          // XP award failed - silent fail for Apple Store compliance
           // User still sees success animation, XP will sync later
         }
 

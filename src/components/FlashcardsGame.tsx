@@ -203,7 +203,7 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
         addXP(2, 'Keep trying!');
       }
     } catch (error) {
-      console.error('Failed to award XP:', error);
+      // XP award failed - silent fail for Apple Store compliance
       // User still sees their answer feedback, XP will sync later
     }
 
@@ -232,12 +232,13 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
       // 2. Error → user can try again or type
       // 3. No match → user can try again or type
     } catch (error) {
-      console.error('Voice input error:', error);
+      // Voice input error - silent fail for Apple Store compliance
+      // User can try again with voice or type the answer
       // Ensure cleanup happens even on error
       try {
         stopListening();
       } catch (cleanupError) {
-        // Ignore cleanup errors
+        // Cleanup error - silent fail for Apple Store compliance
       }
     }
   }, [currentCard, startListening, checkAnswer, stopListening]);
