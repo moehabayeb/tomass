@@ -452,18 +452,48 @@ Effective negotiation requires strategic language that builds rapport, demonstra
 
 **Negotiation Language by Category:**`,
 
-  table: [
-    { english: "Opening Statements", turkish: "Açılış İfadeleri", example: "I'm looking forward to finding a solution that works for both of us." },
-    { english: "Establishing Value", turkish: "Değer Belirleme", example: "What makes this particularly valuable is the long-term cost savings you'll realize." },
-    { english: "Making Offers", turkish: "Teklif Sunma", example: "I'd like to propose the following terms: We'll provide X in exchange for Y." },
-    { english: "Conditional Language", turkish: "Koşullu İfadeler", example: "If you can commit to a longer contract, we could offer a more competitive rate." },
-    { english: "Handling Objections", turkish: "İtirazları Ele Alma", example: "I understand your concern about the timeline. Let's explore how we might address that." },
-    { english: "Seeking Concessions", turkish: "Taviz İsteme", example: "Would you be willing to consider adjusting the payment terms if we expedite delivery?" },
-    { english: "Building on Agreement", turkish: "Anlaşma Üzerine İnşa", example: "Since we agree on the main framework, let's work through these remaining details." },
-    { english: "Buying Time", turkish: "Zaman Kazanma", example: "That's an interesting proposal. I'd like some time to review it with my team before responding." },
-    { english: "Creating Options", turkish: "Seçenekler Yaratma", example: "Another option we haven't discussed would be to structure this as a pilot program first." },
-    { english: "Closing Statements", turkish: "Kapanış İfadeleri", example: "I believe we've reached an agreement that benefits both parties. Let's formalize these terms." }
-  ],
+  table: {
+    title: "📋 Negotiation Skills Language (Müzakere Becerileri Dili)",
+    data: [
+      { category: "Core Principle - Interests vs Positions", position: "Position = what you say you want ('I want $100,000')", interest: "Interest = why you want it ('I need financial security for my family')", strategy: "Focus on underlying interests, not rigid positions", why: "Interests offer flexibility, positions create deadlock", examples: "Position: 'I won't accept less than X' | Interest: 'I need to cover costs and make reasonable profit'", note: "Win-win solutions come from understanding interests!" },
+
+      { category: "Opening Statements - Setting Tone", collaborative: "I'm looking forward to finding a solution that works for both of us.", optimistic: "I'm confident we can reach an agreement that benefits everyone involved.", acknowledge: "I appreciate the opportunity to discuss this with you today.", avoid: "Don't start adversarially: 'I'm here to get what I deserve' ✗", good: "Start cooperatively: 'Let's explore how we can both achieve our goals' ✓", note: "First impression sets negotiation tone!" },
+
+      { category: "Establishing Value - Building Your Case", demonstrate: "What makes this particularly valuable is the long-term cost savings you'll realize.", quantify: "Our solution will save you approximately 30% over three years compared to alternatives.", unique: "Unlike our competitors, we offer X, which addresses your specific concern about Y.", avoid: "Don't just claim value: 'This is great' ✗ → Prove it with data: 'This reduces costs by 30%' ✓", note: "Value must be specific and relevant to THEIR needs!" },
+
+      { category: "Making Offers - Proposing Terms", clear: "I'd like to propose the following terms: We'll provide X in exchange for Y.", structured: "My proposal is: First, ... Second, ... Third, ...", rationale: "I'm suggesting this because it addresses your concern about Z while meeting our needs for W.", leave_room: "Make first offer slightly better than your minimum - leave negotiation space!", examples: "'I propose $95,000 with these terms...' (leaves room to negotiate down to $90k minimum)", note: "First offer anchors negotiation!" },
+
+      { category: "Conditional Language - If/Then Structures", structure: "If you can [concession], we could [reciprocal benefit].", examples: "If you can commit to a longer contract, we could offer a more competitive rate. / If you increase the order size to 500 units, we could reduce the per-unit cost by 15%.", power: "Links concessions without committing unilaterally", flexibility: "Explores trade-offs without binding yourself", note: "'If-then' lets you test proposals safely!" },
+
+      { category: "Handling Objections - Acknowledging Concerns", acknowledge: "I understand your concern about the timeline. That's a valid point.", explore: "Let's explore how we might address that. What if we...?", reframe: "I hear you're worried about X. Another way to look at it is...", dont_dismiss: "Don't say: 'That's not a problem' ✗ → Say: 'I understand why that concerns you. Let's find a solution' ✓", note: "Validate before solving!" },
+
+      { category: "Seeking Concessions - Trading Value", polite: "Would you be willing to consider adjusting the payment terms if we expedite delivery?", reciprocal: "If we can move on price, could you be flexible on the timeline?", explore: "What would it take for you to agree to X?", never_free: "Never give concessions without getting something back!", examples: "'We can do X, but we'd need Y in return' (always trade, never just give)", note: "Every concession should have a reciprocal!" },
+
+      { category: "Building on Agreement - Finding Common Ground", emphasize: "Since we agree on the main framework, let's work through these remaining details.", momentum: "We've made great progress on A, B, and C. Now let's tackle D.", summarize: "So far we've agreed that... Is that correct?", focus_positive: "Focus on what's working, not just what's difficult", note: "Build momentum with agreements!" },
+
+      { category: "Buying Time - Strategic Pauses", pause: "That's an interesting proposal. I'd like some time to review it with my team before responding.", consult: "I need to check with my colleague/manager before I can commit to that.", think: "Let me think about that. Can we revisit this point after we discuss X?", power: "Time pressure = negotiation tactic. Don't be rushed!", examples: "'I appreciate the offer, but I need 24 hours to consider it carefully' (buys time)", note: "Never agree under pressure!" },
+
+      { category: "Creating Options - Expanding the Pie", alternatives: "Another option we haven't discussed would be to structure this as a pilot program first.", creative: "What if we approached it from this angle: instead of X, we could do Y with these terms?", multiple: "I see three possible paths forward: Option A..., Option B..., or Option C...", brainstorm: "Let's brainstorm some alternatives that might work for both of us.", note: "More options = better chance of agreement!" },
+
+      { category: "Closing Statements - Finalizing Agreement", summarize: "I believe we've reached an agreement that benefits both parties. Let me summarize what we've agreed...", formalize: "Let's formalize these terms in writing. I'll have our team draft the contract by Friday.", confirm: "To confirm: You'll do X by [date], and we'll do Y by [date]. Does that match your understanding?", next_steps: "Great! Next steps are: 1) ..., 2) ..., 3) ...", note: "Clear summary prevents misunderstandings!" },
+
+      { category: "BATNA - Best Alternative", what: "BATNA = Best Alternative To a Negotiated Agreement (your backup plan)", power: "Knowing your BATNA gives you walk-away confidence", examples: "If this deal falls through, I have another offer at $85k (BATNA)", strategy: "Never reveal your BATNA to the other side!", strengthen: "Before negotiating, strengthen your BATNA (get other options)", critical: "If offer < your BATNA, walk away!", note: "Your BATNA = your negotiation power!" },
+
+      { category: "ZOPA - Zone of Possible Agreement", what: "ZOPA = range where both parties can agree (overlap of minimums/maximums)", example: "Seller's minimum: $90k | Buyer's maximum: $100k → ZOPA: $90k-$100k", strategy: "Try to discover their limits without revealing yours", no_zopa: "If no ZOPA, negotiation will fail (seller wants $100k minimum, buyer offers $80k max)", note: "Negotiation only works if ZOPA exists!" },
+
+      { category: "Reading Body Language", positive_signs: "Leaning forward, nodding, open posture, maintaining eye contact = engagement, interest", negative_signs: "Crossing arms, leaning back, looking away, checking phone = resistance, discomfort", mirror: "Subtly mirror their body language to build rapport", watch_for: "Sudden changes in body language signal reaction to your proposals", note: "Non-verbal communication reveals true feelings!" },
+
+      { category: "Language to Avoid - Ultimatums", never_say: "'This is my final offer' / 'Take it or leave it' / 'I won't negotiate on this'", why_bad: "Ultimatums back both parties into corners with no flexibility", alternative: "Instead: 'This is as far as I can go right now, but let's explore creative alternatives'", threat: "Don't threaten: 'If you don't agree, I'll walk' ✗ → 'I need to see movement on this for us to proceed' ✓", note: "Ultimatums end negotiations!" },
+
+      { category: "Language to Avoid - Aggressive Tactics", bad_phrases: "'You're being unreasonable' / 'That's ridiculous' / 'I won't accept that' / 'You're wrong'", why_bad: "Aggressive language triggers defensive reactions and kills rapport", alternative: "'I see this differently. Here's my perspective...' / 'Help me understand why you think that...'", tone: "Stay calm, professional, respectful even when frustrated", note: "Aggression destroys deals!" },
+
+      { category: "Strategic Silence - Power of Pauses", after_offer: "After making an offer, STAY SILENT. Let them respond first.", discomfort: "Silence creates uncomfortable pressure to speak", information: "They often reveal information or make concessions to fill silence", examples: "You: 'My price is $95,000.' [SILENCE] / Them: 'Well, maybe we could go to $93,000...'", practice: "Practice staying quiet - resist urge to keep talking!", note: "Whoever speaks first after an offer often loses!" },
+
+      { category: "Anchoring - First Number Matters", anchor: "First number mentioned influences entire negotiation", strategy: "Make first offer if you have good information (anchors high/low)", examples: "Seller says $100k first → negotiation centers around $100k | Buyer offers $80k first → negotiation centers around $80k", caution: "Don't anchor if you lack information about market value!", adjust: "If they anchor too extreme, reframe: 'That's outside the range I was considering. Let's discuss realistic parameters.'", note: "First number = psychological anchor!" },
+
+      { category: "Remember", takeaway_1: "Focus on INTERESTS (why), not POSITIONS (what) - creates flexibility", takeaway_2: "Use conditional language: 'If you can X, we could Y' - links concessions", takeaway_3: "Know your BATNA (backup plan) - gives you walk-away power", takeaway_4: "Build on agreements, emphasize progress, create momentum", takeaway_5: "Strategic silence after offers - let them speak first!", final_note: "Great negotiation is collaborative problem-solving, not combat - seek win-win solutions where both parties feel satisfied!" }
+    ]
+  },
 
   speakingPractice: [
     { question: "What is the most important principle in negotiation language?", answer: "The most important principle is maintaining respect and focusing on interests rather than positions—seeking solutions that address both parties' underlying needs rather than simply defending predetermined stances." },
