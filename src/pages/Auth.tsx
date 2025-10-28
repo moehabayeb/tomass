@@ -30,9 +30,11 @@ export default function Auth() {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     try {
-      const { error } = await signIn(email, password);
+      // Sanitize inputs: trim whitespace and normalize email to lowercase
+      const trimmedEmail = email.trim().toLowerCase();
+      const { error } = await signIn(trimmedEmail, password);
       
       if (error) {
         toast({
@@ -62,9 +64,12 @@ export default function Auth() {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     try {
-      const { error } = await signUp(email, password, fullName);
+      // Sanitize inputs: trim whitespace, normalize email, and clean name
+      const trimmedEmail = email.trim().toLowerCase();
+      const trimmedName = fullName.trim();
+      const { error } = await signUp(trimmedEmail, password, trimmedName);
       
       if (error) {
         if (error.message.includes('already registered')) {
@@ -81,6 +86,11 @@ export default function Auth() {
           });
         }
       } else {
+        // Clear form fields after successful sign-up
+        setEmail('');
+        setPassword('');
+        setFullName('');
+
         toast({
           title: "Account created!",
           description: "Please check your email to verify your account.",
@@ -99,6 +109,14 @@ export default function Auth() {
 
   const [activeTab, setActiveTab] = useState('signin');
 
+  // Clear form fields when switching tabs for better UX and security
+  const handleTabChange = (tab: 'signin' | 'signup') => {
+    setActiveTab(tab);
+    setEmail('');
+    setPassword('');
+    setFullName('');
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-indigo-900 via-indigo-950 to-[#0B0E2C] text-white">
       {/* Header */}
@@ -114,16 +132,16 @@ export default function Auth() {
         <div className="mx-auto w-full max-w-md rounded-3xl bg-white/5 backdrop-blur-xl ring-1 ring-white/10 shadow-2xl overflow-hidden">
           {/* Tab navigation */}
           <div className="grid grid-cols-2">
-            <button 
-              onClick={() => setActiveTab('signin')}
+            <button
+              onClick={() => handleTabChange('signin')}
               className={`py-3 text-sm font-semibold transition-colors ${
                 activeTab === 'signin' ? 'text-white' : 'text-slate-300 hover:text-white/90'
               }`}
             >
               Sign In
             </button>
-            <button 
-              onClick={() => setActiveTab('signup')}
+            <button
+              onClick={() => handleTabChange('signup')}
               className={`py-3 text-sm font-semibold transition-colors ${
                 activeTab === 'signup' ? 'text-white' : 'text-slate-300 hover:text-white/90'
               }`}
@@ -138,9 +156,11 @@ export default function Auth() {
               <div>
                 <label className="block text-sm font-medium text-slate-200">Email</label>
                 <input
-                  type="email" 
-                  inputMode="email" 
-                  autoComplete="email" 
+                  type="email"
+                  inputMode="email"
+                  autoComplete="email"
+                  pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+                  title="Please enter a valid email address (e.g., user@example.com)"
                   required
                   placeholder="you@example.com"
                   value={email}
@@ -204,6 +224,8 @@ export default function Auth() {
                   type="email"
                   inputMode="email"
                   autoComplete="email"
+                  pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+                  title="Please enter a valid email address (e.g., user@example.com)"
                   required
                   placeholder="you@example.com"
                   value={email}
@@ -221,13 +243,16 @@ export default function Auth() {
                   autoComplete="new-password"
                   required
                   minLength={6}
-                  placeholder="Choose a password"
+                  placeholder="At least 6 characters"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="mt-1 w-full rounded-xl bg-white/10 text-white placeholder:text-slate-300/70
                              px-4 py-3 outline-none ring-1 ring-white/10 focus:ring-2 focus:ring-sky-400
                              shadow-inner selection:bg-sky-400/30"
                 />
+                <p className="mt-1 text-xs text-slate-300/60">
+                  Must be at least 6 characters
+                </p>
               </div>
 
               <button
