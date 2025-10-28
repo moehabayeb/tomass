@@ -77,7 +77,7 @@ async function loadModuleData(moduleId: number): Promise<any> {
 
     return moduleData;
   } catch (error) {
-    console.error(`Failed to load module ${moduleId}:`, error);
+    // Silent fail - error will be handled by UI loading state
     return null;
   }
 }
@@ -166,8 +166,10 @@ function saveModuleProgress(level: string, moduleId: number, phase: LessonPhaseT
     const completed = phase === 'complete';
     
     saveProgress(userId, level, String(moduleId), questionIndex, total, correct, completed);
-    
+
   } catch (error) {
+    // Silent fail - progress save is non-critical
+    // User can continue without interruption
   }
 }
 
@@ -182,8 +184,9 @@ function loadModuleProgress(level: string, moduleId: number): { phase: LessonPha
       };
     }
   } catch (error) {
+    // Silent fail - return default starting state
   }
-  
+
   return { phase: 'intro', questionIndex: 0 };
 }
 
@@ -219,9 +222,7 @@ function getSpeakingPracticeItemBase(item: any, questionIndex: number, mcqFromCa
   }
 
   // Ensure every item has multiple choice
-  if (!practiceItem.multipleChoice) {
-    console.warn('🚨 No multiple choice in cache for item:', practiceItem, 'index:', questionIndex);
-  }
+  // If missing, will be generated on-demand
 
   return practiceItem;
 }
@@ -888,7 +889,7 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
           setModuleData(data);
         }
       } catch (error: any) {
-        console.error('Error loading module:', error);
+        // Set error state for UI display
         setModuleLoadError(error.message || 'Failed to load module');
         setModuleData(null);
       } finally {
@@ -912,10 +913,10 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
       enabled: viewState === 'lesson',
       autoStart: false,
       onCommandExecuted: (command, result) => {
-        console.log('Voice command executed:', command.type, result);
+        // Voice command executed successfully
       },
       onCommandFailed: (command, error) => {
-        console.warn('Voice command failed:', command.type, error);
+        // Voice command failed - silent handling
       }
     }
   );
@@ -923,6 +924,7 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
   // Guards for module-scoped timers and safe progression
   const moduleGuardRef = useRef<number | null>(null);
   const timeoutRef = useRef<number | null>(null);
+  const placementToastTimeoutRef = useRef<number | null>(null);
   const lessonCompletedRef = useRef(false);
   
   // Track the live speaking index (no stale closures)
@@ -1490,6 +1492,7 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
       const parsed = JSON.parse(stored || '[]');
       return Array.isArray(parsed) ? parsed : [];
     } catch (error) {
+      // Corrupted localStorage - return empty array
       return [];
     }
   };
@@ -1560,28 +1563,7 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
     const successfulMCQs = Object.values(cache).filter(mcq => mcq !== null).length;
     const failedMCQs = Object.values(cache).filter(mcq => mcq === null).length;
 
-    if (failedMCQs > 0) {
-      console.error('🚨 CRITICAL: MCQs failed to generate!', {
-        level: selectedLevel,
-        module: selectedModule,
-        total: totalQuestions,
-        successful: successfulMCQs,
-        failed: failedMCQs,
-        coverage: `${((successfulMCQs / totalQuestions) * 100).toFixed(1)}%`
-      });
-
-      // Log which specific questions failed
-      Object.entries(cache).forEach(([key, mcq]) => {
-        if (!mcq) {
-          const questionIndex = parseInt(key.split('-')[2]);
-          const item = currentModuleData?.speakingPractice?.[questionIndex];
-          const practiceItem = typeof item === 'string' ? { question: item, answer: item } : item;
-          console.error(`  ❌ Question ${questionIndex + 1}:`, practiceItem?.answer || 'Unknown');
-        }
-      });
-    } else {
-      console.log(`✅ MCQ Coverage: ${successfulMCQs}/${totalQuestions} (100%) - Module ${selectedModule}`);
-    }
+    // MCQ generation complete - silently handle failures
 
     return cache;
   }, [selectedLevel, selectedModule, currentModuleData]); // ✅ Added currentModuleData dependency
@@ -1824,7 +1806,7 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
         
         // Show toast if placement was recent (within last 5 minutes)
         if (testTime && (now - testTime) < 300000) {
-          setTimeout(() => {
+          placementToastTimeoutRef.current = window.setTimeout(() => {
             // Use toast import from hooks/use-toast
             import('@/hooks/use-toast').then(({ toast }) => {
               toast({
@@ -1833,13 +1815,22 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
                 duration: 3000,
               });
             }).catch(error => {
-              // Fallback notification
+              // Fallback notification failed - silent fail
+              // User already has visual progress state
             });
           }, 500);
         }
       } catch (e) {
+        // Progress restoration error - silent fail
+        // User starts fresh from beginning
       }
     }
+
+    return () => {
+      if (placementToastTimeoutRef.current) {
+        clearTimeout(placementToastTimeoutRef.current);
+      }
+    };
   }, [isHydrated]);
 
   // Keep evaluator target fresh when index or module changes
@@ -1854,6 +1845,9 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
     return () => {
       narration.cancel();
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      if (autosaveTimeoutRef.current) clearTimeout(autosaveTimeoutRef.current);
+      if (placementToastTimeoutRef.current) clearTimeout(placementToastTimeoutRef.current);
     };
   }, []);
 
@@ -2348,7 +2342,8 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
 
       evaluateSpoken(finalTranscript);
     } catch (error) {
-      // No generic error feedback - let the flow auto-retry
+      // Speech evaluation error - silent fail
+      // User can retry speaking immediately
     }
     
     setLastResponseTime(Date.now());
@@ -2404,7 +2399,7 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
         setSpeakStatus('idle');
       }
     } catch {
-      // silent failure; user can tap again
+      // VAD processing error - cleanup and allow retry
       vad.stopListening();
       setVadVolume(0);
       setIsSpeechDetected(false);
@@ -2781,7 +2776,7 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
               checkpoints.setShowResumeDialog(false);
               setSpeakingIndex(progress.question_index);
               setCurrentPhase('speaking');
-              console.log(`📍 Restored to Q${progress.question_index + 1} (${progress.question_phase})`);
+              // Progress restored successfully
             }
           }}
           onStartFresh={() => checkpoints.startFromBeginning(selectedLevel, selectedModule)}
@@ -2948,6 +2943,7 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
                           variant="ghost"
                           size="sm"
                           className="text-white/70 hover:text-white hover:bg-white/10"
+                          aria-label="Listen to question"
                         >
                           <Volume2 className="h-4 w-4 mr-2" />
                           Listen to Question
@@ -3037,6 +3033,7 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
                               variant="ghost"
                               size="sm"
                               className="text-white/70 hover:text-white hover:bg-white/10 mb-4"
+                              aria-label="Listen to answer"
                             >
                               <Volume2 className="h-4 w-4 mr-2" />
                               Listen to Answer
@@ -3085,6 +3082,7 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
                             }}
                             disabled={false}
                             aria-disabled={false}
+                            aria-label={speakStatus === 'recording' ? 'Stop recording' : 'Start speaking practice'}
                             style={{
                               pointerEvents: 'auto',
                               zIndex: 5,
@@ -3242,7 +3240,7 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
             showHelp={true}
             compact={false}
             onVisibilityChange={(visible) => {
-              console.log('Voice controls visibility:', visible);
+              // Voice controls visibility changed
             }}
           />
           
