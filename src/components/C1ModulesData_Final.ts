@@ -596,23 +596,46 @@ Climate change and environmental issues dominate global discourse. Understanding
 
 **Key Environmental Terms:**`,
 
-  table: [
-    { english: "Climate Change", turkish: "İklim Değişikliği", example: "Climate change is causing more frequent extreme weather events worldwide." },
-    { english: "Greenhouse Gases", turkish: "Sera Gazları", example: "Reducing greenhouse gas emissions is essential to limiting global warming." },
-    { english: "Carbon Footprint", turkish: "Karbon Ayak İzi", example: "We can reduce our carbon footprint by using public transportation and renewable energy." },
-    { english: "Sustainability", turkish: "Sürdürülebilirlik", example: "Sustainability means meeting present needs without compromising future generations' ability to meet theirs." },
-    { english: "Renewable Energy", turkish: "Yenilenebilir Enerji", example: "Solar and wind power are renewable energy sources that don't deplete natural resources." },
-    { english: "Biodiversity", turkish: "Biyoçeşitlilik", example: "Protecting biodiversity is crucial because diverse ecosystems are more resilient to change." },
-    { english: "Deforestation", turkish: "Ormansızlaşma", example: "Deforestation in the Amazon threatens countless species and accelerates climate change." },
-    { english: "Ecosystem", turkish: "Ekosistem", example: "A healthy ecosystem maintains balance between all living organisms and their environment." },
-    { english: "Conservation", turkish: "Koruma", example: "Wildlife conservation efforts have helped bring several endangered species back from the brink." },
-    { english: "Carbon Neutral", turkish: "Karbon Nötr", example: "Many companies aim to become carbon neutral by offsetting their emissions through environmental projects." },
-    { english: "Pollution", turkish: "Kirlilik", example: "Air pollution from factories and vehicles poses serious health risks to urban populations." },
-    { english: "Fossil Fuels", turkish: "Fosil Yakıtlar", example: "Transitioning away from fossil fuels is necessary to reduce greenhouse gas emissions." },
-    { english: "Recycling", turkish: "Geri Dönüşüm", example: "Recycling reduces waste in landfills and conserves natural resources." },
-    { english: "Erosion", turkish: "Erozyon", example: "Soil erosion from poor farming practices degrades land and reduces agricultural productivity." },
-    { english: "Habitat Loss", turkish: "Habitat Kaybı", example: "Habitat loss due to urban development is the primary threat to many endangered species." }
-  ],
+  table: {
+    title: "📋 Environmental Issues Vocabulary (Çevre Sorunları Kelime Dağarcığı)",
+    data: [
+      { category: "Climate Change - The Crisis", what: "Climate Change (İklim Değişikliği) - long-term shifts in temperatures and weather patterns", causes: "Primarily from human activities: burning fossil fuels, deforestation, industrial processes", effects: "Rising temperatures, extreme weather, sea level rise, ecosystem disruption", examples: "Climate change is causing more frequent heat waves, droughts, floods, and hurricanes.", critical: "Most urgent global challenge of our time!", note: "Overwhelming scientific consensus confirms human causation" },
+
+      { category: "Greenhouse Effect & Gases", natural: "Natural greenhouse effect keeps Earth warm enough for life", problem: "Excess greenhouse gases intensify effect → global warming", gases: "CO2 (carbon dioxide), methane (CH4), nitrous oxide (N2O), water vapor", sources: "Fossil fuels, agriculture, deforestation, industry", examples: "Reducing greenhouse gas emissions is essential to limiting global warming to 1.5°C.", note: "CO2 is most abundant, methane is more potent" },
+
+      { category: "Carbon Footprint - Measuring Impact", what: "Carbon Footprint (Karbon Ayak İzi) - total greenhouse gas emissions you cause", measured_in: "Tons of CO2 equivalent (CO2e) per year", categories: "Transportation, energy use, food consumption, purchases", reduce: "Use public transit, renewable energy, reduce meat, buy less, recycle", examples: "Average American: ~16 tons CO2/year | Global average: ~4 tons | Target: ~2 tons for climate safety", note: "Individual + systemic action both needed!" },
+
+      { category: "Sustainability - Meeting Needs", definition: "Sustainability (Sürdürülebilirlik) - meeting present needs without compromising future generations", three_pillars: "Environmental protection + Economic viability + Social equity", principles: "Reduce, reuse, recycle | Renewable resources | Circular economy", examples: "Sustainable farming, green buildings, ethical sourcing, renewable energy", critical: "Not just 'being green' - holistic approach!", note: "Balance between planet, people, and profit" },
+
+      { category: "Renewable vs Non-Renewable Energy", renewable: "Renewable (Yenilenebilir) - naturally replenished: solar, wind, hydro, geothermal, biomass", non_renewable: "Non-renewable / Fossil Fuels (Fosil Yakıtlar) - finite: coal, oil, natural gas", why_switch: "Renewables: low emissions, sustainable | Fossils: high emissions, finite, polluting", challenge: "Transition requires infrastructure investment and political will", examples: "Solar panels, wind turbines, hydroelectric dams | vs Coal plants, gas-powered cars", note: "Renewables now cost-competitive with fossils!" },
+
+      { category: "Biodiversity - Variety of Life", what: "Biodiversity (Biyoçeşitlilik) - variety of species, genes, and ecosystems", importance: "Ecosystem stability, pollination, food security, medicine, climate regulation", threats: "Habitat loss, pollution, climate change, overexploitation, invasive species", examples: "Coral reefs, rainforests, wetlands - biodiversity hotspots", critical: "6th mass extinction underway - human-caused!", note: "More diverse ecosystems = more resilient to change" },
+
+      { category: "Deforestation - Losing Forests", what: "Deforestation (Ormansızlaşma) - permanent removal of forests", causes: "Agriculture (cattle, palm oil, soy), logging, urbanization", impacts: "Climate change (carbon release), biodiversity loss, soil erosion, indigenous displacement", examples: "Amazon rainforest lost area size of France in 40 years", solutions: "Sustainable forestry, reforestation, protecting indigenous rights, reducing beef consumption", note: "Forests = lungs of Earth, absorbing CO2" },
+
+      { category: "Ecosystem - Interconnected Life", what: "Ecosystem (Ekosistem) - community of organisms + their physical environment", balance: "Predators, prey, plants, decomposers all interdependent", disruption: "Removing one species can collapse entire ecosystem", examples: "When wolves removed from Yellowstone, entire ecosystem changed; when reintroduced, balance restored", types: "Forests, oceans, deserts, wetlands, grasslands, coral reefs", note: "Everything connected - no species exists in isolation!" },
+
+      { category: "Conservation vs Preservation", conservation: "Conservation (Koruma) - sustainable use while protecting ecosystems", preservation: "Preservation (Muhafaza) - protect from all human interference", examples: "Conservation: National forests (regulated logging) | Preservation: Wilderness areas (no human activity)", debate: "Balance human needs with environmental protection", note: "Both approaches needed in different contexts" },
+
+      { category: "Pollution Types", air: "Air Pollution (Hava Kirliliği) - smog, emissions from vehicles/factories", water: "Water Pollution (Su Kirliliği) - chemicals, sewage, plastics in waterways", soil: "Soil Pollution (Toprak Kirliliği) - pesticides, industrial waste", noise_light: "Noise & Light Pollution - urban impacts on wildlife and humans", examples: "Air pollution kills ~7 million/year globally | Ocean plastic gyres | Dead zones from agricultural runoff", note: "Pollution knows no borders - global problem!" },
+
+      { category: "Plastic Crisis", problem: "Plastic persists for 500+ years, accumulates in oceans and landfills", microplastics: "Microplastics (<5mm) enter food chain, found in human blood and organs", solutions: "Reduce single-use plastics, improve recycling, develop biodegradable alternatives", examples: "8 million tons plastic enter oceans yearly | Microplastics in 90% of table salt", individual_action: "Reusable bags, bottles, straws | Avoid microbeads in cosmetics", note: "Only 9% of plastic ever made has been recycled!" },
+
+      { category: "Carbon Neutral & Net Zero", carbon_neutral: "Carbon Neutral (Karbon Nötr) - balance emissions with offsets (planting trees, carbon credits)", net_zero: "Net Zero - reduce emissions as much as possible, offset remainder", greenwashing: "Greenwashing - claiming environmental benefits without real change", examples: "Many companies pledge 'net zero by 2050' - scrutinize their plans!", critical: "Offsets don't replace emission reductions!", note: "Priority: reduce emissions first, offset what remains" },
+
+      { category: "Recycling & Circular Economy", recycling: "Recycling (Geri Dönüşüm) - reprocess materials into new products", limitations: "Only some plastics recyclable, degrades quality, requires energy", circular_economy: "Circular Economy - design products for reuse, repair, recycling (not disposal)", hierarchy: "Reduce (best) > Reuse > Recycle > Dispose (worst)", examples: "Repair cafes, product-as-service models, biodegradable packaging", note: "Recycling alone won't solve waste problem!" },
+
+      { category: "Habitat Loss & Fragmentation", what: "Habitat Loss (Habitat Kaybı) - destruction of ecosystems where species live", causes: "Urban development, agriculture, infrastructure, mining", fragmentation: "Breaking habitats into small, isolated patches", impact: "Species can't find food, mates, or migrate | #1 threat to biodiversity", examples: "70% of world's forests fragmented | Many species need large continuous areas", note: "Urban sprawl = major driver of habitat loss" },
+
+      { category: "Erosion & Soil Degradation", erosion: "Erosion (Erozyon) - soil washed/blown away faster than it forms", causes: "Deforestation, poor farming, overgrazing, construction", consequences: "Lost farmland, water pollution (sediment), desertification", solutions: "Cover crops, terracing, no-till farming, reforestation", examples: "Takes 500 years to form 1 inch of topsoil | Losing farmland faster than creating it", note: "Soil = non-renewable on human timescales!" },
+
+      { category: "Ocean Acidification", what: "Ocean Acidification (Okyanus Asitleşmesi) - oceans absorb CO2, become more acidic", chemistry: "CO2 + H2O → carbonic acid → lowers pH", impact: "Threatens corals, shellfish, entire marine food webs", examples: "Oceans 30% more acidic since Industrial Revolution | Coral bleaching events", critical: "Called 'climate change's equally evil twin'!", note: "Oceans absorb 25% of human CO2 emissions" },
+
+      { category: "Individual Actions - Make a Difference", transport: "Walk, bike, public transit, carpool, electric vehicles", energy: "LED bulbs, insulation, renewable energy, turn off devices", food: "Reduce meat (especially beef), local/seasonal, reduce food waste", consumption: "Buy less, buy used, repair don't replace, avoid fast fashion", advocate: "Vote for climate policies, divest from fossil fuels, educate others", note: "Individual + systemic change both necessary!" },
+
+      { category: "Remember", takeaway_1: "Climate change = human-caused, primarily from fossil fuels and deforestation", takeaway_2: "Greenhouse gases trap heat → global warming → extreme weather, rising seas", takeaway_3: "Biodiversity loss = 6th mass extinction, threatens ecosystems and human survival", takeaway_4: "Sustainability = meeting needs without compromising future generations", takeaway_5: "Solutions exist: renewable energy, conservation, circular economy, policy change", final_note: "Environmental challenges are urgent but solvable - requires individual action + systemic change + political will!" }
+    ]
+  },
 
   speakingPractice: [
     { question: "What is the greenhouse effect?", answer: "The greenhouse effect occurs when gases in Earth's atmosphere trap heat from the sun, keeping the planet warm enough to support life. However, excess greenhouse gases from human activities intensify this effect, causing global warming." },
