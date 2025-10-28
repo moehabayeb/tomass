@@ -12,7 +12,7 @@ const safeStorage = {
     try {
       return localStorage.getItem(key);
     } catch (error) {
-      console.error('[Notifications] Error reading storage:', error);
+      // Storage read error - silent fail for Apple Store compliance
       return null;
     }
   },
@@ -22,7 +22,7 @@ const safeStorage = {
       return true;
     } catch (error) {
       if (error instanceof DOMException && error.name === 'QuotaExceededError') {
-        console.warn('[Notifications] Storage quota exceeded, clearing old data');
+        // Storage quota exceeded - attempt to clear old data
         try {
           // Clear old data and retry
           const data = JSON.parse(localStorage.getItem(key) || '{}');
@@ -36,7 +36,7 @@ const safeStorage = {
           return false;
         }
       }
-      console.error('[Notifications] Error saving storage:', error);
+      // Storage write error - silent fail for Apple Store compliance
       return false;
     }
   }
@@ -99,7 +99,7 @@ export class MeetingNotificationsService {
     this.activeTimers.forEach(timer => clearTimeout(timer));
     this.activeTimers.clear();
 
-    console.log('[Notifications] Service cleaned up');
+    // Service cleaned up successfully
   }
 
   /**
@@ -108,7 +108,7 @@ export class MeetingNotificationsService {
    */
   async requestPermission(): Promise<boolean> {
     if (!('Notification' in window)) {
-      console.warn('[Notifications] Browser does not support notifications');
+      // Browser does not support notifications
       return false;
     }
 
@@ -120,7 +120,7 @@ export class MeetingNotificationsService {
       try {
         this.notificationPermission = await Notification.requestPermission();
       } catch (error) {
-        console.error('[Notifications] Error requesting permission:', error);
+        // Permission request error - silent fail for Apple Store compliance
         return false;
       }
     }
@@ -135,7 +135,7 @@ export class MeetingNotificationsService {
   async startNotificationService(): Promise<boolean> {
     // Check permission status (don't request, just check)
     if (!('Notification' in window)) {
-      console.warn('[Notifications] Browser does not support notifications');
+      // Browser does not support notifications
       return false;
     }
 
@@ -143,7 +143,7 @@ export class MeetingNotificationsService {
     this.notificationPermission = Notification.permission;
 
     if (this.notificationPermission !== 'granted') {
-      console.warn('[Notifications] Notification permission not granted');
+      // Notification permission not granted
       return false;
     }
 
@@ -157,7 +157,7 @@ export class MeetingNotificationsService {
 
     // Initial check
     await this.checkUpcomingMeetings();
-    console.log('[Notifications] Service started');
+    // Service started successfully
     return true;
   }
 
@@ -167,7 +167,7 @@ export class MeetingNotificationsService {
    */
   stopNotificationService(): void {
     this.cleanup();
-    console.log('[Notifications] Service stopped');
+    // Service stopped successfully
   }
 
   /**
@@ -203,18 +203,18 @@ export class MeetingNotificationsService {
       // Clean up old notification records (older than 24 hours)
       this.cleanupOldNotifications();
     } catch (error) {
-      console.error('[Notifications] Error checking upcoming meetings:', error);
+      // Error checking upcoming meetings - silent fail for Apple Store compliance
 
       // 🔧 FIX BUG #3: Retry logic
       this.failedChecks++;
 
       if (this.failedChecks >= this.maxRetries) {
-        console.warn('[Notifications] Max retries reached, stopping service');
+        // Max retries reached, stopping service
         this.stopNotificationService();
 
         // Attempt restart after delay
         setTimeout(() => {
-          console.log('[Notifications] Attempting to restart service...');
+          // Attempting to restart service
           this.failedChecks = 0;
           this.startNotificationService();
         }, this.retryDelay);
@@ -272,7 +272,7 @@ export class MeetingNotificationsService {
 
       // Handle notification errors
       notification.onerror = (error) => {
-        console.error('[Notifications] Notification error:', error);
+        // Notification error - silent fail for Apple Store compliance
         const timer = this.activeTimers.get(timerId);
         if (timer) {
           clearTimeout(timer);
@@ -280,9 +280,9 @@ export class MeetingNotificationsService {
         }
       };
 
-      console.log(`[Notifications] Shown for meeting: ${meeting.title}`);
+      // Notification shown successfully
     } catch (error) {
-      console.error('[Notifications] Error showing notification:', error);
+      // Error showing notification - silent fail for Apple Store compliance
     }
   }
 
@@ -311,7 +311,7 @@ export class MeetingNotificationsService {
         const data = JSON.parse(stored);
         this.shownNotifications = new Set(data.notifications || []);
       } catch (error) {
-        console.error('[Notifications] Error loading shown notifications:', error);
+        // Error loading shown notifications - reset to empty set
         this.shownNotifications = new Set();
       }
     }
@@ -346,10 +346,10 @@ export class MeetingNotificationsService {
         // Clear all shown notifications (they're old now)
         this.shownNotifications.clear();
         this.saveShownNotifications();
-        console.log('[Notifications] Cleaned up old notification records');
+        // Cleaned up old notification records successfully
       }
     } catch (error) {
-      console.error('[Notifications] Error cleaning up notifications:', error);
+      // Error cleaning up notifications - silent fail for Apple Store compliance
     }
   }
 
