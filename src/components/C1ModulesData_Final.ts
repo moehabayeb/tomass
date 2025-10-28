@@ -524,23 +524,48 @@ Understanding legal and political vocabulary enables you to engage with news, pa
 
 **Key Legal and Political Terms:**`,
 
-  table: [
-    { english: "Constitution", turkish: "Anayasa", example: "The constitution guarantees fundamental rights and freedoms to all citizens." },
-    { english: "Legislation", turkish: "Yasama", example: "The new legislation aims to reform healthcare access across the country." },
-    { english: "Judiciary", turkish: "Yargı", example: "An independent judiciary is essential for a functioning democracy." },
-    { english: "Precedent", turkish: "Emsal", example: "This court ruling sets an important legal precedent for future cases." },
-    { english: "Plaintiff", turkish: "Davacı", example: "The plaintiff argued that the company violated their contract." },
-    { english: "Defendant", turkish: "Davalı", example: "The defendant has the right to legal representation during trial." },
-    { english: "Jurisdiction", turkish: "Yargı Yetkisi", example: "This case falls under federal jurisdiction, not state jurisdiction." },
-    { english: "Amendment", turkish: "Değişiklik", example: "The constitution has been modified through several amendments over time." },
-    { english: "Ratify", turkish: "Onaylamak", example: "The treaty must be ratified by parliament before it becomes law." },
-    { english: "Veto", turkish: "Veto", example: "The president has the power to veto legislation passed by congress." },
-    { english: "Referendum", turkish: "Referandum", example: "Citizens will vote in a referendum to decide on the proposed changes." },
-    { english: "Diplomatic Immunity", turkish: "Diplomatik Dokunulmazlık", example: "Ambassadors enjoy diplomatic immunity from prosecution in host countries." },
-    { english: "Impeachment", turkish: "Görevden Alma", example: "The impeachment process requires evidence of serious misconduct." },
-    { english: "Sovereignty", turkish: "Egemenlik", example: "National sovereignty means a country's right to govern itself without external interference." },
-    { english: "Prosecution", turkish: "Kovuşturma", example: "The prosecution presented compelling evidence against the accused." }
-  ],
+  table: {
+    title: "📋 Legal and Political Vocabulary (Hukuk ve Siyaset Kelime Dağarcığı)",
+    data: [
+      { category: "Government Branches - Separation of Powers", legislative: "Legislative (Yasama) - makes laws (parliament, congress)", executive: "Executive (Yürütme) - enforces laws (president, prime minister, government)", judicial: "Judiciary (Yargı) - interprets laws and ensures justice", purpose: "Separation prevents concentration of power in one branch", checks: "Each branch can check/limit the others' power", note: "Foundation of democratic government!" },
+
+      { category: "Constitution - Supreme Law", what: "Constitution (Anayasa) - fundamental legal framework for government", purpose: "Defines government structure, distributes power, protects citizens' rights", amendment: "Amendment (Değişiklik) - formal change to constitution", examples: "The constitution guarantees fundamental rights and freedoms. / Constitutional amendments require special procedures.", critical: "Constitution = highest law, all other laws must comply!", note: "Limits government power and protects individual rights" },
+
+      { category: "Legislation - Making Laws", legislation: "Legislation (Yasama/Kanun) - laws enacted by legislative body", bill: "Bill - proposed law before it's passed", enact: "Enact - officially make into law", ratify: "Ratify (Onaylamak) - formally approve (especially treaties)", examples: "The new legislation aims to reform healthcare. / The treaty must be ratified by parliament. / Congress enacted the bill into law.", note: "Laws go through multiple stages before becoming official" },
+
+      { category: "Executive Powers", veto: "Veto (Veto) - power to reject legislation", decree: "Decree/Executive Order - law issued by executive without legislature", pardon: "Pardon - forgive someone's crime (executive power)", examples: "The president has the power to veto legislation. / She issued an executive order. / The governor pardoned the prisoner.", note: "Executive has power to enforce laws and some to create them" },
+
+      { category: "Legal System - Court Parties", plaintiff: "Plaintiff (Davacı) - person who brings lawsuit (sues)", defendant: "Defendant (Davalı) - person being accused/sued", prosecutor: "Prosecutor (Savcı) - government lawyer in criminal case", judge: "Judge (Hakim) - decides cases, interprets law", jury: "Jury (Jüri) - citizens who decide guilt in trial", examples: "The plaintiff argued the company violated their contract. / The defendant has the right to legal representation. / The prosecution presented evidence.", note: "Each party has specific role in legal process" },
+
+      { category: "Legal Concepts - Due Process", due_process: "Due Process (Usul Hukuku) - fair treatment through judicial system", rights: "Right to: be heard, face accusers, legal representation, impartial judge", presumption: "Presumption of innocence - innocent until proven guilty", burden: "Burden of proof on prosecution (not defendant)", examples: "Due process guarantees fair treatment. / Everyone is presumed innocent until proven guilty.", critical: "Due process protects against arbitrary government action!", note: "Cornerstone of rule of law" },
+
+      { category: "Legal Precedent & Jurisdiction", precedent: "Precedent (Emsal/İçtihat) - court decision that guides future similar cases", binding: "Binding precedent - must be followed by lower courts", jurisdiction: "Jurisdiction (Yargı Yetkisi) - court's authority to hear case", federal_vs_state: "Federal jurisdiction vs State jurisdiction (different levels)", examples: "This ruling sets important legal precedent. / This case falls under federal jurisdiction. / The court cited previous precedent.", note: "Precedent ensures consistency in law application" },
+
+      { category: "Political Systems - Democracy Types", democracy: "Democracy (Demokrasi) - citizens participate in decision-making through voting", representative: "Representative Democracy - citizens elect representatives", direct: "Direct Democracy - citizens vote directly on issues (referendums)", republic: "Republic - elected officials represent citizens", examples: "In a representative democracy, we elect officials. / The referendum is an example of direct democracy.", note: "Most modern democracies are representative, not direct" },
+
+      { category: "Political Systems - Non-Democratic", autocracy: "Autocracy (Otokrasi) - power concentrated in one person/group", dictatorship: "Dictatorship (Diktatörlük) - absolute rule by one person", oligarchy: "Oligarchy (Oligarşi) - rule by small elite group", totalitarian: "Totalitarian (Totaliter) - government controls all aspects of life", examples: "An autocracy concentrates power. / A dictatorship allows no opposition. / Totalitarian regimes control media, education, economy.", note: "Limited citizen participation and accountability" },
+
+      { category: "Elections & Voting", referendum: "Referendum (Referandum) - citizens vote directly on specific issue", ballot: "Ballot (Oy pusulası) - paper/form used to vote", constituency: "Constituency (Seçim bölgesi) - area represented by elected official", electoral: "Electoral system - how votes translate to seats", examples: "Citizens will vote in a referendum on the changes. / The constituency elected a new representative. / The electoral college system is unique.", note: "Different countries use different electoral systems" },
+
+      { category: "International Relations", treaty: "Treaty (Antlaşma) - formal agreement between countries", diplomatic_immunity: "Diplomatic Immunity (Diplomatik Dokunulmazlık) - ambassadors protected from prosecution", sovereignty: "Sovereignty (Egemenlik) - country's right to self-governance", sanction: "Sanction (Yaptırım) - penalty against country violating international norms", examples: "The treaty must be ratified. / Ambassadors enjoy diplomatic immunity. / National sovereignty means independence from external interference.", note: "International law governs relations between nations" },
+
+      { category: "Criminal vs Civil Law", criminal: "Criminal Law - offenses against society, prosecuted by state, can result in prison", civil: "Civil Law - disputes between individuals/organizations, typically compensation", examples: "Criminal: murder, theft, assault → Prison / Civil: contract disputes, divorce, property → Money damages", key_difference: "Criminal = State vs Individual | Civil = Individual vs Individual", burden_proof: "Criminal = beyond reasonable doubt | Civil = preponderance of evidence", note: "Can face both for same act (e.g., O.J. Simpson acquitted criminally, liable civilly)" },
+
+      { category: "Impeachment & Removal", impeachment: "Impeachment (Görevden Alma Süreci) - formal accusation of misconduct", process: "Legislature votes to impeach, then trial held to remove from office", grounds: "Usually: treason, bribery, high crimes and misdemeanors", examples: "The impeachment process requires evidence of serious misconduct. / Three US presidents have been impeached, none removed by Senate.", note: "Impeachment ≠ removal (it's just the accusation!)" },
+
+      { category: "Rights & Freedoms", fundamental_rights: "Rights guaranteed by constitution (speech, religion, assembly, due process)", civil_rights: "Civil Rights - equality regardless of race, gender, etc.", human_rights: "Human Rights - universal rights all humans have", examples: "Freedom of speech is a fundamental right. / Civil rights legislation prohibits discrimination. / Human rights include life, liberty, dignity.", critical: "Rights can conflict - courts balance them!", note: "Constitution protects rights from government infringement" },
+
+      { category: "Checks and Balances", what: "Each branch can limit the others' power", examples: "Legislature makes laws → Executive can veto → Legislature can override veto → Judiciary can declare laws unconstitutional", purpose: "Prevents tyranny through mutual oversight", why_matters: "No single branch can act without restraint", note: "Different countries have different check systems" },
+
+      { category: "Political Participation", vote: "Vote (Oy vermek) - most basic form of participation", advocacy: "Advocacy (Savunuculuk) - speaking up for policy changes", lobby: "Lobby (Lobi yapmak) - influence lawmakers on specific issues", protest: "Protest (Protesto) - public demonstration of opposition", examples: "Citizens vote in elections. / Advocacy groups pushed for reform. / Companies lobby for favorable regulations.", note: "Democracy requires active citizen participation!" },
+
+      { category: "Common Confusions - Plaintiff vs Defendant", plaintiff: "Plaintiff (Davacı) = the one who BRINGS the lawsuit", defendant: "Defendant (Davalı) = the one being ACCUSED/SUED", remember: "Plaintiff = complains | Defendant = defends", examples: "Plaintiff sues for damages. / Defendant responds to allegations.", note: "In criminal cases: Prosecution (not plaintiff) vs Defendant" },
+
+      { category: "Common Confusions - Democracy vs Republic", democracy: "Democracy = broad term for citizen participation in government", republic: "Republic = specific type where elected representatives make decisions", relationship: "Most republics are democracies, but not all democracies are republics", examples: "USA = democratic republic / Switzerland = direct democracy (many referendums)", note: "These terms often overlap but have distinct meanings" },
+
+      { category: "Remember", takeaway_1: "Separation of powers = Legislative (makes laws), Executive (enforces), Judicial (interprets)", takeaway_2: "Constitution = supreme law, all other laws must comply with it", takeaway_3: "Plaintiff sues, Defendant defends | Criminal = state prosecutes, Civil = individuals sue", takeaway_4: "Due process = fair treatment, presumption of innocence, right to defense", takeaway_5: "Precedent = past court decisions guide future similar cases", final_note: "Legal and political vocabulary enables informed citizenship and understanding of rights, governance, and justice systems!" }
+    ]
+  },
 
   speakingPractice: [
     { question: "What is the difference between criminal and civil law?", answer: "Criminal law deals with offenses against society prosecuted by the state, potentially resulting in imprisonment, while civil law handles disputes between individuals or organizations, typically resolved through compensation or specific performance." },
