@@ -2031,7 +2031,7 @@ This module combines timeless principles with practical techniques to transform 
       { element: "Kairos", description: "Perfect timing", example: "Delivering unity messages after crises." },
       { element: "Repetition & Rhythm", description: "Reinforcing ideas through phrasing", example: "We will fight. We will rise. We will win." },
       { element: "Rhetorical Questions", description: "Engaging the audience intellectually", example: "What future do we want to leave for our children?" },
-      { element: "Parallelism", description: "Balanced structure for clarity and beauty", example: "Not because it is easy, but because it is hard. – JFK" }
+      { element: "Parallelism", description: "Balanced structure for clarity and beauty", example: "Not because it is easy, but because it is hard. - JFK" }
     ]
   },
   speakingPractice: [

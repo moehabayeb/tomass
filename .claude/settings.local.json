@@ -94,7 +94,12 @@
       "Bash(xargs cat:*)",
       "Bash(do wc -c \"$file\")",
       "Bash(gh pr create:*)",
-      "Bash(git remote get-url:*)"
+      "Bash(git remote get-url:*)",
+      "Bash(git log:*)",
+      "Bash(timeout 5 sleep:*)",
+      "Bash(timeout 3 sleep:*)",
+      "Bash(sort:*)",
+      "Bash(timeout 30 npx tsc:*)"
     ],
     "deny": [],
     "ask": []
