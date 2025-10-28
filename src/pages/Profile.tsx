@@ -108,7 +108,7 @@ export default function Profile() {
           .gte('meetings.starts_at', new Date().toISOString()); // Only future meetings
 
         if (error) {
-          console.error('Error loading reminders:', error);
+          // Error loading reminders - silent fail for Apple Store compliance
           throw error;
         }
 
@@ -124,7 +124,7 @@ export default function Profile() {
 
         setReminders(formattedReminders);
       } catch (error) {
-        console.error('Failed to load reminders:', error);
+        // Failed to load reminders - silent fail for Apple Store compliance
       } finally {
         setIsLoadingReminders(false);
       }
@@ -163,12 +163,16 @@ export default function Profile() {
     try {
       const { error } = await signOut();
       if (error) throw error;
-      
-      // Clear any stored state
-      localStorage.removeItem('streakData');
-      localStorage.removeItem('recommendedStartLevel');
-      localStorage.removeItem('recommendedStartModule');
-      
+
+      // Clear any stored state (with error protection for private browsing mode)
+      try {
+        localStorage.removeItem('streakData');
+        localStorage.removeItem('recommendedStartLevel');
+        localStorage.removeItem('recommendedStartModule');
+      } catch (storageError) {
+        // Storage access error - silent fail for Apple Store compliance
+      }
+
       toast({
         title: "Logged out successfully",
         description: "See you next time!",
@@ -197,14 +201,15 @@ export default function Profile() {
 
       if (error) throw error;
 
+      // Update local state to reflect changes
+      setProfile(prev => prev ? { ...prev, full_name: editedName.trim() } : null);
+
       toast({
         title: "Profile updated",
         description: "Your name has been updated successfully.",
       });
-      
+
       setIsEditingName(false);
-      // Force a page refresh to update the UI
-      window.location.reload();
     } catch (error) {
       toast({
         title: "Error updating profile",
@@ -277,13 +282,13 @@ export default function Profile() {
 
       if (updateError) throw updateError;
 
+      // Update local state to reflect changes
+      setProfile(prev => prev ? { ...prev, avatar_url: publicUrl } : null);
+
       toast({
         title: "Avatar updated",
         description: "Your profile picture has been updated successfully.",
       });
-
-      // Force a page refresh to update the UI
-      window.location.reload();
     } catch (error) {
       toast({
         title: "Upload failed",
@@ -320,13 +325,13 @@ export default function Profile() {
 
       if (error) throw error;
 
+      // Update local state to reflect changes
+      setProfile(prev => prev ? { ...prev, avatar_url: null } : null);
+
       toast({
         title: "Avatar removed",
         description: "Your profile picture has been removed.",
       });
-
-      // Force a page refresh to update the UI
-      window.location.reload();
     } catch (error) {
       toast({
         title: "Remove failed",
