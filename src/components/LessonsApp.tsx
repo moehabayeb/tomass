@@ -28,6 +28,8 @@ import '../utils/placementQA';
 // Progress checkpointing imports
 import { useLessonCheckpoints } from '../hooks/useLessonCheckpoints';
 import { ResumeProgressDialog, SyncStatusIndicator } from './ResumeProgressDialog';
+// Auth
+import { useAuthReady } from '../hooks/useAuthReady';
 // 🚀 BUNDLE OPTIMIZATION: Dynamic module loading to reduce initial bundle size by ~80%
 // Modules are now loaded on-demand when user accesses a specific lesson
 
@@ -141,7 +143,7 @@ import { detectGrammarErrors } from '../utils/grammarErrorDetector';
 import { useVoiceActivityDetection } from '../hooks/useVoiceActivityDetection';
 
 // Enhanced progress saving with new progress system
-function saveModuleProgress(level: string, moduleId: number, phase: LessonPhaseType, questionIndex: number = 0) {
+function saveModuleProgress(userId: string | undefined, level: string, moduleId: number, phase: LessonPhaseType, questionIndex: number = 0) {
   try {
     // Save to both old and new systems for compatibility
     const progressData: StoreModuleProgress = {
@@ -156,15 +158,15 @@ function saveModuleProgress(level: string, moduleId: number, phase: LessonPhaseT
       updatedAt: Date.now(),
       v: 1
     };
-    
+
     setProgress(progressData);
 
-    // Save to new progress system for exact resume
-    const userId = 'guest'; // TODO: get from auth when available
+    // Save to new progress system for exact resume (requires auth)
+    if (!userId) return; // Skip if not authenticated
     const total = 40; // All modules have 40 questions
     const correct = Math.min(questionIndex + 1, total); // questions answered correctly so far
     const completed = phase === 'complete';
-    
+
     saveProgress(userId, level, String(moduleId), questionIndex, total, correct, completed);
 
   } catch (error) {
@@ -814,6 +816,9 @@ const MODULES_BY_LEVEL = {
 };
 
 export default function LessonsApp({ onBack, initialLevel, initialModule }: LessonsAppProps) {
+  // ===== AUTH =====
+  const { user, isAuthenticated } = useAuthReady();
+
   // ===== STATE (must be first) =====
   const [width, height] = useWindowSize();
   const [viewState, setViewState] = useState<ViewState>('levels');
@@ -1614,7 +1619,6 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
   }, [selectedModule]);
 
   // Restore progress safely when a module opens
-  const userId = 'anon'; // TODO: adapt to your auth; fallback to 'anon'
   const totals = {
     listening: currentModuleData?.listeningExamples?.length ?? 0,
     speaking: currentModuleData?.speakingPractice?.length ?? 0,
@@ -1681,6 +1685,7 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
     if (autosaveTimeoutRef.current) window.clearTimeout(autosaveTimeoutRef.current);
     autosaveTimeoutRef.current = window.setTimeout(() => {
       saveModuleProgress(
+        user?.id,
         String(selectedLevel),
         selectedModule,
         currentPhase === 'speaking' ? 'speaking' as LessonPhaseType : 'intro',
@@ -1688,7 +1693,7 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
       );
       autosaveTimeoutRef.current = null;
     }, 250);
-  }, [userId, selectedLevel, selectedModule, currentPhase, speakingIndex, currentModuleData]);
+  }, [user?.id, selectedLevel, selectedModule, currentPhase, speakingIndex, currentModuleData]);
 
   // Clean up on unmount
   useEffect(() => () => {
@@ -1739,8 +1744,7 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
     }
     // Priority 2: Saved progress (resume functionality)
     else {
-      const userId = 'guest'; // TODO: get from auth when available
-      const lastPointer = resumeLastPointer(userId);
+      const lastPointer = user?.id ? resumeLastPointer(user.id) : null;
       
       if (lastPointer) {
         hydratedLevel = lastPointer.levelId;
@@ -1884,6 +1888,7 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
 
     // persist completion in new progress store
     saveModuleProgress(
+      user?.id,
       String(selectedLevel),
       selectedModule,
       'complete',
@@ -1962,7 +1967,7 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
     });
 
     // Save progress after each question (exact resume point)
-    saveModuleProgress(String(selectedLevel), selectedModule!, 'speaking', curr + 1);
+    saveModuleProgress(user?.id, String(selectedLevel), selectedModule!, 'speaking', curr + 1);
 
     // still inside the range → move to next question
     if (curr + 1 < total) {
@@ -2692,8 +2697,8 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
                                className="text-red-400 hover:text-red-300 hover:bg-red-500/10 p-1 h-auto"
                                onClick={(e) => {
                                  e.stopPropagation();
-                                 const userId = 'guest';
-                                 clearModuleProgress(userId, selectedLevel, String(module.id));
+                                 if (!user?.id) return; // Require auth for progress reset
+                                 clearModuleProgress(user.id, selectedLevel, String(module.id));
                                  // Remove from completed modules
                                  const newCompleted = completedModules.filter(m => m !== `module-${module.id}`);
                                  setCompletedModules(newCompleted);
