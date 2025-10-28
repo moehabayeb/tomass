@@ -89,19 +89,19 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
   // Debug flag
   const debug = typeof window !== 'undefined' && window.location.search.includes('sttdebug=1');
 
-  // OPTIMIZED: Production-ready logging system
+  // OPTIMIZED: Production-ready logging system (disabled for Apple Store compliance)
   const logger = {
     debug: (message: string, ...args: any[]) => {
-      if (debug) console.log(`[DEBUG] ${message}`, ...args);
+      // Debug logging disabled for production
     },
     info: (message: string, ...args: any[]) => {
-      console.log(`[INFO] ${message}`, ...args);
+      // Info logging disabled for production
     },
     warn: (message: string, ...args: any[]) => {
-      console.warn(`[WARN] ${message}`, ...args);
+      // Warning logging disabled for production
     },
     error: (message: string, ...args: any[]) => {
-      console.error(`[ERROR] ${message}`, ...args);
+      // Error logging disabled for production
     }
   };
 
@@ -566,14 +566,14 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
           this.activeUsers.add(userId);
           if (context.state === 'running') {
             await context.suspend();
-            console.log(`🔇 Audio suspended for ${userId}`);
+            // Audio suspended for speech recognition
           }
         } else {
           // Release reservation
           this.activeUsers.delete(userId);
           if (this.activeUsers.size === 0 && context.state === 'suspended') {
             await context.resume();
-            console.log(`🔊 Audio resumed (no active users)`);
+            // Audio resumed after speech recognition
           }
         }
       } catch (error) {
@@ -744,7 +744,7 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
       // 🔧 FIX BUG #5: Mark as unmounted to prevent setState on unmounted component
       isMountedRef.current = false;
 
-      console.log('🧹 Cleaning up speaking test component');
+      // Cleaning up speaking test component
 
       // Stop TTS
       TTSManager.stop();
@@ -760,9 +760,9 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
       // 🔧 FIX BUG #1: Properly close AudioContext to prevent memory leak
       try {
         audioManager.cleanup(); // This closes the AudioContext
-        console.log('🔊 AudioContext closed successfully');
+        // AudioContext closed successfully
       } catch (err) {
-        console.warn('Audio context cleanup error:', err);
+        // Audio context cleanup error - silent fail
       }
 
       // Clear refs

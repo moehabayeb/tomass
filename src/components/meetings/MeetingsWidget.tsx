@@ -36,7 +36,7 @@ function MeetingCard({ meeting, onJoin }: MeetingCardProps) {
     try {
       await setRSVPStatus(status);
     } catch (error) {
-      console.error('Failed to update RSVP:', error);
+      // RSVP update failed - silent fail, UI will show previous state
     }
   };
 
@@ -199,7 +199,7 @@ export function MeetingsWidget({
 
   // Don't render if there's an error
   if (error) {
-    console.error('Meetings widget error:', error);
+    // Failed to load meetings - silent fail, widget won't display
     return null;
   }
 
