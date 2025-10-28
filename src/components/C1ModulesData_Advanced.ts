@@ -265,117 +265,36 @@ Say: "I didn't say she took your book." six times, stressing a different word ea
 **Why It Matters:**
 Stress signals which words carry the key meaning. Clear stress helps listeners process information quickly, reduces ambiguity, and keeps your message focused. Intonation conveys attitude—interest, doubt, sarcasm, enthusiasm—shaping how listeners interpret your intention.`,
 
-  table1: {
-    title: "📊 Types of Stress in English",
+  table: {
+    title: "📋 Stress and Intonation for Emphasis (Vurgu ve Tonlama ile Vurgu)",
     data: [
-      {
-        type: "Word Stress",
-        description: "Emphasis on one syllable in a word",
-        example: "PHOtograph / phoTOgrapher / photoGRAphic"
-      },
-      {
-        type: "Sentence Stress",
-        description: "Emphasis on key words in a sentence",
-        example: "She BOUGHT a NEW car."
-      },
-      {
-        type: "Contrastive Stress",
-        description: "Used to correct or highlight a difference",
-        example: "I said TEA, not COFFEE."
-      },
-      {
-        type: "Emphatic Stress",
-        description: "Shows strong feeling",
-        example: "That was AMAZING!"
-      }
-    ]
-  },
+      { category: "Why Stress & Intonation Matter - The Secret to Expression", stress_function: "Stress signals which words carry KEY meaning - guides listeners' attention efficiently", intonation_function: "Intonation conveys ATTITUDE - interest, doubt, sarcasm, enthusiasm, politeness", together: "Stress + Intonation = expressiveness, emotion, persuasion, natural sound", flat_speech: "Without them: robotic, boring, unclear, confusing, disengaging - listeners tune out!", mastery_impact: "Master these → sound natural, confident, emotionally connected | Your message is understood AND felt", critical: "Grammar = what you say | Stress/Intonation = HOW you say it (often more important!)", note: "These are suprasegmental features - operate above individual sounds to create meaning!" },
 
-  table2: {
-    title: "🎵 Intonation Patterns",
-    data: [
-      {
-        pattern: "Rising (↑)",
-        meaning: "Yes/no questions, uncertainty",
-        example: "Are you coming? / Maybe later?"
-      },
-      {
-        pattern: "Falling (↓)",
-        meaning: "Statements, certainty, commands",
-        example: "I'm sure. / Sit down."
-      },
-      {
-        pattern: "Fall-Rise (↓↑)",
-        meaning: "Politeness, hesitation, contrast",
-        example: "Well, I could..."
-      },
-      {
-        pattern: "Rise-Fall (↑↓)",
-        meaning: "Surprise, strong emotion, sarcasm",
-        example: "Really?! / That's incredible!"
-      }
-    ]
-  },
+      { category: "4 Types of Stress in English", word_stress: "Word Stress: Emphasis on ONE syllable in word | 'PHOtograph' vs 'phoTOgrapher' vs 'photoGRAphic' (shifts with word form!)", sentence_stress: "Sentence Stress: Emphasis on KEY words (content words) | 'She BOUGHT a NEW car' (bought & new carry meaning, she/a don't)", contrastive_stress: "Contrastive Stress: Corrects/highlights difference | 'I said TEA, not COFFEE' (correcting mishearing) | 'I called YOU, not him' (emphasizing who)", emphatic_stress: "Emphatic Stress: Shows strong feeling/emotion | 'That was AMAZING!' | 'We MUST act now!' | 'AbsoLUTEly not!'", content_vs_function: "Content words (nouns, verbs, adjectives, adverbs) get stress | Function words (articles, prepositions, pronouns) reduce", note: "Sentence stress creates English's characteristic rhythm - stress-timed, not syllable-timed!" },
 
-  table3: {
-    title: "💬 How Stress Changes Meaning",
-    data: [
-      {
-        sentence: "I didn't say he stole the money.",
-        stressedWord: "I",
-        meaning: "Someone else might have said it."
-      },
-      {
-        sentence: "I didn't say he stole the money.",
-        stressedWord: "didn't",
-        meaning: "I implied it, but didn't say it."
-      },
-      {
-        sentence: "I didn't say he stole the money.",
-        stressedWord: "he",
-        meaning: "Someone else did."
-      },
-      {
-        sentence: "I didn't say he stole the money.",
-        stressedWord: "stole",
-        meaning: "Maybe he borrowed it."
-      },
-      {
-        sentence: "I didn't say he stole the money.",
-        stressedWord: "money",
-        meaning: "Maybe it was something else."
-      }
-    ]
-  },
+      { category: "Intonation Patterns - Pitch Movement", rising: "Rising (↑): Yes/no questions, uncertainty, lists (non-final items) | 'Are you COMING?' ↑ | 'MAYbe later?' ↑", falling: "Falling (↓): Statements, certainty, commands, wh-questions | 'I'm SURE.' ↓ | 'Sit DOWN.' ↓ | 'What's your NAME?' ↓", fall_rise: "Fall-Rise (↓↑): Politeness, hesitation, reservation, contrast | 'WELL, I could...' ↓↑ | 'I GUESS that's okay...' ↓↑ (implies doubt)", rise_fall: "Rise-Fall (↑↓): Surprise, strong emotion, sarcasm, being impressed | 'REAlly?!' ↑↓ | 'That's inCREDible!' ↑↓ | 'Yeah, RIGHT.' ↑↓ (sarcasm)", function: "Rising = incompleteness, invitation to respond | Falling = finality, confidence | Combinations = nuance!", common_mistake: "Learners often use rising at sentence end (sounds uncertain!) - use falling for statements to sound confident", note: "Intonation is like musical notes - same words, different 'melody' = different meaning!" },
 
-  table4: {
-    title: "😊 Intonation and Emotion",
-    data: [
-      {
-        emotion: "Excitement",
-        intonationPattern: "Rise-Fall",
-        example: "That's fantastic!"
-      },
-      {
-        emotion: "Uncertainty",
-        intonationPattern: "Rising",
-        example: "Maybe later?"
-      },
-      {
-        emotion: "Disappointment",
-        intonationPattern: "Falling",
-        example: "Oh no..."
-      },
-      {
-        emotion: "Sarcasm",
-        intonationPattern: "Rise-Fall",
-        example: "Yeah, right."
-      },
-      {
-        emotion: "Politeness",
-        intonationPattern: "Fall-Rise",
-        example: "I guess that's okay..."
-      }
+      { category: "How Stress Changes Meaning - Classic Example", sentence: "'I didn't say he stole the money.' - Meaning shifts based on which word is stressed!", I: "*I* didn't say he stole the money. (Someone ELSE said it, not me)", didnt: "I *didn't* say he stole the money. (I IMPLIED it, but didn't SAY it explicitly)", say: "I didn't *SAY* he stole the money. (I wrote it / thought it / suggested it, but didn't speak it)", he: "I didn't say *HE* stole the money. (Someone ELSE stole it, not him)", stole: "I didn't say he *STOLE* the money. (He BORROWED it / found it / took it legally)", money: "I didn't say he stole the *MONEY*. (He stole something ELSE, not money)", critical: "ONE sentence, SIX different meanings - all from stress placement!", note: "This shows WHY stress is crucial - misplaced stress = unintended meaning!" },
+
+      { category: "Intonation and Emotion - Expressing Feelings", excitement: "Excitement: Rise-Fall (↑↓) | 'That's fanTAStic!' ↑↓ | Wide pitch range + high energy", uncertainty: "Uncertainty: Rising (↑) | 'MAYbe later?' ↑ | 'I THINK so?' ↑ | Seeking confirmation/showing doubt", disappointment: "Disappointment: Falling (↓) with low pitch | 'Oh NO...' ↓ | 'That's too BAD.' ↓ | Low energy, narrow range", sarcasm: "Sarcasm: Rise-Fall (↑↓) with elongated vowels | 'Yeah, RIIIGHT.' ↑↓ | Exaggerated contour signals 'don't take literally'", politeness: "Politeness: Fall-Rise (↓↑) | 'I GUESS that's okay...' ↓↑ | Softens directness, shows openness", enthusiasm: "Enthusiasm: High starting pitch + wide range | 'I LOVE it!' (high pitch) vs 'I love it.' (low pitch = sarcasm)", note: "Same words + different intonation = opposite emotions! Tone reveals true intent." },
+
+      { category: "English Rhythm - Stress-Timed", definition: "English = stress-timed language: intervals between STRESSED syllables tend to be equal", pattern: "Stressed syllables = longer, clearer | Unstressed syllables = shorter, reduced (schwa /ə/), compressed", example: "'The CAT sat on the MAT' - CAT and MAT are stressed, others compress | 'The CATalog needs ORganizing' - stressed syllables evenly spaced", compression: "Unstressed syllables squeeze together: 'I'm going to go' → 'I'm gonna go' (compresses for rhythm)", vs_syllable_timed: "Spanish/French/Japanese = syllable-timed (each syllable gets equal time) | English is NOT - creates distinctive rhythm", why_matters: "This rhythm is WHY weak forms exist, why connected speech happens, why English sounds the way it does!", note: "Master stress-timing to sound natural - don't pronounce every syllable equally!" },
+
+      { category: "Contrastive Stress - Correcting & Highlighting", correction: "Corrects mishearing: 'I said TEA, not coffee' | 'She's from BOSton, not Austin' | 'It's ThURSday, not Tuesday'", emphasis: "Emphasizes unexpected element: 'I ACTually agreed with him' | 'SHE did it' (not who you'd expect)", comparison: "Highlights contrast: 'Some people TALK, others ACT' | 'We need FEWER slides and MORE stories'", disagreement: "Polite disagreement: 'That's ONE way to see it' (implies there are others)", strategic_use: "In debates: stress the point of difference | In presentations: stress the key advantage", power: "Single word stress can completely change focus and implication - very powerful tool!", note: "Contrastive stress makes opposites audible - listeners hear the distinction immediately" },
+
+      { category: "Emphatic Stress - Strong Feelings", intensification: "Makes emotion stronger: 'That was AMAZING!' vs 'That was amazing.' (flat = less impressed)", urgency: "'We MUST act NOW' - double stress creates urgency | 'This is CRItical!' - stress + high pitch = alarm", agreement: "'exACTly!' | 'absoLUTEly!' | 'DEFinitely!' - stressed agreement sounds enthusiastic", disagreement: "'ABsolutely NOT!' | 'NO way!' - stress + volume = firm refusal", warnings: "'Be CAREful!' | 'DON'T touch that!' - stress signals danger/importance", overuse_warning: "Too much emphatic stress = exhausting, theatrical, loses impact | Save it for genuinely important moments!", note: "Emphatic stress = emotion made audible - use it to make listeners FEEL your point" },
+
+      { category: "Common Intonation Mistakes - What NOT to Do", flat_monotone: "✗ Flat intonation (no pitch variation) = robotic, boring, disengaged | Listeners tune out quickly!", rising_everywhere: "✗ Rising at every sentence end = sounds uncertain, asking for validation constantly | Use falling for statements!", equal_stress: "✗ Stressing every word equally = nothing stands out, everything competes | Reduce function words, stress content words!", wrong_pattern: "✗ Falling on yes/no questions = sounds rude or not really asking | 'Are you COMing?' ↓ (command) vs 'Are you COMing?' ↑ (question)", no_emotion: "✗ Emotionless delivery = listeners can't tell your attitude | Use pitch to show interest, enthusiasm, concern!", fixed_in_L1: "Many learners transfer L1 intonation patterns - sounds foreign even with perfect grammar!", note: "Intonation mistakes don't break grammar but they break communication flow and naturalness!" },
+
+      { category: "How to Practice Stress & Intonation", shadowing: "Shadowing: Copy native speakers immediately - mimic pitch, rhythm, stress patterns | Daily 10-15 minutes!", mark_scripts: "Mark stress in scripts: BOLD or CAPS for stressed words | Practice reading aloud with marked stress", record_compare: "Record yourself → Compare to native model → Identify differences in pitch movement and stress placement", exaggerate: "EXAGGERATE during practice - make stress VERY obvious | Once pattern is learned, dial back to natural level", hand_gestures: "Use hand for pitch contours - move up for rising, down for falling | Visualizes intonation physically", focus_one: "Focus one feature at a time: Week 1 = sentence stress | Week 2 = rising/falling | Week 3 = contrastive stress", note: "Exaggeration builds muscle memory - it feels weird at first but makes patterns automatic!" },
+
+      { category: "Stress in Different Contexts", presentations: "Public speaking: Strategic stress highlights key points | Pauses before/after stressed words = emphasis", persuasion: "'We NEED action NOW' - stress creates urgency | 'THIS is the solution' - stress creates confidence", storytelling: "Vary stress and pitch to show character emotions, build suspense, pace narrative", polite_requests: "Fall-rise for politeness: 'Could you HELP me?' ↓↑ (softer than falling ↓)", commands_vs_requests: "Commands: 'Sit DOWN.' ↓ (final fall) | Requests: 'Could you sit DOWN?' ↓↑ (fall-rise softens)", lists: "Rising on non-final items ↑, falling on final ↓: 'I need bread ↑, milk ↑, and eggs ↓'", note: "Adapt stress/intonation to context - what works in casual chat may sound wrong in formal presentation!" },
+
+      { category: "Cultural Differences in Intonation", british_vs_american: "British: Broader pitch excursions, frequent fall-rise | American: Smoother contours, level final falls", high_context_cultures: "Some Asian cultures use narrower pitch range (wide range = too emotional) | English uses wide range = expressive", directness: "American rising questions = direct | British fall-rise = more indirect/polite | Different cultures hear differently!", transfer_errors: "Learners transfer L1 patterns: Spanish rhythm sounds 'mechanical' in English | Mandarin tones create unexpected stress", adapt: "When speaking to international audiences: slightly exaggerate stress, avoid heavy cultural intonation", note: "No 'correct' intonation - British, American, Indian English all valid but different!" },
+
+      { category: "Why Function Words Reduce", content_vs_function: "Content words (nouns, verbs, adjectives, adverbs) = carry MEANING → get stress", function_words: "Function words (articles, prepositions, pronouns, auxiliaries) = grammatical glue → reduce", reduction: "'to' → /tə/ | 'for' → /fə/ | 'and' → /n/ | 'can' → /kən/ | 'have' → /həv/'", rhythm_creation: "Reducing function words creates space between stressed syllables = English rhythm!", emphasis_exception: "Function words CAN be stressed for contrast: 'I said TO him, not ABOUT him' | 'He IS coming' (emphasizing 'is')", automaticity: "Native speakers reduce automatically - not lazy, it's the CORRECT way English works!", note: "Reduction is required for natural rhythm - pronouncing all function words clearly = textbook English, not real English!" },
+
+      { category: "Remember - Key Takeaways", takeaway_1: "4 stress types: Word (PHOtograph), Sentence (She BOUGHT a car), Contrastive (TEA not coffee), Emphatic (AMAZING!)", takeaway_2: "4 intonation patterns: Rising ↑ (questions), Falling ↓ (statements), Fall-Rise ↓↑ (politeness), Rise-Fall ↑↓ (surprise/sarcasm)", takeaway_3: "'I didn't say he stole the money' = 6 different meanings depending on which word is stressed!", takeaway_4: "English = stress-timed (stressed syllables evenly spaced) NOT syllable-timed | Creates distinctive rhythm", takeaway_5: "Intonation conveys emotion: Excitement (↑↓), Uncertainty (↑), Disappointment (↓), Sarcasm (↑↓ elongated)", takeaway_6: "Common mistakes: Flat monotone, rising everywhere, stressing all words equally, no emotion", takeaway_7: "Practice: Shadowing, mark scripts, record & compare, exaggerate then dial back, use hand gestures for pitch", final_note: "Stress and intonation are THE SECRET to sounding natural, confident, and emotionally connected. They operate above grammar to create real communication. Master them to transform from technically correct to genuinely fluent!" }
     ]
   },
 
