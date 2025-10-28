@@ -158,194 +158,36 @@ Connected speech is how words sound when spoken in natural flow, not in isolatio
 **Why It Matters:**
 Connected speech is the key to understanding native rhythm and fluency. It makes speaking faster, smoother, and easier for the mouth.`,
 
-  table1: {
-    title: "🔗 Key Features of Connected Speech",
+  table: {
+    title: "📋 Connected Speech - Sound Like a Native (Bağlı Konuşma - Anadili Gibi Konuş)",
     data: [
-      {
-        feature: "Linking",
-        description: "Connecting final consonants to initial vowels",
-        example: "Go on, Turn off"
-      },
-      {
-        feature: "Elision",
-        description: "Omitting a sound",
-        example: "Must be → mus be"
-      },
-      {
-        feature: "Assimilation",
-        description: "Sound changes to resemble nearby sounds",
-        example: "Green park → Greem park"
-      },
-      {
-        feature: "Intrusion",
-        description: "Adding an extra sound /r/, /j/, or /w/",
-        example: "Law and order → Lawr and order"
-      },
-      {
-        feature: "Weak Forms",
-        description: "Reducing unstressed words",
-        example: "to → /tə/, for → /fə/"
-      }
-    ]
-  },
+      { category: "What Is Connected Speech", definition: "How sounds link, blend, change, or disappear when words connect in natural flow - NOT how words sound in isolation!", why_different: "Textbook: clear, separate words | Real speech: words merge, sounds change/drop, rhythm flows", examples: "'What are you doing?' → 'Whatcha doing?' | 'Going to' → 'Gonna' | 'Did you' → 'Didja'", why_matters: "Key to understanding natives AND sounding natural yourself | Makes speaking faster, smoother, easier for mouth", challenge: "Hard for learners because words sound VERY different from textbooks/dictionaries", reality: "This is how English is ACTUALLY spoken - must learn it to understand and be understood naturally!", note: "Connected speech isn't sloppy - it's normal, efficient, and how ALL native speakers talk!" },
 
-  table2: {
-    title: "🔗 Linking Rules and Practice",
-    data: [
-      {
-        situation: "Consonant + Vowel",
-        example: "Turn off",
-        pronunciation: "tur noff"
-      },
-      {
-        situation: "Consonant + Consonant",
-        example: "Big girl",
-        pronunciation: "big girl (smooth transition)"
-      },
-      {
-        situation: "Vowel + Vowel",
-        example: "Go away",
-        pronunciation: "go away (with /w/ glide)"
-      },
-      {
-        situation: "Same Consonant",
-        example: "Good day",
-        pronunciation: "goo day (one /d/ sound)"
-      }
-    ]
-  },
+      { category: "5 Key Features Overview", linking: "Linking (Bağlama) - words connect smoothly without pauses", elision: "Elision (Düşme) - sounds are dropped completely to make pronunciation easier", assimilation: "Assimilation (Benzeşme) - sounds change to resemble nearby sounds", intrusion: "Intrusion (Ekleme) - extra sounds (/r/, /j/, /w/) added between words", weak_forms: "Weak forms (Zayıf biçimler) - function words reduced/shortened in unstressed positions", all_together: "These 5 features combine to create natural English rhythm and flow!", note: "Master these to unlock native-speed listening comprehension!" },
 
-  table3: {
-    title: "✂️ Elision (Sound Dropping)",
-    data: [
-      {
-        word: "Next day",
-        naturalForm: "Nex day",
-        explanation: "/t/ dropped"
-      },
-      {
-        word: "Friendship",
-        naturalForm: "Frenship",
-        explanation: "/d/ dropped"
-      },
-      {
-        word: "Camera",
-        naturalForm: "Camra",
-        explanation: "/e/ dropped"
-      },
-      {
-        word: "Must be",
-        naturalForm: "Mus be",
-        explanation: "/t/ dropped before /b/"
-      },
-      {
-        word: "Exactly",
-        naturalForm: "Exacly",
-        explanation: "/t/ dropped"
-      }
-    ]
-  },
+      { category: "Linking - Connecting Sounds Smoothly", consonant_vowel: "C + V: 'Turn it off' → 'tur nit off' (consonant flows directly into next vowel)", consonant_consonant: "C + C: 'Big girl' → smooth transition, no pause between consonants", vowel_vowel: "V + V: 'Go away' → 'Go waway' (/w/ glide naturally inserted) | 'See it' → 'See yit' (/j/ glide)", same_consonant: "Same C: 'Good day' → 'Goo day' (say /d/ once, not twice - hold it longer)", practice: "'Turn off' NOT 'Turn (pause) off' | 'An apple' → 'a napple' (flows together)", why_it_works: "Eliminates awkward pauses | Creates smooth flow | Saves energy/time", note: "Linking makes speech FLUID - no choppy, robotic pauses between words!" },
 
-  table4: {
-    title: "🔄 Assimilation (Sound Change)",
-    data: [
-      {
-        original: "Good boy",
-        assimilatedForm: "Goob boy",
-        explanation: "/d/ → /b/"
-      },
-      {
-        original: "That pen",
-        assimilatedForm: "Thap pen",
-        explanation: "/t/ → /p/"
-      },
-      {
-        original: "Green park",
-        assimilatedForm: "Greem park",
-        explanation: "/n/ → /m/"
-      },
-      {
-        original: "Handbag",
-        assimilatedForm: "Hambag",
-        explanation: "/nd/ → /mb/"
-      },
-      {
-        original: "Have to",
-        assimilatedForm: "Haf to",
-        explanation: "/v/ → /f/"
-      }
-    ]
-  },
+      { category: "Elision - Dropping Sounds", what_drops: "Consonants (especially /t/, /d/) in difficult clusters | Vowels in unstressed syllables", examples: "'Next day' → 'Nex day' (/t/ dropped) | 'Friendship' → 'Frenship' (/d/ dropped) | 'Camera' → 'Camra' (/e/ dropped) | 'Must be' → 'Mus be' (/t/ before /b/) | 'Exactly' → 'Exacly' (/t/ dropped)", why_happens: "Dropping sounds makes pronunciation easier and faster - English loves efficiency!", common_pattern: "/t/ and /d/ drop between consonants because clusters are hard to say quickly", warning: "Don't drop TOO much or you'll sound unclear - maintain intelligibility!", note: "This is why natives sound like they're 'swallowing' sounds - they are!" },
 
-  table5: {
-    title: "➕ Intrusion (Extra Sounds)",
-    data: [
-      {
-        type: "/r/ Intrusion",
-        example: "Law and order",
-        addedSound: "/r/ between vowels",
-        pronunciation: "Lawr and order"
-      },
-      {
-        type: "/j/ Intrusion",
-        example: "I agree",
-        addedSound: "/j/ between /i/ and vowel",
-        pronunciation: "I yagree"
-      },
-      {
-        type: "/w/ Intrusion",
-        example: "Do it",
-        addedSound: "/w/ between /u/ and vowel",
-        pronunciation: "Do wit"
-      },
-      {
-        type: "/r/ Intrusion",
-        example: "The idea of",
-        addedSound: "/r/ linking",
-        pronunciation: "The idear of"
-      }
-    ]
-  },
+      { category: "Assimilation - Sounds Change", definition: "Sounds change to become more like neighboring sounds for easier pronunciation", examples: "'Good boy' → 'Goob boy' (/d/ becomes /b/ before /b/) | 'That pen' → 'Thap pen' (/t/ becomes /p/ before /p/) | 'Green park' → 'Greem park' (/n/ becomes /m/ before /p/) | 'Handbag' → 'Hambag' (/n/ becomes /m/ before /b/) | 'Have to' → 'Haf to' (/v/ becomes /f/ before /t/)", pattern: "Voiced → voiceless when next to voiceless sound | Place of articulation matches next sound", why_it_happens: "Mouth is lazy - easier to prepare for next sound early than switch quickly!", automatic: "Native speakers do this unconsciously - it's natural efficiency, not carelessness", note: "This is why 'handbag' naturally sounds like 'hambag' - assimilation is unavoidable!" },
 
-  table6: {
-    title: "🔽 Weak Forms in Fast Speech",
-    data: [
-      {
-        word: "to",
-        strongForm: "/tu/",
-        weakForm: "/tə/",
-        example: "Go to work → go tə work"
-      },
-      {
-        word: "for",
-        strongForm: "/fɔr/",
-        weakForm: "/fə/",
-        example: "Thanks for coming → thanks fə coming"
-      },
-      {
-        word: "of",
-        strongForm: "/ɒv/",
-        weakForm: "/əv/ or /v/",
-        example: "A cup of tea → a cup ə tea"
-      },
-      {
-        word: "and",
-        strongForm: "/ænd/",
-        weakForm: "/ən/ or /n/",
-        example: "Bread and butter → bread n butter"
-      },
-      {
-        word: "can",
-        strongForm: "/kæn/",
-        weakForm: "/kən/",
-        example: "I can go → I kən go"
-      },
-      {
-        word: "have",
-        strongForm: "/hæv/",
-        weakForm: "/həv/ or /əv/",
-        example: "I have to → I həv to / I hafta"
-      }
+      { category: "Intrusion - Adding Extra Sounds", r_intrusion: "/r/ intrusion: 'Law and order' → 'Lawr and order' (between vowels in non-rhotic accents) | 'The idea of' → 'The idear of'", j_intrusion: "/j/ intrusion: 'I agree' → 'I yagree' (/j/ between /i/ and vowel) | 'See it' → 'See yit'", w_intrusion: "/w/ intrusion: 'Do it' → 'Do wit' (/w/ between /u/ and vowel) | 'Go on' → 'Go won'", why_added: "Prevents awkward hiatus (gap) between vowels - makes flow smoother!", common_in: "British English more than American for /r/ intrusion", mistake: "Some learners think this is 'wrong' - it's not! It's natural phonological process", note: "These 'extra' sounds appear automatically to smooth vowel-to-vowel transitions!" },
+
+      { category: "Weak Forms - Function Words Reduced", definition: "Function words (to, for, of, and, can, have, etc.) pronounced with schwa /ə/ in unstressed positions", examples: "'to' → /tə/: 'Go to work' → 'go tə work' | 'for' → /fə/: 'Thanks for coming' → 'thanks fə coming' | 'of' → /əv/: 'Cup of tea' → 'cup ə tea' | 'and' → /ən/ or /n/: 'Bread and butter' → 'bread n butter' | 'can' → /kən/: 'I can go' → 'I kən go' | 'have' → /həv/: 'I have to' → 'I hafta'", strong_vs_weak: "Strong forms = careful/emphasized speech | Weak forms = natural connected speech", when_strong: "Use strong form when word is emphasized, final in sentence, or contrasted", rhythm: "Weak forms create English's stress-timed rhythm - content words stressed, function words reduced!", note: "Weak forms are THE SECRET to English rhythm - master them to sound natural!" },
+
+      { category: "Common Reductions - Everyday Speech", gonna: "'Going to' → 'gonna': 'I'm going to eat' → 'I'm gonna eat'", wanna: "'Want to' → 'wanna': 'I want to go' → 'I wanna go'", gotta: "'Got to' (have to) → 'gotta': 'I've got to leave' → 'I gotta leave'", shoulda_woulda_coulda: "'Should have' → 'shoulda' | 'Would have' → 'woulda' | 'Could have' → 'coulda'", dunno: "'Don't know' → 'dunno': 'I don't know' → 'I dunno'", lemme_gimme: "'Let me' → 'lemme' | 'Give me' → 'gimme'", formality: "These are INFORMAL but universal in casual speech - even highly educated speakers use them!", note: "Textbooks teach 'going to', but natives say 'gonna' 95% of the time in casual speech!" },
+
+      { category: "Why Connected Speech Is Hard for Learners", problem_1: "Words sound completely different from dictionary pronunciation", problem_2: "Multiple features happen simultaneously (linking + elision + weak forms all at once!)", problem_3: "No spaces between words in spoken English - continuous stream", problem_4: "Speed makes it hard to catch individual sounds", problem_5: "Different accents use different features (American vs British r-intrusion)", solution: "Practice recognition FIRST (listening) → Then production (speaking) | Start slow, increase speed gradually", note: "Once you 'crack the code', understanding natives becomes MUCH easier!" },
+
+      { category: "How to Practice Connected Speech", shadowing: "Shadowing: Listen to native speech, repeat immediately copying rhythm and reductions", slow_motion: "Slow down recordings, notice exactly what changes, then speed up gradually", mark_script: "Get transcript, mark where linking/elision happens, practice reading aloud", record_yourself: "Record yourself, compare to natives - identify unnatural breaks/missing connections", movies_shows: "Watch with subtitles ON, notice difference between written and spoken forms", focus_on_rhythm: "Don't try to say every sound clearly - focus on rhythm and stress patterns instead", note: "Imitation is key - the more you copy natives, the more automatic it becomes!" },
+
+      { category: "Balancing Clarity and Naturalness", too_clear: "Pronouncing every sound distinctly = robotic, unnatural, slow, textbook-like", too_reduced: "Over-reducing = sloppy, unclear, hard to understand, unprofessional in formal contexts", sweet_spot: "Natural connected speech with maintained clarity - understandable but fluent!", context_matters: "Formal presentation: more careful pronunciation | Casual chat: more reductions | Exams: moderate - show fluency without losing clarity", adjust_to_listener: "With non-natives or in noisy environments: speak more clearly | With natives in quiet room: full connected speech ok", note: "Goal is natural AND clear - not one or the other!" },
+
+      { category: "Accent Differences in Connected Speech", british: "British: More r-intrusion ('idea of' → 'idear of'), t-glottalization (butter → bu'er), more elision", american: "American: Flapped t ('better' → 'bedder'), strong r's, less elision of final consonants", australian: "Australian: Heavy r-intrusion, vowel changes, unique reductions", all_accents: "ALL accents use connected speech - it's universal feature of natural English!", implication: "Learn general patterns, then adapt to specific accent you want to sound like or understand", note: "Connected speech makes accents MORE different from each other!" },
+
+      { category: "When NOT to Use Heavy Connected Speech", presentations: "Formal presentations: maintain more careful pronunciation for clarity and professionalism", exams: "Speaking exams (IELTS/TOEFL): moderate connected speech shows fluency without sacrificing clarity", teaching: "When teaching others: articulate more carefully so students hear full forms", public_speaking: "Speeches to large audiences: clearer pronunciation ensures everyone understands", cross_cultural: "Speaking to non-natives: reduce reductions to improve mutual understanding", never_lose: "NEVER sacrifice intelligibility for speed - communication > sounding native", note: "Connected speech is tool, not requirement - adapt to context and audience!" },
+
+      { category: "Remember - Key Takeaways", takeaway_1: "Connected speech = how English is ACTUALLY spoken: linking, elision, assimilation, intrusion, weak forms", takeaway_2: "Linking: sounds flow together (C+V, V+V with glides) | Elision: sounds drop (/t/, /d/ in clusters)", takeaway_3: "Assimilation: sounds change to match neighbors ('handbag' → 'hambag') | Intrusion: extra sounds added (/r/, /j/, /w/)", takeaway_4: "Weak forms are THE SECRET to English rhythm: 'to' → /tə/, 'for' → /fə/, 'and' → /n/", takeaway_5: "Common reductions: 'going to' → 'gonna', 'want to' → 'wanna', 'got to' → 'gotta' (universal in casual speech!)", takeaway_6: "Practice: shadowing, slow-motion analysis, mark scripts, record yourself, watch movies with subtitles", takeaway_7: "Balance clarity and naturalness - adjust to context (formal vs casual) and listener (native vs non-native)", final_note: "Connected speech is THE KEY to understanding natives and sounding natural. It's not optional at advanced levels - it's how English works! Master it through extensive listening and imitation." }
     ]
   },
 
