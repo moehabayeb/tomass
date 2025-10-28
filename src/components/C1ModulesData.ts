@@ -2385,28 +2385,52 @@ A good critique is objective, analytical, and respectful. It highlights strength
 **Useful Collocations:**
 • Offer insight • Provide analysis • Raise an issue • Express doubt • Give credit to • Draw attention to • Present a balanced view • Address a weakness • Identify a strength • Make a valid point • Offer an alternative perspective • Present evidence • Support a claim • Challenge an argument • Summarize key findings`,
 
-  table: [
-    { english: "Evaluate", turkish: "Değerlendirmek", example: "The author evaluates the effectiveness of the proposed solution." },
-    { english: "Highlight", turkish: "Vurgulamak", example: "The study highlights the need for further research." },
-    { english: "Argue", turkish: "Savunmak", example: "The writer argues that education reforms are necessary." },
-    { english: "Question", turkish: "Sorgulamak", example: "The article questions the reliability of previous findings." },
-    { english: "Demonstrate", turkish: "Göstermek", example: "The paper demonstrates a strong correlation between variables." },
-    { english: "Emphasize", turkish: "Vurgulamak", example: "The review emphasizes the significance of teamwork." },
-    { english: "Criticize", turkish: "Eleştirmek", example: "The critique criticizes the limited sample size." },
-    { english: "Acknowledge", turkish: "Kabul etmek", example: "The author acknowledges the limitations of the study." },
-    { english: "Support", turkish: "Desteklemek", example: "The researcher supports her claim with empirical evidence." },
-    { english: "Refute", turkish: "Çürütmek", example: "The paper refutes the earlier theory." },
-    { english: "Offer insight", turkish: "İçgörü sunmak", example: "The book offers valuable insight into human behavior." },
-    { english: "Provide analysis", turkish: "Analiz sunmak", example: "The review provides thorough analysis of the methodology." },
-    { english: "Raise an issue", turkish: "Sorun ortaya koymak", example: "The author raises an important ethical issue." },
-    { english: "Express doubt", turkish: "Şüphe belirtmek", example: "The critic expresses doubt about the findings." },
-    { english: "Give credit to", turkish: "Takdir etmek", example: "We must give credit to the researcher's innovative approach." },
-    { english: "Present a balanced view", turkish: "Dengeli görüş sunmak", example: "The critique presents a balanced view of strengths and weaknesses." },
-    { english: "Address a weakness", turkish: "Zayıflığa değinmek", example: "The review addresses a major weakness in the argument." },
-    { english: "Identify a strength", turkish: "Güçlü yönü belirlemek", example: "The analysis identifies the study's main strength." },
-    { english: "Challenge an argument", turkish: "Argümanı sorgulamak", example: "The paper challenges the author's central argument." },
-    { english: "Summarize key findings", turkish: "Ana bulguları özetlemek", example: "The review summarizes the key findings effectively." }
-  ],
+  table: {
+    title: "📋 Writing Critiques and Reviews (Eleştiri ve İnceleme Yazma)",
+    data: [
+      { category: "What is a Critique?", explanation: "An objective, analytical evaluation of a text, study, film, or performance", purpose: "Assess quality, identify strengths and weaknesses, provide constructive feedback", turkish: "Eleştiri - nesnel değerlendirme", function: "Goes beyond description to evaluation and analysis", note: "Critique ≠ criticism! A critique is balanced, not just negative" },
+
+      { category: "Description vs Evaluation", description_what: "Description = WHAT the work does (summarizing content)", evaluation_why: "Evaluation = HOW WELL it does it (judging quality)", examples_description: "The study examines 500 participants. / The film depicts war.", examples_evaluation: "The sample size is adequate. / The film powerfully depicts war.", critical: "Critiques must EVALUATE, not just describe!", remember: "Description = neutral facts | Evaluation = judgment of quality" },
+
+      { category: "Core Verbs - Assessment", evaluate: "evaluate (değerlendirmek) - assess value or quality carefully", assess: "assess (değerlendirmek) - determine worth or importance", examine: "examine (incelemek) - look at closely and systematically", analyze: "analyze (analiz etmek) - study in detail, break into parts", examples: "The author evaluates the solution's effectiveness. / I will assess the methodology. / Let's examine the evidence. / The review analyzes the argument structure.", note: "These verbs show careful, thoughtful engagement!" },
+
+      { category: "Core Verbs - Presentation", argue: "argue (savunmak) - present reasoning for a position", demonstrate: "demonstrate (göstermek) - show evidence or proof", illustrate: "illustrate (örneklemek) - explain with examples", highlight: "highlight (vurgulamak) - draw attention to important points", examples: "The writer argues that reforms are necessary. / The paper demonstrates strong correlation. / The author illustrates with case studies. / The study highlights the need for research.", note: "Shows how authors present their ideas!" },
+
+      { category: "Core Verbs - Criticism", criticize: "criticize (eleştirmek) - point out flaws or problems", question: "question (sorgulamak) - express doubt, challenge", challenge: "challenge (sorgulamak) - dispute or oppose", refute: "refute (çürütmek) - prove wrong, disprove", examples: "The critique criticizes the limited sample size. / The article questions the reliability of findings. / The paper challenges the author's central argument. / The study refutes the earlier theory.", note: "Use these to identify weaknesses constructively!" },
+
+      { category: "Core Verbs - Recognition", acknowledge: "acknowledge (kabul etmek) - recognize truth or existence of", recognize: "recognize (tanımak) - identify and appreciate", appreciate: "appreciate (takdir etmek) - understand value of", emphasize: "emphasize (vurgulamak) - stress importance of", examples: "The author acknowledges limitations. / We must recognize her contribution. / I appreciate the thorough methodology. / The review emphasizes the significance of teamwork.", note: "Balance criticism with recognition of strengths!" },
+
+      { category: "Supporting Arguments", support: "support + claim/argument (desteklemek) - back up with evidence", provide_evidence: "provide evidence/analysis (kanıt/analiz sunmak)", present_view: "present a balanced view (dengeli görüş sunmak)", offer_insight: "offer insight (içgörü sunmak) - provide deep understanding", examples: "The researcher supports her claim with empirical evidence. / The review provides thorough analysis. / The critique presents a balanced view. / The book offers valuable insight into human behavior.", note: "All claims in critique need evidence!" },
+
+      { category: "Identifying Strengths & Weaknesses", identify_strength: "identify a strength (güçlü yönü belirlemek)", address_weakness: "address a weakness (zayıflığa değinmek)", raise_issue: "raise an issue/concern (sorun ortaya koymak)", give_credit: "give credit to (takdir etmek) - acknowledge merit", examples: "The analysis identifies the study's main strength. / The review addresses a major weakness in the argument. / The author raises an important ethical issue. / We must give credit to the researcher's innovative approach.", note: "Balanced critique = strengths AND weaknesses!" },
+
+      { category: "Expressing Doubt & Questioning", express_doubt: "express doubt (şüphe belirtmek) - indicate uncertainty", question_validity: "question the validity/reliability (geçerliliği sorgulamak)", raise_concerns: "raise concerns about (endişe dile getirmek)", appears_questionable: "appears questionable / seems problematic", examples: "The critic expresses doubt about the findings. / We should question the validity of these claims. / The review raises concerns about methodology. / The conclusion appears questionable.", note: "Use hedging language to sound diplomatic!" },
+
+      { category: "Summarizing & Concluding", summarize_findings: "summarize key findings (ana bulguları özetlemek)", draw_conclusions: "draw conclusions (sonuç çıkarmak)", reach_verdict: "reach a verdict/judgment (karara varmak)", provide_overview: "provide an overview (genel bakış sunmak)", examples: "The review summarizes the key findings effectively. / Based on evidence, we can draw conclusions. / The critique reaches a balanced verdict. / The introduction provides a clear overview.", note: "Good critiques end with clear overall assessment!" },
+
+      { category: "Hedging Language - Being Diplomatic", hedge_verbs: "appears to, seems to, tends to, may, might, could, suggests", hedge_adverbs: "somewhat, relatively, fairly, rather, perhaps, possibly", examples: "The evidence APPEARS TO support this claim. / The methodology SEEMS questionable. / The conclusion MAY be overstated. / The argument is SOMEWHAT weak.", purpose: "Softens criticism, sounds professional and objective", remember: "Academic critiques use hedging, not absolute statements!" },
+
+      { category: "Balancing Positive & Negative", positive_negative: "While X is strong, Y needs improvement", strength_but: "The study has merit, but...", acknowledge_however: "Although the author makes valid points, however...", examples: "While the research design is robust, the sample size limits generalizability. / The study has merit, but the conclusions are overstated. / Although the author makes valid points, the evidence is insufficient.", note: "Professional critiques are balanced, not one-sided!" },
+
+      { category: "Common Mistakes - Too Harsh", mistake_1: "Being overly critical without recognizing strengths", wrong_1: "This study is terrible and useless ✗ / The author clearly doesn't understand ✗", correct_1: "While the study contributes to the field, several methodological concerns arise ✓", rule: "Critique the WORK, not the PERSON", remember: "Be firm but fair - avoid personal attacks!" },
+
+      { category: "Common Mistakes - Too Vague", mistake_2: "Making vague criticisms without specifics", wrong_2: "The methodology is bad ✗ / The argument doesn't work ✗ / This is not convincing ✗", correct_2: "The sample size (n=20) is insufficient for generalization ✓ / The argument relies on unverified assumptions ✓ / The evidence doesn't fully support Claim X ✓", rule: "Be SPECIFIC - cite examples, page numbers, particular claims", remember: "Vague criticism is unhelpful!" },
+
+      { category: "Common Mistakes - Only Describing", mistake_3: "Only describing content without evaluating", wrong_3: "The author discusses climate change. The study has 100 participants. ✗", correct_3: "The author provides a compelling analysis of climate change, though some claims lack empirical support. The sample size (n=100) is adequate for exploratory research. ✓", critical: "Description alone is NOT a critique!", remember: "Always EVALUATE, don't just summarize!" },
+
+      { category: "Structure of a Critique", intro: "1. Introduction: State what you're reviewing + brief overview", body_strengths: "2. Strengths: What works well? (with specific examples)", body_weaknesses: "3. Weaknesses: What needs improvement? (with evidence)", conclusion: "4. Conclusion: Overall assessment + recommendation", example: "Introduction → Main strengths → Main weaknesses → Balanced conclusion", note: "Clear structure helps readers follow your evaluation!" },
+
+      { category: "Useful Sentence Frames - Opening", opening_1: "This paper/study/article examines...", opening_2: "The author argues/claims/demonstrates that...", opening_3: "This critique evaluates...", opening_4: "The work under review addresses...", examples: "This study examines the relationship between X and Y. / The author argues convincingly that Z. / This critique evaluates the methodology and findings.", note: "Start with clear statement of what you're reviewing!" },
+
+      { category: "Useful Sentence Frames - Strengths", strength_1: "A particular strength is...", strength_2: "The author successfully demonstrates...", strength_3: "One notable aspect is...", strength_4: "The study makes a valuable contribution by...", examples: "A particular strength is the rigorous methodology. / The author successfully demonstrates the relationship. / One notable aspect is the innovative approach. / The study makes a valuable contribution to the field.", note: "Give credit where it's due!" },
+
+      { category: "Useful Sentence Frames - Weaknesses", weakness_1: "However, one limitation is...", weakness_2: "The study would benefit from...", weakness_3: "A potential concern is...", weakness_4: "While X is strong, Y remains problematic because...", examples: "However, one limitation is the small sample size. / The study would benefit from longitudinal data. / A potential concern is the reliance on self-reported measures. / While the design is sound, the generalizability remains limited.", note: "Frame weaknesses constructively!" },
+
+      { category: "Useful Sentence Frames - Overall Assessment", conclusion_1: "Overall, the work presents...", conclusion_2: "Despite some limitations, the study...", conclusion_3: "In balance, this represents...", conclusion_4: "While further research is needed, the author has...", examples: "Overall, the work presents a thorough analysis of X. / Despite some limitations, the study makes important contributions. / In balance, this represents a solid addition to the literature. / While further research is needed, the author has opened important avenues.", note: "End with balanced overall judgment!" },
+
+      { category: "Remember", takeaway_1: "Critique = balanced evaluation (strengths + weaknesses), not just criticism", takeaway_2: "Evaluate HOW WELL, don't just describe WHAT", takeaway_3: "Use hedging language: appears to, seems to, may, might", takeaway_4: "Be SPECIFIC - cite examples, page numbers, particular claims", takeaway_5: "Critique the WORK, not the person - stay objective and professional", final_note: "Good critiques are balanced, specific, evidence-based, and diplomatic - they help improve scholarship by providing constructive, reasoned evaluation!" }
+    ]
+  },
 
   speakingPractice: [
     { question: "What distinguishes a critique from a summary?", answer: "A critique goes beyond description; it evaluates and analyzes the subject using reasoning and evidence. While a summary restates the author's points, a critique discusses how effective or convincing those points are." },
