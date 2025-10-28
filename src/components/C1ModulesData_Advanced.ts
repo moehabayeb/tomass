@@ -47,55 +47,40 @@ Original: "We should all recycle more to save the planet."
 Improved version:
 "Every bottle, every bag, every can we recycle is a small promise to our children — a promise that this planet will still be green, alive, and beautiful."`,
 
-  table1: {
-    title: "📋 Structuring a Powerful Speech",
+  table: {
+    title: "📋 Public Speaking Skills - Advanced Mastery (İleri Düzey Topluluk Önünde Konuşma)",
     data: [
-      {
-        part: "Introduction",
-        purpose: "Grab attention",
-        example: "Imagine waking up tomorrow and finding out your phone no longer exists."
-      },
-      {
-        part: "Body",
-        purpose: "Present key points logically",
-        example: "First, let's explore how technology changed our habits..."
-      },
-      {
-        part: "Conclusion",
-        purpose: "End memorably",
-        example: "So next time you reach for your phone, remember—you control it, not the other way around."
-      }
-    ]
-  },
+      { category: "What Makes a Great Speaker", key_elements: "Clarity, confidence, connection, emotion, presence", secret: "Make people FEEL something - emotions create memories that facts alone cannot", combination: "Content (well-organized) + Delivery (tone, pace) + Presence (body language) + Emotion (sincerity) + Engagement (interaction)", memorable_speakers: "Martin Luther King Jr., Steve Jobs, Brené Brown, Barack Obama, Malala Yousafzai", common_thread: "They don't just inform - they inspire, move, and transform audiences", mistake: "Focusing only on content and ignoring delivery/emotion = forgettable speech", note: "People remember how you made them feel, not just what you said" },
 
-  table2: {
-    title: "🎭 Rhetorical Devices for Impact",
-    data: [
-      {
-        device: "Repetition",
-        example: "We will not stop. We will not rest. We will not fail.",
-        purpose: "Emphasis"
-      },
-      {
-        device: "Metaphor",
-        example: "Education is the key to unlock the golden door of freedom.",
-        purpose: "Imagery"
-      },
-      {
-        device: "Alliteration",
-        example: "Power, purpose, and perseverance.",
-        purpose: "Rhythm"
-      },
-      {
-        device: "Contrast",
-        example: "Ask not what your country can do for you—ask what you can do for your country.",
-        purpose: "Persuasion"
-      },
-      {
-        device: "Anecdote",
-        example: "A short personal story to illustrate a point.",
-        purpose: "Connection"
-      }
+      { category: "Speech Structure - Introduction", purpose: "Grab attention immediately - you have 30 seconds before audience decides if you're worth listening to!", powerful_openings: "Shocking statistic | Provocative question | Personal story | Bold statement | Silence (dramatic pause)", examples: "'Imagine waking up tomorrow and your phone no longer exists' (imagination) | 'By the end of this talk, 3 people will have died from...' (statistic) | 'I failed 12 times before I succeeded' (vulnerability)", what_to_avoid: "✗ Apologizing ('Sorry, I'm nervous') | ✗ Thanking everyone | ✗ Reading bio | ✗ Starting with 'So, yeah, um...'", hook_formula: "Surprise + Relevance = Attention | Make them curious, shocked, or emotionally engaged", classic_mistake: "Weak opening kills interest before you've even started - nail the first 30 seconds!", note: "First impression = last impression if done wrong!" },
+
+      { category: "Speech Structure - Body", purpose: "Present 2-4 key points logically with evidence, stories, examples", organization: "Rule of Three works best: 'There are three reasons...', 'I have three stories...' (brain loves patterns of three)", transitions: "Use signposts: 'First...', 'Second...', 'Finally...', 'Now let's turn to...', 'This brings me to...'", support_points: "Each point needs: Evidence (data/research) + Story (emotional connection) + Example (makes it real)", example_structure: "'First, let's explore how technology changed our habits... (point) → Studies show 80% check phones within 5 minutes of waking (evidence) → Let me tell you about my own addiction... (story)'", avoid: "✗ Too many points (confuses) | ✗ No logical flow | ✗ All facts, no stories | ✗ All stories, no substance", balance: "Logic (logos) + Emotion (pathos) + Credibility (ethos) = persuasive body", note: "Body is where you build your case - structure it so even distracted listeners follow along!" },
+
+      { category: "Speech Structure - Conclusion", purpose: "End memorably - last words echo longest in minds!", powerful_endings: "Call to action | Return to opening | Inspiring quote | Emotional story | Rhetorical question", examples: "'So next time you reach for your phone, remember—you control it, not the other way around' (call to action with callback) | 'I began by asking you to imagine...now I'm asking you to act' (bookending)", what_works: "Summarize key points + Emotional resonance + Clear next step = powerful conclusion", what_doesnt: "✗ Trailing off: 'So, yeah, that's it...' | ✗ New information in conclusion | ✗ Rushing because out of time | ✗ 'Thank you' as ending (weak!)", classic_formula: "Restate thesis → Review key points → End with memorable line/action", critical: "Strong ending can save mediocre speech | Weak ending ruins great speech!", note: "Last words should be your BEST words - plan them carefully, deliver them powerfully!" },
+
+      { category: "Rhetorical Devices - Repetition", definition: "Repeating words/phrases for emphasis and rhythm", power: "Repetition embeds message in memory through pattern and rhythm", examples: "'We will not stop. We will not rest. We will not fail.' (builds momentum) | Martin Luther King: 'I have a dream...' (8 times) | Churchill: 'We shall fight...' (6 times)", structure: "Repeat at beginning (anaphora): 'We choose... We choose... We choose...' | Repeat at end (epistrophe): '...of the people, by the people, for the people'", why_it_works: "Brain loves patterns | Creates rhythm | Makes message unforgettable | Builds emotional intensity", warning: "Overuse becomes monotonous - use strategically, not constantly!", note: "Used in almost every famous speech - master this device!" },
+
+      { category: "Rhetorical Devices - Metaphor & Imagery", definition: "Describing something through comparison to make abstract concrete", power: "Metaphors help audiences SEE your ideas, not just hear them", examples: "'Education is the key to unlock the golden door of freedom' (Martin Luther King Jr.) | 'A firewall protects your data' (tech metaphor)", why_effective: "Makes abstract visible | Creates emotional connection | More memorable than literal language", extended_metaphor: "Develop one metaphor throughout speech: 'Our company is a ship - we need clear direction (vision), crew working together (teamwork), and ability to weather storms (resilience)'", mixed_metaphors: "✗ Avoid mixing: 'We'll burn that bridge when we come to it' (confusing!)", note: "Metaphors from nature, journey, war, building are universal and powerful" },
+
+      { category: "Rhetorical Devices - Rule of Three & Alliteration", rule_of_three: "Listing three things creates rhythm and completeness", examples: "'Power, purpose, and perseverance' | 'Life, liberty, and the pursuit of happiness' | 'I came, I saw, I conquered'", why_three: "Two feels incomplete | Four feels too long | Three = perfect balance", alliteration: "Starting words with same sound creates musicality and memorability", examples: "'Power, purpose, perseverance' | 'Bold, brave, brilliant' | 'Dedication, determination, drive'", combination: "Rule of three + Alliteration = maximum impact!", warning: "Don't force it - sounds cheesy if unnatural", note: "Politicians and advertisers use this constantly - it works!" },
+
+      { category: "Rhetorical Devices - Contrast & Antithesis", definition: "Juxtaposing opposite ideas to highlight difference and create drama", power: "Contrast makes both sides more memorable and creates 'aha!' moment", famous_example: "Kennedy: 'Ask not what your country can do for you—ask what you can do for your country'", structure: "Set up expectation → Flip it: 'They expected me to fail. Instead, I thrived.' | 'Some see problems. I see opportunities.'", why_effective: "Creates tension | Makes point sharper through comparison | Memorable through opposition", modern_examples: "'We were told to compete. We chose to collaborate.' | 'They built walls. We built bridges.'", note: "One of most powerful devices - used in virtually every great speech!" },
+
+      { category: "Rhetorical Devices - Anecdotes & Storytelling", definition: "Short personal stories that illustrate your point", why_stories_work: "Stories bypass logic and hit emotions directly | People remember stories, forget facts | Create human connection", formula: "Setup (context) → Conflict (problem) → Resolution (lesson)", example: "'I stood at that door for 10 minutes, hand trembling, afraid to knock (setup). I'd failed twice before (conflict). But this time, I knocked—and that knock changed everything (resolution).'", types: "Personal experience (most powerful) | Historical | Hypothetical ('Imagine if...') | Other people's stories", vulnerability: "Sharing failures/struggles makes you relatable and authentic - audiences connect with humanity, not perfection", length: "Keep stories tight: 60-90 seconds maximum unless keynote speech", note: "Every great speaker is great storyteller - master this art!" },
+
+      { category: "Body Language - Posture & Presence", power_posture: "Stand tall, shoulders back, weight balanced, open stance (arms not crossed)", what_it_communicates: "Confidence, authority, openness, comfort with audience", avoid: "✗ Slouching (looks insecure) | ✗ Swaying/pacing nervously | ✗ Hiding behind podium | ✗ Hands in pockets (disengaged) | ✗ Arms crossed (defensive)", power_poses: "Before speech: stand in power pose 2 minutes (hands on hips, stand tall) - increases confidence hormones!", movement: "Purposeful movement is good (moving for emphasis) | Nervous fidgeting is bad (distracts)", stage_use: "Own the stage - use full space, don't stay in one spot | Move toward audience for emphasis, back for transitions", note: "Before you speak a word, your body is already communicating - make sure it says 'confident' not 'nervous'!" },
+
+      { category: "Body Language - Eye Contact & Gestures", eye_contact: "Most powerful tool for connection - make individuals feel seen", technique: "Divide room into sections, spend 3-5 seconds per person, rotate evenly | Don't scan like lighthouse!", cultural_note: "Direct eye contact = confidence in West | May be disrespectful in some Asian cultures - adapt!", gestures: "Emphasize points with natural hand movements - but don't overdo it", good_gestures: "Open palms (honesty) | Counting on fingers (organized) | Wide arms (inclusiveness) | Pointing forward (future/action)", bad_gestures: "✗ Repetitive/distracting | ✗ Pointing at audience (aggressive) | ✗ Hands clasped tight (nervous) | ✗ Fig leaf position (insecure)", rule: "Gestures should enhance words, not distract from them - when in doubt, do less", note: "Eye contact builds trust | Gestures add energy | Together, they make you magnetic!" },
+
+      { category: "Voice Control - Pace, Pitch, Pause", pace: "Vary speed: Slow for important points (let them sink in) | Faster for energy/enthusiasm | Average: 140-160 words/minute", pitch: "Vary pitch to avoid monotone - go higher for excitement, lower for seriousness", volume: "Louder for emphasis, softer to draw audience in (makes them lean forward to listen)", pausing: "MOST UNDERUSED TOOL! Silence creates suspense, lets ideas land, shows confidence", strategic_pauses: "After important point (3 seconds) | Before revealing key information (2 seconds) | After asking rhetorical question (3 seconds)", fillers: "Eliminate 'um,' 'uh,' 'like,' 'you know' - replace with silence! Pauses sound confident, fillers sound unprepared", note: "Your voice is instrument - play it skillfully with variation, don't drone in monotone!" },
+
+      { category: "Overcoming Nervousness - Mindset & Preparation", reality_check: "Even professional speakers get nervous - nervousness = you care! Channel it into energy, not fear", reframe: "✗ 'I'm terrified' → ✓ 'I'm excited!' (physically similar, mentally different)", preparation_cures_anxiety: "Know your material cold (but don't memorize word-for-word) | Practice 3-5 times aloud | Anticipate questions", breathing: "Before speaking: deep breathing (4 counts in, hold 4, out 4) - activates calm response | During: breathe during pauses", visualization: "Visualize success the night before - see yourself confident, audience engaged, ending with applause", power_posing: "2 minutes in power pose before speaking raises confidence hormones!", note: "Preparation + breathing + reframing = nervousness becomes fuel, not obstacle!" },
+
+      { category: "Audience Engagement - Interaction & Adaptation", ask_questions: "Rhetorical questions make them think | Direct questions create participation (but be ready for silence!)", examples: "'How many of you have felt this way?' (raise hands) | 'What would you do in this situation?' (rhetorical)", read_the_room: "Watch for: nodding (agreement), glazed eyes (lost them), phones (really lost them), leaning forward (engaged)", adapt_real_time: "If losing them: change pace, ask question, tell story, add humor | If engaged: go deeper", humor: "Well-placed humor relaxes everyone (you and audience) and builds rapport - but never force it!", mistakes_handling: "If you stumble: laugh it off, don't apologize! Confidence shows in how you recover, not perfection", note: "Speaking is dialogue with audience (even if they're quiet) - stay connected and responsive!" },
+
+      { category: "Common Mistakes to Avoid", mistake_1: "✗ Reading word-for-word (kills eye contact and sounds robotic) - use notes with key points only!", mistake_2: "✗ Speaking too fast (nerves make us rush) - slow down deliberately, especially at start", mistake_3: "✗ Overloading with information (overwhelms) - less is more, focus on 3 key points", mistake_4: "✗ Weak conclusion (trailing off) - end strong with clear call to action or memorable line", mistake_5: "✗ Ignoring body language (face buried in notes) - practice until you can maintain presence", mistake_6: "✗ Monotone delivery (boredom guaranteed) - vary pace, pitch, volume for dynamic delivery", mistake_7: "✗ No preparation (obvious to everyone) - practice makes confident, winging it shows", remember: "Great speakers make it look effortless - but that 'effortless' comes from hours of practice!" },
+
+      { category: "Remember - Key Takeaways", takeaway_1: "Speech structure: Hook intro (grab attention) → Body (2-4 points with stories+evidence) → Power conclusion (call to action)", takeaway_2: "Rhetorical devices: Repetition, Rule of three, Metaphor, Contrast, Anecdotes - master these for memorable speeches!", takeaway_3: "Body language: Power posture, purposeful gestures, eye contact with individuals, own the stage", takeaway_4: "Voice control: Vary pace/pitch/volume | Strategic pauses > fillers | Slow down for important points", takeaway_5: "Overcome nervousness: Preparation + deep breathing + power poses + reframe fear as excitement", takeaway_6: "Audience engagement: Ask questions, read the room, adapt in real-time, recover from mistakes confidently", takeaway_7: "Avoid: Reading, rushing, monotone, weak ending, information overload, ignoring body language", final_note: "Great public speaking = preparation + structure + delivery + presence + connection. Practice these elements until they become natural. Remember: people remember how you made them feel!" }
     ]
   },
 
