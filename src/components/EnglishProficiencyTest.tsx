@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Mic, MicOff, Play, Pause, RotateCcw, CheckCircle } from 'lucide-react';
+import { Mic, MicOff, CheckCircle } from 'lucide-react';
 import { SpeechAnalyzer } from '@/services/SpeechAnalyzer';
 import { GrammarChecker } from '@/services/GrammarChecker';
 import { VocabularyAnalyzer } from '@/services/VocabularyAnalyzer';
@@ -21,6 +21,7 @@ interface TestPhaseData {
     comprehension: number;
   };
   duration: number;
+  grammarErrorCount: number; // Store to avoid recalculation
 }
 
 interface EnglishProficiencyTestProps {
@@ -29,6 +30,11 @@ interface EnglishProficiencyTestProps {
   onGoToLessons?: () => void;
   testType?: 'full' | 'practice' | 'placement';
 }
+
+// Constants for scoring and timing
+const PHASE_TRANSITION_DELAY = 1000; // 1 second delay before advancing to next phase
+const DEFAULT_TIME_LIMIT = 120; // Default time limit in seconds if not specified
+const MIN_WORD_LENGTH = 2; // Minimum word length for vocabulary counting
 
 export default function EnglishProficiencyTest({
   onComplete,
@@ -40,7 +46,7 @@ export default function EnglishProficiencyTest({
   const [isRecording, setIsRecording] = useState(false);
   const [testPrompts, setTestPrompts] = useState<TestPrompt[]>([]);
   const [phaseData, setPhaseData] = useState<TestPhaseData[]>([]);
-  const [timeRemaining, setTimeRemaining] = useState(0);
+  const [timeRemaining, setTimeRemaining] = useState(DEFAULT_TIME_LIMIT);
   const [isLoading, setIsLoading] = useState(true);
   const [isTestComplete, setIsTestComplete] = useState(false);
   const [finalResult, setFinalResult] = useState<TestResult | null>(null);
@@ -49,7 +55,29 @@ export default function EnglishProficiencyTest({
   const [vocabularyAnalyzer] = useState(() => new VocabularyAnalyzer());
   const [phaseStartTime, setPhaseStartTime] = useState<number>(0);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [phaseTransitionTimer, setPhaseTransitionTimer] = useState<NodeJS.Timeout | null>(null);
+  const [isMounted, setIsMounted] = useState(true);
   const { toast } = useToast();
+
+  // Cleanup on unmount - prevent memory leaks
+  useEffect(() => {
+    setIsMounted(true);
+    return () => {
+      setIsMounted(false);
+      // Clear phase transition timer
+      if (phaseTransitionTimer) {
+        clearTimeout(phaseTransitionTimer);
+      }
+      // Stop recording and release microphone
+      if (speechAnalyzer) {
+        try {
+          speechAnalyzer.stopRecording();
+        } catch {
+          // Silent cleanup
+        }
+      }
+    };
+  }, [phaseTransitionTimer, speechAnalyzer]);
 
   // Load test prompts on component mount
   useEffect(() => {
@@ -65,7 +93,7 @@ export default function EnglishProficiencyTest({
           setTimeRemaining(prompts[0].time_limit);
         }
       } catch (error) {
-        console.error('Failed to load test prompts:', error);
+        // Apple Store Compliance: Silent fail - error shown via toast
         toast({
           title: "Error",
           description: "Failed to load test prompts. Please try again.",
@@ -78,6 +106,19 @@ export default function EnglishProficiencyTest({
 
     loadTestPrompts();
   }, [testType, toast]);
+
+  // Stable reference for handlePhaseComplete
+  const handlePhaseComplete = useCallback(() => {
+    if (currentPhase < testPrompts.length - 1) {
+      // Move to next phase
+      const nextPhase = currentPhase + 1;
+      setCurrentPhase(nextPhase);
+      setTimeRemaining(testPrompts[nextPhase].time_limit);
+    } else {
+      // Test complete
+      completeTest();
+    }
+  }, [currentPhase, testPrompts]);
 
   // Timer countdown
   useEffect(() => {
@@ -93,7 +134,7 @@ export default function EnglishProficiencyTest({
     }
 
     return () => clearTimeout(timer);
-  }, [timeRemaining, currentPhase, testPrompts.length, isTestComplete]);
+  }, [timeRemaining, currentPhase, testPrompts.length, isTestComplete, handlePhaseComplete]);
 
   const startRecording = async () => {
     try {
@@ -110,7 +151,7 @@ export default function EnglishProficiencyTest({
       setIsRecording(true);
       setPhaseStartTime(Date.now());
     } catch (error) {
-      console.error('Failed to start recording:', error);
+      // Apple Store Compliance: Silent fail - error shown via toast
       toast({
         title: "Recording Error",
         description: "Failed to start recording. Please check your microphone permissions.",
@@ -125,6 +166,10 @@ export default function EnglishProficiencyTest({
       setIsAnalyzing(true);
 
       const speechResult = await speechAnalyzer.stopRecording();
+
+      // Check if component is still mounted before state updates
+      if (!isMounted) return;
+
       const transcript = speechResult.transcript;
 
       if (!transcript.trim()) {
@@ -140,6 +185,9 @@ export default function EnglishProficiencyTest({
       // Analyze the transcript
       const grammarResult = grammarChecker.analyzeGrammar(transcript);
       const vocabularyResult = vocabularyAnalyzer.analyzeVocabulary(transcript);
+
+      // Check if still mounted before continuing
+      if (!isMounted) return;
 
       // Calculate scores for this phase
       const pronunciationScore = speechResult.pronunciationScore;
@@ -168,37 +216,32 @@ export default function EnglishProficiencyTest({
           fluency: Math.round(fluencyScore),
           comprehension: Math.round(comprehensionScore)
         },
-        duration: phaseDuration
+        duration: phaseDuration,
+        grammarErrorCount: grammarResult.totalErrors // Store for later use
       };
+
+      // Final mounted check before state updates
+      if (!isMounted) return;
 
       setPhaseData(prev => [...prev, newPhaseData]);
       setIsAnalyzing(false);
 
       // Auto-advance to next phase after a short delay
-      setTimeout(() => {
-        handlePhaseComplete();
-      }, 1000);
+      const timer = setTimeout(() => {
+        if (isMounted) {
+          handlePhaseComplete();
+        }
+      }, PHASE_TRANSITION_DELAY);
+      setPhaseTransitionTimer(timer);
 
     } catch (error) {
-      console.error('Failed to stop recording:', error);
+      // Apple Store Compliance: Silent fail - error shown via toast
       setIsAnalyzing(false);
       toast({
         title: "Analysis Error",
         description: "Failed to analyze your speech. Please try again.",
         variant: "destructive"
       });
-    }
-  };
-
-  const handlePhaseComplete = () => {
-    if (currentPhase < testPrompts.length - 1) {
-      // Move to next phase
-      const nextPhase = currentPhase + 1;
-      setCurrentPhase(nextPhase);
-      setTimeRemaining(testPrompts[nextPhase].time_limit);
-    } else {
-      // Test complete
-      completeTest();
     }
   };
 
@@ -267,7 +310,7 @@ export default function EnglishProficiencyTest({
         onComplete(savedResult);
       }
     } catch (error) {
-      console.error('Failed to save test result:', error);
+      // Apple Store Compliance: Silent fail - error shown via toast
       setFinalResult(result);
       toast({
         title: "Save Error",
@@ -290,13 +333,13 @@ export default function EnglishProficiencyTest({
     const responseLength = transcript.trim().split(/\s+/).length;
     const promptType = prompt.prompt_type;
 
-    // Check if response length is appropriate for the task
+    // Check if response length is appropriate for the task (CEFR-aligned word counts)
     const expectedLengths = {
-      introduction: 15, // Should be brief
-      description: 30,  // More detailed
-      storytelling: 40, // Detailed narrative
-      discussion: 50,   // Comprehensive opinion
-      listening: 25     // Summary response
+      introduction: 15, // A1-A2: Brief self-introduction (name, interests)
+      description: 30,  // A2-B1: Simple event description with details
+      storytelling: 40, // B1-B2: Detailed narrative with sequence and emotions
+      discussion: 50,   // B2-C1: Complex opinion with reasoning and examples
+      listening: 25     // All levels: Summary of audio content
     };
 
     const expectedLength = expectedLengths[promptType as keyof typeof expectedLengths] || 30;
@@ -487,16 +530,14 @@ export default function EnglishProficiencyTest({
 
   const calculateUniqueWordsCount = (): number => {
     const allWords = phaseData.flatMap(phase =>
-      phase.transcript.toLowerCase().split(/\s+/).filter(word => word.length > 2)
+      phase.transcript.toLowerCase().split(/\s+/).filter(word => word.length > MIN_WORD_LENGTH)
     );
     return new Set(allWords).size;
   };
 
   const calculateGrammarErrorsCount = (): number => {
-    return phaseData.reduce((sum, phase) => {
-      const grammarResult = grammarChecker.analyzeGrammar(phase.transcript);
-      return sum + grammarResult.totalErrors;
-    }, 0);
+    // Use stored grammar error count to avoid duplicate analysis
+    return phaseData.reduce((sum, phase) => sum + phase.grammarErrorCount, 0);
   };
 
   const collectPronunciationIssues = (): any[] => {
@@ -510,7 +551,7 @@ export default function EnglishProficiencyTest({
     setPhaseData([]);
     setIsTestComplete(false);
     setFinalResult(null);
-    setTimeRemaining(testPrompts[0]?.time_limit || 120);
+    setTimeRemaining(testPrompts[0]?.time_limit || DEFAULT_TIME_LIMIT);
   };
 
   const formatTime = (seconds: number): string => {
@@ -556,7 +597,15 @@ export default function EnglishProficiencyTest({
           </CardHeader>
           <CardContent>
             <p className="text-center mb-4">Failed to load test prompts.</p>
-            <Button onClick={() => window.location.reload()} className="w-full">
+            <Button onClick={() => {
+              // Soft retry - reset state instead of hard reload
+              setIsLoading(true);
+              setTestPrompts([]);
+              setPhaseData([]);
+              setCurrentPhase(0);
+              setIsTestComplete(false);
+              setFinalResult(null);
+            }} className="w-full">
               Try Again
             </Button>
           </CardContent>
@@ -651,6 +700,7 @@ export default function EnglishProficiencyTest({
                     size="lg"
                     className="bg-red-600 hover:bg-red-700 text-white px-8 py-4"
                     disabled={isAnalyzing}
+                    aria-label="Start recording your response"
                   >
                     <Mic className="w-6 h-6 mr-2" />
                     Start Recording
@@ -660,6 +710,7 @@ export default function EnglishProficiencyTest({
                     onClick={stopRecording}
                     size="lg"
                     className="bg-red-800 hover:bg-red-900 text-white px-8 py-4 animate-pulse"
+                    aria-label="Stop recording"
                   >
                     <MicOff className="w-6 h-6 mr-2" />
                     Stop Recording
@@ -668,15 +719,16 @@ export default function EnglishProficiencyTest({
               </div>
 
               {isAnalyzing && (
-                <div className="text-white">
+                <div className="text-white" role="status" aria-live="polite">
                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white mx-auto mb-2"></div>
                   Analyzing your speech...
                 </div>
               )}
 
               {isRecording && (
-                <div className="text-white text-sm">
-                  🔴 Recording in progress... Speak clearly into your microphone
+                <div className="text-white text-sm" role="status" aria-live="polite">
+                  <span className="inline-block w-3 h-3 bg-red-600 rounded-full mr-2 animate-pulse" aria-hidden="true"></span>
+                  Recording in progress... Speak clearly into your microphone
                 </div>
               )}
             </div>
