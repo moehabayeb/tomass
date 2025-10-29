@@ -126,35 +126,30 @@ export const useHangmanSpeechRecognition = () => {
   const extractLetter = useCallback((transcript: string, confidence?: number): SpeechResult => {
     const normalized = transcript.toLowerCase().trim().replace(/[^\w\s-]/g, '');
 
-    // Always log in development for debugging
-    console.log('[Hangman Speech] Processing:', {
-      raw: transcript,
-      normalized,
-      confidence: confidence?.toFixed(2)
-    });
+    // Apple Store Compliance: Silent operation
 
     // Handle "as in" patterns (e.g., "B as in boy")
     const asInMatch = normalized.match(/([a-z])\s+as\s+in/);
     if (asInMatch) {
       const letter = asInMatch[1];
-      console.log('[Hangman Speech] ✓ Matched "as in" pattern:', letter);
+      // Apple Store Compliance: Silent operation
       return { letter, confidence, transcript };
     }
 
     // Handle multi-word phrases like "double you"
     if (normalized.includes('double you') || normalized.includes('double-you') || normalized.includes('double u')) {
-      console.log('[Hangman Speech] ✓ Matched multi-word: W');
+      // Apple Store Compliance: Silent operation
       return { letter: 'w', confidence, transcript };
     }
     if (normalized.includes('x-ray') || normalized.includes('xray')) {
-      console.log('[Hangman Speech] ✓ Matched multi-word: X');
+      // Apple Store Compliance: Silent operation
       return { letter: 'x', confidence, transcript };
     }
 
     // PRIORITY 1: Check if the ENTIRE normalized string is a letter name
     if (letterMap[normalized]) {
       const letter = letterMap[normalized];
-      console.log('[Hangman Speech] ✓ Full phrase match:', { phrase: normalized, letter });
+      // Apple Store Compliance: Silent operation
       return { letter, confidence, transcript };
     }
 
@@ -162,7 +157,7 @@ export const useHangmanSpeechRecognition = () => {
     const SKIP_WORDS = ['the', 'a', 'an', 'is', 'it', 'letter', 'i', 'say', 'choose', 'pick', 'want'];
     const tokens = normalized.split(/\s+/).filter(t => !SKIP_WORDS.includes(t));
 
-    console.log('[Hangman Speech] Tokens after filtering:', tokens);
+    // Apple Store Compliance: Silent operation
 
     // PRIORITY 3: Sort tokens by length (longest first) to prioritize specific letter names
     const sortedTokens = [...tokens].sort((a, b) => b.length - a.length);
@@ -171,25 +166,24 @@ export const useHangmanSpeechRecognition = () => {
       // Direct letter mapping
       if (letterMap[token]) {
         const letter = letterMap[token];
-        console.log('[Hangman Speech] ✓ Token match:', { token, letter });
+        // Apple Store Compliance: Silent operation
         return { letter, confidence, transcript };
       }
 
       // Single alphabetic character
       if (/^[a-z]$/.test(token)) {
-        console.log('[Hangman Speech] ✓ Single char match:', token);
+        // Apple Store Compliance: Silent operation
         return { letter: token, confidence, transcript };
       }
     }
 
     // PRIORITY 4: Check if the whole transcript is just a single letter
     if (/^[a-z]$/.test(normalized)) {
-      console.log('[Hangman Speech] ✓ Single letter:', normalized);
+      // Apple Store Compliance: Silent operation
       return { letter: normalized, confidence, transcript };
     }
 
-    // No letter found
-    console.warn('[Hangman Speech] ✗ Could not extract letter from:', { transcript, normalized, tokens });
+    // No letter found - Apple Store Compliance: Silent operation
     return { letter: null, confidence, transcript };
   }, []);
 
@@ -313,12 +307,7 @@ public <letter> = a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p 
             // Sort by confidence (highest first)
             alternatives.sort((a, b) => b.confidence - a.confidence);
 
-            // Log all alternatives for debugging
-            console.log('[Hangman Speech] All alternatives received:', alternatives.map((a, i) => ({
-              rank: i + 1,
-              transcript: a.transcript,
-              confidence: a.confidence.toFixed(2)
-            })));
+            // Apple Store Compliance: Silent operation
 
             // Try to extract letter from ALL alternatives and pick best
             const candidates: Array<{letter: string, confidence: number, transcript: string}> = [];
@@ -332,7 +321,7 @@ public <letter> = a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p 
               }
             }
 
-            console.log('[Hangman Speech] Extracted candidates:', candidates);
+            // Apple Store Compliance: Silent operation
 
             // If we have candidates, pick the best one
             if (candidates.length > 0) {
@@ -341,15 +330,11 @@ public <letter> = a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p 
               const best = candidates[0];
               const letter = best.letter;
 
-              console.log('[Hangman Speech] 🎯 Best candidate selected:', {
-                letter: letter.toUpperCase(),
-                confidence: best.confidence.toFixed(2),
-                transcript: best.transcript
-              });
+              // Apple Store Compliance: Silent operation
 
               // Check if already guessed
               if (alreadyGuessed.has(letter)) {
-                console.log('[Hangman Speech] ⚠️ Letter already guessed:', letter.toUpperCase());
+                // Apple Store Compliance: Silent operation
                 setState({
                   isListening: false,
                   isProcessing: false,
@@ -367,7 +352,7 @@ public <letter> = a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p 
               const needsConfirmation = best.confidence < 0.2;
 
               if (needsConfirmation) {
-                console.log('[Hangman Speech] ❓ Low confidence, asking for confirmation:', best.confidence.toFixed(2));
+                // Apple Store Compliance: Silent operation
                 setState({
                   isListening: false,
                   isProcessing: false,
@@ -386,7 +371,7 @@ public <letter> = a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p 
                 timeoutRef.current = null;
               }
 
-              console.log('[Hangman Speech] ✅ SUCCESS! Letter accepted:', letter.toUpperCase());
+              // Apple Store Compliance: Silent operation
               setState({
                 isListening: false,
                 isProcessing: false,
@@ -400,8 +385,7 @@ public <letter> = a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p 
               return;
             }
 
-            // No letter found in any alternative
-            console.warn('[Hangman Speech] ❌ No letter extracted from any alternative');
+            // No letter found in any alternative - Apple Store Compliance: Silent operation
             setState({
               isListening: false,
               isProcessing: false,
@@ -418,8 +402,7 @@ public <letter> = a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p 
             if (!hasResultRef.current) {
               hasResultRef.current = true;
 
-              // Log error details for debugging
-              console.error('[Hangman Speech] Error:', event.error, event.message);
+              // Apple Store Compliance: Silent fail - operation continues
 
               // User-friendly error messages based on error type
               let errorMessage = "Didn't catch that—try again";
@@ -471,9 +454,9 @@ public <letter> = a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p 
           // Try to start recognition with error handling
           try {
             recognition.start();
-            console.log('[Hangman Speech] Recognition started successfully');
+            // Apple Store Compliance: Silent operation
           } catch (error) {
-            console.error('[Hangman Speech] Failed to start recognition:', error);
+            // Apple Store Compliance: Silent fail - operation continues
             setState({
               isListening: false,
               isProcessing: false,

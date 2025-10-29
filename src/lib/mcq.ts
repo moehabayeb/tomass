@@ -187,7 +187,7 @@ export function buildClozeAndChoices(
 
   // Fallback for empty answer
   if (normalizedAnswer.length === 0) {
-    console.warn('[MCQ] Empty answer, using fallback');
+    // Apple Store Compliance: Silent operation
     return {
       cloze: 'No answer provided ___',
       options: ['yes', 'no', 'maybe', 'ok'],

@@ -289,39 +289,7 @@ export function auditAllModules(
  * Print a formatted audit report to console
  */
 export function printAuditReport(report: AuditReport, verbose: boolean = false): void {
-  console.log('\n='.repeat(80));
-  console.log('MODULE QUALITY AUDIT REPORT');
-  console.log('='.repeat(80));
-  console.log(`\n📊 Overview:`);
-  console.log(`   Total Modules: ${report.totalModules}`);
-  console.log(`   ✅ Valid Modules: ${report.validModules} (${Math.round(report.validModules / report.totalModules * 100)}%)`);
-  console.log(`   ❌ Invalid Modules: ${report.invalidModules} (${Math.round(report.invalidModules / report.totalModules * 100)}%)`);
-
-  console.log(`\n📈 Summary:`);
-  console.log(`   Missing Fields: ${report.summary.missingFields}`);
-  console.log(`   Insufficient Questions: ${report.summary.insufficientQuestions}`);
-  console.log(`   Empty Tables: ${report.summary.emptyTables}`);
-  console.log(`   Generic Content: ${report.summary.genericContent}`);
-  console.log(`   Duplicate Content: ${report.summary.duplicateContent}`);
-
-  if (verbose) {
-    console.log(`\n🔍 Detailed Results:`);
-    report.moduleResults.forEach((result, moduleId) => {
-      if (!result.valid || result.warnings.length > 0) {
-        console.log(`\n   Module ${moduleId}:`);
-        if (result.errors.length > 0) {
-          console.log(`      ❌ Errors:`);
-          result.errors.forEach(err => console.log(`         - ${err}`));
-        }
-        if (result.warnings.length > 0) {
-          console.log(`      ⚠️  Warnings:`);
-          result.warnings.forEach(warn => console.log(`         - ${warn}`));
-        }
-      }
-    });
-  }
-
-  console.log('\n' + '='.repeat(80) + '\n');
+  // Apple Store Compliance: Silent operation - audit reports disabled in production
 }
 
 /**

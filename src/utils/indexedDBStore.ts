@@ -104,9 +104,9 @@ class IndexedDBStore {
         request.onerror = () => reject(request.error);
       });
 
-      console.log('📱 Checkpoint saved to IndexedDB:', key);
+      // Apple Store Compliance: Silent operation
     } catch (error) {
-      console.error('❌ Failed to save checkpoint to IndexedDB:', error);
+      // Apple Store Compliance: Silent fail - operation continues
       // Fall back to localStorage as last resort
       this.fallbackToLocalStorage(checkpoint);
     }
@@ -127,7 +127,7 @@ class IndexedDBStore {
         request.onerror = () => reject(request.error);
       });
     } catch (error) {
-      console.error('❌ Failed to get checkpoints from IndexedDB:', error);
+      // Apple Store Compliance: Silent fail - operation continues
       return this.fallbackGetFromLocalStorage();
     }
   }
@@ -149,7 +149,7 @@ class IndexedDBStore {
         request.onerror = () => reject(request.error);
       });
     } catch (error) {
-      console.error('❌ Failed to get checkpoint from IndexedDB:', error);
+      // Apple Store Compliance: Silent fail - operation continues
       return null;
     }
   }
@@ -171,9 +171,9 @@ class IndexedDBStore {
         request.onerror = () => reject(request.error);
       });
 
-      console.log('🗑️ Checkpoint removed from IndexedDB:', key);
+      // Apple Store Compliance: Silent operation
     } catch (error) {
-      console.error('❌ Failed to remove checkpoint from IndexedDB:', error);
+      // Apple Store Compliance: Silent fail - operation continues
     }
   }
 
@@ -189,7 +189,7 @@ class IndexedDBStore {
         await this.addCheckpoint(checkpoint);
       }
     } catch (error) {
-      console.error('❌ Failed to update retry count:', error);
+      // Apple Store Compliance: Silent fail - operation continues
     }
   }
 
@@ -208,9 +208,9 @@ class IndexedDBStore {
         request.onerror = () => reject(request.error);
       });
 
-      console.log('🧹 All checkpoints cleared from IndexedDB');
+      // Apple Store Compliance: Silent operation
     } catch (error) {
-      console.error('❌ Failed to clear checkpoints:', error);
+      // Apple Store Compliance: Silent fail - operation continues
     }
   }
 
@@ -251,9 +251,9 @@ class IndexedDBStore {
     try {
       const key = `tomass_offline_${checkpoint.level}_${checkpoint.module_id}`;
       localStorage.setItem(key, JSON.stringify(checkpoint));
-      console.log('📦 Checkpoint saved to localStorage fallback:', key);
+      // Apple Store Compliance: Silent operation
     } catch (error) {
-      console.error('❌ Both IndexedDB and localStorage failed:', error);
+      // Apple Store Compliance: Silent fail - operation continues
     }
   }
 
@@ -270,7 +270,7 @@ class IndexedDBStore {
           const checkpoint = JSON.parse(localStorage.getItem(key) || '{}');
           checkpoints.push(checkpoint);
         } catch (error) {
-          console.error('❌ Failed to parse localStorage checkpoint:', error);
+          // Apple Store Compliance: Silent fail - operation continues
         }
       }
     }

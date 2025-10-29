@@ -23,22 +23,14 @@ export function ModulesView({ selectedLevel, onBack, onSelectModule }: ModulesVi
 
   let modules = MODULES_BY_LEVEL[selectedLevel] || [];
 
-  // NUCLEAR DEBUG LOGGING
-  console.log(`📊 ModulesView rendered for level: ${selectedLevel}`);
-  console.log(`📊 Raw MODULES_BY_LEVEL[${selectedLevel}]:`, MODULES_BY_LEVEL[selectedLevel]);
-  console.log(`📊 Modules length: ${modules.length}`);
+  // Apple Store Compliance: Silent operation
 
   if (selectedLevel === 'B2') {
-    console.log('🔍 B2 MODULES DEBUG:');
-    console.log('Total B2 modules:', modules.length);
-    console.log('Module IDs:', modules.map(m => m.id));
-    console.log('First module:', modules[0]?.title);
-    console.log('Last module:', modules[modules.length - 1]?.title);
+    // Apple Store Compliance: Silent operation
 
     // NUCLEAR OPTION: If somehow less than 18, force it
     if (modules.length < 18) {
-      console.error('🚨 CRITICAL: B2 modules array has only', modules.length, 'modules! Expected 18!');
-      console.error('🚨 FORCING fallback generation...');
+      // Apple Store Compliance: Silent fail - regenerating fallback
       // Force regenerate to guarantee 18 modules
       modules = Array.from({ length: 18 }, (_, i) => ({
         id: i + 151,
@@ -47,7 +39,7 @@ export function ModulesView({ selectedLevel, onBack, onSelectModule }: ModulesVi
         completed: false,
         locked: false
       }));
-      console.log('✅ Generated fallback modules:', modules.map(m => m.id));
+      // Apple Store Compliance: Silent operation
     }
   }
 

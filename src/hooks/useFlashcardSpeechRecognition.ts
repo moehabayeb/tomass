@@ -106,17 +106,17 @@ export const useFlashcardSpeechRecognition = () => {
     const spokenClean = spoken.toLowerCase().trim().replace(/[^\w\s]/g, '');
     const expectedClean = expected.toLowerCase().trim();
 
-    console.log('[Flashcard Speech] Matching:', { spoken: spokenClean, expected: expectedClean });
+    // Apple Store Compliance: Silent operation
 
     // 1. Exact match (100% confidence)
     if (spokenClean === expectedClean) {
-      console.log('[Flashcard Speech] ✅ Exact match!');
+      // Apple Store Compliance: Silent operation
       return { word: expected, confidence: 1.0, transcript: spoken, matchType: 'exact' };
     }
 
     // 2. Check if full expected word appears in the spoken phrase
     if (spokenClean.includes(expectedClean) || spokenClean.includes(' ' + expectedClean) || spokenClean.includes(expectedClean + ' ')) {
-      console.log('[Flashcard Speech] ✅ Partial match (word found in phrase)');
+      // Apple Store Compliance: Silent operation
       return { word: expected, confidence: 0.9, transcript: spoken, matchType: 'partial' };
     }
 
@@ -126,7 +126,7 @@ export const useFlashcardSpeechRecognition = () => {
 
     for (const word of words) {
       const similarity = calculateSimilarity(word, expectedClean);
-      console.log(`[Flashcard Speech] Checking "${word}" vs "${expectedClean}": ${(similarity * 100).toFixed(0)}% similar`);
+      // Apple Store Compliance: Silent operation
 
       if (similarity >= 0.85) { // 85% or higher similarity
         const matchResult = {
@@ -143,12 +143,11 @@ export const useFlashcardSpeechRecognition = () => {
     }
 
     if (bestMatch) {
-      console.log('[Flashcard Speech] ✅ Close match found:', bestMatch.confidence.toFixed(2));
+      // Apple Store Compliance: Silent operation
       return bestMatch;
     }
 
-    // 4. No match
-    console.log('[Flashcard Speech] ❌ No match found');
+    // 4. No match - Apple Store Compliance: Silent operation
     return { word: null, confidence: 0, transcript: spoken, matchType: 'none' };
   }, []);
 
@@ -227,7 +226,7 @@ export const useFlashcardSpeechRecognition = () => {
               });
             }
 
-            console.log('[Flashcard Speech] Alternatives:', alternatives);
+            // Apple Store Compliance: Silent operation
 
             // Try to match against expected word
             let bestResult: WordResult | null = null;
@@ -246,8 +245,7 @@ export const useFlashcardSpeechRecognition = () => {
               const confidence = bestResult.confidence;
 
               if (confidence >= 0.95) {
-                // High confidence - auto-accept
-                console.log('[Flashcard Speech] 🎉 Auto-accepted (high confidence)');
+                // High confidence - auto-accept - Apple Store Compliance: Silent operation
                 setState({
                   isListening: false,
                   isProcessing: false,
@@ -259,8 +257,7 @@ export const useFlashcardSpeechRecognition = () => {
                 setMessageTimeout(() => setState(prev => ({ ...prev, message: '' })), 1500);
                 resolve(bestResult.word);
               } else if (confidence >= 0.75) {
-                // Medium confidence - ask for confirmation
-                console.log('[Flashcard Speech] ❓ Asking for confirmation');
+                // Medium confidence - ask for confirmation - Apple Store Compliance: Silent operation
                 setState({
                   isListening: false,
                   isProcessing: false,
@@ -271,8 +268,7 @@ export const useFlashcardSpeechRecognition = () => {
                 });
                 resolve(null); // Will be handled by confirm/reject
               } else {
-                // Low confidence - not sure
-                console.log('[Flashcard Speech] ⚠️ Low confidence');
+                // Low confidence - not sure - Apple Store Compliance: Silent operation
                 setState({
                   isListening: false,
                   isProcessing: false,
@@ -285,9 +281,8 @@ export const useFlashcardSpeechRecognition = () => {
                 resolve(null);
               }
             } else {
-              // No match found
+              // No match found - Apple Store Compliance: Silent operation
               const transcript = alternatives[0]?.transcript || 'nothing';
-              console.log('[Flashcard Speech] ❌ No match');
               setState({
                 isListening: false,
                 isProcessing: false,
@@ -305,7 +300,7 @@ export const useFlashcardSpeechRecognition = () => {
             if (!hasResultRef.current) {
               hasResultRef.current = true;
 
-              console.error('[Flashcard Speech] Error:', event.error);
+              // Apple Store Compliance: Silent fail - operation continues
 
               let errorMessage = "Didn't catch that—try again or type your answer";
               if (event.error === 'not-allowed' || event.error === 'permission-denied') {
@@ -352,9 +347,9 @@ export const useFlashcardSpeechRecognition = () => {
           // Try to start recognition
           try {
             recognition.start();
-            console.log('[Flashcard Speech] Recognition started for word:', expectedWord);
+            // Apple Store Compliance: Silent operation
           } catch (error) {
-            console.error('[Flashcard Speech] Failed to start recognition:', error);
+            // Apple Store Compliance: Silent fail - operation continues
             setState({
               isListening: false,
               isProcessing: false,

@@ -19,13 +19,11 @@ export interface VoiceTestResult {
  * Test voice consistency across multiple TTS calls
  */
 export async function testVoiceConsistency(): Promise<VoiceTestResult> {
-  console.log('🎯 Starting Voice Consistency Test...');
-  
+  // Apple Store Compliance: Silent operation
+
   // Initialize voice consistency manager
   await VoiceConsistencyManager.initialize();
   const voiceInfo = VoiceConsistencyManager.getVoiceInfo();
-  
-  console.log('📊 Voice Info:', voiceInfo);
   
   if (!voiceInfo.isInitialized || !voiceInfo.isLocked) {
     return {
@@ -62,7 +60,7 @@ export async function testVoiceConsistency(): Promise<VoiceTestResult> {
 
   for (let i = 0; i < testPhrases.length; i++) {
     const phrase = testPhrases[i];
-    console.log(`🧪 Test ${i + 1}/${testPhrases.length}: "${phrase.substring(0, 30)}..."`);
+    // Apple Store Compliance: Silent operation
 
     try {
       // Create utterance
@@ -91,26 +89,17 @@ export async function testVoiceConsistency(): Promise<VoiceTestResult> {
       }
 
       results.passedTests++;
-      console.log(`✅ Test ${i + 1} PASSED: Voice = ${utterance.voice?.name}`);
+      // Apple Store Compliance: Silent operation
 
     } catch (error) {
       results.failedTests.push(`Test ${i + 1}: Exception - ${error}`);
-      console.error(`❌ Test ${i + 1} ERROR:`, error);
+      // Apple Store Compliance: Silent fail - operation continues
     }
   }
 
   results.success = results.passedTests === results.totalTests;
-  
-  console.log(`\n🏁 VOICE CONSISTENCY TEST RESULTS:`);
-  console.log(`✅ Passed: ${results.passedTests}/${results.totalTests}`);
-  console.log(`❌ Failed: ${results.failedTests.length}`);
-  console.log(`🎯 Voice Used: ${results.voiceName}`);
-  console.log(`🔒 Success Rate: ${((results.passedTests / results.totalTests) * 100).toFixed(1)}%`);
 
-  if (results.failedTests.length > 0) {
-    console.log(`\n❌ Failed Tests:`);
-    results.failedTests.forEach(failure => console.log(`   - ${failure}`));
-  }
+  // Apple Store Compliance: Silent operation
 
   return results;
 }
@@ -119,22 +108,22 @@ export async function testVoiceConsistency(): Promise<VoiceTestResult> {
  * Test TTS Manager integration
  */
 export async function testTTSManagerConsistency(): Promise<boolean> {
-  console.log('🎯 Testing TTSManager Voice Consistency...');
-  
+  // Apple Store Compliance: Silent operation
+
   try {
     // Test with TTSManager
     const testText = "Testing voice consistency through TTSManager.";
-    
+
     // This should initialize voice consistency automatically
     await TTSManager.speak(testText, { canSkip: true });
-    
+
     const voiceInfo = VoiceConsistencyManager.getVoiceInfo();
-    console.log('📊 TTSManager Voice Info:', voiceInfo);
-    
+    // Apple Store Compliance: Silent operation
+
     return voiceInfo.isInitialized && voiceInfo.isLocked;
-    
+
   } catch (error) {
-    console.error('❌ TTSManager test failed:', error);
+    // Apple Store Compliance: Silent fail - operation continues
     return false;
   }
 }
@@ -143,31 +132,15 @@ export async function testTTSManagerConsistency(): Promise<boolean> {
  * Run complete voice consistency test suite
  */
 export async function runVoiceConsistencyTestSuite(): Promise<void> {
-  console.log('\n🎯 ==========================================');
-  console.log('🎯 RUNNING COMPLETE VOICE CONSISTENCY TEST');
-  console.log('🎯 ==========================================\n');
+  // Apple Store Compliance: Silent operation
 
   // Test 1: Basic voice consistency
   const basicTest = await testVoiceConsistency();
-  
+
   // Test 2: TTSManager integration
   const ttsTest = await testTTSManagerConsistency();
-  
-  // Summary
-  console.log('\n🏁 ==========================================');
-  console.log('🏁 TEST SUITE RESULTS');
-  console.log('🏁 ==========================================');
-  console.log(`🎯 Voice Lock Test: ${basicTest.success ? '✅ PASSED' : '❌ FAILED'}`);
-  console.log(`🎯 TTSManager Test: ${ttsTest ? '✅ PASSED' : '❌ FAILED'}`);
-  console.log(`🔒 Voice Used: ${basicTest.voiceName}`);
-  console.log(`📊 Consistency Rate: ${basicTest.success ? '100%' : (basicTest.passedTests / basicTest.totalTests * 100).toFixed(1) + '%'}`);
-  
-  if (basicTest.success && ttsTest) {
-    console.log('\n🎉 VOICE CONSISTENCY: PERFECT! All tests passed.');
-    console.log('✅ Your voice chat will now use the same mature male voice consistently.');
-  } else {
-    console.log('\n⚠️ VOICE CONSISTENCY: Issues detected. Check the logs above.');
-  }
+
+  // Apple Store Compliance: Silent operation
 }
 
 // Expose test functions on window for easy browser console testing

@@ -317,14 +317,14 @@ const getBestMaleVoiceLegacy = (): SpeechSynthesisVoice | null => {
  * 🎯 IMPORTANT: This is now a fallback function. Use VoiceConsistencyManager for guaranteed consistency.
  */
 export const configureUtterance = (utterance: SpeechSynthesisUtterance, text: string, language?: 'en' | 'tr'): void => {
-  // 🎯 PRIMARY: Try to use VoiceConsistencyManager first for guaranteed consistency
+  // Apple Store Compliance: Try to use VoiceConsistencyManager first for guaranteed consistency
   if (VOICE_CONFIG.VOICE_CONSISTENCY_ENABLED) {
     const success = VoiceConsistencyManager.configureUtterance(utterance, text);
     if (success) {
-      console.log('✅ Utterance configured with locked voice via VoiceConsistencyManager');
+      // Apple Store Compliance: Silent operation
       return;
     }
-    console.warn('⚠️ VoiceConsistencyManager failed, falling back to legacy method');
+    // Apple Store Compliance: Silent operation - falling back to legacy method
   }
 
   // FALLBACK: Legacy configuration
@@ -423,14 +423,14 @@ class VoiceConsistencyManagerClass {
   }
 
   private async _performInitialization(): Promise<SpeechSynthesisVoice | null> {
-    console.log('🎯 VoiceConsistencyManager: Initializing voice lock...');
+    // Apple Store Compliance: Silent operation
 
     // First try to restore previously locked voice
     const restoredVoice = await this._restorePreviousVoice();
     if (restoredVoice) {
       this.lockedVoice = restoredVoice;
       this.isInitialized = true;
-      console.log(`🔒 VOICE LOCKED (RESTORED): ${this.lockedVoice.name}`);
+      // Apple Store Compliance: Silent operation
       return this.lockedVoice;
     }
 
@@ -443,22 +443,16 @@ class VoiceConsistencyManagerClass {
     if (selectedVoice) {
       this.lockedVoice = selectedVoice;
       this.isInitialized = true;
-      
+
       // Persist the locked voice for future sessions
       this._persistLockedVoice(selectedVoice);
-      
-      console.log(`🔒 VOICE LOCKED (NEW): ${this.lockedVoice.name}`);
-      console.log(`📊 Voice Details:`, {
-        name: selectedVoice.name,
-        lang: selectedVoice.lang,
-        localService: selectedVoice.localService,
-        voiceURI: selectedVoice.voiceURI
-      });
-      
+
+      // Apple Store Compliance: Silent operation
+
       return this.lockedVoice;
     }
 
-    console.error('❌ CRITICAL: No suitable mature male voice found!');
+    // Apple Store Compliance: Silent fail - no suitable voice found
     return null;
   }
 
@@ -490,27 +484,27 @@ class VoiceConsistencyManagerClass {
 
   private _selectBestMatureVoice(): SpeechSynthesisVoice | null {
     const voices = speechSynthesis.getVoices();
-    console.log(`🔍 Analyzing ${voices.length} available voices...`);
+    // Apple Store Compliance: Silent operation
 
     // Priority 1: Exact matches from curated mature voice list
     for (const preferredName of VOICE_CONFIG.PREFERRED_ENGLISH_VOICES) {
-      const exactMatch = voices.find(v => 
+      const exactMatch = voices.find(v =>
         v.name === preferredName && v.lang.startsWith('en')
       );
       if (exactMatch) {
-        console.log(`✅ Found exact mature voice match: ${exactMatch.name}`);
+        // Apple Store Compliance: Silent operation
         return exactMatch;
       }
     }
 
     // Priority 2: Partial matches from curated list
     for (const preferredName of VOICE_CONFIG.PREFERRED_ENGLISH_VOICES) {
-      const partialMatch = voices.find(v => 
-        v.name.toLowerCase().includes(preferredName.toLowerCase()) && 
+      const partialMatch = voices.find(v =>
+        v.name.toLowerCase().includes(preferredName.toLowerCase()) &&
         v.lang.startsWith('en')
       );
       if (partialMatch) {
-        console.log(`✅ Found partial mature voice match: ${partialMatch.name}`);
+        // Apple Store Compliance: Silent operation
         return partialMatch;
       }
     }
@@ -518,30 +512,30 @@ class VoiceConsistencyManagerClass {
     // Priority 3: Male voice keywords (mature characteristics)
     const matureKeywords = ['davis', 'guy', 'david', 'mark', 'daniel', 'alex', 'matthew'];
     for (const keyword of matureKeywords) {
-      const keywordMatch = voices.find(v => 
+      const keywordMatch = voices.find(v =>
         v.name.toLowerCase().includes(keyword) && v.lang.startsWith('en')
       );
       if (keywordMatch) {
-        console.log(`✅ Found mature keyword match: ${keywordMatch.name}`);
+        // Apple Store Compliance: Silent operation
         return keywordMatch;
       }
     }
 
     // Priority 4: Any male voice indicator
-    const maleVoice = voices.find(v => 
-      v.lang.startsWith('en') && 
-      (v.name.toLowerCase().includes('male') || 
+    const maleVoice = voices.find(v =>
+      v.lang.startsWith('en') &&
+      (v.name.toLowerCase().includes('male') ||
        v.name.toLowerCase().includes('man'))
     );
     if (maleVoice) {
-      console.log(`⚠️ Using generic male voice: ${maleVoice.name}`);
+      // Apple Store Compliance: Silent operation
       return maleVoice;
     }
 
     // Last resort: First English voice
     const englishVoice = voices.find(v => v.lang.startsWith('en'));
     if (englishVoice) {
-      console.log(`⚠️ FALLBACK: Using first English voice: ${englishVoice.name}`);
+      // Apple Store Compliance: Silent operation
       return englishVoice;
     }
 
@@ -556,17 +550,17 @@ class VoiceConsistencyManagerClass {
       await this._waitForVoices();
       const voices = speechSynthesis.getVoices();
       const restoredVoice = voices.find(v => v.name === storedVoiceName);
-      
+
       if (restoredVoice) {
-        console.log(`♻️ Restored previously locked voice: ${restoredVoice.name}`);
+        // Apple Store Compliance: Silent operation
         return restoredVoice;
       } else {
-        console.log(`⚠️ Previously locked voice '${storedVoiceName}' no longer available`);
+        // Apple Store Compliance: Silent operation
         localStorage.removeItem(this.LOCKED_VOICE_KEY);
         return null;
       }
     } catch (error) {
-      console.error('Error restoring previous voice:', error);
+      // Apple Store Compliance: Silent fail - operation continues
       return null;
     }
   }
@@ -575,7 +569,7 @@ class VoiceConsistencyManagerClass {
     try {
       localStorage.setItem(this.LOCKED_VOICE_KEY, voice.name);
     } catch (error) {
-      console.error('Failed to persist locked voice:', error);
+      // Apple Store Compliance: Silent fail - operation continues
     }
   }
 
@@ -584,7 +578,7 @@ class VoiceConsistencyManagerClass {
    */
   getLockedVoice(): SpeechSynthesisVoice | null {
     if (!this.isInitialized) {
-      console.error('❌ CRITICAL: VoiceConsistencyManager not initialized! Call initialize() first.');
+      // Apple Store Compliance: Silent fail - operation continues
       return null;
     }
     return this.lockedVoice;
@@ -626,29 +620,29 @@ class VoiceConsistencyManagerClass {
         utterance.pitch = VOICE_CONFIG.TURKISH.PITCH;
         utterance.volume = VOICE_CONFIG.TURKISH.VOLUME;
         utterance.lang = VOICE_CONFIG.TURKISH.LANG;
-        console.log('🇹🇷 Using Turkish voice for Turkish content:', turkishVoice.name);
+        // Apple Store Compliance: Silent operation
         return true;
       } else {
-        console.warn('⚠️ Turkish voice not available, falling back to English voice');
+        // Apple Store Compliance: Silent operation - falling back to English voice
       }
     }
 
     // Default: Use locked English voice
     const voice = this.getLockedVoice();
     if (!voice) {
-      console.error('❌ CRITICAL: No locked voice available for utterance configuration!');
+      // Apple Store Compliance: Silent fail - operation continues
       return false;
     }
 
     // MANDATORY: Use locked English voice
     utterance.voice = voice;
-    
+
     // Apply mature male voice characteristics
     utterance.rate = VOICE_CONFIG.ENGLISH.RATE;
     utterance.pitch = VOICE_CONFIG.ENGLISH.PITCH;
     utterance.volume = VOICE_CONFIG.ENGLISH.VOLUME;
     utterance.lang = VOICE_CONFIG.ENGLISH.LANG;
-    console.log('🇺🇸 Using English voice for English content:', voice.name);
+    // Apple Store Compliance: Silent operation
 
     return true;
   }
@@ -672,12 +666,12 @@ class VoiceConsistencyManagerClass {
 
         // Set up event handlers
         utterance.onend = () => {
-          console.log('🎤 Speech completed for text:', text.substring(0, 50) + '...');
+          // Apple Store Compliance: Silent operation
           resolve();
         };
 
         utterance.onerror = (event) => {
-          console.error('🚫 Speech error:', event.error);
+          // Apple Store Compliance: Silent fail - operation continues
           reject(new Error(event.error));
         };
 
@@ -688,7 +682,7 @@ class VoiceConsistencyManagerClass {
         speechSynthesis.speak(utterance);
 
       } catch (error) {
-        console.error('❌ Speech synthesis error:', error);
+        // Apple Store Compliance: Silent fail - operation continues
         reject(error);
       }
     });
@@ -703,7 +697,7 @@ class VoiceConsistencyManagerClass {
 
     const isCorrectVoice = utterance.voice?.name === lockedVoice.name;
     if (!isCorrectVoice) {
-      console.error(`❌ VOICE VALIDATION FAILED! Expected: ${lockedVoice.name}, Got: ${utterance.voice?.name || 'null'}`);
+      // Apple Store Compliance: Silent fail - validation failed
     }
     return isCorrectVoice;
   }
