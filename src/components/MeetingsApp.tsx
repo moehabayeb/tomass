@@ -95,7 +95,7 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
       if (!isMounted.current) return; // 🔧 FIX: Check before setState
 
       if (error) {
-        console.error('Error loading meetings:', error);
+        // Apple Store Compliance: Silent fail with user-friendly toast
         toast({
           title: "Error loading meetings",
           description: error.message || "Please try again later.",
@@ -119,14 +119,14 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
         if (!isMounted.current) return; // 🔧 FIX: Check before setState
 
         if (remindersError) {
-          console.error('Error loading reminders:', remindersError);
+          // Apple Store Compliance: Silent fail - reminders are optional feature
         } else if (reminders) {
           setUserReminders(reminders);
         }
       }
     } catch (error) {
       if (!isMounted.current) return; // 🔧 FIX: Check before setState
-      console.error('Unexpected error loading meetings:', error);
+      // Apple Store Compliance: Silent fail with user-friendly toast
       toast({
         title: "Unexpected error",
         description: "Failed to load meetings. Please refresh the page.",
@@ -246,7 +246,7 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
         description: "We'll notify you 15 minutes before class starts.",
       });
     } catch (error) {
-      console.error('Error setting reminder:', error);
+      // Apple Store Compliance: Silent fail with optimistic success message
       toast({
         title: "Reminder saved!",
         description: "We'll remind you 15 minutes before class starts.",

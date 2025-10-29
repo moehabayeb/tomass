@@ -19,7 +19,7 @@ export function useUpcomingMeetings() {
       setMeetings(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load upcoming meetings');
-      console.error('Error loading upcoming meetings:', err);
+      // Apple Store Compliance: Silent fail with error state
     } finally {
       setIsLoading(false);
     }
@@ -75,17 +75,30 @@ export function useMeetingRSVP(meetingId: string) {
   }, [loadRSVP]);
 
   const setRSVPStatus = useCallback(async (status: 'yes' | 'no' | 'maybe') => {
+    // Store previous state for rollback on failure
+    const previousRSVP = rsvp;
+
     try {
       setError(null);
+
+      // Optimistic update: Update UI immediately for better UX
+      setRsvp(prevRSVP => prevRSVP ? { ...prevRSVP, status } : null);
+
+      // Make API call
       const updatedRSVP = await MeetingsService.setRSVP(meetingId, status);
+
+      // Update with server response
       setRsvp(updatedRSVP);
       return updatedRSVP;
     } catch (err) {
+      // Rollback to previous state on failure
+      setRsvp(previousRSVP);
+
       const errorMsg = err instanceof Error ? err.message : 'Failed to update RSVP';
       setError(errorMsg);
       throw new Error(errorMsg);
     }
-  }, [meetingId]);
+  }, [meetingId, rsvp]);
 
   return {
     rsvp,

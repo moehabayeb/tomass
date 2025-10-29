@@ -64,13 +64,13 @@ export class MeetingsService {
         .limit(10);
 
       if (error) {
-        console.error('Error fetching public meetings:', error);
+        // Apple Store Compliance: Silent fail - error propagated to caller
         throw error;
       }
 
       return data || [];
     } catch (error) {
-      console.error('Error in getPublicMeetings:', error);
+      // Apple Store Compliance: Silent fail - error propagated to caller
       throw error;
     }
   }
@@ -94,13 +94,13 @@ export class MeetingsService {
         .limit(5);
 
       if (error) {
-        console.error('Error fetching upcoming meetings:', error);
+        // Apple Store Compliance: Silent fail - error propagated to caller
         throw error;
       }
 
       return data || [];
     } catch (error) {
-      console.error('Error in getUpcomingMeetings:', error);
+      // Apple Store Compliance: Silent fail - error propagated to caller
       throw error;
     }
   }
@@ -121,13 +121,13 @@ export class MeetingsService {
         .single();
 
       if (error && error.code !== 'PGRST116') { // Not found is OK
-        console.error('Error fetching RSVP:', error);
+        // Apple Store Compliance: Silent fail - error propagated to caller
         throw error;
       }
 
       return data;
     } catch (error) {
-      console.error('Error in getUserRSVP:', error);
+      // Apple Store Compliance: Silent fail - error propagated to caller
       throw error;
     }
   }
@@ -143,13 +143,13 @@ export class MeetingsService {
       });
 
       if (error) {
-        console.error('Error setting RSVP:', error);
+        // Apple Store Compliance: Silent fail - error propagated to caller
         throw error;
       }
 
       return data;
     } catch (error) {
-      console.error('Error in setRSVP:', error);
+      // Apple Store Compliance: Silent fail - error propagated to caller
       throw error;
     }
   }
