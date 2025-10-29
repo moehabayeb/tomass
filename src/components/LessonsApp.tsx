@@ -1148,9 +1148,9 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
   // --- Multiple Choice Handler ---
   function handleMultipleChoiceSelect(selectedLetter: 'A' | 'B' | 'C', isCorrect: boolean) {
     const currentState = questionStates[speakingIndex] || { selectedChoice: undefined, choiceCorrect: false, speechCompleted: false };
-    
-    // Don't allow selecting if already selected correctly
-    if (currentState.selectedChoice && currentState.choiceCorrect) {
+
+    // Only prevent changes if already answered correctly
+    if (currentState.choiceCorrect) {
       return;
     }
     
@@ -1190,18 +1190,11 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
       setFeedback("❌ Incorrect. Try again!");
       setFeedbackType('error');
 
-      // Clear selection after a delay to allow retry
+      // Don't clear state - let user select another option to override
+      // Clear feedback after showing error message
       const timeoutId2 = setTimeout(() => {
-        setQuestionStates(prev => ({
-          ...prev,
-          [speakingIndex]: {
-            ...prev[speakingIndex],
-            selectedChoice: undefined,
-            choiceCorrect: false
-          }
-        }));
         setFeedback('');
-      }, 1500);
+      }, 2000);
       lessonTimeoutsRef.current.add(timeoutId2);
     }
   }
@@ -3058,7 +3051,7 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
                                       : 'bg-red-500/20 border-red-500 text-red-300'
                                     : 'bg-white/10 text-white border-white/30 hover:bg-white/20'
                                 }`}
-                                disabled={!!currentState.selectedChoice}
+                                disabled={currentState.choiceCorrect}
                               >
                                 <span className="font-bold mr-3 text-lg">
                                   {option.letter}.
