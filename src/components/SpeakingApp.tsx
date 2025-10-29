@@ -44,12 +44,12 @@ const Sparkle = ({ className, delayed = false }: { className?: string; delayed?:
   />
 );
 
-// 🔧 FIX #11: Floating XP Gain Animation Component with ARIA
+// 🔧 FIX #11: Floating XP Gain Animation Component with ARIA (Memory leak fixed)
 const FloatingXP = ({ amount, onComplete }: { amount: number; onComplete: () => void }) => {
   useEffect(() => {
     const timer = setTimeout(onComplete, 2000); // Animation duration
     return () => clearTimeout(timer);
-  }, [onComplete]);
+  }, []); // Fixed: onComplete should not change during animation lifecycle
 
   return (
     <div

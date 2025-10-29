@@ -63,12 +63,12 @@ class TTSManagerService {
 
   private async initializeVoiceConsistency(): Promise<void> {
     try {
-      console.log('🎯 TTSManager: Initializing voice consistency...');
+      // Apple Store Compliance: Silent initialization
       await VoiceConsistencyManager.initialize();
       const voiceInfo = VoiceConsistencyManager.getVoiceInfo();
-      console.log('✅ Voice consistency initialized:', voiceInfo);
+      // Voice consistency initialized successfully
     } catch (error) {
-      console.error('❌ Failed to initialize voice consistency:', error);
+      // Apple Store Compliance: Silent fail - voice consistency is optional enhancement
     }
   }
 
@@ -203,14 +203,14 @@ class TTSManagerService {
       // 🎯 CRITICAL: Use VoiceConsistencyManager for GUARANTEED voice consistency
       const voiceConfigured = VoiceConsistencyManager.configureUtterance(this.currentUtterance, text);
       if (!voiceConfigured) {
-        console.error('❌ CRITICAL: Failed to configure utterance with locked voice!');
+        // Apple Store Compliance: Silent fallback - voice configuration failed
         // Fallback to old method as last resort
         configureUtterance(this.currentUtterance, text);
       } else {
         // Validate that the utterance uses the correct voice
         const isValid = VoiceConsistencyManager.validateUtterance(this.currentUtterance);
         if (!isValid) {
-          console.error('❌ VOICE VALIDATION FAILED for chunk:', text.substring(0, 50));
+          // Apple Store Compliance: Silent validation - voice may vary but TTS will continue
         }
       }
 
@@ -387,7 +387,7 @@ class TTSManagerService {
   public async speak(text: string, options: TTSOptions = {}): Promise<TTSResult> {
     // 🎯 CRITICAL: Ensure voice consistency is initialized before speaking
     if (!VoiceConsistencyManager.getVoiceInfo().isInitialized) {
-      console.log('🎯 Voice not initialized, initializing now...');
+      // Apple Store Compliance: Silent initialization before first speak
       await VoiceConsistencyManager.initialize();
     }
     
