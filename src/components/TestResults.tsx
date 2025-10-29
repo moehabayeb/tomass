@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -27,8 +28,41 @@ interface TestResultsProps {
   onGoToLessons?: () => void;
 }
 
+// Score thresholds for performance categorization (CEFR-aligned)
+const SCORE_THRESHOLDS = {
+  EXCELLENT: 90,
+  VERY_GOOD: 85,
+  GOOD: 75,
+  FAIR: 60,
+  NEEDS_IMPROVEMENT: 45,
+  COLOR_GREEN: 85,
+  COLOR_BLUE: 70,
+  COLOR_YELLOW: 55,
+  COLOR_ORANGE: 40,
+} as const;
+
+// Safe localStorage wrapper for Safari Private Mode compatibility
+const safeLocalStorage = {
+  getItem: (key: string): string | null => {
+    try {
+      return localStorage.getItem(key);
+    } catch {
+      return null;
+    }
+  },
+  setItem: (key: string, value: string): boolean => {
+    try {
+      localStorage.setItem(key, value);
+      return true;
+    } catch {
+      return false;
+    }
+  },
+};
+
 export function TestResults({ result, onRestart, onBack, onGoToLessons }: TestResultsProps) {
   const [activeTab, setActiveTab] = useState('overview');
+  const { toast } = useToast();
 
   const getLevelColor = (level: string): string => {
     switch (level) {
@@ -42,19 +76,21 @@ export function TestResults({ result, onRestart, onBack, onGoToLessons }: TestRe
     }
   };
 
-  const getScoreColor = (score: number): string => {
-    if (score >= 85) return 'text-green-500';
-    if (score >= 70) return 'text-blue-500';
-    if (score >= 55) return 'text-yellow-500';
-    if (score >= 40) return 'text-orange-500';
+  const getScoreColor = (score: number | undefined | null): string => {
+    const safeScore = score ?? 0;
+    if (safeScore >= SCORE_THRESHOLDS.COLOR_GREEN) return 'text-green-500';
+    if (safeScore >= SCORE_THRESHOLDS.COLOR_BLUE) return 'text-blue-500';
+    if (safeScore >= SCORE_THRESHOLDS.COLOR_YELLOW) return 'text-yellow-500';
+    if (safeScore >= SCORE_THRESHOLDS.COLOR_ORANGE) return 'text-orange-500';
     return 'text-red-500';
   };
 
-  const getPerformanceLevel = (score: number): string => {
-    if (score >= 90) return 'Excellent';
-    if (score >= 75) return 'Good';
-    if (score >= 60) return 'Fair';
-    if (score >= 45) return 'Needs Improvement';
+  const getPerformanceLevel = (score: number | undefined | null): string => {
+    const safeScore = score ?? 0;
+    if (safeScore >= SCORE_THRESHOLDS.EXCELLENT) return 'Excellent';
+    if (safeScore >= SCORE_THRESHOLDS.GOOD) return 'Good';
+    if (safeScore >= SCORE_THRESHOLDS.FAIR) return 'Fair';
+    if (safeScore >= SCORE_THRESHOLDS.NEEDS_IMPROVEMENT) return 'Needs Improvement';
     return 'Poor';
   };
 
@@ -64,29 +100,55 @@ export function TestResults({ result, onRestart, onBack, onGoToLessons }: TestRe
     return `${mins}m ${secs}s`;
   };
 
-  const generateCertificate = () => {
-    // This would generate a PDF certificate
-    alert('Certificate generation feature coming soon!');
-  };
+  const generateCertificate = useCallback(() => {
+    // Certificate generation feature - placeholder
+    toast({
+      title: "Coming Soon",
+      description: "Certificate generation feature will be available in a future update.",
+    });
+  }, [toast]);
 
-  const shareResults = async () => {
+  const shareResults = useCallback(async () => {
+    const shareText = `I scored ${result.overall_score}% on my English proficiency test and achieved ${result.recommended_level} level!`;
+
     if (navigator.share) {
       try {
         await navigator.share({
           title: 'My English Proficiency Test Results',
-          text: `I scored ${result.overall_score}% on my English test and achieved ${result.recommended_level} level!`,
-          url: window.location.href
+          text: shareText,
+          // Removed URL to avoid exposing localhost/internal URLs
         });
-      } catch (error) {
-        console.log('Error sharing:', error);
+        toast({
+          title: "Shared Successfully",
+          description: "Your test results have been shared!",
+        });
+      } catch (error: any) {
+        // User cancelled or share failed
+        if (error?.name !== 'AbortError') {
+          toast({
+            title: "Share Failed",
+            description: "Unable to share. Try copying to clipboard instead.",
+            variant: "destructive",
+          });
+        }
       }
     } else {
       // Fallback: copy to clipboard
-      const text = `I scored ${result.overall_score}% on my English proficiency test and achieved ${result.recommended_level} level!`;
-      navigator.clipboard.writeText(text);
-      alert('Results copied to clipboard!');
+      try {
+        await navigator.clipboard.writeText(shareText);
+        toast({
+          title: "Copied to Clipboard",
+          description: "Your results have been copied. You can now paste them anywhere!",
+        });
+      } catch (error) {
+        toast({
+          title: "Copy Failed",
+          description: "Unable to copy to clipboard. Please try again or share manually.",
+          variant: "destructive",
+        });
+      }
     }
-  };
+  }, [result.overall_score, result.recommended_level, toast]);
 
   const skillAreas = [
     { key: 'pronunciation_score', label: 'Pronunciation', icon: MessageSquare },
@@ -104,7 +166,9 @@ export function TestResults({ result, onRestart, onBack, onGoToLessons }: TestRe
           <Button
             variant="ghost"
             onClick={onBack}
+            disabled={!onBack}
             className="text-white hover:bg-white/10"
+            aria-label="Go back to main menu"
           >
             ← Back to Menu
           </Button>
@@ -112,7 +176,11 @@ export function TestResults({ result, onRestart, onBack, onGoToLessons }: TestRe
           <div className="text-center">
             <h1 className="text-3xl font-bold text-white mb-2">Test Results</h1>
             <p className="text-blue-200">
-              Completed on {new Date(result.test_date || Date.now()).toLocaleDateString()}
+              Completed on {new Date(result.test_date ?? Date.now()).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })}
             </p>
           </div>
 
@@ -121,6 +189,7 @@ export function TestResults({ result, onRestart, onBack, onGoToLessons }: TestRe
               variant="ghost"
               onClick={shareResults}
               className="text-white hover:bg-white/10"
+              aria-label="Share your test results"
             >
               <Share2 className="w-4 h-4 mr-2" />
               Share
@@ -129,6 +198,7 @@ export function TestResults({ result, onRestart, onBack, onGoToLessons }: TestRe
               variant="ghost"
               onClick={generateCertificate}
               className="text-white hover:bg-white/10"
+              aria-label="Download certificate"
             >
               <Download className="w-4 h-4 mr-2" />
               Certificate
@@ -207,7 +277,7 @@ export function TestResults({ result, onRestart, onBack, onGoToLessons }: TestRe
               <CardContent>
                 <div className="space-y-6">
                   {skillAreas.map(({ key, label, icon: Icon }) => {
-                    const score = result[key as keyof TestResult] as number;
+                    const score = (result[key as keyof TestResult] as number) ?? 0;
                     return (
                       <div key={key} className="space-y-2">
                         <div className="flex items-center justify-between">
@@ -237,7 +307,7 @@ export function TestResults({ result, onRestart, onBack, onGoToLessons }: TestRe
               </CardHeader>
               <CardContent>
                 <div className="space-y-4 text-white">
-                  {result.detailed_feedback.overall_assessment?.strengths?.length > 0 && (
+                  {result.detailed_feedback?.overall_assessment?.strengths?.length ? (
                     <div>
                       <h4 className="font-semibold text-green-300 mb-2">Your Strengths:</h4>
                       <ul className="list-disc list-inside space-y-1 text-blue-100">
@@ -246,9 +316,9 @@ export function TestResults({ result, onRestart, onBack, onGoToLessons }: TestRe
                         ))}
                       </ul>
                     </div>
-                  )}
+                  ) : null}
 
-                  {result.detailed_feedback.overall_assessment?.weaknesses?.length > 0 && (
+                  {result.detailed_feedback?.overall_assessment?.weaknesses?.length ? (
                     <div>
                       <h4 className="font-semibold text-orange-300 mb-2">Areas for Improvement:</h4>
                       <ul className="list-disc list-inside space-y-1 text-blue-100">
@@ -257,9 +327,9 @@ export function TestResults({ result, onRestart, onBack, onGoToLessons }: TestRe
                         ))}
                       </ul>
                     </div>
-                  )}
+                  ) : null}
 
-                  {result.detailed_feedback.overall_assessment?.suggestions?.length > 0 && (
+                  {result.detailed_feedback?.overall_assessment?.suggestions?.length ? (
                     <div>
                       <h4 className="font-semibold text-blue-300 mb-2">Study Suggestions:</h4>
                       <ul className="list-disc list-inside space-y-1 text-blue-100">
@@ -268,6 +338,12 @@ export function TestResults({ result, onRestart, onBack, onGoToLessons }: TestRe
                         ))}
                       </ul>
                     </div>
+                  ) : null}
+
+                  {!result.detailed_feedback?.overall_assessment && (
+                    <p className="text-blue-200 text-center py-4">
+                      Detailed recommendations will be available after analysis is complete.
+                    </p>
                   )}
                 </div>
               </CardContent>
@@ -276,49 +352,66 @@ export function TestResults({ result, onRestart, onBack, onGoToLessons }: TestRe
 
           <TabsContent value="breakdown" className="space-y-6">
             {/* Phase-by-Phase Results */}
-            <div className="grid gap-6">
-              {result.detailed_feedback.phase_breakdown?.map((phase: any, index: number) => (
-                <Card key={index} className="bg-white/10 backdrop-blur-lg border-white/20">
-                  <CardHeader>
-                    <CardTitle className="text-white">
-                      Phase {phase.phase}: {result.transcript[index]?.phase_name}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
-                      {Object.entries(phase.scores).map(([skill, score]) => (
-                        <div key={skill} className="text-center">
-                          <div className={`text-2xl font-bold ${getScoreColor(score as number)}`}>
-                            {score}%
-                          </div>
-                          <div className="text-white text-sm capitalize">{skill}</div>
-                        </div>
-                      ))}
-                    </div>
+            {result.detailed_feedback?.phase_breakdown?.length ? (
+              <div className="grid gap-6">
+                {result.detailed_feedback.phase_breakdown.map((phase: any, index: number) => {
+                  const transcriptEntry = result.transcript?.[index];
+                  const transcriptText = transcriptEntry?.transcript || '';
+                  const truncatedText = transcriptText.substring(0, 200);
+                  const needsEllipsis = transcriptText.length > 200;
 
-                    {/* Transcript Preview */}
-                    <div className="bg-white/5 rounded-lg p-4 mt-4">
-                      <h4 className="text-white font-semibold mb-2">What you said:</h4>
-                      <p className="text-blue-100 italic">
-                        "{result.transcript[index]?.transcript.substring(0, 200)}..."
-                      </p>
-                    </div>
-
-                    {/* Phase Feedback */}
-                    {phase.feedback && phase.feedback.length > 0 && (
-                      <div className="mt-4">
-                        <h4 className="text-white font-semibold mb-2">Feedback:</h4>
-                        <ul className="list-disc list-inside space-y-1 text-blue-100">
-                          {phase.feedback.map((feedback: string, feedbackIndex: number) => (
-                            <li key={feedbackIndex}>{feedback}</li>
+                  return (
+                    <Card key={index} className="bg-white/10 backdrop-blur-lg border-white/20">
+                      <CardHeader>
+                        <CardTitle className="text-white">
+                          Phase {phase.phase}: {transcriptEntry?.phase_name || 'Unknown Phase'}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
+                          {Object.entries(phase.scores || {}).map(([skill, score]) => (
+                            <div key={skill} className="text-center">
+                              <div className={`text-2xl font-bold ${getScoreColor(score as number)}`}>
+                                {score ?? 0}%
+                              </div>
+                              <div className="text-white text-sm capitalize">{skill}</div>
+                            </div>
                           ))}
-                        </ul>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                        </div>
+
+                        {/* Transcript Preview */}
+                        {transcriptText && (
+                          <div className="bg-white/5 rounded-lg p-4 mt-4">
+                            <h4 className="text-white font-semibold mb-2">What you said:</h4>
+                            <p className="text-blue-100 italic">
+                              "{truncatedText}{needsEllipsis ? '...' : ''}"
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Phase Feedback */}
+                        {phase.feedback?.length > 0 && (
+                          <div className="mt-4">
+                            <h4 className="text-white font-semibold mb-2">Feedback:</h4>
+                            <ul className="list-disc list-inside space-y-1 text-blue-100">
+                              {phase.feedback.map((feedback: string, feedbackIndex: number) => (
+                                <li key={feedbackIndex}>{feedback}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            ) : (
+              <Card className="bg-white/10 backdrop-blur-lg border-white/20">
+                <CardContent className="p-8 text-center text-blue-200">
+                  No phase breakdown available for this test.
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           <TabsContent value="feedback" className="space-y-6">
@@ -385,19 +478,27 @@ export function TestResults({ result, onRestart, onBack, onGoToLessons }: TestRe
                 <CardTitle className="text-white">Complete Transcript</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4 max-h-96 overflow-y-auto">
-                  {result.transcript.map((phase: any, index: number) => (
-                    <div key={index} className="bg-white/5 rounded-lg p-4">
-                      <h4 className="text-white font-semibold mb-2">
-                        Phase {phase.phase}: {phase.phase_name}
-                      </h4>
-                      <p className="text-blue-100 italic">"{phase.transcript}"</p>
-                      <div className="text-xs text-blue-200 mt-2">
-                        Duration: {formatDuration(phase.duration / 1000)}
+                {result.transcript?.length ? (
+                  <div className="space-y-4 max-h-96 overflow-y-auto">
+                    {result.transcript.map((phase: any, index: number) => (
+                      <div key={index} className="bg-white/5 rounded-lg p-4">
+                        <h4 className="text-white font-semibold mb-2">
+                          Phase {phase.phase ?? index + 1}: {phase.phase_name || 'Unknown Phase'}
+                        </h4>
+                        <p className="text-blue-100 italic">"{phase.transcript || 'No transcript available'}"</p>
+                        {phase.duration != null && (
+                          <div className="text-xs text-blue-200 mt-2">
+                            Duration: {formatDuration(Math.floor(phase.duration / 1000))}
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-blue-200 text-center py-4">
+                    No transcript available for this test.
+                  </p>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -407,32 +508,51 @@ export function TestResults({ result, onRestart, onBack, onGoToLessons }: TestRe
         <div className="flex justify-center space-x-4 mt-8">
           <Button
             onClick={onRestart}
+            disabled={!onRestart}
             className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3"
+            aria-label="Retake the English proficiency test"
           >
             <RotateCcw className="w-5 h-5 mr-2" />
             Take Test Again
           </Button>
 
           <Button
-            onClick={() => {
-              if (onGoToLessons) {
-                // Call the provided navigation callback
-                onGoToLessons();
-              } else {
-                // Fallback: Store data and attempt to navigate
-                localStorage.setItem('recommendedStartLevel', result.recommended_level);
-                localStorage.setItem('currentLevel', result.recommended_level);
+            onClick={useCallback(() => {
+              // Always save progress data first (Safari Private Mode safe)
+              const saved = safeLocalStorage.setItem('recommendedStartLevel', result.recommended_level);
+              safeLocalStorage.setItem('currentLevel', result.recommended_level);
 
-                // Enable access to the recommended level
-                const unlocks = JSON.parse(localStorage.getItem('unlocks') || '{}');
+              // Enable access to the recommended level
+              const unlocksStr = safeLocalStorage.getItem('unlocks') || '{}';
+              try {
+                const unlocks = JSON.parse(unlocksStr);
                 unlocks[result.recommended_level] = true;
-                localStorage.setItem('unlocks', JSON.stringify(unlocks));
-
-                // Alert user since navigation is broken
-                alert('Test completed! Please navigate to lessons manually.');
+                safeLocalStorage.setItem('unlocks', JSON.stringify(unlocks));
+              } catch {
+                // If parsing fails, create new object
+                safeLocalStorage.setItem('unlocks', JSON.stringify({ [result.recommended_level]: true }));
               }
-            }}
+
+              // Attempt navigation
+              if (onGoToLessons) {
+                onGoToLessons();
+              } else if (!saved) {
+                // Safari Private Mode or storage failed
+                toast({
+                  title: "Storage Unavailable",
+                  description: "Your progress couldn't be saved. Please enable storage in your browser settings.",
+                  variant: "destructive",
+                });
+              } else {
+                // Navigation callback missing but data saved
+                toast({
+                  title: "Progress Saved",
+                  description: "Test completed! Navigate to lessons to start learning.",
+                });
+              }
+            }, [result.recommended_level, onGoToLessons, toast])}
             className="bg-green-600 hover:bg-green-700 text-white px-8 py-3"
+            aria-label={`Start learning at ${result.recommended_level} level`}
           >
             <BookOpen className="w-5 h-5 mr-2" />
             Start Learning ({result.recommended_level})
