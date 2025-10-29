@@ -181,8 +181,13 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   
   // G) Single source of truth: Speaking page sound state
   const [speakingSoundEnabled, setSpeakingSoundEnabled] = useState(() => {
-    const saved = localStorage.getItem('speaking.sound.enabled');
-    return saved !== null ? saved === 'true' : true; // Default = true
+    try {
+      const saved = localStorage.getItem('speaking.sound.enabled');
+      return saved !== null ? saved === 'true' : true; // Default = true
+    } catch {
+      // Safari Private Mode / iOS incognito - use default
+      return true;
+    }
   });
   const [audioContextResumed, setAudioContextResumed] = useState(false);
 
@@ -214,6 +219,9 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   // 🔧 FIX #3: Track if component is mounted to prevent setState on unmounted component
   const isMountedRef = useRef(true);
 
+  // 🔧 FIX BUG #4 & #5: Track setTimeout calls to prevent memory leaks
+  const stateTransitionTimeoutRef = useRef<number | null>(null);
+
   // 🔧 FIX #3: Safe setState wrapper - only call if component is still mounted
   const safeSetState = <T,>(setter: React.Dispatch<React.SetStateAction<T>>) => {
     return (value: React.SetStateAction<T>) => {
@@ -230,13 +238,20 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
   // 1) Helper to guarantee sound is ready
   const ensureSoundReady = async () => {
-    const enabled = localStorage.getItem('speaking.sound.enabled') !== 'false';
+    let enabled = true; // Default
+    try {
+      enabled = localStorage.getItem('speaking.sound.enabled') !== 'false';
+    } catch {
+      // Safari Private Mode / iOS incognito - use default
+      enabled = true;
+    }
+
     let resumed = false;
     if (enabled) {
-      try { 
-        resumed = await enableAudioContext(); 
-      } catch { 
-        resumed = false; 
+      try {
+        resumed = await enableAudioContext();
+      } catch {
+        resumed = false;
       }
     }
     return { enabled, resumed };
@@ -281,10 +296,15 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   // Keep icon and engine in sync: Persist sound state changes
   const toggleSpeakingSound = () => {
     const newEnabled = !speakingSoundEnabled;
-    
+
     setSpeakingSoundEnabled(newEnabled);
-    localStorage.setItem('speaking.sound.enabled', newEnabled.toString());
-    
+
+    try {
+      localStorage.setItem('speaking.sound.enabled', newEnabled.toString());
+    } catch {
+      // Safari Private Mode / iOS incognito - silent fail (state still updated)
+    }
+
     // Immediately sync with TTS manager
     if (!newEnabled && TTSManager.isSpeaking()) {
       TTSManager.stop();
@@ -753,12 +773,19 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
     // Enter LISTENING state first
     setFlowState('LISTENING');
-    
+
+    // 🔧 FIX BUG #4: Clear any pending timeout before setting new one
+    if (stateTransitionTimeoutRef.current !== null) {
+      clearTimeout(stateTransitionTimeoutRef.current);
+    }
+
     // Start mic with small delay to ensure state has updated (fix race condition)
-    setTimeout(() => {
+    stateTransitionTimeoutRef.current = window.setTimeout(() => {
+      if (!isMountedRef.current) return; // Check if component is still mounted
+      stateTransitionTimeoutRef.current = null;
       startHandsFreeMicCaptureSafe(true); // pass force=true
     }, 50);
-    
+
   };
 
   // A) TTS → LISTENING (always) - FSM enforced completion
@@ -834,11 +861,21 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       } else {
         // No input: resume listening
         setFlowState('LISTENING');
-        setTimeout(() => startHandsFreeMicCaptureSafe(), 100);
+
+        // 🔧 FIX BUG #5: Clear any pending timeout before setting new one
+        if (stateTransitionTimeoutRef.current !== null) {
+          clearTimeout(stateTransitionTimeoutRef.current);
+        }
+
+        stateTransitionTimeoutRef.current = window.setTimeout(() => {
+          if (!isMountedRef.current) return; // Check if component is still mounted
+          stateTransitionTimeoutRef.current = null;
+          startHandsFreeMicCaptureSafe();
+        }, 100);
       }
     } catch (err) {
       // 🔧 FIX #10: Fixed TypeScript error - catch type should not be annotated
-      console.error('Mic capture error:', err);
+      // Apple Store Compliance: Silent fail - error handled by state change to PAUSED
       setFlowState('PAUSED');
     }
   };
@@ -1020,7 +1057,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
       // 🔧 FIX #9: Comprehensive error handling with user-friendly messages
       if (error) {
-        console.error('Supabase function error:', error);
+        // Apple Store Compliance: Silent fail with user-friendly error message
 
         // Provide specific error messages based on error type
         let errorMessage = "I couldn't process your message right now. ";
@@ -1300,6 +1337,12 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     return () => {
       // 🔧 FIX #3: Mark component as unmounted to prevent setState
       isMountedRef.current = false;
+
+      // 🔧 FIX BUG #4 & #5: Clear state transition timeout
+      if (stateTransitionTimeoutRef.current !== null) {
+        clearTimeout(stateTransitionTimeoutRef.current);
+        stateTransitionTimeoutRef.current = null;
+      }
 
       // Clear all pending timers
       ttsCompletionTimeouts.forEach(clearTimeout);

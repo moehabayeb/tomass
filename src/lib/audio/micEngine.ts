@@ -20,10 +20,14 @@ const getFeatureFlag = (key: string, defaultValue: boolean = false): boolean => 
   if (typeof window !== 'undefined') {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has(key)) return urlParams.get(key) === '1';
-    
+
     // Check localStorage for persistent flags
-    const stored = localStorage.getItem(`speaking_${key}`);
-    if (stored !== null) return stored === '1';
+    try {
+      const stored = localStorage.getItem(`speaking_${key}`);
+      if (stored !== null) return stored === '1';
+    } catch {
+      // Safari Private Mode / iOS incognito - use default
+    }
   }
   return defaultValue;
 };
