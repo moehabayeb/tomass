@@ -52,10 +52,10 @@ export function useSpeechRecognition() {
     if (!Ctx) return;
     const ctx = (window as any).__appAudioCtx || ((window as any).__appAudioCtx = new Ctx());
     if (ctx.state === 'suspended') { 
-      try { 
-        await ctx.resume(); 
-      } catch (error) { 
-        console.warn('Failed to resume audio context:', error);
+      try {
+        await ctx.resume();
+      } catch (error) {
+        // Apple Store Compliance: Silent fail - audio context resume is optional
       } 
     }
   }, []);

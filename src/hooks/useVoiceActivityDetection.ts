@@ -145,7 +145,7 @@ export function useVoiceActivityDetection(options: VADOptions = {}) {
 
       return true;
     } catch (error) {
-      console.error('Failed to start voice activity detection:', error);
+      // Apple Store Compliance: Silent fail - VAD is optional enhancement
       return false;
     }
   }, [analyzeAudio]);

@@ -1881,6 +1881,8 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
   useEffect(() => {
     return () => {
       narration.cancel();
+      // Stop speech recognizer to prevent memory leak
+      try { recognizerRef.current?.stop?.(); } catch {}
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
       if (autosaveTimeoutRef.current) clearTimeout(autosaveTimeoutRef.current);
@@ -2283,10 +2285,11 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
       if (!audioBlob || audioBlob.size === 0) {
         setFeedback('No audio captured. Please speak louder and try again.');
         setFeedbackType('error');
-        setTimeout(() => {
+        const timeoutId = setTimeout(() => {
           setFeedback('');
           setIsProcessing(false);
         }, 3000);
+        lessonTimeoutsRef.current.add(timeoutId);
         return;
       }
       
@@ -2294,10 +2297,11 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
       if (audioBlob.size < 1000) {
         setFeedback('Audio recording too short. Please speak for at least 2 seconds.');
         setFeedbackType('error');
-        setTimeout(() => {
+        const timeoutId = setTimeout(() => {
           setFeedback('');
           setIsProcessing(false);
         }, 3000);
+        lessonTimeoutsRef.current.add(timeoutId);
         return;
       }
       
@@ -2318,10 +2322,11 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
       if (transcribeResponse.error) {
         setFeedback('Failed to process audio. Please try again.');
         setFeedbackType('error');
-        setTimeout(() => {
+        const timeoutId = setTimeout(() => {
           setFeedback('');
           setIsProcessing(false);
         }, 3000);
+        lessonTimeoutsRef.current.add(timeoutId);
         return;
       }
 
@@ -2331,10 +2336,11 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
       if (!finalTranscript || finalTranscript.trim() === '') {
         setFeedback('I couldn\'t understand what you said. Please speak clearly and try again.');
         setFeedbackType('error');
-        setTimeout(() => {
+        const timeoutId = setTimeout(() => {
           setFeedback('');
           setIsProcessing(false);
         }, 3000);
+        lessonTimeoutsRef.current.add(timeoutId);
         return;
       }
 
@@ -2400,10 +2406,11 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
             
           setFeedback(`❌ Not quite right. The correct answer is: "${target}"${grammarFeedback}`);
           setFeedbackType('error');
-          setTimeout(() => {
+          const timeoutId = setTimeout(() => {
             setFeedback('');
             setIsProcessing(false);
           }, 3000);
+          lessonTimeoutsRef.current.add(timeoutId);
         }
       }
 
@@ -2481,13 +2488,14 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
       setFeedback('Reconnecting microphone...');
       setFeedbackType('info');
       await initializeRecorder(false);
-      
-      // Wait a moment for initialization
-      setTimeout(() => {
+
+      // Wait a moment for initialization - track timeout to prevent leak
+      const retryTimeoutId = setTimeout(() => {
         if (mediaRecorder && mediaRecorder.state === 'inactive') {
           startRecording();
         }
       }, 1000);
+      lessonTimeoutsRef.current.add(retryTimeoutId);
       return;
     }
     
@@ -2503,13 +2511,14 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
         
         // Store the start time for minimum duration check
         (mediaRecorder as any)._recordingStartTime = startTime;
-        
-        // Auto-stop after 10 seconds
-        setTimeout(() => {
+
+        // Auto-stop after 10 seconds - CRITICAL: Must track to prevent mic leak
+        const autoStopTimeoutId = setTimeout(() => {
           if (mediaRecorder.state === 'recording') {
             stopRecording();
           }
         }, 10000);
+        lessonTimeoutsRef.current.add(autoStopTimeoutId);
         
       } catch (error: any) {
         setIsRecording(false);
@@ -2526,12 +2535,13 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
         
         setFeedback(errorMessage);
         setFeedbackType('error');
-        
-        // Auto-retry after 2 seconds
-        setTimeout(() => {
+
+        // Auto-retry after 2 seconds - track timeout to prevent leak
+        const autoRetryTimeoutId = setTimeout(() => {
           setFeedback('');
           initializeRecorder(true);
         }, 2000);
+        lessonTimeoutsRef.current.add(autoRetryTimeoutId);
       }
     } else {
       setFeedback('Microphone not ready. Trying to reconnect...');
