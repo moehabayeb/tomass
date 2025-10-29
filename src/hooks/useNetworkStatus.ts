@@ -50,7 +50,7 @@ export function useNetworkStatus() {
     if (typeof window === 'undefined') return;
 
     const handleOnline = async () => {
-      console.log('🌐 Network: Online event detected');
+      // Apple Store Compliance: Silent operation
 
       // Verify actual connectivity (sometimes online event is unreliable)
       const isActuallyOnline = await testConnectivity();
@@ -63,14 +63,14 @@ export function useNetworkStatus() {
       }));
 
       if (isActuallyOnline) {
-        console.log('✅ Network: Connectivity confirmed');
+        // Apple Store Compliance: Silent operation
         // Dispatch custom event for other components to listen
         window.dispatchEvent(new CustomEvent('network-online'));
       }
     };
 
     const handleOffline = () => {
-      console.log('📡 Network: Offline event detected');
+      // Apple Store Compliance: Silent operation
       setNetworkStatus(prev => ({
         ...prev,
         isOnline: false,
@@ -199,7 +199,7 @@ export function useSyncStatus() {
   useEffect(() => {
     const handleNetworkOnline = () => {
       if (!isSyncing) {
-        console.log('🔄 Network back online - triggering sync');
+        // Apple Store Compliance: Silent operation
         window.dispatchEvent(new CustomEvent('trigger-sync'));
       }
     };
@@ -218,11 +218,7 @@ export function useSyncStatus() {
     setLastSyncAt(Date.now());
     setSyncError(error || null);
 
-    if (success) {
-      console.log('✅ Sync completed successfully');
-    } else {
-      console.error('❌ Sync failed:', error);
-    }
+    // Apple Store Compliance: Silent operation
   }, []);
 
   const getSyncStatus = useCallback(() => {

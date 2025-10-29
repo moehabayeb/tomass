@@ -40,7 +40,7 @@ const safeLocalStorage = {
     try {
       return localStorage.getItem(key);
     } catch (error) {
-      console.error(`[Badge System] Error reading ${key}:`, error);
+      // Apple Store Compliance: Silent operation
       return null;
     }
   },
@@ -51,18 +51,18 @@ const safeLocalStorage = {
     } catch (error) {
       // 🔧 FIX BUG #4: Handle quota exceeded
       if (error instanceof DOMException && error.name === 'QuotaExceededError') {
-        console.warn('[Badge System] localStorage quota exceeded, clearing old data');
+        // Apple Store Compliance: Silent operation - quota exceeded, clearing old data
         // Try to free up space by removing old notification data
         try {
           localStorage.removeItem('meeting_notifications_shown');
           localStorage.setItem(key, value);
           return true;
         } catch (retryError) {
-          console.error('[Badge System] Failed to save after cleanup:', retryError);
+          // Apple Store Compliance: Silent operation
           return false;
         }
       }
-      console.error(`[Badge System] Error saving ${key}:`, error);
+      // Apple Store Compliance: Silent operation
       return false;
     }
   },
@@ -70,7 +70,7 @@ const safeLocalStorage = {
     try {
       localStorage.removeItem(key);
     } catch (error) {
-      console.error(`[Badge System] Error removing ${key}:`, error);
+      // Apple Store Compliance: Silent operation
     }
   }
 };
@@ -200,7 +200,7 @@ export const useBadgeSystem = () => {
           return;
         }
       } catch (error) {
-        console.error('[Badge System] Error parsing saved badges, using defaults:', error);
+        // Apple Store Compliance: Silent operation
       }
     }
 
@@ -254,7 +254,7 @@ export const useBadgeSystem = () => {
 
         setBadgeProgress(validatedProgress);
       } catch (error) {
-        console.error('[Badge System] Error parsing badge progress:', error);
+        // Apple Store Compliance: Silent operation
       }
     }
   }, []);

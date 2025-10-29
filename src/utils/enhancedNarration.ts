@@ -105,7 +105,7 @@ export class EnhancedNarrationController {
         this.startSpeaking();
       }
     } catch (error) {
-      console.error('Enhanced narration speak error:', error);
+      // Apple Store Compliance: Silent operation
       this.onError?.(error as Error);
     }
   }
@@ -148,7 +148,7 @@ export class EnhancedNarrationController {
       };
 
       this.currentUtterance.onerror = (event: any) => {
-        console.warn('Speech synthesis error:', event.error);
+        // Apple Store Compliance: Silent operation
         this.onError?.(new Error(`Speech synthesis error: ${event.error}`));
         this.moveToNextSegment();
       };
@@ -158,7 +158,7 @@ export class EnhancedNarrationController {
       this.notifyStateChange();
 
     } catch (error) {
-      console.error('Failed to start speaking:', error);
+      // Apple Store Compliance: Silent operation
       this.onError?.(error as Error);
       this.isPlaying = false;
       this.notifyStateChange();
@@ -194,7 +194,7 @@ export class EnhancedNarrationController {
       this.notifyStateChange();
       return true;
     } catch (error) {
-      console.warn('Failed to pause speech:', error);
+      // Apple Store Compliance: Silent operation
       return false;
     }
   }
@@ -210,7 +210,7 @@ export class EnhancedNarrationController {
       this.notifyStateChange();
       return true;
     } catch (error) {
-      console.warn('Failed to resume speech:', error);
+      // Apple Store Compliance: Silent operation
       return false;
     }
   }
@@ -222,7 +222,7 @@ export class EnhancedNarrationController {
         this.synth.cancel();
       }
     } catch (error) {
-      console.warn('Speech cancellation error:', error);
+      // Apple Store Compliance: Silent operation
     }
 
     this.currentUtterance = null;

@@ -60,13 +60,13 @@ class SpeakingTestService {
       const { data, error } = await supabase.rpc('get_test_prompts');
 
       if (error) {
-        console.error('Error fetching test prompts:', error);
+        // Apple Store Compliance: Silent operation
         throw new Error('Failed to fetch test prompts');
       }
 
       return data || [];
     } catch (error) {
-      console.error('Error in getTestPrompts:', error);
+      // Apple Store Compliance: Silent operation
       // Return fallback prompts if database fails
       return this.getFallbackPrompts();
     }
@@ -93,13 +93,13 @@ class SpeakingTestService {
       });
 
       if (error) {
-        console.error('Error saving test result:', error);
+        // Apple Store Compliance: Silent operation
         throw new Error('Failed to save test result');
       }
 
       return data;
     } catch (error) {
-      console.error('Error in saveTestResult:', error);
+      // Apple Store Compliance: Silent operation
       throw error;
     }
   }
@@ -111,7 +111,7 @@ class SpeakingTestService {
       });
 
       if (error) {
-        console.error('Error fetching test history:', error);
+        // Apple Store Compliance: Silent operation
         throw new Error('Failed to fetch test history');
       }
 
@@ -125,7 +125,7 @@ class SpeakingTestService {
         improvement
       };
     } catch (error) {
-      console.error('Error in getUserTestHistory:', error);
+      // Apple Store Compliance: Silent operation
       return {
         results: [],
         averageScores: {
@@ -155,13 +155,13 @@ class SpeakingTestService {
       });
 
       if (error) {
-        console.error('Error checking vocabulary level:', error);
+        // Apple Store Compliance: Silent operation
         throw new Error('Failed to check vocabulary level');
       }
 
       return data;
     } catch (error) {
-      console.error('Error in checkVocabularyLevel:', error);
+      // Apple Store Compliance: Silent operation
       // Return fallback analysis
       return {
         total_words: words.length,

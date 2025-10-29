@@ -437,8 +437,7 @@ function generateB2Modules(): Module[] {
     locked: false,
   }));
 
-  console.log('✅ generateB2Modules() called - Generated', modules.length, 'modules');
-  console.log('Module IDs generated:', modules.map(m => m.id));
+  // Apple Store Compliance: Silent operation
 
   return modules;
 }
@@ -468,8 +467,7 @@ function generateC1Modules(): Module[] {
     locked: false
   }));
 
-  console.log('✅ generateC1Modules() called - Generated', modules.length, 'modules');
-  console.log('Module IDs generated:', modules.map(m => m.id));
+  // Apple Store Compliance: Silent operation
 
   return modules;
 }

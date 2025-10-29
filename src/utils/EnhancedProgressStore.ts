@@ -63,7 +63,7 @@ export class EnhancedProgressStore {
     try {
       localStorage.setItem(STORAGE_KEYS.config, JSON.stringify(this.config));
     } catch (error) {
-      console.warn('Failed to save config:', error);
+      // Apple Store Compliance: Silent operation
     }
   }
 
@@ -79,7 +79,7 @@ export class EnhancedProgressStore {
         return JSON.parse(stored);
       }
     } catch (error) {
-      console.warn('Failed to load user profile:', error);
+      // Apple Store Compliance: Silent operation
     }
 
     // Return default profile
@@ -122,7 +122,7 @@ export class EnhancedProgressStore {
       profile.lastUpdated = Date.now();
       localStorage.setItem(STORAGE_KEYS.userProfile(profile.userId), JSON.stringify(profile));
     } catch (error) {
-      console.warn('Failed to save user profile:', error);
+      // Apple Store Compliance: Silent operation
     }
   }
 
@@ -131,14 +131,14 @@ export class EnhancedProgressStore {
     try {
       const attempts = this.getQuestionAttempts(attempt.moduleId, attempt.levelId);
       attempts.push(attempt);
-      
+
       const key = STORAGE_KEYS.questionAttempts(attempt.moduleId + '_' + attempt.levelId);
       localStorage.setItem(key, JSON.stringify(attempts));
 
       // Update user profile
       this.updateProfileAfterAttempt(attempt);
     } catch (error) {
-      console.warn('Failed to record question attempt:', error);
+      // Apple Store Compliance: Silent operation
     }
   }
 
@@ -278,7 +278,7 @@ export class EnhancedProgressStore {
       sessions.push(session);
       localStorage.setItem(STORAGE_KEYS.learningSessions(userId), JSON.stringify(sessions));
     } catch (error) {
-      console.warn('Failed to start learning session:', error);
+      // Apple Store Compliance: Silent operation
     }
 
     return sessionId;
@@ -307,7 +307,7 @@ export class EnhancedProgressStore {
         localStorage.setItem(STORAGE_KEYS.learningSessions(userId), JSON.stringify(sessions));
       }
     } catch (error) {
-      console.warn('Failed to end learning session:', error);
+      // Apple Store Compliance: Silent operation
     }
   }
 
@@ -330,10 +330,10 @@ export class EnhancedProgressStore {
       if (snapshots.length > 100) {
         snapshots.splice(0, snapshots.length - 100);
       }
-      
+
       localStorage.setItem(STORAGE_KEYS.snapshots(userId), JSON.stringify(snapshots));
     } catch (error) {
-      console.warn('Failed to save progress snapshot:', error);
+      // Apple Store Compliance: Silent operation
     }
   }
 
@@ -443,10 +443,10 @@ export class EnhancedProgressStore {
       if (data.snapshots) {
         localStorage.setItem(STORAGE_KEYS.snapshots(userId), JSON.stringify(data.snapshots));
       }
-      
+
       return true;
     } catch (error) {
-      console.warn('Failed to import user data:', error);
+      // Apple Store Compliance: Silent operation
       return false;
     }
   }
@@ -467,7 +467,7 @@ export class EnhancedProgressStore {
         }
       });
     } catch (error) {
-      console.warn('Failed to clear user data:', error);
+      // Apple Store Compliance: Silent operation
     }
   }
 }

@@ -71,10 +71,10 @@ export class VoiceCommandService implements IVoiceCommandService {
 
       this.isInitialized = true;
       this.setState('idle');
-      
+
       return true;
     } catch (error) {
-      console.error('Voice command service initialization failed:', error);
+      // Apple Store Compliance: Silent operation
       this.setState('error');
       return false;
     }
@@ -111,21 +111,15 @@ export class VoiceCommandService implements IVoiceCommandService {
 
     this.recognition.onnomatch = () => {
       // No match found - continue listening in continuous mode
-      if (this.config.debugMode) {
-        console.log('[VoiceCommand] No match found');
-      }
+      // Apple Store Compliance: Silent operation
     };
 
     this.recognition.onsoundstart = () => {
-      if (this.config.debugMode) {
-        console.log('[VoiceCommand] Sound detected');
-      }
+      // Apple Store Compliance: Silent operation
     };
 
     this.recognition.onspeechend = () => {
-      if (this.config.debugMode) {
-        console.log('[VoiceCommand] Speech ended');
-      }
+      // Apple Store Compliance: Silent operation
     };
   }
 
@@ -138,9 +132,7 @@ export class VoiceCommandService implements IVoiceCommandService {
     const transcript = latestResult[0].transcript.toLowerCase().trim();
     const confidence = latestResult[0].confidence || 0;
 
-    if (this.config.debugMode) {
-      console.log(`[VoiceCommand] Heard: "${transcript}" (confidence: ${confidence})`);
-    }
+    // Apple Store Compliance: Silent operation
 
     // Add to command buffer for processing
     this.commandBuffer.push(transcript);
@@ -172,8 +164,8 @@ export class VoiceCommandService implements IVoiceCommandService {
     
     if (command) {
       this.executeDetectedCommand(command);
-    } else if (this.config.debugMode) {
-      console.log(`[VoiceCommand] No command detected in: "${fullTranscript}"`);
+    } else {
+      // Apple Store Compliance: Silent operation
     }
 
     this.setState(this.continuousMode ? 'listening' : 'idle');
@@ -353,8 +345,8 @@ export class VoiceCommandService implements IVoiceCommandService {
   }
 
   private handleRecognitionError(event: any): void {
-    console.warn('Voice recognition error:', event.error);
-    
+    // Apple Store Compliance: Silent operation
+
     trackRecognitionError(
       this.sessionId,
       event.error,
@@ -404,7 +396,7 @@ export class VoiceCommandService implements IVoiceCommandService {
     try {
       this.recognition.start();
     } catch (error) {
-      console.warn('Failed to start recognition:', error);
+      // Apple Store Compliance: Silent operation
       // Recognition might already be running, ignore this error
     }
   }
@@ -416,7 +408,7 @@ export class VoiceCommandService implements IVoiceCommandService {
       try {
         this.recognition.stop();
       } catch (error) {
-        console.warn('Failed to stop recognition:', error);
+        // Apple Store Compliance: Silent operation
       }
     }
 

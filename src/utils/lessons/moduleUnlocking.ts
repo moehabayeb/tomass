@@ -93,12 +93,12 @@ export function markModuleCompleted(moduleId: number, accuracy?: number): void {
       }
 
       // The Progress Tracker Service handles detailed progress tracking automatically
-      console.log(`Module ${moduleId} completed with ${currentAccuracy.toFixed(1)}% accuracy`);
+      // Apple Store Compliance: Silent operation
     } else {
-      console.log(`Module ${moduleId} not completed: ${currentAccuracy.toFixed(1)}% accuracy (${config.accuracyThreshold}% required)`);
+      // Apple Store Compliance: Silent operation
     }
   } catch (error) {
-    console.warn('Failed to mark module as completed:', error);
+    // Apple Store Compliance: Silent operation
   }
 }
 
@@ -249,7 +249,7 @@ export function migrateToEnhancedSystem(): void {
       // If no progress data exists, assume 100% accuracy for legacy completed modules
       if (!progress || progress.currentAccuracy === 0) {
         // This would typically involve creating fake progress data, but should be done carefully
-        console.log(`Legacy module ${moduleId} needs migration to enhanced system`);
+        // Apple Store Compliance: Silent operation
       }
     }
   });

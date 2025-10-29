@@ -25,7 +25,7 @@ class AudioManager {
 
       return this.context;
     } catch (error) {
-      console.warn('AudioContext creation failed:', error);
+      // Apple Store Compliance: Silent operation
       this.isSupported = false;
       return null;
     }
@@ -53,7 +53,7 @@ class AudioManager {
       oscillator.start(ctx.currentTime);
       oscillator.stop(ctx.currentTime + 0.3);
     } catch (error) {
-      console.warn('Failed to play success sound:', error);
+      // Apple Store Compliance: Silent operation
     }
   }
 
@@ -78,7 +78,7 @@ class AudioManager {
       oscillator.start(ctx.currentTime);
       oscillator.stop(ctx.currentTime + 0.3);
     } catch (error) {
-      console.warn('Failed to play failure sound:', error);
+      // Apple Store Compliance: Silent operation
     }
   }
 
@@ -100,7 +100,7 @@ class AudioManager {
       oscillator.start(ctx.currentTime);
       oscillator.stop(ctx.currentTime + 0.1);
     } catch (error) {
-      console.warn('Failed to play click sound:', error);
+      // Apple Store Compliance: Silent operation
     }
   }
 
@@ -109,7 +109,7 @@ class AudioManager {
       try {
         this.context.close();
       } catch (error) {
-        console.warn('Failed to close AudioContext:', error);
+        // Apple Store Compliance: Silent operation
       }
       this.context = null;
     }
