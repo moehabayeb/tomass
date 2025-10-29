@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { CheckCircle, XCircle } from 'lucide-react';
@@ -21,6 +21,7 @@ export default function MultipleChoiceCard({
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Reset state when question changes
   useEffect(() => {
@@ -29,18 +30,29 @@ export default function MultipleChoiceCard({
     setIsCorrect(false);
   }, [questionIndex, cloze]);
 
+  // Cleanup timeout on unmount or question change
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+    };
+  }, [questionIndex]);
+
   const handleOptionClick = (optionIndex: number) => {
     if (showFeedback) return; // Prevent clicking after answering
 
     setSelectedOption(optionIndex);
-    const correct = optionIndex === correct;
-    setIsCorrect(correct);
+    const isAnswerCorrect = optionIndex === correct; // Fixed: Use different variable name to avoid shadowing
+    setIsCorrect(isAnswerCorrect);
     setShowFeedback(true);
 
-    if (correct) {
-      // Auto-advance after showing success feedback
-      setTimeout(() => {
+    if (isAnswerCorrect) {
+      // Auto-advance after showing success feedback with proper cleanup
+      timeoutRef.current = setTimeout(() => {
         onCorrect();
+        timeoutRef.current = null;
       }, 1500);
     }
   };

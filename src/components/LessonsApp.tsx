@@ -2726,6 +2726,7 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
                       setCorrectAnswers(0);
                       setAttempts(0);
                       setFeedback('');
+                      setQuestionStates({}); // Clear MCQ state when switching modules
                     }
                   }}
                 >
