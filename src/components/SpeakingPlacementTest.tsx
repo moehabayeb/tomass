@@ -233,6 +233,10 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
   // 🔧 FIX BUG #2: Track if VAD cleanup is in progress to prevent race condition
   const isCleaningUpVADRef = useRef<boolean>(false);
 
+  // 🔧 FIX BUG #2 (NEW): Track auto-advance timeouts to prevent memory leaks
+  const autoAdvanceTimeoutRef = useRef<number | null>(null);
+  const autoAdvanceDelayRef = useRef<number | null>(null);
+
   const [pauseStatus, setPauseStatus] = useState<string>('');
 
   function newRunId() {
@@ -244,8 +248,18 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
   }
   
   function clearAllTimers() {
-    if (ttsTimerRef.current) clearTimeout(ttsTimerRef.current); 
+    if (ttsTimerRef.current) clearTimeout(ttsTimerRef.current);
     ttsTimerRef.current = undefined;
+
+    // 🔧 FIX BUG #2 (NEW): Clear auto-advance timeouts
+    if (autoAdvanceTimeoutRef.current) {
+      clearTimeout(autoAdvanceTimeoutRef.current);
+      autoAdvanceTimeoutRef.current = null;
+    }
+    if (autoAdvanceDelayRef.current) {
+      clearTimeout(autoAdvanceDelayRef.current);
+      autoAdvanceDelayRef.current = null;
+    }
   }
   
   const PROMPTS = useMemo(() => [
@@ -722,7 +736,9 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     };
     
     const handlePageHide = () => {
-      if (debug) 
+      if (debug) {
+        // Page hide event - strict session reset
+      }
       hardResetSession();
     };
     
@@ -1170,13 +1186,20 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
             }
 
             // Save the answer and proceed
-            setTimeout(() => {
+            // 🔧 FIX BUG #2 (NEW): Track timeout to prevent memory leak
+            autoAdvanceTimeoutRef.current = window.setTimeout(() => {
+              // 🔧 FIX BUG #5: Check if component is still mounted
+              if (!isMountedRef.current) return;
+
               saveAnswer(qIndex, finalTranscript, durationSec);
               updateMicState('done');
               setStatusMessage('');
-              
+
               // Auto advance after a brief delay
-              setTimeout(() => {
+              // 🔧 FIX BUG #2 (NEW): Track timeout to prevent memory leak
+              autoAdvanceDelayRef.current = window.setTimeout(() => {
+                // 🔧 FIX BUG #5: Check if component is still mounted
+                if (!isMountedRef.current) return;
                 handleContinue();
               }, 800);
             }, 500);
@@ -1293,6 +1316,17 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
       setTimeout(() => {
         // 🔧 FIX BUG #5: Check if component is still mounted before retry
         if (!isMountedRef.current) return;
+
+        // 🔧 FIX BUG #3 (NEW): Check VAD cleanup state to prevent race condition
+        if (isCleaningUpVADRef.current) {
+          // VAD cleanup in progress - retry after cleanup completes
+          setTimeout(() => {
+            if (!isMountedRef.current) return;
+            startRecording();
+          }, 200);
+          return;
+        }
+
         startRecording();
       }, 500);
     } else {
@@ -1348,6 +1382,8 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
           setTimeout(() => {
             // 🔧 FIX BUG #5: Check if component is still mounted
             if (!isMountedRef.current) return;
+            // 🔧 FIX BUG #3 (NEW): Check VAD cleanup state before retry
+            if (isCleaningUpVADRef.current) return;
             logger.info('Auto-retrying after network error...');
             retryCountRef.current++;
             onMicPress();
@@ -1360,6 +1396,8 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
           setTimeout(() => {
             // 🔧 FIX BUG #5: Check if component is still mounted
             if (!isMountedRef.current) return;
+            // 🔧 FIX BUG #3 (NEW): Check VAD cleanup state before retry
+            if (isCleaningUpVADRef.current) return;
             logger.info('Auto-retrying after audio capture error...');
             retryCountRef.current++;
             onMicPress();
@@ -1381,6 +1419,8 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
           setTimeout(() => {
             // 🔧 FIX BUG #5: Check if component is still mounted
             if (!isMountedRef.current) return;
+            // 🔧 FIX BUG #3 (NEW): Check VAD cleanup state before retry
+            if (isCleaningUpVADRef.current) return;
             logger.info('Auto-retrying after unknown error...');
             retryCountRef.current++;
             onMicPress();
