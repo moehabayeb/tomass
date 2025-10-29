@@ -33,6 +33,9 @@ class LessonProgressService {
   private debounceTimers: Map<string, NodeJS.Timeout> = new Map();
   private isOnline: boolean = navigator.onLine;
   private syncPromise: Promise<void> | null = null;
+  private periodicSyncInterval: NodeJS.Timeout | null = null;
+  private onlineHandler: (() => void) | null = null;
+  private offlineHandler: (() => void) | null = null;
 
   constructor(config: Partial<LessonProgressServiceConfig> = {}) {
     this.config = {
@@ -90,7 +93,7 @@ class LessonProgressService {
       // Fallback to local progress
       return await this.loadLocalProgress(level, moduleId);
     } catch (error) {
-      console.error('❌ Failed to load progress:', error);
+      // Apple Store Compliance: Silent fail
       return await this.loadLocalProgress(level, moduleId);
     }
   }
@@ -111,7 +114,7 @@ class LessonProgressService {
    * Merge local progress with server on login
    */
   async mergeProgressOnLogin(userId: string): Promise<ProgressSyncResult> {
-    console.log('🔄 Merging local progress with server for user:', userId);
+    // Apple Store Compliance: Silent fail
 
     const result: ProgressSyncResult = {
       success: true,
@@ -123,7 +126,7 @@ class LessonProgressService {
     try {
       // 1. Get all local checkpoints (IndexedDB + localStorage + ProgressStore)
       const localCheckpoints = await this.getAllLocalCheckpoints();
-      console.log(`📱 Found ${localCheckpoints.length} local checkpoints`);
+      // Apple Store Compliance: Silent fail
 
       // 2. For each local checkpoint, check if server has newer data
       for (const localCP of localCheckpoints) {
@@ -134,7 +137,7 @@ class LessonProgressService {
             // No server data - upload local
             await this.saveToServer({ ...localCP, user_id: userId });
             result.synced++;
-            console.log(`⬆️ Uploaded local progress: ${localCP.level}-${localCP.module_id}`);
+            // Apple Store Compliance: Silent fail
           } else {
             // Compare timestamps - newer wins
             const localTime = localCP.timestamp || 0;
@@ -144,9 +147,9 @@ class LessonProgressService {
               // Local is newer - upload to server
               await this.saveToServer({ ...localCP, user_id: userId });
               result.synced++;
-              console.log(`🔄 Local newer, uploaded: ${localCP.level}-${localCP.module_id}`);
+              // Apple Store Compliance: Silent fail
             } else {
-              console.log(`⬇️ Server newer, keeping server data: ${localCP.level}-${localCP.module_id}`);
+              // Apple Store Compliance: Silent fail
             }
           }
 
@@ -155,16 +158,16 @@ class LessonProgressService {
         } catch (error) {
           result.failed++;
           result.errors.push(`Failed to merge ${localCP.level}-${localCP.module_id}: ${error}`);
-          console.error('❌ Failed to merge checkpoint:', error);
+          // Apple Store Compliance: Silent fail
         }
       }
 
       result.success = result.failed === 0;
-      console.log(`✅ Merge complete: ${result.synced} synced, ${result.failed} failed`);
+      // Apple Store Compliance: Silent fail
 
       return result;
     } catch (error) {
-      console.error('❌ Merge failed:', error);
+      // Apple Store Compliance: Silent fail
       return {
         success: false,
         synced: 0,
@@ -180,14 +183,18 @@ class LessonProgressService {
   async clearAllProgress(): Promise<void> {
     await indexedDBStore.clearAll();
 
-    // Clear localStorage progress
-    Object.keys(localStorage).forEach(key => {
-      if (key.startsWith('ll_progress_') || key.startsWith('tomass_offline_')) {
-        localStorage.removeItem(key);
-      }
-    });
+    // Clear localStorage progress - Safari Private Mode safe
+    try {
+      Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('ll_progress_') || key.startsWith('tomass_offline_')) {
+          localStorage.removeItem(key);
+        }
+      });
+    } catch (error) {
+      // Apple Store Compliance: Silent fail
+    }
 
-    console.log('🧹 All progress cleared');
+    // Apple Store Compliance: Silent fail
   }
 
   /**
@@ -208,7 +215,7 @@ class LessonProgressService {
   // ===== PRIVATE METHODS =====
 
   private async saveCheckpointInternal(checkpoint: LessonCheckpoint): Promise<void> {
-    console.log(`💾 Saving checkpoint: ${checkpoint.level}-${checkpoint.module_id} Q${checkpoint.question_index} (${checkpoint.question_phase})`);
+    // Apple Store Compliance: Silent fail
 
     // Always save locally first for immediate persistence
     await this.saveLocalProgress(checkpoint);
@@ -217,9 +224,9 @@ class LessonProgressService {
     if (checkpoint.user_id && this.isOnline) {
       try {
         await this.saveToServer(checkpoint);
-        console.log(`☁️ Checkpoint synced to server: ${checkpoint.level}-${checkpoint.module_id}`);
+        // Apple Store Compliance: Silent fail
       } catch (error) {
-        console.error('❌ Failed to sync to server, queuing for retry:', error);
+        // Apple Store Compliance: Silent fail
 
         if (this.config.enableOfflineQueue) {
           await indexedDBStore.addCheckpoint(checkpoint);
@@ -228,7 +235,7 @@ class LessonProgressService {
     } else if (checkpoint.user_id && this.config.enableOfflineQueue) {
       // User authenticated but offline - queue for later
       await indexedDBStore.addCheckpoint(checkpoint);
-      console.log(`📦 Checkpoint queued for sync: ${checkpoint.level}-${checkpoint.module_id}`);
+      // Apple Store Compliance: Silent fail
     }
   }
 
@@ -254,7 +261,7 @@ class LessonProgressService {
       throw new Error(`Supabase error: ${error.message}`);
     }
 
-    console.log(`✅ Server save successful:`, data);
+    // Apple Store Compliance: Silent fail
   }
 
   private async loadServerProgress(userId: string, level: string, moduleId: number): Promise<LessonCheckpoint | null> {
@@ -374,7 +381,7 @@ class LessonProgressService {
 
     try {
       const checkpoints = await indexedDBStore.getCheckpointsForRetry();
-      console.log(`🔄 Syncing ${checkpoints.length} queued checkpoints`);
+      // Apple Store Compliance: Silent fail
 
       for (const checkpoint of checkpoints.slice(0, this.config.batchSize)) {
         try {
@@ -395,12 +402,12 @@ class LessonProgressService {
       }
 
       result.success = result.failed === 0;
-      console.log(`✅ Sync complete: ${result.synced} synced, ${result.failed} failed`);
+      // Apple Store Compliance: Silent fail
 
     } catch (error) {
       result.success = false;
       result.errors.push(`Sync failed: ${error}`);
-      console.error('❌ Sync failed:', error);
+      // Apple Store Compliance: Silent fail
     }
 
     this.setLastSyncTime(Date.now());
@@ -408,25 +415,29 @@ class LessonProgressService {
   }
 
   private setupNetworkListeners(): void {
-    window.addEventListener('online', () => {
+    // Store handlers for cleanup
+    this.onlineHandler = () => {
       this.isOnline = true;
-      console.log('🌐 Network online - triggering sync');
+      // Apple Store Compliance: Silent fail
       setTimeout(() => this.syncOfflineQueue(), 1000);
-    });
+    };
 
-    window.addEventListener('offline', () => {
+    this.offlineHandler = () => {
       this.isOnline = false;
-      console.log('📡 Network offline');
-    });
+      // Apple Store Compliance: Silent fail
+    };
+
+    window.addEventListener('online', this.onlineHandler);
+    window.addEventListener('offline', this.offlineHandler);
   }
 
   private startPeriodicSync(): void {
     // Sync every 5 minutes when online
-    setInterval(() => {
+    this.periodicSyncInterval = setInterval(() => {
       if (this.isOnline) {
         this.syncOfflineQueue();
       }
-    }, 5 * 60 * 1000);
+    }, 5 * 60 * 1000) as unknown as NodeJS.Timeout;
   }
 
   private getCheckpointKey(checkpoint: LessonCheckpoint): string {
@@ -450,12 +461,46 @@ class LessonProgressService {
   }
 
   private getLastSyncTime(): number | null {
-    const time = localStorage.getItem('tomass_last_sync_time');
-    return time ? parseInt(time, 10) : null;
+    try {
+      const time = localStorage.getItem('tomass_last_sync_time');
+      return time ? parseInt(time, 10) : null;
+    } catch (error) {
+      // Apple Store Compliance: Silent fail - Safari Private Mode support
+      return null;
+    }
   }
 
   private setLastSyncTime(time: number): void {
-    localStorage.setItem('tomass_last_sync_time', time.toString());
+    try {
+      localStorage.setItem('tomass_last_sync_time', time.toString());
+    } catch (error) {
+      // Apple Store Compliance: Silent fail - Safari Private Mode support
+    }
+  }
+
+  /**
+   * Clean up resources and event listeners
+   */
+  public cleanup(): void {
+    // Clear all debounce timers
+    this.debounceTimers.forEach(timer => clearTimeout(timer));
+    this.debounceTimers.clear();
+
+    // Clear periodic sync interval
+    if (this.periodicSyncInterval) {
+      clearInterval(this.periodicSyncInterval);
+      this.periodicSyncInterval = null;
+    }
+
+    // Remove event listeners
+    if (this.onlineHandler) {
+      window.removeEventListener('online', this.onlineHandler);
+      this.onlineHandler = null;
+    }
+    if (this.offlineHandler) {
+      window.removeEventListener('offline', this.offlineHandler);
+      this.offlineHandler = null;
+    }
   }
 }
 

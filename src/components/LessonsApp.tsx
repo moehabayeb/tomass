@@ -36,6 +36,27 @@ import { useAuthReady } from '../hooks/useAuthReady';
 // Dynamic module loader with caching
 const moduleCache = new Map<number, any>();
 
+// Safe localStorage wrapper for Safari Private Mode compatibility
+function safeLocalStorage() {
+  try {
+    const test = '__localStorage_test__';
+    localStorage.setItem(test, test);
+    localStorage.removeItem(test);
+    return localStorage;
+  } catch {
+    // Safari Private Mode or localStorage disabled - return in-memory fallback
+    const memoryStorage: { [key: string]: string } = {};
+    return {
+      getItem: (key: string) => memoryStorage[key] || null,
+      setItem: (key: string, value: string) => { memoryStorage[key] = value; },
+      removeItem: (key: string) => { delete memoryStorage[key]; },
+      clear: () => { Object.keys(memoryStorage).forEach(k => delete memoryStorage[k]); }
+    };
+  }
+}
+
+const storage = safeLocalStorage();
+
 async function loadModuleData(moduleId: number): Promise<any> {
   // Check cache first
   if (moduleCache.has(moduleId)) {
@@ -945,6 +966,9 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
   const retryCountRef = useRef(0);
   const MAX_ASR_RETRIES = 3; // Maximum ASR retry attempts
 
+  // Timeout tracking for cleanup (Apple Store compliance)
+  const lessonTimeoutsRef = useRef<Set<NodeJS.Timeout>>(new Set());
+
   // ---- Voice Activity Detection for visual feedback ----
   const [vadVolume, setVadVolume] = useState(0);
   const [isSpeechDetected, setIsSpeechDetected] = useState(false);
@@ -1158,15 +1182,16 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
       });
 
       // Clear feedback after showing success message
-      setTimeout(() => {
+      const timeoutId1 = setTimeout(() => {
         setFeedback('');
       }, 2000);
+      lessonTimeoutsRef.current.add(timeoutId1);
     } else {
       setFeedback("❌ Incorrect. Try again!");
       setFeedbackType('error');
-      
+
       // Clear selection after a delay to allow retry
-      setTimeout(() => {
+      const timeoutId2 = setTimeout(() => {
         setQuestionStates(prev => ({
           ...prev,
           [speakingIndex]: {
@@ -1177,6 +1202,7 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
         }));
         setFeedback('');
       }, 1500);
+      lessonTimeoutsRef.current.add(timeoutId2);
     }
   }
 
@@ -1215,11 +1241,11 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
     setShowCelebration(true);
     
     // Show accuracy-based completion message
-    const completionMessage = accuracy >= config.accuracyThreshold 
+    const completionMessage = accuracy >= config.accuracyThreshold
       ? `🎉 Module completed with ${accuracy.toFixed(1)}% accuracy! Next module unlocked!`
       : `📚 Module finished with ${accuracy.toFixed(1)}% accuracy. You need ${config.accuracyThreshold}% to unlock the next module. Keep practicing!`;
-    
-    setTimeout(() => {
+
+    const timeoutId3 = setTimeout(() => {
       setShowCelebration(false);
       setFeedback(completionMessage);
       setFeedbackType(accuracy >= config.accuracyThreshold ? 'success' : 'warning');
@@ -1227,7 +1253,7 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
     // compute next module - only advance if accuracy requirement is met
     const nextId = getNextModuleId(selectedLevel as 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2', selectedModule);
       if (nextId && accuracy >= config.accuracyThreshold) {
-        setTimeout(() => {
+        const timeoutId4 = setTimeout(() => {
           narration.cancel();
           // reset local UI state
           setSpeakingIndex(0);
@@ -1235,16 +1261,19 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
           setSelectedModule(nextId);
           setFeedback('');
         }, 3000);
+        lessonTimeoutsRef.current.add(timeoutId4);
       } else if (nextId) {
         // Module exists but accuracy not met - stay on current module
-        setTimeout(() => {
+        const timeoutId5 = setTimeout(() => {
           setFeedback('Review the suggested topics and try again to improve your accuracy!');
           setFeedbackType('info');
         }, 3000);
+        lessonTimeoutsRef.current.add(timeoutId5);
       } else {
         // no next module: stay on completion screen or show a CTA to change level
       }
     }, 2000);
+    lessonTimeoutsRef.current.add(timeoutId3);
   }
   
   // --- Speaking evaluation helpers ---
@@ -1757,20 +1786,25 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
       }
       // Priority 3: localStorage (placed level from Speaking Test)
       else {
-        const storedLevel = localStorage.getItem('currentLevel');
-        const storedModule = localStorage.getItem('currentModule');
-        
-        if (storedLevel && storedModule) {
-          hydratedLevel = storedLevel;
-          hydratedModule = parseInt(storedModule);
-          hydratedQuestion = 0;
-          hydratedPhase = 'intro';
-          hydratedViewState = 'lesson';
-          source = 'storage';
-          
+        try {
+          const storedLevel = storage.getItem('currentLevel');
+          const storedModule = storage.getItem('currentModule');
+
+          if (storedLevel && storedModule) {
+            hydratedLevel = storedLevel;
+            hydratedModule = parseInt(storedModule);
+            hydratedQuestion = 0;
+            hydratedPhase = 'intro';
+            hydratedViewState = 'lesson';
+            source = 'storage';
+
+          }
+        } catch {
+          // Safari Private Mode - skip localStorage fallback
         }
+
         // Priority 4: Default fallback (A1/Module 1)
-        else {
+        if (!hydratedLevel) {
           hydratedLevel = 'A1';
           hydratedModule = 1;
           hydratedQuestion = 0;
@@ -1798,36 +1832,42 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
     }
     
     setIsHydrated(true);
-    
+
     // Show placement toast if this came from Speaking Test
-    const userPlacement = localStorage.getItem('userPlacement');
-    if (userPlacement && source === 'storage') {
-      try {
-        const placement = JSON.parse(userPlacement);
-        const placedLevel = placement.level;
-        const testTime = placement.at;
-        const now = Date.now();
-        
-        // Show toast if placement was recent (within last 5 minutes)
-        if (testTime && (now - testTime) < 300000) {
-          placementToastTimeoutRef.current = window.setTimeout(() => {
-            // Use toast import from hooks/use-toast
-            import('@/hooks/use-toast').then(({ toast }) => {
-              toast({
-                title: `Starting at ${placedLevel} based on your Speaking Test`,
-                description: `You've been placed in ${placedLevel} level. Good luck!`,
-                duration: 3000,
+    try {
+      const userPlacement = storage.getItem('userPlacement');
+      if (userPlacement && source === 'storage') {
+        try {
+          const placement = JSON.parse(userPlacement);
+          const placedLevel = placement.level;
+          const testTime = placement.at;
+          const now = Date.now();
+
+          // Show toast if placement was recent (within last 5 minutes)
+          if (testTime && (now - testTime) < 300000) {
+            const timeoutId = window.setTimeout(() => {
+              // Use toast import from hooks/use-toast
+              import('@/hooks/use-toast').then(({ toast }) => {
+                toast({
+                  title: `Starting at ${placedLevel} based on your Speaking Test`,
+                  description: `You've been placed in ${placedLevel} level. Good luck!`,
+                  duration: 3000,
+                });
+              }).catch(error => {
+                // Fallback notification failed - silent fail
+                // User already has visual progress state
               });
-            }).catch(error => {
-              // Fallback notification failed - silent fail
-              // User already has visual progress state
-            });
-          }, 500);
+            }, 500);
+            placementToastTimeoutRef.current = timeoutId;
+            lessonTimeoutsRef.current.add(timeoutId);
+          }
+        } catch (e) {
+          // Progress restoration error - silent fail
+          // User starts fresh from beginning
         }
-      } catch (e) {
-        // Progress restoration error - silent fail
-        // User starts fresh from beginning
       }
+    } catch {
+      // Safari Private Mode - skip localStorage
     }
 
     return () => {
@@ -1901,14 +1941,18 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
     if (!newCompletedModules.includes(moduleKey)) {
       newCompletedModules.push(moduleKey);
       setCompletedModules(newCompletedModules);
-      localStorage.setItem('completedModules', JSON.stringify(newCompletedModules));
+      try {
+        storage.setItem('completedModules', JSON.stringify(newCompletedModules));
+      } catch {
+        // Safari Private Mode - skip localStorage persistence
+      }
     }
 
     narration.cancel();
     narration.speak(`Congratulations! You have completed Module ${selectedModule}. Well done!`);
 
     const nextModule = getNextModuleId(selectedLevel as 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2', selectedModule);
-    window.setTimeout(() => {
+    const timeoutId = window.setTimeout(() => {
       setShowConfetti(false);
 
       if (nextModule != null) {
@@ -1928,6 +1972,7 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
         setViewState('modules');
       }
     }, 1600);
+    lessonTimeoutsRef.current.add(timeoutId);
   }
 
   // Enhanced progress update every correct answer (Module 51 standard)
@@ -1990,6 +2035,7 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
 
   // Audio recording setup
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
+  const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
   const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
   const [microphoneError, setMicrophoneError] = useState<string | null>(null);
   const [retryAttempts, setRetryAttempts] = useState(0);
@@ -2023,9 +2069,10 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
       };
       
       const stream = await navigator.mediaDevices.getUserMedia(audioConstraints);
-      
+      setMediaStream(stream);
+
       // Stream info: streamId=${stream.id}, audioTracks=${stream.getAudioTracks().length}, trackSettings=${JSON.stringify(stream.getAudioTracks()[0]?.getSettings())}
-      
+
       // Check MediaRecorder support with fallback mimeTypes
       let mimeType = 'audio/webm;codecs=opus';
       const supportedTypes = [
@@ -2034,13 +2081,13 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
         'audio/mp4',
         'audio/wav'
       ];
-      
+
       const supportedType = supportedTypes.find(type => MediaRecorder.isTypeSupported(type));
       if (supportedType) {
         mimeType = supportedType;
       } else {
       }
-      
+
       const recorder = new MediaRecorder(stream, { mimeType });
       
       let currentAudioChunks: Blob[] = [];
@@ -2147,14 +2194,36 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
   useEffect(() => {
     // Initialize media recorder when component mounts
     initializeRecorder();
-    
+
     // Cleanup function
     return () => {
+      // Stop MediaRecorder
       if (mediaRecorder && mediaRecorder.state !== 'inactive') {
         mediaRecorder.stop();
       }
+
+      // Close MediaStream tracks to release microphone
+      if (mediaStream) {
+        mediaStream.getTracks().forEach(track => {
+          try {
+            track.stop();
+          } catch (e) {
+            // Ignore cleanup errors
+          }
+        });
+      }
+
+      // Clear all tracked timeouts
+      lessonTimeoutsRef.current.forEach(timeoutId => {
+        try {
+          clearTimeout(timeoutId);
+        } catch (e) {
+          // Ignore cleanup errors
+        }
+      });
+      lessonTimeoutsRef.current.clear();
     };
-  }, [initializeRecorder]);
+  }, [initializeRecorder, mediaRecorder, mediaStream]);
 
   // Start lesson with intro - but don't auto-advance, let user control
   useEffect(() => {
@@ -2702,7 +2771,11 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
                                  // Remove from completed modules
                                  const newCompleted = completedModules.filter(m => m !== `module-${module.id}`);
                                  setCompletedModules(newCompleted);
-                                 localStorage.setItem('completedModules', JSON.stringify(newCompleted));
+                                 try {
+                                   storage.setItem('completedModules', JSON.stringify(newCompleted));
+                                 } catch {
+                                   // Safari Private Mode - skip localStorage persistence
+                                 }
                                }}
                                title="Reset progress"
                              >

@@ -91,10 +91,14 @@ export function useLessonProgress(level?: string, moduleId?: number) {
   // Auto-sync on user login
   useEffect(() => {
     if (isAuthenticated && user?.id) {
-      const hasLocalProgress = localStorage.getItem('ll_progress_v1');
-      if (hasLocalProgress) {
-        // Offer to merge progress
-        mergeProgressOnLogin();
+      try {
+        const hasLocalProgress = localStorage.getItem('ll_progress_v1');
+        if (hasLocalProgress) {
+          // Offer to merge progress
+          mergeProgressOnLogin();
+        }
+      } catch (error) {
+        // Apple Store Compliance: Silent fail - Safari Private Mode support
       }
     }
   }, [isAuthenticated, user?.id]);
@@ -133,9 +137,9 @@ export function useLessonProgress(level?: string, moduleId?: number) {
       }
 
       lastCheckpointRef.current = fullCheckpoint;
-      console.log(`✅ Checkpoint saved: ${checkpoint.level}-${checkpoint.module_id} Q${checkpoint.question_index}`);
+      // Apple Store Compliance: Silent fail
     } catch (error) {
-      console.error('❌ Failed to save checkpoint:', error);
+      // Apple Store Compliance: Silent fail
       throw error;
     }
   }, [user?.id, level, moduleId]);
@@ -163,7 +167,7 @@ export function useLessonProgress(level?: string, moduleId?: number) {
 
       return progress;
     } catch (error) {
-      console.error('❌ Failed to load progress:', error);
+      // Apple Store Compliance: Silent fail
       setState(prev => ({
         ...prev,
         currentProgress: null,
@@ -181,7 +185,7 @@ export function useLessonProgress(level?: string, moduleId?: number) {
   const resumeProgress = useCallback(() => {
     setShowResumeDialog(false);
     // Progress is already loaded in state.currentProgress
-    console.log('📍 Resuming progress from checkpoint');
+    // Apple Store Compliance: Silent fail
   }, []);
 
   /**
@@ -200,7 +204,7 @@ export function useLessonProgress(level?: string, moduleId?: number) {
       is_module_completed: false
     });
 
-    console.log('🎯 Starting module from beginning');
+    // Apple Store Compliance: Silent fail
   }, [saveCheckpoint]);
 
   /**
@@ -235,7 +239,7 @@ export function useLessonProgress(level?: string, moduleId?: number) {
       hasProgress: false,
       canResume: false
     }));
-    console.log('🧹 All progress cleared');
+    // Apple Store Compliance: Silent fail
   }, []);
 
   /**

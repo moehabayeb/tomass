@@ -42,9 +42,9 @@ export function useLessonCheckpoints(level?: string, moduleId?: number) {
       });
 
       lastCheckpointRef.current = key;
-      console.log(`📍 Checkpoint: MCQ shown for Q${options.questionIndex + 1}`);
+      // Apple Store Compliance: Silent fail
     } catch (error) {
-      console.error('❌ Failed to save MCQ checkpoint:', error);
+      // Apple Store Compliance: Silent fail
     }
   }, [progress.saveCheckpoint]);
 
@@ -68,9 +68,9 @@ export function useLessonCheckpoints(level?: string, moduleId?: number) {
       });
 
       lastCheckpointRef.current = key;
-      console.log(`✅ Checkpoint: MCQ answered correctly for Q${options.questionIndex + 1}`);
+      // Apple Store Compliance: Silent fail
     } catch (error) {
-      console.error('❌ Failed to save MCQ correct checkpoint:', error);
+      // Apple Store Compliance: Silent fail
     }
   }, [progress.saveCheckpoint]);
 
@@ -94,9 +94,9 @@ export function useLessonCheckpoints(level?: string, moduleId?: number) {
       });
 
       lastCheckpointRef.current = key;
-      console.log(`🎤 Checkpoint: Speech started for Q${options.questionIndex + 1}`);
+      // Apple Store Compliance: Silent fail
     } catch (error) {
-      console.error('❌ Failed to save speech checkpoint:', error);
+      // Apple Store Compliance: Silent fail
     }
   }, [progress.saveCheckpoint]);
 
@@ -119,7 +119,7 @@ export function useLessonCheckpoints(level?: string, moduleId?: number) {
           is_module_completed: true
         });
 
-        console.log(`🎉 Checkpoint: Module ${options.moduleId} completed!`);
+        // Apple Store Compliance: Silent fail
       } else {
         // Advance to next question's MCQ phase
         await progress.saveCheckpoint({
@@ -131,13 +131,13 @@ export function useLessonCheckpoints(level?: string, moduleId?: number) {
           is_module_completed: false
         });
 
-        console.log(`➡️ Checkpoint: Advanced to Q${nextIndex + 1}`);
+        // Apple Store Compliance: Silent fail
       }
 
       // Reset checkpoint tracking for new question
       lastCheckpointRef.current = '';
     } catch (error) {
-      console.error('❌ Failed to save completion checkpoint:', error);
+      // Apple Store Compliance: Silent fail
     }
   }, [progress.saveCheckpoint]);
 
@@ -149,7 +149,7 @@ export function useLessonCheckpoints(level?: string, moduleId?: number) {
 
     const savedProgress = await progress.loadProgress(level, moduleId);
     if (savedProgress && !savedProgress.is_module_completed) {
-      console.log(`📍 Restored progress: ${level}-${moduleId} Q${savedProgress.question_index + 1} (${savedProgress.question_phase})`);
+      // Apple Store Compliance: Silent fail
     }
 
     return savedProgress;
@@ -197,7 +197,7 @@ export function useLessonCheckpoints(level?: string, moduleId?: number) {
       case 'question-complete':
         return checkpointQuestionComplete(options);
       default:
-        console.warn('Unknown checkpoint phase:', phase);
+        // Apple Store Compliance: Silent fail
     }
   }, [checkpointMCQShown, checkpointMCQCorrect, checkpointSpeechStarted, checkpointQuestionComplete]);
 

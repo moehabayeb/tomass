@@ -45,7 +45,7 @@ export class LessonAutoReader {
    */
   async readLessonContent(content: LessonContent): Promise<void> {
     if (this.isReading) {
-      console.log('⚠️ Already reading content, stopping previous session');
+      // Apple Store Compliance: Silent fail
       this.stop();
     }
 
@@ -53,7 +53,7 @@ export class LessonAutoReader {
     this.isPaused = false;
 
     try {
-      console.log('📚 Starting automatic lesson reading...');
+      // Apple Store Compliance: Silent fail
       await this.voiceManager.initialize();
 
       const sections = this.prepareLessonSections(content);
@@ -72,7 +72,7 @@ export class LessonAutoReader {
           currentText: section.text
         });
 
-        console.log(`🎤 Reading section: ${section.name}`);
+        // Apple Store Compliance: Silent fail
         await this.readSection(section);
 
         // Brief pause between sections
@@ -82,7 +82,7 @@ export class LessonAutoReader {
       }
 
       if (this.isReading) {
-        console.log('✅ Lesson reading completed successfully');
+        // Apple Store Compliance: Silent fail
         this.updateProgress({
           currentSection: 'Completed',
           progress: 100,
@@ -93,7 +93,7 @@ export class LessonAutoReader {
       }
 
     } catch (error) {
-      console.error('❌ Error during lesson reading:', error);
+      // Apple Store Compliance: Silent fail
     } finally {
       this.isReading = false;
     }
@@ -107,8 +107,8 @@ export class LessonAutoReader {
       if (!this.isReading || this.isPaused) break;
 
       try {
-        console.log(`🌐 Reading ${segment.language} text: "${segment.text.substring(0, 50)}..."`);
-        
+        // Apple Store Compliance: Silent fail
+
         if (segment.language === 'tr') {
           // Turkish content - use Turkish voice
           await this.speakWithLanguage(segment.text, 'tr');
@@ -123,7 +123,7 @@ export class LessonAutoReader {
         }
 
       } catch (error) {
-        console.error(`❌ Error reading segment in ${segment.language}:`, error);
+        // Apple Store Compliance: Silent fail
         // Continue with next segment instead of failing completely
       }
     }
@@ -140,7 +140,7 @@ export class LessonAutoReader {
         // Configure with forced language
         const success = this.voiceManager.configureUtterance(utterance, text, language);
         if (!success) {
-          console.warn(`⚠️ Failed to configure ${language} voice, using fallback`);
+          // Apple Store Compliance: Silent fail
         }
 
         utterance.onend = () => resolve();
@@ -251,7 +251,7 @@ export class LessonAutoReader {
       // Generic fallback
       return '';
     } catch (error) {
-      console.warn('⚠️ Error formatting table for speech:', error);
+      // Apple Store Compliance: Silent fail
       return '';
     }
   }
@@ -276,7 +276,7 @@ export class LessonAutoReader {
    * Stop reading
    */
   stop(): void {
-    console.log('🛑 Stopping lesson reading');
+    // Apple Store Compliance: Silent fail
     this.isReading = false;
     this.isPaused = false;
     speechSynthesis.cancel();
@@ -294,7 +294,7 @@ export class LessonAutoReader {
    * Pause reading
    */
   pauseReading(): void {
-    console.log('⏸️ Pausing lesson reading');
+    // Apple Store Compliance: Silent fail
     this.isPaused = true;
     speechSynthesis.pause();
   }
@@ -303,7 +303,7 @@ export class LessonAutoReader {
    * Resume reading
    */
   resumeReading(): void {
-    console.log('▶️ Resuming lesson reading');
+    // Apple Store Compliance: Silent fail
     this.isPaused = false;
     speechSynthesis.resume();
   }
@@ -360,9 +360,9 @@ export function testAutoReader() {
     ]
   };
 
-  console.log('🧪 Testing auto-reader with sample content...');
+  // Apple Store Compliance: Silent fail
   readLessonContentAuto(sampleContent, (progress) => {
-    console.log(`📊 Progress: ${progress.progress.toFixed(1)}% - ${progress.currentSection}`);
+    // Apple Store Compliance: Silent fail
   });
 }
 
