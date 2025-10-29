@@ -10,7 +10,8 @@ export const LevelUpModal = ({ level, onClose }: LevelUpModalProps) => {
     // Auto-dismiss after 4 seconds
     const timer = setTimeout(onClose, 4000);
     return () => clearTimeout(timer);
-  }, [onClose]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run once on mount - onClose callback is stable
 
   return (
     <div

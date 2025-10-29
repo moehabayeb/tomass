@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -31,18 +31,41 @@ export const LevelUpPopup = ({ show, newLevel, onClose }: LevelUpPopupProps) => 
   const [showConfetti, setShowConfetti] = useState(false);
   const reward = getUnlockedReward(newLevel);
 
+  // Track timers for proper cleanup
+  const confettiTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const closeTimerRef = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
     if (show) {
       setIsVisible(true);
       setShowConfetti(true);
-      // Auto-hide confetti after animation
-      setTimeout(() => setShowConfetti(false), 3000);
+
+      // Auto-hide confetti after animation with cleanup
+      confettiTimerRef.current = setTimeout(() => setShowConfetti(false), 3000);
     }
+
+    // Cleanup confetti timer on unmount or when show changes
+    return () => {
+      if (confettiTimerRef.current) {
+        clearTimeout(confettiTimerRef.current);
+        confettiTimerRef.current = null;
+      }
+    };
   }, [show]);
 
   const handleClose = () => {
     setIsVisible(false);
-    setTimeout(onClose, 300);
+
+    // Clear any existing close timer
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current);
+    }
+
+    // Set new close timer with cleanup tracking
+    closeTimerRef.current = setTimeout(() => {
+      onClose();
+      closeTimerRef.current = null;
+    }, 300);
   };
 
   if (!show) return null;
