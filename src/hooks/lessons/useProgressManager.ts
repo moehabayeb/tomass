@@ -59,7 +59,7 @@ export function useProgressManager() {
       }
       
     } catch (error) {
-      console.warn('Failed to save progress:', error);
+      // Apple Store Compliance: Silent fail - progress save is non-critical
     }
   }, [progressTracker]);
 
@@ -87,9 +87,9 @@ export function useProgressManager() {
         };
       }
     } catch (error) {
-      console.warn('Failed to load progress:', error);
+      // Apple Store Compliance: Silent fail - return default progress
     }
-    
+
     return { phase: 'intro', questionIndex: 0 };
   }, [progressTracker]);
 
