@@ -27,13 +27,56 @@ import { MeetingsWidget } from '@/components/meetings/MeetingsWidget';
 import { TestResult } from '@/services/speakingTestService';
 import { ErrorBoundary } from './ErrorBoundary';
 
+// Safe storage wrappers for Safari Private Mode compatibility
+const safeLocalStorage = {
+  getItem: (key: string): string | null => {
+    try {
+      return localStorage.getItem(key);
+    } catch {
+      return null;
+    }
+  },
+  setItem: (key: string, value: string): boolean => {
+    try {
+      localStorage.setItem(key, value);
+      return true;
+    } catch {
+      return false;
+    }
+  },
+  removeItem: (key: string): void => {
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      // Silent fail
+    }
+  }
+};
+
+const safeSessionStorage = {
+  getItem: (key: string): string | null => {
+    try {
+      return sessionStorage.getItem(key);
+    } catch {
+      return null;
+    }
+  },
+  setItem: (key: string, value: string): boolean => {
+    try {
+      sessionStorage.setItem(key, value);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+};
+
 type AppMode = 'speaking' | 'lessons' | 'bookmarks' | 'badges' | 'placement-test' | 'games' | 'meetings';
 
 export default function AppNavigation() {
   const [currentMode, setCurrentMode] = useState<AppMode>('speaking');
   const [continuedMessage, setContinuedMessage] = useState<string | undefined>();
   const [showStreakWelcome, setShowStreakWelcome] = useState(false);
-  const [, setHasCompletedPlacement] = useState(false);
   const [profile, setProfile] = useState<Tables<'profiles'> | null>(null);
   const { user, isAuthenticated } = useAuthReady();
   const { soundEnabled, toggleSound } = useGlobalSound();
@@ -43,20 +86,20 @@ export default function AppNavigation() {
 
   // Show streak welcome popup on first load
   useEffect(() => {
-    const hasShownToday = sessionStorage.getItem('streakWelcomeShown');
+    const hasShownToday = safeSessionStorage.getItem('streakWelcomeShown');
     if (!hasShownToday && streakData.currentStreak > 0) {
       const timer = setTimeout(() => {
         setShowStreakWelcome(true);
-        sessionStorage.setItem('streakWelcomeShown', 'true');
+        safeSessionStorage.setItem('streakWelcomeShown', 'true');
       }, 1000);
       return () => clearTimeout(timer);
     }
   }, [streakData.currentStreak]);
 
-  // const xpProgress = getXPProgress(); // Commented out - not currently used but may be needed for future features
-
   // Fetch user profile when authenticated
   useEffect(() => {
+    let isMounted = true;
+
     if (user && isAuthenticated) {
       const fetchProfile = async () => {
         try {
@@ -65,18 +108,21 @@ export default function AppNavigation() {
             .select('*')
             .eq('user_id', user.id)
             .single();
-          
-          if (!error && data) {
+
+          if (!error && data && isMounted) {
             setProfile(data);
           }
         } catch (error) {
-          // Error handling: Profile fetch failed - user will continue with limited functionality
-          console.warn('Failed to fetch user profile:', error);
+          // Apple Store Compliance: Silent fail - profile fetch is non-critical
         }
       };
 
       fetchProfile();
     }
+
+    return () => {
+      isMounted = false;
+    };
   }, [user, isAuthenticated]);
 
   // Clear continued message after it's used
@@ -91,19 +137,16 @@ export default function AppNavigation() {
   }, [currentMode, continuedMessage]);
 
   const handlePlacementComplete = (level: string, recommendedModule: number) => {
-    setHasCompletedPlacement(true);
     setCurrentMode('lessons');
-    // You could store the recommended starting point in localStorage or user profile
-    localStorage.setItem('recommendedStartLevel', level);
-    localStorage.setItem('recommendedStartModule', recommendedModule.toString());
+    safeLocalStorage.setItem('recommendedStartLevel', level);
+    safeLocalStorage.setItem('recommendedStartModule', recommendedModule.toString());
   };
 
   const handleTestComplete = (result: TestResult) => {
-    // Handle comprehensive test completion
-    console.log('English Proficiency Test completed with result:', result);
+    // Apple Store Compliance: Silent operation - no console logs
 
-    // Store the test result in localStorage for later reference
-    localStorage.setItem('lastTestResult', JSON.stringify({
+    // Store the test result safely
+    safeLocalStorage.setItem('lastTestResult', JSON.stringify({
       level: result.recommended_level,
       scores: {
         overall: result.overall_score,
@@ -116,22 +159,24 @@ export default function AppNavigation() {
       date: new Date().toISOString()
     }));
 
-    // Set up for lessons navigation (same as placement test completion)
-    setHasCompletedPlacement(true);
-    localStorage.setItem('recommendedStartLevel', result.recommended_level);
-    localStorage.setItem('userPlacement', JSON.stringify({
+    // Set up for lessons navigation
+    safeLocalStorage.setItem('recommendedStartLevel', result.recommended_level);
+    safeLocalStorage.setItem('userPlacement', JSON.stringify({
       level: result.recommended_level,
       scores: result,
       at: Date.now()
     }));
 
     // Enable access to the recommended level
-    const unlocks = JSON.parse(localStorage.getItem('unlocks') || '{}');
-    unlocks[result.recommended_level] = true;
-    localStorage.setItem('unlocks', JSON.stringify(unlocks));
-
-    // The test component will handle showing results and navigation to lessons
-    // Note: Navigation to lessons is handled by the onGoToLessons callback
+    const unlocksStr = safeLocalStorage.getItem('unlocks') || '{}';
+    try {
+      const unlocks = JSON.parse(unlocksStr);
+      unlocks[result.recommended_level] = true;
+      safeLocalStorage.setItem('unlocks', JSON.stringify(unlocks));
+    } catch {
+      // If parsing fails, create new object
+      safeLocalStorage.setItem('unlocks', JSON.stringify({ [result.recommended_level]: true }));
+    }
   };
 
   const handleGoToLessons = () => {
@@ -141,42 +186,46 @@ export default function AppNavigation() {
 
   // Get initial lesson parameters from test result
   const getInitialLessonParams = () => {
-    const testResult = localStorage.getItem('lastTestResult');
+    const testResult = safeLocalStorage.getItem('lastTestResult');
     if (testResult) {
-      const parsed = JSON.parse(testResult);
-      const level = parsed.level;
+      try {
+        const parsed = JSON.parse(testResult);
+        const level = parsed.level;
 
-      // Determine starting module based on level
-      let startingModule = 1;
-      switch (level) {
-        case 'A1':
-          startingModule = 1;
-          break;
-        case 'A2':
-          startingModule = 51;
-          break;
-        case 'B1':
-          startingModule = 101;
-          break;
-        case 'B2':
-          startingModule = 151;
-          break;
-        case 'C1':
-          startingModule = 1; // C1 not implemented yet, fallback to A1
-          break;
-        case 'C2':
-          startingModule = 1; // C2 not implemented yet, fallback to A1
-          break;
-        default:
-          startingModule = 1;
+        // Determine starting module based on level
+        let startingModule = 1;
+        switch (level) {
+          case 'A1':
+            startingModule = 1;
+            break;
+          case 'A2':
+            startingModule = 51;
+            break;
+          case 'B1':
+            startingModule = 101;
+            break;
+          case 'B2':
+            startingModule = 151;
+            break;
+          case 'C1':
+            startingModule = 1; // C1 not implemented yet, fallback to A1
+            break;
+          case 'C2':
+            startingModule = 1; // C2 not implemented yet, fallback to A1
+            break;
+          default:
+            startingModule = 1;
+        }
+
+        return { level: level === 'C1' || level === 'C2' ? 'A1' : level, module: startingModule };
+      } catch {
+        // Parsing failed, fall through to next check
       }
-
-      return { level: level === 'C1' || level === 'C2' ? 'A1' : level, module: startingModule };
     }
 
     // Fallback to localStorage recommendedStartLevel if available
-    const recommendedLevel = localStorage.getItem('recommendedStartLevel');
-    const recommendedModule = localStorage.getItem('recommendedStartModule');
+    const recommendedLevel = safeLocalStorage.getItem('recommendedStartLevel');
+    const recommendedModule = safeLocalStorage.getItem('recommendedStartModule');
 
     if (recommendedLevel) {
       let module = recommendedModule ? parseInt(recommendedModule) : 1;
@@ -347,7 +396,7 @@ export default function AppNavigation() {
         <ErrorBoundary>
           <SpeakingApp
             initialMessage={continuedMessage}
-            key={continuedMessage ? `continued-${Date.now()}` : 'default'} // Force re-mount when continuing
+            key={continuedMessage || 'default'} // Use message content as stable key
           />
         </ErrorBoundary>
       )}
