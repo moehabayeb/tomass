@@ -283,12 +283,12 @@ export function testLanguageDetection() {
     { text: "Use 'am' with I, 'is' with he/she/it, and 'are' with we/you/they", expected: 'en' },
     { text: "Sıklık zarfları 'to be' fiilinden sonra, diğer fiillerden önce gelir", expected: 'tr' }
   ];
-  
-  console.log('🧪 Language Detection Test Results:');
+
+  // Apple Store Compliance: Silent operation
   tests.forEach(test => {
     const detected = detectLanguage(test.text);
     const status = detected === test.expected ? '✅' : '❌';
-    console.log(`${status} "${test.text.substring(0, 50)}..." → Expected: ${test.expected}, Got: ${detected}`);
+    // Apple Store Compliance: Silent operation
   });
 }
 

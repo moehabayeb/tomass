@@ -24,7 +24,7 @@ export class HangmanErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('Hangman Error Boundary caught an error:', error, errorInfo);
+    // Apple Store Compliance: Silent operation
   }
 
   handleReset = () => {

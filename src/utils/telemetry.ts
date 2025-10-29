@@ -55,9 +55,7 @@ class TelemetryService implements ITelemetryService {
       }
 
       // Debug logging
-      if (this.config.debugMode) {
-        console.log(`[Telemetry] ${event.type}:`, event);
-      }
+      // Apple Store Compliance: Silent monitoring
 
       // Add to send queue
       if (this.config.endpoint) {
@@ -72,7 +70,7 @@ class TelemetryService implements ITelemetryService {
       // Cleanup old events
       this.cleanupEvents();
     } catch (error) {
-      console.warn('Failed to track telemetry event:', error);
+      // Apple Store Compliance: Silent monitoring
     }
   }
 
@@ -159,7 +157,7 @@ class TelemetryService implements ITelemetryService {
         localStorage.removeItem('voice_telemetry_sessions');
         localStorage.removeItem('voice_telemetry_queue');
       } catch (error) {
-        console.warn('Failed to clear localStorage:', error);
+        // Apple Store Compliance: Silent monitoring
       }
     }
   }
@@ -242,11 +240,9 @@ class TelemetryService implements ITelemetryService {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      if (this.config.debugMode) {
-        console.log(`[Telemetry] Sent ${events.length} events to ${this.config.endpoint}`);
-      }
+      // Apple Store Compliance: Silent monitoring
     } catch (error) {
-      console.warn('Failed to send telemetry events:', error);
+      // Apple Store Compliance: Silent monitoring
       // Put events back in queue for retry
       this.sendQueue.unshift(...this.sendQueue);
     }
@@ -264,7 +260,7 @@ class TelemetryService implements ITelemetryService {
       localStorage.setItem('voice_telemetry_sessions', JSON.stringify(sessionsData));
       localStorage.setItem('voice_telemetry_queue', JSON.stringify(this.sendQueue));
     } catch (error) {
-      console.warn('Failed to save telemetry to localStorage:', error);
+      // Apple Store Compliance: Silent monitoring
     }
   }
 
@@ -287,7 +283,7 @@ class TelemetryService implements ITelemetryService {
         this.sendQueue = JSON.parse(queueData);
       }
     } catch (error) {
-      console.warn('Failed to load telemetry from localStorage:', error);
+      // Apple Store Compliance: Silent monitoring
     }
   }
 

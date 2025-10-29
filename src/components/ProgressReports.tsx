@@ -61,7 +61,7 @@ export function ProgressReports({ userId = 'guest', onClose }: ProgressReportsPr
       setProfile(userProfile);
       setModuleStatuses(statuses);
     } catch (error) {
-      console.error('Failed to load progress data:', error);
+      // Apple Store Compliance: Silent operation
     } finally {
       setIsLoading(false);
     }

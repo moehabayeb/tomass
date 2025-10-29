@@ -199,7 +199,7 @@ export function getModuleData(moduleId: number): ModuleData {
   // For modules 1-150, we'll need to load from inline data temporarily
   // This will be replaced when we extract all modules to separate files
   // For now, return a fallback to MODULE_1_DATA equivalent
-  console.warn(`Module ${moduleId} not found in moduleDataMap, using fallback`);
+  // Apple Store Compliance: Silent operation
 
   // Fallback module data
   const fallbackData: ModuleData = {

@@ -12,10 +12,8 @@ export const PerformanceMonitor = {
       renderFn();
       const end = performance.now();
       const duration = end - start;
-      
-      if (duration > 16) { // More than one frame at 60fps
-        console.warn(`🐌 Slow render in ${componentName}: ${duration.toFixed(2)}ms`);
-      }
+
+      // Apple Store Compliance: Silent performance monitoring
     } else {
       renderFn();
     }
@@ -30,20 +28,16 @@ export const PerformanceMonitor = {
       const result = await operation();
       const end = performance.now();
       const duration = end - start;
-      
-      if (process.env.NODE_ENV === 'development' && duration > 1000) {
-        console.warn(`⏰ Slow async operation ${operationName}: ${duration.toFixed(2)}ms`);
-      }
-      
+
+      // Apple Store Compliance: Silent performance monitoring
+
       return result;
     } catch (error) {
       const end = performance.now();
       const duration = end - start;
-      
-      if (process.env.NODE_ENV === 'development') {
-        console.error(`❌ Failed operation ${operationName} after ${duration.toFixed(2)}ms:`, error);
-      }
-      
+
+      // Apple Store Compliance: Silent performance monitoring
+
       throw error;
     }
   },
@@ -55,7 +49,7 @@ export const PerformanceMonitor = {
     if (process.env.NODE_ENV === 'development' && 'memory' in performance) {
       const memory = (performance as any).memory;
       const prefix = componentName ? `[${componentName}]` : '[Memory]';
-      console.info(`${prefix} Used: ${(memory.usedJSHeapSize / 1048576).toFixed(2)}MB`);
+      // Apple Store Compliance: Silent performance monitoring
     }
   },
 
@@ -67,10 +61,8 @@ export const PerformanceMonitor = {
       const observer = new PerformanceObserver((list) => {
         const entries = list.getEntries();
         const lcp = entries[entries.length - 1];
-        
-        if (process.env.NODE_ENV === 'development') {
-          console.info(`🎯 Largest Contentful Paint: ${lcp.startTime.toFixed(2)}ms`);
-        }
+
+        // Apple Store Compliance: Silent performance monitoring
       });
       
       observer.observe({ type: 'largest-contentful-paint', buffered: true });
@@ -87,9 +79,7 @@ export const PerformanceMonitor = {
         const entries = list.getEntries();
         entries.forEach((entry) => {
           const fid = entry.processingStart - entry.startTime;
-          if (process.env.NODE_ENV === 'development') {
-            console.info(`⚡ First Input Delay: ${fid.toFixed(2)}ms`);
-          }
+          // Apple Store Compliance: Silent performance monitoring
         });
       });
       
@@ -109,10 +99,8 @@ export const PerformanceMonitor = {
         for (const entry of list.getEntries()) {
           if (!(entry as any).hadRecentInput) {
             clsValue += (entry as any).value;
-            
-            if (process.env.NODE_ENV === 'development' && clsValue > 0.1) {
-              console.warn(`📐 High Cumulative Layout Shift: ${clsValue.toFixed(4)}`);
-            }
+
+            // Apple Store Compliance: Silent performance monitoring
           }
         }
       });

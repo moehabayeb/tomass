@@ -38,7 +38,7 @@ export const BadgeAchievement = ({ badge, onClose }: BadgeAchievementProps) => {
           }
         } catch (error) {
           // Focus failed, ignore silently
-          console.debug('[BadgeAchievement] Focus restoration failed:', error);
+          // Apple Store Compliance: Silent operation
         }
       }
     }, 300);

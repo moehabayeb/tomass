@@ -15,9 +15,7 @@ export default function TestB2Modules() {
   const b2Modules = MODULES_BY_LEVEL.B2 || [];
   const newModules = b2Modules.filter(m => m.id >= 161 && m.id <= 168);
 
-  console.log('🔍 TEST PAGE - B2 Modules:', b2Modules.length);
-  console.log('🔍 TEST PAGE - New modules (161-168):', newModules.length);
-  console.log('🔍 TEST PAGE - Module IDs:', b2Modules.map(m => m.id));
+  // Apple Store Compliance: Silent operation
 
   const moduleDataExports = {
     MODULE_161_DATA,

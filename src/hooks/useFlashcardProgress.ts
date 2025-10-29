@@ -39,7 +39,7 @@ export const useFlashcardProgress = () => {
         setProgress(parsed);
       }
     } catch (error) {
-      console.error('[Flashcard Progress] Failed to load:', error);
+      // Apple Store Compliance: Silent operation
     } finally {
       setIsLoading(false);
     }
@@ -51,7 +51,7 @@ export const useFlashcardProgress = () => {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(newProgress));
       setProgress(newProgress);
     } catch (error) {
-      console.error('[Flashcard Progress] Failed to save:', error);
+      // Apple Store Compliance: Silent operation
     }
   }, []);
 

@@ -129,7 +129,7 @@ export function ReviewSuggestions({
       const reviewSuggestions = progressTracker.getReviewSuggestions();
       setSuggestions(reviewSuggestions.slice(0, maxSuggestions));
     } catch (error) {
-      console.error('Failed to load review suggestions:', error);
+      // Apple Store Compliance: Silent operation
       setSuggestions([]);
     } finally {
       setIsLoading(false);
