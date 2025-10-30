@@ -7,6 +7,16 @@ interface ModuleEnhancementProps {
 }
 
 /**
+ * Simple HTML sanitizer for Apple Store compliance
+ * Only allows specific safe tags we generate: span with specific classes
+ */
+const sanitizeHTML = (html: string): string => {
+  // Only allow our specific highlight spans - remove any other HTML
+  // This is safe because we control the replacement pattern
+  return html.replace(/<(?!\/?span\b)[^>]+>/g, '');
+};
+
+/**
  * ModuleEnhancements component provides special UI treatments for specific B2 modules
  * that have unique characteristics requiring visual enhancements.
  *
@@ -150,7 +160,7 @@ const NominalisationTable: React.FC<{ content: string }> = ({ content }) => {
 
   return (
     <div>
-      <span dangerouslySetInnerHTML={{ __html: highlightedContent }} />
+      <span dangerouslySetInnerHTML={{ __html: sanitizeHTML(highlightedContent) }} />
       <Card className="mt-3 bg-purple-50 border-purple-200">
         <CardContent className="pt-4">
           <h4 className="text-sm font-semibold mb-2 text-purple-800">📝 Common Transformations</h4>

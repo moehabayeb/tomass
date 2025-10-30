@@ -359,7 +359,7 @@ export class MeetingNotificationsService {
   async testNotification(): Promise<void> {
     const hasPermission = await this.requestPermission();
     if (!hasPermission) {
-      alert('Notification permission required for testing');
+      // Apple Store Compliance: Silent fail - notification permission denied
       return;
     }
 
