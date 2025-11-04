@@ -7,6 +7,14 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { useGamification } from '@/hooks/useGamification';
 import { useBadgeSystem } from '@/hooks/useBadgeSystem';
 import CanvasAvatar from './CanvasAvatar';
@@ -840,6 +848,10 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
   // ===== AUTH =====
   const { user, isAuthenticated } = useAuthReady();
 
+  // Phase 3.1: Placement test requirement state
+  const [showPlacementRequired, setShowPlacementRequired] = useState(false);
+  const [hasPlacementTest, setHasPlacementTest] = useState<boolean | null>(null);
+
   // ===== STATE (must be first) =====
   const [width, height] = useWindowSize();
   const [viewState, setViewState] = useState<ViewState>('levels');
@@ -877,6 +889,47 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
   // Keep a live ref of the phase for async flows (prevents stale closures)
   const phaseRef = useRef(currentPhase);
   useEffect(() => { phaseRef.current = currentPhase; }, [currentPhase]);
+
+  // Phase 3.1: Check for placement test requirement
+  useEffect(() => {
+    async function checkPlacementTest() {
+      if (!isAuthenticated || hasPlacementTest !== null) return;
+
+      try {
+        // Check database for speaking test results
+        const { data, error } = await supabase
+          .from('speaking_test_results')
+          .select('id')
+          .eq('user_id', user?.id)
+          .limit(1);
+
+        if (error) {
+          console.error('Error checking placement test:', error);
+          // Don't block on error - check localStorage fallback
+          const localPlacement = safeLocalStorage().getItem('userPlacement') ||
+                                safeLocalStorage().getItem('placement');
+          setHasPlacementTest(!!localPlacement);
+          return;
+        }
+
+        const hasTest = (data && data.length > 0);
+        setHasPlacementTest(hasTest);
+
+        // Show modal if no test found
+        if (!hasTest) {
+          setShowPlacementRequired(true);
+        }
+      } catch (err) {
+        console.error('Placement test check failed:', err);
+        // Fallback to localStorage check
+        const localPlacement = safeLocalStorage().getItem('userPlacement') ||
+                              safeLocalStorage().getItem('placement');
+        setHasPlacementTest(!!localPlacement);
+      }
+    }
+
+    checkPlacementTest();
+  }, [isAuthenticated, user, hasPlacementTest]);
 
   // Initialize with props from test result
   useEffect(() => {
@@ -2843,6 +2896,56 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
   // Render lesson content
   return (
     <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: 'hsl(var(--app-bg))' }}>
+      {/* Phase 3.1: Placement Test Required Dialog */}
+      <Dialog open={showPlacementRequired} onOpenChange={setShowPlacementRequired}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-blue-500" />
+              Take Placement Test First
+            </DialogTitle>
+            <DialogDescription className="space-y-3 pt-2">
+              <p>
+                To start your personalized learning journey, please take our quick placement test first. This helps us:
+              </p>
+              <div className="bg-blue-50 dark:bg-blue-950 p-3 rounded-lg">
+                <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1 list-disc list-inside">
+                  <li>Assess your current English level</li>
+                  <li>Recommend the right starting point</li>
+                  <li>Track your progress accurately</li>
+                  <li>Unlock appropriate lessons</li>
+                </ul>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                The test only takes 3-5 minutes and helps ensure you get the best learning experience!
+              </p>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowPlacementRequired(false);
+                // Allow browsing but show limited access
+                setHasPlacementTest(false);
+              }}
+              className="w-full sm:w-auto"
+            >
+              Browse Anyway
+            </Button>
+            <Button
+              onClick={() => {
+                setShowPlacementRequired(false);
+                onBack(); // Navigate to main screen with placement test
+              }}
+              className="w-full sm:w-auto"
+            >
+              Take Placement Test
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Resume Progress Dialog */}
       {checkpoints.showResumeDialog && checkpoints.getResumeInfo() && (
         <ResumeProgressDialog

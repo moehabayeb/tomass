@@ -3,7 +3,7 @@ import { Mic, Volume2, VolumeX, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import DIDAvatar from './DIDAvatar';
-import AnimatedAvatar from './AnimatedAvatar';
+import TomasAvatarImage from './TomasAvatarImage';
 import { useAvatarState } from '@/hooks/useAvatarState';
 import { useSpeakingTTS } from '@/hooks/useSpeakingTTS';
 import { supabase } from '@/integrations/supabase/client';
@@ -1021,14 +1021,52 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   const [showLevelUpModal, setShowLevelUpModal] = useState(false);
   const [levelUpValue, setLevelUpValue] = useState<number | null>(null);
 
-  // Helper: Simple validation to prevent display issues (NOT grammar validation - AI handles that)
+  // Helper: Multi-layer validation to prevent false positive corrections
   const isValidGrammarCorrection = (original: string, corrected: string): boolean => {
-    // Only check for basic display validity - trust the AI's grammar validation
+    // Basic validity checks
     if (!original || !corrected) return false;
     if (original.trim() === '' || corrected.trim() === '') return false;
     if (original.trim() === corrected.trim()) return false;
 
-    // Trust the AI backend - it has strict validation already
+    // Client-side safety check 1: Reject punctuation-only differences
+    // Examples: "hello" vs 'hello' vs "hello", at some point vs 'at some point'
+    const normalizePunctuation = (text: string): string => {
+      return text
+        .toLowerCase()
+        // Remove ASCII punctuation
+        .replace(/[.,!?;:'"()\[\]{}<>\/\\|@#$%^&*_+=~`-]/g, '')
+        // Remove Unicode smart quotes and quote variants
+        .replace(/[\u2018\u2019\u201C\u201D\u00AB\u00BB\u2039\u203A\u201E\u201A]/g, '')
+        // Normalize whitespace
+        .replace(/\s+/g, ' ')
+        .trim();
+    };
+
+    const origNoPunct = normalizePunctuation(original);
+    const corrNoPunct = normalizePunctuation(corrected);
+
+    if (origNoPunct === corrNoPunct) {
+      console.warn('🚨 Client-side blocked false positive: punctuation-only difference', { original, corrected });
+      return false;
+    }
+
+    // Client-side safety check 2: Reject compound word spacing variations
+    // Examples: "super cars" vs "supercars", "ice cream" vs "icecream"
+    const normalizeCompounds = (text: string): string => {
+      return text
+        .toLowerCase()
+        .replace(/[\s-]/g, '') // Remove spaces and hyphens
+        .trim();
+    };
+
+    const origNormalized = normalizeCompounds(original);
+    const corrNormalized = normalizeCompounds(corrected);
+
+    if (origNormalized === corrNormalized) {
+      console.warn('🚨 Client-side blocked false positive: compound word variation', { original, corrected });
+      return false;
+    }
+
     return true;
   };
 
@@ -1431,7 +1469,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
                 !isSpeaking && "shadow-[0_20px_60px_rgba(88,28,135,0.6)]"
               )}>
                 {/* Animated Avatar */}
-                <AnimatedAvatar isSpeaking={isSpeaking} className="w-full h-full" />
+                <TomasAvatarImage isSpeaking={isSpeaking} className="w-full h-full object-cover rounded-full" />
 
                 {/* Animated Pulsing Rings - State-based */}
                 {flowState === 'LISTENING' && (

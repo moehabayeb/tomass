@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Menu, Mic, BookOpen, Bookmark, Award, Gamepad2, Users, Lightbulb } from 'lucide-react';
+import { Menu, Mic, BookOpen, Bookmark, Award, Gamepad2, Users, Lightbulb, Crown, Sparkles } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 // Admin functionality removed for Apple App Store compliance
 import { Button } from '@/components/ui/button';
 import {
@@ -59,9 +60,15 @@ const navigationItems = [
 export function NavigationDropdown({ currentMode, onModeChange }: NavigationDropdownProps) {
   const [open, setOpen] = useState(false);
   const [showDailyTips, setShowDailyTips] = useState(false);
+  const navigate = useNavigate();
 
   const handleItemClick = (mode: AppMode) => {
     onModeChange(mode);
+    setOpen(false);
+  };
+
+  const handlePricingClick = () => {
+    navigate('/pricing');
     setOpen(false);
   };
 
@@ -87,12 +94,24 @@ export function NavigationDropdown({ currentMode, onModeChange }: NavigationDrop
             )}
           </Button>
         </DropdownMenuTrigger>
-          <DropdownMenuContent 
-            align="end" 
+          <DropdownMenuContent
+            align="end"
             className="w-48 bg-gradient-to-b from-white/95 to-white/90 backdrop-blur-xl border border-white/20 rounded-xl shadow-lg"
             style={{ boxShadow: 'var(--shadow-medium)' }}
           >
-            {/* Daily Tips at the top */}
+            {/* Pricing - Premium Feature */}
+            <DropdownMenuItem
+              onClick={handlePricingClick}
+              className="flex items-center px-3 py-2 cursor-pointer rounded-lg mx-1 my-0.5 transition-all duration-200 bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 border border-purple-200/50 relative group"
+            >
+              <Crown className="h-4 w-4 mr-3 flex-shrink-0 text-purple-600 group-hover:text-purple-700" />
+              <span className="text-sm font-semibold text-purple-700">View Plans</span>
+              <Sparkles className="w-3 h-3 ml-auto text-yellow-500 animate-pulse" />
+            </DropdownMenuItem>
+
+            <DropdownMenuSeparator className="my-1" />
+
+            {/* Daily Tips */}
             <DropdownMenuItem
               onClick={() => {
                 setShowDailyTips(true);
@@ -106,8 +125,6 @@ export function NavigationDropdown({ currentMode, onModeChange }: NavigationDrop
                 <div className="w-2 h-2 bg-orange-500 rounded-full ml-auto animate-pulse"></div>
               )}
             </DropdownMenuItem>
-            
-            <DropdownMenuSeparator className="my-1" />
 
             {navigationItems.map((item) => {
               const Icon = item.icon;

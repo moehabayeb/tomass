@@ -19,7 +19,6 @@ import { BadgeAchievement } from './BadgeAchievement';
 import { useGamification } from '@/hooks/useGamification';
 import { useStreakTracker } from '@/hooks/useStreakTracker';
 import { useBadgeSystem } from '@/hooks/useBadgeSystem';
-import { Toaster } from '@/components/ui/toaster';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
 // Admin panel removed for Apple App Store compliance
@@ -180,6 +179,24 @@ export default function AppNavigation() {
   };
 
   const handleGoToLessons = () => {
+    // Phase 2.1: Check for pending navigation from placement test
+    const pendingNav = safeLocalStorage.getItem('pendingNavigation');
+    if (pendingNav) {
+      try {
+        const nav = JSON.parse(pendingNav);
+        // Clear pending navigation
+        safeLocalStorage.removeItem('pendingNavigation');
+
+        // Apply navigation parameters if recent (within 5 minutes)
+        if (Date.now() - nav.timestamp < 5 * 60 * 1000) {
+          safeLocalStorage.setItem('currentLevel', nav.level);
+          safeLocalStorage.setItem('currentModule', String(nav.moduleId));
+        }
+      } catch (error) {
+        // Invalid JSON, ignore
+      }
+    }
+
     // Navigate to lessons mode with the user's recommended level
     setCurrentMode('lessons');
   };
@@ -401,8 +418,6 @@ export default function AppNavigation() {
         </ErrorBoundary>
       )}
 
-      {/* Toast Notifications */}
-      <Toaster />
     </div>
   );
 }

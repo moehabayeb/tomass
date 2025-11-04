@@ -99,6 +99,22 @@ RESPONSE FORMAT (ALWAYS follow this structure):
 18. "let's discuss science" ✅ CORRECT
 19. "I'm excited about this" ✅ CORRECT
 20. "we should talk more" ✅ CORRECT
+21. "I like Italian super cars" ✅ CORRECT (compound word variation - both "super cars" and "supercars" are acceptable)
+22. "I want ice cream" ✅ CORRECT (compound word - both "ice cream" and "icecream" are acceptable)
+23. "Let's meet at the coffee shop" ✅ CORRECT (compound word - both "coffee shop" and "coffeeshop" are acceptable)
+24. "I got your e-mail" ✅ CORRECT (compound word - both "e-mail" and "email" are acceptable)
+25. "I'm learning on line" ✅ CORRECT (compound word - both "on line", "on-line" and "online" are acceptable)
+26. "at some point in life" ✅ CORRECT (same as 'at some point in life' or "at some point in life" - quote style doesn't matter)
+27. "hello" ✅ CORRECT (same as 'hello' or "hello" or hello - all quote styles are acceptable)
+28. "He said yes" ✅ CORRECT (adding quotes around 'yes' is unnecessary)
+29. "I like it" ✅ CORRECT (no comma/period needed in spoken language)
+30. "We can talk about this later" ✅ CORRECT (punctuation is added by speech-to-text, don't correct it)
+
+⚠️ CRITICAL RULE FOR SPOKEN LANGUAGE:
+Speech-to-text systems automatically add punctuation (commas, periods, quotes) based on pauses and intonation.
+Users CANNOT control what punctuation is added during speech recognition.
+NEVER correct differences that are ONLY about punctuation, quote styles, or capitalization.
+These are NOT grammar errors - they are transcription variations.
 
 ✅ ONLY CORRECT THESE ACTUAL ERRORS:
 1. ❌ "I goed" → ✅ "I went" (WRONG VERB FORM)
@@ -271,12 +287,16 @@ Return your response in this JSON format:
       }
 
       // Safety check 4: Reject if only difference is punctuation/capitalization
-      // Remove ALL punctuation and normalize whitespace
+      // Remove ALL punctuation (including Unicode smart quotes) and normalize whitespace
       const normalizePunctuation = (text: string): string => {
         return text
           .toLowerCase()
-          .replace(/[.,!?;:'"()\[\]{}<>\/\\|@#$%^&*_+=~`-]/g, '') // Remove all punctuation
-          .replace(/\s+/g, ' ') // Normalize whitespace
+          // Remove ASCII punctuation
+          .replace(/[.,!?;:'"()\[\]{}<>\/\\|@#$%^&*_+=~`-]/g, '')
+          // Remove Unicode smart quotes and quote variants
+          .replace(/[\u2018\u2019\u201C\u201D\u00AB\u00BB\u2039\u203A\u201E\u201A]/g, '')
+          // Normalize whitespace
+          .replace(/\s+/g, ' ')
           .trim();
       };
 
@@ -285,6 +305,25 @@ Return your response in this JSON format:
 
       if (origNoPunct === corrNoPunct) {
         console.warn('🚨 Blocked false positive: only punctuation/capitalization difference', { original, corrected })
+        aiResponse.hadGrammarIssue = false
+        aiResponse.originalPhrase = ''
+        aiResponse.correctedPhrase = ''
+      }
+
+      // Safety check 5: Reject if only difference is compound word spacing/hyphenation
+      // Examples: "super cars" vs "supercars", "ice cream" vs "icecream", "e-mail" vs "email"
+      const normalizeCompounds = (text: string): string => {
+        return text
+          .toLowerCase()
+          .replace(/[\s-]/g, '') // Remove all spaces and hyphens
+          .trim();
+      };
+
+      const origNoSpaces = normalizeCompounds(original);
+      const corrNoSpaces = normalizeCompounds(corrected);
+
+      if (origNoSpaces === corrNoSpaces) {
+        console.warn('🚨 Blocked false positive: only compound word spacing/hyphenation difference', { original, corrected })
         aiResponse.hadGrammarIssue = false
         aiResponse.originalPhrase = ''
         aiResponse.correctedPhrase = ''

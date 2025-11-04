@@ -3,12 +3,20 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Progress } from './ui/progress';
-import { 
-  Mic, 
-  MicOff, 
-  Volume2, 
-  Award, 
-  Star, 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from './ui/dialog';
+import {
+  Mic,
+  MicOff,
+  Volume2,
+  Award,
+  Star,
   CheckCircle,
   AlertCircle
 } from 'lucide-react';
@@ -18,6 +26,9 @@ import { useGamification } from '@/hooks/useGamification';
 import { configureUtterance } from '@/config/voice';
 import { TTSManager } from '@/services/TTSManager';
 import { processPlacementResults } from './levelPlacementLogic';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { useAuthReady } from '@/hooks/useAuthReady';
 
 interface SpeakingPlacementTestProps {
   onBack: () => void;
@@ -26,7 +37,19 @@ interface SpeakingPlacementTestProps {
 
 // --------- Speaking Test (isolated) ----------
 export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementTestProps) {
-  
+
+  // Phase 1.3: Authentication check
+  const { user, isLoading: authLoading, isAuthenticated } = useAuthReady();
+  const [showAuthPrompt, setShowAuthPrompt] = useState(false);
+  const [allowPracticeMode, setAllowPracticeMode] = useState(false);
+
+  // Phase 3.2: Minimum completion validation
+  const [validationError, setValidationError] = useState<string>('');
+  const [retryCount, setRetryCount] = useState<number>(0);
+  const MAX_RETRIES = 3;
+  const MIN_DURATION_SEC = 5;
+  const MIN_WORDS = 10;
+
   // ROUTING/UNLOCK HELPERS (use your existing app context if available)
   function unlockLevel(level: 'A1'|'A2'|'B1') {
     const key = 'unlocks';
@@ -34,34 +57,38 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     data[level] = true;
     localStorage.setItem(key, JSON.stringify(data));
   }
-  // CRITICAL FIX: Add missing routeToLessons function
+  // Phase 2.1: State-based navigation (no hard redirects)
   function routeToLessons(level: string, moduleId: number, questionIndex: number) {
     logger.info(`Routing to lessons: ${level}, module ${moduleId}, question ${questionIndex}`);
-    
+
     try {
-      // Set localStorage state first
+      // Set localStorage state
       localStorage.setItem('currentLevel', level);
       localStorage.setItem('currentModule', String(moduleId));
       localStorage.setItem('userPlacement', JSON.stringify({ level, scores: {}, at: Date.now() }));
       localStorage.setItem('unlockedLevel', level);
-      
+      localStorage.setItem('recommendedStartLevel', level);
+      localStorage.setItem('recommendedStartModule', String(moduleId));
+
       // Mark level as unlocked
       const unlocks = JSON.parse(localStorage.getItem('unlocks') || '{}');
       unlocks[level] = true;
       localStorage.setItem('unlocks', JSON.stringify(unlocks));
-      
-      // Navigate to Lessons with URL parameters
-      const url = new URL(window.location.origin + '/lessons');
-      url.searchParams.set('level', level);
-      url.searchParams.set('module', String(moduleId));
-      url.searchParams.set('q', String(questionIndex));
-      
-      // Use location.href for reliable navigation
-      window.location.href = url.toString();
+
+      // Store navigation intent for AppNavigation
+      localStorage.setItem('pendingNavigation', JSON.stringify({
+        mode: 'lessons',
+        level,
+        moduleId,
+        questionIndex,
+        timestamp: Date.now()
+      }));
+
+      // Navigation handled by onComplete callback to AppNavigation
+      // No window.location.href - uses setCurrentMode('lessons') instead
+
     } catch (error) {
       logger.error('Route to lessons failed:', error);
-      // Fallback to simple navigation
-      window.location.href = '/lessons';
     }
   }
 
@@ -239,6 +266,13 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
 
   const [pauseStatus, setPauseStatus] = useState<string>('');
 
+  // Phase 1.3: Check authentication on component mount
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated && testState === 'idle' && qIndex === 0) {
+      setShowAuthPrompt(true);
+    }
+  }, [authLoading, isAuthenticated, testState, qIndex]);
+
   function newRunId() {
     return `${Date.now()}-${Math.random().toString(36).slice(2,7)}`;
   }
@@ -271,14 +305,48 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
 
   function saveAnswer(qIndex: number, transcript: string, durationSec: number) {
     const words = transcript.trim().split(/\s+/).filter(Boolean).length;
-    
+
+    // Phase 3.2: Validate minimum completion requirements
+    if (durationSec < MIN_DURATION_SEC) {
+      const remaining = MIN_DURATION_SEC - durationSec;
+      setValidationError(`Please speak for at least ${MIN_DURATION_SEC} seconds (you spoke for ${durationSec.toFixed(1)}s). Try again!`);
+      setRetryCount(prev => prev + 1);
+
+      if (retryCount >= MAX_RETRIES - 1) {
+        // Allow after max retries, but warn
+        toast.warning(`Maximum retries reached. Accepting answer anyway.`);
+        setRetryCount(0);
+        setValidationError('');
+      } else {
+        return; // Don't save, allow retry
+      }
+    }
+
+    if (words < MIN_WORDS) {
+      setValidationError(`Please speak more (at least ${MIN_WORDS} words). You said ${words} word${words !== 1 ? 's' : ''}. Try again!`);
+      setRetryCount(prev => prev + 1);
+
+      if (retryCount >= MAX_RETRIES - 1) {
+        // Allow after max retries, but warn
+        toast.warning(`Maximum retries reached. Accepting answer anyway.`);
+        setRetryCount(0);
+        setValidationError('');
+      } else {
+        return; // Don't save, allow retry
+      }
+    }
+
+    // Clear validation error if all checks pass
+    setValidationError('');
+    setRetryCount(0);
+
     if (debug) {
     }
-    
-    setAnswers(prev => [...prev, { 
-      transcript, 
-      durationSec, 
-      wordsRecognized: words 
+
+    setAnswers(prev => [...prev, {
+      transcript,
+      durationSec,
+      wordsRecognized: words
     }]);
   }
   
@@ -612,24 +680,109 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     await audioManager.reserveAudio(userId, suspend);
   }
 
-  function showResults() {
+  async function showResults() {
     const scored = scorePlacement(answers);
     setResult(scored);
-    
+
+    // Save to localStorage first (backup/cache)
+    const placement = { level: scored.level, g: scored.grammar, v: scored.vocab, p: scored.pron, date: Date.now() };
+    localStorage.setItem('placement', JSON.stringify(placement));
+    localStorage.setItem('userPlacement', JSON.stringify({ level: scored.level, scores: scored, at: Date.now() }));
+    localStorage.setItem('unlockedLevel', scored.level);
+    unlockLevel(scored.level);
+
+    // Calculate test metrics
+    const testDuration = Math.round((Date.now() - startTimeRef.current) / 1000); // seconds
+    const totalWords = answers.reduce((sum, a) => sum + a.wordsRecognized, 0);
+    const uniqueWords = new Set(
+      answers.flatMap(a => a.transcript.toLowerCase().split(/\s+/).filter(w => w.length > 0))
+    ).size;
+    const wordsPerMinute = testDuration > 0 ? (totalWords / testDuration) * 60 : 0;
+
+    // Prepare transcript as JSONB
+    const transcript = answers.map((a, idx) => ({
+      question: idx + 1,
+      text: a.transcript,
+      duration: a.durationSec,
+      words: a.wordsRecognized
+    }));
+
+    // Calculate overall score (0-100 scale)
+    const overallScore = Math.round(((scored.grammar + scored.vocab + scored.pron) / 3) * 10);
+
+    // Save to database (only if authenticated)
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (user && isAuthenticated) {
+        const { data, error } = await supabase.rpc('save_speaking_test_result', {
+          p_overall_score: overallScore,
+          p_recommended_level: scored.level,
+          p_pronunciation_score: scored.pron * 10,
+          p_grammar_score: scored.grammar * 10,
+          p_vocabulary_score: scored.vocab * 10,
+          p_fluency_score: Math.min(100, Math.round(wordsPerMinute * 2)), // Simple fluency metric
+          p_comprehension_score: 75, // Default (test doesn't measure this directly)
+          p_test_duration: testDuration,
+          p_transcript: transcript,
+          p_detailed_feedback: {
+            level: scored.level,
+            scores: { grammar: scored.grammar, vocabulary: scored.vocab, pronunciation: scored.pron },
+            metrics: { totalWords, uniqueWords, wordsPerMinute, testDuration }
+          },
+          p_words_per_minute: wordsPerMinute,
+          p_unique_words_count: uniqueWords,
+          p_grammar_errors_count: Math.max(0, 10 - scored.grammar), // Estimate
+          p_pronunciation_issues: {},
+          p_test_type: 'placement'
+        });
+
+        if (error) {
+          console.error('Failed to save test results to database:', error);
+          toast.error('Test completed, but results may not be saved. Please check your connection.');
+        } else {
+          toast.success('Test results saved successfully!');
+
+          // Phase 1.2: Create initial lesson progress entry
+          try {
+            // Determine starting module based on level
+            const startingModule = scored.level === 'A1' ? 1 :
+                                   scored.level === 'A2' ? 51 :
+                                   scored.level === 'B1' ? 101 : 1;
+
+            const { data: progressData, error: progressError } = await supabase.rpc('upsert_lesson_progress', {
+              p_user_id: user.id,
+              p_level: scored.level,
+              p_module_id: startingModule,
+              p_question_index: 0,
+              p_total_questions: 10, // Default, will be updated when lesson starts
+              p_question_phase: 'MCQ',
+              p_is_module_completed: false
+            });
+
+            if (progressError) {
+              console.error('Failed to create lesson progress:', progressError);
+            }
+          } catch (progressErr) {
+            console.error('Error creating lesson progress:', progressErr);
+          }
+        }
+      } else if (!isAuthenticated && allowPracticeMode) {
+        // Practice mode - inform user results aren't saved
+        toast.info('Practice Mode: Results saved locally only.');
+      }
+    } catch (dbError) {
+      console.error('Database error:', dbError);
+      // Continue anyway - localStorage has the data
+    }
+
     // Enhanced placement with new logic
     try {
       processPlacementResults(scored, answers, onComplete);
     } catch (error) {
-      // Fallback to current behavior
-      const placement = { level: scored.level, g: scored.grammar, v: scored.vocab, p: scored.pron, date: Date.now() };
-      localStorage.setItem('placement', JSON.stringify(placement));
-      localStorage.setItem('userPlacement', JSON.stringify({ level: scored.level, scores: scored, at: Date.now() }));
-      localStorage.setItem('unlockedLevel', scored.level);
-      unlockLevel(scored.level);
-      
       // Clear progress
       localStorage.removeItem('speakingTestProgress');
-      
+
       // @ts-ignore
       window.triggerConfetti?.();
       setTimeout(() => routeToLevel(scored.level), 1200);
@@ -1486,6 +1639,60 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700 pt-safe">
+      {/* Phase 1.3: Authentication Prompt Modal */}
+      <Dialog open={showAuthPrompt} onOpenChange={setShowAuthPrompt}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-yellow-500" />
+              Sign In to Save Your Results
+            </DialogTitle>
+            <DialogDescription className="space-y-3 pt-2">
+              <p>
+                To save your placement test results and track your progress across devices, please sign in to your account.
+              </p>
+              <div className="bg-blue-50 dark:bg-blue-950 p-3 rounded-lg">
+                <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                  Why sign in?
+                </p>
+                <ul className="text-sm text-blue-800 dark:text-blue-200 mt-2 space-y-1 list-disc list-inside">
+                  <li>Save your test results to the database</li>
+                  <li>Track your progress across devices</li>
+                  <li>Resume lessons where you left off</li>
+                  <li>Access your learning history</li>
+                </ul>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Or continue in <strong>Practice Mode</strong> (results won't be saved)
+              </p>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setAllowPracticeMode(true);
+                setShowAuthPrompt(false);
+                toast.info('Practice Mode: Results will not be saved to your account.');
+              }}
+              className="w-full sm:w-auto"
+            >
+              Continue in Practice Mode
+            </Button>
+            <Button
+              onClick={() => {
+                setShowAuthPrompt(false);
+                onBack(); // Navigate back to main screen where they can sign in
+                toast.info('Please sign in to save your test results.');
+              }}
+              className="w-full sm:w-auto"
+            >
+              Go to Sign In
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Header with Progress */}
       <div className="p-4 bg-black/10">
         <div className="flex items-center justify-between max-w-4xl mx-auto">
@@ -1600,7 +1807,23 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
                     <div className="text-white/80 text-sm">Tap to start</div>
                   ) : null}
                 </div>
-                
+
+                {/* Phase 3.2: Validation Error Display */}
+                {validationError && (
+                  <div className="mt-4 p-4 bg-red-500/20 border border-red-500/50 rounded-lg">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle className="w-5 h-5 text-red-300 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-red-200 text-sm font-medium">Validation Error</p>
+                        <p className="text-red-100 text-xs mt-1">{validationError}</p>
+                        <p className="text-red-200/70 text-xs mt-2">
+                          Retry {retryCount}/{MAX_RETRIES}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Continue button when we have a transcript */}
                 {micState === 'done' && transcript && (
                   <Button

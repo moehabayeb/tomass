@@ -100,30 +100,32 @@ export function processPlacementResults(
 
 function routeToLessons(level: Level, moduleId: number, questionIndex: number) {
   try {
+    // Phase 2.1: Use state-based navigation instead of hard redirects
     // Set current level and module (Single Source of Truth)
     localStorage.setItem('currentLevel', level);
     localStorage.setItem('currentModule', String(moduleId));
-    
+    localStorage.setItem('recommendedStartLevel', level);
+    localStorage.setItem('recommendedStartModule', String(moduleId));
+
     // Mark level as unlocked
     const unlocks = JSON.parse(localStorage.getItem('unlocks') || '{}');
     unlocks[level] = true;
     localStorage.setItem('unlocks', JSON.stringify(unlocks));
     localStorage.setItem('unlockedLevel', level);
-    
-    // Navigate to Lessons with redundant parameters for safety
-    const url = new URL(window.location.origin + '/lessons');
-    url.searchParams.set('level', level);
-    url.searchParams.set('module', String(moduleId));
-    if (questionIndex > 0) {
-      url.searchParams.set('q', String(questionIndex));
-    }
-    
-    // Navigation telemetry
-    const reason = questionIndex > 0 ? 'resume' : 'placed';
-    
-    // Replace current URL to avoid back navigation issues
-    window.history.replaceState(null, '', url.pathname + url.search);
-    
+
+    // Store navigation intent for AppNavigation to handle
+    localStorage.setItem('pendingNavigation', JSON.stringify({
+      mode: 'lessons',
+      level,
+      moduleId,
+      questionIndex,
+      timestamp: Date.now()
+    }));
+
+    // Navigation will be handled by the parent component via onComplete callback
+    // No hard redirects - AppNavigation will call setCurrentMode('lessons')
+
   } catch (error) {
+    // Silent fail - localStorage errors shouldn't break the app
   }
 }
