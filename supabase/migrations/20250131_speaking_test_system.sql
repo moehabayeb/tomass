@@ -58,7 +58,7 @@ create table if not exists public.speaking_test_prompts (
   phase integer not null check (phase >= 1 and phase <= 5),
   phase_name text not null,
   level_range text[] not null, -- Array of levels this prompt is suitable for
-  prompt_type text not null check (prompt_type in ('introduction', 'description', 'storytelling', 'discussion', 'listening')),
+  prompt_type text not null check (prompt_type in ('introduction', 'description', 'storytelling', 'discussion', 'comparison')),
 
   -- Prompt content
   title text not null,
@@ -373,12 +373,12 @@ insert into public.speaking_test_prompts (phase, phase_name, level_range, prompt
  240,
  '{"argumentation": "Clear position and supporting reasons", "vocabulary": "Opinion-expressing language", "grammar": "Complex sentence structures", "critical_thinking": "Depth of analysis"}'),
 
--- Phase 5: Listening Comprehension
-(5, 'Listening', '{A2,B1,B2,C1,C2}', 'listening', 'Listen and Respond',
- 'You will hear a short audio clip. After listening, please summarize what you heard and answer the questions I ask.',
- 'Listen carefully and take mental notes. You can ask me to repeat the audio once if needed.',
+-- Phase 5: Comparison and Contrast
+(5, 'Comparison', '{A2,B1,B2,C1,C2}', 'comparison', 'Compare and Contrast',
+ 'Compare living in a big city versus living in a small town. Which lifestyle do you prefer and why? Speak for at least 30 seconds.',
+ 'Think about differences in lifestyle, opportunities, community, cost of living, and quality of life. Provide clear reasoning for your preference.',
  180,
- '{"comprehension": "Understanding of main ideas", "response": "Appropriate answers to questions", "vocabulary": "Use of vocabulary from the audio", "accuracy": "Factual correctness of summary"}');
+ '{"analysis": "Clear comparison of both options with specific differences", "reasoning": "Logical explanation of preference with supporting arguments", "examples": "Use of concrete examples to illustrate points", "clarity": "Well-structured response with clear contrasts"}');
 
 -- Insert sample CEFR vocabulary (basic set)
 insert into public.cefr_vocabulary (word, level, word_type, frequency_score) values

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, BookOpen, Lock, Trophy } from 'lucide-react';
+import { ArrowLeft, BookOpen, Lock, Trophy, CheckCircle, Circle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { toast } from 'sonner';
 import { MODULES_BY_LEVEL } from '../../../utils/lessons/moduleData';
 import { LevelType } from '../../../utils/lessons/levelsData';
 import { getCompletedModules, isModuleUnlocked } from '../../../utils/lessons/moduleUnlocking';
@@ -45,14 +47,23 @@ export function ModulesView({ selectedLevel, onBack, onSelectModule }: ModulesVi
 
   const handleModuleSelect = (moduleId: number) => {
     const isUnlocked = isModuleUnlocked(moduleId, completedModules);
+    const isImplemented = (moduleId >= 1 && moduleId <= 50) ||
+                          (moduleId >= 51 && moduleId <= 100) ||
+                          (moduleId >= 101 && moduleId <= 150) ||
+                          (moduleId >= 151 && moduleId <= 200) ||
+                          (moduleId >= 201 && moduleId <= 213);
 
-    if (isUnlocked && (
-      (moduleId >= 1 && moduleId <= 50) ||
-      (moduleId >= 51 && moduleId <= 100) ||
-      (moduleId >= 101 && moduleId <= 150) ||
-      (moduleId >= 151 && moduleId <= 200) ||
-      (moduleId >= 201 && moduleId <= 213)
-    )) {
+    // Show locked module feedback
+    if (!isUnlocked) {
+      const previousModuleId = moduleId - 1;
+      toast.error(`Module ${moduleId} is Locked 🔒`, {
+        description: `Complete Module ${previousModuleId} first to unlock this module`,
+        duration: 3000,
+      });
+      return;
+    }
+
+    if (isUnlocked && isImplemented) {
       narration.cancel();
       onSelectModule(moduleId);
     }
@@ -104,37 +115,80 @@ export function ModulesView({ selectedLevel, onBack, onSelectModule }: ModulesVi
                                   (module.id >= 151 && module.id <= 200) ||
                                   (module.id >= 201 && module.id <= 213);
               const isCompleted = completedModules.includes(`module-${module.id}`);
+              const previousModuleId = module.id - 1;
 
-              return (
+              const cardContent = (
                 <Card
                   key={module.id}
-                  className={`bg-white/10 border-white/20 cursor-pointer transition-all hover:bg-white/15 ${!isUnlocked ? 'opacity-50' : ''}`}
+                  className={`
+                    bg-white/10 border-white/20 transition-all
+                    ${!isUnlocked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-white/15 hover:scale-[1.02]'}
+                    ${isCompleted ? 'border-green-500/40' : ''}
+                    ${isUnlocked && !isCompleted ? 'border-blue-500/40' : ''}
+                  `}
                   onClick={() => handleModuleSelect(module.id)}
                 >
                   <CardContent className="p-4">
                     <div className="flex items-center space-x-4">
-                      <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                      <div className={`
+                        w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0
+                        ${!isUnlocked ? 'bg-gray-500/20' : isCompleted ? 'bg-green-500/20' : 'bg-blue-500/20'}
+                      `}>
                         {!isUnlocked ? (
-                          <Lock className="h-6 w-6 text-white/50" />
+                          <Lock className="h-6 w-6 text-gray-400" />
                         ) : isCompleted ? (
-                          <Trophy className="h-6 w-6 text-yellow-400" />
+                          <Trophy className="h-6 w-6 text-yellow-400 animate-pulse" />
                         ) : (
-                          <BookOpen className="h-6 w-6 text-white/80" />
+                          <BookOpen className="h-6 w-6 text-blue-400" />
                         )}
                       </div>
-                      
+
                       <div className="flex-1">
                         <div className="flex items-center space-x-2 mb-1">
-                          <h3 className="font-semibold text-white text-sm">{module.title}</h3>
-                          {isCompleted && <Badge variant="secondary" className="text-xs">Complete</Badge>}
+                          <h3 className={`font-semibold text-sm ${isUnlocked ? 'text-white' : 'text-white/50'}`}>
+                            {module.title}
+                          </h3>
+                          {isCompleted && (
+                            <Badge variant="secondary" className="text-xs bg-green-500/20 text-green-300 border-green-500/30">
+                              <CheckCircle className="h-3 w-3 mr-1" />
+                              Complete
+                            </Badge>
+                          )}
+                          {!isUnlocked && (
+                            <Badge variant="outline" className="text-xs bg-gray-500/20 text-gray-300 border-gray-500/30">
+                              <Lock className="h-3 w-3 mr-1" />
+                              Locked
+                            </Badge>
+                          )}
                           {!isImplemented && <Badge variant="outline" className="text-xs">Coming Soon</Badge>}
                         </div>
-                        <p className="text-white/70 text-xs line-clamp-2">{module.description}</p>
+                        <p className={`text-xs line-clamp-2 ${isUnlocked ? 'text-white/70' : 'text-white/40'}`}>
+                          {module.description}
+                        </p>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
               );
+
+              // Wrap locked modules with tooltip
+              if (!isUnlocked) {
+                return (
+                  <TooltipProvider key={module.id}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        {cardContent}
+                      </TooltipTrigger>
+                      <TooltipContent className="bg-gray-900 text-white border-gray-700">
+                        <p className="font-semibold">🔒 Module Locked</p>
+                        <p className="text-sm">Complete Module {previousModuleId} to unlock</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                );
+              }
+
+              return cardContent;
             })
           )}
         </div>

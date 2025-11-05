@@ -339,7 +339,7 @@ export default function EnglishProficiencyTest({
       description: 30,  // A2-B1: Simple event description with details
       storytelling: 40, // B1-B2: Detailed narrative with sequence and emotions
       discussion: 50,   // B2-C1: Complex opinion with reasoning and examples
-      listening: 25     // All levels: Summary of audio content
+      comparison: 30    // A2-C2: Comparison with preference and reasoning
     };
 
     const expectedLength = expectedLengths[promptType as keyof typeof expectedLengths] || 30;
@@ -360,7 +360,7 @@ export default function EnglishProficiencyTest({
       description: ['yesterday', 'morning', 'afternoon', 'evening', 'went', 'did', 'met'],
       storytelling: ['experience', 'happened', 'felt', 'remember', 'trip', 'celebration', 'event'],
       discussion: ['think', 'opinion', 'believe', 'positive', 'negative', 'impact', 'society', 'because'],
-      listening: ['heard', 'mentioned', 'about', 'summary', 'main', 'point', 'topic']
+      comparison: ['compare', 'contrast', 'prefer', 'better', 'versus', 'difference', 'advantage', 'disadvantage', 'both', 'however', 'while', 'whereas']
     };
 
     const keywords = relevanceKeywords[promptType as keyof typeof relevanceKeywords] || [];

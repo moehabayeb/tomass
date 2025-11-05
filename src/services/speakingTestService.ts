@@ -309,17 +309,17 @@ class SpeakingTestService {
       },
       {
         phase: 5,
-        phase_name: 'Listening',
-        prompt_type: 'listening',
-        title: 'Listen and Respond',
-        instructions: 'You will hear a short audio clip about environmental conservation. After listening, please summarize what you heard and share your thoughts on the topic.',
-        content: 'Listen carefully and take mental notes. Focus on the main ideas and key details mentioned in the audio.',
+        phase_name: 'Comparison',
+        prompt_type: 'comparison',
+        title: 'Compare and Contrast',
+        instructions: 'Compare living in a big city versus living in a small town. Which lifestyle do you prefer and why? Speak for at least 30 seconds.',
+        content: 'Think about differences in lifestyle, opportunities, community, cost of living, and quality of life. Provide clear reasoning for your preference.',
         time_limit: 180,
         evaluation_criteria: {
-          comprehension: 'Understanding of main ideas and details',
-          response: 'Appropriate and relevant answers',
-          vocabulary: 'Use of vocabulary from the audio and topic-related words',
-          accuracy: 'Factual correctness of summary'
+          analysis: 'Clear comparison of both options with specific differences',
+          reasoning: 'Logical explanation of preference with supporting arguments',
+          examples: 'Use of concrete examples to illustrate points',
+          clarity: 'Well-structured response with clear contrasts'
         }
       }
     ];

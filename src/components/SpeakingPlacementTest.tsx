@@ -300,7 +300,8 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     "Tell me your name and where you are from. Speak clearly for about 15 seconds.",
     "Describe your typical weekday. What do you usually do?",
     "Talk about a past event. What did you do last weekend?",
-    "What are your goals for learning English this year?"
+    "What are your goals for learning English this year?",
+    "Compare living in a big city versus living in a small town. Which lifestyle do you prefer and why? Speak for at least 30 seconds."
   ], []);
 
   function saveAnswer(qIndex: number, transcript: string, durationSec: number) {

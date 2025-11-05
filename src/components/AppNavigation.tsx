@@ -141,6 +141,10 @@ export default function AppNavigation() {
     safeLocalStorage.setItem('recommendedStartModule', recommendedModule.toString());
   };
 
+  const handleNavigateToPlacementTest = () => {
+    setCurrentMode('placement-test');
+  };
+
   const handleTestComplete = (result: TestResult) => {
     // Apple Store Compliance: Silent operation - no console logs
 
@@ -372,6 +376,7 @@ export default function AppNavigation() {
       {currentMode === 'lessons' && (
         <LessonsApp
           onBack={() => setCurrentMode('speaking')}
+          onNavigateToPlacementTest={handleNavigateToPlacementTest}
           {...getInitialLessonParams()}
         />
       )}

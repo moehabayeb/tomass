@@ -10,6 +10,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 const Index = React.lazy(() => import("./pages/Index"));
 const Auth = React.lazy(() => import("./pages/Auth"));
 const Profile = React.lazy(() => import("./pages/Profile"));
+const Pricing = React.lazy(() => import("./pages/Pricing"));
 // Admin panel removed for Apple App Store compliance - use web dashboard instead
 const TestB2Modules = React.lazy(() => import("./pages/TestB2Modules"));
 const NotFound = React.lazy(() => import("./pages/NotFound"));
@@ -44,6 +45,7 @@ const App = () => (
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/profile" element={<Profile />} />
+                <Route path="/pricing" element={<Pricing />} />
                 {/* Admin route removed for Apple compliance - admins use web dashboard */}
                 <Route path="/test-b2" element={<TestB2Modules />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

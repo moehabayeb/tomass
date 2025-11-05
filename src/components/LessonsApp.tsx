@@ -28,6 +28,7 @@ import { narration } from '@/utils/narration';
 import { useLessonVoiceCommands } from '../hooks/useVoiceCommands';
 import VoiceControls from './lessons/VoiceControls';
 import ResumeChip from './lessons/ResumeChip';
+import { PlacementTestModal } from './PlacementTestModal';
 import { CelebrationOverlay } from './CelebrationOverlay';
 import MobileCompactIntro from './MobileCompactIntro';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -260,6 +261,7 @@ function getSpeakingPracticeItemBase(item: any, questionIndex: number, mcqFromCa
 
 interface LessonsAppProps {
   onBack: () => void;
+  onNavigateToPlacementTest?: () => void;
   initialLevel?: string;
   initialModule?: number;
 }
@@ -844,7 +846,7 @@ const MODULES_BY_LEVEL = {
   }))
 };
 
-export default function LessonsApp({ onBack, initialLevel, initialModule }: LessonsAppProps) {
+export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialLevel, initialModule }: LessonsAppProps) {
   // ===== AUTH =====
   const { user, isAuthenticated } = useAuthReady();
 
@@ -891,12 +893,24 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
   useEffect(() => { phaseRef.current = currentPhase; }, [currentPhase]);
 
   // Phase 3.1: Check for placement test requirement
+  // FIX #2: Fix placement test race condition
   useEffect(() => {
     async function checkPlacementTest() {
-      if (!isAuthenticated || hasPlacementTest !== null) return;
+      // Only check if authenticated AND user object is loaded
+      if (!isAuthenticated || !user?.id) return;
+      if (hasPlacementTest === true) return; // Only skip if confirmed
 
+      // Quick check: localStorage first (instant)
+      const localPlacement = safeLocalStorage().getItem('userPlacement') ||
+                            safeLocalStorage().getItem('placement');
+
+      if (localPlacement) {
+        setHasPlacementTest(true);
+        return;
+      }
+
+      // No localStorage - check database
       try {
-        // Check database for speaking test results
         const { data, error } = await supabase
           .from('speaking_test_results')
           .select('id')
@@ -905,31 +919,26 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
 
         if (error) {
           console.error('Error checking placement test:', error);
-          // Don't block on error - check localStorage fallback
-          const localPlacement = safeLocalStorage().getItem('userPlacement') ||
-                                safeLocalStorage().getItem('placement');
-          setHasPlacementTest(!!localPlacement);
+          setHasPlacementTest(false);
+          setShowPlacementRequired(true);
           return;
         }
 
         const hasTest = (data && data.length > 0);
         setHasPlacementTest(hasTest);
 
-        // Show modal if no test found
         if (!hasTest) {
           setShowPlacementRequired(true);
         }
       } catch (err) {
         console.error('Placement test check failed:', err);
-        // Fallback to localStorage check
-        const localPlacement = safeLocalStorage().getItem('userPlacement') ||
-                              safeLocalStorage().getItem('placement');
-        setHasPlacementTest(!!localPlacement);
+        setHasPlacementTest(false);
+        setShowPlacementRequired(true);
       }
     }
 
     checkPlacementTest();
-  }, [isAuthenticated, user, hasPlacementTest]);
+  }, [isAuthenticated, user?.id]); // FIX: Depend on user.id to trigger when user loads
 
   // Initialize with props from test result
   useEffect(() => {
@@ -1579,9 +1588,45 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
   
   const [completedModules, setCompletedModules] = useState<string[]>(getCompletedModules);
 
-  // Check if module is unlocked
-  const isModuleUnlocked = (moduleId: number) => {
-    return true; // Unlock all modules for testing
+  // Check if module is unlocked - GODLY LOCKDOWN SYSTEM
+  const isModuleUnlocked = (moduleId: number): boolean => {
+    // Phase 1: Check placement test requirement
+    if (!hasPlacementTest) {
+      return false; // No modules accessible without placement test
+    }
+
+    // Phase 2: Get placement test results
+    const placedLevel = safeLocalStorage().getItem('recommendedStartLevel') || 'A1';
+    const placedModuleStr = safeLocalStorage().getItem('recommendedStartModule') || '1';
+    const placedModule = parseInt(placedModuleStr);
+
+    // Phase 3: Always unlock the starting module from placement test
+    if (moduleId === placedModule) {
+      return true;
+    }
+
+    // Phase 4: Block modules BEFORE placement (can't go backwards)
+    if (moduleId < placedModule) {
+      return false; // Locked: below your level
+    }
+
+    // Phase 5: Check previous module completion
+    const previousModuleId = moduleId - 1;
+
+    // Skip check for first modules of each level (but respect placement)
+    if (moduleId === 1 || moduleId === 51 || moduleId === 101 || moduleId === 151 || moduleId === 201 || moduleId === 251) {
+      // These are level starting points - check if we're at or past placement
+      return moduleId >= placedModule;
+    }
+
+    // Phase 6: Previous module must be completed
+    const isPreviousCompleted = completedModules.includes(`module-${previousModuleId}`);
+
+    if (!isPreviousCompleted) {
+      return false; // Locked: complete previous module first
+    }
+
+    return true;
   };
 
 // A2 Level Modules (88-100)
@@ -1807,15 +1852,35 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
     let hydratedViewState: ViewState = 'levels';
     let source = '';
     
-    // Priority 1: URL parameters (wins over everything)
+    // Priority 1: URL parameters (with SECURITY VALIDATION)
     if (urlLevel && urlModule) {
-      hydratedLevel = urlLevel;
-      hydratedModule = parseInt(urlModule);
-      hydratedQuestion = urlQuestion ? parseInt(urlQuestion) : 0;
-      hydratedPhase = hydratedQuestion > 0 ? 'speaking' : 'intro';
-      hydratedViewState = 'lesson';
-      source = 'params';
-      
+      const requestedModule = parseInt(urlModule);
+
+      // SECURITY CHECK 1: Validate level exists
+      const validLevels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+      if (!validLevels.includes(urlLevel)) {
+        toast.error(`Invalid level in URL: ${urlLevel}`);
+      }
+      // SECURITY CHECK 2: Validate module is in valid range
+      else if (isNaN(requestedModule) || requestedModule < 1 || requestedModule > 300) {
+        toast.error(`Invalid module number in URL: ${urlModule}`);
+      }
+      // SECURITY CHECK 3: Check if module is unlocked
+      else if (!isModuleUnlocked(requestedModule)) {
+        toast.error(`Module ${requestedModule} is locked. Complete previous modules first.`, {
+          duration: 4000,
+          description: 'You cannot skip modules via URL'
+        });
+      }
+      // All checks passed - allow URL navigation
+      else {
+        hydratedLevel = urlLevel;
+        hydratedModule = requestedModule;
+        hydratedQuestion = urlQuestion ? parseInt(urlQuestion) : 0;
+        hydratedPhase = hydratedQuestion > 0 ? 'speaking' : 'intro';
+        hydratedViewState = 'lesson';
+        source = 'params';
+      }
     }
     // Priority 2: Saved progress (resume functionality)
     else {
@@ -1993,6 +2058,25 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
         storage.setItem('completedModules', JSON.stringify(newCompletedModules));
       } catch {
         // Safari Private Mode - skip localStorage persistence
+      }
+
+      // FIX #1: Save module completion to database (fire-and-forget)
+      if (user?.id) {
+        lessonProgressService.saveCheckpoint({
+          user_id: user.id,
+          level: String(selectedLevel),
+          module_id: selectedModule,
+          question_index: (currentModuleData?.speakingPractice?.length || 40) - 1,
+          total_questions: currentModuleData?.speakingPractice?.length || 40,
+          question_phase: 'COMPLETED',
+          is_module_completed: true,
+          timestamp: Date.now()
+        }).then(() => {
+          toast.success('Progress saved to cloud!', { duration: 2000 });
+        }).catch((error) => {
+          console.error('Failed to save module completion to database:', error);
+          toast.warning('Saved locally. Will sync when online.', { duration: 3000 });
+        });
       }
     }
 
@@ -2663,40 +2747,79 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
     });
   }, [currentPhase, speakingIndex, selectedModule, selectedLevel, currentModuleData]); // ✅ Added currentModuleData dependency
 
+  // ===== RENDER LOGIC =====
+  // PlacementTestModal MUST render at top level (before any early returns)
+  // so it's accessible in all view states
+
   // Render levels view
   if (!isHydrated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700">
-        <div className="p-4 max-w-4xl mx-auto">
-          <div className="animate-pulse">
-            <div className="h-8 bg-white/20 rounded mb-6"></div>
-            <div className="h-64 bg-white/10 rounded-lg"></div>
+      <>
+        {/* CRITICAL: Render placement modal even during loading */}
+        <PlacementTestModal
+          isOpen={showPlacementRequired}
+          onClose={() => {
+            setShowPlacementRequired(false);
+            onBack(); // Return to speaking page
+          }}
+          onStartTest={() => {
+            setShowPlacementRequired(false);
+            if (onNavigateToPlacementTest) {
+              onNavigateToPlacementTest();
+            } else {
+              onBack(); // Fallback to main view
+            }
+          }}
+        />
+        <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700">
+          <div className="p-4 max-w-4xl mx-auto">
+            <div className="animate-pulse">
+              <div className="h-8 bg-white/20 rounded mb-6"></div>
+              <div className="h-64 bg-white/10 rounded-lg"></div>
+            </div>
           </div>
         </div>
-      </div>
+      </>
     );
   }
 
   if (viewState === 'levels') {
     return (
-      <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: 'hsl(var(--app-bg))' }}>
-        <div className="relative z-10 p-4 max-w-sm mx-auto">
-          {/* Header */}
-          <div className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-3xl p-6 mb-6 mt-safe-area-inset-top">
-            <div className="flex items-center justify-between mb-4">
-              <Button
-                onClick={onBack}
-                variant="ghost"
-                size="icon"
-                className="text-white hover:bg-white/10 rounded-full"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-              
-              <h1 className="text-lg font-bold text-white">Choose Your Level</h1>
-              <div className="w-10"></div>
+      <>
+        {/* CRITICAL: Render placement modal in levels view */}
+        <PlacementTestModal
+          isOpen={showPlacementRequired}
+          onClose={() => {
+            setShowPlacementRequired(false);
+            onBack(); // Return to speaking page
+          }}
+          onStartTest={() => {
+            setShowPlacementRequired(false);
+            if (onNavigateToPlacementTest) {
+              onNavigateToPlacementTest();
+            } else {
+              onBack(); // Fallback to main view
+            }
+          }}
+        />
+        <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: 'hsl(var(--app-bg))' }}>
+          <div className="relative z-10 p-4 max-w-sm mx-auto">
+            {/* Header */}
+            <div className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-3xl p-6 mb-6 mt-safe-area-inset-top">
+              <div className="flex items-center justify-between mb-4">
+                <Button
+                  onClick={onBack}
+                  variant="ghost"
+                  size="icon"
+                  className="text-white hover:bg-white/10 rounded-full"
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </Button>
+
+                <h1 className="text-lg font-bold text-white">Choose Your Level</h1>
+                <div className="w-10"></div>
+              </div>
             </div>
-          </div>
 
           {/* Levels Grid */}
           <div className="space-y-4">
@@ -2728,6 +2851,7 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
           </div>
         </div>
       </div>
+      </>
     );
   }
 
@@ -2893,58 +3017,37 @@ export default function LessonsApp({ onBack, initialLevel, initialModule }: Less
     );
   }
 
+  // FIX #2: Add loading state for placement check
+  if (isAuthenticated && hasPlacementTest === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'hsl(var(--app-bg))' }}>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+          <p className="text-white/80">Checking your progress...</p>
+        </div>
+      </div>
+    );
+  }
+
   // Render lesson content
   return (
     <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: 'hsl(var(--app-bg))' }}>
-      {/* Phase 3.1: Placement Test Required Dialog */}
-      <Dialog open={showPlacementRequired} onOpenChange={setShowPlacementRequired}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-blue-500" />
-              Take Placement Test First
-            </DialogTitle>
-            <DialogDescription className="space-y-3 pt-2">
-              <p>
-                To start your personalized learning journey, please take our quick placement test first. This helps us:
-              </p>
-              <div className="bg-blue-50 dark:bg-blue-950 p-3 rounded-lg">
-                <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1 list-disc list-inside">
-                  <li>Assess your current English level</li>
-                  <li>Recommend the right starting point</li>
-                  <li>Track your progress accurately</li>
-                  <li>Unlock appropriate lessons</li>
-                </ul>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                The test only takes 3-5 minutes and helps ensure you get the best learning experience!
-              </p>
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="flex-col sm:flex-row gap-2">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setShowPlacementRequired(false);
-                // Allow browsing but show limited access
-                setHasPlacementTest(false);
-              }}
-              className="w-full sm:w-auto"
-            >
-              Browse Anyway
-            </Button>
-            <Button
-              onClick={() => {
-                setShowPlacementRequired(false);
-                onBack(); // Navigate to main screen with placement test
-              }}
-              className="w-full sm:w-auto"
-            >
-              Take Placement Test
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Placement Test Modal - Clean separation */}
+      <PlacementTestModal
+        isOpen={showPlacementRequired}
+        onClose={() => {
+          setShowPlacementRequired(false);
+          onBack(); // Return to speaking page
+        }}
+        onStartTest={() => {
+          setShowPlacementRequired(false);
+          if (onNavigateToPlacementTest) {
+            onNavigateToPlacementTest();
+          } else {
+            onBack(); // Fallback to main view
+          }
+        }}
+      />
 
       {/* Resume Progress Dialog */}
       {checkpoints.showResumeDialog && checkpoints.getResumeInfo() && (
