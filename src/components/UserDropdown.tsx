@@ -30,32 +30,34 @@ export function UserDropdown({ user, profile, className }: UserDropdownProps) {
   const { toast } = useToast();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  const handleSignOut = async () => {
+  const handleSignOut = () => {
     setIsLoggingOut(true);
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
 
-      // Clear any local storage data
-      localStorage.removeItem('userProfile');
-      localStorage.removeItem('streakData');
-      localStorage.removeItem('badgeProgress');
-      
+    // PERFORMANCE FIX: Fire-and-forget pattern for instant sign-out
+    // Don't await network call - let it happen in background
+    supabase.auth.signOut().catch(error => {
+      // Handle errors silently in background
+      console.error('Sign out error (background):', error);
       toast({
-        title: "Logged out successfully",
-        description: "You have been signed out of your account.",
-      });
-      
-      navigate('/auth');
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to sign out. Please try again.",
+        title: "Note",
+        description: "Sign out may not have completed. Please refresh if needed.",
         variant: "destructive",
       });
-    } finally {
-      setIsLoggingOut(false);
-    }
+    });
+
+    // Clear local storage immediately (don't wait for network)
+    localStorage.removeItem('userProfile');
+    localStorage.removeItem('streakData');
+    localStorage.removeItem('badgeProgress');
+
+    // Show feedback and navigate immediately
+    toast({
+      title: "Signed out successfully",
+      description: "You have been signed out of your account.",
+    });
+
+    navigate('/auth');
+    setIsLoggingOut(false);
   };
 
   const getInitials = () => {

@@ -74,7 +74,7 @@ export const useAuthReady = () => {
         // FIX #6: Handle logout event - clear localStorage for security
         if (event === 'SIGNED_OUT') {
           try {
-            // Clear progress data for security/privacy
+            // Clear progress data for security/privacy (synchronous - fast)
             localStorage.removeItem('ll_progress_v1');
             localStorage.removeItem('completedModules');
             localStorage.removeItem('userPlacement');
@@ -82,15 +82,19 @@ export const useAuthReady = () => {
             localStorage.removeItem('recommendedStartLevel');
             localStorage.removeItem('recommendedStartModule');
 
-            // Clear guest progress keys
-            const allKeys = Object.keys(localStorage);
-            allKeys.forEach(key => {
-              if (key.startsWith('speakflow:v2:')) {
-                localStorage.removeItem(key);
+            // PERFORMANCE FIX: Clear guest progress keys in background (non-blocking)
+            // Using setTimeout prevents blocking the UI thread during sign-out
+            setTimeout(() => {
+              try {
+                const allKeys = Object.keys(localStorage);
+                const keysToRemove = allKeys.filter(key => key.startsWith('speakflow:v2:'));
+                keysToRemove.forEach(key => localStorage.removeItem(key));
+              } catch (err) {
+                console.error('Failed to clear speakflow keys:', err);
               }
-            });
+            }, 0);
 
-            toast.info('Signed out. Your progress is saved in the cloud.');
+            // REMOVED: Duplicate toast (UserDropdown already shows one)
           } catch (error) {
             console.error('Failed to clear localStorage on logout:', error);
           }

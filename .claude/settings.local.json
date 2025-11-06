@@ -102,7 +102,11 @@
       "Bash(timeout 30 npx tsc:*)",
       "Bash(timeout 60 npx tsc:*)",
       "Bash(git rev-list:*)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(vercel --prod:*)",
+      "Bash(vercel login)",
+      "Bash(vercel whoami:*)",
+      "Bash(vercel login:*)"
     ],
     "deny": [],
     "ask": []

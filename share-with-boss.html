@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tomas English - Demo Access</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 48px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #1a202c;
+            font-size: 32px;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: #718096;
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 16px;
+        }
+
+        .qr-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .qr-code {
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            display: inline-block;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .instruction {
+            color: #4a5568;
+            font-size: 14px;
+            margin-top: 16px;
+        }
+
+        .url-section {
+            background: #f7fafc;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .url-label {
+            color: #4a5568;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .url {
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            color: #667eea;
+            font-weight: 600;
+            word-break: break-all;
+            background: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 2px solid #e2e8f0;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .url:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .copy-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+        }
+
+        .copy-btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .copy-btn:active {
+            transform: translateY(0);
+        }
+
+        .feature-list {
+            list-style: none;
+            margin: 24px 0;
+        }
+
+        .feature-list li {
+            padding: 12px 0;
+            color: #2d3748;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .feature-list li:before {
+            content: "✓";
+            background: #48bb78;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .alert {
+            background: #fff5f5;
+            border-left: 4px solid #f56565;
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 24px;
+        }
+
+        .alert-title {
+            color: #c53030;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .alert-text {
+            color: #742a2a;
+            font-size: 14px;
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                padding: 32px 24px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .url {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Tomas English Demo</h1>
+        <p class="subtitle">AI-Powered English Learning Platform</p>
+
+        <!-- QR Code Section -->
+        <div class="qr-section">
+            <div class="qr-code">
+                <canvas id="qr-canvas"></canvas>
+            </div>
+            <p class="instruction">📱 Scan this QR code with your phone to access the demo</p>
+        </div>
+
+        <!-- URL Section -->
+        <div class="url-section">
+            <div class="url-label">🖥️ Local Access (Your Computer)</div>
+            <div class="url" id="local-url" onclick="copyUrl('local')">http://localhost:8083</div>
+            <button class="copy-btn" onclick="copyUrl('local')">Copy Local URL</button>
+        </div>
+
+        <div class="url-section">
+            <div class="url-label">📱 Network Access (Boss's Device - Same WiFi)</div>
+            <div class="url" id="network-url" onclick="copyUrl('network')">http://192.168.1.193:8083</div>
+            <button class="copy-btn" onclick="copyUrl('network')">Copy Network URL</button>
+        </div>
+
+        <!-- Features -->
+        <ul class="feature-list">
+            <li>Placement test requirement for lesson access</li>
+            <li>Godly lockdown system - sequential progression</li>
+            <li>Voice-enabled speaking practice</li>
+            <li>Real-time progress tracking</li>
+            <li>Beautiful modern UI design</li>
+        </ul>
+
+        <!-- Alert -->
+        <div class="alert">
+            <div class="alert-title">⚠️ Important</div>
+            <div class="alert-text">Both devices must be on the SAME WiFi network. If the network URL doesn't work, try: http://100.127.255.253:8083</div>
+        </div>
+    </div>
+
+    <!-- QR Code Generation Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        // Generate QR Code for network URL
+        const networkUrl = 'http://192.168.1.193:8083';
+
+        // Create QR code using canvas
+        function generateQRCode() {
+            const canvas = document.getElementById('qr-canvas');
+            const size = 200;
+            canvas.width = size;
+            canvas.height = size;
+
+            // Use QRCode library
+            new QRCode(document.getElementById("qr-canvas"), {
+                text: networkUrl,
+                width: 200,
+                height: 200,
+                colorDark : "#667eea",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+            });
+        }
+
+        // Alternative: Use a QR code API if library doesn't load
+        setTimeout(() => {
+            if (typeof QRCode === 'undefined') {
+                const canvas = document.getElementById('qr-canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = 200;
+                canvas.height = 200;
+
+                // Use Google Charts API as fallback
+                const img = new Image();
+                img.onload = function() {
+                    ctx.drawImage(img, 0, 0, 200, 200);
+                };
+                img.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(networkUrl)}&color=667eea`;
+            } else {
+                generateQRCode();
+            }
+        }, 100);
+
+        // Copy URL to clipboard
+        function copyUrl(type) {
+            const url = type === 'local' ? 'http://localhost:8083' : 'http://192.168.1.193:8083';
+
+            // Create temporary input
+            const temp = document.createElement('input');
+            temp.value = url;
+            document.body.appendChild(temp);
+            temp.select();
+
+            try {
+                document.execCommand('copy');
+
+                // Show success feedback
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '✓ Copied!';
+                btn.style.background = '#48bb78';
+
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = '#667eea';
+                }, 2000);
+            } catch (err) {
+                alert('Failed to copy. Please copy manually: ' + url);
+            }
+
+            document.body.removeChild(temp);
+        }
+
+        // Make URLs clickable
+        document.getElementById('local-url').addEventListener('click', function() {
+            window.open('http://localhost:8083', '_blank');
+        });
+
+        document.getElementById('network-url').addEventListener('click', function() {
+            window.open('http://192.168.1.193:8083', '_blank');
+        });
+    </script>
+</body>
+</html>
