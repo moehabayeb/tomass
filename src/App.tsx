@@ -5,6 +5,14 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { initSentry } from "@/lib/sentry";
+import { initAmplitude } from "@/lib/amplitude";
+
+// Initialize Sentry for error tracking
+initSentry();
+
+// Initialize Amplitude for analytics
+initAmplitude();
 
 // Lazy load major components for better bundle splitting
 const Index = React.lazy(() => import("./pages/Index"));
