@@ -2,6 +2,7 @@ import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useBadgeSystem } from '@/hooks/useBadgeSystem';
+import { useBadgeProgress } from '@/hooks/useBadgeProgress';
 import { useEffect, useRef, useState } from 'react';
 
 interface BadgesViewProps {
@@ -43,6 +44,8 @@ function useVisibleBadges(badgeIds: string[]) {
 
     return () => {
       observerRef.current?.disconnect();
+      // Phase 1.2: Clear Map to prevent memory leak when badges change
+      elementRefs.current.clear();
     };
   }, [badgeIds]);
 
@@ -65,56 +68,8 @@ function useVisibleBadges(badgeIds: string[]) {
 export default function BadgesView({ onBack }: BadgesViewProps) {
   const { badges, badgeProgress } = useBadgeSystem();
   const { visibleBadges, registerElement } = useVisibleBadges(badges.map(b => b.id));
-
-  const getProgressText = (badgeId: string) => {
-    switch (badgeId) {
-      case 'streak_starter':
-        return `${Math.min(badgeProgress.currentStreak, 3)}/3 days`;
-      case 'grammar_hero':
-        return `${badgeProgress.completedModules}/5 modules`;
-      case 'speaking_pro':
-        return `${badgeProgress.speakingSubmissions}/10 submissions`;
-      case 'daily_learner':
-        return `${badgeProgress.dailyTipsViewed}/7 tips`;
-      case 'early_riser':
-        return `${badgeProgress.earlyRiserCount}/3 times`;
-      case 'bookmark_master':
-        return `${badgeProgress.bookmarksSaved}/5 bookmarks`;
-      case 'level_up':
-        return `Level ${badgeProgress.currentLevel}/10`;
-      case 'party_master':
-        return badgeProgress.partyModeUnlocked ? 'Unlocked!' : 'Reach Level 10';
-      case 'first_lesson':
-        return badgeProgress.totalExercises >= 1 ? 'Completed!' : '0/1 lessons';
-      default:
-        return '';
-    }
-  };
-
-  const getProgressPercentage = (badgeId: string) => {
-    switch (badgeId) {
-      case 'streak_starter':
-        return Math.min((badgeProgress.currentStreak / 3) * 100, 100);
-      case 'grammar_hero':
-        return Math.min((badgeProgress.completedModules / 5) * 100, 100);
-      case 'speaking_pro':
-        return Math.min((badgeProgress.speakingSubmissions / 10) * 100, 100);
-      case 'daily_learner':
-        return Math.min((badgeProgress.dailyTipsViewed / 7) * 100, 100);
-      case 'early_riser':
-        return Math.min((badgeProgress.earlyRiserCount / 3) * 100, 100);
-      case 'bookmark_master':
-        return Math.min((badgeProgress.bookmarksSaved / 5) * 100, 100);
-      case 'level_up':
-        return Math.min((badgeProgress.currentLevel / 10) * 100, 100);
-      case 'party_master':
-        return badgeProgress.partyModeUnlocked ? 100 : Math.min((badgeProgress.currentLevel / 10) * 100, 100);
-      case 'first_lesson':
-        return badgeProgress.totalExercises >= 1 ? 100 : 0;
-      default:
-        return 0;
-    }
-  };
+  // Phase 2.3: Use extracted hook for progress calculations
+  const { getProgressText, getProgressPercentage } = useBadgeProgress(badgeProgress);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-pink-900 text-white relative">
@@ -155,6 +110,12 @@ export default function BadgesView({ onBack }: BadgesViewProps) {
             <div className="text-xl sm:text-2xl font-bold text-primary">{badgeProgress.totalExercises}</div>
             <div className="text-xs sm:text-sm text-white/70">Total Exercises</div>
           </div>
+        </div>
+
+        {/* Phase 2.1: ARIA live region for screen reader support */}
+        <div className="sr-only" aria-live="polite" aria-atomic="true">
+          {badges.filter(b => b.unlocked).length} of {badges.length} badges unlocked.
+          {badges.filter(b => !b.unlocked).length} badges remaining to unlock.
         </div>
 
         {/* Badges Grid */}
@@ -241,11 +202,20 @@ export default function BadgesView({ onBack }: BadgesViewProps) {
             </div>
 
             {/* Unlock Date */}
-            {badge.unlocked && badge.unlockedAt && (
-              <div className="text-center mt-2 text-xs text-white/50">
-                Unlocked {new Date(badge.unlockedAt).toLocaleDateString()}
-              </div>
-            )}
+            {badge.unlocked && badge.unlockedAt && (() => {
+              // Phase 1.1: Validate date to prevent "Invalid Date" display
+              try {
+                const date = new Date(badge.unlockedAt);
+                if (isNaN(date.getTime())) return null;
+                return (
+                  <div className="text-center mt-2 text-xs text-white/50">
+                    Unlocked {date.toLocaleDateString()}
+                  </div>
+                );
+              } catch {
+                return null;
+              }
+            })()}
           </div>
           );
         })}

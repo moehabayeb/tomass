@@ -306,10 +306,13 @@ export default function AppNavigation() {
       />
 
       {/* Badge Achievement Popup */}
-      <BadgeAchievement
-        badge={newlyUnlockedBadge}
-        onClose={closeBadgeNotification}
-      />
+      {/* Phase 2.2: Add ErrorBoundary for consistency with BadgesView */}
+      <ErrorBoundary>
+        <BadgeAchievement
+          badge={newlyUnlockedBadge}
+          onClose={closeBadgeNotification}
+        />
+      </ErrorBoundary>
 
       {/* User Authentication Section */}
       <div className="fixed top-4 left-4 z-20">
@@ -394,7 +397,9 @@ export default function AppNavigation() {
       )}
       
       {currentMode === 'badges' && (
-        <BadgesView onBack={() => setCurrentMode('speaking')} />
+        <ErrorBoundary>
+          <BadgesView onBack={() => setCurrentMode('speaking')} />
+        </ErrorBoundary>
       )}
       
       {currentMode === 'placement-test' && (
