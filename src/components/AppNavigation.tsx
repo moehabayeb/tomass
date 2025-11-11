@@ -382,13 +382,15 @@ export default function AppNavigation() {
       )}
       
       {currentMode === 'bookmarks' && (
-        <BookmarksView 
-          onBack={() => setCurrentMode('speaking')} 
-          onContinueFromMessage={(content) => {
-            setContinuedMessage(content);
-            setCurrentMode('speaking');
-          }}
-        />
+        <ErrorBoundary>
+          <BookmarksView
+            onBack={() => setCurrentMode('speaking')}
+            onContinueFromMessage={(content) => {
+              setContinuedMessage(content);
+              setCurrentMode('speaking');
+            }}
+          />
+        </ErrorBoundary>
       )}
       
       {currentMode === 'badges' && (

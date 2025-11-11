@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Bookmark, MessageSquare, BookOpen, Lightbulb, Trash2, Calendar, Reply } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BookmarkItem } from './BookmarkButton';
+import { toast } from 'sonner';
 
 interface BookmarksViewProps {
   onBack: () => void;
@@ -13,36 +14,46 @@ interface BookmarksViewProps {
 export default function BookmarksView({ onBack, onContinueFromMessage }: BookmarksViewProps) {
   const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
   const [selectedTab, setSelectedTab] = useState<'all' | 'message' | 'lesson' | 'tip'>('all');
+  // Phase 1.1: Track mounted state to prevent state updates after unmount
+  const isMountedRef = useRef(true);
 
   useEffect(() => {
     loadBookmarks();
+
+    // Cleanup: Mark component as unmounted
+    return () => {
+      isMountedRef.current = false;
+    };
   }, []);
 
   const loadBookmarks = async () => {
     try {
       // Load from localStorage
       const localBookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]');
-      
-      // Sort by timestamp (newest first)
-      const sortedBookmarks = localBookmarks.sort((a: BookmarkItem, b: BookmarkItem) => 
-        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-      );
-      
+
+      // Phase 1.2: Validate dates before sorting to prevent NaN crashes
+      const sortedBookmarks = localBookmarks.sort((a: BookmarkItem, b: BookmarkItem) => {
+        const dateA = new Date(a.timestamp);
+        const dateB = new Date(b.timestamp);
+
+        // Handle invalid dates
+        const timeA = isNaN(dateA.getTime()) ? 0 : dateA.getTime();
+        const timeB = isNaN(dateB.getTime()) ? 0 : dateB.getTime();
+
+        return timeB - timeA;
+      });
+
+      // Phase 1.1: Guard against unmounted component
+      if (!isMountedRef.current) return;
+
       setBookmarks(sortedBookmarks);
 
       // TODO: Merge with Supabase bookmarks when user authentication is implemented
-      // const { data: { user } } = await supabase.auth.getUser();
-      // if (user) {
-      //   const { data: supabaseBookmarks } = await supabase
-      //     .from('bookmarks')
-      //     .select('*')
-      //     .eq('user_id', user.id);
-      //   
-      //   // Merge and deduplicate bookmarks
-      // }
     } catch (error) {
-      // 🔧 FIX BUG #2: Failed to load bookmarks from localStorage - silent fail, show empty list
-      // Error cases: JSON parse error or localStorage access denied
+      // Phase 1.3: Show user-friendly error message instead of silent fail
+      if (isMountedRef.current) {
+        toast.error('Failed to load bookmarks. Please try again.');
+      }
     }
   };
 
@@ -52,14 +63,22 @@ export default function BookmarksView({ onBack, onContinueFromMessage }: Bookmar
       const localBookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]');
       const updatedBookmarks = localBookmarks.filter((b: BookmarkItem) => b.id !== id);
       localStorage.setItem('bookmarks', JSON.stringify(updatedBookmarks));
-      
+
+      // Phase 1.1: Guard against unmounted component
+      if (!isMountedRef.current) return;
+
       // Update state
       setBookmarks(prev => prev.filter(b => b.id !== id));
 
+      // Phase 1.3: Show success feedback
+      toast.success('Bookmark deleted');
+
       // TODO: Remove from Supabase when user authentication is implemented
     } catch (error) {
-      // 🔧 FIX BUG #2: Failed to delete bookmark - silent fail, bookmark remains visible
-      // Error cases: JSON parse error, localStorage access denied, or storage write error
+      // Phase 1.3: Show user-friendly error message instead of silent fail
+      if (isMountedRef.current) {
+        toast.error('Failed to delete bookmark. Please try again.');
+      }
     }
   };
 
@@ -87,10 +106,17 @@ export default function BookmarksView({ onBack, onContinueFromMessage }: Bookmar
   };
 
   const formatDate = (timestamp: string) => {
+    // Phase 1.2: Validate date before using it
     const date = new Date(timestamp);
+
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      return 'Unknown date';
+    }
+
     const now = new Date();
     const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
-    
+
     if (diffInHours < 24) {
       return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     } else if (diffInHours < 168) { // 7 days

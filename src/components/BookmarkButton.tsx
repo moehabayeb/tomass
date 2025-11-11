@@ -35,6 +35,8 @@ export default function BookmarkButton({
 
   // 🔧 FIX BUG #4: Track in-flight operations to prevent race conditions
   const isTogglingRef = useRef(false);
+  // Phase 1.1: Track mounted state to prevent memory leak
+  const isMountedRef = useRef(true);
 
   // Generate a unique ID for the bookmark based on content
   const getBookmarkId = (content: string) => {
@@ -62,6 +64,9 @@ export default function BookmarkButton({
       const bookmarkId = getBookmarkId(content);
       const isLocallyBookmarked = localBookmarks.some((b: BookmarkItem) => b.id === bookmarkId);
 
+      // Phase 1.1: Guard against unmounted component
+      if (!isMountedRef.current) return;
+
       setIsBookmarked(isLocallyBookmarked);
 
       // TODO: Also check Supabase when user authentication is implemented
@@ -77,6 +82,11 @@ export default function BookmarkButton({
   // Check if item is bookmarked on mount
   useEffect(() => {
     checkBookmarkStatus();
+
+    // Cleanup: Mark component as unmounted
+    return () => {
+      isMountedRef.current = false;
+    };
   }, [checkBookmarkStatus]);
 
   const toggleBookmark = async () => {
@@ -105,6 +115,10 @@ export default function BookmarkButton({
         // Remove bookmark
         const updatedBookmarks = localBookmarks.filter((b: BookmarkItem) => b.id !== bookmarkId);
         localStorage.setItem('bookmarks', JSON.stringify(updatedBookmarks));
+
+        // Phase 1.1: Guard against unmounted component
+        if (!isMountedRef.current) return;
+
         setIsBookmarked(false);
         onBookmark?.(false);
       } else {
@@ -126,6 +140,9 @@ export default function BookmarkButton({
           }
           throw storageError; // Re-throw other errors
         }
+
+        // Phase 1.1: Guard against unmounted component
+        if (!isMountedRef.current) return;
 
         setIsBookmarked(true);
         onBookmark?.(true);
@@ -155,7 +172,11 @@ export default function BookmarkButton({
     } finally {
       // 🔧 FIX BUG #4: Reset the ref to allow future operations
       isTogglingRef.current = false;
-      setIsLoading(false);
+
+      // Phase 1.1: Guard against unmounted component
+      if (isMountedRef.current) {
+        setIsLoading(false);
+      }
     }
   };
 
