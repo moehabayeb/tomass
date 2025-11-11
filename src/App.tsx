@@ -2,7 +2,7 @@ import React, { Suspense } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Footer } from "@/components/Footer";
@@ -35,6 +35,38 @@ const queryClient = new QueryClient({
   },
 });
 
+// Footer should only appear on static/settings pages, not on interactive app pages
+const ConditionalFooter = () => {
+  const location = useLocation();
+
+  // Pages where footer SHOULD appear (static/legal/settings pages)
+  const footerPages = [
+    '/auth',
+    '/pricing',
+    '/profile',
+    '/privacy',
+    '/terms',
+    '/test-b2',
+  ];
+
+  // Check if current path matches any footer page
+  const shouldShowFooter = footerPages.some(page => location.pathname.startsWith(page)) ||
+                           location.pathname === '/404' ||
+                           !['/', '/lessons', '/meetings', '/speaking'].some(p => location.pathname.startsWith(p));
+
+  // Don't show footer on main app pages (/, with tabs for speaking/lessons/meetings)
+  if (location.pathname === '/' || location.pathname.startsWith('/?')) {
+    return null;
+  }
+
+  // Show footer on static pages only
+  if (shouldShowFooter) {
+    return <Footer />;
+  }
+
+  return null;
+};
+
 const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
@@ -66,7 +98,7 @@ const App = () => (
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
-            <Footer />
+            <ConditionalFooter />
           </>
           </BrowserRouter>
       </ThemeProvider>
