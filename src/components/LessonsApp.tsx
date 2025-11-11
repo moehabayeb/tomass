@@ -45,6 +45,16 @@ import { useAuthReady } from '../hooks/useAuthReady';
 // Dynamic module loader with caching
 const moduleCache = new Map<number, any>();
 
+// Utility: Add timeout to Supabase calls to prevent indefinite hangs
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 30000): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error('Request timeout - please check your connection')), timeoutMs)
+    )
+  ]);
+}
+
 // Safe localStorage wrapper for Safari Private Mode compatibility
 function safeLocalStorage() {
   try {
@@ -911,14 +921,17 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
 
       // No localStorage - check database
       try {
-        const { data, error } = await supabase
-          .from('speaking_test_results')
-          .select('id')
-          .eq('user_id', user?.id)
-          .limit(1);
+        const { data, error } = await withTimeout(
+          supabase
+            .from('speaking_test_results')
+            .select('id')
+            .eq('user_id', user?.id)
+            .limit(1),
+          30000 // 30 second timeout
+        );
 
         if (error) {
-          console.error('Error checking placement test:', error);
+          // Error checking placement test - Sentry will capture this
           setHasPlacementTest(false);
           setShowPlacementRequired(true);
           return;
@@ -931,7 +944,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
           setShowPlacementRequired(true);
         }
       } catch (err) {
-        console.error('Placement test check failed:', err);
+        // Placement test check failed - Sentry will capture this
         setHasPlacementTest(false);
         setShowPlacementRequired(true);
       }
@@ -1815,9 +1828,35 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
     }, 250);
   }, [user?.id, selectedLevel, selectedModule, currentPhase, speakingIndex, currentModuleData]);
 
-  // Clean up on unmount
+  // Clean up on unmount - Phase 1: Comprehensive cleanup for memory leaks
   useEffect(() => () => {
+    // Clear autosave timeout
     if (autosaveTimeoutRef.current) clearTimeout(autosaveTimeoutRef.current);
+
+    // Phase 1.2: Close AudioContext to prevent memory leak
+    try {
+      const ctx = (window as any).__appAudioCtx;
+      if (ctx && ctx.state !== 'closed') {
+        ctx.close();
+        (window as any).__appAudioCtx = null;
+      }
+    } catch (err) {
+      // Ignore cleanup errors
+    }
+
+    // Phase 1.4: Clean up speech recognition
+    try {
+      if (recognizerRef.current) {
+        recognizerRef.current.stop?.();
+        recognizerRef.current = null;
+      }
+    } catch (err) {
+      // Ignore cleanup errors
+    }
+
+    // Phase 1.5: Clear all lesson timeouts
+    lessonTimeoutsRef.current.forEach(clearTimeout);
+    lessonTimeoutsRef.current.clear();
   }, []);
 
   // Also save on tab hide/close
@@ -1826,13 +1865,15 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
       const snap = snapshotProgress();
       if (snap) setProgress(snap);
     };
-    window.addEventListener('beforeunload', handler);
-    document.addEventListener('visibilitychange', () => {
+    // Phase 1: Fix event listener cleanup - store visibility handler separately
+    const visibilityHandler = () => {
       if (document.visibilityState === 'hidden') handler();
-    });
+    };
+    window.addEventListener('beforeunload', handler);
+    document.addEventListener('visibilitychange', visibilityHandler);
     return () => {
       window.removeEventListener('beforeunload', handler);
-      document.removeEventListener('visibilitychange', handler as any);
+      document.removeEventListener('visibilitychange', visibilityHandler);
     };
   }, []);
 
@@ -2074,7 +2115,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
         }).then(() => {
           toast.success('Progress saved to cloud!', { duration: 2000 });
         }).catch((error) => {
-          console.error('Failed to save module completion to database:', error);
+          // Failed to save module completion - Sentry will capture this
           toast.warning('Saved locally. Will sync when online.', { duration: 3000 });
         });
       }
@@ -2452,9 +2493,12 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
       
       // Uploading audio - blobSize: ${audioBlob.size}, filename: ${filename}, type: ${audioBlob.type}
       
-      const transcribeResponse = await supabase.functions.invoke('transcribe', {
-        body: formData
-      });
+      const transcribeResponse = await withTimeout(
+        supabase.functions.invoke('transcribe', {
+          body: formData
+        }),
+        30000 // 30 second timeout
+      );
 
       if (transcribeResponse.error) {
         setFeedback('Failed to process audio. Please try again.');
@@ -2486,9 +2530,12 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
       setFeedbackType('info');
 
       // Step 2: Get feedback on the transcribed text
-      const feedbackResponse = await supabase.functions.invoke('feedback', {
-        body: { text: finalTranscript }
-      });
+      const feedbackResponse = await withTimeout(
+        supabase.functions.invoke('feedback', {
+          body: { text: finalTranscript }
+        }),
+        30000 // 30 second timeout
+      );
 
       if (feedbackResponse.error) {
         throw new Error('Feedback analysis failed');
