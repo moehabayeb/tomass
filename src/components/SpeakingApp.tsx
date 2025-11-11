@@ -467,14 +467,12 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   };
 
   // Helper function to compute messageId from turnToken + phase + text + replay
+  // Use crypto.randomUUID() to prevent hash collisions that cause message deduplication bugs
   const computeMessageId = (turnToken: string, phase: 'prompt' | 'feedback', text: string, replay = 0) => {
-    const baseId = `${turnToken}-${phase}-${text.substring(0, 20).replace(/[^a-zA-Z0-9]/g, '')}`;
-    const hash = baseId.split('').reduce((a, b) => {
-      a = ((a << 5) - a) + b.charCodeAt(0);
-      return a & a;
-    }, 0);
+    const textPrefix = text.substring(0, 20).replace(/[^a-zA-Z0-9]/g, '');
+    const uniqueId = crypto.randomUUID().substring(0, 8); // Short UUID for readability
     const replaySuffix = replay > 0 ? `-r${replay}` : '';
-    return `msg-${Math.abs(hash)}-${phase}${replaySuffix}`;
+    return `msg-${turnToken.substring(5, 13)}-${phase}-${textPrefix}-${uniqueId}${replaySuffix}`;
   };
 
   // Clear old state/timers on every new turn
@@ -500,8 +498,9 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     }
   };
 
-  // 🔧 FIX #5: Debounce turn token generation to prevent race conditions
+  // 🔧 FIX #5 & Phase 2: Debounce + mutex to prevent turn token race conditions
   const lastTurnStartRef = useRef(0);
+  const turnInProgressRef = useRef(false);
   const TURN_DEBOUNCE_MS = 300;
 
   // 2) When starting a turn, always pass a token and always call completion
@@ -512,13 +511,26 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       // Too soon, return current token
       return currentTurnToken;
     }
+
+    // Phase 2: Mutex check - prevent starting new turn if one is in progress
+    if (turnInProgressRef.current) {
+      return currentTurnToken;
+    }
+
     lastTurnStartRef.current = now;
+    turnInProgressRef.current = true;
 
     const tok = `turn-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,7)}`;
     cancelOldListeners();
     setCurrentTurnToken(tok);
     setReplayCounter(0);
     setFlowState('IDLE');
+
+    // Release mutex after a short delay to allow turn to initialize
+    setTimeout(() => {
+      turnInProgressRef.current = false;
+    }, 500);
+
     return tok;
   };
 
