@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Edit2, LogOut, User, Mail, Trophy, Calendar, Upload, Trash2 } from 'lucide-react';
+import { ArrowLeft, Edit2, LogOut, User, Mail, Trophy, Calendar, Upload, Trash2, FileText, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuthReady } from '@/hooks/useAuthReady';
@@ -7,7 +7,7 @@ import { useUserData } from '@/hooks/useUserData';
 import { useProgressStore } from '@/hooks/useProgressStore';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { AvatarDisplay } from '@/components/AvatarDisplay';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -641,6 +641,40 @@ export default function Profile() {
                   ))}
                 </div>
               )}
+            </CardContent>
+          </Card>
+
+          {/* Legal Section */}
+          <Card className="bg-white/10 backdrop-blur-xl border-white/20 lg:col-span-2">
+            <CardHeader className="pb-3 sm:pb-6">
+              <CardTitle className="text-white flex items-center gap-2 text-base sm:text-lg">
+                <Shield className="h-4 w-4 sm:h-5 sm:w-5" />
+                Legal Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Link
+                  to="/privacy"
+                  className="flex items-center gap-2 p-3 bg-white/5 rounded-lg border border-white/20 hover:bg-white/10 transition-colors"
+                >
+                  <Shield className="h-5 w-5 text-blue-400" />
+                  <div className="flex-1">
+                    <div className="text-white font-medium text-sm sm:text-base">Privacy Policy</div>
+                    <div className="text-white/60 text-xs">How we protect your data</div>
+                  </div>
+                </Link>
+                <Link
+                  to="/terms"
+                  className="flex items-center gap-2 p-3 bg-white/5 rounded-lg border border-white/20 hover:bg-white/10 transition-colors"
+                >
+                  <FileText className="h-5 w-5 text-purple-400" />
+                  <div className="flex-1">
+                    <div className="text-white font-medium text-sm sm:text-base">Terms of Service</div>
+                    <div className="text-white/60 text-xs">Our terms and conditions</div>
+                  </div>
+                </Link>
+              </div>
             </CardContent>
           </Card>
         </div>

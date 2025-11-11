@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { Footer } from "@/components/Footer";
 import { initSentry } from "@/lib/sentry";
 import { initAmplitude } from "@/lib/amplitude";
 
@@ -46,6 +47,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <>
             <Suspense fallback={
               <div className="min-h-screen flex items-center justify-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -64,6 +66,8 @@ const App = () => (
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
+            <Footer />
+          </>
           </BrowserRouter>
       </ThemeProvider>
     </QueryClientProvider>

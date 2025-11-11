@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -252,6 +252,26 @@ export default function Auth() {
                 />
                 <p className="mt-1 text-xs text-slate-300/60">
                   Must be at least 6 characters
+                </p>
+              </div>
+
+              {/* Legal Agreement */}
+              <div className="pt-2 pb-1">
+                <p className="text-xs text-slate-300/70 text-center leading-relaxed">
+                  By creating an account, you agree to our{' '}
+                  <Link
+                    to="/terms"
+                    className="text-sky-300 hover:text-sky-200 underline transition-colors"
+                  >
+                    Terms of Service
+                  </Link>
+                  {' '}and{' '}
+                  <Link
+                    to="/privacy"
+                    className="text-sky-300 hover:text-sky-200 underline transition-colors"
+                  >
+                    Privacy Policy
+                  </Link>
                 </p>
               </div>
 

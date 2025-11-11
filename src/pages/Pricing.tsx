@@ -4,8 +4,8 @@
  */
 
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Check, Crown, Zap, Users, ArrowLeft, Sparkles, Star, Smartphone } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
+import { Check, Crown, Zap, Users, ArrowLeft, Sparkles, Star, Smartphone, Shield, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -313,6 +313,38 @@ export default function Pricing() {
                 <p className="text-slate-300">
                   Yes! You can upgrade or downgrade at any time. Changes take effect at the start of your next billing cycle.
                 </p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white/5 border-white/10 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="text-lg text-white flex items-center gap-2">
+                  <Shield className="w-5 h-5" />
+                  Legal Information
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <p className="text-slate-300">
+                    Please review our legal documents before subscribing:
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <Link
+                      to="/privacy"
+                      className="flex items-center gap-2 px-4 py-3 bg-blue-500/10 border border-blue-500/30 rounded-lg hover:bg-blue-500/20 transition-colors"
+                    >
+                      <Shield className="w-5 h-5 text-blue-400" />
+                      <span className="text-white font-medium">Privacy Policy</span>
+                    </Link>
+                    <Link
+                      to="/terms"
+                      className="flex items-center gap-2 px-4 py-3 bg-purple-500/10 border border-purple-500/30 rounded-lg hover:bg-purple-500/20 transition-colors"
+                    >
+                      <FileText className="w-5 h-5 text-purple-400" />
+                      <span className="text-white font-medium">Terms of Service</span>
+                    </Link>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>
