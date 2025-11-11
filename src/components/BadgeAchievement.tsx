@@ -14,6 +14,9 @@ export const BadgeAchievement = ({ badge, onClose }: BadgeAchievementProps) => {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
   const isMountedRef = useRef(true);
+  // Phase 1.5: Add refs for animation timers to prevent memory leaks
+  const focusTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const closeTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // 🔧 FIX BUG #15, #18: Proper timer cleanup
   const clearAutoTimer = useCallback(() => {
@@ -27,7 +30,8 @@ export const BadgeAchievement = ({ badge, onClose }: BadgeAchievementProps) => {
     setShow(false);
     clearAutoTimer();
 
-    setTimeout(() => {
+    // Phase 1.5: Store timer in ref for cleanup
+    closeTimerRef.current = setTimeout(() => {
       onClose();
       // 🔧 FIX BUG #16: Safely restore focus
       if (previousFocusRef.current && document.contains(previousFocusRef.current)) {
@@ -41,6 +45,7 @@ export const BadgeAchievement = ({ badge, onClose }: BadgeAchievementProps) => {
           // Apple Store Compliance: Silent operation
         }
       }
+      closeTimerRef.current = null;
     }, 300);
   }, [onClose, clearAutoTimer]);
 
@@ -62,6 +67,15 @@ export const BadgeAchievement = ({ badge, onClose }: BadgeAchievementProps) => {
     return () => {
       isMountedRef.current = false;
       clearAutoTimer();
+      // Phase 1.5: Clear all timers on unmount to prevent memory leaks
+      if (focusTimerRef.current) {
+        clearTimeout(focusTimerRef.current);
+        focusTimerRef.current = null;
+      }
+      if (closeTimerRef.current) {
+        clearTimeout(closeTimerRef.current);
+        closeTimerRef.current = null;
+      }
     };
   }, [clearAutoTimer]);
 
@@ -72,11 +86,12 @@ export const BadgeAchievement = ({ badge, onClose }: BadgeAchievementProps) => {
 
       setShow(true);
 
-      // Focus the close button after animation
-      setTimeout(() => {
+      // Phase 1.5: Store focus timer in ref for cleanup
+      focusTimerRef.current = setTimeout(() => {
         if (isMountedRef.current) {
           closeButtonRef.current?.focus();
         }
+        focusTimerRef.current = null;
       }, 100);
 
       // Auto-dismiss after 4 seconds

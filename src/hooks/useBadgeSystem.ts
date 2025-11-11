@@ -187,12 +187,27 @@ export const useBadgeSystem = () => {
       try {
         const parsed = JSON.parse(savedBadges);
 
+        // Phase 1.3: Define type guard for parsed badge validation
+        interface ParsedBadge {
+          id: string;
+          unlocked?: boolean;
+          unlockedAt?: Date | string;
+          [key: string]: unknown;
+        }
+
+        const isParsedBadge = (b: unknown): b is ParsedBadge => {
+          return typeof b === 'object' &&
+                 b !== null &&
+                 'id' in b &&
+                 typeof (b as ParsedBadge).id === 'string';
+        };
+
         // Validate structure
         if (Array.isArray(parsed)) {
           // Merge with new badges for existing users
           const mergedBadges = initialBadges.map(newBadge => {
-            const existingBadge = parsed.find((b: any) =>
-              b && typeof b === 'object' && b.id === newBadge.id
+            const existingBadge = parsed.find((b: unknown): b is ParsedBadge =>
+              isParsedBadge(b) && b.id === newBadge.id
             );
             return existingBadge || newBadge;
           });
@@ -283,6 +298,16 @@ export const useBadgeSystem = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run once on mount
 
+  // Phase 1.5: Cleanup timer on unmount to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (updateTimeout.current) {
+        clearTimeout(updateTimeout.current);
+        updateTimeout.current = null;
+      }
+    };
+  }, []);
+
   // 🔧 FIX BUG #8 & #11: Check badges without triggering infinite loop
   const checkBadgeUnlocks = useCallback((progress: BadgeProgress, currentBadges: Badge[]) => {
     if (isUpdatingBadges.current) return currentBadges;
@@ -352,21 +377,26 @@ export const useBadgeSystem = () => {
 
   // Check badges when progress changes
   useEffect(() => {
-    const updatedBadges = checkBadgeUnlocks(badgeProgress, badges);
+    // Phase 1.4: Use functional setState to avoid race conditions
+    setBadges(currentBadges => {
+      const updatedBadges = checkBadgeUnlocks(badgeProgress, currentBadges);
 
-    // Only update if actually changed
-    const hasChanges = updatedBadges.some((badge, idx) =>
-      badge.unlocked !== badges[idx]?.unlocked
-    );
+      // Only update if actually changed
+      const hasChanges = updatedBadges.some((badge, idx) =>
+        badge.unlocked !== currentBadges[idx]?.unlocked
+      );
 
-    if (hasChanges) {
-      setBadges(updatedBadges);
-      safeLocalStorage.setItem('user_badges', JSON.stringify(updatedBadges));
-    }
+      if (hasChanges) {
+        safeLocalStorage.setItem('user_badges', JSON.stringify(updatedBadges));
+        return updatedBadges;
+      }
+
+      return currentBadges;
+    });
 
     // Always save progress
     safeLocalStorage.setItem('badge_progress', JSON.stringify(badgeProgress));
-  }, [badgeProgress, badges, checkBadgeUnlocks]);
+  }, [badgeProgress, checkBadgeUnlocks]);
 
   // 🔧 FIX BUG #11: Update features without infinite loop
   useEffect(() => {
