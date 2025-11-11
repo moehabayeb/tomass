@@ -1046,7 +1046,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     const corrNoPunct = normalizePunctuation(corrected);
 
     if (origNoPunct === corrNoPunct) {
-      console.warn('🚨 Client-side blocked false positive: punctuation-only difference', { original, corrected });
+      // Blocked false positive: punctuation-only difference
       return false;
     }
 
@@ -1063,7 +1063,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     const corrNormalized = normalizeCompounds(corrected);
 
     if (origNormalized === corrNormalized) {
-      console.warn('🚨 Client-side blocked false positive: compound word variation', { original, corrected });
+      // Blocked false positive: compound word variation
       return false;
     }
 

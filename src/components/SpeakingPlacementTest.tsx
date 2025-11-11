@@ -30,6 +30,16 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuthReady } from '@/hooks/useAuthReady';
 
+// Utility: Add timeout to Supabase calls to prevent indefinite hangs
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 30000): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error('Request timeout - please check your connection')), timeoutMs)
+    )
+  ]);
+}
+
 interface SpeakingPlacementTestProps {
   onBack: () => void;
   onComplete: (level: string, score: number) => void;
@@ -716,30 +726,33 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
       const { data: { user } } = await supabase.auth.getUser();
 
       if (user && isAuthenticated) {
-        const { data, error } = await supabase.rpc('save_speaking_test_result', {
-          p_overall_score: overallScore,
-          p_recommended_level: scored.level,
-          p_pronunciation_score: scored.pron * 10,
-          p_grammar_score: scored.grammar * 10,
-          p_vocabulary_score: scored.vocab * 10,
-          p_fluency_score: Math.min(100, Math.round(wordsPerMinute * 2)), // Simple fluency metric
-          p_comprehension_score: 75, // Default (test doesn't measure this directly)
-          p_test_duration: testDuration,
-          p_transcript: transcript,
-          p_detailed_feedback: {
-            level: scored.level,
-            scores: { grammar: scored.grammar, vocabulary: scored.vocab, pronunciation: scored.pron },
-            metrics: { totalWords, uniqueWords, wordsPerMinute, testDuration }
-          },
-          p_words_per_minute: wordsPerMinute,
-          p_unique_words_count: uniqueWords,
-          p_grammar_errors_count: Math.max(0, 10 - scored.grammar), // Estimate
-          p_pronunciation_issues: {},
-          p_test_type: 'placement'
-        });
+        const { data, error } = await withTimeout(
+          supabase.rpc('save_speaking_test_result', {
+            p_overall_score: overallScore,
+            p_recommended_level: scored.level,
+            p_pronunciation_score: scored.pron * 10,
+            p_grammar_score: scored.grammar * 10,
+            p_vocabulary_score: scored.vocab * 10,
+            p_fluency_score: Math.min(100, Math.round(wordsPerMinute * 2)), // Simple fluency metric
+            p_comprehension_score: 75, // Default (test doesn't measure this directly)
+            p_test_duration: testDuration,
+            p_transcript: transcript,
+            p_detailed_feedback: {
+              level: scored.level,
+              scores: { grammar: scored.grammar, vocabulary: scored.vocab, pronunciation: scored.pron },
+              metrics: { totalWords, uniqueWords, wordsPerMinute, testDuration }
+            },
+            p_words_per_minute: wordsPerMinute,
+            p_unique_words_count: uniqueWords,
+            p_grammar_errors_count: Math.max(0, 10 - scored.grammar), // Estimate
+            p_pronunciation_issues: {},
+            p_test_type: 'placement'
+          }),
+          30000 // 30 second timeout
+        );
 
         if (error) {
-          console.error('Failed to save test results to database:', error);
+          // Failed to save test results - Sentry will capture this
           toast.error('Test completed, but results may not be saved. Please check your connection.');
         } else {
           toast.success('Test results saved successfully!');
@@ -751,21 +764,24 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
                                    scored.level === 'A2' ? 51 :
                                    scored.level === 'B1' ? 101 : 1;
 
-            const { data: progressData, error: progressError } = await supabase.rpc('upsert_lesson_progress', {
-              p_user_id: user.id,
-              p_level: scored.level,
-              p_module_id: startingModule,
-              p_question_index: 0,
-              p_total_questions: 10, // Default, will be updated when lesson starts
-              p_question_phase: 'MCQ',
-              p_is_module_completed: false
-            });
+            const { data: progressData, error: progressError } = await withTimeout(
+              supabase.rpc('upsert_lesson_progress', {
+                p_user_id: user.id,
+                p_level: scored.level,
+                p_module_id: startingModule,
+                p_question_index: 0,
+                p_total_questions: 10, // Default, will be updated when lesson starts
+                p_question_phase: 'MCQ',
+                p_is_module_completed: false
+              }),
+              30000 // 30 second timeout
+            );
 
             if (progressError) {
-              console.error('Failed to create lesson progress:', progressError);
+              // Failed to create lesson progress - Sentry will capture this
             }
           } catch (progressErr) {
-            console.error('Error creating lesson progress:', progressErr);
+            // Error creating lesson progress - Sentry will capture this
           }
         }
       } else if (!isAuthenticated && allowPracticeMode) {
@@ -773,7 +789,7 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
         toast.info('Practice Mode: Results saved locally only.');
       }
     } catch (dbError) {
-      console.error('Database error:', dbError);
+      // Database error - Sentry will capture this
       // Continue anyway - localStorage has the data
     }
 
