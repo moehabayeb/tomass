@@ -42,8 +42,18 @@ import { useAuthReady } from '../hooks/useAuthReady';
 // 🚀 BUNDLE OPTIMIZATION: Dynamic module loading to reduce initial bundle size by ~80%
 // Modules are now loaded on-demand when user accesses a specific lesson
 
+// Phase 4: Type definitions for module data
+interface ModuleData {
+  speakingPractice?: Array<{
+    question: string;
+    answer: string;
+    [key: string]: any;
+  }>;
+  [key: string]: any;
+}
+
 // Dynamic module loader with caching
-const moduleCache = new Map<number, any>();
+const moduleCache = new Map<number, ModuleData>();
 
 // Utility: Add timeout to Supabase calls to prevent indefinite hangs
 function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 30000): Promise<T> {
@@ -76,14 +86,14 @@ function safeLocalStorage() {
 
 const storage = safeLocalStorage();
 
-async function loadModuleData(moduleId: number): Promise<any> {
+async function loadModuleData(moduleId: number): Promise<ModuleData | null> {
   // Check cache first
   if (moduleCache.has(moduleId)) {
-    return moduleCache.get(moduleId);
+    return moduleCache.get(moduleId)!;
   }
 
   // Determine which file to load from based on module ID
-  let moduleData: any;
+  let moduleData: ModuleData | null = null;
 
   try {
     if (moduleId >= 1 && moduleId <= 150) {
@@ -890,7 +900,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
   const [lastResponseTime, setLastResponseTime] = useState(0);
 
   // 🔧 GOD-LEVEL FIX: Dynamic module loading state
-  const [moduleData, setModuleData] = useState<any>(null);
+  const [moduleData, setModuleData] = useState<ModuleData | null>(null);
   const [isLoadingModule, setIsLoadingModule] = useState(true);
   const [moduleLoadError, setModuleLoadError] = useState<string | null>(null);
 
@@ -2489,6 +2499,19 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
         return;
       }
       
+      // Phase 3: Validate audio MIME type
+      const validAudioTypes = ['audio/webm', 'audio/wav', 'audio/ogg', 'audio/mp4', 'audio/mpeg'];
+      if (audioBlob.type && !validAudioTypes.includes(audioBlob.type)) {
+        setFeedback('Invalid audio format. Please try again.');
+        setFeedbackType('error');
+        const timeoutId = setTimeout(() => {
+          setFeedback('');
+          setIsProcessing(false);
+        }, 3000);
+        lessonTimeoutsRef.current.add(timeoutId);
+        return;
+      }
+
       // Check minimum audio size (should be at least a few KB for meaningful audio)
       if (audioBlob.size < 1000) {
         setFeedback('Audio recording too short. Please speak for at least 2 seconds.');
@@ -2880,6 +2903,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
                   variant="ghost"
                   size="icon"
                   className="text-white hover:bg-white/10 rounded-full"
+                  aria-label="Go back to home"
                 >
                   <ArrowLeft className="h-5 w-5" />
                 </Button>
@@ -3073,9 +3097,10 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
               </div>
             </div>
 
-            <Button 
+            <Button
               onClick={() => { narration.cancel(); setViewState('modules'); }}
               className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30"
+              aria-label="Back to module selection"
             >
               Back to Modules
             </Button>
