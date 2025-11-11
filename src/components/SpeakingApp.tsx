@@ -1042,13 +1042,17 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
     // Client-side safety check 1: Reject punctuation-only differences
     // Examples: "hello" vs 'hello' vs "hello", at some point vs 'at some point'
+    // Phase 3: Preserve apostrophes in contractions (don't, can't, I'm, etc.)
     const normalizePunctuation = (text: string): string => {
       return text
         .toLowerCase()
-        // Remove ASCII punctuation
-        .replace(/[.,!?;:'"()\[\]{}<>\/\\|@#$%^&*_+=~`-]/g, '')
-        // Remove Unicode smart quotes and quote variants
-        .replace(/[\u2018\u2019\u201C\u201D\u00AB\u00BB\u2039\u203A\u201E\u201A]/g, '')
+        // Remove ASCII punctuation BUT preserve apostrophes between letters (contractions)
+        .replace(/[.,!?;:()\[\]{}<>\/\\|@#$%^&*_+=~`-]/g, '')
+        // Remove quotes EXCEPT apostrophes in contractions (e.g., don't, can't)
+        .replace(/^['"]|['"]$/g, '') // Remove leading/trailing quotes
+        .replace(/\s['"]|['"]\s/g, ' ') // Remove quotes around spaces
+        // Remove Unicode smart quotes
+        .replace(/[\u201C\u201D\u00AB\u00BB\u2039\u203A\u201E\u201A]/g, '')
         // Normalize whitespace
         .replace(/\s+/g, ' ')
         .trim();
@@ -1586,7 +1590,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       {/* Full-Screen Scrollable Chat Area - adjusted for floating header */}
       <div className="flex-1 overflow-y-auto pt-[240px] pb-24 px-4 overscroll-behavior-contain">
           <div className="space-y-4">
-            {messages.map((message, index) => (
+            {/* Phase 3: Pagination - show only last 50 messages to prevent performance issues */}
+            {messages.slice(-50).map((message, index) => (
               <ChatBubble
                 key={`${message.id}-${index}`}
                 message={message.text}
