@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useUserData } from './useUserData';
 import { toast } from '@/hooks/use-toast';
+import { BADGE_THRESHOLDS } from './useBadgeProgress';
 
 export interface Badge {
   id: string;
@@ -319,33 +320,34 @@ export const useBadgeSystem = () => {
 
       let shouldUnlock = false;
 
+      // Phase 3.1: Use constants for badge thresholds
       switch (badge.id) {
         case 'streak_starter':
-          shouldUnlock = progress.currentStreak >= 3;
+          shouldUnlock = progress.currentStreak >= BADGE_THRESHOLDS.STREAK_STARTER;
           break;
         case 'grammar_hero':
-          shouldUnlock = progress.completedModules >= 5;
+          shouldUnlock = progress.completedModules >= BADGE_THRESHOLDS.GRAMMAR_HERO;
           break;
         case 'speaking_pro':
-          shouldUnlock = progress.speakingSubmissions >= 10;
+          shouldUnlock = progress.speakingSubmissions >= BADGE_THRESHOLDS.SPEAKING_PRO;
           break;
         case 'daily_learner':
-          shouldUnlock = progress.dailyTipsViewed >= 7;
+          shouldUnlock = progress.dailyTipsViewed >= BADGE_THRESHOLDS.DAILY_LEARNER;
           break;
         case 'early_riser':
-          shouldUnlock = progress.earlyRiserCount >= 3;
+          shouldUnlock = progress.earlyRiserCount >= BADGE_THRESHOLDS.EARLY_RISER;
           break;
         case 'bookmark_master':
-          shouldUnlock = progress.bookmarksSaved >= 5;
+          shouldUnlock = progress.bookmarksSaved >= BADGE_THRESHOLDS.BOOKMARK_MASTER;
           break;
         case 'level_up':
-          shouldUnlock = progress.currentLevel >= 10;
+          shouldUnlock = progress.currentLevel >= BADGE_THRESHOLDS.LEVEL_UP;
           break;
         case 'party_master':
           shouldUnlock = progress.partyModeUnlocked;
           break;
         case 'first_lesson':
-          shouldUnlock = progress.grammarLessonsCompleted >= 1 || progress.totalExercises >= 1;
+          shouldUnlock = progress.grammarLessonsCompleted >= BADGE_THRESHOLDS.FIRST_LESSON || progress.totalExercises >= BADGE_THRESHOLDS.FIRST_LESSON;
           break;
       }
 
@@ -356,9 +358,10 @@ export const useBadgeSystem = () => {
         if (!shownBadgeIds.current.has(badge.id)) {
           shownBadgeIds.current.add(badge.id);
 
+          // Phase 3.2: Enhanced toast with badge description for better UX
           toast({
             title: "🏅 Badge Unlocked!",
-            description: `You earned the "${badge.name}" badge!`,
+            description: `You earned "${badge.name}" - ${badge.description}`,
             duration: 4000,
           });
 
