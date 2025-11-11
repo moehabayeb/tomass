@@ -1663,6 +1663,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
               flowState === 'READING' || flowState === 'LISTENING' || flowState === 'PROCESSING' ? 'Pause' :
               'Conversation control'
             }
+            tabIndex={0}
+            role="button"
             onClick={async () => {
               triggerHaptic('light');
               if (flowState === 'IDLE') {
