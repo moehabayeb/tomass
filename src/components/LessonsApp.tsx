@@ -977,10 +977,15 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
       try {
         const data = await loadModuleData(selectedModule);
 
+        // Phase 2.2: Check if component still mounted after async load
+        if (!isMountedRef.current) return;
+
         if (!data) {
           // Fallback for modules 68-87 (not yet implemented) - use module 51
           if (selectedModule >= 68 && selectedModule <= 87) {
             const fallbackData = await loadModuleData(51);
+            // Check again after second async operation
+            if (!isMountedRef.current) return;
             setModuleData(fallbackData);
           } else {
             setModuleLoadError(`Module ${selectedModule} not found`);
@@ -990,11 +995,16 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
           setModuleData(data);
         }
       } catch (error: any) {
+        // Phase 2.2: Guard state updates in error handler
+        if (!isMountedRef.current) return;
         // Set error state for UI display
         setModuleLoadError(error.message || 'Failed to load module');
         setModuleData(null);
       } finally {
-        setIsLoadingModule(false);
+        // Phase 2.2: Guard state updates in finally block
+        if (isMountedRef.current) {
+          setIsLoadingModule(false);
+        }
       }
     }
 
@@ -1027,6 +1037,8 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
   const timeoutRef = useRef<number | null>(null);
   const placementToastTimeoutRef = useRef<number | null>(null);
   const lessonCompletedRef = useRef(false);
+  // Phase 2.1: Track mounted state to prevent state updates after unmount
+  const isMountedRef = useRef(true);
   
   // Track the live speaking index (no stale closures)
   const speakingIndexRef = useRef(0);
@@ -1828,8 +1840,11 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
     }, 250);
   }, [user?.id, selectedLevel, selectedModule, currentPhase, speakingIndex, currentModuleData]);
 
-  // Clean up on unmount - Phase 1: Comprehensive cleanup for memory leaks
+  // Clean up on unmount - Phase 1 & 2: Comprehensive cleanup for memory leaks
   useEffect(() => () => {
+    // Phase 2.1: Mark component as unmounted
+    isMountedRef.current = false;
+
     // Clear autosave timeout
     if (autosaveTimeoutRef.current) clearTimeout(autosaveTimeoutRef.current);
 
@@ -2423,6 +2438,9 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
   }, [speakingIndex, currentModuleData, isProcessing]);
 
   const processAudioRecording = useCallback(async (audioBlob: Blob) => {
+    // Phase 2.1: Guard against unmounted component
+    if (!isMountedRef.current) return;
+
     // 🔒 CRITICAL: Prevent concurrent processing and lock current state
     if (isProcessing) {
       return;
@@ -2540,6 +2558,9 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
       if (feedbackResponse.error) {
         throw new Error('Feedback analysis failed');
       }
+
+      // Phase 2.1: Check if component still mounted after async operations
+      if (!isMountedRef.current) return;
 
       const { corrected } = feedbackResponse.data;
 
