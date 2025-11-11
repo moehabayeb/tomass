@@ -580,4 +580,125 @@ export class SubscriptionService {
       subscription: data,
     };
   }
+
+  /**
+   * Verify Apple In-App Purchase receipt
+   * Calls the verify-apple-receipt Edge Function
+   */
+  static async verifyAppleReceipt(receipt: string, userId: string): Promise<SubscriptionActionResult> {
+    try {
+      const { data, error } = await supabase.functions.invoke('verify-apple-receipt', {
+        body: {
+          receipt,
+          userId,
+        },
+      });
+
+      if (error) {
+        return {
+          success: false,
+          message: 'Failed to verify Apple receipt',
+          error: error.message,
+        };
+      }
+
+      if (!data.success) {
+        return {
+          success: false,
+          message: 'Apple receipt verification failed',
+          error: data.error,
+        };
+      }
+
+      return {
+        success: true,
+        message: 'Apple receipt verified successfully',
+        subscription: data.subscription,
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: 'Error verifying Apple receipt',
+        error: error.message,
+      };
+    }
+  }
+
+  /**
+   * Verify Google Play Store purchase
+   * Calls the verify-google-receipt Edge Function
+   */
+  static async verifyGoogleReceipt(
+    purchaseToken: string,
+    productId: string,
+    userId: string
+  ): Promise<SubscriptionActionResult> {
+    try {
+      const { data, error } = await supabase.functions.invoke('verify-google-receipt', {
+        body: {
+          purchaseToken,
+          productId,
+          userId,
+        },
+      });
+
+      if (error) {
+        return {
+          success: false,
+          message: 'Failed to verify Google receipt',
+          error: error.message,
+        };
+      }
+
+      if (!data.success) {
+        return {
+          success: false,
+          message: 'Google receipt verification failed',
+          error: data.error,
+        };
+      }
+
+      return {
+        success: true,
+        message: 'Google receipt verified successfully',
+        subscription: data.subscription,
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: 'Error verifying Google receipt',
+        error: error.message,
+      };
+    }
+  }
+
+  /**
+   * Sync subscription from mobile receipt
+   * Automatically detects platform and verifies receipt
+   */
+  static async syncSubscriptionFromReceipt(
+    userId: string,
+    receipt: string,
+    platform: 'ios' | 'android',
+    productId?: string
+  ): Promise<SubscriptionActionResult> {
+    if (platform === 'ios') {
+      return await this.verifyAppleReceipt(receipt, userId);
+    } else if (platform === 'android') {
+      if (!productId) {
+        return {
+          success: false,
+          message: 'Product ID required for Android',
+          error: 'MISSING_PRODUCT_ID',
+        };
+      }
+      return await this.verifyGoogleReceipt(receipt, productId, userId);
+    } else {
+      return {
+        success: false,
+        message: 'Invalid platform',
+        error: 'INVALID_PLATFORM',
+      };
+    }
+  }
 }

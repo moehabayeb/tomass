@@ -5,15 +5,17 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Check, Crown, Zap, Users, ArrowLeft, Sparkles, Star } from 'lucide-react';
+import { Check, Crown, Zap, Users, ArrowLeft, Sparkles, Star, Smartphone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useAuthReady } from '@/hooks/useAuthReady';
 import { PRICING_CONFIG, type TierCode } from '@/types/subscription';
 import { useToast } from '@/hooks/use-toast';
+import { detectPlatform, isMobile, getAppStoreName } from '@/lib/platform';
 
 export default function Pricing() {
   const navigate = useNavigate();
@@ -23,6 +25,11 @@ export default function Pricing() {
 
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'quarterly'>('monthly');
   const [loadingTier, setLoadingTier] = useState<TierCode | null>(null);
+
+  // Detect platform
+  const platform = detectPlatform();
+  const isOnMobile = isMobile();
+  const storeName = getAppStoreName();
 
   const handleSelectPlan = async (tierCode: TierCode) => {
     if (!isAuthenticated) {
@@ -38,6 +45,16 @@ export default function Pricing() {
       return;
     }
 
+    // Check if trying to subscribe on web (paid plans are mobile-only)
+    if (!isOnMobile && tierCode !== 'free') {
+      toast({
+        title: 'Mobile App Required',
+        description: `Subscriptions are only available in the iOS or Android app. Download from ${storeName} to subscribe.`,
+        variant: 'destructive',
+      });
+      return;
+    }
+
     if (tierCode === currentTier) {
       toast({
         title: 'Already Subscribed',
@@ -48,11 +65,17 @@ export default function Pricing() {
 
     setLoadingTier(tierCode);
 
-    // TODO: Integrate with Iyzico/Stripe payment
-    // For now, redirect to a placeholder payment page
+    // On mobile: This would trigger Apple IAP or Google Play Billing
+    // The mobile app (React Native/Capacitor) would handle the payment flow
+    // After successful purchase, the app would call SubscriptionService.verifyAppleReceipt() or verifyGoogleReceipt()
+
+    // For now, show a message that mobile integration is needed
     setTimeout(() => {
       setLoadingTier(null);
-      navigate(`/payment/checkout?tier=${tierCode}&cycle=${billingCycle}`);
+      toast({
+        title: 'Mobile Payment Integration Required',
+        description: 'Your mobile dev needs to integrate Apple IAP or Google Play Billing to enable subscriptions.',
+      });
     }, 500);
   };
 
@@ -207,6 +230,18 @@ export default function Pricing() {
             </Badge>
           )}
         </div>
+
+        {/* Web User Notice */}
+        {!isOnMobile && (
+          <Alert className="max-w-2xl mx-auto mb-8 bg-blue-500/10 border-blue-500/50">
+            <Smartphone className="h-4 w-4 text-blue-400" />
+            <AlertTitle className="text-white">Mobile App Required for Subscriptions</AlertTitle>
+            <AlertDescription className="text-slate-300">
+              Paid subscriptions are only available in our iOS and Android apps. Download from {storeName} to
+              unlock unlimited AI practice and live lessons.
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* Billing Cycle Toggle */}
         <div className="flex justify-center mb-12">
