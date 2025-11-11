@@ -16,6 +16,8 @@ export default function BookmarksView({ onBack, onContinueFromMessage }: Bookmar
   const [selectedTab, setSelectedTab] = useState<'all' | 'message' | 'lesson' | 'tip'>('all');
   // Phase 1.1: Track mounted state to prevent state updates after unmount
   const isMountedRef = useRef(true);
+  // Phase 2.2: Track ongoing delete operations to prevent race conditions
+  const deletingIdsRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     loadBookmarks();
@@ -29,10 +31,26 @@ export default function BookmarksView({ onBack, onContinueFromMessage }: Bookmar
   const loadBookmarks = async () => {
     try {
       // Load from localStorage
-      const localBookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]');
+      const rawBookmarks = localStorage.getItem('bookmarks') || '[]';
+      const localBookmarks = JSON.parse(rawBookmarks);
+
+      // Phase 2.1: Validate bookmark structure before using
+      if (!Array.isArray(localBookmarks)) {
+        throw new Error('Invalid bookmarks data structure');
+      }
+
+      // Phase 2.1: Filter out invalid bookmarks (null, undefined, or missing required fields)
+      const validBookmarks = localBookmarks.filter((b: BookmarkItem) => {
+        return b &&
+               typeof b === 'object' &&
+               typeof b.id === 'string' &&
+               typeof b.content === 'string' &&
+               typeof b.type === 'string' &&
+               typeof b.timestamp === 'string';
+      });
 
       // Phase 1.2: Validate dates before sorting to prevent NaN crashes
-      const sortedBookmarks = localBookmarks.sort((a: BookmarkItem, b: BookmarkItem) => {
+      const sortedBookmarks = validBookmarks.sort((a: BookmarkItem, b: BookmarkItem) => {
         const dateA = new Date(a.timestamp);
         const dateB = new Date(b.timestamp);
 
@@ -59,9 +77,33 @@ export default function BookmarksView({ onBack, onContinueFromMessage }: Bookmar
 
   const deleteBookmark = async (id: string) => {
     try {
+      // Phase 2.1: Validate id parameter
+      if (!id || typeof id !== 'string') {
+        throw new Error('Invalid bookmark ID');
+      }
+
+      // Phase 2.2: Prevent concurrent delete operations
+      if (deletingIdsRef.current.has(id)) {
+        return; // Delete already in progress for this ID
+      }
+
+      // Mark this ID as being deleted
+      deletingIdsRef.current.add(id);
+
       // Remove from localStorage
-      const localBookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]');
-      const updatedBookmarks = localBookmarks.filter((b: BookmarkItem) => b.id !== id);
+      const rawBookmarks = localStorage.getItem('bookmarks') || '[]';
+      const localBookmarks = JSON.parse(rawBookmarks);
+
+      // Phase 2.1: Validate structure
+      if (!Array.isArray(localBookmarks)) {
+        throw new Error('Invalid bookmarks data structure');
+      }
+
+      // Phase 2.1: Filter with null safety check
+      const updatedBookmarks = localBookmarks.filter((b: BookmarkItem) => {
+        return b && typeof b === 'object' && b.id !== id;
+      });
+
       localStorage.setItem('bookmarks', JSON.stringify(updatedBookmarks));
 
       // Phase 1.1: Guard against unmounted component
@@ -79,12 +121,24 @@ export default function BookmarksView({ onBack, onContinueFromMessage }: Bookmar
       if (isMountedRef.current) {
         toast.error('Failed to delete bookmark. Please try again.');
       }
+    } finally {
+      // Phase 2.2: Always remove the ID from the set when done
+      deletingIdsRef.current.delete(id);
     }
   };
 
   const getFilteredBookmarks = () => {
-    if (selectedTab === 'all') return bookmarks;
-    return bookmarks.filter(bookmark => bookmark.type === selectedTab);
+    // Phase 2.1: Add null safety check before filtering
+    const safeBookmarks = bookmarks.filter(bookmark => {
+      return bookmark &&
+             typeof bookmark === 'object' &&
+             bookmark.id &&
+             bookmark.content &&
+             bookmark.type;
+    });
+
+    if (selectedTab === 'all') return safeBookmarks;
+    return safeBookmarks.filter(bookmark => bookmark.type === selectedTab);
   };
 
   const getTypeIcon = (type: string) => {

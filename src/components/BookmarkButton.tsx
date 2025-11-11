@@ -59,10 +59,26 @@ export default function BookmarkButton({
   // 🔧 FIX BUG #1: Wrap in useCallback with proper dependencies
   const checkBookmarkStatus = useCallback(async () => {
     try {
+      // Phase 2.1: Validate content before proceeding
+      if (!content || typeof content !== 'string') {
+        return; // Invalid content, stay at default not-bookmarked state
+      }
+
       // Check localStorage first
-      const localBookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]');
+      const rawBookmarks = localStorage.getItem('bookmarks') || '[]';
+      const localBookmarks = JSON.parse(rawBookmarks);
+
+      // Phase 2.1: Validate structure
+      if (!Array.isArray(localBookmarks)) {
+        return; // Invalid data, stay at default state
+      }
+
       const bookmarkId = getBookmarkId(content);
-      const isLocallyBookmarked = localBookmarks.some((b: BookmarkItem) => b.id === bookmarkId);
+
+      // Phase 2.1: Filter null/undefined bookmarks before checking
+      const isLocallyBookmarked = localBookmarks.some((b: BookmarkItem) => {
+        return b && typeof b === 'object' && b.id === bookmarkId;
+      });
 
       // Phase 1.1: Guard against unmounted component
       if (!isMountedRef.current) return;
@@ -95,6 +111,16 @@ export default function BookmarkButton({
       return; // Operation already in progress, ignore this click
     }
 
+    // Phase 2.1: Validate inputs before proceeding
+    if (!content || typeof content !== 'string') {
+      toast({
+        title: "Invalid Content",
+        description: "Cannot bookmark empty or invalid content.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     isTogglingRef.current = true;
     setIsLoading(true);
 
@@ -109,11 +135,20 @@ export default function BookmarkButton({
       };
 
       // Update localStorage
-      const localBookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]');
+      const rawBookmarks = localStorage.getItem('bookmarks') || '[]';
+      const localBookmarks = JSON.parse(rawBookmarks);
+
+      // Phase 2.1: Validate structure
+      if (!Array.isArray(localBookmarks)) {
+        throw new Error('Invalid bookmarks data structure');
+      }
       
       if (isBookmarked) {
         // Remove bookmark
-        const updatedBookmarks = localBookmarks.filter((b: BookmarkItem) => b.id !== bookmarkId);
+        // Phase 2.1: Add null safety to filter operation
+        const updatedBookmarks = localBookmarks.filter((b: BookmarkItem) => {
+          return b && typeof b === 'object' && b.id !== bookmarkId;
+        });
         localStorage.setItem('bookmarks', JSON.stringify(updatedBookmarks));
 
         // Phase 1.1: Guard against unmounted component
