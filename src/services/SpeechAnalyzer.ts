@@ -124,9 +124,10 @@ export class SpeechAnalyzer {
       // 🔧 FIX BUG #17: Wrap start() in try-catch to handle "already started" errors
       try {
         this.recognition.start();
-      } catch (error: any) {
+      } catch (error: unknown) {
+        // Phase 3.1: Use 'unknown' instead of 'any' for better type safety
         this.isRecording = false;
-        if (error.message?.includes('already started')) {
+        if (error instanceof Error && error.message?.includes('already started')) {
           reject(new Error('Recognition already running. Please wait.'));
         } else {
           reject(error);

@@ -655,8 +655,15 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       setAvatarState('idle');
     }
 
-    // Mark as spoken and played
-    setSpokenKeys(prev => new Set([...prev, messageKey]));
+    // Phase 3.4: Mark as spoken and played with size limit to prevent unbounded growth
+    setSpokenKeys(prev => {
+      const newSet = new Set([...prev, messageKey]);
+      if (newSet.size > 100) {
+        const arr = Array.from(newSet);
+        return new Set(arr.slice(-100));
+      }
+      return newSet;
+    });
     setLastPlayedMessageIds(prev => new Set([...prev, messageId]));
     if (isRepeat) {
       setReplayCounter(replay);
@@ -1674,7 +1681,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
             {/* Live captions (Mobile optimized) */}
             {flowState === 'LISTENING' && interimCaption && (
-              <div className="text-center py-2" role="status" aria-live="polite" aria-atomic="true">
+              <div className="text-center py-2" role="status" aria-live="polite" aria-atomic="true" aria-label="Live transcript of your speech">
                 <div className="inline-block px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm">
                   <span className="text-white/70 italic text-sm">"{interimCaption}"</span>
                 </div>
