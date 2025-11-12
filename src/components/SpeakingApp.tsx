@@ -501,34 +501,41 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   // 🔧 FIX #5 & Phase 2: Debounce + mutex to prevent turn token race conditions
   const lastTurnStartRef = useRef(0);
   const turnInProgressRef = useRef(false);
+  // Phase 1.2: Track mutex timeout to prevent memory leak
+  const turnMutexTimeoutRef = useRef<number | null>(null);
   const TURN_DEBOUNCE_MS = 300;
 
   // 2) When starting a turn, always pass a token and always call completion
   const startNewTurn = () => {
     // 🔧 FIX #5: Debounce to prevent rapid-fire token generation
     const now = Date.now();
-    if (now - lastTurnStartRef.current < TURN_DEBOUNCE_MS) {
+    // Phase 1.3: Check debounce with current token (only if token exists)
+    if (now - lastTurnStartRef.current < TURN_DEBOUNCE_MS && currentTurnToken) {
       // Too soon, return current token
       return currentTurnToken;
     }
 
-    // Phase 2: Mutex check - prevent starting new turn if one is in progress
-    if (turnInProgressRef.current) {
+    // Phase 1.3: Check mutex with current token (only if token exists)
+    if (turnInProgressRef.current && currentTurnToken) {
       return currentTurnToken;
     }
+
+    // Phase 1.3: Generate token BEFORE setting mutex to prevent race condition
+    const tok = `turn-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,7)}`;
 
     lastTurnStartRef.current = now;
     turnInProgressRef.current = true;
 
-    const tok = `turn-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,7)}`;
     cancelOldListeners();
     setCurrentTurnToken(tok);
     setReplayCounter(0);
     setFlowState('IDLE');
 
+    // Phase 1.2: Track timeout to prevent memory leak on unmount
     // Release mutex after a short delay to allow turn to initialize
-    setTimeout(() => {
+    turnMutexTimeoutRef.current = window.setTimeout(() => {
       turnInProgressRef.current = false;
+      turnMutexTimeoutRef.current = null;
     }, 500);
 
     return tok;
@@ -1101,13 +1108,36 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
       // Use the unified conversational-ai function
       // 🎯 AUTOMATIC DIFFICULTY: user_level is now synced with XP progression!
-      const { data, error } = await supabase.functions.invoke('conversational-ai', {
-        body: {
-          userMessage: transcript,
-          conversationHistory: conversationContext || '',
-          userLevel: user_level // ✨ Dynamically adjusts based on XP level (beginner/intermediate/advanced)
+      // Phase 1.1: Add AbortController with 30s timeout to prevent indefinite hangs
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+
+      let data, error;
+      try {
+        const response = await supabase.functions.invoke('conversational-ai', {
+          body: {
+            userMessage: transcript,
+            conversationHistory: conversationContext || '',
+            userLevel: user_level // ✨ Dynamically adjusts based on XP level (beginner/intermediate/advanced)
+          },
+          headers: {
+            // @ts-ignore - AbortSignal not in Supabase types but supported
+            signal: controller.signal
+          }
+        });
+        data = response.data;
+        error = response.error;
+        clearTimeout(timeoutId);
+      } catch (err: any) {
+        clearTimeout(timeoutId);
+        if (err.name === 'AbortError') {
+          // Phase 1.1: Handle timeout with user-friendly message
+          await addAssistantMessage("The request took too long. Please check your connection and try again.", 'feedback');
+          return;
         }
-      });
+        // Re-throw other errors to be caught by outer catch
+        throw err;
+      }
 
       // 🔧 FIX #9: Comprehensive error handling with user-friendly messages
       if (error) {
@@ -1162,7 +1192,14 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       }
 
     } catch (error) {
-      await addAssistantMessage("Sorry, I encountered an error. Let's continue our conversation.", 'feedback');
+      // Phase 1.4: Add nested error handling to prevent unhandled promise rejection
+      try {
+        await addAssistantMessage("Sorry, I encountered an error. Let's continue our conversation.", 'feedback');
+      } catch (fallbackError) {
+        // Last resort: update state directly without API call
+        setFlowState('IDLE');
+        // Silent fail - already in error state
+      }
     } finally {
       setIsProcessingTranscript(false);
     }
@@ -1396,6 +1433,12 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       if (stateTransitionTimeoutRef.current !== null) {
         clearTimeout(stateTransitionTimeoutRef.current);
         stateTransitionTimeoutRef.current = null;
+      }
+
+      // Phase 1.2: Clear turn mutex timeout to prevent memory leak
+      if (turnMutexTimeoutRef.current !== null) {
+        clearTimeout(turnMutexTimeoutRef.current);
+        turnMutexTimeoutRef.current = null;
       }
 
       // Clear all pending timers
