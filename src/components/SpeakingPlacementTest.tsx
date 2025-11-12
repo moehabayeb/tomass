@@ -248,6 +248,8 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
   const audioContextRef = useRef<AudioContext | null>(null);
   const retryCountRef = useRef<number>(0);
   const sessionStateRef = useRef<MicState>('idle');
+  // Phase 2.3: Track nested retry timeout to prevent memory leak
+  const retryTimeoutRef = useRef<number | null>(null);
 
   // VAD (Voice Activity Detection) refs
   const analyserRef = useRef<AnalyserNode | null>(null);
@@ -303,6 +305,12 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     if (autoAdvanceDelayRef.current) {
       clearTimeout(autoAdvanceDelayRef.current);
       autoAdvanceDelayRef.current = null;
+    }
+
+    // Phase 2.3: Clear nested retry timeout
+    if (retryTimeoutRef.current) {
+      clearTimeout(retryTimeoutRef.current);
+      retryTimeoutRef.current = null;
     }
   }
   
@@ -723,7 +731,11 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
 
     // Save to database (only if authenticated)
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      // Phase 2.4: Wrap getUser() with timeout for consistency
+      const { data: { user } } = await withTimeout(
+        supabase.auth.getUser(),
+        10000 // 10 second timeout for auth check
+      );
 
       if (user && isAuthenticated) {
         const { data, error } = await withTimeout(
@@ -1417,20 +1429,32 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
       };
 
       // Start recognition
-      recognition.start();
-      if (debug) 
+      // Phase 2.2: Wrap recognition.start() in try-catch to handle immediate failures
+      try {
+        recognition.start();
+        if (debug)
 
-      // Start VAD monitoring after recognition begins
-      if (SPEAKING_TEST_VAD_ENDPOINTING && vadSetup) {
-        // Wait briefly for recognition to stabilize, then start VAD
-        setTimeout(() => {
-          if (recognitionRef.current === recognition) {
-            startVADMonitoring();
-            if (debug) {
-              // VAD monitoring started
+        // Start VAD monitoring after recognition begins
+        if (SPEAKING_TEST_VAD_ENDPOINTING && vadSetup) {
+          // Wait briefly for recognition to stabilize, then start VAD
+          setTimeout(() => {
+            if (recognitionRef.current === recognition && isMountedRef.current) {
+              try {
+                startVADMonitoring();
+                if (debug) {
+                  // VAD monitoring started
+                }
+              } catch (vadError) {
+                // Phase 2.2: Handle VAD setup failure gracefully
+                const durationMs = Date.now() - startTimeRef.current;
+                handleSpeechError('vad-setup-failed', durationMs);
+              }
             }
-          }
-        }, 500);
+          }, 500);
+        }
+      } catch (startError) {
+        // Phase 2.2: Handle recognition.start() failure immediately
+        throw startError;
       }
 
     } catch (error) {
@@ -1489,8 +1513,10 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
 
         // 🔧 FIX BUG #3 (NEW): Check VAD cleanup state to prevent race condition
         if (isCleaningUpVADRef.current) {
+          // Phase 2.3: Track nested timeout for cleanup
           // VAD cleanup in progress - retry after cleanup completes
-          setTimeout(() => {
+          retryTimeoutRef.current = window.setTimeout(() => {
+            retryTimeoutRef.current = null;
             if (!isMountedRef.current) return;
             startRecording();
           }, 200);

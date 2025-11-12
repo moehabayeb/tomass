@@ -46,10 +46,21 @@ const Sparkle = ({ className, delayed = false }: { className?: string; delayed?:
 
 // 🔧 FIX #11: Floating XP Gain Animation Component with ARIA (Memory leak fixed)
 const FloatingXP = ({ amount, onComplete }: { amount: number; onComplete: () => void }) => {
+  // Phase 2.1: Add mounted check to prevent setState after unmount
+  const isMountedRef = useRef(true);
+
   useEffect(() => {
-    const timer = setTimeout(onComplete, 2000); // Animation duration
-    return () => clearTimeout(timer);
-  }, []); // Fixed: onComplete should not change during animation lifecycle
+    const timer = setTimeout(() => {
+      if (isMountedRef.current) {
+        onComplete();
+      }
+    }, 2000); // Animation duration
+
+    return () => {
+      isMountedRef.current = false;
+      clearTimeout(timer);
+    };
+  }, [onComplete]); // Phase 2.1: Include onComplete in deps for proper cleanup
 
   return (
     <div
@@ -1311,10 +1322,20 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     window.addEventListener('pagehide', handleAudioInterruption);
     window.addEventListener('blur', handleAudioInterruption);
 
+    // Phase 2.8: Add iOS-specific audio interruption event for phone calls, Siri, etc.
+    if ('onwebkitaudiointerrupted' in window) {
+      window.addEventListener('webkitaudiointerrupted', handleAudioInterruption as EventListener);
+    }
+
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('pagehide', handleAudioInterruption);
       window.removeEventListener('blur', handleAudioInterruption);
+
+      // Phase 2.8: Remove iOS audio interruption listener
+      if ('onwebkitaudiointerrupted' in window) {
+        window.removeEventListener('webkitaudiointerrupted', handleAudioInterruption as EventListener);
+      }
     };
   }, [isIOS, micState]);
 
