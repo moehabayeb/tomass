@@ -61,6 +61,14 @@ export const HangmanKeyboard = memo<HangmanKeyboardProps>(({
                 key={letter}
                 onClick={() => !isDisabled && onLetterClick(letter)}
                 disabled={isDisabled}
+                aria-label={
+                  state === 'correct'
+                    ? `Letter ${letter}, correct guess`
+                    : state === 'wrong'
+                    ? `Letter ${letter}, incorrect guess`
+                    : `Guess letter ${letter}`
+                }
+                aria-pressed={state !== 'default'}
                 className={`
                   w-10 h-10 sm:w-11 sm:h-11
                   p-0

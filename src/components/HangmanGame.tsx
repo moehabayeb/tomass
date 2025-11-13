@@ -42,6 +42,8 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
   const gameInitialized = useRef(false);
   // Phase 1.4: Track hint timeout to prevent memory leak
   const hintTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // Phase 3.1: XP retry queue for network failures
+  const xpRetryQueueRef = useRef<Array<{ amount: number; reason: string }>>([]);
 
   const difficultySettings = {
     easy: { maxWrong: 10, label: 'Easy', color: 'from-green-500 to-emerald-600' },
@@ -97,11 +99,15 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
         setScore(prev => prev + 10);
         setStreak(prev => prev + 1);
 
-        // 🔧 FIX #10: Handle XP network errors gracefully
+        // Phase 3.1: Handle XP network errors gracefully with retry queue
         try {
           addXP(xpEarned, `Hangman victory! 🎉 Streak: ${streak + 1}`);
         } catch (error) {
-          // XP award failed - silent fail for Apple Store compliance
+          // Phase 3.1: Queue failed XP for retry - Apple Store compliance silent fail
+          xpRetryQueueRef.current.push({
+            amount: xpEarned,
+            reason: `Hangman victory! 🎉 Streak: ${streak + 1}`
+          });
           // User still sees success animation, XP will sync later
         }
 
@@ -128,6 +134,28 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
       audioManager.cleanup();
     };
   }, []);
+
+  // Phase 3.1: Retry failed XP awards periodically
+  useEffect(() => {
+    const retryInterval = setInterval(() => {
+      if (xpRetryQueueRef.current.length > 0) {
+        const failedAward = xpRetryQueueRef.current[0];
+        try {
+          addXP(failedAward.amount, failedAward.reason);
+          // Success - remove from queue
+          xpRetryQueueRef.current.shift();
+        } catch (error) {
+          // Still failing - keep in queue for next retry
+          // Limit queue to 10 items to prevent memory issues
+          if (xpRetryQueueRef.current.length > 10) {
+            xpRetryQueueRef.current.shift(); // Remove oldest
+          }
+        }
+      }
+    }, 5000); // Retry every 5 seconds
+
+    return () => clearInterval(retryInterval);
+  }, [addXP]);
 
   // Process a letter guess - optimized with batched state updates and case normalization
   const processGuess = useCallback((letter: string) => {
@@ -231,8 +259,9 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
             width={width}
             height={height}
             recycle={false}
-            numberOfPieces={isMobile ? 100 : 300}
-            gravity={0.3}
+            numberOfPieces={isMobile ? 50 : 150}
+            gravity={0.4}
+            tweenDuration={3000}
           />
         </div>
       )}

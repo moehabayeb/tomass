@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -142,6 +142,9 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
     getOverallAccuracy
   } = useFlashcardProgress();
 
+  // Phase 3.2: XP retry queue for network failures
+  const xpRetryQueueRef = useRef<Array<{ amount: number; reason: string }>>([]);
+
   // Start a tier
   const startTier = useCallback((tier: number) => {
     if (!isTierUnlocked(tier)) return;
@@ -195,7 +198,7 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
 
     setTotalXPEarned(prev => prev + xpEarned);
 
-    // 🔧 FIX #10: Add XP with error handling
+    // Phase 3.2: Add XP with error handling and retry queue
     try {
       if (isExactMatch) {
         addXP(10, 'Perfect answer!');
@@ -203,7 +206,11 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
         addXP(2, 'Keep trying!');
       }
     } catch (error) {
-      // XP award failed - silent fail for Apple Store compliance
+      // Phase 3.2: Queue failed XP for retry - Apple Store compliance silent fail
+      xpRetryQueueRef.current.push({
+        amount: isExactMatch ? 10 : 2,
+        reason: isExactMatch ? 'Perfect answer!' : 'Keep trying!'
+      });
       // User still sees their answer feedback, XP will sync later
     }
 
@@ -305,6 +312,28 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
       }
     };
   }, [stopListening]);
+
+  // Phase 3.2: Retry failed XP awards periodically
+  useEffect(() => {
+    const retryInterval = setInterval(() => {
+      if (xpRetryQueueRef.current.length > 0) {
+        const failedAward = xpRetryQueueRef.current[0];
+        try {
+          addXP(failedAward.amount, failedAward.reason);
+          // Success - remove from queue
+          xpRetryQueueRef.current.shift();
+        } catch (error) {
+          // Still failing - keep in queue for next retry
+          // Limit queue to 10 items to prevent memory issues
+          if (xpRetryQueueRef.current.length > 10) {
+            xpRetryQueueRef.current.shift(); // Remove oldest
+          }
+        }
+      }
+    }, 5000); // Retry every 5 seconds
+
+    return () => clearInterval(retryInterval);
+  }, [addXP]);
 
   const getStarRating = () => {
     const correctCount = cardResults.filter(result => result.correct).length;
@@ -753,6 +782,12 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
                       <Button
                         onClick={speechState.isListening ? stopListening : handleVoiceInput}
                         disabled={speechState.needsConfirmation}
+                        aria-label={
+                          speechState.isListening
+                            ? 'Stop listening, microphone is active'
+                            : 'Start voice input to speak the word'
+                        }
+                        aria-pressed={speechState.isListening}
                         className={`w-full py-8 text-xl font-bold rounded-xl transition-all duration-300 ${
                           speechState.isListening
                             ? 'animate-pulse bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700'
@@ -794,6 +829,7 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
                         onChange={(e) => setUserAnswer(e.target.value)}
                         onKeyPress={handleKeyPress}
                         placeholder="Type the English word..."
+                        aria-label="Type your answer for the current flashcard"
                         className="text-lg py-6 bg-white/90 text-gray-900 placeholder:text-gray-500 border-white/50"
                       />
                       <p className="text-white/60 text-sm mt-2">⌨️ Press Enter to submit</p>
@@ -802,6 +838,7 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
                     <Button
                       onClick={() => checkAnswer()}
                       disabled={!userAnswer.trim() || isProcessing}
+                      aria-label="Submit your answer and check if it's correct"
                       className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 py-6 text-xl font-bold disabled:opacity-50"
                     >
                       {isProcessing ? '⏳ Processing...' : '✅ Check Answer'}
