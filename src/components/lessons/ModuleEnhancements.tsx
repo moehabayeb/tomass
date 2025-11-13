@@ -7,14 +7,10 @@ interface ModuleEnhancementProps {
 }
 
 /**
- * Simple HTML sanitizer for Apple Store compliance
- * Only allows specific safe tags we generate: span with specific classes
+ * Phase 1.1: Removed sanitizeHTML function - no longer needed
+ * Now using safe React rendering instead of dangerouslySetInnerHTML
+ * This eliminates XSS vulnerability for Apple Store compliance
  */
-const sanitizeHTML = (html: string): string => {
-  // Only allow our specific highlight spans - remove any other HTML
-  // This is safe because we control the replacement pattern
-  return html.replace(/<(?!\/?span\b)[^>]+>/g, '');
-};
 
 /**
  * ModuleEnhancements component provides special UI treatments for specific B2 modules
@@ -111,6 +107,7 @@ const SubstitutionHighlight: React.FC<{ content: string }> = ({ content }) => {
 /**
  * Module 156: Nominalisation
  * Displays verb→noun transformation table for common nominalisations
+ * Phase 1.1: FIXED XSS vulnerability - now uses safe React rendering
  */
 const NominalisationTable: React.FC<{ content: string }> = ({ content }) => {
   // Common verb→noun transformations
@@ -148,19 +145,35 @@ const NominalisationTable: React.FC<{ content: string }> = ({ content }) => {
     return <span>{content}</span>;
   }
 
-  // Highlight the nominalised word in the content
-  let highlightedContent = content;
-  transformations.forEach(({ noun }) => {
-    const regex = new RegExp(`\\b(${noun})\\b`, 'gi');
-    highlightedContent = highlightedContent.replace(
-      regex,
-      '<span class="bg-purple-100 px-1 py-0.5 rounded font-semibold text-purple-700">$1</span>'
-    );
-  });
+  // Phase 1.1: Safe React rendering - create regex pattern for all nouns
+  const nounsPattern = transformations.map(({ noun }) => `\\b(${noun})\\b`).join('|');
+  const regex = new RegExp(nounsPattern, 'gi');
+  const parts = content.split(regex);
+
+  // Filter out undefined/empty parts
+  const filteredParts = parts.filter(part => part !== undefined && part !== '');
 
   return (
     <div>
-      <span dangerouslySetInnerHTML={{ __html: sanitizeHTML(highlightedContent) }} />
+      <span>
+        {filteredParts.map((part, index) => {
+          // Check if this part is a nominalised word
+          const isNominalisation = transformations.some(({ noun }) =>
+            noun.toLowerCase() === part.toLowerCase()
+          );
+
+          return isNominalisation ? (
+            <span
+              key={index}
+              className="bg-purple-100 px-1 py-0.5 rounded font-semibold text-purple-700"
+            >
+              {part}
+            </span>
+          ) : (
+            <span key={index}>{part}</span>
+          );
+        })}
+      </span>
       <Card className="mt-3 bg-purple-50 border-purple-200">
         <CardContent className="pt-4">
           <h4 className="text-sm font-semibold mb-2 text-purple-800">📝 Common Transformations</h4>

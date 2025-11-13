@@ -31,8 +31,25 @@ function readAll(): ProgressMap {
 function writeAll(map: ProgressMap) {
   try {
     localStorage.setItem(STORE_KEY, JSON.stringify(map));
-  } catch {
-    // ignore quota issues
+  } catch (error) {
+    // Phase 2.1: Handle QuotaExceededError by clearing old data and retrying
+    if (error instanceof DOMException && error.name === 'QuotaExceededError') {
+      try {
+        // Clear old/stale progress entries (keep only recent 20)
+        const allEntries = Object.entries(map);
+        const sortedByDate = allEntries.sort((a, b) => b[1].updatedAt - a[1].updatedAt);
+        const recentEntries = sortedByDate.slice(0, 20);
+        const reducedMap: ProgressMap = Object.fromEntries(recentEntries);
+
+        // Clear storage and retry with reduced data
+        localStorage.removeItem(STORE_KEY);
+        localStorage.setItem(STORE_KEY, JSON.stringify(reducedMap));
+      } catch (retryError) {
+        // Phase 2.1: If retry also fails, continue silently - Apple Store compliance
+        // Progress may be lost but app doesn't crash
+      }
+    }
+    // For other errors, fail silently - Apple Store compliance
   }
 }
 

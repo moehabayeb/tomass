@@ -981,21 +981,25 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
         return;
       }
 
+      // Phase 2.2: Track this load operation to prevent race conditions
+      const loadId = selectedModule;
+      currentModuleLoadRef.current = loadId;
+
       setIsLoadingModule(true);
       setModuleLoadError(null);
 
       try {
         const data = await loadModuleData(selectedModule);
 
-        // Phase 2.2: Check if component still mounted after async load
-        if (!isMountedRef.current) return;
+        // Phase 2.2: Check if this is still the current module load
+        if (!isMountedRef.current || currentModuleLoadRef.current !== loadId) return;
 
         if (!data) {
           // Fallback for modules 68-87 (not yet implemented) - use module 51
           if (selectedModule >= 68 && selectedModule <= 87) {
             const fallbackData = await loadModuleData(51);
             // Check again after second async operation
-            if (!isMountedRef.current) return;
+            if (!isMountedRef.current || currentModuleLoadRef.current !== loadId) return;
             setModuleData(fallbackData);
           } else {
             setModuleLoadError(`Module ${selectedModule} not found`);
@@ -1005,14 +1009,14 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
           setModuleData(data);
         }
       } catch (error: any) {
-        // Phase 2.2: Guard state updates in error handler
-        if (!isMountedRef.current) return;
+        // Phase 2.2: Guard state updates - check both mounted and load ID
+        if (!isMountedRef.current || currentModuleLoadRef.current !== loadId) return;
         // Set error state for UI display
         setModuleLoadError(error.message || 'Failed to load module');
         setModuleData(null);
       } finally {
-        // Phase 2.2: Guard state updates in finally block
-        if (isMountedRef.current) {
+        // Phase 2.2: Guard state updates - check both mounted and load ID
+        if (isMountedRef.current && currentModuleLoadRef.current === loadId) {
           setIsLoadingModule(false);
         }
       }
@@ -1049,7 +1053,9 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
   const lessonCompletedRef = useRef(false);
   // Phase 2.1: Track mounted state to prevent state updates after unmount
   const isMountedRef = useRef(true);
-  
+  // Phase 2.2: Track current module load to prevent race conditions
+  const currentModuleLoadRef = useRef<number>(0);
+
   // Track the live speaking index (no stale closures)
   const speakingIndexRef = useRef(0);
 
