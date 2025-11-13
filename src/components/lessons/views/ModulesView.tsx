@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, BookOpen, Lock, Trophy, CheckCircle, Circle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -18,6 +18,8 @@ interface ModulesViewProps {
 
 export function ModulesView({ selectedLevel, onBack, onSelectModule }: ModulesViewProps) {
   const [completedModules, setCompletedModules] = useState<string[]>([]);
+  // Phase 3.2: Accessibility announcement for screen readers
+  const [accessibilityAnnouncement, setAccessibilityAnnouncement] = useState('');
 
   useEffect(() => {
     setCompletedModules(getCompletedModules());
@@ -56,6 +58,8 @@ export function ModulesView({ selectedLevel, onBack, onSelectModule }: ModulesVi
     // Show locked module feedback
     if (!isUnlocked) {
       const previousModuleId = moduleId - 1;
+      // Phase 3.2: Announce to screen readers
+      setAccessibilityAnnouncement(`Module ${moduleId} is locked. Complete Module ${previousModuleId} first to unlock this module.`);
       toast.error(`Module ${moduleId} is Locked 🔒`, {
         description: `Complete Module ${previousModuleId} first to unlock this module`,
         duration: 3000,
@@ -64,6 +68,9 @@ export function ModulesView({ selectedLevel, onBack, onSelectModule }: ModulesVi
     }
 
     if (isUnlocked && isImplemented) {
+      // Phase 3.2: Announce module loading to screen readers
+      const module = modules.find(m => m.id === moduleId);
+      setAccessibilityAnnouncement(`Loading ${module?.title || `Module ${moduleId}`}. Please wait.`);
       narration.cancel();
       onSelectModule(moduleId);
     }
@@ -191,6 +198,16 @@ export function ModulesView({ selectedLevel, onBack, onSelectModule }: ModulesVi
               return cardContent;
             })
           )}
+        </div>
+
+        {/* Phase 3.2: Accessibility - Screen reader announcements */}
+        <div
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          className="sr-only"
+        >
+          {accessibilityAnnouncement}
         </div>
       </div>
     </div>

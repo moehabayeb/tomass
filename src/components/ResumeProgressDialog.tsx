@@ -65,14 +65,17 @@ export function ResumeProgressDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md bg-gradient-to-b from-blue-900/95 to-purple-900/95 backdrop-blur-xl border-white/20 text-white">
+      <DialogContent
+        className="max-w-md bg-gradient-to-b from-blue-900/95 to-purple-900/95 backdrop-blur-xl border-white/20 text-white"
+        aria-describedby="resume-dialog-description"
+      >
         <DialogHeader>
           <DialogTitle className="text-center text-xl font-bold text-white">
             Continue Your Progress?
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-6" id="resume-dialog-description">
           {/* Module Info */}
           <Card className="bg-white/10 border-white/20">
             <CardContent className="p-4">
@@ -119,6 +122,8 @@ export function ResumeProgressDialog({
               onClick={onResume}
               className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold"
               size="lg"
+              autoFocus
+              aria-label={`Resume from question ${questionIndex + 1} of ${totalQuestions}`}
             >
               <PlayCircle className="h-5 w-5 mr-2" />
               Resume from Question {questionIndex + 1}
@@ -129,6 +134,7 @@ export function ResumeProgressDialog({
               variant="outline"
               className="w-full border-white/30 text-white hover:bg-white/10"
               size="lg"
+              aria-label="Start module from the beginning"
             >
               <RotateCcw className="h-5 w-5 mr-2" />
               Start from Beginning
