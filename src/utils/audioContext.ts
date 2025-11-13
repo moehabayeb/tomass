@@ -4,6 +4,8 @@
 class AudioManager {
   private context: AudioContext | null = null;
   private isSupported: boolean = true;
+  // Phase 1.5: Track active oscillators for proper cleanup
+  private activeOscillators: Set<OscillatorNode> = new Set();
 
   private getContext(): AudioContext | null {
     if (!this.isSupported) return null;
@@ -50,6 +52,13 @@ class AudioManager {
       gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
       gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
 
+      // Phase 1.5: Track oscillator and auto-remove when finished
+      this.activeOscillators.add(oscillator);
+      oscillator.onended = () => {
+        oscillator.disconnect();
+        this.activeOscillators.delete(oscillator);
+      };
+
       oscillator.start(ctx.currentTime);
       oscillator.stop(ctx.currentTime + 0.3);
     } catch (error) {
@@ -75,6 +84,13 @@ class AudioManager {
       gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
       gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
 
+      // Phase 1.5: Track oscillator and auto-remove when finished
+      this.activeOscillators.add(oscillator);
+      oscillator.onended = () => {
+        oscillator.disconnect();
+        this.activeOscillators.delete(oscillator);
+      };
+
       oscillator.start(ctx.currentTime);
       oscillator.stop(ctx.currentTime + 0.3);
     } catch (error) {
@@ -97,6 +113,13 @@ class AudioManager {
       gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
       gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
 
+      // Phase 1.5: Track oscillator and auto-remove when finished
+      this.activeOscillators.add(oscillator);
+      oscillator.onended = () => {
+        oscillator.disconnect();
+        this.activeOscillators.delete(oscillator);
+      };
+
       oscillator.start(ctx.currentTime);
       oscillator.stop(ctx.currentTime + 0.1);
     } catch (error) {
@@ -105,6 +128,17 @@ class AudioManager {
   }
 
   cleanup(): void {
+    // Phase 1.5: Stop and disconnect all active oscillators before closing context
+    this.activeOscillators.forEach(oscillator => {
+      try {
+        oscillator.stop();
+        oscillator.disconnect();
+      } catch (error) {
+        // Apple Store Compliance: Silent operation (oscillator may already be stopped)
+      }
+    });
+    this.activeOscillators.clear();
+
     if (this.context) {
       try {
         this.context.close();

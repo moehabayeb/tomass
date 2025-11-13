@@ -40,6 +40,8 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
   // Refs for preventing race conditions and memory leaks
   const isInitialMount = useRef(true);
   const gameInitialized = useRef(false);
+  // Phase 1.4: Track hint timeout to prevent memory leak
+  const hintTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const difficultySettings = {
     easy: { maxWrong: 10, label: 'Easy', color: 'from-green-500 to-emerald-600' },
@@ -115,9 +117,14 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
     }
   }, [revealed, wrong, status, word, addXP, difficulty, streak, maxWrong]);
 
-  // Cleanup audio context on unmount
+  // Cleanup audio context and timers on unmount
   useEffect(() => {
     return () => {
+      // Phase 1.4: Clear hint timeout to prevent memory leak
+      if (hintTimeoutRef.current) {
+        clearTimeout(hintTimeoutRef.current);
+        hintTimeoutRef.current = null;
+      }
       audioManager.cleanup();
     };
   }, []);
@@ -207,8 +214,8 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
       setShowHint(true);
       setHintLetter(randomLetter);
 
-      // Release lock after state updates
-      setTimeout(() => setIsHintProcessing(false), 300);
+      // Phase 1.4: Store timeout ID for cleanup - Release lock after state updates
+      hintTimeoutRef.current = setTimeout(() => setIsHintProcessing(false), 300);
     }
   }, [showHint, wrong, maxWrong, word, guessed, isHintProcessing]);
 
