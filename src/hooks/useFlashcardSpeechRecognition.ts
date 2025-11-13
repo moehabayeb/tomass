@@ -70,10 +70,17 @@ export const useFlashcardSpeechRecognition = () => {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hasResultRef = useRef(false);
   const messageTimeoutsRef = useRef<NodeJS.Timeout[]>([]);
+  // Phase 2.1: Track mount state to prevent setState on unmounted component
+  const isMountedRef = useRef(true);
 
   // Helper to set and track message timeouts
   const setMessageTimeout = useCallback((callback: () => void, delay: number) => {
-    const timeoutId = setTimeout(callback, delay);
+    const timeoutId = setTimeout(() => {
+      // Phase 2.1: Only execute callback if still mounted
+      if (isMountedRef.current) {
+        callback();
+      }
+    }, delay);
     messageTimeoutsRef.current.push(timeoutId);
     return timeoutId;
   }, []);
@@ -86,7 +93,9 @@ export const useFlashcardSpeechRecognition = () => {
 
   // Cleanup on unmount
   useEffect(() => {
+    isMountedRef.current = true; // Phase 2.1: Set mounted on mount
     return () => {
+      isMountedRef.current = false; // Phase 2.1: Prevent setState after unmount
       clearAllMessageTimeouts();
       if (recognitionRef.current) {
         try {
@@ -196,6 +205,9 @@ export const useFlashcardSpeechRecognition = () => {
 
           hasResultRef.current = false;
 
+          // Phase 2.1: Check if still mounted before setState
+          if (!isMountedRef.current) return;
+
           setState({
             isListening: true,
             isProcessing: false,
@@ -246,6 +258,8 @@ export const useFlashcardSpeechRecognition = () => {
 
               if (confidence >= 0.95) {
                 // High confidence - auto-accept - Apple Store Compliance: Silent operation
+                // Phase 2.1: Check if still mounted before setState
+                if (!isMountedRef.current) return;
                 setState({
                   isListening: false,
                   isProcessing: false,
@@ -258,6 +272,8 @@ export const useFlashcardSpeechRecognition = () => {
                 resolve(bestResult.word);
               } else if (confidence >= 0.75) {
                 // Medium confidence - ask for confirmation - Apple Store Compliance: Silent operation
+                // Phase 2.1: Check if still mounted before setState
+                if (!isMountedRef.current) return;
                 setState({
                   isListening: false,
                   isProcessing: false,
@@ -269,6 +285,8 @@ export const useFlashcardSpeechRecognition = () => {
                 resolve(null); // Will be handled by confirm/reject
               } else {
                 // Low confidence - not sure - Apple Store Compliance: Silent operation
+                // Phase 2.1: Check if still mounted before setState
+                if (!isMountedRef.current) return;
                 setState({
                   isListening: false,
                   isProcessing: false,
@@ -283,6 +301,8 @@ export const useFlashcardSpeechRecognition = () => {
             } else {
               // No match found - Apple Store Compliance: Silent operation
               const transcript = alternatives[0]?.transcript || 'nothing';
+              // Phase 2.1: Check if still mounted before setState
+              if (!isMountedRef.current) return;
               setState({
                 isListening: false,
                 isProcessing: false,
@@ -311,6 +331,8 @@ export const useFlashcardSpeechRecognition = () => {
                 errorMessage = 'Microphone not working. Please type your answer.';
               }
 
+              // Phase 2.1: Check if still mounted before setState
+              if (!isMountedRef.current) return;
               setState({
                 isListening: false,
                 isProcessing: false,
@@ -329,6 +351,8 @@ export const useFlashcardSpeechRecognition = () => {
 
             if (!hasResultRef.current) {
               hasResultRef.current = true;
+              // Phase 2.1: Check if still mounted before setState
+              if (!isMountedRef.current) return;
               setState({
                 isListening: false,
                 isProcessing: false,
@@ -350,6 +374,8 @@ export const useFlashcardSpeechRecognition = () => {
             // Apple Store Compliance: Silent operation
           } catch (error) {
             // Apple Store Compliance: Silent fail - operation continues
+            // Phase 2.1: Check if still mounted before setState
+            if (!isMountedRef.current) return;
             setState({
               isListening: false,
               isProcessing: false,
@@ -375,6 +401,8 @@ export const useFlashcardSpeechRecognition = () => {
 
         })
         .catch(() => {
+          // Phase 2.1: Check if still mounted before setState
+          if (!isMountedRef.current) return;
           setState({
             isListening: false,
             isProcessing: false,

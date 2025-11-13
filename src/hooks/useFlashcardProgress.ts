@@ -51,7 +51,32 @@ export const useFlashcardProgress = () => {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(newProgress));
       setProgress(newProgress);
     } catch (error) {
-      // Apple Store Compliance: Silent operation
+      // Phase 2.2: Handle QuotaExceededError by clearing old data and retrying
+      if (error instanceof DOMException && error.name === 'QuotaExceededError') {
+        try {
+          // Clear old flashcard data to free up space
+          localStorage.removeItem(STORAGE_KEY);
+
+          // Retry with reduced data (keep only essential progress)
+          const reducedProgress: FlashcardProgress = {
+            ...newProgress,
+            // Keep only recent word attempts (last 50)
+            wordAttempts: Object.fromEntries(
+              Object.entries(newProgress.wordAttempts).slice(-50)
+            ),
+          };
+
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(reducedProgress));
+          setProgress(reducedProgress);
+        } catch (retryError) {
+          // If retry also fails, continue silently - Apple Store Compliance
+          // User can still play, progress just won't persist
+          setProgress(newProgress); // At least update in-memory state
+        }
+      } else {
+        // Apple Store Compliance: Silent operation for other errors
+        setProgress(newProgress); // Update in-memory state even if save fails
+      }
     }
   }, []);
 
