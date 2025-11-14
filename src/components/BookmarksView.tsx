@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { ArrowLeft, Bookmark, MessageSquare, BookOpen, Lightbulb, Trash2, Calendar, Reply, Search, X, Download, ArrowUpDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -65,14 +65,15 @@ export default function BookmarksView({ onBack, onContinueFromMessage }: Bookmar
     return () => {
       isMountedRef.current = false;
     };
-  }, []);
+  }, [loadBookmarks]); // 🔧 CRITICAL FIX: Include loadBookmarks dependency
 
   // BUG #13 FIX: Reset pagination when tab changes
   useEffect(() => {
     setDisplayLimit(INITIAL_DISPLAY_LIMIT); // Reset to initial limit when switching tabs
   }, [selectedTab]);
 
-  const loadBookmarks = async () => {
+  // 🔧 CRITICAL FIX: Wrap loadBookmarks in useCallback to prevent stale closures
+  const loadBookmarks = useCallback(async () => {
     try {
       // Phase 3.1: Set loading state
       setIsLoading(true);
@@ -131,7 +132,7 @@ export default function BookmarksView({ onBack, onContinueFromMessage }: Bookmar
         setIsLoading(false);
       }
     }
-  };
+  }, [syncBookmarks, badgeProgress.bookmarksSaved]);
 
   // BUG #15 FIX: Undo delete functionality
   const undoDelete = () => {
