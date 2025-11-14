@@ -107,7 +107,8 @@
       "Bash(vercel login)",
       "Bash(vercel whoami:*)",
       "Bash(vercel login:*)",
-      "Bash(npm run lint:*)"
+      "Bash(npm run lint:*)",
+      "Bash(xxd:*)"
     ],
     "deny": [],
     "ask": []
