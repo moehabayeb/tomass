@@ -14,6 +14,7 @@ import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ProfileErrorBoundary } from '@/components/ProfileErrorBoundary';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface Reminder {
   id: string;
@@ -356,8 +357,109 @@ function Profile() {
 
   if (isLoading || isLoadingProfile) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-violet-900 via-blue-900 to-indigo-900 flex items-center justify-center">
-        <div className="text-white">Loading...</div>
+      <div className="min-h-screen bg-gradient-to-br from-violet-900 via-blue-900 to-indigo-900" role="main" aria-busy="true" aria-label="Loading profile">
+        {/* Background Stars Animation */}
+        <div
+          className="absolute inset-0 w-full h-full pointer-events-none"
+          style={{
+            backgroundImage: 'radial-gradient(2px 2px at 20px 30px, #fff, transparent), radial-gradient(2px 2px at 40px 70px, #fff, transparent), radial-gradient(1px 1px at 90px 40px, #fff, transparent)',
+            backgroundSize: '100px 100px'
+          }}
+          aria-hidden="true"
+        />
+
+        <div className="relative z-10 container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-4xl">
+          {/* Header Skeleton */}
+          <div className="flex items-center justify-between mb-4 sm:mb-8 gap-2">
+            <Skeleton className="h-9 w-28 bg-white/10" />
+            <Skeleton className="h-8 w-32 bg-white/10" />
+            <Skeleton className="h-9 w-24 bg-white/10" />
+          </div>
+
+          <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
+            {/* Profile Info Card Skeleton */}
+            <Card className="bg-white/10 backdrop-blur-xl border-white/20">
+              <CardHeader className="pb-3 sm:pb-6">
+                <Skeleton className="h-6 w-48 bg-white/10" />
+              </CardHeader>
+              <CardContent className="space-y-4 sm:space-y-6">
+                {/* Avatar Skeleton */}
+                <div className="space-y-3 sm:space-y-4">
+                  <Skeleton className="h-4 w-24 bg-white/10" />
+                  <div className="flex flex-col items-center space-y-3 sm:space-y-4">
+                    <Skeleton className="h-24 w-24 rounded-full bg-white/10" />
+                    <div className="flex gap-2">
+                      <Skeleton className="h-9 w-24 bg-white/10" />
+                    </div>
+                    <Skeleton className="h-3 w-48 bg-white/10" />
+                  </div>
+                </div>
+
+                {/* Name Field Skeleton */}
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-20 bg-white/10" />
+                  <Skeleton className="h-11 w-full bg-white/10" />
+                </div>
+
+                {/* Email Field Skeleton */}
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-16 bg-white/10" />
+                  <Skeleton className="h-11 w-full bg-white/10" />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Stats Card Skeleton */}
+            <Card className="bg-white/10 backdrop-blur-xl border-white/20">
+              <CardHeader className="pb-3 sm:pb-6">
+                <Skeleton className="h-6 w-40 bg-white/10" />
+              </CardHeader>
+              <CardContent className="space-y-3 sm:space-y-4">
+                {/* Level & XP Skeleton */}
+                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                  <div className="text-center p-3 sm:p-4 bg-white/5 rounded-lg">
+                    <Skeleton className="h-8 w-20 mx-auto mb-2 bg-white/10" />
+                    <Skeleton className="h-4 w-24 mx-auto bg-white/10" />
+                  </div>
+                  <div className="text-center p-3 sm:p-4 bg-white/5 rounded-lg">
+                    <Skeleton className="h-8 w-16 mx-auto mb-2 bg-white/10" />
+                    <Skeleton className="h-4 w-20 mx-auto bg-white/10" />
+                  </div>
+                </div>
+
+                {/* Difficulty Skeleton */}
+                <div className="p-3 sm:p-4 bg-white/5 rounded-lg">
+                  <Skeleton className="h-5 w-full bg-white/10 mb-2" />
+                  <Skeleton className="h-4 w-3/4 bg-white/10" />
+                </div>
+
+                {/* Streak Skeleton */}
+                <div className="p-3 sm:p-4 bg-white/5 rounded-lg">
+                  <Skeleton className="h-5 w-full bg-white/10 mb-2" />
+                  <Skeleton className="h-4 w-2/3 bg-white/10" />
+                </div>
+
+                {/* Progress Skeleton */}
+                <div className="p-3 sm:p-4 bg-white/5 rounded-lg">
+                  <Skeleton className="h-5 w-full bg-white/10 mb-2" />
+                  <Skeleton className="h-2 w-full bg-white/10" />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Reminders Card Skeleton */}
+            <Card className="bg-white/10 backdrop-blur-xl border-white/20 lg:col-span-2">
+              <CardHeader className="pb-3 sm:pb-6">
+                <Skeleton className="h-6 w-56 bg-white/10" />
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Skeleton className="h-16 w-full bg-white/10" />
+                <Skeleton className="h-16 w-full bg-white/10" />
+                <Skeleton className="h-16 w-full bg-white/10" />
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     );
   }
@@ -632,8 +734,28 @@ function Profile() {
             </CardHeader>
             <CardContent>
               {isLoadingReminders ? (
-                <div className="text-white/60 text-center py-4 text-sm" role="status" aria-live="polite" aria-busy="true">
-                  Loading reminders...
+                <div className="space-y-2 sm:space-y-3" role="status" aria-live="polite" aria-busy="true" aria-label="Loading reminders">
+                  <div className="flex items-center p-3 bg-white/5 rounded-lg gap-3">
+                    <Skeleton className="h-10 w-10 rounded-lg bg-white/10" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-4 w-3/4 bg-white/10" />
+                      <Skeleton className="h-3 w-1/2 bg-white/10" />
+                    </div>
+                  </div>
+                  <div className="flex items-center p-3 bg-white/5 rounded-lg gap-3">
+                    <Skeleton className="h-10 w-10 rounded-lg bg-white/10" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-4 w-2/3 bg-white/10" />
+                      <Skeleton className="h-3 w-1/3 bg-white/10" />
+                    </div>
+                  </div>
+                  <div className="flex items-center p-3 bg-white/5 rounded-lg gap-3">
+                    <Skeleton className="h-10 w-10 rounded-lg bg-white/10" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-4 w-4/5 bg-white/10" />
+                      <Skeleton className="h-3 w-2/5 bg-white/10" />
+                    </div>
+                  </div>
                 </div>
               ) : reminders.length === 0 ? (
                 <div className="text-center py-6 sm:py-8" role="status">
