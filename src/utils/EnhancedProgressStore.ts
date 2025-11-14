@@ -17,6 +17,7 @@ import {
   GrammarError
 } from '../types/progressTypes';
 import { safeLocalStorage } from './safeLocalStorage';
+import { supabase } from '@/integrations/supabase/client';
 
 const STORAGE_KEYS = {
   userProfile: (userId: string) => `progress_tracker_v1:profile:${userId}`,
@@ -32,7 +33,7 @@ const DEFAULT_CONFIG: ProgressTrackerConfig = {
   timeoutSeconds: 30,
   enableGrammarDetection: true,
   enableTimingAnalytics: true,
-  syncWithSupabase: false
+  syncWithSupabase: true // Bug #9 Fix: Enable Supabase sync for question attempts
 };
 
 export class EnhancedProgressStore {
@@ -135,6 +136,13 @@ export class EnhancedProgressStore {
 
       // Update user profile
       this.updateProfileAfterAttempt(attempt);
+
+      // Bug #9 Fix: Sync to Supabase if enabled
+      if (this.config.syncWithSupabase) {
+        this.syncQuestionAttemptToSupabase(attempt).catch(() => {
+          // Apple Store Compliance: Silent fail - data already saved locally
+        });
+      }
     } catch (error) {
       // Apple Store Compliance: Silent operation
     }
@@ -449,13 +457,99 @@ export class EnhancedProgressStore {
     }
   }
 
+  /**
+   * Bug #9 Fix: Sync question attempt to Supabase
+   * Enables cross-device analytics and progress backup
+   */
+  private async syncQuestionAttemptToSupabase(attempt: QuestionAttempt): Promise<void> {
+    // Get current authenticated user
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      // Not authenticated - skip sync (data saved locally)
+      return;
+    }
+
+    try {
+      // Insert question attempt to Supabase
+      const { error } = await supabase.from('question_attempts').insert({
+        user_id: user.id,
+        question_id: attempt.questionId,
+        module_id: attempt.moduleId,
+        level_id: attempt.levelId,
+        attempt_number: attempt.attemptNumber,
+        correct: attempt.correct,
+        user_answer: attempt.userAnswer,
+        expected_answer: attempt.expectedAnswer,
+        start_time: attempt.startTime,
+        end_time: attempt.endTime,
+        time_spent: attempt.timeSpent,
+        grammar_errors: attempt.grammarErrors || [],
+        retry_reason: attempt.retryReason || null,
+      });
+
+      if (error) {
+        // Log error but don't throw - data is already saved locally
+        console.warn('Failed to sync question attempt to Supabase:', error);
+      }
+    } catch (error) {
+      // Apple Store Compliance: Silent fail - localStorage already has the data
+    }
+  }
+
+  /**
+   * Bulk sync local question attempts to Supabase
+   * Useful for migrating existing data or catching up after offline period
+   */
+  public async syncAllQuestionAttemptsToSupabase(userId: string): Promise<{ synced: number; failed: number }> {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user || !this.config.syncWithSupabase) {
+      return { synced: 0, failed: 0 };
+    }
+
+    let synced = 0;
+    let failed = 0;
+
+    try {
+      // Get all attempts from localStorage
+      const keys = safeLocalStorage.keys();
+      const attemptKeys = keys.filter(key => key.includes('attempts'));
+
+      for (const key of attemptKeys) {
+        try {
+          const stored = safeLocalStorage.getItem(key);
+          if (!stored) continue;
+
+          const attempts: QuestionAttempt[] = JSON.parse(stored);
+
+          // Batch insert attempts
+          for (const attempt of attempts) {
+            try {
+              await this.syncQuestionAttemptToSupabase(attempt);
+              synced++;
+            } catch (error) {
+              failed++;
+            }
+          }
+        } catch (error) {
+          failed++;
+        }
+      }
+    } catch (error) {
+      // Apple Store Compliance: Silent fail
+    }
+
+    return { synced, failed };
+  }
+
   // Clear all data (for testing or reset)
   public clearUserData(userId: string): void {
     try {
       safeLocalStorage.removeItem(STORAGE_KEYS.userProfile(userId));
       safeLocalStorage.removeItem(STORAGE_KEYS.learningSessions(userId));
       safeLocalStorage.removeItem(STORAGE_KEYS.snapshots(userId));
-      
+
       // Clear question attempts for all modules
       // Note: This is a simplified approach - in production you'd want better key management
       const keys = Object.keys(safeLocalStorage);
