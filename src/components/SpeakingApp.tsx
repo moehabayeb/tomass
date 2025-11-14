@@ -514,31 +514,36 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   const turnInProgressRef = useRef(false);
   // Phase 1.2: Track mutex timeout to prevent memory leak
   const turnMutexTimeoutRef = useRef<number | null>(null);
+  // 🔧 CRITICAL FIX: Atomic token storage to prevent race condition
+  const currentTurnTokenRef = useRef<string>('');
   const TURN_DEBOUNCE_MS = 300;
 
   // 2) When starting a turn, always pass a token and always call completion
   const startNewTurn = () => {
-    // 🔧 FIX #5: Debounce to prevent rapid-fire token generation
+    // 🔧 CRITICAL FIX: Use atomic ref to prevent race condition
     const now = Date.now();
-    // Phase 1.3: Check debounce with current token (only if token exists)
-    if (now - lastTurnStartRef.current < TURN_DEBOUNCE_MS && currentTurnToken) {
-      // Too soon, return current token
-      return currentTurnToken;
+
+    // Phase 1.3: Check debounce with atomic ref (synchronous check)
+    if (now - lastTurnStartRef.current < TURN_DEBOUNCE_MS && currentTurnTokenRef.current) {
+      // Too soon, return current token from ref (atomic)
+      return currentTurnTokenRef.current;
     }
 
-    // Phase 1.3: Check mutex with current token (only if token exists)
-    if (turnInProgressRef.current && currentTurnToken) {
-      return currentTurnToken;
+    // Phase 1.3: Check mutex with atomic ref (synchronous check)
+    if (turnInProgressRef.current && currentTurnTokenRef.current) {
+      return currentTurnTokenRef.current;
     }
 
     // Phase 1.3: Generate token BEFORE setting mutex to prevent race condition
     const tok = `turn-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,7)}`;
 
+    // 🔧 CRITICAL: Update atomic ref IMMEDIATELY (synchronous)
+    currentTurnTokenRef.current = tok;
     lastTurnStartRef.current = now;
     turnInProgressRef.current = true;
 
     cancelOldListeners();
-    setCurrentTurnToken(tok);
+    setCurrentTurnToken(tok); // Update React state for UI (async is OK)
     setReplayCounter(0);
     setFlowState('IDLE');
 
@@ -664,7 +669,15 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       }
       return newSet;
     });
-    setLastPlayedMessageIds(prev => new Set([...prev, messageId]));
+    // 🔧 CRITICAL FIX: Add size limit to prevent memory leak
+    setLastPlayedMessageIds(prev => {
+      const newSet = new Set([...prev, messageId]);
+      if (newSet.size > 100) {
+        const arr = Array.from(newSet);
+        return new Set(arr.slice(-100));
+      }
+      return newSet;
+    });
     if (isRepeat) {
       setReplayCounter(replay);
     }
@@ -1491,9 +1504,12 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       if (audioContextRef.current) {
         try {
           audioContextRef.current.close();
-          audioContextRef.current = null;
         } catch (e) {
-          // Ignore errors during cleanup
+          // 🔧 CRITICAL FIX: Silently handle error, cleanup continues
+          // Production: Errors should be logged to Sentry/monitoring service
+        } finally {
+          // 🔧 CRITICAL: Always null out ref even if close() fails
+          audioContextRef.current = null;
         }
       }
 

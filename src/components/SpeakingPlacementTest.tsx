@@ -1074,18 +1074,15 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
 
       // Only start if we're in idle state
       if (sessionStateRef.current !== 'idle') {
-        if (debug) 
         return;
       }
 
       if (testState !== 'ready') {
-        if (debug) 
         return;
       }
     } else {
       // Legacy behavior
       if (micState === 'listening') {
-        if (debug) 
         cleanupRecognition();
         updateMicState('idle');
         setStatusMessage('');
@@ -1093,7 +1090,6 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
       }
 
       if (testState !== 'ready' || micState !== 'idle') {
-        if (debug) 
         return;
       }
     }
@@ -1128,7 +1124,6 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
       // State transition: idle → listening
       if (SPEAKING_TEST_STRICT_SESSION) {
         if (sessionStateRef.current !== 'idle') {
-          if (debug) 
           return;
         }
         updateMicState('listening');
@@ -1215,7 +1210,6 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
       const maxTimeout = SPEAKING_TEST_VAD_ENDPOINTING ? 20000 : 15000;
       timeoutRef.current = window.setTimeout(() => {
         if (!hasResult && recognitionRef.current && !hasFinal) {
-          if (debug) 
           try {
             recognition.stop();
           } catch (e) {}
@@ -1251,7 +1245,6 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
       };
 
       recognition.onspeechend = () => {
-        if (debug) 
         recognition.stop();
       };
 
@@ -1284,7 +1277,6 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
         // State transition: listening → processing
         if (SPEAKING_TEST_STRICT_SESSION) {
           if (sessionStateRef.current !== 'listening') {
-            if (debug) 
             return;
           }
           updateMicState('processing');
@@ -1298,8 +1290,7 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
         const result = event.results[0];
         if (result && result.isFinal) {
           hasFinal = true;
-          if (debug) 
-          
+
           // Clean up VAD when we get final result
           cleanupVAD();
           
@@ -1409,11 +1400,8 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
       };
 
       recognition.onend = () => {
-        if (debug) 
-        
         if (!hasResult && !hasFinal) {
           const durationMs = Date.now() - startTimeRef.current;
-          if (debug) 
           handleNoCapture(durationMs, 'no_results');
         }
         
@@ -1432,7 +1420,6 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
       // Phase 2.2: Wrap recognition.start() in try-catch to handle immediate failures
       try {
         recognition.start();
-        if (debug)
 
         // Start VAD monitoring after recognition begins
         if (SPEAKING_TEST_VAD_ENDPOINTING && vadSetup) {
@@ -1485,8 +1472,6 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
 
   // Watchdog + one safe retry for no capture
   function handleNoCapture(durationMs: number, errorType: string) {
-    if (debug) 
-    
     // Clean up timers
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
@@ -1501,7 +1486,6 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     
     if (isNoCapture && retryCountRef.current === 0 && SPEAKING_TEST_STRICT_SESSION) {
       // One safe retry
-      if (debug) 
       retryCountRef.current = 1;
       sessionStateRef.current = 'idle'; // Reset for retry
       setStatusMessage('Retrying...');
