@@ -367,41 +367,44 @@ function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-violet-900 via-blue-900 to-indigo-900">
+    <div className="min-h-screen bg-gradient-to-br from-violet-900 via-blue-900 to-indigo-900" role="main">
       {/* Background Stars Animation */}
-      <div 
-        className="absolute inset-0 w-full h-full pointer-events-none" 
-        style={{ 
-          backgroundImage: 'radial-gradient(2px 2px at 20px 30px, #fff, transparent), radial-gradient(2px 2px at 40px 70px, #fff, transparent), radial-gradient(1px 1px at 90px 40px, #fff, transparent)', 
-          backgroundSize: '100px 100px' 
-        }} 
+      <div
+        className="absolute inset-0 w-full h-full pointer-events-none"
+        style={{
+          backgroundImage: 'radial-gradient(2px 2px at 20px 30px, #fff, transparent), radial-gradient(2px 2px at 40px 70px, #fff, transparent), radial-gradient(1px 1px at 90px 40px, #fff, transparent)',
+          backgroundSize: '100px 100px'
+        }}
+        aria-hidden="true"
       />
 
       <div className="relative z-10 container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-4xl">
         {/* Header */}
-        <div className="flex items-center justify-between mb-4 sm:mb-8 gap-2">
+        <header className="flex items-center justify-between mb-4 sm:mb-8 gap-2" role="banner">
           <Button
             onClick={() => navigate('/?tab=meetings')}
             variant="ghost"
             size="sm"
             className="text-white/70 hover:text-white hover:bg-white/10 p-2 sm:px-4"
+            aria-label="Go back to meetings page"
           >
-            <ArrowLeft className="h-4 w-4 sm:mr-2" />
+            <ArrowLeft className="h-4 w-4 sm:mr-2" aria-hidden="true" />
             <span className="hidden sm:inline">Back to Meetings</span>
           </Button>
-          
+
           <h1 className="text-xl sm:text-3xl font-bold text-white text-center">My Profile</h1>
-          
+
           <Button
             onClick={handleSignOut}
             variant="outline"
             size="sm"
             className="text-white border-white/20 hover:bg-white/10 p-2 sm:px-4"
+            aria-label="Sign out of your account"
           >
-            <LogOut className="h-4 w-4 sm:mr-2" />
+            <LogOut className="h-4 w-4 sm:mr-2" aria-hidden="true" />
             <span className="hidden sm:inline">Sign Out</span>
           </Button>
-        </div>
+        </header>
 
         <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
           {/* Profile Info Card */}
@@ -415,9 +418,9 @@ function Profile() {
             <CardContent className="space-y-4 sm:space-y-6">
               {/* Avatar Section with Upload */}
               <div className="space-y-3 sm:space-y-4">
-                <Label className="text-white/80 text-sm">Profile Picture</Label>
-                <div className="flex flex-col items-center space-y-3 sm:space-y-4">
-                  <div className="relative">
+                <Label className="text-white/80 text-sm" id="avatar-label">Profile Picture</Label>
+                <div className="flex flex-col items-center space-y-3 sm:space-y-4" role="group" aria-labelledby="avatar-label">
+                  <div className="relative" aria-busy={isUploadingAvatar}>
                     <AvatarDisplay
                       level={level}
                       xp={Math.max(0, xpProgress.current)}
@@ -428,7 +431,7 @@ function Profile() {
                       avatarUrl={profile.avatar_url}
                     />
                   </div>
-                  
+
                   <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                     <input
                       ref={fileInputRef}
@@ -436,6 +439,8 @@ function Profile() {
                       accept=".jpg,.jpeg,.png,.webp"
                       onChange={handleAvatarUpload}
                       className="hidden"
+                      aria-label="Upload profile picture"
+                      aria-describedby="avatar-help"
                     />
                     <Button
                       onClick={() => fileInputRef.current?.click()}
@@ -443,8 +448,10 @@ function Profile() {
                       size="sm"
                       variant="outline"
                       className="text-white border-white/20 hover:bg-white/10 text-xs sm:text-sm"
+                      aria-label="Upload new profile picture"
+                      aria-busy={isUploadingAvatar}
                     >
-                      <Upload className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                      <Upload className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" aria-hidden="true" />
                       {isUploadingAvatar ? 'Uploading...' : 'Upload'}
                     </Button>
                     {profile.avatar_url && (
@@ -454,13 +461,15 @@ function Profile() {
                         size="sm"
                         variant="outline"
                         className="text-red-300 border-red-300/20 hover:bg-red-500/10 text-xs sm:text-sm"
+                        aria-label="Remove current profile picture"
+                        aria-busy={isUploadingAvatar}
                       >
-                        <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                        <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" aria-hidden="true" />
                         Remove
                       </Button>
                     )}
                   </div>
-                  <p className="text-white/60 text-xs text-center">
+                  <p className="text-white/60 text-xs text-center" id="avatar-help">
                     JPG, PNG, or WebP up to 2MB
                   </p>
                 </div>
@@ -468,14 +477,18 @@ function Profile() {
 
               {/* Name Field */}
               <div className="space-y-2">
-                <Label className="text-white/80 text-sm">Full Name</Label>
+                <Label className="text-white/80 text-sm" htmlFor="full-name-input">Full Name</Label>
                 {isEditingName ? (
-                  <div className="flex flex-col sm:flex-row gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2" role="group" aria-label="Edit full name">
                     <Input
+                      id="full-name-input"
                       value={editedName}
                       onChange={(e) => setEditedName(e.target.value)}
                       className="bg-white/5 border-white/20 text-white text-sm"
                       placeholder="Enter your name"
+                      aria-label="Full name"
+                      aria-required="true"
+                      autoFocus
                     />
                     <div className="flex gap-2">
                       <Button
@@ -483,6 +496,8 @@ function Profile() {
                         disabled={isUpdatingProfile || !editedName.trim()}
                         size="sm"
                         className="flex-1 sm:flex-none"
+                        aria-label="Save name changes"
+                        aria-busy={isUpdatingProfile}
                       >
                         Save
                       </Button>
@@ -494,6 +509,7 @@ function Profile() {
                         variant="outline"
                         size="sm"
                         className="flex-1 sm:flex-none"
+                        aria-label="Cancel name editing"
                       >
                         Cancel
                       </Button>
@@ -501,7 +517,7 @@ function Profile() {
                   </div>
                 ) : (
                   <div className="flex items-center justify-between p-2 sm:p-3 bg-white/5 rounded-md border border-white/20">
-                     <span className="text-white text-sm truncate mr-2">
+                     <span className="text-white text-sm truncate mr-2" id="current-name">
                        {profile.full_name || 'No name set'}
                      </span>
                     <Button
@@ -509,8 +525,9 @@ function Profile() {
                       variant="ghost"
                       size="sm"
                       className="text-white/70 hover:text-white p-1 sm:p-2"
+                      aria-label={`Edit name: ${profile.full_name || 'No name set'}`}
                     >
-                      <Edit2 className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <Edit2 className="h-3 w-3 sm:h-4 sm:w-4" aria-hidden="true" />
                     </Button>
                   </div>
                 )}
@@ -528,38 +545,40 @@ function Profile() {
           </Card>
 
           {/* Stats Card */}
-          <Card className="bg-white/10 backdrop-blur-xl border-white/20">
+          <Card className="bg-white/10 backdrop-blur-xl border-white/20" role="region" aria-label="Learning progress">
             <CardHeader className="pb-3 sm:pb-6">
               <CardTitle className="text-white flex items-center gap-2 text-base sm:text-lg">
-                <Trophy className="h-4 w-4 sm:h-5 sm:w-5" />
+                <Trophy className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
                 Learning Progress
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 sm:space-y-4">
               {/* Level & XP */}
-              <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                <div className="text-center p-3 sm:p-4 bg-white/5 rounded-lg border border-white/20">
-                  <div className="text-lg sm:text-2xl font-bold text-white">Level {level}</div>
-                  <div className="text-white/60 text-xs sm:text-sm">Current Level</div>
+              <div className="grid grid-cols-2 gap-3 sm:gap-4" role="group" aria-label="Level and experience points">
+                <div className="text-center p-3 sm:p-4 bg-white/5 rounded-lg border border-white/20" aria-label={`Current level ${level}`}>
+                  <div className="text-lg sm:text-2xl font-bold text-white" aria-label={`Level ${level}`}>Level {level}</div>
+                  <div className="text-white/60 text-xs sm:text-sm" aria-hidden="true">Current Level</div>
                 </div>
-                <div className="text-center p-3 sm:p-4 bg-white/5 rounded-lg border border-white/20">
-                  <div className="text-lg sm:text-2xl font-bold text-white">{totalXP}</div>
-                  <div className="text-white/60 text-xs sm:text-sm">Total XP</div>
+                <div className="text-center p-3 sm:p-4 bg-white/5 rounded-lg border border-white/20" aria-label={`Total experience points: ${totalXP}`}>
+                  <div className="text-lg sm:text-2xl font-bold text-white" aria-label={`${totalXP} XP`}>{totalXP}</div>
+                  <div className="text-white/60 text-xs sm:text-sm" aria-hidden="true">Total XP</div>
                 </div>
               </div>
 
               {/* Conversation Difficulty Indicator */}
-              <div className="p-3 sm:p-4 bg-white/5 rounded-lg border border-white/20">
+              <div className="p-3 sm:p-4 bg-white/5 rounded-lg border border-white/20" role="status" aria-label={`Conversation difficulty level: ${user_level}`}>
                 <div className="flex items-center justify-between">
                   <span className="text-white font-medium text-sm sm:text-base">Conversation Difficulty</span>
                   <Badge className={`text-xs ${
                     user_level === 'beginner' ? 'bg-green-500/20 text-green-300 border-green-500/50' :
                     user_level === 'intermediate' ? 'bg-orange-500/20 text-orange-300 border-orange-500/50' :
                     'bg-purple-500/20 text-purple-300 border-purple-500/50'
-                  }`}>
-                    {user_level === 'beginner' ? '🌱 Beginner' :
-                     user_level === 'intermediate' ? '🔥 Intermediate' :
-                     '⭐ Advanced'}
+                  }`} aria-label={user_level}>
+                    <span aria-hidden="true">
+                      {user_level === 'beginner' ? '🌱 Beginner' :
+                       user_level === 'intermediate' ? '🔥 Intermediate' :
+                       '⭐ Advanced'}
+                    </span>
                   </Badge>
                 </div>
                 <div className="text-white/60 text-xs sm:text-sm mt-2">
@@ -570,31 +589,31 @@ function Profile() {
               </div>
 
               {/* Streak Info */}
-              <div className="p-3 sm:p-4 bg-white/5 rounded-lg border border-white/20">
+              <div className="p-3 sm:p-4 bg-white/5 rounded-lg border border-white/20" role="status" aria-label={`Learning streak: ${streakData.currentStreak} days current, ${streakData.bestStreak} days best`}>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-white font-medium text-sm sm:text-base">Current Streak</span>
-                  <Badge variant="secondary" className="bg-orange-500/20 text-orange-300 text-xs">
+                  <Badge variant="secondary" className="bg-orange-500/20 text-orange-300 text-xs" aria-label={`${streakData.currentStreak} days`}>
                     {streakData.currentStreak} days
                   </Badge>
                 </div>
-                <div className="text-white/60 text-xs sm:text-sm">{getStreakMessage()}</div>
-                <Separator className="my-2 bg-white/20" />
+                <div className="text-white/60 text-xs sm:text-sm" role="status">{getStreakMessage()}</div>
+                <Separator className="my-2 bg-white/20" aria-hidden="true" />
                 <div className="flex justify-between text-xs sm:text-sm">
                   <span className="text-white/60">Best Streak</span>
-                  <span className="text-white">{streakData.bestStreak} days</span>
+                  <span className="text-white" aria-label={`Best streak: ${streakData.bestStreak} days`}>{streakData.bestStreak} days</span>
                 </div>
               </div>
 
               {/* XP Progress */}
-              <div className="p-3 sm:p-4 bg-white/5 rounded-lg border border-white/20">
+              <div className="p-3 sm:p-4 bg-white/5 rounded-lg border border-white/20" role="progressbar" aria-valuenow={Math.max(0, xpProgress.current)} aria-valuemin={0} aria-valuemax={xpProgress.max} aria-label={`Progress to level ${level + 1}: ${Math.max(0, xpProgress.current)} of ${xpProgress.max} XP, ${Math.round(xpProgress.percentage)}% complete`}>
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-2 gap-1">
                   <span className="text-white font-medium text-sm sm:text-base">Progress to Level {level + 1}</span>
                   <span className="text-white/60 text-xs sm:text-sm">
                     {Math.max(0, xpProgress.current)} / {xpProgress.max} XP
                   </span>
                 </div>
-                <div className="w-full bg-white/10 rounded-full h-2 sm:h-2">
-                  <div 
+                <div className="w-full bg-white/10 rounded-full h-2 sm:h-2" aria-hidden="true">
+                  <div
                     className="bg-gradient-to-r from-blue-400 to-purple-400 h-2 rounded-full transition-all duration-300"
                     style={{ width: `${Math.max(0, xpProgress.percentage)}%` }}
                   />
@@ -604,19 +623,21 @@ function Profile() {
           </Card>
 
           {/* Reminders Card */}
-          <Card className="bg-white/10 backdrop-blur-xl border-white/20 lg:col-span-2">
+          <Card className="bg-white/10 backdrop-blur-xl border-white/20 lg:col-span-2" role="region" aria-label="Upcoming meeting reminders">
             <CardHeader className="pb-3 sm:pb-6">
               <CardTitle className="text-white flex items-center gap-2 text-base sm:text-lg">
-                <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
+                <Calendar className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
                 Upcoming Meeting Reminders
               </CardTitle>
             </CardHeader>
             <CardContent>
               {isLoadingReminders ? (
-                <div className="text-white/60 text-center py-4 text-sm">Loading reminders...</div>
+                <div className="text-white/60 text-center py-4 text-sm" role="status" aria-live="polite" aria-busy="true">
+                  Loading reminders...
+                </div>
               ) : reminders.length === 0 ? (
-                <div className="text-center py-6 sm:py-8">
-                  <Calendar className="h-8 w-8 sm:h-12 sm:w-12 text-white/40 mx-auto mb-2 sm:mb-3" />
+                <div className="text-center py-6 sm:py-8" role="status">
+                  <Calendar className="h-8 w-8 sm:h-12 sm:w-12 text-white/40 mx-auto mb-2 sm:mb-3" aria-hidden="true" />
                   <div className="text-white/60 text-sm sm:text-base">No upcoming reminders</div>
                   <div className="text-white/40 text-xs sm:text-sm mt-1">
                     Set reminders for meetings to see them here
