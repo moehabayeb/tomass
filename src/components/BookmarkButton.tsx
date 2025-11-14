@@ -24,6 +24,22 @@ export interface BookmarkItem {
 // 🔧 BUG #17 FIX: Maximum bookmark limit to prevent performance issues
 const MAX_BOOKMARKS_LIMIT = 1000;
 
+// PHASE 4 FIX: Extract magic numbers to constants for maintainability
+const BOOKMARK_ID_CONTENT_LENGTH = 150; // Characters to use for ID generation
+const BOOKMARK_ID_FINAL_LENGTH = 32; // Final ID length after encoding
+const APPLE_HIG_MIN_BUTTON_SIZE = 44; // Apple HIG minimum touch target (px)
+const BUTTON_ICON_SIZE = 5; // Tailwind class value for icon size (h-5 w-5)
+
+// PHASE 4 FIX: Standardized error messages for consistency
+const ERROR_MESSAGES = {
+  INVALID_CONTENT: "Cannot bookmark empty or invalid content.",
+  ALREADY_BOOKMARKED: "This content is already in your bookmarks.",
+  STORAGE_FULL: "You've reached the bookmark storage limit. Please delete some old bookmarks to make space.",
+  BOOKMARK_LIMIT_REACHED: (limit: number) => `You've reached the maximum limit of ${limit} bookmarks. Please delete some old bookmarks to add new ones.`,
+  BOOKMARK_ERROR: "Failed to save bookmark. Please try again.",
+  CORRUPTED_DATA: "Bookmarks data was corrupted and has been reset"
+} as const;
+
 export default function BookmarkButton({ 
   content, 
   type, 
@@ -46,16 +62,14 @@ export default function BookmarkButton({
   // BUG #2 FIX: Added timestamp to prevent collisions for identical content
   const getBookmarkId = useCallback((content: string, includeTimestamp: boolean = false) => {
     // Phase 4.3: Improved ID generation to reduce collision risk
-    // Use first 150 chars (increased from 100) for better uniqueness
     // Include timestamp when creating NEW bookmarks to ensure uniqueness
     const timestamp = includeTimestamp ? Date.now().toString() : '';
-    const uniqueString = content.slice(0, 150) + type + (title || '') + timestamp;
+    const uniqueString = content.slice(0, BOOKMARK_ID_CONTENT_LENGTH) + type + (title || '') + timestamp;
 
     try {
       // Try base64 encoding first
       const encoded = btoa(unescape(encodeURIComponent(uniqueString)));
-      // Keep more characters (32 instead of 20) to reduce collisions
-      return encoded.replace(/[^a-zA-Z0-9]/g, '').slice(0, 32);
+      return encoded.replace(/[^a-zA-Z0-9]/g, '').slice(0, BOOKMARK_ID_FINAL_LENGTH);
     } catch (error) {
       // Fallback to string hashing if encoding fails
       let hash = 0;
@@ -64,8 +78,7 @@ export default function BookmarkButton({
         hash = ((hash << 5) - hash) + char;
         hash = hash & hash; // Convert to 32bit integer
       }
-      // Use longer hash string (32 chars) to reduce collisions
-      return Math.abs(hash).toString(36).padStart(32, '0');
+      return Math.abs(hash).toString(36).padStart(BOOKMARK_ID_FINAL_LENGTH, '0');
     }
   }, [type, title]);
 
@@ -139,7 +152,7 @@ export default function BookmarkButton({
     if (!content || typeof content !== 'string') {
       toast({
         title: "Invalid Content",
-        description: "Cannot bookmark empty or invalid content.",
+        description: ERROR_MESSAGES.INVALID_CONTENT,
         variant: "destructive"
       });
       return;
@@ -168,7 +181,7 @@ export default function BookmarkButton({
         // Invalid JSON format, reset to empty array
         console.error('Invalid bookmarks format detected during toggle, resetting');
         localStorage.setItem('bookmarks', '[]');
-        throw new Error('Bookmarks data was corrupted and has been reset');
+        throw new Error(ERROR_MESSAGES.CORRUPTED_DATA);
       }
 
       const localBookmarks = JSON.parse(rawBookmarks);
@@ -206,7 +219,7 @@ export default function BookmarkButton({
         if (isDuplicate) {
           toast({
             title: "Already Bookmarked",
-            description: "This content is already in your bookmarks.",
+            description: ERROR_MESSAGES.ALREADY_BOOKMARKED,
             variant: "default"
           });
           return; // Exit early, don't add duplicate
@@ -216,7 +229,7 @@ export default function BookmarkButton({
         if (localBookmarks.length >= MAX_BOOKMARKS_LIMIT) {
           toast({
             title: "Bookmark Limit Reached",
-            description: `You've reached the maximum limit of ${MAX_BOOKMARKS_LIMIT} bookmarks. Please delete some old bookmarks to add new ones.`,
+            description: ERROR_MESSAGES.BOOKMARK_LIMIT_REACHED(MAX_BOOKMARKS_LIMIT),
             variant: "destructive"
           });
           return; // Exit early, don't add more bookmarks
@@ -235,7 +248,7 @@ export default function BookmarkButton({
             // Quota exceeded - show user-friendly error
             toast({
               title: "Storage Full",
-              description: "You've reached the bookmark storage limit. Please delete some old bookmarks to make space.",
+              description: ERROR_MESSAGES.STORAGE_FULL,
               variant: "destructive"
             });
             return; // Exit early, don't update state
@@ -267,7 +280,7 @@ export default function BookmarkButton({
       // 🔧 FIX BUG #2 & #3: Comprehensive error handling
       // Error cases: JSON parse error, storage access denied, or other localStorage errors
       // Phase 4.1: Improved type safety with unknown instead of any
-      const errorMessage = error instanceof Error ? error.message : "Failed to save bookmark. Please try again.";
+      const errorMessage = error instanceof Error ? error.message : ERROR_MESSAGES.BOOKMARK_ERROR;
       toast({
         title: "Bookmark Error",
         description: errorMessage,
@@ -293,7 +306,7 @@ export default function BookmarkButton({
       aria-label={isBookmarked ? `Remove ${type} bookmark` : `Add ${type} bookmark`}
       aria-pressed={isBookmarked}
       className={`
-        min-h-[44px] min-w-[44px] p-0 transition-all duration-200 hover:scale-110
+        min-h-[${APPLE_HIG_MIN_BUTTON_SIZE}px] min-w-[${APPLE_HIG_MIN_BUTTON_SIZE}px] p-0 transition-all duration-200 hover:scale-110
         ${isBookmarked
           ? 'text-yellow-500 hover:text-yellow-600'
           : 'text-gray-400 hover:text-yellow-500'
@@ -302,9 +315,9 @@ export default function BookmarkButton({
       `}
     >
       {isBookmarked ? (
-        <BookmarkCheck className="h-5 w-5" aria-hidden="true" />
+        <BookmarkCheck className={`h-${BUTTON_ICON_SIZE} w-${BUTTON_ICON_SIZE}`} aria-hidden="true" />
       ) : (
-        <Bookmark className="h-5 w-5" aria-hidden="true" />
+        <Bookmark className={`h-${BUTTON_ICON_SIZE} w-${BUTTON_ICON_SIZE}`} aria-hidden="true" />
       )}
     </Button>
   );

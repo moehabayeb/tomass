@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Bookmark, MessageSquare, BookOpen, Lightbulb, Trash2, Calendar, Reply, Search, X, Download } from 'lucide-react';
+import { ArrowLeft, Bookmark, MessageSquare, BookOpen, Lightbulb, Trash2, Calendar, Reply, Search, X, Download, ArrowUpDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BookmarkItem } from './BookmarkButton';
 import { toast } from 'sonner';
 import { useBadgeSystem } from '@/hooks/useBadgeSystem';
@@ -13,15 +14,39 @@ interface BookmarksViewProps {
   onContinueFromMessage?: (content: string) => void;
 }
 
+// PHASE 4 FIX: Extract magic numbers to constants for maintainability
+const INITIAL_DISPLAY_LIMIT = 20; // Initial number of bookmarks to show
+const PAGINATION_INCREMENT = 20; // Number of bookmarks to add when showing more
+const UNDO_TIMEOUT_MS = 5000; // Time window for undo operation (milliseconds)
+
+// PHASE 4 FIX: Standardized error messages for consistency
+const ERROR_MESSAGES = {
+  LOAD_FAILED: "Failed to load bookmarks. Please try again.",
+  DELETE_FAILED: "Failed to delete bookmark. Please try again.",
+  RESTORE_FAILED: "Failed to restore bookmark",
+  EXPORT_FAILED: "Failed to export bookmarks. Please try again.",
+  BOOKMARK_DELETED: "Bookmark deleted",
+  BOOKMARK_RESTORED: "Bookmark restored"
+} as const;
+
+const SUCCESS_MESSAGES = {
+  EXPORT_SUCCESS: (count: number) => `Exported ${count} bookmarks successfully`
+} as const;
+
+// PHASE 4 FIX: Sort options for bookmarks
+type SortOption = 'newest' | 'oldest' | 'type' | 'title';
+
 export default function BookmarksView({ onBack, onContinueFromMessage }: BookmarksViewProps) {
   const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
   const [selectedTab, setSelectedTab] = useState<'all' | 'message' | 'lesson' | 'tip'>('all');
   // Phase 3.1: Add loading state
   const [isLoading, setIsLoading] = useState(true);
   // Phase 3.3: Add pagination to prevent performance issues with large lists
-  const [displayLimit, setDisplayLimit] = useState(20);
+  const [displayLimit, setDisplayLimit] = useState(INITIAL_DISPLAY_LIMIT);
   // BUG #19 FIX: Add search functionality
   const [searchQuery, setSearchQuery] = useState('');
+  // PHASE 4 FIX: Add sort functionality
+  const [sortBy, setSortBy] = useState<SortOption>('newest');
   // Phase 1.1: Track mounted state to prevent state updates after unmount
   const isMountedRef = useRef(true);
   // Phase 2.2: Track ongoing delete operations to prevent race conditions
@@ -44,7 +69,7 @@ export default function BookmarksView({ onBack, onContinueFromMessage }: Bookmar
 
   // BUG #13 FIX: Reset pagination when tab changes
   useEffect(() => {
-    setDisplayLimit(20); // Reset to initial limit when switching tabs
+    setDisplayLimit(INITIAL_DISPLAY_LIMIT); // Reset to initial limit when switching tabs
   }, [selectedTab]);
 
   const loadBookmarks = async () => {
@@ -98,7 +123,7 @@ export default function BookmarksView({ onBack, onContinueFromMessage }: Bookmar
     } catch (error) {
       // Phase 1.3: Show user-friendly error message instead of silent fail
       if (isMountedRef.current) {
-        toast.error('Failed to load bookmarks. Please try again.');
+        toast.error(ERROR_MESSAGES.LOAD_FAILED);
       }
     } finally {
       // Phase 3.1: Always clear loading state
@@ -131,7 +156,7 @@ export default function BookmarksView({ onBack, onContinueFromMessage }: Bookmar
             syncBookmarks(newBookmarks.length);
             return newBookmarks;
           });
-          toast.success('Bookmark restored');
+          toast.success(ERROR_MESSAGES.BOOKMARK_RESTORED);
         }
       }
 
@@ -143,7 +168,7 @@ export default function BookmarksView({ onBack, onContinueFromMessage }: Bookmar
       }
     } catch (error) {
       if (isMountedRef.current) {
-        toast.error('Failed to restore bookmark');
+        toast.error(ERROR_MESSAGES.RESTORE_FAILED);
       }
     }
   };
@@ -195,12 +220,12 @@ export default function BookmarksView({ onBack, onContinueFromMessage }: Bookmar
       decrementBookmarks();
 
       // BUG #15 FIX: Show success with undo button
-      toast.success('Bookmark deleted', {
+      toast.success(ERROR_MESSAGES.BOOKMARK_DELETED, {
         action: {
           label: 'Undo',
           onClick: undoDelete,
         },
-        duration: 5000, // 5 seconds to undo
+        duration: UNDO_TIMEOUT_MS,
       });
 
       // Clear undo data after timeout
@@ -209,13 +234,13 @@ export default function BookmarksView({ onBack, onContinueFromMessage }: Bookmar
       }
       undoTimeoutRef.current = setTimeout(() => {
         deletedBookmarkRef.current = null;
-      }, 5000);
+      }, UNDO_TIMEOUT_MS);
 
       // TODO: Remove from Supabase when user authentication is implemented
     } catch (error) {
       // Phase 1.3: Show user-friendly error message instead of silent fail
       if (isMountedRef.current) {
-        toast.error('Failed to delete bookmark. Please try again.');
+        toast.error(ERROR_MESSAGES.DELETE_FAILED);
       }
     } finally {
       // Phase 2.2: Always remove the ID from the set when done
@@ -244,9 +269,9 @@ export default function BookmarksView({ onBack, onContinueFromMessage }: Bookmar
       // Cleanup
       URL.revokeObjectURL(url);
 
-      toast.success(`Exported ${bookmarks.length} bookmarks successfully`);
+      toast.success(SUCCESS_MESSAGES.EXPORT_SUCCESS(bookmarks.length));
     } catch (error) {
-      toast.error('Failed to export bookmarks. Please try again.');
+      toast.error(ERROR_MESSAGES.EXPORT_FAILED);
     }
   };
 
@@ -275,11 +300,27 @@ export default function BookmarksView({ onBack, onContinueFromMessage }: Bookmar
       });
     }
 
+    // PHASE 4 FIX: Apply sorting
+    const sorted = [...filtered].sort((a, b) => {
+      switch (sortBy) {
+        case 'newest':
+          return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+        case 'oldest':
+          return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
+        case 'type':
+          return a.type.localeCompare(b.type);
+        case 'title':
+          return (a.title || a.content.slice(0, 50)).localeCompare(b.title || b.content.slice(0, 50));
+        default:
+          return 0;
+      }
+    });
+
     // Phase 3.3: Apply pagination limit
     return {
-      items: filtered.slice(0, displayLimit),
-      total: filtered.length,
-      hasMore: filtered.length > displayLimit
+      items: sorted.slice(0, displayLimit),
+      total: sorted.length,
+      hasMore: sorted.length > displayLimit
     };
   };
 
@@ -385,8 +426,8 @@ export default function BookmarksView({ onBack, onContinueFromMessage }: Bookmar
           </TabsList>
         </Tabs>
 
-        {/* BUG #19 FIX: Search Bar */}
-        <div className="mb-4 sm:mb-6 relative">
+        {/* BUG #19 FIX: Search Bar & PHASE 4 FIX: Sort Options */}
+        <div className="mb-4 sm:mb-6 space-y-3">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/60" aria-hidden="true" />
             <Input
@@ -409,8 +450,25 @@ export default function BookmarksView({ onBack, onContinueFromMessage }: Bookmar
               </Button>
             )}
           </div>
+
+          {/* PHASE 4 FIX: Sort dropdown */}
+          <div className="flex items-center gap-2">
+            <ArrowUpDown className="h-4 w-4 text-white/60 flex-shrink-0" aria-hidden="true" />
+            <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
+              <SelectTrigger className="w-full sm:w-[180px] bg-white/10 backdrop-blur-sm border-white/20 text-white text-sm h-9">
+                <SelectValue placeholder="Sort by..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">Newest first</SelectItem>
+                <SelectItem value="oldest">Oldest first</SelectItem>
+                <SelectItem value="type">By type</SelectItem>
+                <SelectItem value="title">By title (A-Z)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           {searchQuery && (
-            <p className="mt-2 text-xs text-white/60">
+            <p className="text-xs text-white/60">
               {filteredBookmarks.length} result{filteredBookmarks.length !== 1 ? 's' : ''} found
             </p>
           )}
@@ -514,7 +572,7 @@ export default function BookmarksView({ onBack, onContinueFromMessage }: Bookmar
           {!isLoading && hasMore && (
             <div className="flex justify-center mt-4">
               <Button
-                onClick={() => setDisplayLimit(prev => prev + 20)}
+                onClick={() => setDisplayLimit(prev => prev + PAGINATION_INCREMENT)}
                 variant="ghost"
                 className="bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 text-white rounded-full px-6 py-2"
                 aria-label={`Show more bookmarks. Currently showing ${filteredBookmarks.length} of ${totalBookmarks}`}
