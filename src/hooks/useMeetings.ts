@@ -40,7 +40,10 @@ export function useUpcomingMeetings() {
       clearInterval(interval);
       subscription.unsubscribe();
     };
-  }, [loadUpcomingMeetings]);
+    // 🔧 CRITICAL FIX: loadUpcomingMeetings is stable (useCallback with empty deps)
+    // Including it in deps causes infinite loop. Run only on mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return {
     upcomingMeetings: meetings,
@@ -72,7 +75,10 @@ export function useMeetingRSVP(meetingId: string) {
 
   useEffect(() => {
     loadRSVP();
-  }, [loadRSVP]);
+    // 🔧 CRITICAL FIX: Depend directly on primitive meetingId instead of memoized function
+    // This prevents unnecessary re-runs when loadRSVP reference changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [meetingId]);
 
   const setRSVPStatus = useCallback(async (status: 'yes' | 'no' | 'maybe') => {
     // Store previous state for rollback on failure
