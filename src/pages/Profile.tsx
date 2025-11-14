@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { ProfileErrorBoundary } from '@/components/ProfileErrorBoundary';
 
 interface Reminder {
   id: string;
@@ -27,7 +28,7 @@ interface ProfileData {
   avatar_url: string | null;
 }
 
-export default function Profile() {
+function Profile() {
   const { user, session, isAuthenticated, isLoading, signOut } = useAuthReady();
   const { userProfile } = useUserData();
   const { level, xp_total, xp_current, next_threshold, user_level } = useProgressStore();
@@ -680,5 +681,14 @@ export default function Profile() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Bug #11 Fix: Wrap with error boundary for Apple Store compliance
+export default function ProfileWithErrorBoundary() {
+  return (
+    <ProfileErrorBoundary>
+      <Profile />
+    </ProfileErrorBoundary>
   );
 }
