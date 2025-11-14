@@ -40,11 +40,13 @@ export default function BookmarkButton({
 
   // Generate a unique ID for the bookmark based on content
   // Phase 4.4: Wrap in useCallback to fix dependency warning
-  const getBookmarkId = useCallback((content: string) => {
+  // BUG #2 FIX: Added timestamp to prevent collisions for identical content
+  const getBookmarkId = useCallback((content: string, includeTimestamp: boolean = false) => {
     // Phase 4.3: Improved ID generation to reduce collision risk
-    // Use first 100 chars instead of 50 for better uniqueness
-    // Include timestamp in hash to ensure uniqueness even for identical content
-    const uniqueString = content.slice(0, 100) + type + (title || '');
+    // Use first 150 chars (increased from 100) for better uniqueness
+    // Include timestamp when creating NEW bookmarks to ensure uniqueness
+    const timestamp = includeTimestamp ? Date.now().toString() : '';
+    const uniqueString = content.slice(0, 150) + type + (title || '') + timestamp;
 
     try {
       // Try base64 encoding first
@@ -74,10 +76,21 @@ export default function BookmarkButton({
 
       // Check localStorage first
       const rawBookmarks = localStorage.getItem('bookmarks') || '[]';
+
+      // BUG #4 FIX: Enhanced validation before JSON.parse
+      if (!rawBookmarks.trim().startsWith('[')) {
+        // Invalid JSON format, reset to empty array
+        console.error('Invalid bookmarks format detected, resetting');
+        localStorage.setItem('bookmarks', '[]');
+        return;
+      }
+
       const localBookmarks = JSON.parse(rawBookmarks);
 
       // Phase 2.1: Validate structure
       if (!Array.isArray(localBookmarks)) {
+        // Invalid data structure, reset to empty array
+        localStorage.setItem('bookmarks', '[]');
         return; // Invalid data, stay at default state
       }
 
@@ -133,7 +146,9 @@ export default function BookmarkButton({
     setIsLoading(true);
 
     try {
-      const bookmarkId = getBookmarkId(content);
+      // BUG #2 FIX: Use timestamp for new bookmarks to prevent collisions
+      // When adding: use timestamp (true), when removing: no timestamp (false)
+      const bookmarkId = isBookmarked ? getBookmarkId(content, false) : getBookmarkId(content, true);
       const bookmarkItem: BookmarkItem = {
         id: bookmarkId,
         content,
@@ -144,11 +159,22 @@ export default function BookmarkButton({
 
       // Update localStorage
       const rawBookmarks = localStorage.getItem('bookmarks') || '[]';
+
+      // BUG #4 FIX: Enhanced validation before JSON.parse
+      if (!rawBookmarks.trim().startsWith('[')) {
+        // Invalid JSON format, reset to empty array
+        console.error('Invalid bookmarks format detected during toggle, resetting');
+        localStorage.setItem('bookmarks', '[]');
+        throw new Error('Bookmarks data was corrupted and has been reset');
+      }
+
       const localBookmarks = JSON.parse(rawBookmarks);
 
       // Phase 2.1: Validate structure
       if (!Array.isArray(localBookmarks)) {
-        throw new Error('Invalid bookmarks data structure');
+        // Invalid data structure, reset to empty array
+        localStorage.setItem('bookmarks', '[]');
+        throw new Error('Invalid bookmarks data structure - reset to empty');
       }
       
       if (isBookmarked) {
@@ -166,6 +192,23 @@ export default function BookmarkButton({
         onBookmark?.(false);
       } else {
         // Add bookmark
+        // BUG #8 FIX: Check for duplicate content before adding
+        const isDuplicate = localBookmarks.some((b: BookmarkItem) => {
+          return b &&
+                 typeof b === 'object' &&
+                 b.content === content &&
+                 b.type === type;
+        });
+
+        if (isDuplicate) {
+          toast({
+            title: "Already Bookmarked",
+            description: "This content is already in your bookmarks.",
+            variant: "default"
+          });
+          return; // Exit early, don't add duplicate
+        }
+
         const updatedBookmarks = [...localBookmarks, bookmarkItem];
 
         // 🔧 FIX BUG #3: Handle localStorage quota exceeded error
@@ -234,19 +277,21 @@ export default function BookmarkButton({
       disabled={isLoading}
       variant="ghost"
       size="sm"
+      aria-label={isBookmarked ? `Remove ${type} bookmark` : `Add ${type} bookmark`}
+      aria-pressed={isBookmarked}
       className={`
-        h-8 w-8 p-0 transition-all duration-200 hover:scale-110
-        ${isBookmarked 
-          ? 'text-yellow-500 hover:text-yellow-600' 
+        min-h-[44px] min-w-[44px] p-0 transition-all duration-200 hover:scale-110
+        ${isBookmarked
+          ? 'text-yellow-500 hover:text-yellow-600'
           : 'text-gray-400 hover:text-yellow-500'
         }
         ${className}
       `}
     >
       {isBookmarked ? (
-        <BookmarkCheck className="h-4 w-4" />
+        <BookmarkCheck className="h-5 w-5" aria-hidden="true" />
       ) : (
-        <Bookmark className="h-4 w-4" />
+        <Bookmark className="h-5 w-5" aria-hidden="true" />
       )}
     </Button>
   );

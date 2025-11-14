@@ -490,6 +490,14 @@ export const useBadgeSystem = () => {
     batchProgressUpdate({ bookmarksSaved: currentValue + 1 });
   }, [badgeProgress.bookmarksSaved, batchProgressUpdate]);
 
+  // BUG #3 FIX: Add decrement function to fix badge counter desync
+  const decrementBookmarks = useCallback(() => {
+    const currentValue = pendingProgressUpdates.current.bookmarksSaved ?? badgeProgress.bookmarksSaved;
+    // Prevent negative values
+    const newValue = Math.max(0, currentValue - 1);
+    batchProgressUpdate({ bookmarksSaved: newValue });
+  }, [badgeProgress.bookmarksSaved, batchProgressUpdate]);
+
   const incrementEarlyRiser = useCallback(() => {
     const currentValue = pendingProgressUpdates.current.earlyRiserCount ?? badgeProgress.earlyRiserCount;
     batchProgressUpdate({ earlyRiserCount: currentValue + 1 });
@@ -522,6 +530,7 @@ export const useBadgeSystem = () => {
     incrementCompletedModules,
     incrementDailyTips,
     incrementBookmarks,
+    decrementBookmarks, // BUG #3 FIX: Export decrement function
     incrementEarlyRiser,
     closeBadgeNotification,
     getFeatureProgress

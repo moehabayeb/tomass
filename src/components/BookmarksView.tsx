@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BookmarkItem } from './BookmarkButton';
 import { toast } from 'sonner';
+import { useBadgeSystem } from '@/hooks/useBadgeSystem';
 
 interface BookmarksViewProps {
   onBack: () => void;
@@ -22,6 +23,8 @@ export default function BookmarksView({ onBack, onContinueFromMessage }: Bookmar
   const isMountedRef = useRef(true);
   // Phase 2.2: Track ongoing delete operations to prevent race conditions
   const deletingIdsRef = useRef<Set<string>>(new Set());
+  // BUG #3 FIX: Import badge system to decrement counter on delete
+  const { decrementBookmarks } = useBadgeSystem();
 
   useEffect(() => {
     loadBookmarks();
@@ -123,6 +126,9 @@ export default function BookmarksView({ onBack, onContinueFromMessage }: Bookmar
 
       // Update state
       setBookmarks(prev => prev.filter(b => b.id !== id));
+
+      // BUG #3 FIX: Decrement badge counter to keep it in sync
+      decrementBookmarks();
 
       // Phase 1.3: Show success feedback
       toast.success('Bookmark deleted');
