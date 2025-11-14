@@ -37,7 +37,8 @@ const DEFAULT_CONFIG: ProgressTrackerConfig = {
 };
 
 export class EnhancedProgressStore {
-  private static instance: EnhancedProgressStore;
+  // Bug #13 Fix: Properly nullable instance for cleanup
+  private static instance: EnhancedProgressStore | undefined;
   private config: ProgressTrackerConfig;
 
   private constructor() {
@@ -568,9 +569,7 @@ export class EnhancedProgressStore {
    * Should be called on logout or app unmount
    */
   public static cleanup(): void {
-    // Reset singleton instance to free memory
-    if (EnhancedProgressStore.instance) {
-      EnhancedProgressStore.instance = undefined as any;
-    }
+    // Bug #13 Fix: Type-safe cleanup
+    EnhancedProgressStore.instance = undefined;
   }
 }

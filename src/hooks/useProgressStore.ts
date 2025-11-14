@@ -4,6 +4,24 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 /**
+ * Database row interface (snake_case from Supabase)
+ * Bug #13 Fix: Type safety for realtime updates
+ */
+interface UserProfileRow {
+  user_id: string;
+  name: string;
+  sound_enabled: boolean;
+  level: number;
+  xp_current: number;
+  xp_total: number;
+  user_level: 'beginner' | 'intermediate' | 'advanced';
+  current_streak: number;
+  best_streak: number;
+  last_visit_date: string;
+  profile_version: number;
+}
+
+/**
  * Consolidated User Profile & Progress State
  * Single source of truth for all user data
  */
@@ -292,7 +310,8 @@ export const useProgressStore = create<UserProfileStore>()(
             },
             (payload) => {
               if (payload.new) {
-                const data = payload.new as any;
+                // Bug #13 Fix: Type-safe realtime update
+                const data = payload.new as UserProfileRow;
                 const next_threshold = getXpThreshold(data.level + 1);
 
                 // Update all profile fields from realtime update
