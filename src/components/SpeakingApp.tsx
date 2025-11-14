@@ -144,6 +144,8 @@ const ChatBubble = ({
   <div
     className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-2 animate-slide-in-up ${className}`}
     style={{ animation: 'slideInUp 0.4s ease-out' }}
+    role="listitem"
+    aria-label={`${isUser ? 'You said' : 'Assistant said'}: ${message}`}
   >
     <div className={`flex items-end gap-2 max-w-[85%] ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
       <div
@@ -1671,6 +1673,14 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   // Mobile-First Full-Screen Layout
   return (
     <div className="fixed inset-0 flex flex-col bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 overflow-hidden">
+      {/* 🔧 PHASE 3: Skip link for screen readers */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-white focus:text-purple-600 focus:rounded-lg focus:shadow-lg"
+      >
+        Skip to main content
+      </a>
+
       {/* Fixed Mobile Header */}
       <MobileHeader />
 
@@ -1702,8 +1712,15 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       )}
 
       {/* Full-Screen Scrollable Chat Area - adjusted for floating header */}
-      <div className="flex-1 overflow-y-auto pt-[240px] pb-24 px-4 overscroll-behavior-contain">
-          <div className="space-y-4">
+      <div
+        id="main-content"
+        className="flex-1 overflow-y-auto pt-[240px] pb-24 px-4 overscroll-behavior-contain"
+        role="log"
+        aria-live="polite"
+        aria-label="Conversation messages"
+        aria-relevant="additions"
+      >
+          <div className="space-y-4" role="list" aria-label="Message list">
             {/* Phase 3: Pagination - show only last 50 messages to prevent performance issues */}
             {messages.slice(-50).map((message, index) => (
               <ChatBubble
