@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { History, Lightbulb, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -8,6 +8,11 @@ import BookmarkButton from './BookmarkButton';
 import { useGamification } from '@/hooks/useGamification';
 import { useBadgeSystem } from '@/hooks/useBadgeSystem';
 import { useAvatarTTS } from '@/hooks/useAvatarTTS';
+import { TomasVoice } from '@/voice/TomasVoice';
+
+// Configuration constants
+const TTS_MODAL_DELAY_MS = 1000; // Delay before auto-speaking tip (allows modal to render)
+const HISTORY_RETENTION_DAYS = 90; // Maximum days to keep in history
 
 // Collection of daily tips for A1-A2 learners
 const dailyTips = [
@@ -107,25 +112,68 @@ interface DailyTipsProps {
   onClose: () => void;
 }
 
-// Get today's tip index based on system date
+// Get today's tip index based on UTC date (timezone-safe)
 const getTodaysTipIndex = () => {
-  const today = new Date();
-  const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
+  const now = new Date();
+  // Use UTC to ensure consistent tip selection across timezones
+  const start = new Date(Date.UTC(now.getUTCFullYear(), 0, 0));
+  const diff = now.getTime() - start.getTime();
+  const oneDay = 1000 * 60 * 60 * 24;
+  const dayOfYear = Math.floor(diff / oneDay);
   return dayOfYear % dailyTips.length;
 };
 
 // Get viewed tips with dates
 const getViewedTipsHistory = () => {
-  const saved = localStorage.getItem('viewedDailyTipsHistory');
-  return saved ? JSON.parse(saved) : {};
+  try {
+    const saved = localStorage.getItem('viewedDailyTipsHistory');
+    return saved ? JSON.parse(saved) : {};
+  } catch (error) {
+    // Corrupted data - reset to empty and log error
+    console.error('Failed to parse Daily Tips history:', error);
+    localStorage.removeItem('viewedDailyTipsHistory');
+    return {};
+  }
 };
 
 // Save tip as viewed with today's date
 const markTipAsViewed = (tipId: number) => {
-  const history = getViewedTipsHistory();
-  const today = new Date().toDateString();
-  history[today] = tipId;
-  localStorage.setItem('viewedDailyTipsHistory', JSON.stringify(history));
+  try {
+    const history = getViewedTipsHistory();
+    const today = new Date().toDateString();
+    history[today] = tipId;
+
+    // Write to localStorage with error handling
+    localStorage.setItem('viewedDailyTipsHistory', JSON.stringify(history));
+  } catch (error) {
+    // Handle quota exceeded or other storage errors
+    console.error('Failed to save Daily Tip progress:', error);
+
+    // Try to clean up old entries if quota exceeded
+    if (error instanceof Error && error.name === 'QuotaExceededError') {
+      try {
+        const history = getViewedTipsHistory();
+        const today = new Date().toDateString();
+
+        // Keep only last 30 days of history
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+        const cleanedHistory: Record<string, number> = {};
+        Object.entries(history).forEach(([date, id]) => {
+          if (new Date(date) >= thirtyDaysAgo) {
+            cleanedHistory[date] = id as number;
+          }
+        });
+
+        cleanedHistory[today] = tipId;
+        localStorage.setItem('viewedDailyTipsHistory', JSON.stringify(cleanedHistory));
+      } catch (retryError) {
+        // Silent fail - progress not saved but app continues
+        console.error('Failed to save even after cleanup:', retryError);
+      }
+    }
+  }
 };
 
 // Check if today's tip has been viewed
@@ -138,19 +186,56 @@ export const hasTodaysTipBeenViewed = () => {
 
 export default function DailyTips({ onClose }: DailyTipsProps) {
   const [showHistory, setShowHistory] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const { earnXPForDailyTip } = useGamification();
   const { incrementDailyTips } = useBadgeSystem();
   const { speakWithAvatar, soundEnabled } = useAvatarTTS();
+  const isMountedRef = useRef(true);
 
   const todaysTipIndex = getTodaysTipIndex();
   const todaysTip = dailyTips[todaysTipIndex];
+
+  // Track component mount status
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  // Track TTS speaking status for visual indicator
+  useEffect(() => {
+    const handleSpeechStart = () => setIsSpeaking(true);
+    const handleSpeechEnd = () => setIsSpeaking(false);
+
+    window.addEventListener('speech:start', handleSpeechStart);
+    window.addEventListener('speech:end', handleSpeechEnd);
+
+    return () => {
+      window.removeEventListener('speech:start', handleSpeechStart);
+      window.removeEventListener('speech:end', handleSpeechEnd);
+    };
+  }, []);
+
+  // Function to stop TTS playback
+  const stopSpeaking = () => {
+    TomasVoice.stop();
+    setIsSpeaking(false);
+  };
 
   // Mark today's tip as viewed and award XP
   useEffect(() => {
     if (!hasTodaysTipBeenViewed()) {
       markTipAsViewed(todaysTip.id);
-      earnXPForDailyTip();
-      incrementDailyTips(); // Track for badge progress
+
+      // Award XP with error handling
+      try {
+        earnXPForDailyTip();
+        incrementDailyTips(); // Track for badge progress
+      } catch (error) {
+        // Silent fail - XP not awarded but tip still marked as viewed
+        console.error('Failed to award XP for daily tip:', error);
+      }
     }
   }, [todaysTip.id, earnXPForDailyTip, incrementDailyTips]);
 
@@ -158,16 +243,38 @@ export default function DailyTips({ onClose }: DailyTipsProps) {
   useEffect(() => {
     if (soundEnabled && todaysTip && !showHistory) {
       // Delay to ensure modal is fully rendered
-      setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         const tipText = `Daily tip: ${todaysTip.content}`;
         speakWithAvatar(tipText);
-      }, 1000);
+      }, TTS_MODAL_DELAY_MS);
+
+      // Cleanup: Cancel timeout and stop TTS on unmount
+      return () => {
+        clearTimeout(timeoutId);
+        TomasVoice.stop();
+      };
     }
-  }, [todaysTip, soundEnabled, showHistory, speakWithAvatar]);
+  }, [todaysTip, soundEnabled, showHistory]);
+
+  // ESC key handler to stop TTS (accessibility)
+  useEffect(() => {
+    const handleEscapeKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        TomasVoice.stop();
+      }
+    };
+
+    window.addEventListener('keydown', handleEscapeKey);
+
+    return () => {
+      window.removeEventListener('keydown', handleEscapeKey);
+    };
+  }, []);
 
   // Function to speak any tip content
   const speakTip = (tip: typeof todaysTip) => {
-    if (soundEnabled) {
+    // Only speak if component is still mounted and sound is enabled
+    if (isMountedRef.current && soundEnabled) {
       const tipText = `Daily tip: ${tip.content}`;
       speakWithAvatar(tipText);
     }
@@ -177,9 +284,14 @@ export default function DailyTips({ onClose }: DailyTipsProps) {
   const getHistoryTips = () => {
     const history = getViewedTipsHistory();
     const today = new Date().toDateString();
-    
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - HISTORY_RETENTION_DAYS);
+
     return Object.entries(history)
-      .filter(([date]) => date !== today) // Exclude today
+      .filter(([date]) => {
+        const entryDate = new Date(date);
+        return date !== today && entryDate >= cutoffDate; // Exclude today and old entries
+      })
       .sort(([dateA], [dateB]) => new Date(dateB).getTime() - new Date(dateA).getTime()) // Sort by date descending
       .map(([date, tipId]) => ({
         date,
@@ -295,6 +407,25 @@ export default function DailyTips({ onClose }: DailyTipsProps) {
           </ScrollArea>
         </DialogContent>
       </Dialog>
+
+      {/* Floating TTS Indicator - Shows when audio is playing */}
+      {isSpeaking && (
+        <div className="fixed bottom-4 right-4 z-[60] animate-scale-in">
+          <Button
+            onClick={stopSpeaking}
+            className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg flex items-center gap-2 px-4 py-6 rounded-full"
+            size="lg"
+          >
+            <div className="flex items-center gap-2">
+              <div className="relative flex items-center justify-center">
+                <div className="absolute w-8 h-8 bg-white/30 rounded-full animate-ping" />
+                <div className="relative w-4 h-4 bg-white rounded-full" />
+              </div>
+              <span className="font-semibold">Stop Audio</span>
+            </div>
+          </Button>
+        </div>
+      )}
     </>
   );
 }
