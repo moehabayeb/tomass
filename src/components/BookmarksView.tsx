@@ -58,21 +58,8 @@ export default function BookmarksView({ onBack, onContinueFromMessage }: Bookmar
   const deletedBookmarkRef = useRef<BookmarkItem | null>(null);
   const undoTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  useEffect(() => {
-    loadBookmarks();
-
-    // Cleanup: Mark component as unmounted
-    return () => {
-      isMountedRef.current = false;
-    };
-  }, [loadBookmarks]); // 🔧 CRITICAL FIX: Include loadBookmarks dependency
-
-  // BUG #13 FIX: Reset pagination when tab changes
-  useEffect(() => {
-    setDisplayLimit(INITIAL_DISPLAY_LIMIT); // Reset to initial limit when switching tabs
-  }, [selectedTab]);
-
-  // 🔧 CRITICAL FIX: Wrap loadBookmarks in useCallback to prevent stale closures
+  // 🔧 CRITICAL FIX: Define loadBookmarks BEFORE useEffect to avoid TDZ error
+  // Wrap loadBookmarks in useCallback to prevent stale closures
   const loadBookmarks = useCallback(async () => {
     try {
       // Phase 3.1: Set loading state
@@ -133,6 +120,20 @@ export default function BookmarksView({ onBack, onContinueFromMessage }: Bookmar
       }
     }
   }, [syncBookmarks, badgeProgress.bookmarksSaved]);
+
+  useEffect(() => {
+    loadBookmarks();
+
+    // Cleanup: Mark component as unmounted
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, [loadBookmarks]); // 🔧 CRITICAL FIX: Include loadBookmarks dependency
+
+  // BUG #13 FIX: Reset pagination when tab changes
+  useEffect(() => {
+    setDisplayLimit(INITIAL_DISPLAY_LIMIT); // Reset to initial limit when switching tabs
+  }, [selectedTab]);
 
   // BUG #15 FIX: Undo delete functionality
   const undoDelete = () => {
