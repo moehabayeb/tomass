@@ -562,4 +562,15 @@ export class EnhancedProgressStore {
       // Apple Store Compliance: Silent operation
     }
   }
+
+  /**
+   * Bug #8/9 Fix: Cleanup method to release memory
+   * Should be called on logout or app unmount
+   */
+  public static cleanup(): void {
+    // Reset singleton instance to free memory
+    if (EnhancedProgressStore.instance) {
+      EnhancedProgressStore.instance = undefined as any;
+    }
+  }
 }
