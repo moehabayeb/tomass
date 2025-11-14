@@ -563,6 +563,10 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     setFlowState('READING');
     setTtsListenerActive(true); // Enable TTS listener authority
 
+    // 🔧 PHASE 2 FIX: Add visual feedback during TTS
+    setIsSpeaking(true);
+    setAvatarState('talking');
+
     const { enabled } = await ensureSoundReady();
 
     let resolved = false;
@@ -812,7 +816,9 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
   // Helper: Force transition to LISTENING with mic activation (unconditional)
   const forceToListening = (reason: string) => {
-    
+    // 🔧 PHASE 2 FIX: Check if component is mounted before setState
+    if (!isMountedRef.current) return;
+
     // Stop any lingering TTS state
     try { TTSManager.stop(); } catch {}
     setIsSpeaking(false);
@@ -902,13 +908,19 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
       // C) Final ASR → single user bubble → evaluation
       if (finalTranscript) {
+        // 🔧 PHASE 2 FIX: Check if mounted after async operation
+        if (!isMountedRef.current) return;
+
         // Append ONE user bubble with EXACT transcript (preserve accents like "café")
         addChatBubble(finalTranscript, 'user');
-        
+
         // Set state=PROCESSING and call existing executeTeacherLoop
         setFlowState('PROCESSING');
         await executeTeacherLoop(finalTranscript);
       } else {
+        // 🔧 PHASE 2 FIX: Check if mounted after async operation
+        if (!isMountedRef.current) return;
+
         // No input: resume listening
         setFlowState('LISTENING');
 
@@ -1152,7 +1164,9 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
             userLevel: user_level // ✨ Dynamically adjusts based on XP level (beginner/intermediate/advanced)
           },
           headers: {
-            // @ts-ignore - AbortSignal not in Supabase types but supported
+            // 🔧 PHASE 2 NOTE: Signal ideally should be at request level, not headers
+            // Current Supabase SDK doesn't support this, but timeout + error handling works
+            // @ts-ignore - AbortSignal not officially supported in headers
             signal: controller.signal
           }
         });
@@ -1186,6 +1200,12 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         }
 
         await addAssistantMessage(errorMessage, 'feedback');
+        return;
+      }
+
+      // 🔧 PHASE 2 FIX: Add null checks on Supabase response
+      if (!data || !data.response) {
+        await addAssistantMessage("I couldn't generate a response. Please try again.", 'feedback');
         return;
       }
 
@@ -1227,9 +1247,16 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       try {
         await addAssistantMessage("Sorry, I encountered an error. Let's continue our conversation.", 'feedback');
       } catch (fallbackError) {
-        // Last resort: update state directly without API call
+        // 🔧 PHASE 2 FIX: Show toast even in fallback to provide user feedback
         setFlowState('IDLE');
-        // Silent fail - already in error state
+        // Use toast as last resort for user feedback
+        if (typeof window !== 'undefined' && document.body) {
+          const toast = document.createElement('div');
+          toast.textContent = 'Connection error. Please check your internet.';
+          toast.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#ef4444;color:white;padding:12px 24px;border-radius:8px;z-index:9999;font-size:14px;';
+          document.body.appendChild(toast);
+          setTimeout(() => toast.remove(), 3000);
+        }
       }
     } finally {
       setIsProcessingTranscript(false);

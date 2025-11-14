@@ -427,6 +427,13 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
     }
     isCleaningUpVADRef.current = true;
 
+    // 🔧 PHASE 2 FIX: Force-release mutex after 5s to prevent deadlock
+    const mutexTimeout = setTimeout(() => {
+      if (isCleaningUpVADRef.current) {
+        isCleaningUpVADRef.current = false;
+      }
+    }, 5000);
+
     try {
       // Clear monitoring interval
       if (vadIntervalRef.current) {
@@ -467,7 +474,8 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
       calibrationStartRef.current = 0;
       calibrationCompleteRef.current = false;
     } finally {
-      // 🔧 FIX BUG #2: Always reset cleanup flag, even if errors occur
+      // 🔧 PHASE 2 FIX: Clear timeout and reset mutex
+      clearTimeout(mutexTimeout);
       isCleaningUpVADRef.current = false;
     }
     lastWordCountRef.current = 0;
