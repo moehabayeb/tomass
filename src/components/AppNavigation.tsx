@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { UserDropdown } from './UserDropdown';
 import { NavigationDropdown } from './NavigationDropdown';
 import { useAuthReady } from '@/hooks/useAuthReady';
@@ -277,6 +277,11 @@ export default function AppNavigation() {
     return null;
   };
 
+  // 🔧 CRITICAL FIX: Memoize mode change handler to prevent prop changes triggering re-renders
+  const handleModeChange = useCallback((mode: AppMode) => {
+    setCurrentMode(mode);
+  }, []);
+
   return (
     <div className="relative">
       {/* Background Stars Animation */}
@@ -358,7 +363,7 @@ export default function AppNavigation() {
 
         <NavigationDropdown
           currentMode={currentMode}
-          onModeChange={setCurrentMode}
+          onModeChange={handleModeChange}
         />
       </div>
 

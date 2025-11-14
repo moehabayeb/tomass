@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Menu, Mic, BookOpen, Bookmark, Award, Gamepad2, Users, Lightbulb, Crown, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 // Admin functionality removed for Apple App Store compliance
@@ -62,19 +62,26 @@ export function NavigationDropdown({ currentMode, onModeChange }: NavigationDrop
   const [showDailyTips, setShowDailyTips] = useState(false);
   const navigate = useNavigate();
 
-  const handleItemClick = (mode: AppMode) => {
+  // 🔧 FIX: Memoize handlers to prevent re-creation on every render
+  const handleItemClick = useCallback((mode: AppMode) => {
     onModeChange(mode);
     setOpen(false);
-  };
+  }, [onModeChange]);
 
-  const handlePricingClick = () => {
+  const handlePricingClick = useCallback(() => {
     navigate('/pricing');
     setOpen(false);
-  };
+  }, [navigate]);
 
-  const currentItem = navigationItems.find(item => item.mode === currentMode);
+  // 🔧 CRITICAL FIX: Memoize to prevent re-computation on every render
+  const currentItem = useMemo(() =>
+    navigationItems.find(item => item.mode === currentMode),
+    [currentMode]
+  );
 
-  const hasNewTip = !hasTodaysTipBeenViewed();
+  // 🔧 CRITICAL FIX: Memoize localStorage read to prevent infinite loop
+  // Reading hasTodaysTipBeenViewed() on every render caused "Maximum update depth exceeded"
+  const hasNewTip = useMemo(() => !hasTodaysTipBeenViewed(), []);
 
   return (
     <>
