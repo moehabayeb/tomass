@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 interface StreakData {
   currentStreak: number;
@@ -22,6 +22,18 @@ const STREAK_REWARDS: StreakReward[] = [
   { day: 30, xp: 100, message: "Month mastery! 👑", showConfetti: true }
 ];
 
+/**
+ * 🔧 CRITICAL FIX: Get UTC-based date string for consistent timezone-independent streak tracking
+ * This ensures users traveling across timezones don't break their streaks
+ */
+const getUTCDateString = (): string => {
+  const now = new Date();
+  const year = now.getUTCFullYear();
+  const month = String(now.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(now.getUTCDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 export const useStreakTracker = (addXP?: (points: number, activity: string) => Promise<number>) => {
   const [streakData, setStreakData] = useState<StreakData>({
     currentStreak: 0,
@@ -29,15 +41,18 @@ export const useStreakTracker = (addXP?: (points: number, activity: string) => P
     bestStreak: 0,
     lastXPRewardDay: 0
   });
-  
+
   const [streakReward, setStreakReward] = useState<StreakReward | null>(null);
+
+  // 🔧 CRITICAL FIX: Track timeout to prevent memory leak on unmount
+  const rewardTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const getStreakReward = (streakDay: number): StreakReward | null => {
     return STREAK_REWARDS.find(reward => reward.day === streakDay) || null;
   };
 
   const updateStreak = useCallback(async () => {
-    const today = new Date().toDateString();
+    const today = getUTCDateString(); // Use UTC for consistent timezone handling
     const saved = localStorage.getItem('streakData');
     
     let newData: StreakData;
@@ -45,8 +60,9 @@ export const useStreakTracker = (addXP?: (points: number, activity: string) => P
     
     if (saved) {
       const data: StreakData = JSON.parse(saved);
-      const lastVisit = new Date(data.lastVisitDate);
-      const todayDate = new Date(today);
+      // Parse dates in UTC for accurate day comparison
+      const lastVisit = new Date(data.lastVisitDate + 'T00:00:00Z');
+      const todayDate = new Date(today + 'T00:00:00Z');
       const timeDiff = todayDate.getTime() - lastVisit.getTime();
       const daysDiff = Math.floor(timeDiff / (1000 * 3600 * 24));
 
@@ -111,14 +127,31 @@ export const useStreakTracker = (addXP?: (points: number, activity: string) => P
     
     if (rewardEarned) {
       setStreakReward(rewardEarned);
+      // Clear any existing timeout to prevent overlapping rewards
+      if (rewardTimeoutRef.current) {
+        clearTimeout(rewardTimeoutRef.current);
+      }
       // Clear reward after showing it
-      setTimeout(() => setStreakReward(null), 3000);
+      rewardTimeoutRef.current = setTimeout(() => setStreakReward(null), 3000);
     }
   }, [addXP]);
 
+  // 🔧 CRITICAL FIX: Run only on mount to prevent infinite loop
+  // updateStreak is stable (useCallback with [addXP]), but including it in deps
+  // can cause re-renders when parent components change. Run once on mount is correct.
   useEffect(() => {
     updateStreak();
-  }, [updateStreak]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // 🔧 CRITICAL FIX: Cleanup timeout on unmount to prevent memory leak
+  useEffect(() => {
+    return () => {
+      if (rewardTimeoutRef.current) {
+        clearTimeout(rewardTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const getStreakMessage = () => {
     const { currentStreak } = streakData;

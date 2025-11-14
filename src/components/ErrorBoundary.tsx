@@ -1,6 +1,7 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { Sentry } from '@/lib/sentry';
 
 interface Props {
   children: ReactNode;
@@ -28,11 +29,19 @@ export class ErrorBoundary extends Component<Props, State> {
       errorInfo
     });
 
-    // Log error to monitoring service in production
-    if (process.env.NODE_ENV === 'production') {
-      // TODO: Replace with your error reporting service (e.g., Sentry)
-      // Error logged silently for Apple Store compliance
-    }
+    // 🔧 CRITICAL FIX: Report errors to Sentry in production
+    // Sentry will only send errors in production (filtered in beforeSend)
+    Sentry.captureException(error, {
+      contexts: {
+        react: {
+          componentStack: errorInfo.componentStack,
+        }
+      },
+      level: 'error',
+      tags: {
+        errorBoundary: true,
+      }
+    });
   }
 
   private handleReset = () => {
