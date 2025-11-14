@@ -96,9 +96,8 @@ export default function BookmarksView({ onBack, onContinueFromMessage }: Bookmar
         return timeB - timeA;
       });
 
-      // Phase 1.1: Guard against unmounted component
-      if (!isMountedRef.current) return;
-
+      // 🔧 CRITICAL FIX: Removed isMountedRef check that was preventing bookmarks from loading
+      // React's memory leak warning is less critical than having a functional UI
       setBookmarks(sortedBookmarks);
 
       // BUG #18 FIX: Validate and sync badge counter with actual bookmark count
@@ -106,18 +105,17 @@ export default function BookmarksView({ onBack, onContinueFromMessage }: Bookmar
       if (badgeProgress.bookmarksSaved !== actualCount) {
         syncBookmarks(actualCount);
       }
-
       // TODO: Merge with Supabase bookmarks when user authentication is implemented
     } catch (error) {
+      console.error('Error loading bookmarks:', error);
       // Phase 1.3: Show user-friendly error message instead of silent fail
       if (isMountedRef.current) {
         toast.error(ERROR_MESSAGES.LOAD_FAILED);
       }
     } finally {
-      // Phase 3.1: Always clear loading state
-      if (isMountedRef.current) {
-        setIsLoading(false);
-      }
+      // 🔧 CRITICAL FIX: ALWAYS clear loading state to prevent infinite loading
+      // Even if component unmounts, we need to clear loading state
+      setIsLoading(false);
     }
   }, [syncBookmarks]); // 🔧 CRITICAL FIX: Removed badgeProgress.bookmarksSaved to prevent infinite loop
 
