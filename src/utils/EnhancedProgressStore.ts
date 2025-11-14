@@ -1,5 +1,6 @@
 // Enhanced Progress Store with detailed question-level tracking and analytics
 // Extends the existing ProgressStore with comprehensive learning analytics
+// Bug #5 Fix: Using safe safeLocalStorage wrapper
 
 import {
   UserProgressProfile,
@@ -15,6 +16,7 @@ import {
   ProgressTrackerConfig,
   GrammarError
 } from '../types/progressTypes';
+import { safeLocalStorage } from './safeLocalStorage';
 
 const STORAGE_KEYS = {
   userProfile: (userId: string) => `progress_tracker_v1:profile:${userId}`,
@@ -51,7 +53,7 @@ export class EnhancedProgressStore {
   // Configuration Management
   private loadConfig(): ProgressTrackerConfig {
     try {
-      const stored = localStorage.getItem(STORAGE_KEYS.config);
+      const stored = safeLocalStorage.getItem(STORAGE_KEYS.config);
       return stored ? { ...DEFAULT_CONFIG, ...JSON.parse(stored) } : DEFAULT_CONFIG;
     } catch {
       return DEFAULT_CONFIG;
@@ -60,11 +62,7 @@ export class EnhancedProgressStore {
 
   public updateConfig(updates: Partial<ProgressTrackerConfig>): void {
     this.config = { ...this.config, ...updates };
-    try {
-      localStorage.setItem(STORAGE_KEYS.config, JSON.stringify(this.config));
-    } catch (error) {
-      // Apple Store Compliance: Silent operation
-    }
+    safeLocalStorage.setItem(STORAGE_KEYS.config, JSON.stringify(this.config));
   }
 
   public getConfig(): ProgressTrackerConfig {
@@ -74,7 +72,7 @@ export class EnhancedProgressStore {
   // User Profile Management
   public getUserProfile(userId: string): UserProgressProfile {
     try {
-      const stored = localStorage.getItem(STORAGE_KEYS.userProfile(userId));
+      const stored = safeLocalStorage.getItem(STORAGE_KEYS.userProfile(userId));
       if (stored) {
         return JSON.parse(stored);
       }
@@ -120,7 +118,7 @@ export class EnhancedProgressStore {
   public saveUserProfile(profile: UserProgressProfile): void {
     try {
       profile.lastUpdated = Date.now();
-      localStorage.setItem(STORAGE_KEYS.userProfile(profile.userId), JSON.stringify(profile));
+      safeLocalStorage.setItem(STORAGE_KEYS.userProfile(profile.userId), JSON.stringify(profile));
     } catch (error) {
       // Apple Store Compliance: Silent operation
     }
@@ -133,7 +131,7 @@ export class EnhancedProgressStore {
       attempts.push(attempt);
 
       const key = STORAGE_KEYS.questionAttempts(attempt.moduleId + '_' + attempt.levelId);
-      localStorage.setItem(key, JSON.stringify(attempts));
+      safeLocalStorage.setItem(key, JSON.stringify(attempts));
 
       // Update user profile
       this.updateProfileAfterAttempt(attempt);
@@ -145,7 +143,7 @@ export class EnhancedProgressStore {
   public getQuestionAttempts(moduleId: number, levelId: string, userId: string = 'guest'): QuestionAttempt[] {
     try {
       const key = STORAGE_KEYS.questionAttempts(moduleId + '_' + levelId);
-      const stored = localStorage.getItem(key);
+      const stored = safeLocalStorage.getItem(key);
       return stored ? JSON.parse(stored) : [];
     } catch {
       return [];
@@ -276,7 +274,7 @@ export class EnhancedProgressStore {
     try {
       const sessions = this.getLearningSessions(userId);
       sessions.push(session);
-      localStorage.setItem(STORAGE_KEYS.learningSessions(userId), JSON.stringify(sessions));
+      safeLocalStorage.setItem(STORAGE_KEYS.learningSessions(userId), JSON.stringify(sessions));
     } catch (error) {
       // Apple Store Compliance: Silent operation
     }
@@ -304,7 +302,7 @@ export class EnhancedProgressStore {
         session.averageAccuracy = session.questionsAttempted > 0 ? 
           (session.questionsCorrect / session.questionsAttempted) * 100 : 0;
 
-        localStorage.setItem(STORAGE_KEYS.learningSessions(userId), JSON.stringify(sessions));
+        safeLocalStorage.setItem(STORAGE_KEYS.learningSessions(userId), JSON.stringify(sessions));
       }
     } catch (error) {
       // Apple Store Compliance: Silent operation
@@ -313,7 +311,7 @@ export class EnhancedProgressStore {
 
   public getLearningSessions(userId: string): LearningSession[] {
     try {
-      const stored = localStorage.getItem(STORAGE_KEYS.learningSessions(userId));
+      const stored = safeLocalStorage.getItem(STORAGE_KEYS.learningSessions(userId));
       return stored ? JSON.parse(stored) : [];
     } catch {
       return [];
@@ -331,7 +329,7 @@ export class EnhancedProgressStore {
         snapshots.splice(0, snapshots.length - 100);
       }
 
-      localStorage.setItem(STORAGE_KEYS.snapshots(userId), JSON.stringify(snapshots));
+      safeLocalStorage.setItem(STORAGE_KEYS.snapshots(userId), JSON.stringify(snapshots));
     } catch (error) {
       // Apple Store Compliance: Silent operation
     }
@@ -339,7 +337,7 @@ export class EnhancedProgressStore {
 
   public getProgressSnapshots(userId: string, timeWindow?: TimeWindow): ProgressSnapshot[] {
     try {
-      const stored = localStorage.getItem(STORAGE_KEYS.snapshots(userId));
+      const stored = safeLocalStorage.getItem(STORAGE_KEYS.snapshots(userId));
       let snapshots: ProgressSnapshot[] = stored ? JSON.parse(stored) : [];
       
       if (timeWindow && timeWindow !== 'all') {
@@ -437,11 +435,11 @@ export class EnhancedProgressStore {
       }
       
       if (data.sessions) {
-        localStorage.setItem(STORAGE_KEYS.learningSessions(userId), JSON.stringify(data.sessions));
+        safeLocalStorage.setItem(STORAGE_KEYS.learningSessions(userId), JSON.stringify(data.sessions));
       }
       
       if (data.snapshots) {
-        localStorage.setItem(STORAGE_KEYS.snapshots(userId), JSON.stringify(data.snapshots));
+        safeLocalStorage.setItem(STORAGE_KEYS.snapshots(userId), JSON.stringify(data.snapshots));
       }
 
       return true;
@@ -454,16 +452,16 @@ export class EnhancedProgressStore {
   // Clear all data (for testing or reset)
   public clearUserData(userId: string): void {
     try {
-      localStorage.removeItem(STORAGE_KEYS.userProfile(userId));
-      localStorage.removeItem(STORAGE_KEYS.learningSessions(userId));
-      localStorage.removeItem(STORAGE_KEYS.snapshots(userId));
+      safeLocalStorage.removeItem(STORAGE_KEYS.userProfile(userId));
+      safeLocalStorage.removeItem(STORAGE_KEYS.learningSessions(userId));
+      safeLocalStorage.removeItem(STORAGE_KEYS.snapshots(userId));
       
       // Clear question attempts for all modules
       // Note: This is a simplified approach - in production you'd want better key management
-      const keys = Object.keys(localStorage);
+      const keys = Object.keys(safeLocalStorage);
       keys.forEach(key => {
         if (key.includes('attempts') && key.includes(userId)) {
-          localStorage.removeItem(key);
+          safeLocalStorage.removeItem(key);
         }
       });
     } catch (error) {

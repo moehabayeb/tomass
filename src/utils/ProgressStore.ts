@@ -1,4 +1,7 @@
 // src/utils/ProgressStore.ts
+// Bug #5 Fix: Using safe localStorage wrapper
+
+import { safeLocalStorage } from './safeLocalStorage';
 
 export type LessonPhase = 'intro' | 'listening' | 'speaking' | 'complete';
 
@@ -21,7 +24,7 @@ type ProgressMap = Record<string, ModuleProgress>; // key = `${level}-${module}`
 
 function readAll(): ProgressMap {
   try {
-    const raw = localStorage.getItem(STORE_KEY);
+    const raw = safeLocalStorage.getItem(STORE_KEY);
     return raw ? (JSON.parse(raw) as ProgressMap) : {};
   } catch {
     return {};
@@ -29,27 +32,21 @@ function readAll(): ProgressMap {
 }
 
 function writeAll(map: ProgressMap) {
-  try {
-    localStorage.setItem(STORE_KEY, JSON.stringify(map));
-  } catch (error) {
-    // Phase 2.1: Handle QuotaExceededError by clearing old data and retrying
-    if (error instanceof DOMException && error.name === 'QuotaExceededError') {
-      try {
-        // Clear old/stale progress entries (keep only recent 20)
-        const allEntries = Object.entries(map);
-        const sortedByDate = allEntries.sort((a, b) => b[1].updatedAt - a[1].updatedAt);
-        const recentEntries = sortedByDate.slice(0, 20);
-        const reducedMap: ProgressMap = Object.fromEntries(recentEntries);
+  const success = safeLocalStorage.setItem(STORE_KEY, JSON.stringify(map));
 
-        // Clear storage and retry with reduced data
-        localStorage.removeItem(STORE_KEY);
-        localStorage.setItem(STORE_KEY, JSON.stringify(reducedMap));
-      } catch (retryError) {
-        // Phase 2.1: If retry also fails, continue silently - Apple Store compliance
-        // Progress may be lost but app doesn't crash
-      }
+  // If localStorage failed, try to reduce data size
+  if (!success) {
+    try {
+      // Keep only recent 20 entries
+      const allEntries = Object.entries(map);
+      const sortedByDate = allEntries.sort((a, b) => b[1].updatedAt - a[1].updatedAt);
+      const recentEntries = sortedByDate.slice(0, 20);
+      const reducedMap: ProgressMap = Object.fromEntries(recentEntries);
+
+      safeLocalStorage.setItem(STORE_KEY, JSON.stringify(reducedMap));
+    } catch (retryError) {
+      // Apple Store Compliance: Silent fail - data saved to memory fallback
     }
-    // For other errors, fail silently - Apple Store compliance
   }
 }
 

@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { indexedDBStore, type LessonCheckpoint } from '@/utils/indexedDBStore';
 import { getProgress as getLocalProgress, setProgress as setLocalProgress } from '@/utils/ProgressStore';
 import type { ModuleProgress } from '@/utils/ProgressStore';
+import { safeLocalStorage } from '@/utils/safeLocalStorage';
 
 export interface LessonProgressServiceConfig {
   enableOfflineQueue: boolean;
@@ -61,7 +62,7 @@ class LessonProgressService {
   async saveCheckpoint(checkpoint: LessonCheckpoint): Promise<void> {
     const key = this.getCheckpointKey(checkpoint);
 
-    // CRITICAL: Save to localStorage IMMEDIATELY (no debounce)
+    // CRITICAL: Save to safeLocalStorage IMMEDIATELY (no debounce)
     // This prevents data loss if user closes browser before debounce completes
     await this.saveLocalProgress(checkpoint);
 
@@ -136,7 +137,7 @@ class LessonProgressService {
     };
 
     try {
-      // 1. Get all local checkpoints (IndexedDB + localStorage + ProgressStore)
+      // 1. Get all local checkpoints (IndexedDB + safeLocalStorage + ProgressStore)
       const localCheckpoints = await this.getAllLocalCheckpoints();
       // Apple Store Compliance: Silent fail
 
@@ -195,11 +196,11 @@ class LessonProgressService {
   async clearAllProgress(): Promise<void> {
     await indexedDBStore.clearAll();
 
-    // Clear localStorage progress - Safari Private Mode safe
+    // Clear safeLocalStorage progress - Safari Private Mode safe
     try {
-      Object.keys(localStorage).forEach(key => {
+      Object.keys(safeLocalStorage).forEach(key => {
         if (key.startsWith('ll_progress_') || key.startsWith('tomass_offline_')) {
-          localStorage.removeItem(key);
+          safeLocalStorage.removeItem(key);
         }
       });
     } catch (error) {
@@ -228,7 +229,7 @@ class LessonProgressService {
 
   /**
    * Save checkpoint to server with offline queue fallback
-   * Used by debounced sync - localStorage already saved immediately
+   * Used by debounced sync - safeLocalStorage already saved immediately
    */
   private async saveToServerWithQueue(checkpoint: LessonCheckpoint): Promise<void> {
     // Try to save to server if user is authenticated and online
@@ -468,7 +469,7 @@ class LessonProgressService {
 
       // Note: We can't use async operations in beforeunload
       // The pending saves in IndexedDB queue will be synced on next app start
-      // This ensures at least localStorage is saved
+      // This ensures at least safeLocalStorage is saved
     };
 
     // Save progress when tab becomes hidden (iOS Safari support)
@@ -494,7 +495,7 @@ class LessonProgressService {
     });
     this.debounceTimers.clear();
 
-    // Execute all pending server syncs (localStorage already saved)
+    // Execute all pending server syncs (safeLocalStorage already saved)
     // Note: We use fire-and-forget here since these will be queued to IndexedDB if they fail
     this.pendingCheckpoints.forEach((checkpoint) => {
       // Fire and forget - errors will queue to IndexedDB automatically
@@ -537,7 +538,7 @@ class LessonProgressService {
 
   private getLastSyncTime(): number | null {
     try {
-      const time = localStorage.getItem('tomass_last_sync_time');
+      const time = safeLocalStorage.getItem('tomass_last_sync_time');
       return time ? parseInt(time, 10) : null;
     } catch (error) {
       // Apple Store Compliance: Silent fail - Safari Private Mode support
@@ -547,7 +548,7 @@ class LessonProgressService {
 
   private setLastSyncTime(time: number): void {
     try {
-      localStorage.setItem('tomass_last_sync_time', time.toString());
+      safeLocalStorage.setItem('tomass_last_sync_time', time.toString());
     } catch (error) {
       // Apple Store Compliance: Silent fail - Safari Private Mode support
     }
@@ -598,7 +599,7 @@ class LessonProgressService {
 // Import the missing function
 function getAllProgress() {
   try {
-    const raw = localStorage.getItem('ll_progress_v1');
+    const raw = safeLocalStorage.getItem('ll_progress_v1');
     const map = raw ? JSON.parse(raw) : {};
     return Object.values(map) as ModuleProgress[];
   } catch {

@@ -1,5 +1,7 @@
 // Data Service Layer - Uses Supabase for data persistence
+// Bug #5 Fix: Using safe safeLocalStorage wrapper
 import { supabase } from '@/integrations/supabase/client';
+import { safeLocalStorage } from '@/utils/safeLocalStorage';
 
 export interface UserProfileData {
   userId?: string;
@@ -32,8 +34,8 @@ class DataService {
   // User Profile Management
   async getUserProfile(userId?: string): Promise<UserProfileData | null> {
     if (!userId) {
-      // Fallback to localStorage for non-authenticated users
-      const savedProfile = localStorage.getItem('userProfile');
+      // Fallback to safeLocalStorage for non-authenticated users
+      const savedProfile = safeLocalStorage.getItem('userProfile');
       if (savedProfile) {
         return JSON.parse(savedProfile);
       }
@@ -73,8 +75,8 @@ class DataService {
 
   async saveUserProfile(profile: UserProfileData): Promise<void> {
     if (!profile.userId) {
-      // Fallback to localStorage for non-authenticated users
-      localStorage.setItem('userProfile', JSON.stringify(profile));
+      // Fallback to safeLocalStorage for non-authenticated users
+      safeLocalStorage.setItem('userProfile', JSON.stringify(profile));
       return;
     }
 
@@ -104,7 +106,7 @@ class DataService {
     // TODO: Replace with Supabase query when auth is implemented
     // const { data, error } = await supabase.from('streaks').select('*').eq('user_id', userId).single();
     
-    const saved = localStorage.getItem('streakData');
+    const saved = safeLocalStorage.getItem('streakData');
     if (saved) {
       return JSON.parse(saved);
     }
@@ -120,7 +122,7 @@ class DataService {
     // TODO: Replace with Supabase upsert when auth is implemented
     // const { error } = await supabase.from('streaks').upsert({ ...streakData, user_id: userId });
     
-    localStorage.setItem('streakData', JSON.stringify(streakData));
+    safeLocalStorage.setItem('streakData', JSON.stringify(streakData));
   }
 
   // Chat History Management
@@ -128,7 +130,7 @@ class DataService {
     // TODO: Replace with Supabase query when auth is implemented
     // const { data, error } = await supabase.from('chat_sessions').select('*').eq('user_id', userId).order('created_at', { ascending: false });
     
-    const saved = localStorage.getItem('chatHistory');
+    const saved = safeLocalStorage.getItem('chatHistory');
     return saved ? JSON.parse(saved) : [];
   }
 
@@ -138,7 +140,7 @@ class DataService {
     
     const history = await this.getChatHistory();
     const updatedHistory = [...history, session];
-    localStorage.setItem('chatHistory', JSON.stringify(updatedHistory));
+    safeLocalStorage.setItem('chatHistory', JSON.stringify(updatedHistory));
   }
 
   // Conversation Messages Management
@@ -146,7 +148,7 @@ class DataService {
     // TODO: Replace with Supabase query when auth is implemented
     // const { data, error } = await supabase.from('conversations').select('*').eq('user_id', userId).order('created_at', { ascending: true });
     
-    const saved = localStorage.getItem('conversationMessages');
+    const saved = safeLocalStorage.getItem('conversationMessages');
     return saved ? JSON.parse(saved) : [
       { text: "Hello! Ready to practice today? 🎤", isUser: false, isSystem: false },
       { text: "Yes, I had pizza today!", isUser: true, isSystem: false },
@@ -161,7 +163,7 @@ class DataService {
     
     const messages = await this.getConversationMessages();
     const updatedMessages = [...messages, message];
-    localStorage.setItem('conversationMessages', JSON.stringify(updatedMessages));
+    safeLocalStorage.setItem('conversationMessages', JSON.stringify(updatedMessages));
   }
 
   // XP and Level Management
@@ -177,11 +179,11 @@ class DataService {
 
   // Clear all data (for logout or reset)
   async clearUserData(): Promise<void> {
-    // Clear localStorage data
-    localStorage.removeItem('userProfile');
-    localStorage.removeItem('streakData');
-    localStorage.removeItem('chatHistory');
-    localStorage.removeItem('conversationMessages');
+    // Clear safeLocalStorage data
+    safeLocalStorage.removeItem('userProfile');
+    safeLocalStorage.removeItem('streakData');
+    safeLocalStorage.removeItem('chatHistory');
+    safeLocalStorage.removeItem('conversationMessages');
     
     // Clear session storage
     sessionStorage.clear();
