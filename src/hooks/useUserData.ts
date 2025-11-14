@@ -1,79 +1,73 @@
-// User Data Hook - Integrated with Supabase Auth
-import { useState, useEffect } from 'react';
-import { dataService, UserProfileData } from '@/services/dataService';
+// User Data Hook - Thin wrapper around Zustand store (Bug #2 fix)
+import { useEffect } from 'react';
+import { useProgressStore } from '@/hooks/useProgressStore';
 import { useAuthReady } from '@/hooks/useAuthReady';
 
+/**
+ * Thin wrapper around useProgressStore for backward compatibility
+ * All state now lives in Zustand store (single source of truth)
+ */
 export const useUserData = () => {
-  const [userProfile, setUserProfile] = useState<UserProfileData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const { user, isAuthenticated } = useAuthReady();
+
+  // Get all state and actions from Zustand store
+  const {
+    userId,
+    name,
+    soundEnabled,
+    level,
+    xp_current,
+    xp_total,
+    currentStreak,
+    bestStreak,
+    lastVisitDate,
+    user_level,
+    isLoading,
+    fetchProgress,
+    updateProfile,
+    logout,
+  } = useProgressStore();
 
   // Load user data when auth state changes
   useEffect(() => {
     if (isAuthenticated && user) {
-      loadUserData();
+      fetchProgress();
     } else {
-      setUserProfile(null);
-      setIsLoading(false);
+      // User logged out - handled by logout() call from auth context
     }
-  }, [user, isAuthenticated]);
+  }, [user, isAuthenticated, fetchProgress]);
 
-  const loadUserData = async () => {
-    try {
-      setIsLoading(true);
-      const userId = user?.id;
-      
-      const profile = await dataService.getUserProfile(userId);
-      
-      if (profile) {
-        setUserProfile(profile);
-      } else if (userId) {
-        // Create default profile for new authenticated user
-        const defaultProfile: UserProfileData = {
-          userId,
-          name: user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Student',
-          level: 1,
-          xp: 0,
-          currentStreak: 0,
-          bestStreak: 0,
-          lastVisitDate: new Date().toDateString(),
-          userLevel: 'beginner',
-          soundEnabled: true
-        };
-        
-        await dataService.saveUserProfile(defaultProfile);
-        setUserProfile(defaultProfile);
-      }
-    } catch (error) {
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const updateProfile = async (updates: Partial<UserProfileData>) => {
-    if (!userProfile) return;
-    
-    try {
-      const updatedProfile = { ...userProfile, ...updates };
-      await dataService.saveUserProfile(updatedProfile);
-      setUserProfile(updatedProfile);
-    } catch (error) {
-    }
-  };
-
-  const logout = async () => {
-    try {
-      await dataService.clearUserData();
-      setUserProfile(null);
-    } catch (error) {
-    }
-  };
-
+  // Return compatible interface (maps new store to old interface)
   return {
-    userProfile,
+    userProfile: userId
+      ? {
+          userId,
+          name,
+          level,
+          xp: xp_current, // Map xp_current to old 'xp' field
+          currentStreak,
+          bestStreak,
+          lastVisitDate,
+          userLevel: user_level,
+          soundEnabled,
+        }
+      : null,
     isLoading,
-    updateProfile,
+    updateProfile: async (updates: any) => {
+      // Map old interface to new store format
+      const storeUpdates = {
+        name: updates.name,
+        soundEnabled: updates.soundEnabled,
+        currentStreak: updates.currentStreak,
+        bestStreak: updates.bestStreak,
+        lastVisitDate: updates.lastVisitDate,
+      };
+      return await updateProfile(storeUpdates);
+    },
     logout,
-    refreshData: loadUserData
+    refreshData: fetchProgress,
   };
 };
+
+// Export type for compatibility
+export type { UserProfileState as UserProfileData } from '@/hooks/useProgressStore';
