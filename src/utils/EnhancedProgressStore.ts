@@ -18,6 +18,7 @@ import {
 } from '../types/progressTypes';
 import { safeLocalStorage } from './safeLocalStorage';
 import { supabase } from '@/integrations/supabase/client';
+import { Sentry } from '@/lib/sentry';
 
 const STORAGE_KEYS = {
   userProfile: (userId: string) => `progress_tracker_v1:profile:${userId}`,
@@ -490,10 +491,20 @@ export class EnhancedProgressStore {
       });
 
       if (error) {
-        // Log error but don't throw - data is already saved locally
+        // Bug #12 Fix: Log sync failure to Sentry
+        Sentry.captureException(error, {
+          tags: { function: 'syncQuestionAttemptToSupabase' },
+          extra: { questionId: attempt.questionId, moduleId: attempt.moduleId },
+        });
+        // Data is already saved locally
         console.warn('Failed to sync question attempt to Supabase:', error);
       }
     } catch (error) {
+      // Bug #12 Fix: Log unexpected errors to Sentry
+      Sentry.captureException(error, {
+        tags: { function: 'syncQuestionAttemptToSupabase', type: 'unexpected' },
+        extra: { attempt },
+      });
       // Apple Store Compliance: Silent fail - localStorage already has the data
     }
   }
@@ -538,7 +549,12 @@ export class EnhancedProgressStore {
         }
       }
     } catch (error) {
-      // Apple Store Compliance: Silent fail
+      // Bug #12 Fix: Log bulk sync failures to Sentry
+      Sentry.captureException(error, {
+        tags: { function: 'syncAllQuestionAttemptsToSupabase' },
+        extra: { userId, synced, failed },
+      });
+      // Apple Store Compliance: Silent fail - partial sync may have succeeded
     }
 
     return { synced, failed };

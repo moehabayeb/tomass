@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { Sentry } from '@/lib/sentry';
 
 /**
  * Database row interface (snake_case from Supabase)
@@ -144,7 +145,12 @@ export const useProgressStore = create<UserProfileStore>()(
             });
           }
         } catch (error) {
-          // Apple Store Compliance: Silent fail
+          // Bug #12 Fix: Log to Sentry while maintaining silent UX
+          Sentry.captureException(error, {
+            tags: { function: 'fetchProgress' },
+            extra: { userId: get().userId },
+          });
+          // Apple Store Compliance: Silent fail - no user-facing error
           set({ isLoading: false });
         }
       },
@@ -175,6 +181,11 @@ export const useProgressStore = create<UserProfileStore>()(
 
       return true;
     } catch (error) {
+      // Bug #12 Fix: Log XP award failures to Sentry
+      Sentry.captureException(error, {
+        tags: { function: 'awardXp' },
+        extra: { points, userId: get().userId },
+      });
       return false;
     }
   },
@@ -224,7 +235,12 @@ export const useProgressStore = create<UserProfileStore>()(
           set({ profileVersion: state.profileVersion + 1 });
           return true;
         } catch (error) {
-          // Apple Store Compliance: Silent fail
+          // Bug #12 Fix: Log profile update failures to Sentry
+          Sentry.captureException(error, {
+            tags: { function: 'updateProfile' },
+            extra: { updates, userId: state.userId },
+          });
+          // Apple Store Compliance: Silent fail - no user-facing error
           return false;
         }
       },
@@ -271,7 +287,12 @@ export const useProgressStore = create<UserProfileStore>()(
             });
           }
         } catch (error) {
-          // Apple Store Compliance: Silent fail
+          // Bug #12 Fix: Log user initialization failures to Sentry
+          Sentry.captureException(error, {
+            tags: { function: 'initializeUser' },
+            extra: { userId },
+          });
+          // Apple Store Compliance: Silent fail - no user-facing error
           set({ isLoading: false });
         }
       },
