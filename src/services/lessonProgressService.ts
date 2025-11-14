@@ -152,9 +152,10 @@ class LessonProgressService {
             result.synced++;
             // Apple Store Compliance: Silent fail
           } else {
-            // Compare timestamps - newer wins
-            const localTime = localCP.timestamp || 0;
-            const serverTime = new Date(serverCP.updated_at || 0).getTime();
+            // Bug #7 Fix: Compare timestamps with proper precision
+            // Both timestamps normalized to milliseconds with rounding to avoid precision issues
+            const localTime = Math.floor((localCP.timestamp || 0) / 1000) * 1000;
+            const serverTime = Math.floor(new Date(serverCP.updated_at || 0).getTime() / 1000) * 1000;
 
             if (localTime > serverTime) {
               // Local is newer - upload to server
@@ -162,6 +163,7 @@ class LessonProgressService {
               result.synced++;
               // Apple Store Compliance: Silent fail
             } else {
+              // Server is newer or equal - keep server version
               // Apple Store Compliance: Silent fail
             }
           }
