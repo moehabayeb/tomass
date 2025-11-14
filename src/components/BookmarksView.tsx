@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Bookmark, MessageSquare, BookOpen, Lightbulb, Trash2, Calendar, Reply } from 'lucide-react';
+import { ArrowLeft, Bookmark, MessageSquare, BookOpen, Lightbulb, Trash2, Calendar, Reply, Search, X, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
 import { BookmarkItem } from './BookmarkButton';
 import { toast } from 'sonner';
 import { useBadgeSystem } from '@/hooks/useBadgeSystem';
@@ -19,12 +20,18 @@ export default function BookmarksView({ onBack, onContinueFromMessage }: Bookmar
   const [isLoading, setIsLoading] = useState(true);
   // Phase 3.3: Add pagination to prevent performance issues with large lists
   const [displayLimit, setDisplayLimit] = useState(20);
+  // BUG #19 FIX: Add search functionality
+  const [searchQuery, setSearchQuery] = useState('');
   // Phase 1.1: Track mounted state to prevent state updates after unmount
   const isMountedRef = useRef(true);
   // Phase 2.2: Track ongoing delete operations to prevent race conditions
   const deletingIdsRef = useRef<Set<string>>(new Set());
   // BUG #3 FIX: Import badge system to decrement counter on delete
-  const { decrementBookmarks } = useBadgeSystem();
+  // BUG #18 FIX: Import sync and progress for counter validation
+  const { decrementBookmarks, syncBookmarks, badgeProgress } = useBadgeSystem();
+  // BUG #15 FIX: Store deleted bookmark for undo functionality
+  const deletedBookmarkRef = useRef<BookmarkItem | null>(null);
+  const undoTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     loadBookmarks();
@@ -34,6 +41,11 @@ export default function BookmarksView({ onBack, onContinueFromMessage }: Bookmar
       isMountedRef.current = false;
     };
   }, []);
+
+  // BUG #13 FIX: Reset pagination when tab changes
+  useEffect(() => {
+    setDisplayLimit(20); // Reset to initial limit when switching tabs
+  }, [selectedTab]);
 
   const loadBookmarks = async () => {
     try {
@@ -76,6 +88,12 @@ export default function BookmarksView({ onBack, onContinueFromMessage }: Bookmar
 
       setBookmarks(sortedBookmarks);
 
+      // BUG #18 FIX: Validate and sync badge counter with actual bookmark count
+      const actualCount = sortedBookmarks.length;
+      if (badgeProgress.bookmarksSaved !== actualCount) {
+        syncBookmarks(actualCount);
+      }
+
       // TODO: Merge with Supabase bookmarks when user authentication is implemented
     } catch (error) {
       // Phase 1.3: Show user-friendly error message instead of silent fail
@@ -86,6 +104,46 @@ export default function BookmarksView({ onBack, onContinueFromMessage }: Bookmar
       // Phase 3.1: Always clear loading state
       if (isMountedRef.current) {
         setIsLoading(false);
+      }
+    }
+  };
+
+  // BUG #15 FIX: Undo delete functionality
+  const undoDelete = () => {
+    if (!deletedBookmarkRef.current) return;
+
+    try {
+      const bookmarkToRestore = deletedBookmarkRef.current;
+
+      // Add back to localStorage
+      const rawBookmarks = localStorage.getItem('bookmarks') || '[]';
+      const localBookmarks = JSON.parse(rawBookmarks);
+
+      if (Array.isArray(localBookmarks)) {
+        const updatedBookmarks = [...localBookmarks, bookmarkToRestore];
+        localStorage.setItem('bookmarks', JSON.stringify(updatedBookmarks));
+
+        // Update state
+        if (isMountedRef.current) {
+          setBookmarks(prev => {
+            const newBookmarks = [...prev, bookmarkToRestore];
+            // BUG #18 FIX: Sync badge counter when restoring bookmark
+            syncBookmarks(newBookmarks.length);
+            return newBookmarks;
+          });
+          toast.success('Bookmark restored');
+        }
+      }
+
+      // Clear undo data
+      deletedBookmarkRef.current = null;
+      if (undoTimeoutRef.current) {
+        clearTimeout(undoTimeoutRef.current);
+        undoTimeoutRef.current = null;
+      }
+    } catch (error) {
+      if (isMountedRef.current) {
+        toast.error('Failed to restore bookmark');
       }
     }
   };
@@ -104,6 +162,12 @@ export default function BookmarksView({ onBack, onContinueFromMessage }: Bookmar
 
       // Mark this ID as being deleted
       deletingIdsRef.current.add(id);
+
+      // BUG #15 FIX: Store bookmark before deleting for undo
+      const bookmarkToDelete = bookmarks.find(b => b.id === id);
+      if (bookmarkToDelete) {
+        deletedBookmarkRef.current = bookmarkToDelete;
+      }
 
       // Remove from localStorage
       const rawBookmarks = localStorage.getItem('bookmarks') || '[]';
@@ -130,8 +194,22 @@ export default function BookmarksView({ onBack, onContinueFromMessage }: Bookmar
       // BUG #3 FIX: Decrement badge counter to keep it in sync
       decrementBookmarks();
 
-      // Phase 1.3: Show success feedback
-      toast.success('Bookmark deleted');
+      // BUG #15 FIX: Show success with undo button
+      toast.success('Bookmark deleted', {
+        action: {
+          label: 'Undo',
+          onClick: undoDelete,
+        },
+        duration: 5000, // 5 seconds to undo
+      });
+
+      // Clear undo data after timeout
+      if (undoTimeoutRef.current) {
+        clearTimeout(undoTimeoutRef.current);
+      }
+      undoTimeoutRef.current = setTimeout(() => {
+        deletedBookmarkRef.current = null;
+      }, 5000);
 
       // TODO: Remove from Supabase when user authentication is implemented
     } catch (error) {
@@ -145,6 +223,33 @@ export default function BookmarksView({ onBack, onContinueFromMessage }: Bookmar
     }
   };
 
+  // BUG #21 FIX: Export bookmarks as JSON file
+  const exportBookmarks = () => {
+    try {
+      // Create JSON file with all bookmarks
+      const dataStr = JSON.stringify(bookmarks, null, 2);
+      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+
+      // Create download link
+      const url = URL.createObjectURL(dataBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `bookmarks-${new Date().toISOString().split('T')[0]}.json`;
+
+      // Trigger download
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Cleanup
+      URL.revokeObjectURL(url);
+
+      toast.success(`Exported ${bookmarks.length} bookmarks successfully`);
+    } catch (error) {
+      toast.error('Failed to export bookmarks. Please try again.');
+    }
+  };
+
   const getFilteredBookmarks = () => {
     // Phase 2.1: Add null safety check before filtering
     const safeBookmarks = bookmarks.filter(bookmark => {
@@ -155,9 +260,20 @@ export default function BookmarksView({ onBack, onContinueFromMessage }: Bookmar
              bookmark.type;
     });
 
-    const filtered = selectedTab === 'all'
+    // Filter by tab
+    let filtered = selectedTab === 'all'
       ? safeBookmarks
       : safeBookmarks.filter(bookmark => bookmark.type === selectedTab);
+
+    // BUG #19 FIX: Filter by search query (case-insensitive)
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter(bookmark => {
+        const contentMatch = bookmark.content?.toLowerCase().includes(query);
+        const titleMatch = bookmark.title?.toLowerCase().includes(query);
+        return contentMatch || titleMatch;
+      });
+    }
 
     // Phase 3.3: Apply pagination limit
     return {
@@ -227,7 +343,18 @@ export default function BookmarksView({ onBack, onContinueFromMessage }: Bookmar
               <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
             <h1 className="text-white font-bold text-lg sm:text-xl" role="heading" aria-level={1}>My Bookmarks</h1>
-            <div className="w-8 sm:w-10" aria-hidden="true" /> {/* Spacer */}
+            {/* BUG #21 FIX: Export button */}
+            <Button
+              onClick={exportBookmarks}
+              disabled={bookmarks.length === 0}
+              variant="ghost"
+              size="icon"
+              className="text-white hover:bg-white/10 rounded-full h-8 w-8 sm:h-10 sm:w-10 disabled:opacity-40"
+              aria-label="Export bookmarks to JSON file"
+              title="Export bookmarks"
+            >
+              <Download className="h-4 w-4 sm:h-5 sm:w-5" />
+            </Button>
           </div>
           
           <div className="text-center">
@@ -257,6 +384,37 @@ export default function BookmarksView({ onBack, onContinueFromMessage }: Bookmar
             </TabsTrigger>
           </TabsList>
         </Tabs>
+
+        {/* BUG #19 FIX: Search Bar */}
+        <div className="mb-4 sm:mb-6 relative">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/60" aria-hidden="true" />
+            <Input
+              type="text"
+              placeholder="Search bookmarks..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder:text-white/50 pl-10 pr-10 h-9 sm:h-10 text-sm"
+              aria-label="Search bookmarks by content or title"
+            />
+            {searchQuery && (
+              <Button
+                onClick={() => setSearchQuery('')}
+                variant="ghost"
+                size="sm"
+                className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7 p-0 text-white/60 hover:text-white hover:bg-white/10 rounded-full"
+                aria-label="Clear search"
+              >
+                <X className="h-4 w-4" aria-hidden="true" />
+              </Button>
+            )}
+          </div>
+          {searchQuery && (
+            <p className="mt-2 text-xs text-white/60">
+              {filteredBookmarks.length} result{filteredBookmarks.length !== 1 ? 's' : ''} found
+            </p>
+          )}
+        </div>
 
         {/* Bookmarks List */}
         <div className="space-y-3 sm:space-y-4 pb-6 sm:pb-8">

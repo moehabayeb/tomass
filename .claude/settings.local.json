@@ -108,7 +108,8 @@
       "Bash(vercel whoami:*)",
       "Bash(vercel login:*)",
       "Bash(npm run lint:*)",
-      "Bash(xxd:*)"
+      "Bash(xxd:*)",
+      "Bash(timeout 120 npx tsc:*)"
     ],
     "deny": [],
     "ask": []

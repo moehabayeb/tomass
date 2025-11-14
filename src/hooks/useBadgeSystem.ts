@@ -498,6 +498,15 @@ export const useBadgeSystem = () => {
     batchProgressUpdate({ bookmarksSaved: newValue });
   }, [badgeProgress.bookmarksSaved, batchProgressUpdate]);
 
+  // BUG #18 FIX: Add sync function to reconcile badge counter with actual bookmark count
+  const syncBookmarks = useCallback((actualCount: number) => {
+    // Validate input
+    if (typeof actualCount !== 'number' || actualCount < 0 || !isFinite(actualCount)) {
+      return;
+    }
+    batchProgressUpdate({ bookmarksSaved: actualCount });
+  }, [batchProgressUpdate]);
+
   const incrementEarlyRiser = useCallback(() => {
     const currentValue = pendingProgressUpdates.current.earlyRiserCount ?? badgeProgress.earlyRiserCount;
     batchProgressUpdate({ earlyRiserCount: currentValue + 1 });
@@ -531,6 +540,7 @@ export const useBadgeSystem = () => {
     incrementDailyTips,
     incrementBookmarks,
     decrementBookmarks, // BUG #3 FIX: Export decrement function
+    syncBookmarks, // BUG #18 FIX: Export sync function for validation
     incrementEarlyRiser,
     closeBadgeNotification,
     getFeatureProgress

@@ -21,6 +21,9 @@ export interface BookmarkItem {
   userId?: string;
 }
 
+// 🔧 BUG #17 FIX: Maximum bookmark limit to prevent performance issues
+const MAX_BOOKMARKS_LIMIT = 1000;
+
 export default function BookmarkButton({ 
   content, 
   type, 
@@ -207,6 +210,16 @@ export default function BookmarkButton({
             variant: "default"
           });
           return; // Exit early, don't add duplicate
+        }
+
+        // BUG #17 FIX: Check max bookmark limit before adding
+        if (localBookmarks.length >= MAX_BOOKMARKS_LIMIT) {
+          toast({
+            title: "Bookmark Limit Reached",
+            description: `You've reached the maximum limit of ${MAX_BOOKMARKS_LIMIT} bookmarks. Please delete some old bookmarks to add new ones.`,
+            variant: "destructive"
+          });
+          return; // Exit early, don't add more bookmarks
         }
 
         const updatedBookmarks = [...localBookmarks, bookmarkItem];
