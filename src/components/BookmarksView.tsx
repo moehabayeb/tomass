@@ -119,7 +119,7 @@ export default function BookmarksView({ onBack, onContinueFromMessage }: Bookmar
         setIsLoading(false);
       }
     }
-  }, [syncBookmarks, badgeProgress.bookmarksSaved]);
+  }, [syncBookmarks]); // 🔧 CRITICAL FIX: Removed badgeProgress.bookmarksSaved to prevent infinite loop
 
   useEffect(() => {
     loadBookmarks();
