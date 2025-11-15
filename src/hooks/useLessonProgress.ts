@@ -71,6 +71,8 @@ export function useLessonProgress(level?: string, moduleId?: number) {
   const lastCheckpointRef = useRef<LessonCheckpoint | null>(null);
 
   // Update state from sync status
+  // 🔧 CRITICAL FIX: Use primitive values in deps to prevent infinite loop
+  // syncStatus is an object that recreates on every render, causing infinite re-renders
   useEffect(() => {
     setState(prev => ({
       ...prev,
@@ -79,16 +81,18 @@ export function useLessonProgress(level?: string, moduleId?: number) {
       lastSyncAt: syncStatus.lastSyncAt,
       syncError: syncStatus.syncError
     }));
-  }, [syncStatus]);
+  }, [syncStatus.isSyncing, syncStatus.isOnline, syncStatus.lastSyncAt, syncStatus.syncError]);
 
   // Load progress when level/module changes
+  // 🔧 CRITICAL FIX: Added loadProgress to dependencies
   useEffect(() => {
     if (level && moduleId !== undefined) {
       loadProgress(level, moduleId);
     }
-  }, [level, moduleId, user?.id]);
+  }, [level, moduleId, user?.id, loadProgress]);
 
   // Auto-sync on user login
+  // 🔧 CRITICAL FIX: Added mergeProgressOnLogin to dependencies
   useEffect(() => {
     if (isAuthenticated && user?.id) {
       try {
@@ -101,7 +105,7 @@ export function useLessonProgress(level?: string, moduleId?: number) {
         // Apple Store Compliance: Silent fail - Safari Private Mode support
       }
     }
-  }, [isAuthenticated, user?.id]);
+  }, [isAuthenticated, user?.id, mergeProgressOnLogin]);
 
   // Listen for sync triggers
   useEffect(() => {

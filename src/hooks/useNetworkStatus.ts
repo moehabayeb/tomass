@@ -112,9 +112,12 @@ export function useNetworkStatus() {
         (navigator as any).connection?.removeEventListener('change', handleConnectionChange);
       }
     };
-  }, [testConnectivity]);
+    // 🔧 CRITICAL FIX: testConnectivity is stable (useCallback with []), only run on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Periodic connectivity check when online (every 30 seconds)
+  // 🔧 CRITICAL FIX: testConnectivity is stable (useCallback with []), removed from deps
   useEffect(() => {
     if (!networkStatus.isOnline) return;
 
@@ -130,7 +133,8 @@ export function useNetworkStatus() {
     }, 30000);
 
     return () => clearInterval(interval);
-  }, [networkStatus.isOnline, testConnectivity]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [networkStatus.isOnline]);
 
   // Manual connectivity check
   const checkConnectivity = useCallback(async (): Promise<boolean> => {

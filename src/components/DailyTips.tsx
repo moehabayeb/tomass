@@ -155,13 +155,17 @@ export default function DailyTips({ onClose }: DailyTipsProps) {
   }, [todaysTip.id, earnXPForDailyTip, incrementDailyTips]);
 
   // Auto-speak today's tip when Sound is ON
+  // 🔧 CRITICAL FIX: Added timeout cleanup to prevent memory leak
   useEffect(() => {
     if (soundEnabled && todaysTip && !showHistory) {
-      // Delay to ensure modal is fully rendered
-      setTimeout(() => {
+      // Delay to ensure modal is fully rendered (increased to 1500ms for better reliability)
+      const timer = setTimeout(() => {
         const tipText = `Daily tip: ${todaysTip.content}`;
         speakWithAvatar(tipText);
-      }, 1000);
+      }, 1500);
+
+      // Cleanup timeout on unmount or deps change
+      return () => clearTimeout(timer);
     }
   }, [todaysTip, soundEnabled, showHistory, speakWithAvatar]);
 

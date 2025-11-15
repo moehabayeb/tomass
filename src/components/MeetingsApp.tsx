@@ -96,13 +96,17 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
 
       if (error) {
         // Apple Store Compliance: Silent fail with user-friendly toast
-        toast({
-          title: "Error loading meetings",
-          description: error.message || "Please try again later.",
-          variant: "destructive"
-        });
+        if (isMounted.current) { // 🔧 CRITICAL FIX: Check before toast (can trigger setState)
+          toast({
+            title: "Error loading meetings",
+            description: error.message || "Please try again later.",
+            variant: "destructive"
+          });
+        }
         return;
       }
+
+      if (!isMounted.current) return; // 🔧 CRITICAL FIX: Check before setState
 
       if (meetings && meetings.length > 0) {
         setNextMeeting(meetings[0]);
@@ -125,13 +129,14 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
         }
       }
     } catch (error) {
-      if (!isMounted.current) return; // 🔧 FIX: Check before setState
       // Apple Store Compliance: Silent fail with user-friendly toast
-      toast({
-        title: "Unexpected error",
-        description: "Failed to load meetings. Please refresh the page.",
-        variant: "destructive"
-      });
+      if (isMounted.current) { // 🔧 CRITICAL FIX: Check before toast (can trigger setState)
+        toast({
+          title: "Unexpected error",
+          description: "Failed to load meetings. Please refresh the page.",
+          variant: "destructive"
+        });
+      }
     } finally {
       if (isMounted.current) { // 🔧 FIX: Check before setState
         setLoading(false);
