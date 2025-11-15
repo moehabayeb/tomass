@@ -70,6 +70,70 @@ export function useLessonProgress(level?: string, moduleId?: number) {
   const [showResumeDialog, setShowResumeDialog] = useState(false);
   const lastCheckpointRef = useRef<LessonCheckpoint | null>(null);
 
+  /**
+   * Load progress for a specific module
+   * 🔧 CRITICAL FIX: Moved BEFORE useEffect to prevent temporal dead zone error
+   */
+  const loadProgress = useCallback(async (targetLevel: string, targetModuleId: number): Promise<LessonCheckpoint | null> => {
+    setState(prev => ({ ...prev, isLoading: true }));
+
+    try {
+      const progress = await lessonProgressService.loadProgress(
+        user?.id || '',
+        targetLevel,
+        targetModuleId
+      );
+
+      setState(prev => ({
+        ...prev,
+        currentProgress: progress,
+        hasProgress: !!progress,
+        canResume: !!progress && !progress.is_module_completed,
+        isLoading: false
+      }));
+
+      return progress;
+    } catch (error) {
+      // Apple Store Compliance: Silent fail
+      setState(prev => ({
+        ...prev,
+        currentProgress: null,
+        hasProgress: false,
+        canResume: false,
+        isLoading: false
+      }));
+      return null;
+    }
+  }, [user?.id]);
+
+  /**
+   * Merge local progress with server on login
+   * 🔧 CRITICAL FIX: Moved BEFORE useEffect to prevent temporal dead zone error
+   */
+  const mergeProgressOnLogin = useCallback(async (): Promise<ProgressSyncResult> => {
+    if (!user?.id) {
+      return { success: false, synced: 0, failed: 0, errors: ['No user ID'] };
+    }
+
+    syncStatus.startSync();
+
+    try {
+      const result = await lessonProgressService.mergeProgressOnLogin(user.id);
+      syncStatus.completeSync(result.success, result.errors[0]);
+
+      // Reload current progress after merge
+      if (level && moduleId !== undefined) {
+        await loadProgress(level, moduleId);
+      }
+
+      return result;
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Merge failed';
+      syncStatus.completeSync(false, errorMsg);
+      return { success: false, synced: 0, failed: 1, errors: [errorMsg] };
+    }
+  }, [user?.id, syncStatus, level, moduleId, loadProgress]);
+
   // Update state from sync status
   // 🔧 CRITICAL FIX: Use primitive values in deps to prevent infinite loop
   // syncStatus is an object that recreates on every render, causing infinite re-renders
@@ -84,7 +148,7 @@ export function useLessonProgress(level?: string, moduleId?: number) {
   }, [syncStatus.isSyncing, syncStatus.isOnline, syncStatus.lastSyncAt, syncStatus.syncError]);
 
   // Load progress when level/module changes
-  // 🔧 CRITICAL FIX: Added loadProgress to dependencies
+  // 🔧 CRITICAL FIX: loadProgress now defined ABOVE, safe to use in deps
   useEffect(() => {
     if (level && moduleId !== undefined) {
       loadProgress(level, moduleId);
@@ -92,7 +156,7 @@ export function useLessonProgress(level?: string, moduleId?: number) {
   }, [level, moduleId, user?.id, loadProgress]);
 
   // Auto-sync on user login
-  // 🔧 CRITICAL FIX: Added mergeProgressOnLogin to dependencies
+  // 🔧 CRITICAL FIX: mergeProgressOnLogin now defined ABOVE, safe to use in deps
   useEffect(() => {
     if (isAuthenticated && user?.id) {
       try {
@@ -147,41 +211,6 @@ export function useLessonProgress(level?: string, moduleId?: number) {
       throw error;
     }
   }, [user?.id, level, moduleId]);
-
-  /**
-   * Load progress for a specific module
-   */
-  const loadProgress = useCallback(async (targetLevel: string, targetModuleId: number): Promise<LessonCheckpoint | null> => {
-    setState(prev => ({ ...prev, isLoading: true }));
-
-    try {
-      const progress = await lessonProgressService.loadProgress(
-        user?.id || '',
-        targetLevel,
-        targetModuleId
-      );
-
-      setState(prev => ({
-        ...prev,
-        currentProgress: progress,
-        hasProgress: !!progress,
-        canResume: !!progress && !progress.is_module_completed,
-        isLoading: false
-      }));
-
-      return progress;
-    } catch (error) {
-      // Apple Store Compliance: Silent fail
-      setState(prev => ({
-        ...prev,
-        currentProgress: null,
-        hasProgress: false,
-        canResume: false,
-        isLoading: false
-      }));
-      return null;
-    }
-  }, [user?.id]);
 
   /**
    * Resume from saved progress
@@ -245,33 +274,6 @@ export function useLessonProgress(level?: string, moduleId?: number) {
     }));
     // Apple Store Compliance: Silent fail
   }, []);
-
-  /**
-   * Merge local progress with server on login
-   */
-  const mergeProgressOnLogin = useCallback(async (): Promise<ProgressSyncResult> => {
-    if (!user?.id) {
-      return { success: false, synced: 0, failed: 0, errors: ['No user ID'] };
-    }
-
-    syncStatus.startSync();
-
-    try {
-      const result = await lessonProgressService.mergeProgressOnLogin(user.id);
-      syncStatus.completeSync(result.success, result.errors[0]);
-
-      // Reload current progress after merge
-      if (level && moduleId !== undefined) {
-        await loadProgress(level, moduleId);
-      }
-
-      return result;
-    } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : 'Merge failed';
-      syncStatus.completeSync(false, errorMsg);
-      return { success: false, synced: 0, failed: 1, errors: [errorMsg] };
-    }
-  }, [user?.id, syncStatus, level, moduleId, loadProgress]);
 
   /**
    * Show resume dialog if there's saved progress
