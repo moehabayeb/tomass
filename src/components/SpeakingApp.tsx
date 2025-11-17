@@ -561,7 +561,10 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
   // First-play / resume path (starter or latest assistant)
   const playAssistantOnce = async (text: string, messageKey: string) => {
-    const token = startNewTurn();
+    // 🔧 FIX: Use existing token OR create new one (not both) - prevents token mismatch
+    const token = currentTurnToken || startNewTurn();
+    currentTurnTokenRef.current = token;  // Store in ref for synchronous access
+
     setFlowState('READING');
     setTtsListenerActive(true); // Enable TTS listener authority
 
@@ -585,15 +588,35 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           resolved = true;
           clearTimeout(watchdog);
         });
+
+        // 🔧 FIX: Mark as spoken AFTER successful TTS (not before)
+        setSpokenKeys(p => new Set([...p, messageKey]));
       } else {
         resolved = true;
         clearTimeout(watchdog);
+
+        // Audio not enabled - show error and reset
+        toast({
+          title: "Audio not available",
+          description: "Please enable audio and try again",
+          variant: "destructive"
+        });
+        setFlowState('IDLE');
+        setIsSpeaking(false);
+        setAvatarState('idle');
+        return;
       }
     } catch (e) {
-      resolved = true; 
+      resolved = true;
       clearTimeout(watchdog);
     } finally {
-      await handleTTSCompletion(token);   // ← ALWAYS
+      setIsSpeaking(false);
+      setAvatarState('idle');
+
+      // 🔧 FIX: Force transition to LISTENING with the SAME token
+      if (enabled) {
+        forceToListening('tts-complete-transition');
+      }
     }
   };
 
@@ -818,31 +841,44 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
   // Helper: Force transition to LISTENING with mic activation (unconditional)
   const forceToListening = (reason: string) => {
-    // 🔧 PHASE 2 FIX: Check if component is mounted before setState
+    // 🔧 PHASE 3 FIX: Check if component is mounted before setState
     if (!isMountedRef.current) return;
 
-    // Stop any lingering TTS state
+    // 🔧 PHASE 3 FIX: Stop ALL TTS immediately (both custom and browser)
     try { TTSManager.stop(); } catch {}
+    try { speechSynthesis.cancel(); } catch {}
     setIsSpeaking(false);
     setAvatarState('idle');
 
-    // Ensure we have a token; if missing, create a simple one
-    if (!currentTurnToken) setCurrentTurnToken(`force-${Date.now()}`);
+    // 🔧 PHASE 3 FIX: Don't generate new tokens - let existing token continue
+    // REMOVED: if (!currentTurnToken) setCurrentTurnToken(`force-${Date.now()}`);
 
     // Enter LISTENING state first
     setFlowState('LISTENING');
 
-    // 🔧 FIX BUG #4: Clear any pending timeout before setting new one
+    // 🔧 PHASE 3 FIX: Clear any pending timeout before setting new one
     if (stateTransitionTimeoutRef.current !== null) {
       clearTimeout(stateTransitionTimeoutRef.current);
+      stateTransitionTimeoutRef.current = null;
     }
 
-    // Start mic with small delay to ensure state has updated (fix race condition)
-    stateTransitionTimeoutRef.current = window.setTimeout(() => {
-      if (!isMountedRef.current) return; // Check if component is still mounted
-      stateTransitionTimeoutRef.current = null;
-      startHandsFreeMicCaptureSafe(true); // pass force=true
-    }, 50);
+    // 🔧 PHASE 3 FIX: Start mic IMMEDIATELY (no delay) with error handling
+    (async () => {
+      if (!isMountedRef.current) return;
+      try {
+        await startHandsFreeMicCaptureSafe(true); // pass force=true
+      } catch (err) {
+        // If mic fails, notify user and reset to IDLE
+        toast({
+          title: "Could not start listening",
+          description: "Please check microphone permissions",
+          variant: "destructive"
+        });
+        if (isMountedRef.current) {
+          setFlowState('IDLE');
+        }
+      }
+    })();
 
   };
 
@@ -877,32 +913,28 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   // B) Mic + interim captions (LISTENING only) - FSM enforced guards
   const startHandsFreeMicCaptureSafe = async (force = false) => {
 
-    // if not forced, keep existing guards; if forced, bypass
+    // 🔧 FIX: Simplified guards - only block if actively speaking, not strict state checks
     if (!force) {
-      if (flowState !== 'LISTENING') {
+      // Only block if TTS is ACTIVELY playing audio (not just state)
+      if (TTSManager.isSpeaking() && speechSynthesis.speaking) {
         return;
       }
-      
-      if (TTSManager.isSpeaking()) {
-        return;
-      }
-      
-      if (!currentTurnToken) {
-        return;
-      }
+
+      // REMOVED: flowState !== 'LISTENING' check (too strict, prevents recovery)
+      // REMOVED: currentTurnToken check (forceToListening creates token)
     }
 
     // Always make sure audio context is unlocked
     try { await enableAudioContext(); } catch {}
 
     // Clean mic channel between turns
-    try { 
-      cleanup(); 
+    try {
+      cleanup();
     } catch {}
 
     // Start recording immediately
     setInterimCaption('');
-    
+
     try {
       // Start recording using existing micEngine
       const result = await startRecording();
@@ -923,24 +955,20 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         // 🔧 PHASE 2 FIX: Check if mounted after async operation
         if (!isMountedRef.current) return;
 
-        // No input: resume listening
+        // 🔧 FIX: No input - retry listening immediately instead of pausing
         setFlowState('LISTENING');
 
-        // 🔧 FIX BUG #5: Clear any pending timeout before setting new one
-        if (stateTransitionTimeoutRef.current !== null) {
-          clearTimeout(stateTransitionTimeoutRef.current);
-        }
-
-        stateTransitionTimeoutRef.current = window.setTimeout(() => {
-          if (!isMountedRef.current) return; // Check if component is still mounted
-          stateTransitionTimeoutRef.current = null;
-          startHandsFreeMicCaptureSafe();
-        }, 100);
+        // Retry immediately (no timeout needed)
+        await startHandsFreeMicCaptureSafe();
       }
     } catch (err) {
-      // 🔧 FIX #10: Fixed TypeScript error - catch type should not be annotated
-      // Apple Store Compliance: Silent fail - error handled by state change to PAUSED
-      setFlowState('PAUSED');
+      // 🔧 FIX: Better error handling - show toast and reset to IDLE instead of PAUSED
+      toast({
+        title: "Microphone error",
+        description: "Please check permissions and try again",
+        variant: "destructive"
+      });
+      setFlowState('IDLE');  // Reset to idle for user to retry
     }
   };
 
@@ -1302,16 +1330,40 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     }
   }, [flowState]);
 
-  // Stuck state detection and debugging
+  // 🔧 PHASE 3 FIX: Enhanced stuck state detection with faster recovery
   useEffect(() => {
-
+    // READING state watchdog: If stuck in READING but not actually speaking
     if (flowState === 'READING' && !isSpeaking) {
-      // If we're in READING but not speaking for 3 seconds, transition to LISTENING
       const timer = setTimeout(() => {
-        if (flowState === 'READING' && !isSpeaking) {
+        // 🔧 PHASE 3: Multi-condition check - verify TTS isn't actually playing
+        if (flowState === 'READING' && !isSpeaking && !TTSManager.isSpeaking() && !speechSynthesis.speaking) {
           forceToListening('stuck-reading-fallback');
         }
-      }, 3000);
+      }, 2000); // 🔧 PHASE 3: Reduced from 3000ms to 2000ms for faster recovery
+      return () => clearTimeout(timer);
+    }
+
+    // 🔧 PHASE 3 FIX: LISTENING state watchdog - verify mic is actually active
+    if (flowState === 'LISTENING' && micState === 'idle') {
+      const timer = setTimeout(() => {
+        // If we're in LISTENING but mic is idle for 2 seconds, retry mic activation
+        if (flowState === 'LISTENING' && micState === 'idle') {
+          // Auto-retry mic start
+          (async () => {
+            try {
+              await startHandsFreeMicCaptureSafe(true);
+            } catch {
+              // If retry fails, reset to IDLE
+              setFlowState('IDLE');
+              toast({
+                title: "Microphone not responding",
+                description: "Please try again",
+                variant: "destructive"
+              });
+            }
+          })();
+        }
+      }, 2000);
       return () => clearTimeout(timer);
     }
   }, [flowState, isSpeaking, micState]);
@@ -1487,6 +1539,31 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
+    };
+  }, [flowState, toast]);
+
+  // 🔧 PHASE 4 FIX: Monitor AudioContext state for iOS suspension recovery
+  useEffect(() => {
+    if (!audioContextRef.current) return;
+
+    const audioContext = audioContextRef.current;
+
+    const handleStateChange = () => {
+      if (audioContext.state === 'suspended' && flowState === 'READING') {
+        // AudioContext suspended during playback - show retry prompt
+        toast({
+          title: "Audio paused",
+          description: "Tap to continue the conversation",
+          variant: "default"
+        });
+      }
+    };
+
+    // Listen for state changes (iOS can suspend AudioContext)
+    audioContext.addEventListener('statechange', handleStateChange);
+
+    return () => {
+      audioContext.removeEventListener('statechange', handleStateChange);
     };
   }, [flowState, toast]);
 
@@ -1801,8 +1878,26 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
               if (flowState === 'IDLE') {
                 const text = 'What would you like to talk about?';
                 const messageKey = stableKeyFromText(text);
-                setSpokenKeys(p => new Set([...p, messageKey]));
+
+                // 🔧 PHASE 4 FIX: Remove premature spokenKeys marking
+                // REMOVED: setSpokenKeys(p => new Set([...p, messageKey]));
+                // playAssistantOnce will mark as spoken AFTER successful TTS
+
                 setEphemeralAssistant({ key: messageKey, text });
+
+                // 🔧 PHASE 4 FIX: Unlock audio context for iOS before playing
+                try {
+                  await enableAudioContext();
+                } catch (err) {
+                  // If audio unlock fails, show error and don't continue
+                  toast({
+                    title: "Audio unavailable",
+                    description: "Please tap again to enable audio",
+                    variant: "destructive"
+                  });
+                  return;
+                }
+
                 await playAssistantOnce(text, messageKey);
               } else if (flowState === 'PAUSED') {
                 if (pausedFrom === 'READING') {
