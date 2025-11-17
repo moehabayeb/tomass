@@ -74,6 +74,26 @@ class SpeakingTestService {
 
   async saveTestResult(result: Omit<TestResult, 'id' | 'user_id' | 'test_date'>): Promise<TestResult> {
     try {
+      // Check if user is authenticated
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) {
+        // 🔧 GUEST USER FALLBACK: Save to localStorage
+        const guestResult: TestResult = {
+          ...result,
+          id: `guest_${Date.now()}`,
+          user_id: undefined,
+          test_date: new Date().toISOString()
+        };
+
+        // Save to localStorage for guest users
+        localStorage.setItem('lastTestResult', JSON.stringify(guestResult));
+        localStorage.setItem('guestPlacementTest', JSON.stringify(guestResult));
+
+        return guestResult;
+      }
+
+      // Authenticated user - save to database
       const { data, error } = await supabase.rpc('save_speaking_test_result', {
         p_overall_score: result.overall_score,
         p_recommended_level: result.recommended_level,

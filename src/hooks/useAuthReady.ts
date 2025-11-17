@@ -3,6 +3,7 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { lessonProgressService } from '@/services/lessonProgressService';
+import { speakingTestService } from '@/services/speakingTestService';
 
 export const useAuthReady = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -30,13 +31,14 @@ export const useAuthReady = () => {
             if (hasLocalProgress) {
               toast.info('Syncing your progress...');
 
-              // Sync placement test if exists locally but not in database
-              const localPlacement = localStorage.getItem('userPlacement') ||
-                                    localStorage.getItem('placement');
+              // 🔧 FIX: Sync placement test if exists locally but not in database
+              const localPlacement = localStorage.getItem('guestPlacementTest') ||
+                                    localStorage.getItem('lastTestResult');
 
               if (localPlacement) {
                 try {
-                  const placement = JSON.parse(localPlacement);
+                  const placementData = JSON.parse(localPlacement);
+
                   // Check if placement exists in database
                   const { data: existingTest } = await supabase
                     .from('speaking_test_results')
@@ -45,9 +47,30 @@ export const useAuthReady = () => {
                     .limit(1);
 
                   if (!existingTest || existingTest.length === 0) {
-                    // Upload placement to database
-                    // Note: This would need the full test result data
-                    toast.success('Placement test synced to your account!');
+                    // 🔧 FIX: Actually upload placement test data to database
+                    const testResult = placementData.scores || placementData;
+
+                    if (testResult.overall_score !== undefined) {
+                      await speakingTestService.saveTestResult({
+                        overall_score: testResult.overall_score || 0,
+                        recommended_level: testResult.recommended_level || placementData.level || 'A1',
+                        pronunciation_score: testResult.pronunciation_score || 0,
+                        grammar_score: testResult.grammar_score || 0,
+                        vocabulary_score: testResult.vocabulary_score || 0,
+                        fluency_score: testResult.fluency_score || 0,
+                        comprehension_score: testResult.comprehension_score || 0,
+                        test_duration: testResult.test_duration || 0,
+                        transcript: testResult.transcript || [],
+                        detailed_feedback: testResult.detailed_feedback || {},
+                        words_per_minute: testResult.words_per_minute || 0,
+                        unique_words_count: testResult.unique_words_count || 0,
+                        grammar_errors_count: testResult.grammar_errors_count || 0,
+                        pronunciation_issues: testResult.pronunciation_issues || [],
+                        test_type: testResult.test_type || 'full'
+                      });
+
+                      toast.success('Placement test synced to your account!');
+                    }
                   }
                 } catch (err) {
                   console.error('Failed to sync placement test:', err);

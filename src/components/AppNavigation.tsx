@@ -170,6 +170,32 @@ export default function AppNavigation() {
       at: Date.now()
     }));
 
+    // 🔧 FIX: Save placement completion flag for ProgressStore
+    safeLocalStorage.setItem('placementTestCompleted', 'true');
+    safeLocalStorage.setItem('placementTestDate', new Date().toISOString());
+
+    // 🔧 FIX: Initialize progress store entry so LessonsApp knows user has started
+    const progressKey = 'll_progress_v1';
+    const existingProgress = safeLocalStorage.getItem(progressKey);
+    if (!existingProgress) {
+      // Create initial empty progress entry to signal placement is complete
+      const initialProgress = {
+        [`${result.recommended_level}-1`]: {
+          level: result.recommended_level,
+          module: 1,
+          phase: 'intro' as const,
+          listeningIndex: 0,
+          speakingIndex: 0,
+          completed: false,
+          totalListening: 0,
+          totalSpeaking: 0,
+          updatedAt: Date.now(),
+          v: 1
+        }
+      };
+      safeLocalStorage.setItem(progressKey, JSON.stringify(initialProgress));
+    }
+
     // Enable access to the recommended level
     const unlocksStr = safeLocalStorage.getItem('unlocks') || '{}';
     try {
