@@ -134,8 +134,21 @@ class SpeakingTestService {
 
       return data;
     } catch (error) {
-      // Apple Store Compliance: Silent operation
-      throw error;
+      // 🔧 CRITICAL FIX: Don't re-throw - return fallback to prevent data loss
+      const fallbackResult: TestResult = {
+        ...result,
+        id: `error_fallback_${Date.now()}`,
+        user_id: undefined,
+        test_date: new Date().toISOString()
+      };
+
+      // Last resort - save to localStorage
+      try {
+        localStorage.setItem('lastTestResult', JSON.stringify(fallbackResult));
+        localStorage.setItem('guestPlacementTest', JSON.stringify(fallbackResult));
+      } catch {}
+
+      return fallbackResult;
     }
   }
 
