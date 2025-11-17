@@ -317,6 +317,11 @@ export default function EnglishProficiencyTest({
         description: "Test completed but failed to save to database. Your results are still available.",
         variant: "destructive"
       });
+
+      // 🔧 DIVINE FIX: ALWAYS call onComplete so AppNavigation can handle localStorage
+      if (onComplete) {
+        onComplete(result);
+      }
     }
   };
 

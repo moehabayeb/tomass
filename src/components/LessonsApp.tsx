@@ -916,20 +916,27 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
   // FIX #2: Fix placement test race condition
   useEffect(() => {
     async function checkPlacementTest() {
-      // Only check if authenticated AND user object is loaded
-      if (!isAuthenticated || !user?.id) return;
       if (hasPlacementTest === true) return; // Only skip if confirmed
 
-      // Quick check: localStorage first (instant)
+      // 🔧 DIVINE FIX: Check ALL localStorage keys (userPlacement, placement, guestPlacementTest, lastTestResult)
       const localPlacement = safeLocalStorage().getItem('userPlacement') ||
-                            safeLocalStorage().getItem('placement');
+                            safeLocalStorage().getItem('placement') ||
+                            safeLocalStorage().getItem('guestPlacementTest') ||
+                            safeLocalStorage().getItem('lastTestResult');
 
       if (localPlacement) {
         setHasPlacementTest(true);
         return;
       }
 
-      // No localStorage - check database
+      // 🔧 DIVINE FIX: Guest users - if no localStorage, require placement test
+      if (!isAuthenticated || !user?.id) {
+        setHasPlacementTest(false);
+        setShowPlacementRequired(true);
+        return;
+      }
+
+      // Authenticated users - check database
       try {
         const { data, error } = await withTimeout(
           supabase
