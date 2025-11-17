@@ -574,6 +574,31 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
     const { enabled } = await ensureSoundReady();
 
+    // 🔧 DIVINE FIX: Validate AudioContext state before TTS
+    if (enabled && audioContextRef.current) {
+      // Check if AudioContext is suspended (common on iOS)
+      if (audioContextRef.current.state === 'suspended') {
+        try {
+          await audioContextRef.current.resume();
+        } catch (err) {
+          console.error('Failed to resume AudioContext:', err);
+        }
+      }
+
+      // If AudioContext is not running, fail gracefully
+      if (audioContextRef.current.state !== 'running') {
+        toast({
+          title: "Audio not ready",
+          description: "Please tap to enable audio",
+          variant: "destructive"
+        });
+        setFlowState('IDLE');
+        setIsSpeaking(false);
+        setAvatarState('idle');
+        return;
+      }
+    }
+
     let resolved = false;
     const watchdog = setTimeout(() => {
       if (!resolved) {
@@ -613,9 +638,9 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       setIsSpeaking(false);
       setAvatarState('idle');
 
-      // 🔧 FIX: Force transition to LISTENING with the SAME token
+      // 🔧 DIVINE FIX: AWAIT force transition to LISTENING
       if (enabled) {
-        forceToListening('tts-complete-transition');
+        await forceToListening('tts-complete-transition');
       }
     }
   };
@@ -742,7 +767,10 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       const wd = setTimeout(() => {
         if (!resolved) {
           resolved = true;
-          forceToListening('watchdog');
+          // 🔧 DIVINE FIX: Wrap in async since setTimeout callback can't be async
+          (async () => {
+            await forceToListening('watchdog');
+          })();
         }
       }, 45000); // 🚨 CRITICAL FIX: Extended to 45s to prevent AI speech cutoff
 
@@ -754,32 +782,34 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           .catch((e) => {
             // TTS error handled
           })
-          .finally(() => {
+          .finally(async () => {
             resolved = true;
             clearTimeout(wd);
-            forceToListening('tts-finally');
+            // 🔧 DIVINE FIX: AWAIT the transition
+            await forceToListening('tts-finally');
           });
       } catch (error) {
         resolved = true;
         clearTimeout(wd);
-        forceToListening('tts-error');
+        // 🔧 DIVINE FIX: AWAIT the transition
+        await forceToListening('tts-error');
       } finally {
         setIsSpeaking(false);
         setAvatarState('idle');
-        
+
         // Clear speaking indicators
         setSpeakingMessageKey(null);
         setEphemeralAssistant(null);
       }
     } else {
       // When muted (we emit HF_PROMPT_SKIP) call forceToListening instead of setState-only
-      
-      // Clear speaking indicators  
+
+      // Clear speaking indicators
       setSpeakingMessageKey(null);
       setEphemeralAssistant(null);
-      
-      // Force to listening with muted skip reason
-      forceToListening('muted-skip');
+
+      // 🔧 DIVINE FIX: AWAIT force to listening with muted skip reason
+      await forceToListening('muted-skip');
     }
     
     return messageKey;
@@ -839,47 +869,44 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     // existing evaluator/save path continues as before
   };
 
-  // Helper: Force transition to LISTENING with mic activation (unconditional)
-  const forceToListening = (reason: string) => {
-    // 🔧 PHASE 3 FIX: Check if component is mounted before setState
+  // 🔧 DIVINE FIX: Helper - Force transition to LISTENING with mic activation (unconditional)
+  const forceToListening = async (reason: string) => {
+    // Check if component is mounted before setState
     if (!isMountedRef.current) return;
 
-    // 🔧 PHASE 3 FIX: Stop ALL TTS immediately (both custom and browser)
+    // Stop ALL TTS immediately (both custom and browser)
     try { TTSManager.stop(); } catch {}
     try { speechSynthesis.cancel(); } catch {}
     setIsSpeaking(false);
     setAvatarState('idle');
 
-    // 🔧 PHASE 3 FIX: Don't generate new tokens - let existing token continue
+    // Don't generate new tokens - let existing token continue
     // REMOVED: if (!currentTurnToken) setCurrentTurnToken(`force-${Date.now()}`);
 
     // Enter LISTENING state first
     setFlowState('LISTENING');
 
-    // 🔧 PHASE 3 FIX: Clear any pending timeout before setting new one
+    // Clear any pending timeout before starting mic
     if (stateTransitionTimeoutRef.current !== null) {
       clearTimeout(stateTransitionTimeoutRef.current);
       stateTransitionTimeoutRef.current = null;
     }
 
-    // 🔧 PHASE 3 FIX: Start mic IMMEDIATELY (no delay) with error handling
-    (async () => {
-      if (!isMountedRef.current) return;
-      try {
-        await startHandsFreeMicCaptureSafe(true); // pass force=true
-      } catch (err) {
-        // If mic fails, notify user and reset to IDLE
-        toast({
-          title: "Could not start listening",
-          description: "Please check microphone permissions",
-          variant: "destructive"
-        });
-        if (isMountedRef.current) {
-          setFlowState('IDLE');
-        }
+    // 🔧 DIVINE FIX: Actually AWAIT mic start (no fire-and-forget!)
+    if (!isMountedRef.current) return;
+    try {
+      await startHandsFreeMicCaptureSafe(true); // pass force=true
+    } catch (err) {
+      // If mic fails, notify user and reset to IDLE
+      toast({
+        title: "Could not start listening",
+        description: "Please check microphone permissions",
+        variant: "destructive"
+      });
+      if (isMountedRef.current) {
+        setFlowState('IDLE');
       }
-    })();
-
+    }
   };
 
   // A) TTS → LISTENING (always) - FSM enforced completion
@@ -922,6 +949,23 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
       // REMOVED: flowState !== 'LISTENING' check (too strict, prevents recovery)
       // REMOVED: currentTurnToken check (forceToListening creates token)
+    }
+
+    // 🔧 DIVINE FIX: Check microphone permission BEFORE requesting (Google Meet pattern)
+    try {
+      const permission = await navigator.permissions.query({ name: 'microphone' as PermissionName });
+      if (permission.state === 'denied') {
+        toast({
+          title: "Microphone blocked",
+          description: "Please enable microphone in browser settings",
+          variant: "destructive"
+        });
+        setFlowState('IDLE');
+        return;
+      }
+    } catch (err) {
+      // Permission API not supported in this browser, continue anyway
+      console.log('Permission API not supported, continuing...');
     }
 
     // Always make sure audio context is unlocked
@@ -1330,16 +1374,19 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     }
   }, [flowState]);
 
-  // 🔧 PHASE 3 FIX: Enhanced stuck state detection with faster recovery
+  // 🔧 DIVINE FIX: Enhanced stuck state detection with faster recovery
   useEffect(() => {
     // READING state watchdog: If stuck in READING but not actually speaking
     if (flowState === 'READING' && !isSpeaking) {
       const timer = setTimeout(() => {
-        // 🔧 PHASE 3: Multi-condition check - verify TTS isn't actually playing
+        // Multi-condition check - verify TTS isn't actually playing
         if (flowState === 'READING' && !isSpeaking && !TTSManager.isSpeaking() && !speechSynthesis.speaking) {
-          forceToListening('stuck-reading-fallback');
+          // 🔧 DIVINE FIX: Wrap in async since setTimeout callback can't be async
+          (async () => {
+            await forceToListening('stuck-reading-fallback');
+          })();
         }
-      }, 2000); // 🔧 PHASE 3: Reduced from 3000ms to 2000ms for faster recovery
+      }, 2000); // Reduced from 3000ms to 2000ms for faster recovery
       return () => clearTimeout(timer);
     }
 
