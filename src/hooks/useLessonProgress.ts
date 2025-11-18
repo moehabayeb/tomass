@@ -132,7 +132,7 @@ export function useLessonProgress(level?: string, moduleId?: number) {
       syncStatus.completeSync(false, errorMsg);
       return { success: false, synced: 0, failed: 1, errors: [errorMsg] };
     }
-  }, [user?.id, syncStatus, level, moduleId, loadProgress]);
+  }, [user?.id, syncStatus.isSyncing, syncStatus.isOnline, level, moduleId, loadProgress]);
 
   // Update state from sync status
   // 🔧 CRITICAL FIX: Use primitive values in deps to prevent infinite loop
@@ -148,28 +148,34 @@ export function useLessonProgress(level?: string, moduleId?: number) {
   }, [syncStatus.isSyncing, syncStatus.isOnline, syncStatus.lastSyncAt, syncStatus.syncError]);
 
   // Load progress when level/module changes
-  // 🔧 CRITICAL FIX: loadProgress now defined ABOVE, safe to use in deps
+  // 🔧 EMERGENCY FIX: Add error boundary to prevent infinite loop
   useEffect(() => {
     if (level && moduleId !== undefined) {
-      loadProgress(level, moduleId);
+      // Wrap in try-catch to prevent blocking
+      loadProgress(level, moduleId).catch(error => {
+        console.warn('🔧 Progress load failed (non-critical):', error);
+        // Silent fail - module can still work without progress
+      });
     }
   }, [level, moduleId, user?.id, loadProgress]);
 
   // Auto-sync on user login
-  // 🔧 CRITICAL FIX: mergeProgressOnLogin now defined ABOVE, safe to use in deps
+  // 🔧 EMERGENCY FIX: TEMPORARILY DISABLED to stop infinite loop
+  // This was triggering infinite Supabase calls - will re-enable after fixing
   useEffect(() => {
     if (isAuthenticated && user?.id) {
-      try {
-        const hasLocalProgress = localStorage.getItem('ll_progress_v1');
-        if (hasLocalProgress) {
-          // Offer to merge progress
-          mergeProgressOnLogin();
-        }
-      } catch (error) {
-        // Apple Store Compliance: Silent fail - Safari Private Mode support
-      }
+      console.log('🔧 Auto-merge temporarily disabled to prevent infinite loop');
+      // try {
+      //   const hasLocalProgress = localStorage.getItem('ll_progress_v1');
+      //   if (hasLocalProgress) {
+      //     // Offer to merge progress
+      //     mergeProgressOnLogin();
+      //   }
+      // } catch (error) {
+      //   // Apple Store Compliance: Silent fail - Safari Private Mode support
+      // }
     }
-  }, [isAuthenticated, user?.id, mergeProgressOnLogin]);
+  }, [isAuthenticated, user?.id]);
 
   // Listen for sync triggers
   useEffect(() => {

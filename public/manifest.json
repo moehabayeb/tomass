@@ -1,0 +1,50 @@
+{
+  "name": "Tomas Hoca - English Learning",
+  "short_name": "Tomas Hoca",
+  "description": "Master English speaking with AI-powered lessons, speech recognition, and 300+ interactive modules across 6 CEFR levels (A1-C2)",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1e40af",
+  "theme_color": "#1e40af",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/tomas-avatar.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/tomas-avatar.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/tomas-avatar.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "productivity"],
+  "lang": "en",
+  "dir": "ltr",
+  "scope": "/",
+  "prefer_related_applications": false,
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Start Learning",
+      "short_name": "Learn",
+      "description": "Jump straight into your lessons",
+      "url": "/",
+      "icons": [{ "src": "/tomas-avatar.png", "sizes": "192x192" }]
+    }
+  ]
+}
