@@ -777,6 +777,12 @@
     min-width: 44px;
   }
 
+  /* Exception for Hangman keyboard - needs smaller buttons to fit on screen */
+  .hangman-key {
+    min-height: 28px !important;
+    min-width: 28px !important;
+  }
+
   /* Prevent text selection on buttons */
   button {
     -webkit-user-select: none;

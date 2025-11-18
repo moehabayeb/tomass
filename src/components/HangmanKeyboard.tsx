@@ -43,7 +43,7 @@ export const HangmanKeyboard = memo<HangmanKeyboardProps>(({
   };
 
   return (
-    <div className="w-full max-w-md mx-auto space-y-2 px-1">
+    <div className="w-full max-w-md mx-auto space-y-2">
       {rows.map((row, rowIndex) => (
         <div
           key={rowIndex}
@@ -69,7 +69,8 @@ export const HangmanKeyboard = memo<HangmanKeyboardProps>(({
                 }
                 aria-pressed={state !== 'default'}
                 className={`
-                  w-8 h-8 sm:w-11 sm:h-11
+                  hangman-key
+                  w-7 h-7 sm:w-11 sm:h-11
                   p-0
                   text-sm sm:text-lg
                   font-bold
@@ -79,8 +80,8 @@ export const HangmanKeyboard = memo<HangmanKeyboardProps>(({
                   ${isDisabled ? '' : 'active:scale-90 transition-transform duration-75'}
                 `}
                 style={{
-                  minWidth: '2rem',
-                  minHeight: '2rem',
+                  minWidth: '1.75rem',
+                  minHeight: '1.75rem',
                   touchAction: 'manipulation',
                   WebkitTapHighlightColor: 'transparent'
                 }}
