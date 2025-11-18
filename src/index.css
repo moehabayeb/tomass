@@ -769,18 +769,30 @@
   overscroll-behavior: contain;
 }
 
+/* Hangman keyboard buttons - must be smaller to fit 10 buttons on mobile screens */
+.hangman-key {
+  min-width: 32px !important;
+  max-width: 32px !important;
+  min-height: 32px !important;
+  max-height: 32px !important;
+}
+
+/* Desktop: allow larger buttons */
+@media (min-width: 640px) {
+  .hangman-key {
+    min-width: 44px !important;
+    max-width: 44px !important;
+    min-height: 44px !important;
+    max-height: 44px !important;
+  }
+}
+
 /* Mobile touch optimization */
 @media (hover: none) and (pointer: coarse) {
   /* Larger touch targets for mobile */
   button, a {
     min-height: 44px;
     min-width: 44px;
-  }
-
-  /* Exception for Hangman keyboard - needs smaller buttons to fit on screen */
-  .hangman-key {
-    min-height: 28px !important;
-    min-width: 28px !important;
   }
 
   /* Prevent text selection on buttons */
