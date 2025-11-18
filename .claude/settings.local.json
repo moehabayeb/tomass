@@ -108,7 +108,14 @@
       "Bash(vercel whoami:*)",
       "Bash(vercel login:*)",
       "Bash(npm run lint:*)",
-      "Bash(xxd:*)"
+      "Bash(xxd:*)",
+      "Bash(git config:*)",
+      "Bash(gh run:*)",
+      "Bash(git cherry-pick:*)",
+      "Bash(vercel --version:*)",
+      "Bash(vercel secrets add:*)",
+      "Bash(vercel env add:*)",
+      "Bash(npx cap sync android)"
     ],
     "deny": [],
     "ask": []

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Tomas Hoca</string>
+    <string name="title_activity_main">Tomas Hoca</string>
+    <string name="package_name">com.tomashoca.app</string>
+    <string name="custom_url_scheme">com.tomashoca.app</string>
+</resources>

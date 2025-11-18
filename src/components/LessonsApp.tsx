@@ -39,6 +39,8 @@ import { useLessonCheckpoints } from '../hooks/useLessonCheckpoints';
 import { ResumeProgressDialog, SyncStatusIndicator } from './ResumeProgressDialog';
 // Auth
 import { useAuthReady } from '../hooks/useAuthReady';
+// 🎤 Unified Speech Recognition: Works on mobile & desktop
+import { unifiedSpeechRecognition } from '../services/unifiedSpeechRecognition';
 // 🚀 BUNDLE OPTIMIZATION: Dynamic module loading to reduce initial bundle size by ~80%
 // Modules are now loaded on-demand when user accesses a specific lesson
 
@@ -1189,32 +1191,16 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
     if (ctx.state === 'suspended') { try { await ctx.resume(); } catch (error) { /* Ignore audio context resume errors */ } }
   }
 
-  // Create or reuse a SpeechRecognition with our settings
-  function getRecognizer(): SpeechRecognition | null {
-    const SR: any = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SR) return null;
-    if (recognizerRef.current) return recognizerRef.current;
-    const rec: SpeechRecognition = new SR();
-    rec.lang = 'en-US';
-    rec.continuous = false;
-    rec.interimResults = false;
-    (rec as any).maxAlternatives = 1;
-    recognizerRef.current = rec;
-    return rec;
-  }
-
+  // 🎤 UNIFIED SPEECH RECOGNITION: Works on mobile (Capacitor) and desktop (Web Speech API)
   // Promise wrapper: listen once, resolve transcript (empty string allowed), silent retry on transient errors
   async function recognizeOnce(abortSignal?: AbortSignal): Promise<string> {
-    const rec = getRecognizer();
-    if (!rec) throw new Error('no-web-speech');
-
-    return new Promise<string>((resolve, reject) => {
+    return new Promise<string>(async (resolve, reject) => {
       let settled = false;
-      const done = (ok: boolean, value?: string) => {
+      const done = (ok: boolean, value?: string | Error) => {
         if (settled) return;
         settled = true;
-        try { rec.stop(); } catch (error) { /* Recognition stop error ignored */ }
-        ok ? resolve(value) : reject(value);
+        unifiedSpeechRecognition.stop();
+        ok ? resolve(value as string) : reject(value);
       };
 
       // Abort support
@@ -1223,18 +1209,40 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
         abortSignal.addEventListener('abort', () => done(false, new Error('aborted')), { once: true });
       }
 
-      rec.onresult = (e: SpeechRecognitionEvent) => {
-        const txt = Array.from(e.results).map(r => r[0]?.transcript ?? '').join(' ').trim();
-        done(true, txt);
-      };
-      rec.onend = () => done(true, ''); // no speech → empty transcript (we'll handle above)
-      rec.onerror = (e: any) => {
-        const code = (e?.error || '').toString();
-        // Transient issues we silently retry outside: network/audio-capture/no-speech/not-allowed (first tap)
-        done(false, new Error(code || 'asr:error'));
-      };
+      // Set up callbacks
+      unifiedSpeechRecognition.onResult((result) => {
+        if (result.isFinal && result.transcript) {
+          if (import.meta.env.DEV) {
+            console.log('🎤 Speech recognized:', result.transcript, `(${result.confidence.toFixed(2)} confidence)`);
+          }
+          done(true, result.transcript);
+        }
+      });
 
-      try { rec.start(); } catch (err) { done(false, err); }
+      unifiedSpeechRecognition.onError((error) => {
+        if (import.meta.env.DEV) {
+          console.error('🎤 Speech recognition error:', error.message);
+        }
+        done(false, error);
+      });
+
+      unifiedSpeechRecognition.onEnd(() => {
+        // If ended without result, return empty string
+        if (!settled) {
+          done(true, '');
+        }
+      });
+
+      try {
+        await unifiedSpeechRecognition.start({
+          language: 'en-US',
+          continuous: false,
+          interimResults: false,
+          maxAlternatives: 1,
+        });
+      } catch (err) {
+        done(false, err as Error);
+      }
     });
   }
 
@@ -1245,7 +1253,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
   // Cancel any live recognition on nav/module change
   useEffect(() => {
     speechRunIdRef.current = null;
-    try { recognizerRef.current?.stop?.(); } catch (error) { /* Ignore recognizer stop errors */ }
+    try { unifiedSpeechRecognition.stop(); } catch (error) { /* Ignore recognizer stop errors */ }
   }, [selectedModule, selectedLevel, viewState]);
 
   // Cancel any narration the moment we enter speaking (no TTS fighting taps)
@@ -1925,10 +1933,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
 
     // Phase 1.4: Clean up speech recognition
     try {
-      if (recognizerRef.current) {
-        recognizerRef.current.stop?.();
-        recognizerRef.current = null;
-      }
+      unifiedSpeechRecognition.stop();
     } catch (err) {
       // Ignore cleanup errors
     }
