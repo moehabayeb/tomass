@@ -115,7 +115,10 @@
       "Bash(vercel --version:*)",
       "Bash(vercel secrets add:*)",
       "Bash(vercel env add:*)",
-      "Bash(npx cap sync android)"
+      "Bash(npx cap sync android)",
+      "Bash(gh repo view:*)",
+      "Bash(npx vercel --prod --yes)",
+      "Bash(npx cap:*)"
     ],
     "deny": [],
     "ask": []
