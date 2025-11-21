@@ -54,12 +54,23 @@ export const useStreakTracker = (addXP?: (points: number, activity: string) => P
   const updateStreak = useCallback(async () => {
     const today = getUTCDateString(); // Use UTC for consistent timezone handling
     const saved = localStorage.getItem('streakData');
-    
+
     let newData: StreakData;
     let rewardEarned: StreakReward | null = null;
-    
+
     if (saved) {
-      const data: StreakData = JSON.parse(saved);
+      let data: StreakData;
+      try {
+        data = JSON.parse(saved);
+      } catch {
+        // Corrupted streak data - reset to new user
+        data = {
+          currentStreak: 0,
+          lastVisitDate: '',
+          bestStreak: 0,
+          lastXPRewardDay: 0
+        };
+      }
       // Parse dates in UTC for accurate day comparison
       const lastVisit = new Date(data.lastVisitDate + 'T00:00:00Z');
       const todayDate = new Date(today + 'T00:00:00Z');

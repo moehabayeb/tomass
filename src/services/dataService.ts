@@ -35,7 +35,12 @@ class DataService {
       // Fallback to localStorage for non-authenticated users
       const savedProfile = localStorage.getItem('userProfile');
       if (savedProfile) {
-        return JSON.parse(savedProfile);
+        try {
+          return JSON.parse(savedProfile);
+        } catch {
+          // Corrupted profile data
+          return null;
+        }
       }
       return null;
     }
@@ -106,9 +111,13 @@ class DataService {
     
     const saved = localStorage.getItem('streakData');
     if (saved) {
-      return JSON.parse(saved);
+      try {
+        return JSON.parse(saved);
+      } catch {
+        // Corrupted streak data - return defaults
+      }
     }
-    
+
     return {
       currentStreak: 0,
       lastVisitDate: '',
@@ -129,7 +138,14 @@ class DataService {
     // const { data, error } = await supabase.from('chat_sessions').select('*').eq('user_id', userId).order('created_at', { ascending: false });
     
     const saved = localStorage.getItem('chatHistory');
-    return saved ? JSON.parse(saved) : [];
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        // Corrupted chat history
+      }
+    }
+    return [];
   }
 
   async saveChatSession(session: SessionRecord, userId?: string): Promise<void> {
@@ -147,12 +163,21 @@ class DataService {
     // const { data, error } = await supabase.from('conversations').select('*').eq('user_id', userId).order('created_at', { ascending: true });
     
     const saved = localStorage.getItem('conversationMessages');
-    return saved ? JSON.parse(saved) : [
+    const defaultMessages: ConversationMessage[] = [
       { text: "Hello! Ready to practice today? 🎤", isUser: false, isSystem: false },
       { text: "Yes, I had pizza today!", isUser: true, isSystem: false },
       { text: 'Great! You can also say: "I had a delicious pizza with friends." 🍕', isUser: false, isSystem: false },
       { text: "Next question: What do you usually eat for breakfast?", isUser: false, isSystem: false }
     ];
+
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        // Corrupted conversation messages
+      }
+    }
+    return defaultMessages;
   }
 
   async saveConversationMessage(message: ConversationMessage, userId?: string): Promise<void> {
