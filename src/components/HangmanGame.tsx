@@ -62,7 +62,11 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
     const availableWords = getWordsForHangman();
     if (availableWords.length === 0) return;
 
-    const randomWord = availableWords[Math.floor(Math.random() * availableWords.length)];
+    // 🔧 FIX #18: Add null safety check for random word selection
+    const randomIndex = Math.floor(Math.random() * availableWords.length);
+    const randomWord = availableWords[randomIndex];
+    if (!randomWord || !randomWord.english) return;
+
     const gameWord = randomWord.english.toUpperCase();
 
     // Batch all state updates together to prevent multiple renders

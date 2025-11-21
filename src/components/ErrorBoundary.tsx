@@ -75,7 +75,8 @@ export class ErrorBoundary extends Component<Props, State> {
               </p>
             </div>
 
-            {process.env.NODE_ENV === 'development' && this.state.error && (
+            {/* 🔧 FIX #21: Secondary DEV check prevents stack trace exposure in production */}
+            {(import.meta.env.DEV || process.env.NODE_ENV === 'development') && this.state.error && (
               <details className="text-left bg-gray-50 p-4 rounded-lg">
                 <summary className="cursor-pointer font-medium text-gray-700 mb-2">
                   Error Details (Development)

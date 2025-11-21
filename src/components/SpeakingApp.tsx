@@ -25,6 +25,13 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { cn } from '@/lib/utils';
 import { LevelUpModal } from './LevelUpModal';
 
+// 🔧 FIX #13: Type declaration for Safari's webkitAudioContext
+declare global {
+  interface Window {
+    webkitAudioContext: typeof AudioContext;
+  }
+}
+
 // Feature flags
 const SPEAKING_HANDS_FREE = true;
 const HF_BARGE_IN = true;
@@ -276,7 +283,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       if (typeof window !== 'undefined' && window.AudioContext) {
         // Reuse existing AudioContext if available
         if (!audioContextRef.current) {
-          audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+          audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
         }
 
         const audioContext = audioContextRef.current;
