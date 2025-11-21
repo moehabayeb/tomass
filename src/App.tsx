@@ -98,7 +98,10 @@ const App = () => (
                 <Route path="/privacy" element={<PrivacyPolicy />} />
                 <Route path="/terms" element={<TermsOfService />} />
                 {/* Admin route removed for Apple compliance - admins use web dashboard */}
-                <Route path="/test-b2" element={<TestB2Modules />} />
+                {/* 🔧 FIX #16: Only expose test route in development */}
+                {import.meta.env.DEV && (
+                  <Route path="/test-b2" element={<TestB2Modules />} />
+                )}
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
