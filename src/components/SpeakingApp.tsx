@@ -1172,6 +1172,13 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     if (original.trim() === '' || corrected.trim() === '') return false;
     if (original.trim() === corrected.trim()) return false;
 
+    // Client-side safety check 0: Reject capitalization-only differences FIRST
+    // This catches "We Should Skip" vs "We should skip" immediately
+    if (original.toLowerCase().trim() === corrected.toLowerCase().trim()) {
+      // Blocked false positive: capitalization-only difference
+      return false;
+    }
+
     // Client-side safety check 1: Reject punctuation-only differences
     // Examples: "hello" vs 'hello' vs "hello", at some point vs 'at some point'
     // Phase 3: Preserve apostrophes in contractions (don't, can't, I'm, etc.)

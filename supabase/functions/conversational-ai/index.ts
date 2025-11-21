@@ -34,14 +34,20 @@ serve(async (req) => {
 
     console.log('Processing conversational AI request:', userMessage.substring(0, 50) + '...')
 
+    // Add 20s timeout to prevent indefinite hangs
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 20000);
+
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
         'Content-Type': 'application/json',
       },
+      signal: controller.signal,
       body: JSON.stringify({
         model: 'gpt-4o-mini',
+        max_tokens: 500, // Limit response length for faster processing
         messages: [
           {
             role: 'system',
@@ -110,11 +116,27 @@ RESPONSE FORMAT (ALWAYS follow this structure):
 29. "I like it" ✅ CORRECT (no comma/period needed in spoken language)
 30. "We can talk about this later" ✅ CORRECT (punctuation is added by speech-to-text, don't correct it)
 
-⚠️ CRITICAL RULE FOR SPOKEN LANGUAGE:
-Speech-to-text systems automatically add punctuation (commas, periods, quotes) based on pauses and intonation.
-Users CANNOT control what punctuation is added during speech recognition.
-NEVER correct differences that are ONLY about punctuation, quote styles, or capitalization.
-These are NOT grammar errors - they are transcription variations.
+⚠️ CRITICAL RULES FOR SPOKEN/CONVERSATIONAL LANGUAGE:
+
+🚨 ABSOLUTELY NEVER CORRECT THESE (NOT GRAMMAR ERRORS):
+1. CAPITALIZATION differences: "We Should Skip" vs "We should skip" - NOT AN ERROR!
+2. PUNCTUATION: Missing commas, periods, question marks - NOT AN ERROR!
+3. QUOTE STYLES: 'hello' vs "hello" vs hello - NOT AN ERROR!
+
+Speech-to-text systems automatically add punctuation AND random capitalization.
+Users CANNOT control these during speech recognition.
+These are TRANSCRIPTION ARTIFACTS, not grammar mistakes.
+
+🧠 SMART TEACHER MINDSET:
+Ask yourself: "Would a good teacher interrupt a student just because they didn't pause for a comma?"
+Answer: NO! A teacher only corrects errors that affect MEANING or show incorrect grammar knowledge.
+
+Examples of what a SMART TEACHER IGNORES:
+❌ "We Should Skip months" → "We should skip months" (JUST CAPITALIZATION - IGNORE!)
+❌ "I like pizza" → "I like pizza." (JUST PUNCTUATION - IGNORE!)
+❌ "Yes I can" → "Yes, I can" (JUST COMMA - IGNORE!)
+❌ "he said yes" → "he said 'yes'" (JUST QUOTES - IGNORE!)
+❌ "how are you" → "How are you?" (JUST CAPITALIZATION + PUNCTUATION - IGNORE!)
 
 ✅ ONLY CORRECT THESE ACTUAL ERRORS:
 1. ❌ "I goed" → ✅ "I went" (WRONG VERB FORM)
@@ -223,6 +245,9 @@ Return your response in this JSON format:
       }),
     })
 
+    // Clear timeout on successful response
+    clearTimeout(timeoutId);
+
     if (!response.ok) {
       const errorText = await response.text()
       console.error('OpenAI API error:', errorText)
@@ -233,16 +258,38 @@ Return your response in this JSON format:
     const aiResponse = JSON.parse(result.choices[0].message.content)
 
     // 🛡️ SERVER-SIDE VALIDATION FILTER - Final safety net against false positives
+    // Helper function to strip correction prefix from response when blocking false positives
+    const stripCorrectionPrefix = (response: string): string => {
+      // Remove "Great! Just a quick tip: it's '...' 😊" pattern
+      const patterns = [
+        /^Great!\s*Just a quick tip:.*?😊\s*\\n\\n/i,
+        /^Great!\s*Just a quick tip:.*?😊\s*\n\n/i,
+        /^Great!\s*Just a quick tip:.*?😊\s*/i,
+        /^Excellent!\s*Just a quick tip:.*?😊\s*\\n\\n/i,
+        /^Excellent!\s*Just a quick tip:.*?😊\s*\n\n/i,
+        /^Nice!\s*Just a quick tip:.*?😊\s*\\n\\n/i,
+      ];
+      let cleaned = response;
+      for (const pattern of patterns) {
+        cleaned = cleaned.replace(pattern, '');
+      }
+      return cleaned.trim();
+    };
+
     if (aiResponse.hadGrammarIssue && aiResponse.originalPhrase && aiResponse.correctedPhrase) {
       const original = aiResponse.originalPhrase.toLowerCase().trim()
       const corrected = aiResponse.correctedPhrase.toLowerCase().trim()
 
-      // Safety check 1: Reject if identical
+      // Safety check 1: Reject if identical (catches capitalization-only differences)
       if (original === corrected) {
-        console.warn('🚨 Blocked false positive: identical phrases')
+        console.warn('🚨 Blocked false positive: identical/capitalization-only', {
+          original: aiResponse.originalPhrase,
+          corrected: aiResponse.correctedPhrase
+        })
         aiResponse.hadGrammarIssue = false
         aiResponse.originalPhrase = ''
         aiResponse.correctedPhrase = ''
+        aiResponse.response = stripCorrectionPrefix(aiResponse.response)
       }
 
       // Safety check 2: Reject if only difference is contractions
@@ -268,6 +315,7 @@ Return your response in this JSON format:
         aiResponse.hadGrammarIssue = false
         aiResponse.originalPhrase = ''
         aiResponse.correctedPhrase = ''
+        aiResponse.response = stripCorrectionPrefix(aiResponse.response)
       }
 
       // Safety check 3: Reject if only difference is optional articles
@@ -283,6 +331,7 @@ Return your response in this JSON format:
           aiResponse.hadGrammarIssue = false
           aiResponse.originalPhrase = ''
           aiResponse.correctedPhrase = ''
+          aiResponse.response = stripCorrectionPrefix(aiResponse.response)
         }
       }
 
@@ -308,6 +357,7 @@ Return your response in this JSON format:
         aiResponse.hadGrammarIssue = false
         aiResponse.originalPhrase = ''
         aiResponse.correctedPhrase = ''
+        aiResponse.response = stripCorrectionPrefix(aiResponse.response)
       }
 
       // Safety check 5: Reject if only difference is compound word spacing/hyphenation
@@ -324,6 +374,7 @@ Return your response in this JSON format:
 
       if (origNoSpaces === corrNoSpaces) {
         console.warn('🚨 Blocked false positive: only compound word spacing/hyphenation difference', { original, corrected })
+        aiResponse.response = stripCorrectionPrefix(aiResponse.response)
         aiResponse.hadGrammarIssue = false
         aiResponse.originalPhrase = ''
         aiResponse.correctedPhrase = ''
@@ -343,19 +394,26 @@ Return your response in this JSON format:
 
   } catch (error) {
     console.error('Error in conversational-ai function:', error)
+
+    // Handle timeout specifically
+    const isTimeout = error.name === 'AbortError' || error.message?.includes('abort');
+    const errorMessage = isTimeout
+      ? "I'm taking a bit longer to think. Let's continue - what would you like to talk about?"
+      : "That's interesting! Let's continue our conversation - what else would you like to talk about?";
+
     return new Response(
       JSON.stringify({
-        response: "That's interesting! Let's continue our conversation - what else would you like to talk about?",
+        response: errorMessage,
         hadGrammarIssue: false,
         originalPhrase: '',
         correctedPhrase: '',
         hasSuggestedPhrasing: false,
         suggestedPhrasing: '',
         conversationTopic: 'general conversation',
-        error: error.message
+        error: isTimeout ? 'timeout' : error.message
       }),
       {
-        status: 500,
+        status: isTimeout ? 504 : 500, // 504 Gateway Timeout for timeouts
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     )
