@@ -43,10 +43,15 @@ export const HangmanKeyboard = memo<HangmanKeyboardProps>(({
   };
 
   return (
-    <div className="w-full max-w-md mx-auto space-y-2">
+    <div
+      className="w-full max-w-md mx-auto space-y-2"
+      role="group"
+      aria-label="Alphabet keyboard for guessing letters"
+    >
       {rows.map((row, rowIndex) => (
         <div
           key={rowIndex}
+          role="row"
           className={`flex justify-center gap-1 sm:gap-1.5 ${
             rowIndex === 1 ? 'sm:pl-4' : rowIndex === 2 ? 'sm:pl-8' : ''
           }`}
@@ -95,7 +100,7 @@ export const HangmanKeyboard = memo<HangmanKeyboardProps>(({
 
       <div className="text-center mt-3">
         <p className="text-white/60 text-xs">
-          💡 Tap letters to guess
+          <span aria-hidden="true">💡</span> Tap letters to guess
         </p>
       </div>
     </div>

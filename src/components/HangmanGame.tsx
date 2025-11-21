@@ -252,9 +252,9 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 overflow-x-hidden">
-      {/* Confetti on win */}
+      {/* Confetti on win - decorative, hidden from screen readers */}
       {status === 'won' && (
-        <div className="fixed inset-0 pointer-events-none z-50">
+        <div className="fixed inset-0 pointer-events-none z-50" aria-hidden="true">
           <Confetti
             width={width}
             height={height}
@@ -266,11 +266,16 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
         </div>
       )}
 
+      {/* Decorative background - hidden from screen readers */}
       <div className="fixed inset-0 w-full h-full background-stars pointer-events-none -z-10"
+           aria-hidden="true"
            style={{ backgroundImage: 'radial-gradient(2px 2px at 20px 30px, #fff, transparent), radial-gradient(2px 2px at 40px 70px, #fff, transparent), radial-gradient(1px 1px at 90px 40px, #fff, transparent)', backgroundSize: '100px 100px' }}
       />
 
-      <div className="relative container max-w-md mx-auto px-3 py-2"
+      <main
+           role="main"
+           aria-label="Hangman word guessing game"
+           className="relative container max-w-md mx-auto px-3 py-2"
            style={{
              paddingTop: 'max(0.5rem, env(safe-area-inset-top))',
              paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))',
@@ -284,26 +289,33 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
             onClick={onBack}
             variant="ghost"
             size="sm"
+            aria-label="Go back to main menu"
             className="text-white/70 hover:text-white hover:bg-white/10 transition-all duration-300 min-h-[44px]"
           >
-            <ArrowLeft className="h-4 w-4 mr-1" />
+            <ArrowLeft className="h-4 w-4 mr-1" aria-hidden="true" />
             Back
           </Button>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2" role="status" aria-live="polite">
             {/* Streak */}
             {streak > 0 && (
-              <div className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-400/50 rounded-full px-2 py-1 backdrop-blur-xl">
+              <div
+                className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-400/50 rounded-full px-2 py-1 backdrop-blur-xl"
+                aria-label={`Current win streak: ${streak}`}
+              >
                 <div className="text-white text-xs flex items-center gap-1">
-                  🔥 <span className="font-bold text-yellow-400">{streak}</span>
+                  <span aria-hidden="true">🔥</span> <span className="font-bold text-yellow-400">{streak}</span>
                 </div>
               </div>
             )}
 
             {/* Score */}
-            <div className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-white/20 rounded-full px-2 py-1 backdrop-blur-xl">
+            <div
+              className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-white/20 rounded-full px-2 py-1 backdrop-blur-xl"
+              aria-label={`Current score: ${score} points`}
+            >
               <div className="text-white text-xs flex items-center gap-1">
-                <Trophy className="h-3 w-3 text-yellow-400" />
+                <Trophy className="h-3 w-3 text-yellow-400" aria-hidden="true" />
                 <span className="font-bold text-yellow-400">{score}</span>
               </div>
             </div>
@@ -313,19 +325,25 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
               onClick={() => setShowSettings(!showSettings)}
               variant="ghost"
               size="sm"
+              aria-label={showSettings ? 'Close settings' : 'Open difficulty settings'}
+              aria-expanded={showSettings}
               className="text-white/70 hover:text-white hover:bg-white/10 rounded-full p-2 min-h-[44px] min-w-[44px]"
             >
-              <Settings className="h-4 w-4" />
+              <Settings className="h-4 w-4" aria-hidden="true" />
             </Button>
           </div>
         </div>
 
         {/* Settings Panel */}
         {showSettings && (
-          <Card className="mb-3 bg-gradient-to-br from-violet-500/20 to-purple-500/20 backdrop-blur-xl border border-purple-300/50 animate-fade-in">
+          <Card
+            className="mb-3 bg-gradient-to-br from-violet-500/20 to-purple-500/20 backdrop-blur-xl border border-purple-300/50 animate-fade-in"
+            role="dialog"
+            aria-labelledby="settings-title"
+          >
             <CardContent className="p-3">
-              <h3 className="text-white font-bold text-base mb-3">Difficulty Level</h3>
-              <div className="grid grid-cols-3 gap-2">
+              <h3 id="settings-title" className="text-white font-bold text-base mb-3">Difficulty Level</h3>
+              <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-label="Select difficulty level">
                 {(Object.keys(difficultySettings) as Difficulty[]).map((diff) => (
                   <Button
                     key={diff}
@@ -334,6 +352,9 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
                       setShowSettings(false);
                       startNewGame();
                     }}
+                    role="radio"
+                    aria-checked={difficulty === diff}
+                    aria-label={`${difficultySettings[diff].label} difficulty with ${difficultySettings[diff].maxWrong} lives`}
                     className={`py-3 ${
                       difficulty === diff
                         ? `bg-gradient-to-r ${difficultySettings[diff].color} text-white`
@@ -370,8 +391,13 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
               <HangmanSVG wrongCount={wrong} maxWrong={maxWrong} />
 
               {/* Lives Indicator */}
-              <div className="mt-2 text-center">
-                <div className="flex justify-center gap-1.5 mb-1">
+              <div
+                className="mt-2 text-center"
+                role="status"
+                aria-live="polite"
+                aria-label={`${maxWrong - wrong} ${maxWrong - wrong === 1 ? 'life' : 'lives'} remaining out of ${maxWrong}`}
+              >
+                <div className="flex justify-center gap-1.5 mb-1" aria-hidden="true">
                   {Array.from({ length: maxWrong }, (_, i) => (
                     <div
                       key={i}
@@ -397,10 +423,15 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
               <CardContent className="p-3">
                 <div className="text-center space-y-2">
                   {/* Word letters */}
-                  <div className="flex flex-wrap justify-center gap-1.5 items-center min-h-[50px]">
+                  <div
+                    className="flex flex-wrap justify-center gap-1.5 items-center min-h-[50px]"
+                    role="group"
+                    aria-label={`Word to guess: ${revealed.map(l => l === '_' ? 'blank' : l).join(' ')}`}
+                  >
                     {word.split('').map((char, index) => (
                       <div
                         key={index}
+                        aria-label={revealed[index] !== '_' ? revealed[index] : 'blank letter'}
                         className={`
                           w-9 h-11 text-xl
                           flex items-center justify-center
@@ -416,7 +447,7 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
                             {revealed[index]}
                           </span>
                         ) : (
-                          <span className="text-white/20">_</span>
+                          <span className="text-white/20" aria-hidden="true">_</span>
                         )}
                       </div>
                     ))}
@@ -424,9 +455,13 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
 
                   {/* Hint Display */}
                   {showHint && hintLetter && (
-                    <div className="bg-gradient-to-r from-yellow-500/30 to-orange-500/30 border border-yellow-300/50 rounded-xl p-4 animate-fade-in">
-                      <p className="text-yellow-100 text-sm mb-1">💡 Hint - Try this letter:</p>
-                      <p className="text-white font-bold text-4xl tracking-wider">{hintLetter}</p>
+                    <div
+                      className="bg-gradient-to-r from-yellow-500/30 to-orange-500/30 border border-yellow-300/50 rounded-xl p-4 animate-fade-in"
+                      role="alert"
+                      aria-live="polite"
+                    >
+                      <p className="text-yellow-100 text-sm mb-1"><span aria-hidden="true">💡</span> Hint - Try this letter:</p>
+                      <p className="text-white font-bold text-4xl tracking-wider" aria-label={`Hint letter is ${hintLetter}`}>{hintLetter}</p>
                     </div>
                   )}
 
@@ -437,9 +472,10 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
                       disabled={isHintProcessing}
                       variant="outline"
                       size="sm"
+                      aria-label={isHintProcessing ? 'Getting hint' : 'Get a hint, costs one life'}
                       className="border-yellow-400/50 text-yellow-300 hover:bg-yellow-500/20 disabled:opacity-50"
                     >
-                      <Lightbulb className="h-4 w-4 mr-2" />
+                      <Lightbulb className="h-4 w-4 mr-2" aria-hidden="true" />
                       {isHintProcessing ? 'Getting hint...' : 'Need a hint? (-1 life)'}
                     </Button>
                   )}
@@ -452,7 +488,7 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
               <Card className="bg-gradient-to-br from-violet-500/30 to-purple-500/20 backdrop-blur-xl border border-purple-300/50 text-white shadow-lg">
                 <CardContent className="p-3 space-y-2">
                   {/* Keyboard */}
-                  <div className="pt-4">
+                  <div className="pt-4" role="group" aria-label="Letter selection keyboard">
                     <HangmanKeyboard
                       guessedLetters={guessed}
                       correctLetters={correctLetters}
@@ -466,25 +502,29 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
 
             {/* Game Over States */}
             {status !== 'playing' && (
-              <Card className="bg-gradient-to-br from-violet-500/30 to-purple-500/20 backdrop-blur-xl border border-purple-300/50 text-white shadow-2xl animate-fade-in">
+              <Card
+                className="bg-gradient-to-br from-violet-500/30 to-purple-500/20 backdrop-blur-xl border border-purple-300/50 text-white shadow-2xl animate-fade-in"
+                role="alert"
+                aria-live="assertive"
+              >
                 <CardContent className={isMobile ? 'p-4' : 'p-6 sm:p-8'}>
                   <div className={`text-center ${isMobile ? 'space-y-3' : 'space-y-6'}`}>
                     {status === 'won' ? (
                       <div>
-                        <div className="text-6xl sm:text-8xl mb-4 animate-bounce">🎉</div>
+                        <div className="text-6xl sm:text-8xl mb-4 animate-bounce" aria-hidden="true">🎉</div>
                         <h3 className="text-3xl sm:text-4xl font-bold text-green-200 mb-3">You Won!</h3>
                         <p className="text-white/90 text-lg sm:text-xl mb-4">
                           The word was: <span className="font-bold text-yellow-300 text-2xl">{word}</span>
                         </p>
                         {streak > 1 && (
                           <div className="bg-gradient-to-r from-orange-400/30 to-yellow-400/30 rounded-lg p-4 mb-4">
-                            <p className="text-2xl font-bold text-orange-200">🔥 {streak} Win Streak! 🔥</p>
+                            <p className="text-2xl font-bold text-orange-200"><span aria-hidden="true">🔥</span> {streak} Win Streak! <span aria-hidden="true">🔥</span></p>
                           </div>
                         )}
                       </div>
                     ) : (
                       <div>
-                        <div className="text-6xl sm:text-8xl mb-4">😔</div>
+                        <div className="text-6xl sm:text-8xl mb-4" aria-hidden="true">😔</div>
                         <h3 className="text-3xl sm:text-4xl font-bold text-red-200 mb-3">Game Over</h3>
                         <p className="text-white/90 text-lg mb-2">The word was:</p>
                         <p className="text-3xl sm:text-4xl font-bold text-white bg-black/20 rounded-lg p-4">{word}</p>
@@ -500,17 +540,19 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
                       <Button
                         onClick={playWordPronunciation}
                         variant="outline"
+                        aria-label={`Hear pronunciation of ${word}`}
                         className="w-full border-white/30 text-white hover:bg-white/20 py-4 text-base sm:text-lg"
                       >
-                        <Volume2 className="h-5 w-5 mr-3" />
+                        <Volume2 className="h-5 w-5 mr-3" aria-hidden="true" />
                         Hear Pronunciation
                       </Button>
 
                       <Button
                         onClick={startNewGame}
+                        aria-label="Start a new game with a different word"
                         className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 py-4 text-base sm:text-lg font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
                       >
-                        <RotateCcw className="h-5 w-5 mr-3" />
+                        <RotateCcw className="h-5 w-5 mr-3" aria-hidden="true" />
                         New Word
                       </Button>
                     </div>
@@ -520,7 +562,7 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
             )}
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 };
