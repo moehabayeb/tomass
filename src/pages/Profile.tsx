@@ -112,13 +112,13 @@ export default function Profile() {
           throw error;
         }
 
-        // Format and sort reminders by meeting time
+        // Format and sort reminders by meeting time (with safe optional chaining)
         const formattedReminders = (data?.map(reminder => ({
           id: reminder.id,
-          meeting_title: reminder.meetings.title,
-          scheduled_at: reminder.meetings.scheduled_at || reminder.meetings.starts_at,
+          meeting_title: reminder.meetings?.title || 'Untitled Meeting',
+          scheduled_at: reminder.meetings?.scheduled_at || reminder.meetings?.starts_at || new Date().toISOString(),
           reminder_type: reminder.reminder_type
-        })) || []).sort((a, b) =>
+        })).filter(r => r.meeting_title && r.scheduled_at) || []).sort((a, b) =>
           new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime()
         );
 

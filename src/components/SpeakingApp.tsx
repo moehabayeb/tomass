@@ -581,7 +581,10 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         try {
           await audioContextRef.current.resume();
         } catch (err) {
-          console.error('Failed to resume AudioContext:', err);
+          // Silent fail for production - AudioContext resume errors are non-critical
+          if (import.meta.env.DEV) {
+            console.error('Failed to resume AudioContext:', err);
+          }
         }
       }
 
@@ -965,7 +968,9 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       }
     } catch (err) {
       // Permission API not supported in this browser, continue anyway
-      console.log('Permission API not supported, continuing...');
+      if (import.meta.env.DEV) {
+        console.log('Permission API not supported, continuing...');
+      }
     }
 
     // Always make sure audio context is unlocked
