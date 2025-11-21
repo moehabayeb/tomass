@@ -116,8 +116,12 @@ const getTodaysTipIndex = () => {
 
 // Get viewed tips with dates
 const getViewedTipsHistory = () => {
-  const saved = localStorage.getItem('viewedDailyTipsHistory');
-  return saved ? JSON.parse(saved) : {};
+  try {
+    const saved = localStorage.getItem('viewedDailyTipsHistory');
+    return saved ? JSON.parse(saved) : {};
+  } catch {
+    return {};
+  }
 };
 
 // Save tip as viewed with today's date

@@ -17,10 +17,14 @@ class ProgressService {
   }
 
   async loadLessonProgress(level: string, moduleId: number): Promise<LessonProgress | null> {
-    // Load from localStorage
-    const key = `lesson_progress_${level}_${moduleId}`;
-    const stored = localStorage.getItem(key);
-    return stored ? JSON.parse(stored) : null;
+    try {
+      // Load from localStorage
+      const key = `lesson_progress_${level}_${moduleId}`;
+      const stored = localStorage.getItem(key);
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
   }
 
   async migrateExistingData(): Promise<void> {

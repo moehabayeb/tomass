@@ -976,9 +976,16 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
 
   // Load completed modules from localStorage
   useEffect(() => {
-    const saved = localStorage.getItem('grammarModulesCompleted');
-    if (saved) {
-      setCompletedModules(JSON.parse(saved));
+    try {
+      const saved = localStorage.getItem('grammarModulesCompleted');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          setCompletedModules(parsed);
+        }
+      }
+    } catch {
+      // Corrupted data - keep default empty array
     }
   }, []);
 
@@ -1033,10 +1040,15 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
   };
 
   const markLessonComplete = (lessonTitle: string) => {
-    const current = JSON.parse(localStorage.getItem("completedA1") || "[]");
-    if (!current.includes(lessonTitle)) {
-      const updated = [...current, lessonTitle];
-      localStorage.setItem("completedA1", JSON.stringify(updated));
+    try {
+      const current = JSON.parse(localStorage.getItem("completedA1") || "[]");
+      if (Array.isArray(current) && !current.includes(lessonTitle)) {
+        const updated = [...current, lessonTitle];
+        localStorage.setItem("completedA1", JSON.stringify(updated));
+      }
+    } catch {
+      // Corrupted data - reset to fresh array with this lesson
+      localStorage.setItem("completedA1", JSON.stringify([lessonTitle]));
     }
   };
 
