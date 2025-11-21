@@ -55,7 +55,8 @@ export default function EnglishProficiencyTest({
   const [vocabularyAnalyzer] = useState(() => new VocabularyAnalyzer());
   const [phaseStartTime, setPhaseStartTime] = useState<number>(0);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [phaseTransitionTimer, setPhaseTransitionTimer] = useState<NodeJS.Timeout | null>(null);
+  // 🔧 FIX #12: Use ref for timer to prevent dependency array issues
+  const phaseTransitionTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [isMounted, setIsMounted] = useState(true);
   const { toast } = useToast();
 
@@ -64,9 +65,10 @@ export default function EnglishProficiencyTest({
     setIsMounted(true);
     return () => {
       setIsMounted(false);
-      // Clear phase transition timer
-      if (phaseTransitionTimer) {
-        clearTimeout(phaseTransitionTimer);
+      // Clear phase transition timer using ref
+      if (phaseTransitionTimerRef.current) {
+        clearTimeout(phaseTransitionTimerRef.current);
+        phaseTransitionTimerRef.current = null;
       }
       // Stop recording and release microphone
       if (speechAnalyzer) {
@@ -77,7 +79,7 @@ export default function EnglishProficiencyTest({
         }
       }
     };
-  }, [phaseTransitionTimer, speechAnalyzer]);
+  }, [speechAnalyzer]);
 
   // Load test prompts on component mount
   useEffect(() => {
@@ -227,12 +229,11 @@ export default function EnglishProficiencyTest({
       setIsAnalyzing(false);
 
       // Auto-advance to next phase after a short delay
-      const timer = setTimeout(() => {
+      phaseTransitionTimerRef.current = setTimeout(() => {
         if (isMounted) {
           handlePhaseComplete();
         }
       }, PHASE_TRANSITION_DELAY);
-      setPhaseTransitionTimer(timer);
 
     } catch (error) {
       // Apple Store Compliance: Silent fail - error shown via toast

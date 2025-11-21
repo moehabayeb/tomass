@@ -153,6 +153,37 @@ export class SpeechAnalyzer {
     });
   }
 
+  // 🔧 FIX #9: Cleanup method to remove event listeners and prevent memory leaks
+  cleanup(): void {
+    if (this.recognition) {
+      // Stop any active recording
+      if (this.isRecording) {
+        try {
+          this.recognition.stop();
+        } catch {
+          // Ignore errors during cleanup
+        }
+      }
+
+      // Remove all event listeners to prevent memory leaks
+      this.recognition.onresult = null;
+      this.recognition.onstart = null;
+      this.recognition.onerror = null;
+      this.recognition.onend = null;
+      this.recognition.onspeechend = null;
+      this.recognition.onnomatch = null;
+      this.recognition.onaudiostart = null;
+      this.recognition.onaudioend = null;
+
+      this.isRecording = false;
+    }
+
+    // Reset internal state
+    this.transcript = '';
+    this.confidenceScores = [];
+    this.wordTimestamps = [];
+  }
+
   private getEmptyResult(): SpeechAnalysisResult {
     return {
       transcript: '',

@@ -127,6 +127,9 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
   // 🔧 FIX #2: Race condition protection - prevent double submission
   const [isProcessing, setIsProcessing] = useState(false);
 
+  // 🔧 FIX #8: Mounted ref to prevent setState after unmount
+  const isMountedRef = useRef(true);
+
   const { speak } = useTextToSpeech();
   const { addXP } = useGamification();
   const { getWordsByTier, getTierInfo, isLoading: vocabLoading } = useGameVocabulary();
@@ -301,8 +304,11 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
 
   // 🔧 FIX #1: Cleanup AudioContext on unmount to prevent memory leak (iOS limit: 6 contexts)
   // 🔧 FIX #5: Also cleanup speech recognition on unmount
+  // 🔧 FIX #8: Mark component as unmounted to prevent setState race conditions
   useEffect(() => {
+    isMountedRef.current = true;
     return () => {
+      isMountedRef.current = false;
       audioManager.cleanup();
       // Ensure microphone is released on unmount
       try {

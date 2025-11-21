@@ -45,13 +45,44 @@ import { unifiedSpeechRecognition } from '../services/unifiedSpeechRecognition';
 // Modules are now loaded on-demand when user accesses a specific lesson
 
 // Phase 4: Type definitions for module data
+interface SpeakingPracticeItem {
+  question: string;
+  answer: string;
+}
+
+interface TableDataItem {
+  category?: string;
+  rule?: string;
+  explanation?: string;
+  turkish?: string;
+  note?: string;
+  example?: string;
+  examples?: string;
+  subject?: string;
+  verb?: string;
+  form?: string;
+  contraction?: string;
+  usage?: string;
+  wrong?: string;
+  correct?: string;
+  mistake?: string;
+  point?: string;
+  turkish_note?: string;
+  [key: string]: string | undefined;
+}
+
+interface ModuleTable {
+  title: string;
+  data: TableDataItem[];
+}
+
 interface ModuleData {
-  speakingPractice?: Array<{
-    question: string;
-    answer: string;
-    [key: string]: any;
-  }>;
-  [key: string]: any;
+  title: string;
+  description: string;
+  intro: string;
+  tip: string;
+  table: ModuleTable;
+  speakingPractice: SpeakingPracticeItem[];
 }
 
 // Dynamic module loader with caching

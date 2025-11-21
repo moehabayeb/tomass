@@ -25,6 +25,7 @@ import { Tables } from '@/integrations/supabase/types';
 import { MeetingsWidget } from '@/components/meetings/MeetingsWidget';
 import { TestResult } from '@/services/speakingTestService';
 import { ErrorBoundary } from './ErrorBoundary';
+import { MODULE_RANGES } from '@/constants/moduleRanges';
 
 // Safe storage wrappers for Safari Private Mode compatibility
 const safeLocalStorage = {
@@ -278,23 +279,15 @@ export default function AppNavigation() {
       let module = recommendedModule ? parseInt(recommendedModule) : 1;
       let level = recommendedLevel;
 
-      // Ensure module is in correct range for level
-      switch (level) {
-        case 'A1':
-          module = Math.max(1, Math.min(50, module));
-          break;
-        case 'A2':
-          module = Math.max(51, Math.min(100, module));
-          break;
-        case 'B1':
-          module = Math.max(101, Math.min(140, module));
-          break;
-        case 'B2':
-          module = Math.max(151, Math.min(160, module));
-          break;
-        default:
-          level = 'A1';
-          module = 1;
+      // Ensure module is in correct range for level using centralized constants
+      const levelKey = level as keyof typeof MODULE_RANGES;
+      if (MODULE_RANGES[levelKey]) {
+        const range = MODULE_RANGES[levelKey];
+        module = Math.max(range.start, Math.min(range.end, module));
+      } else {
+        // Default to A1 if level is invalid
+        level = 'A1';
+        module = MODULE_RANGES.A1.start;
       }
 
       return { level, module };
