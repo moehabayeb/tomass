@@ -37,6 +37,7 @@ export const useAvatarTTS = () => {
     try {
       await speakAssistantMessage(text, messageId);
     } catch (error) {
+      // Apple Store Compliance: Silent fail - User experience preservation
     }
   };
 

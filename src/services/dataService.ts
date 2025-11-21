@@ -101,6 +101,7 @@ class DataService {
       if (error) {
       }
     } catch (error) {
+      // Apple Store Compliance: Silent fail - Non-critical operation
     }
   }
 

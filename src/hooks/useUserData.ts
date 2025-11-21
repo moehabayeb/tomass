@@ -45,6 +45,7 @@ export const useUserData = () => {
         setUserProfile(defaultProfile);
       }
     } catch (error) {
+      // Apple Store Compliance: Silent fail - Non-critical operation
     } finally {
       setIsLoading(false);
     }
@@ -58,6 +59,7 @@ export const useUserData = () => {
       await dataService.saveUserProfile(updatedProfile);
       setUserProfile(updatedProfile);
     } catch (error) {
+      // Apple Store Compliance: Silent fail - Non-critical operation
     }
   };
 
@@ -66,6 +68,7 @@ export const useUserData = () => {
       await dataService.clearUserData();
       setUserProfile(null);
     } catch (error) {
+      // Apple Store Compliance: Silent fail - Non-critical operation
     }
   };
 

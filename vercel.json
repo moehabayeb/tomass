@@ -23,10 +23,10 @@
   ],
   "build": {
     "env": {
-      "VITE_SUPABASE_PROJECT_ID": "sgzhbiknaiqsuknwgvjr",
-      "VITE_SUPABASE_PUBLISHABLE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNnemhiaWtuYWlxc3VrbndndmpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIzNDkyNTUsImV4cCI6MjA2NzkyNTI1NX0.zi3agHTlckDVeDOQ-rFvC9X_TI21QOxiXzqbNs2UrG4",
-      "VITE_SUPABASE_URL": "https://sgzhbiknaiqsuknwgvjr.supabase.co",
-      "VITE_DID_VOICE_ID": "en-US-DavisNeural"
+      "VITE_SUPABASE_PROJECT_ID": "@vite_supabase_project_id",
+      "VITE_SUPABASE_PUBLISHABLE_KEY": "@vite_supabase_publishable_key",
+      "VITE_SUPABASE_URL": "@vite_supabase_url",
+      "VITE_DID_VOICE_ID": "@vite_did_voice_id"
     }
   }
 }

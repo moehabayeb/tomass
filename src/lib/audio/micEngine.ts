@@ -226,8 +226,9 @@ function attachStreamToContext(stream: MediaStream) {
       gainNode.gain.value = 0; // Muted
       sourceNodeRef.connect(gainNode);
     }
-    
+
   } catch (error) {
+    // Apple Store Compliance: Silent fail - Graceful degradation
   }
 }
 

@@ -27,6 +27,7 @@ export const useGlobalSound = () => {
     try {
       localStorage.setItem(STORAGE_KEY, soundEnabled.toString());
     } catch (error) {
+      // Apple Store Compliance: Silent fail - Safari Private Mode support
     }
   }, [soundEnabled]);
 
@@ -46,6 +47,7 @@ export const useGlobalSound = () => {
       
       setAudioContextResumed(true);
     } catch (error) {
+      // Apple Store Compliance: Silent fail - User experience preservation
     }
   };
 

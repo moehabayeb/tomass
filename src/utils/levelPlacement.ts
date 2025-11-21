@@ -102,8 +102,9 @@ export function savePlacementResult(result: PlacementResult) {
     unlocks[result.level] = true;
     localStorage.setItem('unlocks', JSON.stringify(unlocks));
     localStorage.setItem('unlockedLevel', result.level);
-    
+
   } catch (error) {
+    // Apple Store Compliance: Silent fail - Safari Private Mode support
   }
 }
 

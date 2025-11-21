@@ -7,6 +7,7 @@ import { ThemeProvider } from "next-themes";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Footer } from "@/components/Footer";
 import { ConsentBanner } from "@/components/ConsentBanner";
+import { AgeVerificationModal } from "@/components/AgeVerificationModal";
 import { initSentry } from "@/lib/sentry";
 import { initAmplitude } from "@/lib/amplitude";
 import { hasConsent } from "@/lib/analyticsConsent";
@@ -73,6 +74,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <ConsentBanner />
+        <AgeVerificationModal />
         <BrowserRouter
           future={{
             v7_startTransition: true,

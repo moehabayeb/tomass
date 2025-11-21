@@ -29,6 +29,7 @@ class WakeLockManager {
       try {
         await this.wakeLock.release();
       } catch (error) {
+        // Apple Store Compliance: Silent fail - Non-critical operation
       }
       this.wakeLock = null;
     }

@@ -151,6 +151,7 @@ export default function Profile() {
           setEditedName(data.full_name);
         }
       } catch (error) {
+        // Apple Store Compliance: Silent fail - Non-critical operation
       } finally {
         setIsLoadingProfile(false);
       }

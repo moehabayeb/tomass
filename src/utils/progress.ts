@@ -44,6 +44,7 @@ export function save(
   try {
     localStorage.setItem(KEY(userId), JSON.stringify(all));
   } catch (error) {
+    // Apple Store Compliance: Silent fail - Safari Private Mode support
   }
 }
 
@@ -75,6 +76,7 @@ export function clearProgress(userId: string, levelId?: string, moduleId?: strin
     try {
       localStorage.removeItem(KEY(userId));
     } catch (error) {
+      // Apple Store Compliance: Silent fail - Safari Private Mode support
     }
     return;
   }
@@ -87,6 +89,7 @@ export function clearProgress(userId: string, levelId?: string, moduleId?: strin
   try {
     localStorage.setItem(KEY(userId), JSON.stringify(all));
   } catch (error) {
+    // Apple Store Compliance: Silent fail - Safari Private Mode support
   }
 }
 

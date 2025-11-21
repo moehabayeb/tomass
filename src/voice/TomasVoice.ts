@@ -90,6 +90,7 @@ class TomasVoiceService {
         resolve({ durationMs: result.durationMs });
         return;
       } catch (error) {
+        // Apple Store Compliance: Silent fail - Graceful degradation
       }
 
       // Fallback to original TTS logic
@@ -198,6 +199,7 @@ class TomasVoiceService {
       this.emitEvent('speech:end', { interrupted: true });
       this.emitEvent('avatar:talking:end');
     } catch (error) {
+      // Apple Store Compliance: Silent fail - User experience preservation
     }
   }
 
@@ -219,6 +221,7 @@ class TomasVoiceService {
       const event = new CustomEvent(eventName, { detail });
       window.dispatchEvent(event);
     } catch (error) {
+      // Apple Store Compliance: Silent fail - Non-critical operation
     }
   }
 

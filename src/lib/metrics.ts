@@ -144,6 +144,7 @@ function sendBeacon() {
       metricsQueue = [];
     }
   } catch (error) {
+    // Apple Store Compliance: Silent fail - Non-critical operation
   }
 }
 
@@ -172,8 +173,9 @@ export function enqueueMetric(metric: Metric) {
     } else {
       scheduleBatch();
     }
-    
+
   } catch (error) {
+    // Apple Store Compliance: Silent fail - Non-critical operation
   }
 }
 

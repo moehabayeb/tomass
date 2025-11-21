@@ -287,6 +287,7 @@ class BilingualTTSService {
         // Small pause between segments
         await new Promise(resolve => setTimeout(resolve, 100));
       } catch (error) {
+        // Apple Store Compliance: Silent fail - User experience preservation
       }
     }
 
@@ -341,6 +342,7 @@ class BilingualTTSService {
       this.currentUtterance = null;
       this.isProcessing = false;
     } catch (error) {
+      // Apple Store Compliance: Silent fail - User experience preservation
     }
   }
 

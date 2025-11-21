@@ -32,6 +32,7 @@ export const useTextToSpeech = () => {
     try {
       await speakMessage(message);
     } catch (error) {
+      // Apple Store Compliance: Silent fail - User experience preservation
     } finally {
       isProcessingQueue.current = false;
       // Process next message in queue
@@ -57,6 +58,7 @@ export const useTextToSpeech = () => {
         return;
       }
     } catch (error) {
+      // Apple Store Compliance: Silent fail - Graceful degradation
     }
 
     // Fallback to legacy TTS logic

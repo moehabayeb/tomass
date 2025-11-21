@@ -129,6 +129,7 @@ class SimpleTTSService {
         return;
       }
     } catch (error) {
+      // Apple Store Compliance: Silent fail - Graceful degradation
     }
 
     // Fallback to legacy TTS

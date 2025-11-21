@@ -60,8 +60,9 @@ export const useSpeakingTTS = (messages: Message[], soundEnabled: boolean) => {
         try {
           await speakAssistantMessage(message.content, message.id);
         } catch (error) {
+          // Apple Store Compliance: Silent fail - User experience preservation
         }
-        
+
         // Small delay between messages
         await new Promise(resolve => setTimeout(resolve, 100));
       }

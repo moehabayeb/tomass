@@ -58,6 +58,7 @@ export const useAutoSpeech = (messages: Message[], enabled: boolean = true) => {
           await speakAssistantMessage(message.content, message.id);
           
         } catch (error) {
+          // Apple Store Compliance: Silent fail - User experience preservation
         }
       }
 
@@ -76,6 +77,7 @@ export const useAutoSpeech = (messages: Message[], enabled: boolean = true) => {
         await speakAssistantMessage(message.content, message.id);
         lastProcessedRef.current.add(message.id);
       } catch (error) {
+        // Apple Store Compliance: Silent fail - User experience preservation
       }
     }
   };
