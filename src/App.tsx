@@ -35,11 +35,14 @@ const queryClient = new QueryClient({
   },
 });
 
+// 🔧 FIX #17: Simplified footer logic - explicit inclusion list only
 // Footer should only appear on static/settings pages, not on interactive app pages
 const ConditionalFooter = () => {
   const location = useLocation();
+  const pathname = location.pathname;
 
-  // Pages where footer SHOULD appear (static/legal/settings pages)
+  // Pages where footer SHOULD appear (static/legal/settings pages only)
+  // Using explicit inclusion is safer than complex exclusion logic
   const footerPages = [
     '/auth',
     '/pricing',
@@ -49,22 +52,10 @@ const ConditionalFooter = () => {
     '/test-b2',
   ];
 
-  // Check if current path matches any footer page
-  const shouldShowFooter = footerPages.some(page => location.pathname.startsWith(page)) ||
-                           location.pathname === '/404' ||
-                           !['/', '/lessons', '/meetings', '/speaking'].some(p => location.pathname.startsWith(p));
+  // Simple check: show footer only on explicitly listed pages
+  const shouldShowFooter = footerPages.some(page => pathname.startsWith(page));
 
-  // Don't show footer on main app pages (/, with tabs for speaking/lessons/meetings)
-  if (location.pathname === '/' || location.pathname.startsWith('/?')) {
-    return null;
-  }
-
-  // Show footer on static pages only
-  if (shouldShowFooter) {
-    return <Footer />;
-  }
-
-  return null;
+  return shouldShowFooter ? <Footer /> : null;
 };
 
 const App = () => (

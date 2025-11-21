@@ -1,5 +1,7 @@
-// Progress Service - Stub implementation
-// This service handles saving/loading lesson progress
+// 🔧 FIX #19: Updated documentation - this is a working localStorage implementation
+// Progress Service - Local storage implementation for lesson progress
+// This service handles saving/loading lesson progress to browser localStorage
+// Note: For authenticated users, consider syncing with Supabase for cross-device persistence
 
 export interface LessonProgress {
   level: string;

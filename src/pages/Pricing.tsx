@@ -26,10 +26,12 @@ export default function Pricing() {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'quarterly'>('monthly');
   const [loadingTier, setLoadingTier] = useState<TierCode | null>(null);
 
-  // Detect platform
+  // 🔧 FIX #14: Use platform detection for specific messaging
   const platform = detectPlatform();
   const isOnMobile = isMobile();
   const storeName = getAppStoreName();
+  const isIOS = platform === 'ios';
+  const isAndroid = platform === 'android';
 
   const handleSelectPlan = async (tierCode: TierCode) => {
     if (!isAuthenticated) {
@@ -45,11 +47,11 @@ export default function Pricing() {
       return;
     }
 
-    // Check if trying to subscribe on web (paid plans are mobile-only)
+    // 🔧 FIX #14: Check if trying to subscribe on web (paid plans are mobile-only)
     if (!isOnMobile && tierCode !== 'free') {
       toast({
         title: 'Mobile App Required',
-        description: `Subscriptions are only available in the iOS or Android app. Download from ${storeName} to subscribe.`,
+        description: 'Subscriptions are only available in the iOS or Android app. Download from the App Store or Google Play Store to subscribe.',
         variant: 'destructive',
       });
       return;
@@ -65,16 +67,18 @@ export default function Pricing() {
 
     setLoadingTier(tierCode);
 
+    // 🔧 FIX #14: Platform-specific payment integration messages
     // On mobile: This would trigger Apple IAP or Google Play Billing
     // The mobile app (React Native/Capacitor) would handle the payment flow
     // After successful purchase, the app would call SubscriptionService.verifyAppleReceipt() or verifyGoogleReceipt()
 
-    // For now, show a message that mobile integration is needed
+    // For now, show a platform-specific message that mobile integration is needed
     setTimeout(() => {
       setLoadingTier(null);
+      const paymentSystem = isIOS ? 'Apple In-App Purchase' : isAndroid ? 'Google Play Billing' : 'Mobile Payment';
       toast({
-        title: 'Mobile Payment Integration Required',
-        description: 'Your mobile dev needs to integrate Apple IAP or Google Play Billing to enable subscriptions.',
+        title: 'Payment Integration Required',
+        description: `${paymentSystem} integration is being configured. Please try again later.`,
       });
     }, 500);
   };

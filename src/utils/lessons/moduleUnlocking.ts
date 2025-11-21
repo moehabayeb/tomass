@@ -1,31 +1,25 @@
 // Enhanced Module unlocking and completion management with 90% accuracy requirement
 // Integrates with Progress Tracker Agent for detailed progress analysis
+// 🔧 FIX #26: Now uses centralized MODULE_RANGES constants
 
 import { ProgressTrackerService } from '../../services/progressTrackerService';
+import { MODULE_RANGES, getLevelForModule as getCentralizedLevel, type Level } from '@/constants/moduleRanges';
 
-// Level definitions for proper module progression
-const LEVEL_RANGES = {
-  'A1': { start: 1, end: 50 },
-  'A2': { start: 51, end: 100 },
-  'B1': { start: 101, end: 150 },
-  'B2': { start: 151, end: 200 },
-  'C1': { start: 201, end: 213 }
-};
+// Re-export centralized constants for backward compatibility
+const LEVEL_RANGES = MODULE_RANGES;
 
-// Get level for a given module ID
+// Wrapper function for backward compatibility - returns string instead of Level | null
 function getLevelForModule(moduleId: number): string {
-  if (moduleId >= 1 && moduleId <= 50) return 'A1';
-  if (moduleId >= 51 && moduleId <= 100) return 'A2';
-  if (moduleId >= 101 && moduleId <= 150) return 'B1';
-  if (moduleId >= 151 && moduleId <= 200) return 'B2';
-  if (moduleId >= 201 && moduleId <= 213) return 'C1';
-  return 'A1'; // Default fallback
+  const level = getCentralizedLevel(moduleId);
+  return level || 'A1'; // Default fallback
 }
 
 // Get previous module ID considering level boundaries
 function getPreviousModuleId(moduleId: number): number | null {
-  if (moduleId === 1 || moduleId === 51 || moduleId === 101 || moduleId === 151 || moduleId === 201) {
-    return null; // These are first modules of their levels
+  // 🔧 FIX #26: Use centralized constants for level boundaries
+  const levelStarts = Object.values(MODULE_RANGES).map(r => r.start);
+  if (levelStarts.includes(moduleId)) {
+    return null; // This is first module of its level
   }
   return moduleId - 1;
 }
@@ -43,9 +37,10 @@ export function getCompletedModules(): string[] {
 
 // Enhanced module unlocking with accuracy requirements
 export function isModuleUnlocked(moduleId: number, completedModules?: string[]): boolean {
-  // Always allow access to first modules of each level
-  if (moduleId === 1 || moduleId === 51 || moduleId === 101 || moduleId === 151 || moduleId === 201) {
-    return true;
+  // 🔧 FIX #26: Use centralized constants for level boundaries
+  const levelStarts = Object.values(MODULE_RANGES).map(r => r.start);
+  if (levelStarts.includes(moduleId)) {
+    return true; // First modules of each level are always unlocked
   }
 
   const progressTracker = ProgressTrackerService.getInstance();

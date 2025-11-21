@@ -2,8 +2,12 @@
  * Module Data Validation Utility
  *
  * Validates that all lesson modules have complete and correct data structures.
- * Helps ensure production-ready quality across all 150 modules.
+ * Helps ensure production-ready quality across all modules.
+ *
+ * 🔧 FIX #26: Now uses centralized MODULE_RANGES constants
  */
+
+import { MODULE_RANGES, isValidModuleId } from '@/constants/moduleRanges';
 
 export interface ModuleData {
   title: string;
@@ -105,7 +109,8 @@ export function validateModule(
     const hasTurkish = turkishIndicators.some(indicator =>
       data.intro?.toLowerCase().includes(indicator)
     );
-    if (!hasTurkish && moduleId >= 1 && moduleId <= 150) {
+    // 🔧 FIX #26: Use centralized validation instead of hardcoded range
+    if (!hasTurkish && isValidModuleId(moduleId)) {
       warnings.push(`Module ${moduleId}: Intro may not contain Turkish explanation`);
     }
   }

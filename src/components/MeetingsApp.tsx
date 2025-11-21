@@ -64,6 +64,8 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
   const [canJoin, setCanJoin] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+  // 🔧 FIX #20: Track load errors for retry functionality
+  const [loadError, setLoadError] = useState(false);
   const { isAuthenticated, user, signOut } = useAuthReady();
   const navigate = useNavigate();
 
@@ -85,6 +87,7 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
     try {
       if (!isMounted.current) return; // 🔧 FIX: Don't start if unmounted
       setLoading(true);
+      setLoadError(false); // 🔧 FIX #20: Reset error state on retry
 
       // Get all upcoming meetings (includes capacity, level_code, section_name if available)
       const { data: meetings, error } = await supabase
@@ -95,8 +98,9 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
       if (!isMounted.current) return; // 🔧 FIX: Check before setState
 
       if (error) {
-        // Apple Store Compliance: Silent fail with user-friendly toast
-        if (isMounted.current) { // 🔧 CRITICAL FIX: Check before toast (can trigger setState)
+        // 🔧 FIX #20: Set error state for retry button display
+        if (isMounted.current) {
+          setLoadError(true);
           toast({
             title: "Error loading meetings",
             description: error.message || "Please try again later.",
@@ -129,11 +133,12 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
         }
       }
     } catch (error) {
-      // Apple Store Compliance: Silent fail with user-friendly toast
-      if (isMounted.current) { // 🔧 CRITICAL FIX: Check before toast (can trigger setState)
+      // 🔧 FIX #20: Set error state for retry button display
+      if (isMounted.current) {
+        setLoadError(true);
         toast({
           title: "Unexpected error",
-          description: "Failed to load meetings. Please refresh the page.",
+          description: "Failed to load meetings. Use the retry button to try again.",
           variant: "destructive"
         });
       }
@@ -366,6 +371,26 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
           </Button>
         )}
       </div>
+
+      {/* 🔧 FIX #20: Error state with retry button */}
+      {loadError && !loading && (
+        <div className="max-w-md mx-auto mb-6">
+          <Card className="border-red-500/30 bg-red-500/10 backdrop-blur-xl">
+            <CardContent className="p-6 text-center">
+              <AlertCircle className="h-12 w-12 mx-auto mb-4 text-red-400" />
+              <h3 className="text-lg font-semibold text-white mb-2">Failed to Load Meetings</h3>
+              <p className="text-white/70 mb-4">There was a problem loading the class schedule.</p>
+              <Button
+                onClick={loadMeetingsData}
+                variant="outline"
+                className="border-white/20 text-white hover:bg-white/10"
+              >
+                Try Again
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
         <div className="max-w-4xl mx-auto space-y-6">
           {/* Page Title */}
