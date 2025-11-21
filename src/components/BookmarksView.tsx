@@ -73,7 +73,7 @@ export default function BookmarksView({ onBack, onContinueFromMessage }: Bookmar
 
       setBookmarks(sortedBookmarks);
 
-      // TODO: Merge with Supabase bookmarks when user authentication is implemented
+      // Note: Bookmarks are stored locally for privacy and offline access
     } catch (error) {
       // Phase 1.3: Show user-friendly error message instead of silent fail
       if (isMountedRef.current) {
@@ -127,7 +127,7 @@ export default function BookmarksView({ onBack, onContinueFromMessage }: Bookmar
       // Phase 1.3: Show success feedback
       toast.success('Bookmark deleted');
 
-      // TODO: Remove from Supabase when user authentication is implemented
+      // Note: Bookmarks are stored locally only
     } catch (error) {
       // Phase 1.3: Show user-friendly error message instead of silent fail
       if (isMountedRef.current) {

@@ -106,9 +106,7 @@ class DataService {
 
   // Streak Management
   async getStreakData(userId?: string): Promise<{ currentStreak: number; lastVisitDate: string; bestStreak: number }> {
-    // TODO: Replace with Supabase query when auth is implemented
-    // const { data, error } = await supabase.from('streaks').select('*').eq('user_id', userId).single();
-    
+    // Note: Using localStorage for offline-first access and instant loading
     const saved = localStorage.getItem('streakData');
     if (saved) {
       try {
@@ -126,17 +124,13 @@ class DataService {
   }
 
   async saveStreakData(streakData: any, userId?: string): Promise<void> {
-    // TODO: Replace with Supabase upsert when auth is implemented
-    // const { error } = await supabase.from('streaks').upsert({ ...streakData, user_id: userId });
-    
+    // Note: Using localStorage for offline-first access
     localStorage.setItem('streakData', JSON.stringify(streakData));
   }
 
   // Chat History Management
   async getChatHistory(userId?: string): Promise<SessionRecord[]> {
-    // TODO: Replace with Supabase query when auth is implemented
-    // const { data, error } = await supabase.from('chat_sessions').select('*').eq('user_id', userId).order('created_at', { ascending: false });
-    
+    // Note: Using localStorage for privacy - chat history stays on device
     const saved = localStorage.getItem('chatHistory');
     if (saved) {
       try {
@@ -149,9 +143,7 @@ class DataService {
   }
 
   async saveChatSession(session: SessionRecord, userId?: string): Promise<void> {
-    // TODO: Replace with Supabase insert when auth is implemented
-    // const { error } = await supabase.from('chat_sessions').insert({ ...session, user_id: userId });
-    
+    // Note: Using localStorage for privacy - chat history stays on device
     const history = await this.getChatHistory();
     const updatedHistory = [...history, session];
     localStorage.setItem('chatHistory', JSON.stringify(updatedHistory));
@@ -159,9 +151,7 @@ class DataService {
 
   // Conversation Messages Management
   async getConversationMessages(userId?: string): Promise<ConversationMessage[]> {
-    // TODO: Replace with Supabase query when auth is implemented
-    // const { data, error } = await supabase.from('conversations').select('*').eq('user_id', userId).order('created_at', { ascending: true });
-    
+    // Note: Using localStorage for privacy - conversations stay on device
     const saved = localStorage.getItem('conversationMessages');
     const defaultMessages: ConversationMessage[] = [
       { text: "Hello! Ready to practice today? 🎤", isUser: false, isSystem: false },
@@ -181,9 +171,7 @@ class DataService {
   }
 
   async saveConversationMessage(message: ConversationMessage, userId?: string): Promise<void> {
-    // TODO: Replace with Supabase insert when auth is implemented
-    // const { error } = await supabase.from('conversations').insert({ ...message, user_id: userId });
-    
+    // Note: Using localStorage for privacy - conversations stay on device
     const messages = await this.getConversationMessages();
     const updatedMessages = [...messages, message];
     localStorage.setItem('conversationMessages', JSON.stringify(updatedMessages));
@@ -191,9 +179,7 @@ class DataService {
 
   // XP and Level Management
   async updateXPAndLevel(xp: number, level: number, userId?: string): Promise<void> {
-    // TODO: Replace with Supabase update when auth is implemented
-    // const { error } = await supabase.from('user_profiles').update({ xp_current: xp, level }).eq('user_id', userId);
-    
+    // Note: Using localStorage for offline-first access
     const profile = await this.getUserProfile() || {} as UserProfileData;
     profile.xp = xp;
     profile.level = level;

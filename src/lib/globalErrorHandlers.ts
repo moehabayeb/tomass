@@ -20,13 +20,10 @@ import { toast } from '@/components/ui/use-toast';
 export function initGlobalErrorHandlers() {
   // 1. Handle uncaught JavaScript errors
   window.onerror = (message, source, lineno, colno, error) => {
-    console.error('🔴 Uncaught error:', {
-      message,
-      source,
-      lineno,
-      colno,
-      error,
-    });
+    // Only log in development
+    if (import.meta.env.DEV) {
+      console.error('Uncaught error:', { message, source, lineno, colno, error });
+    }
 
     // Report to Sentry
     if (error) {
@@ -76,7 +73,10 @@ export function initGlobalErrorHandlers() {
 
   // 2. Handle unhandled promise rejections
   window.addEventListener('unhandledrejection', (event) => {
-    console.error('🔴 Unhandled promise rejection:', event.reason);
+    // Only log in development
+    if (import.meta.env.DEV) {
+      console.error('Unhandled promise rejection:', event.reason);
+    }
 
     // Report to Sentry
     if (event.reason instanceof Error) {
@@ -122,7 +122,10 @@ export function initGlobalErrorHandlers() {
   // 3. Handle service worker errors (for PWA)
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.addEventListener('error', (event) => {
-      console.error('🔴 Service Worker error:', event);
+      // Only log in development
+      if (import.meta.env.DEV) {
+        console.error('Service Worker error:', event);
+      }
 
       Sentry.captureMessage('Service Worker error', {
         level: 'error',
@@ -143,11 +146,11 @@ export function initGlobalErrorHandlers() {
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
       // App became visible - check for any stale state errors
-      console.log('📱 App became visible');
+      // Silent in production
     }
   });
 
-  console.log('✅ Global error handlers initialized');
+  // Silent in production - no initialization logging
 }
 
 /**

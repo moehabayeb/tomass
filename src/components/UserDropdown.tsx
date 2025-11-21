@@ -36,8 +36,7 @@ export function UserDropdown({ user, profile, className }: UserDropdownProps) {
     // PERFORMANCE FIX: Fire-and-forget pattern for instant sign-out
     // Don't await network call - let it happen in background
     supabase.auth.signOut().catch(error => {
-      // Handle errors silently in background
-      console.error('Sign out error (background):', error);
+      // Handle errors silently in background - show toast only
       toast({
         title: "Note",
         description: "Sign out may not have completed. Please refresh if needed.",

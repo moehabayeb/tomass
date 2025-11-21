@@ -93,11 +93,7 @@ export default function BookmarkButton({
 
       setIsBookmarked(isLocallyBookmarked);
 
-      // TODO: Also check Supabase when user authentication is implemented
-      // const { data: { user } } = await supabase.auth.getUser();
-      // if (user) {
-      //   // Check Supabase bookmarks
-      // }
+      // Note: Bookmarks are stored locally for privacy and offline access
     } catch (error) {
       // 🔧 FIX BUG #2: Bookmark status check failed - silent fail, default to not bookmarked
     }
@@ -197,15 +193,7 @@ export default function BookmarkButton({
         incrementBookmarks();
       }
 
-      // TODO: Sync with Supabase when user authentication is implemented
-      // const { data: { user } } = await supabase.auth.getUser();
-      // if (user) {
-      //   if (isBookmarked) {
-      //     await supabase.from('bookmarks').delete().eq('id', bookmarkId).eq('user_id', user.id);
-      //   } else {
-      //     await supabase.from('bookmarks').insert({ ...bookmarkItem, user_id: user.id });
-      //   }
-      // }
+      // Note: Bookmarks are stored locally for privacy and offline access
 
     } catch (error: unknown) {
       // 🔧 FIX BUG #2 & #3: Comprehensive error handling

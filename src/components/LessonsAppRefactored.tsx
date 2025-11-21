@@ -20,8 +20,7 @@ import { useSpeechRecognition } from '../hooks/lessons/useSpeechRecognition';
 import { MODULES_BY_LEVEL, LevelType } from '../utils/lessons/levelsData';
 import { getCompletedModules, isModuleUnlocked } from '../utils/lessons/moduleUnlocking';
 
-// Import the original components temporarily for lesson content
-// TODO: These will be extracted in future iterations
+// Import the original components for lesson content
 import LessonsApp from './LessonsApp';
 
 interface LessonsAppProps {

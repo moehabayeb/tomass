@@ -146,7 +146,9 @@ class SpeakingTestService {
       try {
         localStorage.setItem('lastTestResult', JSON.stringify(fallbackResult));
         localStorage.setItem('guestPlacementTest', JSON.stringify(fallbackResult));
-      } catch {}
+      } catch {
+        // Silent fail: localStorage may be unavailable (Safari Private Mode)
+      }
 
       return fallbackResult;
     }

@@ -167,19 +167,13 @@ const ChatBubble = ({
 
       {/* Compact bookmark button for AI messages */}
       {!isUser && (
-        <button
-          onClick={() => {
-            // Trigger bookmark action
-          }}
-          className="opacity-0 group-hover:opacity-60 hover:opacity-100 transition-opacity p-1"
-          aria-label="Bookmark message"
-        >
+        <div className="opacity-0 group-hover:opacity-60 hover:opacity-100 transition-opacity p-1">
           <BookmarkButton
             content={message}
             type="message"
             className="w-5 h-5"
           />
-        </button>
+        </div>
       )}
     </div>
   </div>
@@ -884,9 +878,9 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     // Check if component is mounted before setState
     if (!isMountedRef.current) return;
 
-    // Stop ALL TTS immediately (both custom and browser)
-    try { TTSManager.stop(); } catch {}
-    try { speechSynthesis.cancel(); } catch {}
+    // Stop ALL TTS immediately (both custom and browser) - silent fail: may not be active
+    try { TTSManager.stop(); } catch { /* Expected: TTS may not be active */ }
+    try { speechSynthesis.cancel(); } catch { /* Expected: synthesis may not be active */ }
     setIsSpeaking(false);
     setAvatarState('idle');
 
@@ -981,12 +975,14 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     }
 
     // Always make sure audio context is unlocked
-    try { await enableAudioContext(); } catch {}
+    try { await enableAudioContext(); } catch { /* Silent fail: non-critical */ }
 
     // Clean mic channel between turns
     try {
       cleanup();
-    } catch {}
+    } catch {
+      // Silent fail: cleanup is best-effort
+    }
 
     // Start recording immediately
     setInterimCaption('');
@@ -1237,31 +1233,27 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
       // Use the unified conversational-ai function
       // 🎯 AUTOMATIC DIFFICULTY: user_level is now synced with XP progression!
-      // Phase 1.1: Add AbortController with 30s timeout to prevent indefinite hangs
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+      // Phase 1.1: Use Promise.race with 30s timeout to prevent indefinite hangs
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Request timeout')), 30000)
+      );
 
       let data, error;
       try {
-        const response = await supabase.functions.invoke('conversational-ai', {
-          body: {
-            userMessage: transcript,
-            conversationHistory: conversationContext || '',
-            userLevel: user_level // ✨ Dynamically adjusts based on XP level (beginner/intermediate/advanced)
-          },
-          headers: {
-            // 🔧 PHASE 2 NOTE: Signal ideally should be at request level, not headers
-            // Current Supabase SDK doesn't support this, but timeout + error handling works
-            // @ts-ignore - AbortSignal not officially supported in headers
-            signal: controller.signal
-          }
-        });
+        const response = await Promise.race([
+          supabase.functions.invoke('conversational-ai', {
+            body: {
+              userMessage: transcript,
+              conversationHistory: conversationContext || '',
+              userLevel: user_level // ✨ Dynamically adjusts based on XP level (beginner/intermediate/advanced)
+            }
+          }),
+          timeoutPromise
+        ]);
         data = response.data;
         error = response.error;
-        clearTimeout(timeoutId);
       } catch (err: any) {
-        clearTimeout(timeoutId);
-        if (err.name === 'AbortError') {
+        if (err.message === 'Request timeout') {
           // Phase 1.1: Handle timeout with user-friendly message
           await addAssistantMessage("The request took too long. Please check your connection and try again.", 'feedback');
           return;

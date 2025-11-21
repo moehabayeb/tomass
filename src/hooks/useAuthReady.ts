@@ -73,7 +73,7 @@ export const useAuthReady = () => {
                     }
                   }
                 } catch (err) {
-                  console.error('Failed to sync placement test:', err);
+                  if (import.meta.env.DEV) console.error('Failed to sync placement test:', err);
                 }
               }
 
@@ -89,7 +89,7 @@ export const useAuthReady = () => {
               toast.success('Welcome back!');
             }
           } catch (error) {
-            console.error('Failed to sync progress on login:', error);
+            if (import.meta.env.DEV) console.error('Failed to sync progress on login:', error);
             toast.warning('Progress sync failed. Some data may not be saved.');
           }
         }
@@ -113,13 +113,13 @@ export const useAuthReady = () => {
                 const keysToRemove = allKeys.filter(key => key.startsWith('speakflow:v2:'));
                 keysToRemove.forEach(key => localStorage.removeItem(key));
               } catch (err) {
-                console.error('Failed to clear speakflow keys:', err);
+                // Silent fail for cleanup - non-critical
               }
             }, 0);
 
             // REMOVED: Duplicate toast (UserDropdown already shows one)
           } catch (error) {
-            console.error('Failed to clear localStorage on logout:', error);
+            // Silent fail for cleanup - non-critical
           }
         }
       }

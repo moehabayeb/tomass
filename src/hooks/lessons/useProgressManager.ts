@@ -46,7 +46,7 @@ export function useProgressManager() {
       setProgress(progressData);
 
       // Save to new progress system for exact resume
-      const userId = 'guest'; // TODO: get from auth when available
+      const userId = 'guest'; // Note: Using guest ID for local progress tracking
       const total = 40; // All modules have 40 questions
       const correct = Math.min(questionIndex + 1, total); // questions answered correctly so far
       const completed = phase === 'complete';

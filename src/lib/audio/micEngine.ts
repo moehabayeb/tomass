@@ -26,7 +26,7 @@ const getFeatureFlag = (key: string, defaultValue: boolean = false): boolean => 
       const stored = localStorage.getItem(`speaking_${key}`);
       if (stored !== null) return stored === '1';
     } catch {
-      // Safari Private Mode / iOS incognito - use default
+      // Silent fail: Safari Private Mode / iOS incognito - use default
     }
   }
   return defaultValue;
@@ -76,9 +76,11 @@ function assertInvariant(condition: boolean, message: string) {
 }
 
 function emitMetrics(phase: string, data: any = {}) {
-  try { 
-    enqueueMetric({ runId, phase, ...data }); 
-  } catch {}
+  try {
+    enqueueMetric({ runId, phase, ...data });
+  } catch {
+    // Silent fail: Metrics are non-critical telemetry
+  }
   
   if (DEBUG_MODE) {
     window.dispatchEvent(new CustomEvent('speaking:metrics', { 
@@ -234,18 +236,18 @@ function cleanupResources() {
   
   clearAllTimers();
   
-  // Cancel TTS
-  try { window?.speechSynthesis?.cancel(); } catch {}
+  // Cancel TTS - silent fail: synthesis may not be active
+  try { window?.speechSynthesis?.cancel(); } catch { /* Expected: synthesis may not be active */ }
   
-  // Stop recognition
+  // Stop recognition - silent fail: may already be stopped
   if (recognitionRef) {
-    try { recognitionRef.stop(); } catch {}
+    try { recognitionRef.stop(); } catch { /* Expected: recognition may already be stopped */ }
     recognitionRef = null;
   }
   
-  // Stop media recorder
+  // Stop media recorder - silent fail: may already be stopped
   if (mediaRecorderRef) {
-    try { mediaRecorderRef.stop(); } catch {}
+    try { mediaRecorderRef.stop(); } catch { /* Expected: recorder may already be stopped */ }
     mediaRecorderRef = null;
   }
   
@@ -257,9 +259,9 @@ function cleanupResources() {
     streamRef = null;
   }
   
-  // Cleanup audio context
+  // Cleanup audio context - silent fail: may already be disconnected
   if (sourceNodeRef) {
-    try { sourceNodeRef.disconnect(); } catch {}
+    try { sourceNodeRef.disconnect(); } catch { /* Expected: node may already be disconnected */ }
     sourceNodeRef = null;
   }
 
@@ -311,8 +313,8 @@ async function startSpeechRecognition(id: number, maxSec: number): Promise<strin
       isFinished = true;
       
       clearTimeout(silenceTimer);
-      try { recognitionRef?.stop(); } catch {}
-      
+      try { recognitionRef?.stop(); } catch { /* Expected: recognition may already be stopped */ }
+
       resolve(transcript.trim());
     }
     
@@ -456,8 +458,8 @@ async function internalStart(id: number, maxSec: number): Promise<MicResult> {
   emitMetrics('engine_start', { mode: engineMode, maxSec });
   
   try {
-    // Cancel any ongoing TTS
-    try { window?.speechSynthesis?.cancel(); } catch {}
+    // Cancel any ongoing TTS - silent fail: synthesis may not be active
+    try { window?.speechSynthesis?.cancel(); } catch { /* Expected: synthesis may not be active */ }
     
     setState('initializing');
     startTime = Date.now();
@@ -591,11 +593,11 @@ export async function startRecording(opts: { maxSec?: number } = {}): Promise<Mi
 export function stopRecording(): void {
   
   if (recognitionRef) {
-    try { recognitionRef.stop(); } catch {}
+    try { recognitionRef.stop(); } catch { /* Expected: recognition may already be stopped */ }
   }
-  
+
   if (mediaRecorderRef && mediaRecorderRef.state === 'recording') {
-    try { mediaRecorderRef.stop(); } catch {}
+    try { mediaRecorderRef.stop(); } catch { /* Expected: recorder may already be stopped */ }
   }
   
   emitMetrics('recording_stopped');

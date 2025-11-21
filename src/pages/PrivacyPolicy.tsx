@@ -49,6 +49,15 @@ export default function PrivacyPolicy() {
                 By using Tomas English, you agree to the collection and use of information in accordance with
                 this policy. If you do not agree with our policies and practices, please do not use our App.
               </p>
+              <div className="mt-4 p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
+                <p className="font-semibold text-green-300">
+                  We do NOT sell your personal data.
+                </p>
+                <p className="text-sm text-slate-300 mt-1">
+                  Your data is used solely to provide and improve our language learning service.
+                  We never share or sell your personal information to third parties for marketing purposes.
+                </p>
+              </div>
             </section>
 
             {/* Information We Collect */}
@@ -68,12 +77,23 @@ export default function PrivacyPolicy() {
               <p className="leading-relaxed mb-3">We automatically collect information about your interaction with the App:</p>
               <ul className="list-disc list-inside space-y-2 ml-4">
                 <li>Lesson progress and completion status</li>
-                <li>Speaking practice recordings (for AI feedback only, not stored)</li>
+                <li><strong>Speaking practice recordings</strong> - processed in real-time for AI feedback, then immediately discarded. We do NOT store your voice recordings.</li>
                 <li>Exercise scores and performance metrics</li>
                 <li>App usage patterns and feature interactions</li>
                 <li>Device information (device type, OS version, app version)</li>
                 <li>Session duration and frequency</li>
               </ul>
+
+              <h3 className="text-xl font-semibold text-white mb-3 mt-6">2.4 Waitlist Information</h3>
+              <p className="leading-relaxed mb-3">If you join our waitlist for premium subscriptions:</p>
+              <ul className="list-disc list-inside space-y-2 ml-4">
+                <li>Email address (to notify you when subscriptions launch)</li>
+                <li>Tier preference (which subscription plan you're interested in)</li>
+                <li>Signup date</li>
+              </ul>
+              <p className="leading-relaxed mt-2 text-sm text-slate-300">
+                You can unsubscribe from waitlist notifications at any time by contacting us.
+              </p>
 
               <h3 className="text-xl font-semibold text-white mb-3 mt-6">2.3 Subscription Information</h3>
               <p className="leading-relaxed mb-3">For paid subscriptions, we collect:</p>
@@ -177,16 +197,29 @@ export default function PrivacyPolicy() {
               <ul className="list-disc list-inside space-y-2 ml-4">
                 <li><strong>Right to Access:</strong> Request a copy of all personal data we hold about you</li>
                 <li><strong>Right to Rectification:</strong> Correct inaccurate or incomplete information</li>
-                <li><strong>Right to Erasure:</strong> Request deletion of your account and all associated data</li>
-                <li><strong>Right to Data Portability:</strong> Receive your data in a machine-readable format</li>
+                <li><strong>Right to Erasure ("Right to be Forgotten"):</strong> Request complete deletion of your account and all associated data within 30 days</li>
+                <li><strong>Right to Data Portability:</strong> Receive your data in a machine-readable format (JSON)</li>
                 <li><strong>Right to Object:</strong> Opt-out of certain data processing activities</li>
                 <li><strong>Right to Withdraw Consent:</strong> Withdraw consent for data processing at any time</li>
+                <li><strong>Right to Restriction:</strong> Request temporary restriction of data processing</li>
               </ul>
               <p className="leading-relaxed mt-3">
                 To exercise any of these rights, please contact us at{' '}
                 <a href="mailto:privacy@tomashoca.com" className="text-blue-400 hover:underline">
                   privacy@tomashoca.com
                 </a>
+                . We will respond to your request within 30 days.
+              </p>
+
+              <h3 className="text-xl font-semibold text-white mb-3 mt-6">6.1 How to Delete Your Account</h3>
+              <p className="leading-relaxed mb-3">You can delete your account and all associated data by:</p>
+              <ul className="list-disc list-inside space-y-2 ml-4">
+                <li>Going to Profile → Settings → Delete Account in the app</li>
+                <li>Sending an email to <a href="mailto:privacy@tomashoca.com" className="text-blue-400 hover:underline">privacy@tomashoca.com</a> with subject "Account Deletion Request"</li>
+              </ul>
+              <p className="leading-relaxed mt-2 text-sm text-slate-300">
+                Upon deletion, all your personal data will be permanently removed within 30 days,
+                except for legally required records (see Section 7).
               </p>
             </section>
 

@@ -517,15 +517,13 @@ export class SubscriptionService {
 
   /**
    * Create payment intent (placeholder for Iyzico/Stripe integration)
+   *
+   * Note: This is a demo implementation. Production payment processing
+   * would integrate with Iyzico/Stripe API and handle webhooks.
    */
   static async createPaymentIntent(userId: string, intent: PaymentIntent): Promise<{ checkoutUrl: string }> {
-    // TODO: Implement actual Iyzico or Stripe payment integration
-    // This is a placeholder that returns a mock URL
-
-    // In production, this would:
-    // 1. Call Iyzico API to create payment session
-    // 2. Return the checkout URL
-    // 3. Handle webhooks to update subscription status
+    // Demo implementation - returns mock checkout URL
+    // Production would: call payment API, return checkout URL, handle webhooks
 
     return {
       checkoutUrl: `/payment/checkout?tier=${intent.tier_code}&cycle=${intent.billing_cycle}`,

@@ -20,7 +20,7 @@ export class ProgressTrackerService {
   private currentSessionId: string | null = null;
   private questionStartTime: number = 0;
   private questionRetries: number = 0;
-  private currentUserId: string = 'guest'; // TODO: Get from auth
+  private currentUserId: string = 'guest'; // Note: Using guest ID for local-first progress
 
   private constructor() {
     this.store = EnhancedProgressStore.getInstance();

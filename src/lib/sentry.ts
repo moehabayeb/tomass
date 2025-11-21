@@ -1,9 +1,12 @@
 /**
  * Sentry Error Tracking Configuration
  * Catches and reports all production errors
+ * Updated for Sentry SDK v8+
  */
 
 import * as Sentry from "@sentry/react";
+
+let isInitialized = false;
 
 export function initSentry() {
   // Only initialize in production or if DSN is explicitly set
@@ -12,6 +15,10 @@ export function initSentry() {
   if (!dsn) {
     // Silent in production - no console output
     return;
+  }
+
+  if (isInitialized) {
+    return; // Already initialized - prevent double initialization
   }
 
   Sentry.init({
@@ -29,20 +36,11 @@ export function initSentry() {
     replaysOnErrorSampleRate: 0.5, // 50% of sessions with errors (reduced)
 
     integrations: [
-      // Browser performance tracking
-      new Sentry.BrowserTracing({
-        // Track React Router navigation
-        routingInstrumentation: Sentry.reactRouterV6Instrumentation(
-          React.useEffect,
-          useLocation,
-          useNavigationType,
-          createRoutesFromChildren,
-          matchRoutes
-        ),
-      }),
+      // Browser performance tracking (v8+ API)
+      Sentry.browserTracingIntegration(),
 
-      // Session replay for debugging - privacy compliant settings
-      new Sentry.Replay({
+      // Session replay for debugging - privacy compliant settings (v8+ API)
+      Sentry.replayIntegration({
         maskAllText: true, // Mask all text to protect user privacy
         blockAllMedia: true, // Block media for privacy compliance
       }),
@@ -77,11 +75,9 @@ export function initSentry() {
       return event;
     },
   });
+
+  isInitialized = true;
 }
 
 // Re-export Sentry for easy access
 export { Sentry };
-
-// Import React Router hooks (needed for routing instrumentation)
-import React, { useEffect } from "react";
-import { useLocation, useNavigationType, createRoutesFromChildren, matchRoutes } from "react-router-dom";

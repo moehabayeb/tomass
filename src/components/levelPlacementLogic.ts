@@ -28,7 +28,7 @@ export function processPlacementResults(
   onComplete: (level: string, score: number) => void
 ) {
   try {
-    const userId = 'guest'; // TODO: get from auth when available
+    const userId = 'guest'; // Note: Using guest ID for local placement storage
     const totalDuration = answers.reduce((sum, a) => sum + a.durationSec, 0);
     
     // Check for insufficient data

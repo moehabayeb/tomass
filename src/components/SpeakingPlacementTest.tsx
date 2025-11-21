@@ -898,7 +898,9 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
           setQIndex(savedQIndex);
           setAnswers(savedAnswers || []);
         }
-      } catch {}
+      } catch {
+        // Silent fail: Invalid JSON in localStorage - start fresh
+      }
     }
   }, [PROMPTS.length]);
 
@@ -1151,7 +1153,9 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
         if (recognitionRef.current) {
           try {
             recognitionRef.current.abort();
-          } catch (e) {}
+          } catch {
+            // Silent fail: Recognition may already be stopped
+          }
           recognitionRef.current = null;
         }
       } else {
@@ -1179,7 +1183,9 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
       // Clear grammars for clean recognition
       try {
         recognition.grammars = (window as any).webkitSpeechGrammarList?.() || null;
-      } catch (e) {}
+      } catch {
+        // Silent fail: Grammar API may not be available in all browsers
+      }
 
       // SPEAKING_TEST_RAW_CAPTURE: Disable normalization features
       if (SPEAKING_TEST_RAW_CAPTURE) {
@@ -1220,7 +1226,9 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
         if (!hasResult && recognitionRef.current && !hasFinal) {
           try {
             recognition.stop();
-          } catch (e) {}
+          } catch {
+            // Silent fail: Recognition may already be stopped
+          }
         }
       }, maxTimeout);
 

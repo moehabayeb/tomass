@@ -45,10 +45,7 @@ import { unifiedSpeechRecognition } from '../services/unifiedSpeechRecognition';
 // Modules are now loaded on-demand when user accesses a specific lesson
 
 // Phase 4: Type definitions for module data
-interface SpeakingPracticeItem {
-  question: string;
-  answer: string;
-}
+// Note: SpeakingPracticeItem type defined below with multipleChoice support
 
 interface TableDataItem {
   category?: string;
@@ -171,8 +168,10 @@ async function loadModuleData(moduleId: number): Promise<ModuleData | null> {
 
     return moduleData;
   } catch (error) {
-    // 🔧 GOD-LEVEL FIX: Log errors for debugging
-    console.error(`❌ Error loading module ${moduleId}:`, error);
+    // Only log errors in development
+    if (import.meta.env.DEV) {
+      console.error(`Error loading module ${moduleId}:`, error);
+    }
     return null;
   }
 }
@@ -1075,7 +1074,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
         }
       } catch (error: any) {
         // 🔧 FINAL FIX: Only check mounted, allow error state update
-        console.error('❌ Module load error:', error);
+        if (import.meta.env.DEV) console.error('Module load error:', error);
         if (!isMountedRef.current) return;
         // Set error state for UI display
         setModuleLoadError(error.message || 'Failed to load module');
@@ -2155,8 +2154,8 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
   useEffect(() => {
     return () => {
       narration.cancel();
-      // Stop speech recognizer to prevent memory leak
-      try { recognizerRef.current?.stop?.(); } catch {}
+      // Stop speech recognizer to prevent memory leak - silent fail: may already be stopped
+      try { recognizerRef.current?.stop?.(); } catch { /* Expected: recognizer may already be stopped */ }
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
       if (autosaveTimeoutRef.current) clearTimeout(autosaveTimeoutRef.current);

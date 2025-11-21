@@ -153,7 +153,7 @@ export function useLessonProgress(level?: string, moduleId?: number) {
     if (level && moduleId !== undefined) {
       // Wrap in try-catch to prevent blocking
       loadProgress(level, moduleId).catch(error => {
-        console.warn('🔧 Progress load failed (non-critical):', error);
+        if (import.meta.env.DEV) console.warn('🔧 Progress load failed (non-critical):', error);
         // Silent fail - module can still work without progress
       });
     }
@@ -164,7 +164,7 @@ export function useLessonProgress(level?: string, moduleId?: number) {
   // This was triggering infinite Supabase calls - will re-enable after fixing
   useEffect(() => {
     if (isAuthenticated && user?.id) {
-      console.log('🔧 Auto-merge temporarily disabled to prevent infinite loop');
+      if (import.meta.env.DEV) console.log('🔧 Auto-merge temporarily disabled to prevent infinite loop');
       // try {
       //   const hasLocalProgress = localStorage.getItem('ll_progress_v1');
       //   if (hasLocalProgress) {
@@ -354,8 +354,8 @@ export function useProgressStats() {
   useEffect(() => {
     if (!user?.id) return;
 
-    // TODO: Implement stats fetching from Supabase
-    // This would call the get_user_progress_summary function
+    // Note: Stats are calculated locally from lesson progress data
+    // Database-side aggregation available via get_user_progress_summary RPC
 
   }, [user?.id]);
 

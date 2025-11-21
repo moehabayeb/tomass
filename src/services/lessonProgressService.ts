@@ -211,7 +211,7 @@ class LessonProgressService {
   } {
     return {
       isOnline: this.isOnline,
-      pendingCount: 0, // TODO: Implement count tracking
+      pendingCount: 0, // Note: Pending count not tracked for simplicity
       lastSyncAt: this.getLastSyncTime()
     };
   }
@@ -264,7 +264,9 @@ class LessonProgressService {
 
       if (error) {
         // 🔧 EMERGENCY FIX: Log but don't throw - RPC might not exist
-        console.warn('Supabase RPC error (upsert_lesson_progress):', error.code, error.message);
+        if (import.meta.env.DEV) {
+          console.warn('Supabase RPC error (upsert_lesson_progress):', error.code, error.message);
+        }
         // Don't throw - allow fallback to local storage
         return;
       }
@@ -272,7 +274,9 @@ class LessonProgressService {
       // Apple Store Compliance: Silent fail
     } catch (error) {
       // 🔧 EMERGENCY FIX: Catch network/RPC errors - don't block saving
-      console.warn('Supabase save failed - using local storage fallback:', error);
+      if (import.meta.env.DEV) {
+        console.warn('Supabase save failed - using local storage fallback:', error);
+      }
       // Don't re-throw - this is already handled by caller's offline queue
     }
   }
@@ -295,7 +299,9 @@ class LessonProgressService {
       }
       // 🔧 GOD-LEVEL FIX: Don't throw - gracefully fallback to local storage
       // This prevents infinite loop when Supabase table doesn't exist
-      console.warn('Supabase progress load error:', error.code, error.message);
+      if (import.meta.env.DEV) {
+        console.warn('Supabase progress load error:', error.code, error.message);
+      }
       return null;
     }
 

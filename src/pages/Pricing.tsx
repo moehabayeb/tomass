@@ -5,7 +5,7 @@
 
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Check, Crown, Zap, Users, ArrowLeft, Sparkles, Star, Smartphone, Shield, FileText } from 'lucide-react';
+import { Check, Crown, Zap, Users, ArrowLeft, Sparkles, Star, Smartphone, Shield, FileText, Bell, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -16,15 +16,18 @@ import { useAuthReady } from '@/hooks/useAuthReady';
 import { PRICING_CONFIG, type TierCode } from '@/types/subscription';
 import { useToast } from '@/hooks/use-toast';
 import { detectPlatform, isMobile, getAppStoreName } from '@/lib/platform';
+import { WaitlistModal } from '@/components/WaitlistModal';
 
 export default function Pricing() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { isAuthenticated } = useAuthReady();
+  const { isAuthenticated, user } = useAuthReady();
   const { currentTier, isOnTrial, trialDaysRemaining, isLoading } = useSubscription();
 
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'quarterly'>('monthly');
   const [loadingTier, setLoadingTier] = useState<TierCode | null>(null);
+  const [waitlistModalOpen, setWaitlistModalOpen] = useState(false);
+  const [selectedTierForWaitlist, setSelectedTierForWaitlist] = useState<TierCode>('ai_only');
 
   // 🔧 FIX #14: Use platform detection for specific messaging
   const platform = detectPlatform();
@@ -34,29 +37,20 @@ export default function Pricing() {
   const isAndroid = platform === 'android';
 
   const handleSelectPlan = async (tierCode: TierCode) => {
-    if (!isAuthenticated) {
-      navigate('/auth?redirectTo=/pricing');
-      return;
-    }
-
+    // Free tier - navigate to start using app
     if (tierCode === 'free') {
-      toast({
-        title: 'Already on Free Plan',
-        description: 'You are already using the free plan.',
-      });
+      if (currentTier === 'free') {
+        toast({
+          title: 'Already on Free Plan',
+          description: 'You are currently using the free plan.',
+        });
+      } else {
+        navigate('/');
+      }
       return;
     }
 
-    // 🔧 FIX #14: Check if trying to subscribe on web (paid plans are mobile-only)
-    if (!isOnMobile && tierCode !== 'free') {
-      toast({
-        title: 'Mobile App Required',
-        description: 'Subscriptions are only available in the iOS or Android app. Download from the App Store or Google Play Store to subscribe.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
+    // Already subscribed to this tier
     if (tierCode === currentTier) {
       toast({
         title: 'Already Subscribed',
@@ -65,21 +59,9 @@ export default function Pricing() {
       return;
     }
 
-    setLoadingTier(tierCode);
-
-    // 🔧 FIX #14: Platform-specific payment integration messages
-    // On mobile: This would trigger Apple IAP or Google Play Billing
-    // The mobile app (React Native/Capacitor) would handle the payment flow
-    // After successful purchase, the app would call SubscriptionService.verifyAppleReceipt() or verifyGoogleReceipt()
-
-    // App Store Compliance: Clear messaging that subscriptions are coming soon
-    setTimeout(() => {
-      setLoadingTier(null);
-      toast({
-        title: 'Subscriptions Coming Soon',
-        description: 'Premium subscriptions will be available in a future update. Enjoy the free features for now!',
-      });
-    }, 500);
+    // For paid tiers, open waitlist modal
+    setSelectedTierForWaitlist(tierCode);
+    setWaitlistModalOpen(true);
   };
 
   const getTierIcon = (tierCode: TierCode) => {
@@ -189,15 +171,18 @@ export default function Pricing() {
             className="w-full"
             variant={isPopular ? 'default' : 'outline'}
             size="lg"
-            disabled={isCurrentTier || loadingTier === tierCode || isLoading}
+            disabled={isCurrentTier || isLoading}
             onClick={() => handleSelectPlan(tierCode)}
           >
-            {loadingTier === tierCode ? (
-              <span>Loading...</span>
-            ) : isCurrentTier ? (
+            {isCurrentTier ? (
               'Current Plan'
+            ) : tierCode === 'free' ? (
+              'Start Free'
             ) : (
-              config.cta
+              <>
+                <Bell className="w-4 h-4 mr-2" />
+                Join Waitlist
+              </>
             )}
           </Button>
         </CardFooter>
@@ -234,17 +219,15 @@ export default function Pricing() {
           )}
         </div>
 
-        {/* Web User Notice */}
-        {!isOnMobile && (
-          <Alert className="max-w-2xl mx-auto mb-8 bg-blue-500/10 border-blue-500/50">
-            <Smartphone className="h-4 w-4 text-blue-400" />
-            <AlertTitle className="text-white">Mobile App Required for Subscriptions</AlertTitle>
-            <AlertDescription className="text-slate-300">
-              Paid subscriptions are only available in our iOS and Android apps. Download from {storeName} to
-              unlock unlimited AI practice and live lessons.
-            </AlertDescription>
-          </Alert>
-        )}
+        {/* Coming Soon Banner - App Store Compliant */}
+        <Alert className="max-w-2xl mx-auto mb-8 bg-amber-500/10 border-amber-500/50">
+          <Clock className="h-4 w-4 text-amber-400" />
+          <AlertTitle className="text-white">Premium Subscriptions Coming Soon</AlertTitle>
+          <AlertDescription className="text-slate-300">
+            Premium plans are currently in development. Join our waitlist to be notified when they launch
+            and receive an exclusive early-bird discount!
+          </AlertDescription>
+        </Alert>
 
         {/* Billing Cycle Toggle */}
         <div className="flex justify-center mb-12">
@@ -353,6 +336,14 @@ export default function Pricing() {
           </div>
         </div>
       </div>
+
+      {/* Waitlist Modal */}
+      <WaitlistModal
+        isOpen={waitlistModalOpen}
+        onClose={() => setWaitlistModalOpen(false)}
+        tierCode={selectedTierForWaitlist}
+        userEmail={user?.email}
+      />
     </div>
   );
 }

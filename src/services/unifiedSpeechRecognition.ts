@@ -77,7 +77,7 @@ class UnifiedSpeechRecognitionService {
         const result = await SpeechRecognition.checkPermissions();
         return result.speechRecognition === 'granted';
       } catch (error) {
-        console.error('Error checking Capacitor permissions:', error);
+        if (import.meta.env.DEV) console.error('Error checking Capacitor permissions:', error);
         return false;
       }
     }
@@ -95,7 +95,7 @@ class UnifiedSpeechRecognitionService {
         const result = await SpeechRecognition.requestPermissions();
         return result.speechRecognition === 'granted';
       } catch (error) {
-        console.error('Error requesting Capacitor permissions:', error);
+        if (import.meta.env.DEV) console.error('Error requesting Capacitor permissions:', error);
         if (this.onErrorCallback) {
           this.onErrorCallback(new Error('Microphone permission denied'));
         }
@@ -116,7 +116,7 @@ class UnifiedSpeechRecognitionService {
         const result = await SpeechRecognition.available();
         return result.available;
       } catch (error) {
-        console.error('Capacitor speech recognition not available:', error);
+        if (import.meta.env.DEV) console.error('Capacitor speech recognition not available:', error);
         return false;
       }
     }
@@ -325,7 +325,7 @@ class UnifiedSpeechRecognitionService {
         console.log('🛑 Speech recognition stopped');
       }
     } catch (error) {
-      console.error('Error stopping speech recognition:', error);
+      if (import.meta.env.DEV) console.error('Error stopping speech recognition:', error);
     }
   }
 
