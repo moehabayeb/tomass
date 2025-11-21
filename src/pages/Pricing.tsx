@@ -72,13 +72,12 @@ export default function Pricing() {
     // The mobile app (React Native/Capacitor) would handle the payment flow
     // After successful purchase, the app would call SubscriptionService.verifyAppleReceipt() or verifyGoogleReceipt()
 
-    // For now, show a platform-specific message that mobile integration is needed
+    // App Store Compliance: Clear messaging that subscriptions are coming soon
     setTimeout(() => {
       setLoadingTier(null);
-      const paymentSystem = isIOS ? 'Apple In-App Purchase' : isAndroid ? 'Google Play Billing' : 'Mobile Payment';
       toast({
-        title: 'Payment Integration Required',
-        description: `${paymentSystem} integration is being configured. Please try again later.`,
+        title: 'Subscriptions Coming Soon',
+        description: 'Premium subscriptions will be available in a future update. Enjoy the free features for now!',
       });
     }, 500);
   };

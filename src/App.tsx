@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -6,14 +6,17 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Footer } from "@/components/Footer";
+import { ConsentBanner } from "@/components/ConsentBanner";
 import { initSentry } from "@/lib/sentry";
 import { initAmplitude } from "@/lib/amplitude";
+import { hasConsent } from "@/lib/analyticsConsent";
 
-// Initialize Sentry for error tracking
-initSentry();
-
-// Initialize Amplitude for analytics
-initAmplitude();
+// Initialize analytics ONLY if user has previously consented
+// New users will see consent banner and analytics will init after consent
+if (hasConsent()) {
+  initSentry();
+  initAmplitude();
+}
 
 // Lazy load major components for better bundle splitting
 const Index = React.lazy(() => import("./pages/Index"));
@@ -69,6 +72,7 @@ const App = () => (
       >
         <Toaster />
         <Sonner />
+        <ConsentBanner />
         <BrowserRouter
           future={{
             v7_startTransition: true,

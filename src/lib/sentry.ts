@@ -10,7 +10,7 @@ export function initSentry() {
   const dsn = import.meta.env.VITE_SENTRY_DSN;
 
   if (!dsn) {
-    console.info('Sentry DSN not configured - error tracking disabled');
+    // Silent in production - no console output
     return;
   }
 
@@ -24,8 +24,9 @@ export function initSentry() {
     tracesSampleRate: import.meta.env.MODE === 'production' ? 0.1 : 1.0,
 
     // Session replay - helps debug issues by recording user sessions
-    replaysSessionSampleRate: 0.1, // 10% of sessions
-    replaysOnErrorSampleRate: 1.0, // 100% of sessions with errors
+    // Reduced rates for privacy compliance
+    replaysSessionSampleRate: 0.05, // 5% of sessions (reduced for privacy)
+    replaysOnErrorSampleRate: 0.5, // 50% of sessions with errors (reduced)
 
     integrations: [
       // Browser performance tracking
@@ -40,10 +41,10 @@ export function initSentry() {
         ),
       }),
 
-      // Session replay for debugging
+      // Session replay for debugging - privacy compliant settings
       new Sentry.Replay({
-        maskAllText: false, // Don't mask text (we want to see what users type)
-        blockAllMedia: false, // Don't block media (images, videos)
+        maskAllText: true, // Mask all text to protect user privacy
+        blockAllMedia: true, // Block media for privacy compliance
       }),
     ],
 
@@ -66,7 +67,10 @@ export function initSentry() {
     beforeSend(event, hint) {
       // Filter out development errors
       if (import.meta.env.MODE === 'development') {
-        console.error('Sentry captured error:', hint.originalException || hint.syntheticException);
+        // Only log in dev mode
+        if (import.meta.env.DEV) {
+          console.error('Sentry captured error:', hint.originalException || hint.syntheticException);
+        }
         return null; // Don't send to Sentry in dev
       }
 

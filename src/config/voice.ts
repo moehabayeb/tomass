@@ -124,7 +124,8 @@ const loadPinnedVoices = (): VoicePins => {
 const savePinnedVoices = (pins: VoicePins): void => {
   try {
     localStorage.setItem(VOICE_STORAGE_KEY, JSON.stringify(pins));
-  } catch (error) {
+  } catch {
+    // Silent fail for localStorage errors - voice pins are non-critical
   }
 };
 

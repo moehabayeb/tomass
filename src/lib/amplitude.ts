@@ -11,7 +11,7 @@ export function initAmplitude() {
   const apiKey = import.meta.env.VITE_AMPLITUDE_API_KEY;
 
   if (!apiKey) {
-    console.info('Amplitude API key not configured - analytics disabled');
+    // Silent in production - no console output
     return;
   }
 
@@ -33,7 +33,6 @@ export function initAmplitude() {
   });
 
   isInitialized = true;
-  console.info('Amplitude analytics initialized');
 }
 
 /**
@@ -43,8 +42,7 @@ export function initAmplitude() {
  */
 export function trackEvent(eventName: string, properties?: Record<string, any>) {
   if (!isInitialized) {
-    console.warn(`Amplitude not initialized, skipping event: ${eventName}`);
-    return;
+    return; // Silent fail - analytics not initialized
   }
 
   amplitude.track(eventName, properties);
@@ -56,8 +54,7 @@ export function trackEvent(eventName: string, properties?: Record<string, any>) 
  */
 export function setUserProperties(properties: Record<string, any>) {
   if (!isInitialized) {
-    console.warn('Amplitude not initialized, skipping setUserProperties');
-    return;
+    return; // Silent fail - analytics not initialized
   }
 
   const identify = new amplitude.Identify();
@@ -76,8 +73,7 @@ export function setUserProperties(properties: Record<string, any>) {
  */
 export function identifyUser(userId: string, userProperties?: Record<string, any>) {
   if (!isInitialized) {
-    console.warn('Amplitude not initialized, skipping identifyUser');
-    return;
+    return; // Silent fail - analytics not initialized
   }
 
   amplitude.setUserId(userId);
