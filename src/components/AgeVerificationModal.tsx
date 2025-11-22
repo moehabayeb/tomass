@@ -110,6 +110,10 @@ export function AgeVerificationModal() {
           {' '}and{' '}
           <a href="/privacy" className="text-blue-400 hover:underline">Privacy Policy</a>
         </p>
+
+        <p className="mt-2 text-xs text-slate-600 text-center">
+          Parents/guardians: Please supervise minors' app usage and review our Privacy Policy for information about data collection.
+        </p>
       </DialogContent>
     </Dialog>
   );

@@ -227,6 +227,10 @@ export default function Pricing() {
             Premium plans are currently in development. Join our waitlist to be notified when they launch
             and receive an exclusive early-bird discount!
           </AlertDescription>
+          <p className="text-xs text-slate-400 mt-2">
+            When available, subscriptions will be processed through {isIOS ? 'Apple App Store' : isAndroid ? 'Google Play Store' : 'your device\'s app store'}.
+            You can manage or cancel subscriptions anytime in your device settings.
+          </p>
         </Alert>
 
         {/* Billing Cycle Toggle */}
@@ -275,7 +279,9 @@ export default function Pricing() {
               </CardHeader>
               <CardContent>
                 <p className="text-slate-300">
-                  We accept all major credit/debit cards through our secure payment partner. Turkish Lira (₺) is supported natively.
+                  Payments are securely processed through Apple App Store (iOS) or Google Play Store (Android).
+                  All payment methods supported by your app store account are accepted, including credit/debit cards and store credit.
+                  Turkish Lira (₺) pricing is displayed for your convenience.
                 </p>
               </CardContent>
             </Card>

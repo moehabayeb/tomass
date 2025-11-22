@@ -59,7 +59,7 @@ export function initGlobalErrorHandlers() {
     }
 
     // Show user-friendly error toast (production only)
-    if (process.env.NODE_ENV === 'production') {
+    if (!import.meta.env.DEV) {
       toast({
         title: 'Something went wrong',
         description: 'An unexpected error occurred. Please try refreshing the page.',
@@ -107,7 +107,7 @@ export function initGlobalErrorHandlers() {
     }
 
     // Show user-friendly error toast (production only)
-    if (process.env.NODE_ENV === 'production') {
+    if (!import.meta.env.DEV) {
       toast({
         title: 'Operation failed',
         description: 'An error occurred while processing your request. Please try again.',

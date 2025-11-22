@@ -24,6 +24,7 @@ export function RecordingButton({
         onClick={onStartRecording}
         disabled={disabled}
         aria-disabled={disabled}
+        aria-label={speakStatus === 'recording' ? 'Stop recording' : 'Start recording'}
         style={{
           pointerEvents: 'auto',
           zIndex: 5,
@@ -31,8 +32,8 @@ export function RecordingButton({
         }}
         size="lg"
         className={`mic-button rounded-full w-20 h-20 ${
-          speakStatus === 'recording' 
-            ? 'bg-red-500 hover:bg-red-600 animate-pulse' 
+          speakStatus === 'recording'
+            ? 'bg-red-500 hover:bg-red-600 animate-pulse'
             : 'bg-white/20 hover:bg-white/30'
         }`}
       >

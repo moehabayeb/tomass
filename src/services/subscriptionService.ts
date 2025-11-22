@@ -18,6 +18,10 @@ import type {
 } from '@/types/subscription';
 import { SUBSCRIPTION_CONSTANTS } from '@/types/subscription';
 
+// Cache for subscription checks to reduce API calls
+const subscriptionCache: Map<string, { data: SubscriptionCheck; timestamp: number }> = new Map();
+const CACHE_TTL = 30000; // 30 seconds
+
 export class SubscriptionService {
   /**
    * Get all available subscription tiers
@@ -59,8 +63,15 @@ export class SubscriptionService {
 
   /**
    * Get comprehensive subscription check (for feature gating)
+   * Includes 30-second cache to reduce API calls
    */
   static async checkSubscription(userId: string): Promise<SubscriptionCheck> {
+    // Check cache first
+    const cached = subscriptionCache.get(userId);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      return cached.data;
+    }
+
     // Get user subscription
     const subscription = await this.getUserSubscription(userId);
 
@@ -128,7 +139,7 @@ export class SubscriptionService {
       suggestedUpgradeTier = 'ai_plus_live';
     }
 
-    return {
+    const result: SubscriptionCheck = {
       isSubscribed: isActive,
       tier: subscription.tier_code,
       status: subscription.status,
@@ -145,6 +156,22 @@ export class SubscriptionService {
       canUpgrade: subscription.tier_code !== 'ai_plus_live',
       suggestedUpgradeTier,
     };
+
+    // Cache the result
+    subscriptionCache.set(userId, { data: result, timestamp: Date.now() });
+
+    return result;
+  }
+
+  /**
+   * Clear subscription cache (call after subscription changes)
+   */
+  static clearCache(userId?: string): void {
+    if (userId) {
+      subscriptionCache.delete(userId);
+    } else {
+      subscriptionCache.clear();
+    }
   }
 
   /**

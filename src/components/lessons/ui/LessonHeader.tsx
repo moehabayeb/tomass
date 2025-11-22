@@ -28,6 +28,7 @@ export function LessonHeader({
           variant="ghost"
           size="icon"
           className="text-white hover:bg-white/10 rounded-full"
+          aria-label="Go back"
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
@@ -42,6 +43,7 @@ export function LessonHeader({
           variant="ghost"
           size="icon"
           className="text-white hover:bg-white/10 rounded-full"
+          aria-label={soundEnabled ? 'Mute sound' : 'Enable sound'}
         >
           <Volume2 className={`h-5 w-5 ${!soundEnabled ? 'opacity-50' : ''}`} />
         </Button>
