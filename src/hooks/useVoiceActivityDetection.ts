@@ -172,10 +172,15 @@ export function useVoiceActivityDetection(options: VADOptions = {}) {
       streamRef.current = null;
     }
 
-    // Close audio context
+    // Close audio context - properly await to prevent memory leaks
     if (audioContextRef.current) {
-      audioContextRef.current.close();
+      const ctx = audioContextRef.current;
       audioContextRef.current = null;
+      if (ctx.state !== 'closed') {
+        ctx.close().catch(() => {
+          // Ignore close errors - context might already be closed
+        });
+      }
     }
 
     analyserRef.current = null;

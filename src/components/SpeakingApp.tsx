@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
+import { flushSync } from 'react-dom';
 import { Mic, Volume2, VolumeX, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -15,7 +16,9 @@ import { useAuthReady } from '@/hooks/useAuthReady';
 import { StreakCounter } from './StreakCounter';
 import { SampleAnswerButton } from './SampleAnswerButton';
 import BookmarkButton from './BookmarkButton';
-import { startRecording, stopRecording, getState, onState, cleanup, type MicState } from '@/lib/audio/micEngine';
+import { startRecording, stopRecording, getState, onState, cleanup, acquirePersistentStream, releasePersistentStream, type MicState } from '@/lib/audio/micEngine';
+import { Capacitor } from '@capacitor/core';
+import { microphoneGuardian } from '@/services/MicrophoneGuardian';
 import { useToast } from '@/hooks/use-toast';
 import { TTSManager } from '@/services/TTSManager';
 import { runVoiceConsistencyTestSuite } from '@/utils/voiceConsistencyTest';
@@ -335,7 +338,17 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   // A) Authoritative flow (finite-state machine)
   // States: IDLE / READING / LISTENING / PROCESSING / PAUSED
   const [flowState, setFlowState] = useState<'IDLE' | 'READING' | 'LISTENING' | 'PROCESSING' | 'PAUSED'>('IDLE');
-  
+
+  // 🔧 GOD-TIER v4: Sync flowStateRef with flowState (refs are synchronous, state is async)
+  useEffect(() => {
+    flowStateRef.current = flowState;
+  }, [flowState]);
+
+  // 🔧 GOD-TIER v7: Sync ttsListenerActiveRef with ttsListenerActive (closure staleness fix)
+  useEffect(() => {
+    ttsListenerActiveRef.current = ttsListenerActive;
+  }, [ttsListenerActive]);
+
   // A) Stop duplicates at the source: NO default/initial assistant message seeded
   // Feed must come only from conversation store/back-end
   const [messages, setMessages] = useState<Array<{
@@ -519,6 +532,21 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   const turnMutexTimeoutRef = useRef<number | null>(null);
   // 🔧 CRITICAL FIX: Atomic token storage to prevent race condition
   const currentTurnTokenRef = useRef<string>('');
+  // 🎯 DEFINITIVE FIX: Track when mic button directly submits to prevent duplicate submissions
+  const micButtonSubmittedRef = useRef(false);
+  // 🔧 GOD-TIER FIX: Prevent duplicate AI responses per turn
+  const responseSpokenForTurnRef = useRef(false);
+  // 🔧 GOD-TIER FIX: Track when mic was last started to prevent watchdog overlap
+  const lastMicStartTimeRef = useRef(0);
+  // 🔧 GOD-TIER v4: Synchronous refs to prevent React closure staleness
+  const recentBotTextsRef = useRef<string[]>([]);
+  const flowStateRef = useRef<'IDLE' | 'READING' | 'LISTENING' | 'PROCESSING' | 'PAUSED'>('IDLE');
+  // 🔧 GOD-TIER v5: Prevent concurrent forceToListening calls (race condition fix)
+  const transitionInProgressRef = useRef(false);
+  // 🔧 GOD-TIER v7: Synchronous ref for ttsListenerActive (closure staleness fix)
+  const ttsListenerActiveRef = useRef(false);
+  // 🔧 GOD-TIER v9: Prevent concurrent mic captures (race condition fix)
+  const micCaptureInProgressRef = useRef(false);
   const TURN_DEBOUNCE_MS = 300;
 
   // 2) When starting a turn, always pass a token and always call completion
@@ -651,17 +679,31 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
   // 🔧 FIX #18: Append user/assistant messages (React provides XSS protection via JSX escaping)
   const addChatBubble = (text: string, type: "user" | "bot" | "system", messageId?: string, messageKey?: string) => {
+    const trimmedText = text.trim();
+
+    // 🔧 GOD-TIER v4: Use REF for dedup (refs are synchronous, state is STALE in closures!)
+    // This prevents duplicate bot messages even when called rapidly in succession
+    if (type === 'bot') {
+      if (recentBotTextsRef.current.includes(trimmedText)) {
+        console.log('[addChatBubble] ⛔ BLOCKED duplicate (ref check):', trimmedText.substring(0, 30));
+        return { id: '', seq: -1, messageKey: '' };
+      }
+      // Add to ref IMMEDIATELY (synchronous) BEFORE adding to state
+      // Keep only last 5 messages to prevent unbounded growth
+      recentBotTextsRef.current = [...recentBotTextsRef.current.slice(-4), trimmedText];
+    }
+
     const seq = messageSeqCounter;
     setMessageSeqCounter(prev => prev + 1);
 
     const id = messageId || `${type}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const newMessage = {
       id,
-      text: text.trim(),
+      text: trimmedText,
       isUser: type === "user",
       isSystem: type === "system",
       role: type === "user" ? "user" as const : "assistant" as const,
-      content: text.trim(),
+      content: trimmedText,
       seq
     };
 
@@ -689,7 +731,9 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     }
     
     // State machine: Only speak during READING state
-    if (flowState !== 'READING' && !isRepeat) {
+    // 🔧 GOD-TIER v7: Use REF for check (refs are synchronous, state is STALE in closures!)
+    if (flowStateRef.current !== 'READING' && !isRepeat) {
+      console.log('[speakExistingMessage] ⛔ TTS skipped - flowState is', flowStateRef.current, 'not READING');
       return messageKey;
     }
     
@@ -741,7 +785,9 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     }
 
     // C) Single authority: TTS can only be triggered by the hands-free controller when it has authority
-    if (!ttsListenerActive) {
+    // 🔧 GOD-TIER v7: Use REF for check (refs are synchronous, state is STALE in closures!)
+    if (!ttsListenerActiveRef.current) {
+      console.log('[speakExistingMessage] ⛔ TTS skipped - ttsListenerActive is false');
       return messageKey;
     }
     
@@ -778,32 +824,29 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         }
       }, 45000); // 🚨 CRITICAL FIX: Extended to 45s to prevent AI speech cutoff
 
+      // 🔧 GOD-TIER v5: Use try-catch-finally instead of .finally() with async callback
+      // .finally() does NOT await async callbacks - this was causing race conditions!
       try {
-        await TTSManager.speak(stripEmojisForTTS(text), { canSkip: false }) // 🚨 CRITICAL FIX: Disabled skip to prevent interruption
-          .then(() => {
-            // TTS completed successfully
-          })
-          .catch((e) => {
-            // TTS error handled
-          })
-          .finally(async () => {
-            resolved = true;
-            clearTimeout(wd);
-            // 🔧 DIVINE FIX: AWAIT the transition
-            await forceToListening('tts-finally');
-          });
+        await TTSManager.speak(stripEmojisForTTS(text), { canSkip: false }); // 🚨 CRITICAL FIX: Disabled skip to prevent interruption
+        // TTS completed successfully
+        console.log('[speakExistingMessage] ✅ TTS completed successfully');
       } catch (error) {
+        // TTS error - log but continue to transition
+        console.warn('[speakExistingMessage] ⚠️ TTS error:', error);
+      } finally {
+        // 🔧 GOD-TIER v5: All cleanup and transition happens here, PROPERLY AWAITED
         resolved = true;
         clearTimeout(wd);
-        // 🔧 DIVINE FIX: AWAIT the transition
-        await forceToListening('tts-error');
-      } finally {
+
         setIsSpeaking(false);
         setAvatarState('idle');
 
         // Clear speaking indicators
         setSpeakingMessageKey(null);
         setEphemeralAssistant(null);
+
+        // 🔧 GOD-TIER v5: This await is now PROPERLY honored in the outer async function
+        await forceToListening('tts-complete');
       }
     } else {
       // When muted (we emit HF_PROMPT_SKIP) call forceToListening instead of setState-only
@@ -842,26 +885,47 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
   // Only append new messages from backend, never fabricate client-side
   const addAssistantMessage = async (message: string, phase: 'prompt' | 'feedback' = 'feedback') => {
-    
+    console.log('[addAssistantMessage] 🤖 Adding AI bubble:', message?.substring(0, 50) + '...');
+
+    // 🔧 GOD-TIER FIX: Prevent duplicate AI responses per turn
+    if (responseSpokenForTurnRef.current && phase === 'feedback') {
+      console.log('[addAssistantMessage] ⚠️ SKIPPING - Response already spoken for this turn');
+      return '';
+    }
+
     // Use current turn token or generate new one if missing
     const turnToken = currentTurnToken || startNewTurn();
-    
+
     // Compute messageId for strict idempotency
     const messageId = computeMessageId(turnToken, phase, message, 0);
-    
+
     // Add to chat and get sequence number - this is the ONLY place we append assistant messages
     const { id, seq } = addChatBubble(message, "bot", messageId);
-    
+    console.log('[addAssistantMessage] 💭 Bubble added with id:', id, 'seq:', seq);
+
     // Generate messageKey for this new message (use stable key)
     const messageKey = stableMessageKey(message, id);
-    
+
     // Transition to READING state before speaking (FSM requirement)
-    setFlowState('READING');
-    setTtsListenerActive(true); // Enable TTS authority so speakExistingMessage doesn't skip
-    
-    // Now speak this newly added message
+    // 🔧 GOD-TIER FIX: Mark that response has been spoken for this turn (prevents duplicate)
+    if (phase === 'feedback') {
+      responseSpokenForTurnRef.current = true;
+    }
+
+    // 🔧 GOD-TIER v7: Update REFS FIRST for synchronous access (closure staleness fix)
+    // flushSync ensures render, but refs must be updated directly for closure checks
+    console.log('[addAssistantMessage] 🔊 Setting state to READING and triggering TTS...');
+    flowStateRef.current = 'READING';
+    ttsListenerActiveRef.current = true;
+    flushSync(() => {
+      setFlowState('READING');
+      setTtsListenerActive(true);
+    });
+
+    // Now speak this newly added message (refs are guaranteed to be updated)
     await speakExistingMessage(message, messageKey, phase, false, { token: turnToken });
-    
+    console.log('[addAssistantMessage] ✅ TTS complete, returning messageId:', messageId);
+
     return messageId;
   };
 
@@ -875,33 +939,51 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
   // 🔧 DIVINE FIX: Helper - Force transition to LISTENING with mic activation (unconditional)
   const forceToListening = async (reason: string) => {
-    // Check if component is mounted before setState
-    if (!isMountedRef.current) return;
+    // 🔧 GOD-TIER v5: Prevent concurrent transitions (race condition fix)
+    if (transitionInProgressRef.current) {
+      console.log('[forceToListening] ⚠️ Transition already in progress, skipping:', reason);
+      return;
+    }
+    transitionInProgressRef.current = true;
 
-    // Stop ALL TTS immediately (both custom and browser) - silent fail: may not be active
-    try { TTSManager.stop(); } catch { /* Expected: TTS may not be active */ }
-    try { speechSynthesis.cancel(); } catch { /* Expected: synthesis may not be active */ }
-    setIsSpeaking(false);
-    setAvatarState('idle');
+    try {
+      // Check if component is mounted before setState
+      if (!isMountedRef.current) return;
 
-    // Don't generate new tokens - let existing token continue
-    // REMOVED: if (!currentTurnToken) setCurrentTurnToken(`force-${Date.now()}`);
+      console.log('[forceToListening] 🎯 Starting transition:', reason);
 
-    // Enter LISTENING state first
-    setFlowState('LISTENING');
+      // Stop ALL TTS immediately (both custom and browser) - silent fail: may not be active
+      try { TTSManager.stop(); } catch { /* Expected: TTS may not be active */ }
+      try { speechSynthesis.cancel(); } catch { /* Expected: synthesis may not be active */ }
+      setIsSpeaking(false);
+      setAvatarState('idle');
 
-    // Clear any pending timeout before starting mic
-    if (stateTransitionTimeoutRef.current !== null) {
-      clearTimeout(stateTransitionTimeoutRef.current);
-      stateTransitionTimeoutRef.current = null;
+      // Enter LISTENING state
+      setFlowState('LISTENING');
+
+      // Clear any pending timeout before starting mic
+      if (stateTransitionTimeoutRef.current !== null) {
+        clearTimeout(stateTransitionTimeoutRef.current);
+        stateTransitionTimeoutRef.current = null;
+      }
+    } finally {
+      // 🔧 GOD-TIER v8: Always reset guard IMMEDIATELY after state transition
+      // This allows nested forceToListening calls from the conversation loop
+      transitionInProgressRef.current = false;
     }
 
-    // 🔧 DIVINE FIX: Actually AWAIT mic start (no fire-and-forget!)
+    // 🔧 GOD-TIER v14: Clear mic guards BEFORE triggering Turn 2+
+    // This ensures the mic can start even if previous turn didn't clean up properly
+    micCaptureInProgressRef.current = false;
+    console.log('[forceToListening] v14: Cleared mic guards before trigger');
+
+    // 🔧 GOD-TIER v8: Fire and forget mic capture - DON'T AWAIT!
+    // This allows nested forceToListening calls from the conversation loop
+    // The guard is already reset, so subsequent calls can proceed
     if (!isMountedRef.current) return;
-    try {
-      await startHandsFreeMicCaptureSafe(true); // pass force=true
-    } catch (err) {
+    startHandsFreeMicCaptureSafe(true).catch(err => {
       // If mic fails, notify user and reset to IDLE
+      console.error('[forceToListening] Mic capture failed:', err);
       toast({
         title: "Could not start listening",
         description: "Please check microphone permissions",
@@ -910,7 +992,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       if (isMountedRef.current) {
         setFlowState('IDLE');
       }
-    }
+    });
   };
 
   // A) TTS → LISTENING (always) - FSM enforced completion
@@ -943,6 +1025,12 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
   // B) Mic + interim captions (LISTENING only) - FSM enforced guards
   const startHandsFreeMicCaptureSafe = async (force = false) => {
+    // 🔧 GOD-TIER v10: Guard ONLY protects mic recording phase, NOT the entire function
+    // This allows new mic capture to start when TTS finishes, while previous turn processes
+    if (micCaptureInProgressRef.current) {
+      console.log('[startHandsFreeMicCaptureSafe] ⚠️ Mic recording in progress, skipping');
+      return;
+    }
 
     // 🔧 FIX: Simplified guards - only block if actively speaking, not strict state checks
     if (!force) {
@@ -950,77 +1038,160 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       if (TTSManager.isSpeaking() && speechSynthesis.speaking) {
         return;
       }
-
-      // REMOVED: flowState !== 'LISTENING' check (too strict, prevents recovery)
-      // REMOVED: currentTurnToken check (forceToListening creates token)
     }
 
-    // 🔧 DIVINE FIX: Check microphone permission BEFORE requesting (Google Meet pattern)
-    try {
-      const permission = await navigator.permissions.query({ name: 'microphone' as PermissionName });
-      if (permission.state === 'denied') {
-        toast({
-          title: "Microphone blocked",
-          description: "Please enable microphone in browser settings",
-          variant: "destructive"
-        });
-        setFlowState('IDLE');
-        return;
-      }
-    } catch (err) {
-      // Permission API not supported in this browser, continue anyway
-      if (import.meta.env.DEV) {
-        console.log('Permission API not supported, continuing...');
-      }
+    // 🔧 PRODUCTION FIX: Use MicrophoneGuardian for bulletproof microphone reliability
+    const preflight = await microphoneGuardian.preflightCheck();
+    if (!preflight.ready) {
+      toast({
+        title: "Microphone issue",
+        description: preflight.userMessage.replace(/^[🎤📶⚠️]\s*/, ''), // Remove emoji for toast
+        variant: "destructive"
+      });
+      setFlowState('IDLE');
+      return;
     }
 
     // Always make sure audio context is unlocked
     try { await enableAudioContext(); } catch { /* Silent fail: non-critical */ }
 
-    // Clean mic channel between turns
-    try {
-      cleanup();
-    } catch {
-      // Silent fail: cleanup is best-effort
+    // 🔧 GOD-TIER v11.1: Only acquire persistent stream on WEB
+    // On native (Android/iOS), Capacitor plugin manages mic internally - no getUserMedia needed
+    if (!Capacitor.isNativePlatform()) {
+      try {
+        await acquirePersistentStream();
+      } catch (streamError) {
+        console.error('[startHandsFreeMicCaptureSafe] Failed to acquire persistent stream:', streamError);
+        toast({
+          title: "Microphone error",
+          description: "Could not access microphone",
+          variant: "destructive"
+        });
+        setFlowState('IDLE');
+        return;
+      }
     }
+
+    // 🔧 GOD-TIER v11.1: On web, stream stays alive. On native, Capacitor manages lifecycle.
+
+    // 🔧 GOD-TIER FIX: Track mic start time to prevent watchdog overlap
+    lastMicStartTimeRef.current = Date.now();
 
     // Start recording immediately
     setInterimCaption('');
 
-    try {
-      // Start recording using existing micEngine
-      const result = await startRecording();
-      const finalTranscript = (result?.transcript || '').trim();
+    // 🔧 GOD-TIER v10: Set guard ONLY for recording phase
+    micCaptureInProgressRef.current = true;
 
-      // C) Final ASR → single user bubble → evaluation
-      if (finalTranscript) {
-        // 🔧 PHASE 2 FIX: Check if mounted after async operation
-        if (!isMountedRef.current) return;
+    // 🔧 GOD-TIER v14: Retry mechanism for bulletproof mic trigger
+    const MAX_MIC_RETRIES = 3;
+    const MIC_RETRY_DELAY_MS = 300;
+    let micRetryCount = 0;
+    let finalTranscript = '';
+    let result: { transcript: string; durationSec: number } | null = null;
 
-        // Append ONE user bubble with EXACT transcript (preserve accents like "café")
-        addChatBubble(finalTranscript, 'user');
-
-        // Set state=PROCESSING and call existing executeTeacherLoop
-        setFlowState('PROCESSING');
-        await executeTeacherLoop(finalTranscript);
-      } else {
-        // 🔧 PHASE 2 FIX: Check if mounted after async operation
-        if (!isMountedRef.current) return;
-
-        // 🔧 FIX: No input - retry listening immediately instead of pausing
-        setFlowState('LISTENING');
-
-        // Retry immediately (no timeout needed)
-        await startHandsFreeMicCaptureSafe();
+    const tryStartMic = async (): Promise<{ transcript: string; durationSec: number } | null> => {
+      try {
+        // 🎯 ULTIMATE FIX: Bypass debounce for internal calls (debounce is for button clicks)
+        return await startRecording({ bypassDebounce: true });
+      } catch (err) {
+        console.error(`[MicTrigger] Attempt ${micRetryCount + 1} failed:`, err);
+        return null;
       }
-    } catch (err) {
-      // 🔧 FIX: Better error handling - show toast and reset to IDLE instead of PAUSED
+    };
+
+    // Try to start mic with retries
+    result = await tryStartMic();
+    while (!result && micRetryCount < MAX_MIC_RETRIES) {
+      micRetryCount++;
+      console.log(`[MicTrigger] 🔄 v14: Retry ${micRetryCount}/${MAX_MIC_RETRIES}...`);
+      await new Promise(r => setTimeout(r, MIC_RETRY_DELAY_MS));
+      result = await tryStartMic();
+    }
+
+    // If all retries failed, show error
+    if (!result) {
+      console.error('[startHandsFreeMicCaptureSafe] ❌ All mic retries failed');
+      micCaptureInProgressRef.current = false;
       toast({
         title: "Microphone error",
         description: "Please check permissions and try again",
         variant: "destructive"
       });
-      setFlowState('IDLE');  // Reset to idle for user to retry
+      setFlowState('IDLE');
+      return;
+    }
+
+    finalTranscript = (result.transcript || '').trim();
+    console.log(`[MicTrigger] ✅ v14: Mic started successfully${micRetryCount > 0 ? ` after ${micRetryCount} retries` : ''}`);
+
+    // 🔧 GOD-TIER v10: Release guard IMMEDIATELY after recording completes
+    // This allows new mic capture to start when TTS finishes
+    micCaptureInProgressRef.current = false;
+    console.log('[startHandsFreeMicCaptureSafe] 🎤 Recording complete, guard released');
+
+    // C) Final ASR → single user bubble → evaluation
+    if (finalTranscript) {
+      // 🎯 DEFINITIVE FIX: Check if mic button already handled submission
+      if (micButtonSubmittedRef.current) {
+        console.log('[SpeakingApp] Mic button already submitted - skipping duplicate');
+        micButtonSubmittedRef.current = false;
+        return;
+      }
+
+      // 🔧 PHASE 2 FIX: Check if mounted after async operation
+      if (!isMountedRef.current) return;
+
+      // Append ONE user bubble with EXACT transcript (preserve accents like "café")
+      addChatBubble(finalTranscript, 'user');
+      console.log('[SpeakingApp] 📝 User bubble added:', finalTranscript.substring(0, 50));
+
+      // 🔧 GOD-TIER FIX: Reset response flag for new turn (allows ONE AI response per user input)
+      responseSpokenForTurnRef.current = false;
+
+      // Set state=PROCESSING and call existing executeTeacherLoop
+      setFlowState('PROCESSING');
+      console.log('[SpeakingApp] 🔄 State set to PROCESSING, calling executeTeacherLoop...');
+
+      try {
+        await executeTeacherLoop(finalTranscript);
+        console.log('[SpeakingApp] ✅ executeTeacherLoop completed successfully');
+        // 🔧 GOD-TIER v6: Safety net - transition to LISTENING if not already there
+        // The transitionInProgressRef guard prevents race condition with tts-complete
+        // If TTS plays: 'tts-complete' runs first, guard blocks this call
+        // If TTS skipped: this call recovers the app from stuck state
+        if (isMountedRef.current && flowStateRef.current !== 'LISTENING') {
+          await forceToListening('teacher-loop-success');
+        }
+      } catch (teacherError: any) {
+        console.error('[SpeakingApp] ❌ executeTeacherLoop FAILED:', teacherError);
+        // Show error to user so they know what happened
+        toast({
+          title: "AI couldn't respond",
+          description: teacherError?.message || "Please try again",
+          variant: "destructive"
+        });
+        // Force transition back to listening so app doesn't get stuck
+        if (isMountedRef.current) {
+          await forceToListening('teacher-loop-error-recovery');
+        }
+      }
+    } else {
+      // 🎯 FIX: Check if mic button already took over before retrying
+      if (micButtonSubmittedRef.current) {
+        console.log('[SpeakingApp] Mic button submitted - not retrying empty transcript');
+        micButtonSubmittedRef.current = false;
+        return;
+      }
+
+      // 🔧 PHASE 2 FIX: Check if mounted after async operation
+      if (!isMountedRef.current) return;
+
+      // 🔧 FIX: No input - retry listening immediately instead of pausing
+      setFlowState('LISTENING');
+
+      // Retry immediately (no timeout needed)
+      await startHandsFreeMicCaptureSafe();
     }
   };
 
@@ -1227,6 +1398,9 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
   // C) Smart executeTeacherLoop - unified conversational AI with grammar correction
   const executeTeacherLoop = async (transcript: string) => {
+    // 🔧 GOD-TIER v16: Force reset response flag at START of each teacher loop
+    // This ensures AI can ALWAYS respond, even if previous turn had issues
+    responseSpokenForTurnRef.current = false;
 
     try {
       setIsProcessingTranscript(true);
@@ -1247,6 +1421,13 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
       let data, error;
       try {
+        console.log('[executeTeacherLoop] 🌐 Making API call to conversational-ai...');
+        console.log('[executeTeacherLoop] 📤 Payload:', {
+          userMessage: transcript.substring(0, 50) + '...',
+          userLevel: user_level,
+          hasConversationHistory: !!conversationContext
+        });
+
         const response = await Promise.race([
           supabase.functions.invoke('conversational-ai', {
             body: {
@@ -1259,6 +1440,13 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         ]);
         data = response.data;
         error = response.error;
+
+        console.log('[executeTeacherLoop] 📥 API Response received:', {
+          hasData: !!data,
+          hasError: !!error,
+          errorMessage: error?.message,
+          responsePreview: data?.response?.substring(0, 50) || '(no response)'
+        });
       } catch (err: any) {
         if (err.message === 'Request timeout') {
           // Phase 1.1: Handle timeout with user-friendly message
@@ -1302,15 +1490,26 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         const isValid = isValidGrammarCorrection(aiResponse.originalPhrase, aiResponse.correctedPhrase);
 
         if (isValid) {
+          // 🔧 GOD-TIER v16: Strip sentence-ending punctuation from corrections
+          // (Can't hear periods, question marks, etc. - only fix GRAMMAR)
+          const stripSentencePunctuation = (text: string): string => {
+            return text
+              .replace(/[.!?]+$/g, '')  // Remove trailing . ! ?
+              .replace(/\s*[.!?]\s+/g, ' ')  // Remove mid-sentence . ! ? (added by AI)
+              .trim();
+          };
+
           setGrammarCorrections([{
-            originalPhrase: aiResponse.originalPhrase,
-            correctedPhrase: aiResponse.correctedPhrase
+            originalPhrase: stripSentencePunctuation(aiResponse.originalPhrase),
+            correctedPhrase: stripSentencePunctuation(aiResponse.correctedPhrase)
           }]);
         }
       }
 
       // Add the AI's response to chat
+      console.log('[executeTeacherLoop] 💬 Adding AI response to chat:', aiResponse.response?.substring(0, 50) + '...');
       await addAssistantMessage(aiResponse.response, 'feedback');
+      console.log('[executeTeacherLoop] ✅ AI response added successfully');
 
       // Update conversation context
       setConversationContext(prev => `${prev}\nUser: ${transcript}\nAssistant: ${aiResponse.response}`.trim());
@@ -1401,11 +1600,15 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       return () => clearTimeout(timer);
     }
 
-    // 🔧 PHASE 3 FIX: LISTENING state watchdog - verify mic is actually active
+    // 🔧 GOD-TIER FIX: LISTENING state watchdog - verify mic is actually active
+    // BUT only retry if mic wasn't recently started (prevents overlap)
     if (flowState === 'LISTENING' && micState === 'idle') {
       const timer = setTimeout(() => {
         // If we're in LISTENING but mic is idle for 2 seconds, retry mic activation
-        if (flowState === 'LISTENING' && micState === 'idle') {
+        // BUT only if mic wasn't started in the last 3 seconds (prevent overlap)
+        const timeSinceMicStart = Date.now() - lastMicStartTimeRef.current;
+        if (flowState === 'LISTENING' && micState === 'idle' && timeSinceMicStart > 3000) {
+          console.log('[SpeakingApp] Watchdog: Mic idle for 2s, retrying (last start was', timeSinceMicStart, 'ms ago)');
           // Auto-retry mic start
           (async () => {
             try {
@@ -1420,8 +1623,21 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
               });
             }
           })();
+        } else if (timeSinceMicStart <= 3000) {
+          console.log('[SpeakingApp] Watchdog: Skipping retry - mic was started', timeSinceMicStart, 'ms ago');
         }
       }, 2000);
+      return () => clearTimeout(timer);
+    }
+
+    // 🔧 BULLETPROOF: PROCESSING state watchdog - prevent stuck "Thinking..."
+    if (flowState === 'PROCESSING') {
+      const timer = setTimeout(() => {
+        if (flowState === 'PROCESSING' && isMountedRef.current) {
+          console.warn('[SpeakingApp] Watchdog: PROCESSING stuck for 20s, forcing to LISTENING');
+          forceToListening('processing-watchdog');
+        }
+      }, 20000); // 20 second timeout
       return () => clearTimeout(timer);
     }
   }, [flowState, isSpeaking, micState]);
@@ -1574,21 +1790,13 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     const handleOffline = () => {
       toast({
         title: "You're offline",
-        description: "Please check your internet connection.",
+        description: "Reconnect to continue the conversation.",
         variant: "destructive",
         duration: 5000,
       });
-
-      // Pause any active TTS
-      if (TTSManager.isSpeaking()) {
-        TTSManager.stop();
-      }
-
-      // Reset to IDLE if in an active state
-      if (flowState !== 'IDLE' && flowState !== 'PAUSED') {
-        setFlowState('PAUSED');
-        setPausedFrom(flowState);
-      }
+      // Don't pause - let the API call fail naturally
+      // The error handling in executeTeacherLoop will handle it gracefully
+      // This prevents the app from going to PAUSED state on brief network drops
     };
 
     window.addEventListener('online', handleOnline);
@@ -1630,9 +1838,26 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     // Mark component as mounted
     isMountedRef.current = true;
 
+    // 🔧 PRODUCTION FIX: Ensure microphone is ready when entering Speaking page
+    microphoneGuardian.ensureReady().then(status => {
+      if (status !== 'ready' && isMountedRef.current) {
+        const message = microphoneGuardian.getStatusMessage();
+        if (message) {
+          toast({
+            title: "Microphone",
+            description: message.replace(/^[🎤📶⚠️]\s*/, ''),
+            variant: status === 'ready' ? 'default' : 'destructive'
+          });
+        }
+      }
+    });
+
     return () => {
       // 🔧 FIX #3: Mark component as unmounted to prevent setState
       isMountedRef.current = false;
+
+      // 🔧 PRODUCTION FIX: Stop microphone guardian monitoring
+      microphoneGuardian.stopMonitoring();
 
       // 🔧 FIX BUG #4 & #5: Clear state transition timeout
       if (stateTransitionTimeoutRef.current !== null) {
@@ -1689,6 +1914,15 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         cleanup();
       } catch (e) {
         // Ignore errors during cleanup
+      }
+
+      // 🔧 GOD-TIER v11.1: Only release persistent stream on WEB
+      if (!Capacitor.isNativePlatform()) {
+        try {
+          releasePersistentStream();
+        } catch (e) {
+          // Ignore errors during cleanup
+        }
       }
     };
   }, []); // Empty deps = run only on mount/unmount
@@ -1857,9 +2091,9 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       >
           <div className="space-y-4" role="list" aria-label="Message list">
             {/* Phase 3: Pagination - show only last 50 messages to prevent performance issues */}
-            {messages.slice(-50).map((message, index) => (
+            {messages.slice(-50).map((message) => (
               <ChatBubble
-                key={`${message.id}-${index}`}
+                key={message.id}
                 message={message.text}
                 isUser={message.isUser}
               />
@@ -1974,7 +2208,44 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
                     await playAssistantOnce(latestMessage.text, messageKey);
                   }
                 }
-              } else if (flowState === 'READING' || flowState === 'LISTENING' || flowState === 'PROCESSING') {
+              } else if (flowState === 'LISTENING') {
+                // 🎯 DEFINITIVE FIX: Capture and submit DIRECTLY - no async waiting, no stale closures
+                const capturedTranscript = interimCaption?.trim() || '';
+                console.log('[SpeakingApp] Mic tapped during LISTENING. Captured:', capturedTranscript);
+
+                // Clear caption immediately to signal we're handling this
+                setInterimCaption('');
+
+                // Mark that mic button is handling submission (prevents duplicate from normal flow)
+                micButtonSubmittedRef.current = true;
+
+                // Stop recording (fire and forget - don't block on it)
+                if (micState === 'recording') {
+                  stopRecording().catch(() => {}); // Ignore errors
+                }
+
+                // Submit directly if we have text - NO WAITING for async chain
+                if (capturedTranscript) {
+                  addChatBubble(capturedTranscript, 'user');
+                  setFlowState('PROCESSING');
+                  try {
+                    await executeTeacherLoop(capturedTranscript);
+                  } catch (err: any) {
+                    console.error('[SpeakingApp] Submit failed:', err);
+                    toast({
+                      title: "AI couldn't respond",
+                      description: err?.message || "Please try again",
+                      variant: "destructive"
+                    });
+                    await forceToListening('submit-error');
+                  }
+                } else {
+                  // No text captured - just stay in listening
+                  console.log('[SpeakingApp] No text captured from mic button press');
+                  micButtonSubmittedRef.current = false; // Reset flag since we didn't actually submit
+                }
+              } else if (flowState === 'READING' || flowState === 'PROCESSING') {
+                // For READING and PROCESSING, pause normally
                 setPausedFrom(flowState);
                 setFlowState('PAUSED');
                 if (TTSManager.isSpeaking()) {
@@ -1983,7 +2254,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
                   setAvatarState('idle');
                 }
                 if (micState === 'recording') {
-                  stopRecording();
+                  await stopRecording();
                 }
               }
             }}

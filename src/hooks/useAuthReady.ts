@@ -4,6 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { lessonProgressService } from '@/services/lessonProgressService';
 import { speakingTestService } from '@/services/speakingTestService';
+import { StorageMigrationService } from '@/services/storageMigrationService';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 export const useAuthReady = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -20,77 +22,106 @@ export const useAuthReady = () => {
         setIsAuthenticated(!!session);
         setIsLoading(false);
 
-        // FIX #6: Handle login event - sync localStorage progress to database
+        // PRODUCTION FIX: Handle login event - robust sync with verification
         if (event === 'SIGNED_IN' && session?.user) {
+          const userId = session.user.id;
+          console.log('[Auth] User signed in, starting progress sync for:', userId);
+
           try {
-            // Check if localStorage has progress to sync
-            const hasLocalProgress = localStorage.getItem('completedModules') ||
-                                    localStorage.getItem('ll_progress_v1') ||
-                                    localStorage.getItem('userPlacement');
+            toast.info('Syncing your progress...');
 
-            if (hasLocalProgress) {
-              toast.info('Syncing your progress...');
+            // Step 1: Run migration service to unify all legacy keys
+            const { placementTest, progress } = StorageMigrationService.runFullMigration(userId);
+            console.log('[Auth] Migration complete. Placement:', !!placementTest, 'Progress:', !!progress);
 
-              // 🔧 FIX: Sync placement test if exists locally but not in database
-              const localPlacement = localStorage.getItem('guestPlacementTest') ||
-                                    localStorage.getItem('lastTestResult');
+            // Step 2: Sync placement test to Supabase with VERIFICATION
+            if (placementTest) {
+              try {
+                // Check if placement already exists in database
+                const { data: existingTest } = await supabase
+                  .from('speaking_test_results')
+                  .select('id')
+                  .eq('user_id', userId)
+                  .limit(1);
 
-              if (localPlacement) {
-                try {
-                  const placementData = JSON.parse(localPlacement);
+                if (!existingTest || existingTest.length === 0) {
+                  // Build test result from placement data
+                  const testResult = placementTest.scores || placementTest;
 
-                  // Check if placement exists in database
-                  const { data: existingTest } = await supabase
+                  // Save to database
+                  const saveResult = await speakingTestService.saveTestResult({
+                    overall_score: testResult.overall_score || 0,
+                    recommended_level: testResult.recommended_level || placementTest.level || 'A1',
+                    pronunciation_score: testResult.pronunciation_score || 0,
+                    grammar_score: testResult.grammar_score || 0,
+                    vocabulary_score: testResult.vocabulary_score || 0,
+                    fluency_score: testResult.fluency_score || 0,
+                    comprehension_score: testResult.comprehension_score || 0,
+                    test_duration: testResult.test_duration || 0,
+                    transcript: testResult.transcript || [],
+                    detailed_feedback: testResult.detailed_feedback || {},
+                    words_per_minute: testResult.words_per_minute || 0,
+                    unique_words_count: testResult.unique_words_count || 0,
+                    grammar_errors_count: testResult.grammar_errors_count || 0,
+                    pronunciation_issues: testResult.pronunciation_issues || [],
+                    test_type: testResult.test_type || 'full'
+                  });
+
+                  // VERIFICATION: Confirm data is in cloud
+                  const { data: verifyTest } = await supabase
                     .from('speaking_test_results')
                     .select('id')
-                    .eq('user_id', session.user.id)
+                    .eq('user_id', userId)
                     .limit(1);
 
-                  if (!existingTest || existingTest.length === 0) {
-                    // 🔧 FIX: Actually upload placement test data to database
-                    const testResult = placementData.scores || placementData;
-
-                    if (testResult.overall_score !== undefined) {
-                      await speakingTestService.saveTestResult({
-                        overall_score: testResult.overall_score || 0,
-                        recommended_level: testResult.recommended_level || placementData.level || 'A1',
-                        pronunciation_score: testResult.pronunciation_score || 0,
-                        grammar_score: testResult.grammar_score || 0,
-                        vocabulary_score: testResult.vocabulary_score || 0,
-                        fluency_score: testResult.fluency_score || 0,
-                        comprehension_score: testResult.comprehension_score || 0,
-                        test_duration: testResult.test_duration || 0,
-                        transcript: testResult.transcript || [],
-                        detailed_feedback: testResult.detailed_feedback || {},
-                        words_per_minute: testResult.words_per_minute || 0,
-                        unique_words_count: testResult.unique_words_count || 0,
-                        grammar_errors_count: testResult.grammar_errors_count || 0,
-                        pronunciation_issues: testResult.pronunciation_issues || [],
-                        test_type: testResult.test_type || 'full'
-                      });
-
-                      toast.success('Placement test synced to your account!');
-                    }
+                  if (verifyTest && verifyTest.length > 0) {
+                    console.log('[Auth] Placement test synced and VERIFIED');
+                    toast.success('Placement test synced!');
+                  } else {
+                    console.error('[Auth] Placement sync verification FAILED');
+                    // Keep local data as backup
                   }
-                } catch (err) {
-                  if (import.meta.env.DEV) console.error('Failed to sync placement test:', err);
+                } else {
+                  console.log('[Auth] Placement test already exists in database');
                 }
+              } catch (err) {
+                console.error('[Auth] Failed to sync placement test:', err);
+                // Don't clear local - keep as backup
               }
-
-              // Sync completed modules using lessonProgressService
-              const result = await lessonProgressService.mergeProgressOnLogin(session.user.id);
-
-              if (result && result.synced > 0) {
-                toast.success(`Welcome back! Synced ${result.synced} module(s).`);
-              } else {
-                toast.success('Welcome back! Your progress is up to date.');
-              }
-            } else {
-              toast.success('Welcome back!');
             }
+
+            // Step 3: Load existing progress from cloud (in case user has progress on other devices)
+            try {
+              await lessonProgressService.loadProgressFromCloud(userId);
+              console.log('[Auth] Cloud progress loaded');
+            } catch (err) {
+              console.log('[Auth] No cloud progress to load or load failed');
+            }
+
+            // Step 4: Sync local progress to cloud
+            const result = await lessonProgressService.mergeProgressOnLogin(userId);
+
+            // Step 5: Dispatch sync complete event for other components to listen
+            window.dispatchEvent(new CustomEvent('auth:sync-complete', {
+              detail: { userId, success: true, synced: result?.synced || 0 }
+            }));
+
+            if (result && result.synced > 0) {
+              toast.success(`Welcome back! Synced ${result.synced} module(s).`);
+            } else {
+              toast.success('Welcome back! Your progress is up to date.');
+            }
+
+            console.log('[Auth] Full sync complete');
+
           } catch (error) {
-            if (import.meta.env.DEV) console.error('Failed to sync progress on login:', error);
+            console.error('[Auth] Progress sync failed:', error);
             toast.warning('Progress sync failed. Some data may not be saved.');
+
+            // Still dispatch event so UI doesn't hang
+            window.dispatchEvent(new CustomEvent('auth:sync-complete', {
+              detail: { userId, success: false, error: String(error) }
+            }));
           }
         }
 
@@ -102,15 +133,24 @@ export const useAuthReady = () => {
             localStorage.removeItem('completedModules');
             localStorage.removeItem('userPlacement');
             localStorage.removeItem('placement');
+            localStorage.removeItem('guestPlacementTest');
+            localStorage.removeItem('lastTestResult');
             localStorage.removeItem('recommendedStartLevel');
             localStorage.removeItem('recommendedStartModule');
+
+            // Also clear new unified keys
+            localStorage.removeItem(STORAGE_KEYS.PLACEMENT_TEST);
+            localStorage.removeItem(STORAGE_KEYS.SYNC_STATUS);
 
             // PERFORMANCE FIX: Clear guest progress keys in background (non-blocking)
             // Using setTimeout prevents blocking the UI thread during sign-out
             setTimeout(() => {
               try {
                 const allKeys = Object.keys(localStorage);
-                const keysToRemove = allKeys.filter(key => key.startsWith('speakflow:v2:'));
+                const keysToRemove = allKeys.filter(key =>
+                  key.startsWith('speakflow:v2:') ||
+                  key.startsWith('tomashoca:progress:')
+                );
                 keysToRemove.forEach(key => localStorage.removeItem(key));
               } catch (err) {
                 // Silent fail for cleanup - non-critical

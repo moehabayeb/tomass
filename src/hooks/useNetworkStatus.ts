@@ -19,26 +19,31 @@ export function useNetworkStatus() {
     connectionType: getConnectionType()
   }));
 
-  // Test network connectivity with a small request
+  // Test network connectivity with a real network request
+  // PRODUCTION FIX: Previous version fetched /favicon.ico which is a LOCAL file in Capacitor apps
+  // This caused false "offline" status. Now we use Google's connectivity check endpoint.
   const testConnectivity = useCallback(async (): Promise<boolean> => {
     if (typeof window === 'undefined') return true;
 
     try {
       setNetworkStatus(prev => ({ ...prev, isConnecting: true }));
 
-      // Test with a small, fast request to a reliable endpoint
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-      const response = await fetch('/favicon.ico', {
+      // Use Google's connectivity check endpoint - returns empty 204 response
+      // mode: 'no-cors' means we can't check response, but if fetch succeeds we're online
+      await fetch('https://www.google.com/generate_204', {
         method: 'HEAD',
+        mode: 'no-cors',
         cache: 'no-cache',
         signal: controller.signal
       });
 
       clearTimeout(timeoutId);
-      return response.ok;
+      return true; // If we get here without error, we're online
     } catch (error) {
+      // Network request failed - we're offline
       return false;
     } finally {
       setNetworkStatus(prev => ({ ...prev, isConnecting: false }));

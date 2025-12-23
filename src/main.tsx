@@ -1,3 +1,6 @@
+// IMPORTANT: Polyfill must be first import to prevent crashes on Android
+import './lib/speechSynthesisPolyfill'
+
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'

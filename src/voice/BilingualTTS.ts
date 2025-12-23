@@ -1,7 +1,12 @@
 import { getBestEnglishVoice, getBestTurkishVoice, configureUtterance, VOICE_CONFIG } from '@/config/voice';
+import { Capacitor } from '@capacitor/core';
+import { UnifiedTTSService } from '@/services/UnifiedTTSService';
 
 // Feature flag for bilingual TTS (controlled by voice upgrade)
 const TTS_MULTI_LANG_ENABLED = () => VOICE_CONFIG.UPGRADE_ENABLED;
+
+// Check if running on native platform
+const isNativePlatform = () => Capacitor.isNativePlatform();
 
 interface TextSegment {
   text: string;
@@ -299,10 +304,33 @@ class BilingualTTSService {
    * Speak a single segment
    */
   private speakSegment(segment: TextSegment): Promise<number> {
+    // Use native TTS on Android/iOS
+    if (isNativePlatform()) {
+      return new Promise(async (resolve) => {
+        const startTime = Date.now();
+        try {
+          const langConfig = segment.language === 'tr-TR' ? VOICE_CONFIG.TURKISH : VOICE_CONFIG.ENGLISH;
+          await UnifiedTTSService.speak({
+            text: segment.cleanText,
+            lang: segment.language,
+            rate: langConfig.RATE,
+            pitch: langConfig.PITCH,
+            volume: langConfig.VOLUME
+          });
+          const duration = Date.now() - startTime;
+          resolve(duration);
+        } catch (error) {
+          console.error('[BilingualTTS] Native speak error:', error);
+          resolve(0);
+        }
+      });
+    }
+
+    // Web Speech API for browsers
     return new Promise((resolve) => {
       const utterance = new SpeechSynthesisUtterance(segment.cleanText);
       this.configureUtteranceForLanguage(utterance, segment);
-      
+
       // If no suitable voice found, skip this segment
       if (!utterance.voice) {
         resolve(0);
@@ -310,16 +338,16 @@ class BilingualTTSService {
       }
 
       const startTime = Date.now();
-      
+
       utterance.onstart = () => {
       };
-      
+
       utterance.onend = () => {
         const duration = Date.now() - startTime;
         this.currentUtterance = null;
         resolve(duration);
       };
-      
+
       utterance.onerror = (event) => {
         this.currentUtterance = null;
         resolve(0); // Graceful fallback
@@ -335,8 +363,12 @@ class BilingualTTSService {
    */
   stop(): void {
     try {
-      if (speechSynthesis.speaking || speechSynthesis.pending) {
-        speechSynthesis.cancel();
+      if (isNativePlatform()) {
+        UnifiedTTSService.stop();
+      } else {
+        if (speechSynthesis.speaking || speechSynthesis.pending) {
+          speechSynthesis.cancel();
+        }
       }
       this.speechQueue = [];
       this.currentUtterance = null;
@@ -350,23 +382,41 @@ class BilingualTTSService {
    * Fallback to simple TTS when bilingual feature is disabled
    */
   private async fallbackToSimpleTTS(text: string): Promise<TTSResult> {
-    return new Promise((resolve) => {
-      const cleanText = this.cleanTextForSpeech(text);
-      if (!cleanText.trim()) {
-        resolve({ durationMs: 0, segmentsSpoken: 0 });
-        return;
-      }
+    const cleanText = this.cleanTextForSpeech(text);
+    if (!cleanText.trim()) {
+      return { durationMs: 0, segmentsSpoken: 0 };
+    }
 
+    // Use native TTS on Android/iOS
+    if (isNativePlatform()) {
+      const startTime = Date.now();
+      try {
+        await UnifiedTTSService.speak({
+          text: cleanText,
+          lang: 'en-US',
+          rate: VOICE_CONFIG.ENGLISH.RATE,
+          pitch: VOICE_CONFIG.ENGLISH.PITCH,
+          volume: VOICE_CONFIG.ENGLISH.VOLUME
+        });
+        return { durationMs: Date.now() - startTime, segmentsSpoken: 1 };
+      } catch (error) {
+        console.error('[BilingualTTS] Native fallback error:', error);
+        return { durationMs: 0, segmentsSpoken: 0 };
+      }
+    }
+
+    // Web Speech API for browsers
+    return new Promise((resolve) => {
       const utterance = new SpeechSynthesisUtterance(cleanText);
       configureUtterance(utterance, cleanText);
-      
+
       const startTime = Date.now();
-      
+
       utterance.onend = () => {
         const duration = Date.now() - startTime;
         resolve({ durationMs: duration, segmentsSpoken: 1 });
       };
-      
+
       utterance.onerror = () => {
         resolve({ durationMs: 0, segmentsSpoken: 0 });
       };
@@ -376,6 +426,9 @@ class BilingualTTSService {
   }
 
   get isSpeaking(): boolean {
+    if (isNativePlatform()) {
+      return UnifiedTTSService.isSpeaking() || this.isProcessing;
+    }
     return speechSynthesis.speaking || this.currentUtterance !== null;
   }
 }

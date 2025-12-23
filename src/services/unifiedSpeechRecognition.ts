@@ -33,11 +33,61 @@ class UnifiedSpeechRecognitionService {
   private onErrorCallback: ((error: Error) => void) | null = null;
   private onEndCallback: (() => void) | null = null;
 
+  // PRODUCTION FIX: Request queue to prevent race conditions
+  // Without this, rapid start/stop cycles can leave the speech recognizer in a bad state
+  private requestQueue: Promise<void> = Promise.resolve();
+  private lastStopTime: number = 0;
+  private readonly MIN_RESTART_DELAY_MS = 200;
+
   constructor() {
     this.mode = this.detectBestMode();
     if (import.meta.env.DEV) {
       console.log('🎤 Unified Speech Recognition initialized with mode:', this.mode);
     }
+  }
+
+  /**
+   * 🔧 GOD-TIER v20: Extract transcript from Capacitor speech recognition data
+   * Handles multiple possible data formats from different Android versions/devices
+   * This fixes the issue where Lessons page shows "Listening" but captures nothing
+   */
+  private extractTranscript(data: any): string {
+    // Format 1: data.matches (array or string) - most common
+    if (data.matches) {
+      if (Array.isArray(data.matches) && data.matches.length > 0) {
+        return data.matches[0];
+      }
+      if (typeof data.matches === 'string') {
+        return data.matches;
+      }
+    }
+
+    // Format 2: data.value (used by some Android versions)
+    if (data.value) {
+      if (Array.isArray(data.value) && data.value.length > 0) {
+        return data.value[0];
+      }
+      if (typeof data.value === 'string') {
+        return data.value;
+      }
+    }
+
+    // Format 3: data.results (rare but possible)
+    if (data.results) {
+      if (Array.isArray(data.results) && data.results.length > 0) {
+        return data.results[0];
+      }
+      if (typeof data.results === 'string') {
+        return data.results;
+      }
+    }
+
+    // Format 4: Direct string (edge case)
+    if (typeof data === 'string') {
+      return data;
+    }
+
+    return '';
   }
 
   /**
@@ -131,15 +181,37 @@ class UnifiedSpeechRecognitionService {
 
   /**
    * Start listening for speech
+   * Uses request queue to prevent race conditions from rapid start/stop
    */
   async start(config: UnifiedSpeechRecognitionConfig = {}): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.requestQueue = this.requestQueue.then(async () => {
+        try {
+          // Ensure minimum delay since last stop to let Android release resources
+          const elapsed = Date.now() - this.lastStopTime;
+          if (elapsed < this.MIN_RESTART_DELAY_MS) {
+            console.log(`[SPEECH] Waiting ${this.MIN_RESTART_DELAY_MS - elapsed}ms before restart`);
+            await new Promise(r => setTimeout(r, this.MIN_RESTART_DELAY_MS - elapsed));
+          }
+
+          await this.doStart(config);
+          resolve();
+        } catch (error) {
+          reject(error);
+        }
+      });
+    });
+  }
+
+  /**
+   * Internal start implementation
+   */
+  private async doStart(config: UnifiedSpeechRecognitionConfig = {}): Promise<void> {
     const language = config.language || 'en-US';
 
     if (this.isListening) {
-      if (import.meta.env.DEV) {
-        console.warn('Already listening, stopping first');
-      }
-      await this.stop();
+      console.log('[SPEECH] Already listening, stopping first');
+      await this.doStop();
     }
 
     // Check availability
@@ -175,23 +247,66 @@ class UnifiedSpeechRecognitionService {
 
   /**
    * Start Capacitor native speech recognition
+   *
+   * CRITICAL: On Android, we must listen for 'listeningState' event because
+   * 'finalResults' may NEVER fire. When user stops speaking, Android fires
+   * listeningState with status='stopped', and we need to capture whatever
+   * partial results we have at that point.
    */
   private async startCapacitorRecognition(language: string): Promise<void> {
-    try {
-      await SpeechRecognition.start({
-        language,
-        maxResults: 5,
-        prompt: 'Speak now',
-        partialResults: true,
-        popup: false,
-      });
+    // PRODUCTION FIX: Small delay to ensure Android fully releases previous recognition resources
+    // Without this, rapid successive start/stop can leave the native SpeechRecognizer in a bad state
+    await new Promise(resolve => setTimeout(resolve, 100));
 
-      // Listen for results
+    // PRODUCTION DEBUG: Log all steps to track down why speech recognition fails
+    console.log('[SPEECH] Starting Capacitor recognition for language:', language);
+
+    // CRITICAL FIX: Remove any existing listeners BEFORE adding new ones
+    try {
+      await SpeechRecognition.removeAllListeners();
+      console.log('[SPEECH] Cleared previous listeners');
+    } catch (e) {
+      console.log('[SPEECH] No previous listeners to clear');
+    }
+
+    // AVAILABILITY CHECK: Verify speech recognition service is available
+    try {
+      console.log('[SPEECH] Checking availability...');
+      const availability = await SpeechRecognition.available();
+      console.log('[SPEECH] Availability result:', availability);
+      if (!availability.available) {
+        const error = new Error('Speech recognition not available. Please install/enable Google app.');
+        this.isListening = false;
+        console.error('[SPEECH] ERROR: Service unavailable');
+        if (this.onErrorCallback) {
+          this.onErrorCallback(error);
+        }
+        throw error;
+      }
+      console.log('[SPEECH] Service is available');
+    } catch (e: any) {
+      console.warn('[SPEECH] Availability check failed:', e.message);
+      // Continue anyway - the check itself might fail but recognition might work
+    }
+
+    // Track partial results to use when listeningState fires
+    let currentTranscript = '';
+    let hasReceivedFinalResult = false;
+
+    try {
+      console.log('[SPEECH] Setting up event listeners...');
+
+      // Listen for partial results - save transcript for listeningState fallback
+      // 🔧 GOD-TIER v20: Use extractTranscript() to handle all data formats
       SpeechRecognition.addListener('partialResults', (data: any) => {
-        if (data.matches && data.matches.length > 0) {
+        console.log('[SPEECH] EVENT: partialResults', JSON.stringify(data));
+        const transcript = this.extractTranscript(data);
+        if (transcript) {
+          currentTranscript = transcript;
+          console.log('[SPEECH] Partial transcript:', currentTranscript);
           if (this.onResultCallback) {
             this.onResultCallback({
-              transcript: data.matches[0],
+              transcript: currentTranscript,
               confidence: 1.0,
               isFinal: false,
             });
@@ -199,12 +314,18 @@ class UnifiedSpeechRecognitionService {
         }
       });
 
-      // Listen for final results
+      // Listen for final results (may not fire on all Android devices)
+      // 🔧 GOD-TIER v20: Use extractTranscript() to handle all data formats
       SpeechRecognition.addListener('finalResults', (data: any) => {
-        if (data.matches && data.matches.length > 0) {
+        console.log('[SPEECH] EVENT: finalResults', JSON.stringify(data));
+        hasReceivedFinalResult = true;
+        const transcript = this.extractTranscript(data);
+        if (transcript) {
+          currentTranscript = transcript;
+          console.log('[SPEECH] Final transcript:', currentTranscript);
           if (this.onResultCallback) {
             this.onResultCallback({
-              transcript: data.matches[0],
+              transcript: currentTranscript,
               confidence: 1.0,
               isFinal: true,
             });
@@ -216,9 +337,84 @@ class UnifiedSpeechRecognitionService {
         }
       });
 
-      if (import.meta.env.DEV) {
-        console.log('✅ Capacitor speech recognition started');
-      }
+      // CRITICAL: Listen for listeningState - this fires when user stops speaking
+      let startConfirmed = false;
+      SpeechRecognition.addListener('listeningState', (data: any) => {
+        console.log('[SPEECH] EVENT: listeningState', data.status);
+
+        // Confirm recognition started when we get 'started' status
+        if (data.status === 'started') {
+          startConfirmed = true;
+          console.log('[SPEECH] Recognition STARTED successfully');
+        }
+
+        if (data.status === 'stopped') {
+          console.log('[SPEECH] Recognition STOPPED. isListening:', this.isListening, 'hasReceivedFinal:', hasReceivedFinalResult, 'transcript:', currentTranscript);
+          if (this.isListening && !hasReceivedFinalResult) {
+            // Use whatever transcript we captured from partial results
+            if (currentTranscript && this.onResultCallback) {
+              console.log('[SPEECH] Using partial as final:', currentTranscript);
+              this.onResultCallback({
+                transcript: currentTranscript,
+                confidence: 1.0,
+                isFinal: true,
+              });
+            } else {
+              console.log('[SPEECH] No transcript captured!');
+            }
+            this.isListening = false;
+            if (this.onEndCallback) {
+              this.onEndCallback();
+            }
+          }
+        }
+      });
+
+      // CRITICAL: Listen for native errors
+      SpeechRecognition.addListener('error', (data: any) => {
+        console.error('[SPEECH] EVENT: error', JSON.stringify(data));
+        const errorMessage = data.message || data.error || 'Speech recognition failed';
+        this.isListening = false;
+
+        if (this.onErrorCallback) {
+          this.onErrorCallback(new Error(errorMessage));
+        }
+        if (this.onEndCallback) {
+          this.onEndCallback();
+        }
+      });
+
+      console.log('[SPEECH] All listeners registered. Starting recognition...');
+
+      // Now start recognition
+      await SpeechRecognition.start({
+        language,
+        maxResults: 5,
+        prompt: 'Speak now',
+        partialResults: true,
+        popup: false,
+      });
+
+      console.log('[SPEECH] SpeechRecognition.start() completed');
+
+      // START CONFIRMATION: Detect silent failures within 3 seconds
+      setTimeout(async () => {
+        if (!startConfirmed && this.isListening) {
+          console.error('[SPEECH] TIMEOUT: No start event after 3s!');
+          // Force stop and report error
+          try {
+            await this.stop();
+          } catch (e) {
+            // Ignore stop errors
+          }
+          if (this.onErrorCallback) {
+            this.onErrorCallback(new Error('Speech recognition failed to start. Please try again or check Google app.'));
+          }
+          if (this.onEndCallback) {
+            this.onEndCallback();
+          }
+        }
+      }, 3000);
     } catch (error: any) {
       this.isListening = false;
       if (this.onErrorCallback) {
@@ -305,14 +501,30 @@ class UnifiedSpeechRecognitionService {
 
   /**
    * Stop listening
+   * Uses request queue to prevent race conditions from rapid start/stop
    */
   async stop(): Promise<void> {
-    if (!this.isListening) {
-      return;
-    }
+    return new Promise((resolve) => {
+      this.requestQueue = this.requestQueue.then(async () => {
+        await this.doStop();
+        this.lastStopTime = Date.now();
+        resolve();
+      });
+    });
+  }
 
+  /**
+   * Internal stop implementation
+   *
+   * CRITICAL FIX: Always clean up listeners regardless of isListening state.
+   * This handles edge cases where recognition ended naturally (listeningState fired)
+   * but listeners weren't properly cleaned up.
+   */
+  private async doStop(): Promise<void> {
     try {
       if (this.mode === 'capacitor') {
+        // ALWAYS stop and remove listeners, even if isListening is false
+        // This ensures cleanup in all edge cases
         await SpeechRecognition.stop();
         await SpeechRecognition.removeAllListeners();
       } else if (this.mode === 'web-speech-api' && this.webRecognition) {
@@ -321,11 +533,11 @@ class UnifiedSpeechRecognitionService {
       }
 
       this.isListening = false;
-      if (import.meta.env.DEV) {
-        console.log('🛑 Speech recognition stopped');
-      }
+      console.log('[SPEECH] Stopped and cleaned up');
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Error stopping speech recognition:', error);
+      // Log but don't throw - cleanup should be best-effort
+      console.error('[SPEECH] Error stopping:', error);
+      this.isListening = false;
     }
   }
 

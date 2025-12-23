@@ -120,7 +120,17 @@
       "Bash(npx vercel --prod --yes)",
       "Bash(npx cap:*)",
       "Bash(timeout 180 npm run build:*)",
-      "Bash(start \"\" \"C:\\Users\\Mohammad\\Downloads\\tomass-main\\INVOICE_ADDITIONAL_WORK.md\")"
+      "Bash(start \"\" \"C:\\Users\\Mohammad\\Downloads\\tomass-main\\INVOICE_ADDITIONAL_WORK.md\")",
+      "WebFetch(domain:tomashoca.com)",
+      "Bash(./gradlew bundleRelease:*)",
+      "Bash(./gradlew assembleRelease:*)",
+      "Bash(./gradlew assembleDebug:*)",
+      "Bash(adb install:*)",
+      "Bash(adb devices:*)",
+      "Bash(adb kill-server:*)",
+      "Bash(adb start-server:*)",
+      "Bash(timeout 5 adb wait-for-device:*)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []

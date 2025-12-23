@@ -1,9 +1,13 @@
 import { supabase } from '@/integrations/supabase/client';
 import { enqueueMetric } from '@/lib/metrics';
+import { Capacitor } from '@capacitor/core';
+import { SpeechRecognition as CapacitorSpeechRecognition } from '@capacitor-community/speech-recognition';
+import { microphoneGuardian } from '@/services/MicrophoneGuardian';
 
 // ============= CONSTANTS =============
-export const INITIAL_SILENCE_MS = 20000; // 20 seconds for initial silence detection - allows thinking time
-export const SILENCE_TIMEOUT_MS = 5000; // 5 seconds of silence to stop recording - allows thinking pauses
+// 🔧 GOD-TIER v17: Increased timeouts for language learners who need time to think
+export const INITIAL_SILENCE_MS = 30000; // 30 seconds for initial silence - more time to think before speaking
+export const SILENCE_TIMEOUT_MS = 10000; // 10 seconds of silence to stop - more time to think between words
 export const INIT_DELAY_MS = 600;
 export const MAX_RETRIES = 2;
 export const RETRY_DELAYS = [400, 800];
@@ -43,12 +47,31 @@ let retryCount = 0;
 let startTime = 0;
 let lastButtonTap = 0;
 
+// 🔧 v27: Module-level callback for force-finishing active recording
+// This allows stopRecording() to immediately resolve the promise when user presses stop
+let activeFinishCallback: ((transcript: string, reason: string) => void) | null = null;
+
 // References
 let recognitionRef: any = null;
 let mediaRecorderRef: MediaRecorder | null = null;
 let streamRef: MediaStream | null = null;
 let audioContextRef: AudioContext | null = null;
 let sourceNodeRef: MediaStreamAudioSourceNode | null = null;
+
+// 🔧 GOD-TIER v11: Persistent stream that survives across recordings
+// This keeps the green mic indicator ON throughout the conversation
+let persistentStreamRef: MediaStream | null = null;
+let persistentAudioContextRef: AudioContext | null = null;
+let persistentStreamActive = false;
+
+// 🔧 GOD-TIER v12: Prevent concurrent Capacitor listener operations
+// This flag ensures Turn 2 waits for Turn 1's cleanup to complete
+let capacitorCleanupInProgress = false;
+
+// 🔧 GOD-TIER v13: Request queue prevents race conditions (like unifiedSpeechRecognition.ts)
+// This is the EXACT pattern used by Duolingo/Google for bulletproof speech recognition
+let capacitorLastStopTime: number = 0;
+const CAPACITOR_MIN_RESTART_DELAY_MS = 200; // Android needs 200ms to release native resources!
 
 // Timers
 let countdownTimerRef: number | undefined;
@@ -252,37 +275,147 @@ function cleanupResources() {
     mediaRecorderRef = null;
   }
   
-  // Stop stream
-  if (streamRef) {
-    streamRef.getTracks().forEach(track => {
-      track.stop();
-    });
-    streamRef = null;
-  }
-  
-  // Cleanup audio context - silent fail: may already be disconnected
-  if (sourceNodeRef) {
-    try { sourceNodeRef.disconnect(); } catch { /* Expected: node may already be disconnected */ }
-    sourceNodeRef = null;
-  }
-
-  // 🔧 FIX BUG #27: Properly close AudioContext to prevent memory leak
-  // Close instead of just suspending - create new context if needed later
-  if (audioContextRef) {
-    try {
-      if (audioContextRef.state !== 'closed') {
-        audioContextRef.close();
-      }
-    } catch (e) {
-      // Ignore errors during cleanup
+  // 🔧 GOD-TIER v11: Skip stream/AudioContext cleanup if persistent stream is active
+  // This keeps the green mic indicator ON between conversation turns
+  if (!persistentStreamActive) {
+    // Stop stream (only when not in persistent mode)
+    if (streamRef) {
+      streamRef.getTracks().forEach(track => {
+        track.stop();
+      });
+      streamRef = null;
     }
-    audioContextRef = null;
+
+    // Cleanup audio context - silent fail: may already be disconnected
+    if (sourceNodeRef) {
+      try { sourceNodeRef.disconnect(); } catch { /* Expected: node may already be disconnected */ }
+      sourceNodeRef = null;
+    }
+
+    // 🔧 FIX BUG #27: Properly close AudioContext to prevent memory leak
+    // Close instead of just suspending - create new context if needed later
+    if (audioContextRef) {
+      try {
+        if (audioContextRef.state !== 'closed') {
+          audioContextRef.close();
+        }
+      } catch (e) {
+        // Ignore errors during cleanup
+      }
+      audioContextRef = null;
+    }
+  } else {
+    console.log('[MicEngine] 🎤 Skipping stream cleanup - persistent stream active');
   }
 
 }
 
-// ============= SPEECH RECOGNITION ENGINE =============
+// ============= GOD-TIER v11: PERSISTENT STREAM MANAGEMENT =============
+// Industry-standard pattern used by Google Assistant, Siri, Duolingo
+// Keeps mic stream alive across conversation turns - green indicator stays ON
+
+/**
+ * Acquire a persistent microphone stream that stays alive across recordings.
+ * Call this ONCE when conversation starts. Stream is reused for all turns.
+ */
+export async function acquirePersistentStream(): Promise<MediaStream> {
+  // If we already have an active persistent stream, reuse it
+  if (persistentStreamRef && persistentStreamRef.active) {
+    console.log('[MicEngine] 🎤 Reusing existing persistent stream');
+    persistentStreamActive = true;
+    return persistentStreamRef;
+  }
+
+  console.log('[MicEngine] 🎤 Acquiring NEW persistent stream...');
+
+  try {
+    // Acquire new stream - this turns ON the green mic indicator
+    persistentStreamRef = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+      }
+    });
+
+    // Create persistent AudioContext (reusable across recordings)
+    if (!persistentAudioContextRef || persistentAudioContextRef.state === 'closed') {
+      persistentAudioContextRef = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+
+    // Resume if suspended
+    if (persistentAudioContextRef.state === 'suspended') {
+      await persistentAudioContextRef.resume();
+    }
+
+    persistentStreamActive = true;
+    console.log('[MicEngine] 🎤 Persistent stream acquired - GREEN INDICATOR ON');
+    emitMetrics('persistent_stream_acquired');
+
+    return persistentStreamRef;
+  } catch (error) {
+    console.error('[MicEngine] Failed to acquire persistent stream:', error);
+    persistentStreamActive = false;
+    throw error;
+  }
+}
+
+/**
+ * Release the persistent stream - call this ONLY when conversation ends.
+ * This turns OFF the green mic indicator.
+ */
+export function releasePersistentStream(): void {
+  console.log('[MicEngine] 🎤 Releasing persistent stream...');
+
+  // Stop all tracks on the persistent stream
+  if (persistentStreamRef) {
+    persistentStreamRef.getTracks().forEach(track => {
+      track.stop();
+    });
+    persistentStreamRef = null;
+  }
+
+  // Close persistent AudioContext
+  if (persistentAudioContextRef) {
+    try {
+      if (persistentAudioContextRef.state !== 'closed') {
+        persistentAudioContextRef.close();
+      }
+    } catch (e) {
+      // Ignore errors during cleanup
+    }
+    persistentAudioContextRef = null;
+  }
+
+  persistentStreamActive = false;
+  console.log('[MicEngine] 🎤 Persistent stream released - GREEN INDICATOR OFF');
+  emitMetrics('persistent_stream_released');
+}
+
+/**
+ * Check if persistent stream is active
+ */
+export function isPersistentStreamActive(): boolean {
+  return persistentStreamActive && persistentStreamRef !== null && persistentStreamRef.active;
+}
+
+/**
+ * Get the persistent stream (for use by speech recognition)
+ */
+export function getPersistentStream(): MediaStream | null {
+  return persistentStreamRef;
+}
+
+/**
+ * Get the persistent AudioContext (for use by audio processing)
+ */
+export function getPersistentAudioContext(): AudioContext | null {
+  return persistentAudioContextRef;
+}
+
+// ============= SPEECH RECOGNITION ENGINE (WEB ONLY) =============
 async function startSpeechRecognition(id: number, maxSec: number): Promise<string> {
+  // Note: Capacitor check is now in internalStart() - this function is web-only
   return new Promise((resolve, reject) => {
     if (!('webkitSpeechRecognition' in window)) {
       throw new Error('SpeechRecognition not supported');
@@ -362,10 +495,11 @@ async function startSpeechRecognition(id: number, maxSec: number): Promise<strin
     
     recognitionRef.onend = () => {
       if (isStale(id)) return;
-      
-      if (hasStarted) {
-        finish(finalTranscript);
-      }
+
+      // 🔧 v26: Always finish when recognition ends - don't gate on hasStarted
+      // This ensures stopRecording() properly resolves the promise
+      // The finish() function already has isFinished guard to prevent double resolution
+      finish(finalTranscript);
     };
     
     recognitionRef.onerror = (event: any) => {
@@ -389,6 +523,206 @@ async function startSpeechRecognition(id: number, maxSec: number): Promise<strin
     } catch (error) {
       clearTimeout(silenceTimer);
       reject(error);
+    }
+  });
+}
+
+// ============= CAPACITOR SPEECH RECOGNITION (ANDROID/iOS) =============
+// 🎯 BULLETPROOF VERSION - Handles all Android edge cases
+async function startCapacitorSpeechRecognition(id: number, maxSec: number): Promise<string> {
+  console.log('[CapacitorSpeech] ========== STARTING ==========');
+
+  // 🔧 GOD-TIER v14: Force reset state to ensure clean start
+  // This prevents "state stuck" issues from blocking Turn 2+
+  if (state !== 'idle' && state !== 'initializing') {
+    console.warn(`[CapacitorSpeech] ⚠️ v14: State was "${state}", forcing to idle for Turn 2+`);
+    state = 'idle';
+  }
+
+  return new Promise(async (resolve, reject) => {
+    let transcript = '';
+    let isFinished = false;
+    let hasStarted = false;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    let silenceTimeoutId: ReturnType<typeof setTimeout> | null = null;
+
+    const cleanup = async () => {
+      console.log('[CapacitorSpeech] Cleanup...');
+      if (timeoutId) clearTimeout(timeoutId);
+      if (silenceTimeoutId) clearTimeout(silenceTimeoutId);
+
+      // Stop recognition - but DON'T remove listeners yet (they might have pending events)
+      try {
+        await CapacitorSpeechRecognition.stop();
+      } catch (e) { /* ignore */ }
+      // NOTE: removeAllListeners is called in finish() BEFORE resolve (GOD-TIER v12)
+    };
+
+    const finish = async (result: string, reason: string) => {
+      if (isFinished || isStale(id)) return;
+      // 🔧 v27: Use closure transcript if external call passes empty result
+      // This allows stopRecording() to finish with the current transcript
+      const finalResult = result || transcript;
+      console.log(`[CapacitorSpeech] FINISH: "${finalResult}" (${reason})`);
+      isFinished = true;
+      activeFinishCallback = null; // 🔧 v27: Clear callback so stopRecording() doesn't double-finish
+
+      // 🔧 v33: RESOLVE FIRST! Then cleanup (cleanup can hang on Android)
+      // This is the same pattern we use in stopRecording() - callback BEFORE stop
+      // The promise must resolve immediately so the UI can continue
+      capacitorLastStopTime = Date.now();
+      resolve(finalResult.trim());  // <-- RESOLVE IMMEDIATELY!
+
+      // Now do cleanup in background (non-blocking)
+      // If this hangs, it doesn't matter - promise already resolved
+      try {
+        capacitorCleanupInProgress = true;
+        await cleanup();
+        await CapacitorSpeechRecognition.removeAllListeners();
+        console.log('[CapacitorSpeech] v33: Cleanup completed after resolve');
+      } catch (e) {
+        console.log('[CapacitorSpeech] Cleanup error (safe - promise already resolved):', e);
+      } finally {
+        capacitorCleanupInProgress = false;
+      }
+    };
+
+    // 🔧 v27: Store the finish callback so stopRecording() can force-finish
+    activeFinishCallback = finish;
+
+    try {
+      // Step 1: Check availability
+      const { available } = await CapacitorSpeechRecognition.available();
+      console.log('[CapacitorSpeech] Available:', available);
+      if (!available) {
+        reject(new Error('Speech recognition not available'));
+        return;
+      }
+
+      // Step 2: Request permissions
+      const permResult = await CapacitorSpeechRecognition.requestPermissions();
+      console.log('[CapacitorSpeech] Permission:', permResult.speechRecognition);
+      if (permResult.speechRecognition !== 'granted') {
+        reject(new Error('Microphone access denied'));
+        return;
+      }
+
+      // 🔧 GOD-TIER v13: Enforce minimum 200ms delay since last stop (Android requirement)
+      // This is the EXACT pattern used by Duolingo/Google - DO NOT call removeAllListeners() here!
+      // Calling it twice corrupts Android's SpeechRecognizer listener registry.
+      const elapsed = Date.now() - capacitorLastStopTime;
+      if (capacitorLastStopTime > 0 && elapsed < CAPACITOR_MIN_RESTART_DELAY_MS) {
+        const waitTime = CAPACITOR_MIN_RESTART_DELAY_MS - elapsed;
+        console.log(`[CapacitorSpeech] 🔧 v13: Waiting ${waitTime}ms for Android cleanup...`);
+        await new Promise(r => setTimeout(r, waitTime));
+      }
+      console.log('[CapacitorSpeech] Android cleanup delay completed, ready to add listeners');
+
+      // Step 4: Add partialResults listener - HANDLE BOTH ARRAY AND STRING
+      await CapacitorSpeechRecognition.addListener('partialResults', (data: any) => {
+        console.log('[CapacitorSpeech] partialResults:', JSON.stringify(data));
+        // 🎯 GOD-TIER FIX: Only exit on stale, NOT on isFinished
+        // Allow late results to update transcript even after stop initiated
+        if (isStale(id)) return;
+
+        // 🎯 CRITICAL FIX: Handle both array and string formats from Android
+        let newTranscript = '';
+        if (data.matches) {
+          if (Array.isArray(data.matches) && data.matches.length > 0) {
+            newTranscript = data.matches[0];
+          } else if (typeof data.matches === 'string') {
+            newTranscript = data.matches;
+          }
+        } else if (data.value) {
+          // Some Android versions use 'value' instead of 'matches'
+          newTranscript = Array.isArray(data.value) ? data.value[0] : data.value;
+        }
+
+        if (newTranscript) {
+          transcript = newTranscript;
+          console.log('[CapacitorSpeech] Transcript:', transcript);
+
+          // Reset silence timeout on speech
+          if (silenceTimeoutId) clearTimeout(silenceTimeoutId);
+          silenceTimeoutId = setTimeout(() => {
+            if (!isFinished && transcript) {
+              finish(transcript, 'silence_after_speech');
+            }
+          }, SILENCE_TIMEOUT_MS);
+
+          // Emit interim event for live captions
+          window.dispatchEvent(new CustomEvent('speech:interim', {
+            detail: { transcript }
+          }));
+        }
+      });
+
+      // Step 5: Add listeningState listener - HANDLE ALL STATES
+      await CapacitorSpeechRecognition.addListener('listeningState', (data: any) => {
+        console.log('[CapacitorSpeech] listeningState:', JSON.stringify(data));
+        if (isStale(id) || isFinished) return;
+
+        // 🎯 CRITICAL FIX: Handle 'started' status too
+        if (data.status === 'started') {
+          hasStarted = true;
+          console.log('[CapacitorSpeech] ✓ Recording STARTED');
+        } else if (data.status === 'stopped') {
+          // 🎯 ULTIMATE FIX: Finish immediately with current transcript
+          // The delay was causing issues - interim caption already has the text
+          console.log('[CapacitorSpeech] Recording STOPPED, transcript so far:', transcript);
+          if (!isFinished) {
+            finish(transcript, 'android_stopped');
+          }
+        }
+      });
+
+      // Step 6: ADD ERROR LISTENER - CRITICAL FOR DEBUGGING
+      await CapacitorSpeechRecognition.addListener('error', (data: any) => {
+        console.error('[CapacitorSpeech] ERROR EVENT:', JSON.stringify(data));
+        if (!isFinished) {
+          // Don't reject - just finish with empty string
+          finish('', 'error_event');
+        }
+      });
+
+      // Step 7: Small delay for listeners to register
+      await new Promise(r => setTimeout(r, 100));
+
+      // Step 8: START RECOGNITION
+      console.log('[CapacitorSpeech] Calling start()...');
+      setState('recording');
+
+      await CapacitorSpeechRecognition.start({
+        language: 'en-US',
+        maxResults: 5,
+        prompt: 'Speak now',
+        partialResults: true,
+        popup: false
+      });
+
+      // 🔧 GOD-TIER v14: Explicit confirmation that mic started
+      console.log('[CapacitorSpeech] ✅ v14: MIC CONFIRMED STARTED - Now listening!');
+
+      // Step 9: Initial silence timeout (if no speech detected)
+      silenceTimeoutId = setTimeout(() => {
+        if (!isFinished && !transcript) {
+          console.log('[CapacitorSpeech] Initial silence - no speech');
+          finish('', 'initial_silence');
+        }
+      }, INITIAL_SILENCE_MS);
+
+      // Step 10: Max duration timeout
+      timeoutId = setTimeout(() => {
+        if (!isFinished) {
+          console.log('[CapacitorSpeech] Max timeout reached');
+          finish(transcript, 'max_timeout');
+        }
+      }, maxSec * 1000);
+
+    } catch (error: any) {
+      console.error('[CapacitorSpeech] CRITICAL ERROR:', error);
+      await cleanup();
+      reject(new Error(error.message || 'Speech recognition failed'));
     }
   });
 }
@@ -452,27 +786,86 @@ async function startMediaRecorder(id: number, maxSec: number): Promise<string> {
 
 // ============= MAIN ENGINE =============
 async function internalStart(id: number, maxSec: number): Promise<MicResult> {
-  const engineMode: EngineMode = USE_FALLBACK || !('webkitSpeechRecognition' in window) 
-    ? 'media-recorder' 
+  // 🎯 ANDROID FIX: On native platforms, try Capacitor first, fallback to MediaRecorder + Whisper
+  if (Capacitor.isNativePlatform()) {
+    console.log('[MicEngine] ===== NATIVE PLATFORM DETECTED =====');
+
+    // 🎯 EMULATOR FIX: Check if speech recognition is actually available
+    try {
+      const { available } = await CapacitorSpeechRecognition.available();
+      console.log('[MicEngine] Speech recognition available:', available);
+
+      if (available) {
+        // Native speech recognition IS available - use Capacitor (fast path)
+        console.log('[MicEngine] Using Capacitor speech recognition');
+        emitMetrics('engine_start', { mode: 'capacitor-native', maxSec });
+
+        try {
+          // Cancel any ongoing TTS
+          try { window?.speechSynthesis?.cancel(); } catch { /* ignore */ }
+
+          setState('initializing');
+          startTime = Date.now();
+          console.log('[MicEngine] State set to initializing, calling startCapacitorSpeechRecognition...');
+
+          // Use Capacitor speech recognition directly - NO getUserMedia needed
+          const transcript = await startCapacitorSpeechRecognition(id, maxSec);
+
+          console.log('[MicEngine] Capacitor speech recognition returned:', transcript || '(empty)');
+          const durationSec = (Date.now() - startTime) / 1000;
+          setState('processing');
+
+          emitMetrics('recording_complete', { transcript: transcript.substring(0, 50), durationSec });
+
+          return { transcript: transcript.trim(), durationSec };
+
+        } catch (error: any) {
+          console.error('[MicEngine] NATIVE ERROR:', error);
+          emitMetrics('recording_error', { error: error.message });
+
+          if (error.message?.includes('denied') || error.name === 'NotAllowedError') {
+            throw new Error('Microphone access denied. Allow mic in Settings.');
+          }
+          throw error;
+        }
+      } else {
+        // 🎯 EMULATOR/NO-GOOGLE-SERVICES: Fall through to MediaRecorder + Whisper
+        console.log('[MicEngine] ⚠️ Native speech NOT available (emulator or no Google Services)');
+        console.log('[MicEngine] Falling back to MediaRecorder + Whisper API');
+        emitMetrics('engine_start', { mode: 'whisper-fallback', maxSec });
+        // Fall through to web path below
+      }
+    } catch (availabilityError) {
+      // Availability check failed - fall back to MediaRecorder + Whisper
+      console.log('[MicEngine] ⚠️ Availability check failed:', availabilityError);
+      console.log('[MicEngine] Falling back to MediaRecorder + Whisper API');
+      emitMetrics('engine_start', { mode: 'whisper-fallback-error', maxSec });
+      // Fall through to web path below
+    }
+  }
+
+  // ============= WEB ONLY BELOW THIS LINE =============
+  const engineMode: EngineMode = USE_FALLBACK || !('webkitSpeechRecognition' in window)
+    ? 'media-recorder'
     : 'speech-recognition';
-    
+
   emitMetrics('engine_start', { mode: engineMode, maxSec });
-  
+
   try {
     // Cancel any ongoing TTS - silent fail: synthesis may not be active
     try { window?.speechSynthesis?.cancel(); } catch { /* Expected: synthesis may not be active */ }
-    
+
     setState('initializing');
     startTime = Date.now();
-    
+
     // Resume audio context on user gesture
     await ensureAudioContext();
-    
+
     // iOS Safari compatibility delay
     await new Promise(resolve => setTimeout(resolve, INIT_DELAY_MS));
-    
+
     if (isStale(id)) throw new Error('Operation cancelled');
-    
+
     // Request microphone
     streamRef = await navigator.mediaDevices.getUserMedia({
       audio: {
@@ -483,18 +876,18 @@ async function internalStart(id: number, maxSec: number): Promise<MicResult> {
         autoGainControl: true,
       }
     });
-    
+
     attachStreamToContext(streamRef);
-    
+
     if (isStale(id)) throw new Error('Operation cancelled');
-    
+
     // Set max timer
     maxTimerRef = window.setTimeout(() => {
       if (!isStale(id)) {
         stopRecording();
       }
     }, maxSec * 1000);
-    
+
     // Start appropriate engine
     let transcript: string;
     if (engineMode === 'speech-recognition') {
@@ -502,14 +895,14 @@ async function internalStart(id: number, maxSec: number): Promise<MicResult> {
     } else {
       transcript = await startMediaRecorder(id, maxSec);
     }
-    
+
     const durationSec = (Date.now() - startTime) / 1000;
     setState('processing');
-    
+
     emitMetrics('recording_complete', { transcript: transcript.substring(0, 50), durationSec });
-    
+
     return { transcript: transcript.trim(), durationSec };
-    
+
   } catch (error: any) {
     emitMetrics('recording_error', { error: error.message });
 
@@ -533,14 +926,35 @@ async function internalStart(id: number, maxSec: number): Promise<MicResult> {
 }
 
 // ============= PUBLIC API =============
-export async function startRecording(opts: { maxSec?: number } = {}): Promise<MicResult> {
-  if (debounceButton()) return Promise.reject(new Error('Button debounced'));
-  
+export async function startRecording(opts: { maxSec?: number; bypassDebounce?: boolean } = {}): Promise<MicResult> {
+  // 🎯 ULTIMATE FIX: Allow bypassing debounce for internal retries
+  if (!opts.bypassDebounce && debounceButton()) return Promise.reject(new Error('Button debounced'));
+
+  // 🔧 GOD-TIER v15: Force reset stuck state instead of throwing
+  // This is the ONLY place that can fix Turn 2+ failures
+  // v14 failed because the reset was AFTER this check - it never ran!
   if (state !== 'idle' && state !== 'prompting') {
-    assertInvariant(false, `startRecording called while state=${state}`);
-    throw new Error('Recording already in progress');
+    console.warn(`[MicEngine] ⚠️ v15: State was "${state}", forcing to idle for Turn 2+`);
+    state = 'idle';
+    // DON'T throw - continue with recording
   }
-  
+
+  // 🔧 PRODUCTION FIX: Pre-flight check via MicrophoneGuardian for bulletproof reliability
+  try {
+    const preflight = await microphoneGuardian.preflightCheck();
+    if (!preflight.ready) {
+      emitMetrics('preflight_failed', { status: preflight.status });
+      throw new Error(preflight.userMessage || 'Microphone not ready');
+    }
+  } catch (preflightError: any) {
+    // If guardian check itself fails, log but continue (don't block recording)
+    emitMetrics('preflight_error', { error: preflightError.message });
+    // Re-throw if it's an actual "not ready" error
+    if (preflightError.message?.includes('not ready') || preflightError.message?.includes('Microphone')) {
+      throw preflightError;
+    }
+  }
+
   const id = newRunId();
   const maxSec = opts.maxSec || MAX_SECONDS;
 
@@ -586,21 +1000,46 @@ export async function startRecording(opts: { maxSec?: number } = {}): Promise<Mi
     setState('idle');
     retryCount = 0;
     throw error;
-  } finally {
-    cleanupResources();
   }
+  // 🔧 GOD-TIER v11: REMOVED finally { cleanupResources() }
+  // Stream now stays alive across turns - green indicator stays ON
+  // Only releasePersistentStream() should stop the mic (when conversation ends)
 }
 
-export function stopRecording(): void {
-  
+export async function stopRecording(): Promise<void> {
+
+  // Stop web speech recognition
   if (recognitionRef) {
     try { recognitionRef.stop(); } catch { /* Expected: recognition may already be stopped */ }
   }
 
+  // Stop media recorder
   if (mediaRecorderRef && mediaRecorderRef.state === 'recording') {
     try { mediaRecorderRef.stop(); } catch { /* Expected: recorder may already be stopped */ }
   }
-  
+
+  // 🎯 CRITICAL: Stop Capacitor speech recognition on native platforms!
+  if (Capacitor.isNativePlatform()) {
+    try {
+      // 🔧 v28: Call callback FIRST - ensures promise resolves even if stop() hangs
+      // Android's CapacitorSpeechRecognition.stop() can hang indefinitely
+      // By calling the callback first, we guarantee the UI responds immediately
+      if (activeFinishCallback) {
+        console.log('[MicEngine] v30: Force-finishing via callback BEFORE stop');
+        const cb = activeFinishCallback;
+        activeFinishCallback = null; // Clear to prevent race conditions/double-calls
+        await cb('', 'manual_stop'); // 🔧 v30: AWAIT the async callback so promise resolves!
+      }
+
+      // Now stop Capacitor (may hang, but promise already resolved above)
+      await CapacitorSpeechRecognition.stop();
+      console.log('[MicEngine] Capacitor speech recognition stopped');
+    } catch (e) {
+      // Expected: may already be stopped or not started
+      console.log('[MicEngine] Capacitor stop error:', e);
+    }
+  }
+
   emitMetrics('recording_stopped');
 }
 

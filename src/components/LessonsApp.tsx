@@ -39,8 +39,13 @@ import { useLessonCheckpoints } from '../hooks/useLessonCheckpoints';
 import { ResumeProgressDialog, SyncStatusIndicator } from './ResumeProgressDialog';
 // Auth
 import { useAuthReady } from '../hooks/useAuthReady';
-// 🎤 Unified Speech Recognition: Works on mobile & desktop
-import { unifiedSpeechRecognition } from '../services/unifiedSpeechRecognition';
+// Storage keys for unified progress
+import { STORAGE_KEYS } from '@/constants/storageKeys';
+// 🔧 GOD-TIER v24: Use micEngine EXCLUSIVELY (removed unifiedSpeechRecognition which was causing issues)
+// micEngine.ts is the PROVEN working engine used by SpeakingApp
+import { startRecording as micStartRecording, stopRecording as micStopRecording, cleanup as micCleanup } from '@/lib/audio/micEngine';
+// 🛡️ Microphone Guardian: Ensures bulletproof mic reliability
+import { microphoneGuardian } from '../services/MicrophoneGuardian';
 // 🚀 BUNDLE OPTIMIZATION: Dynamic module loading to reduce initial bundle size by ~80%
 // Modules are now loaded on-demand when user accesses a specific lesson
 
@@ -915,6 +920,8 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
   // Phase 3.1: Placement test requirement state
   const [showPlacementRequired, setShowPlacementRequired] = useState(false);
   const [hasPlacementTest, setHasPlacementTest] = useState<boolean | null>(null);
+  // PRODUCTION FIX: Track if auth sync has completed to prevent race condition
+  const [syncComplete, setSyncComplete] = useState(false);
 
   // ===== STATE (must be first) =====
   const [width, height] = useWindowSize();
@@ -934,9 +941,13 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
   const [showCelebration, setShowCelebration] = useState(false);
   const [correctAnswers, setCorrectAnswers] = useState(0);
   const [attempts, setAttempts] = useState(0);
-  const [isRecording, setIsRecording] = useState(false);
+  // 🔧 v23: isRecording removed - now we use speakStatus === 'recording' instead
   const [feedback, setFeedback] = useState<string>('');
   const [feedbackType, setFeedbackType] = useState<'success' | 'error' | 'info'>('info');
+
+  // 🔧 v34: Local recording timer (replaces vad.elapsedTime since VAD is no longer used)
+  const [recordingElapsedTime, setRecordingElapsedTime] = useState(0);
+  const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [lastResponseTime, setLastResponseTime] = useState(0);
@@ -954,31 +965,60 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
   const phaseRef = useRef(currentPhase);
   useEffect(() => { phaseRef.current = currentPhase; }, [currentPhase]);
 
+  // PRODUCTION FIX: Listen for auth sync completion event
+  useEffect(() => {
+    const handleSyncComplete = (event: CustomEvent) => {
+      console.log('[LessonsApp] Auth sync complete event received:', event.detail);
+      setSyncComplete(true);
+    };
+
+    // Also set sync complete immediately if not authenticated (guests don't need to wait)
+    if (!isAuthenticated) {
+      setSyncComplete(true);
+    }
+
+    window.addEventListener('auth:sync-complete', handleSyncComplete as EventListener);
+    return () => {
+      window.removeEventListener('auth:sync-complete', handleSyncComplete as EventListener);
+    };
+  }, [isAuthenticated]);
+
   // Phase 3.1: Check for placement test requirement
-  // FIX #2: Fix placement test race condition
+  // PRODUCTION FIX: Wait for sync to complete before checking database
   useEffect(() => {
     async function checkPlacementTest() {
       if (hasPlacementTest === true) return; // Only skip if confirmed
 
-      // 🔧 DIVINE FIX: Check ALL localStorage keys (userPlacement, placement, guestPlacementTest, lastTestResult)
-      const localPlacement = safeLocalStorage().getItem('userPlacement') ||
+      // PRODUCTION FIX: Check ALL localStorage keys including new unified key
+      const localPlacement = safeLocalStorage().getItem(STORAGE_KEYS.PLACEMENT_TEST) ||
+                            safeLocalStorage().getItem('userPlacement') ||
                             safeLocalStorage().getItem('placement') ||
                             safeLocalStorage().getItem('guestPlacementTest') ||
                             safeLocalStorage().getItem('lastTestResult');
 
       if (localPlacement) {
+        console.log('[LessonsApp] Found local placement data');
         setHasPlacementTest(true);
         return;
       }
 
-      // 🔧 DIVINE FIX: Guest users - if no localStorage, require placement test
+      // Guest users - if no localStorage, require placement test
       if (!isAuthenticated || !user?.id) {
+        console.log('[LessonsApp] Guest user without placement test');
         setHasPlacementTest(false);
         setShowPlacementRequired(true);
         return;
       }
 
-      // Authenticated users - check database
+      // PRODUCTION FIX: For authenticated users, WAIT for sync to complete
+      // This prevents the race condition where we check DB before sync finishes
+      if (!syncComplete) {
+        console.log('[LessonsApp] Waiting for auth sync to complete before checking placement...');
+        return; // Will re-run when syncComplete becomes true
+      }
+
+      // Authenticated users - check database (sync is now complete)
+      console.log('[LessonsApp] Checking database for placement test...');
       try {
         const { data, error } = await withTimeout(
           supabase
@@ -990,27 +1030,28 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
         );
 
         if (error) {
-          // Error checking placement test - Sentry will capture this
+          console.error('[LessonsApp] Error checking placement test:', error);
           setHasPlacementTest(false);
           setShowPlacementRequired(true);
           return;
         }
 
         const hasTest = (data && data.length > 0);
+        console.log('[LessonsApp] Database placement test check result:', hasTest);
         setHasPlacementTest(hasTest);
 
         if (!hasTest) {
           setShowPlacementRequired(true);
         }
       } catch (err) {
-        // Placement test check failed - Sentry will capture this
+        console.error('[LessonsApp] Placement test check failed:', err);
         setHasPlacementTest(false);
         setShowPlacementRequired(true);
       }
     }
 
     checkPlacementTest();
-  }, [isAuthenticated, user?.id]); // FIX: Depend on user.id to trigger when user loads
+  }, [isAuthenticated, user?.id, syncComplete]); // PRODUCTION FIX: Added syncComplete dependency
 
   // Initialize with props from test result
   useEffect(() => {
@@ -1176,6 +1217,22 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
     vadRef.current = vad;
   }, [vad]);
 
+  // 🔧 v25: Listen to speech:interim events for live feedback
+  // micEngine dispatches these events with live transcripts during recording
+  useEffect(() => {
+    const handleInterim = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const transcript = customEvent.detail?.transcript;
+      if (transcript && speakStatus === 'recording') {
+        console.log('[LessonsApp] Speech detected via interim:', transcript.substring(0, 30));
+        setIsSpeechDetected(true);
+      }
+    };
+
+    window.addEventListener('speech:interim', handleInterim);
+    return () => window.removeEventListener('speech:interim', handleInterim);
+  }, [speakStatus]);
+
   // ---- Mic + ASR utilities (robust) ----
   type Abortable = { signal?: AbortSignal };
 
@@ -1221,76 +1278,97 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
     if (ctx.state === 'suspended') { try { await ctx.resume(); } catch (error) { /* Ignore audio context resume errors */ } }
   }
 
-  // 🎤 UNIFIED SPEECH RECOGNITION: Works on mobile (Capacitor) and desktop (Web Speech API)
-  // Promise wrapper: listen once, resolve transcript (empty string allowed), silent retry on transient errors
+  // 🔧 GOD-TIER v21: Use micEngine.ts directly (same as SpeakingApp)
+  // This fixes the callback race condition by using a block-and-wait pattern
+  // instead of the broken event-driven approach of unifiedSpeechRecognition
   async function recognizeOnce(abortSignal?: AbortSignal): Promise<string> {
-    return new Promise<string>(async (resolve, reject) => {
-      let settled = false;
-      const done = (ok: boolean, value?: string | Error) => {
-        if (settled) return;
-        settled = true;
-        unifiedSpeechRecognition.stop();
-        ok ? resolve(value as string) : reject(value);
+    // Check if aborted before starting
+    if (abortSignal?.aborted) {
+      throw new Error('aborted');
+    }
+
+    // Set up abort handler
+    let abortHandler: (() => void) | null = null;
+    if (abortSignal) {
+      abortHandler = () => {
+        console.log('[recognizeOnce] Abort signal received, stopping recording...');
+        micStopRecording();  // 🔧 v22: Use renamed micEngine function
       };
+      abortSignal.addEventListener('abort', abortHandler, { once: true });
+    }
 
-      // Abort support
-      if (abortSignal) {
-        if (abortSignal.aborted) return done(false, new Error('aborted'));
-        abortSignal.addEventListener('abort', () => done(false, new Error('aborted')), { once: true });
+    try {
+      console.log('[recognizeOnce] 🔧 v22: Starting micEngine recording (same engine as SpeakingApp)...');
+
+      // Use micEngine's block-and-wait pattern (same as SpeakingApp)
+      // This is the PROVEN working approach - no callback race conditions!
+      // 🔧 v22: Use renamed function to avoid shadowing by local MediaRecorder function
+      const result = await micStartRecording({ bypassDebounce: true });
+
+      const transcript = result?.transcript?.trim() || '';
+      console.log('[recognizeOnce] Got transcript:', transcript || '(empty)');
+
+      return transcript;
+    } catch (err: any) {
+      console.error('[recognizeOnce] Error:', err);
+
+      // If aborted, throw abort error
+      if (abortSignal?.aborted) {
+        throw new Error('aborted');
       }
 
-      // Set up callbacks
-      unifiedSpeechRecognition.onResult((result) => {
-        if (result.isFinal && result.transcript) {
-          if (import.meta.env.DEV) {
-            console.log('🎤 Speech recognized:', result.transcript, `(${result.confidence.toFixed(2)} confidence)`);
-          }
-          done(true, result.transcript);
-        }
-      });
-
-      unifiedSpeechRecognition.onError((error) => {
-        if (import.meta.env.DEV) {
-          console.error('🎤 Speech recognition error:', error.message);
-        }
-        done(false, error);
-      });
-
-      unifiedSpeechRecognition.onEnd(() => {
-        // If ended without result, return empty string
-        if (!settled) {
-          done(true, '');
-        }
-      });
-
-      try {
-        await unifiedSpeechRecognition.start({
-          language: 'en-US',
-          continuous: false,
-          interimResults: false,
-          maxAlternatives: 1,
-        });
-      } catch (err) {
-        done(false, err as Error);
+      // Return empty string on other errors (let caller handle with proper feedback)
+      return '';
+    } finally {
+      // Clean up abort handler
+      if (abortHandler && abortSignal) {
+        abortSignal.removeEventListener('abort', abortHandler);
       }
-    });
+    }
   }
 
   // Guard helpers
   function newRunId() { return `${Date.now()}-${Math.random().toString(36).slice(2,8)}`; }
   function isStale(id: string) { return speechRunIdRef.current !== id; }
 
-  // Cancel any live recognition on nav/module change
+  // 🔧 GOD-TIER v22/v25: Cancel any live recognition on nav/module change using micEngine
+  // 🔧 v25: Guard - don't cleanup if actively recording (prevents premature cancellation)
   useEffect(() => {
+    if (speakStatus !== 'idle') {
+      console.log('[LessonsApp] Cleanup skipped - currently recording:', speakStatus);
+      return; // Don't interrupt active recording
+    }
+
     speechRunIdRef.current = null;
-    try { unifiedSpeechRecognition.stop(); } catch (error) { /* Ignore recognizer stop errors */ }
-  }, [selectedModule, selectedLevel, viewState]);
+    try {
+      micStopRecording();  // Use renamed micEngine's stop (avoids shadowing)
+      micCleanup();        // Full cleanup of mic resources
+    } catch (error) {
+      // Ignore recognizer stop errors
+    }
+  }, [selectedModule, selectedLevel, viewState, speakStatus]);
 
   // Cancel any narration the moment we enter speaking (no TTS fighting taps)
+  // PRODUCTION FIX: Also ensure microphone is ready for reliable speech recognition
   useEffect(() => {
     if (currentPhase === 'speaking') {
       narration.cancel();          // nothing else should be talking now
       setIsProcessing(false);
+
+      // 🛡️ Microphone Guardian: Ensure mic is ready before user needs it
+      microphoneGuardian.ensureReady().then(status => {
+        if (status !== 'ready') {
+          console.warn('[LessonsApp] Microphone not ready:', status);
+          // Show feedback to user if mic isn't ready
+          const message = microphoneGuardian.getStatusMessage();
+          if (message) {
+            setFeedback(message);
+            setFeedbackType('info');
+          }
+        } else {
+          console.log('[LessonsApp] Microphone ready for speaking practice');
+        }
+      });
     }
   }, [currentPhase]);
 
@@ -1679,7 +1757,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
   const { incrementGrammarLessons, incrementTotalExercises } = useBadgeSystem();
   
   const { avatarState, triggerState } = useAvatarState({
-    isRecording,
+    isRecording: speakStatus === 'recording',  // 🔧 v23: Use speakStatus instead of removed isRecording state
     isProcessing,
     lastMessageTime: lastResponseTime
   });
@@ -2320,197 +2398,14 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
   }
 
 
-  // Audio recording setup
-  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
-  const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
-  const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
-  const [microphoneError, setMicrophoneError] = useState<string | null>(null);
-  const [retryAttempts, setRetryAttempts] = useState(0);
+  // 🔧 v23: MediaRecorder states removed - now using micEngine.ts exclusively
   const [grammarCorrections, setGrammarCorrections] = useState<GrammarCorrection[]>([]);
   const [currentAttemptNumber, setCurrentAttemptNumber] = useState(1);
   const [evaluationResult, setEvaluationResult] = useState<EvaluationResult | null>(null);
 
-  const initializeRecorder = useCallback(async (isRetry = false) => {
-    try {
-      setMicrophoneError(null);
-      
-      if (isRetry) {
-      } else {
-      }
-      
-      // Check if getUserMedia is supported
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        throw new Error('Browser does not support microphone access. Please use a modern browser like Chrome, Firefox, or Safari.');
-      }
-      
-      // More permissive audio constraints for better compatibility
-      const audioConstraints = {
-        audio: {
-          sampleRate: { ideal: 24000, min: 16000, max: 48000 },
-          channelCount: { ideal: 1 },
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-          // Remove specific device requirements for better compatibility
-        }
-      };
-      
-      const stream = await navigator.mediaDevices.getUserMedia(audioConstraints);
-      setMediaStream(stream);
-
-      // Stream info: streamId=${stream.id}, audioTracks=${stream.getAudioTracks().length}, trackSettings=${JSON.stringify(stream.getAudioTracks()[0]?.getSettings())}
-
-      // Check MediaRecorder support with fallback mimeTypes
-      let mimeType = 'audio/webm;codecs=opus';
-      const supportedTypes = [
-        'audio/webm;codecs=opus',
-        'audio/webm',
-        'audio/mp4',
-        'audio/wav'
-      ];
-
-      const supportedType = supportedTypes.find(type => MediaRecorder.isTypeSupported(type));
-      if (supportedType) {
-        mimeType = supportedType;
-      } else {
-      }
-
-      const recorder = new MediaRecorder(stream, { mimeType });
-      
-      let currentAudioChunks: Blob[] = [];
-      
-      recorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          currentAudioChunks.push(event.data);
-        }
-      };
-      
-      recorder.onstart = () => {
-        currentAudioChunks = [];
-        setRetryAttempts(0); // Reset retry count on successful start
-      };
-      
-      recorder.onstop = async () => {
-        
-        if (currentAudioChunks.length > 0) {
-          const totalSize = currentAudioChunks.reduce((sum, chunk) => sum + chunk.size, 0);
-          
-          if (totalSize > 1000) { // Minimum 1KB for meaningful audio
-            const audioBlob = new Blob(currentAudioChunks, { type: mimeType });
-            // Audio blob created - size: ${audioBlob.size}, type: ${audioBlob.type}, chunks: ${currentAudioChunks.length}
-            
-            // Additional validation: check if blob is actually audio data
-            if (audioBlob.size > 0 && audioBlob.type.includes('audio')) {
-              await processAudioRecording(audioBlob);
-            } else {
-              setFeedback('Invalid audio format. Please try again.');
-              setFeedbackType('error');
-              setTimeout(() => {
-                setFeedback('');
-                setIsProcessing(false);
-              }, 3000);
-            }
-          } else {
-            setFeedback('Recording too short. Please speak for at least 2 seconds.');
-            setFeedbackType('error');
-            setTimeout(() => {
-              setFeedback('');
-              setIsProcessing(false);
-            }, 3000);
-          }
-          currentAudioChunks = [];
-        } else {
-          setFeedback('No audio was captured. Please check your microphone and try again.');
-          setFeedbackType('error');
-          setTimeout(() => {
-            setFeedback('');
-            setIsProcessing(false);
-          }, 3000);
-        }
-      };
-      
-      recorder.onerror = (event: any) => {
-        // No generic error feedback - let the flow auto-retry
-        setIsRecording(false);
-        setIsProcessing(false);
-      };
-      
-      setMediaRecorder(recorder);
-      
-    } catch (error: any) {
-      
-      let errorMessage = 'Unable to access microphone. ';
-      let shouldRetry = false;
-      
-      // Detailed error handling for better user experience
-      if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
-        errorMessage = 'Microphone access was denied. Please allow microphone access in your browser settings and refresh the page.';
-      } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
-        errorMessage = 'No microphone found. Please connect a microphone and try again.';
-      } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
-        errorMessage = 'Microphone is already in use by another application. Please close other apps and try again.';
-        shouldRetry = true;
-      } else if (error.name === 'OverconstrainedError' || error.name === 'ConstraintNotSatisfiedError') {
-        errorMessage = 'Microphone settings not supported. Trying with different settings...';
-        shouldRetry = true;
-      } else if (error.name === 'AbortError') {
-        errorMessage = 'Microphone access was aborted. Please try again.';
-        shouldRetry = true;
-      } else if (error.message) {
-        errorMessage += error.message;
-        shouldRetry = true;
-      } else {
-        errorMessage += 'Please check your browser permissions and try again.';
-        shouldRetry = true;
-      }
-      
-      setMicrophoneError(errorMessage);
-      setFeedback(errorMessage);
-      setFeedbackType('error');
-      
-      // Auto-retry with simpler constraints for compatibility issues
-      if (shouldRetry && retryAttempts < 2) {
-        setTimeout(() => {
-          setRetryAttempts(prev => prev + 1);
-          initializeRecorder(true);
-        }, 2000);
-      }
-    }
-  }, [retryAttempts]);
-
-  useEffect(() => {
-    // Initialize media recorder when component mounts
-    initializeRecorder();
-
-    // Cleanup function
-    return () => {
-      // Stop MediaRecorder
-      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-        mediaRecorder.stop();
-      }
-
-      // Close MediaStream tracks to release microphone
-      if (mediaStream) {
-        mediaStream.getTracks().forEach(track => {
-          try {
-            track.stop();
-          } catch (e) {
-            // Ignore cleanup errors
-          }
-        });
-      }
-
-      // Clear all tracked timeouts
-      lessonTimeoutsRef.current.forEach(timeoutId => {
-        try {
-          clearTimeout(timeoutId);
-        } catch (e) {
-          // Ignore cleanup errors
-        }
-      });
-      lessonTimeoutsRef.current.clear();
-    };
-  }, [initializeRecorder, mediaRecorder, mediaStream]);
+  // 🔧 v23: initializeRecorder and MediaRecorder useEffect REMOVED
+  // Speech recognition now uses micEngine.ts exclusively (same as SpeakingApp)
+  // This eliminates false "Invalid audio format" and "No audio captured" errors
 
   // Start lesson with intro - but don't auto-advance, let user control
   useEffect(() => {
@@ -2536,209 +2431,8 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
     }
   }, [speakingIndex, currentModuleData, isProcessing]);
 
-  const processAudioRecording = useCallback(async (audioBlob: Blob) => {
-    // Phase 2.1: Guard against unmounted component
-    if (!isMountedRef.current) return;
-
-    // 🔒 CRITICAL: Prevent concurrent processing and lock current state
-    if (isProcessing) {
-      return;
-    }
-
-    setIsProcessing(true);
-    setAttempts(prev => prev + 1);
-    setCurrentQuestionRetries(prev => prev + 1);
-
-    // Checkpoint: Speech recording started
-    checkpoints.checkpointSpeechStarted({
-      level: selectedLevel,
-      moduleId: selectedModule,
-      questionIndex: speakingIndex,
-      totalQuestions: 40,
-      mcqChoice: questionStates[speakingIndex]?.selectedChoice,
-      mcqCorrect: questionStates[speakingIndex]?.choiceCorrect
-    });
-
-    // Start question timing if this is the first attempt
-    if (currentQuestionRetries === 0) {
-      setQuestionStartTime(Date.now());
-      const currentQuestion = currentModuleData?.speakingPractice?.[speakingIndex];
-      if (currentQuestion) {
-        const questionId = `${selectedLevel}_${selectedModule}_${speakingIndex}`;
-        progressTracker.startQuestion(questionId);
-      }
-    }
-
-    // Clear any previous feedback to prevent confusion
-    setFeedback('');
-    setFeedbackType('info');
-    
-    try {
-      // Processing audio blob - size: ${audioBlob.size}, type: ${audioBlob.type}, isEmpty: ${audioBlob.size === 0}
-      
-      // Validate audio blob
-      if (!audioBlob || audioBlob.size === 0) {
-        setFeedback('No audio captured. Please speak louder and try again.');
-        setFeedbackType('error');
-        const timeoutId = setTimeout(() => {
-          setFeedback('');
-          setIsProcessing(false);
-        }, 3000);
-        lessonTimeoutsRef.current.add(timeoutId);
-        return;
-      }
-      
-      // Phase 3: Validate audio MIME type
-      const validAudioTypes = ['audio/webm', 'audio/wav', 'audio/ogg', 'audio/mp4', 'audio/mpeg'];
-      if (audioBlob.type && !validAudioTypes.includes(audioBlob.type)) {
-        setFeedback('Invalid audio format. Please try again.');
-        setFeedbackType('error');
-        const timeoutId = setTimeout(() => {
-          setFeedback('');
-          setIsProcessing(false);
-        }, 3000);
-        lessonTimeoutsRef.current.add(timeoutId);
-        return;
-      }
-
-      // Check minimum audio size (should be at least a few KB for meaningful audio)
-      if (audioBlob.size < 1000) {
-        setFeedback('Audio recording too short. Please speak for at least 2 seconds.');
-        setFeedbackType('error');
-        const timeoutId = setTimeout(() => {
-          setFeedback('');
-          setIsProcessing(false);
-        }, 3000);
-        lessonTimeoutsRef.current.add(timeoutId);
-        return;
-      }
-      
-      // Step 1: Transcribe the audio using FormData (as expected by the endpoint)
-      const formData = new FormData();
-      
-      // Create a unique filename with timestamp to avoid caching issues
-      const timestamp = Date.now();
-      const filename = `recording_${timestamp}.webm`;
-      formData.append('audio', audioBlob, filename);
-      
-      // Uploading audio - blobSize: ${audioBlob.size}, filename: ${filename}, type: ${audioBlob.type}
-      
-      const transcribeResponse = await withTimeout(
-        supabase.functions.invoke('transcribe', {
-          body: formData
-        }),
-        30000 // 30 second timeout
-      );
-
-      if (transcribeResponse.error) {
-        setFeedback('Failed to process audio. Please try again.');
-        setFeedbackType('error');
-        const timeoutId = setTimeout(() => {
-          setFeedback('');
-          setIsProcessing(false);
-        }, 3000);
-        lessonTimeoutsRef.current.add(timeoutId);
-        return;
-      }
-
-      const { transcript, text } = transcribeResponse.data || {};
-      const finalTranscript = transcript || text || '';
-
-      if (!finalTranscript || finalTranscript.trim() === '') {
-        setFeedback('I couldn\'t understand what you said. Please speak clearly and try again.');
-        setFeedbackType('error');
-        const timeoutId = setTimeout(() => {
-          setFeedback('');
-          setIsProcessing(false);
-        }, 3000);
-        lessonTimeoutsRef.current.add(timeoutId);
-        return;
-      }
-
-      // Show the user exactly what they said (verbatim)
-      setFeedback(`You said: "${finalTranscript}"`);
-      setFeedbackType('info');
-
-      // Step 2: Get feedback on the transcribed text
-      const feedbackResponse = await withTimeout(
-        supabase.functions.invoke('feedback', {
-          body: { text: finalTranscript }
-        }),
-        30000 // 30 second timeout
-      );
-
-      if (feedbackResponse.error) {
-        throw new Error('Feedback analysis failed');
-      }
-
-      // Phase 2.1: Check if component still mounted after async operations
-      if (!isMountedRef.current) return;
-
-      const { corrected } = feedbackResponse.data;
-
-      // Use expectedRef for current question evaluation with Progress Tracker integration
-      function evaluateSpoken(transcript: string) {
-        const userRaw = transcript?.trim() || '';
-        let target = evaluatorTargetRef.current;
-
-        // If, for any reason, the ref is empty, compute on the fly from the live card
-        if (!target) {
-          const item = currentModuleData?.speakingPractice?.[speakingIndex];
-          target = computeTargetFromItem(item);
-        }
-
-        const ok = isExactlyCorrect(userRaw, target); // uses the normalization that ignores diacritics and punctuation
-        
-        // Record the attempt with Progress Tracker
-        const questionId = `${selectedLevel}_${selectedModule}_${speakingIndex}`;
-        const currentQuestion = currentModuleData?.speakingPractice?.[speakingIndex];
-        const questionContext = currentQuestion?.question || '';
-        
-        const attempt = progressTracker.recordQuestionAttempt(
-          questionId,
-          selectedModule,
-          selectedLevel,
-          userRaw,
-          target,
-          ok,
-          questionContext
-        );
-
-        if (ok) {
-          setCorrectAnswers(prev => prev + 1);
-          setFeedback('🎉 Perfect! Moving to the next question...');
-          setFeedbackType('success');
-          earnXPForGrammarLesson(true);
-          incrementTotalExercises();
-          
-          // Reset retry counter for next question
-          setCurrentQuestionRetries(0);
-          
-          advanceSpeakingOnce();     // Use the centralized, guarded advance
-        } else {
-          // Show grammar error feedback if detected
-          const grammarFeedback = attempt.grammarErrors && attempt.grammarErrors.length > 0 
-            ? `\n\nTip: ${attempt.grammarErrors[0].description}` 
-            : '';
-            
-          setFeedback(`❌ Not quite right. The correct answer is: "${target}"${grammarFeedback}`);
-          setFeedbackType('error');
-          const timeoutId = setTimeout(() => {
-            setFeedback('');
-            setIsProcessing(false);
-          }, 3000);
-          lessonTimeoutsRef.current.add(timeoutId);
-        }
-      }
-
-      evaluateSpoken(finalTranscript);
-    } catch (error) {
-      // Speech evaluation error - silent fail
-      // User can retry speaking immediately
-    }
-    
-    setLastResponseTime(Date.now());
-  }, [speakingIndex, earnXPForGrammarLesson, incrementTotalExercises]);
+  // 🔧 v23: processAudioRecording REMOVED - was dead code for MediaRecorder blob processing
+  // Speech recognition now uses micEngine.ts exclusively via recognizeOnce() in startSpeakingFlow()
 
   // Optional: Reset progress for current module
   function resetThisModuleProgress() {
@@ -2751,30 +2445,82 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
 
   // Single-source speaking start with internal guard
   async function startSpeakingFlow() {
+    console.log('[startSpeakingFlow] Starting, speakStatus:', speakStatus, 'phase:', currentPhase);
+
     // block parallel runs here (not via disabled button)
-    if (speakStatus !== 'idle' || currentPhase !== 'speaking' || viewState !== 'lesson') return;
+    if (speakStatus !== 'idle' || currentPhase !== 'speaking' || viewState !== 'lesson') {
+      console.log('[startSpeakingFlow] Guard blocked - returning');
+      return;
+    }
+
+    // 🔧 v34: Define event handler at function scope so it's accessible in catch block
+    const handleInterim = () => setIsSpeechDetected(true);
 
     try {
-      setSpeakStatus('recording');
+      // 🛡️ Pre-flight check: Ensure microphone is ready before recording
+      const preflight = await microphoneGuardian.preflightCheck();
+      if (!preflight.ready) {
+        console.warn('[startSpeakingFlow] Pre-flight failed:', preflight.status);
+        setFeedback(preflight.userMessage);
+        setFeedbackType('error');
+        return;
+      }
 
-      // Start VAD for visual feedback
-      await vad.startListening();
+      setSpeakStatus('recording');
+      console.log('[startSpeakingFlow] Set to recording');
+
+      // 🔧 v34: DON'T start VAD - it blocks Capacitor's mic access on Android!
+      // VAD opens its own MediaStream which prevents Capacitor from accessing the mic.
+      // Instead, use speech:interim events from Capacitor for speech detection feedback.
+      setIsSpeechDetected(false); // Reset speech detection state
+
+      // 🔧 v34: Listen for speech:interim events to show "Speech detected" indicator
+      window.addEventListener('speech:interim', handleInterim);
+
+      // 🔧 v34: Start local recording timer
+      setRecordingElapsedTime(0);
+      recordingTimerRef.current = setInterval(() => {
+        setRecordingElapsedTime(prev => prev + 1000);
+      }, 1000);
+
+      // Start monitoring for issues during recording
+      microphoneGuardian.startMonitoring((issue, message) => {
+        console.warn('[startSpeakingFlow] Mic issue during recording:', issue, message);
+        // Don't interrupt recording, just log - let it finish naturally
+      });
 
       await unlockAudioOnce();          // iOS resume AudioContext
+      console.log('[startSpeakingFlow] Calling recognizeOnce()...');
       const transcript = await recognizeOnce(); // from our robust ASR helper
+      console.log('[startSpeakingFlow] recognizeOnce returned:', transcript);
 
-      // Stop VAD
-      vad.stopListening();
-      setVadVolume(0);
+      // PRODUCTION FIX: Check for empty/null transcript with proper user feedback
+      // Instead of silently returning or showing "Not quite right", give clear guidance
+      if (!transcript || transcript.trim() === '') {
+        console.log('[startSpeakingFlow] Empty transcript - showing feedback');
+        microphoneGuardian.stopMonitoring();
+        window.removeEventListener('speech:interim', handleInterim); // 🔧 v34: Cleanup listener
+        if (recordingTimerRef.current) { clearInterval(recordingTimerRef.current); recordingTimerRef.current = null; } // 🔧 v34: Stop timer
+        setIsSpeechDetected(false);
+        setFeedback('🎤 No speech detected. Please try again.');
+        setFeedbackType('info');
+        setSpeakStatus('idle');
+        return;
+      }
+
+      // Stop mic monitoring now that recording is done
+      microphoneGuardian.stopMonitoring();
+      window.removeEventListener('speech:interim', handleInterim); // 🔧 v34: Cleanup listener
+      if (recordingTimerRef.current) { clearInterval(recordingTimerRef.current); recordingTimerRef.current = null; } // 🔧 v34: Stop timer
       setIsSpeechDetected(false);
 
-      if (transcript == null) return;
-
       setSpeakStatus('evaluating');
+      console.log('[startSpeakingFlow] Evaluating transcript:', transcript);
 
       // Evaluate against the CURRENT card only
       const { prompt, target } = getCurrentPromptAndTarget();
       const ok = isExactlyCorrect(transcript, target);
+      console.log('[startSpeakingFlow] Evaluation result:', ok, 'target was:', target);
 
       if (ok) {
         setCorrectAnswers(prev => prev + 1);
@@ -2783,118 +2529,77 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
         earnXPForGrammarLesson(true);
         incrementTotalExercises();
         setSpeakStatus('advancing');
+        console.log('[startSpeakingFlow] Correct! Calling advanceSpeakingOnce()');
         advanceSpeakingOnce();              // centralized progression
       } else {
         setFeedback(`❌ Not quite right. The correct answer is: "${target}"`);
         setFeedbackType('error');
         setSpeakStatus('idle');
+        console.log('[startSpeakingFlow] Wrong answer, allowing retry');
       }
-    } catch {
-      // VAD processing error - cleanup and allow retry
-      vad.stopListening();
-      setVadVolume(0);
+    } catch (error: any) {
+      // Speech recognition error - cleanup and show feedback
+      console.error('[startSpeakingFlow] Error:', error);
+
+      // Stop mic monitoring on error
+      microphoneGuardian.stopMonitoring();
+      window.removeEventListener('speech:interim', handleInterim); // 🔧 v34: Cleanup listener
+      if (recordingTimerRef.current) { clearInterval(recordingTimerRef.current); recordingTimerRef.current = null; } // 🔧 v34: Stop timer
+      setIsSpeechDetected(false);
+
+      // Show appropriate feedback based on error type
+      const errorMsg = error?.message || String(error);
+      if (errorMsg.includes('internet') || errorMsg.includes('network') || errorMsg.includes('connection')) {
+        setFeedback('📶 No internet connection. Speech recognition requires network.');
+        setFeedbackType('error');
+      } else if (errorMsg.includes('permission') || errorMsg.includes('denied')) {
+        setFeedback('🎤 Microphone permission denied. Please allow access.');
+        setFeedbackType('error');
+      } else {
+        setFeedback('🎤 Something went wrong. Please try again.');
+        setFeedbackType('error');
+      }
+
+      setSpeakStatus('idle');
+    }
+  }
+
+  // Stop speaking flow when user taps mic during recording
+  // This allows users to manually stop and submit their speech
+  async function stopSpeakingFlow() {
+    console.log('[stopSpeakingFlow] Stopping, current speakStatus:', speakStatus);
+
+    if (speakStatus !== 'recording') {
+      console.log('[stopSpeakingFlow] Not recording - ignoring');
+      return;
+    }
+
+    try {
+      // 🔧 v24: Use micEngine to stop recording (matches recognizeOnce which uses micStartRecording)
+      // This fixes the engine mismatch where we started with micEngine but tried to stop with unifiedSpeechRecognition
+      console.log('[stopSpeakingFlow] Calling micStopRecording()');
+      await micStopRecording();
+
+      // The micEngine will resolve the recognizeOnce() promise with current transcript
+      // and the flow will continue in startSpeakingFlow
+      console.log('[stopSpeakingFlow] Stop completed - flow will continue in startSpeakingFlow');
+    } catch (error) {
+      console.error('[stopSpeakingFlow] Error:', error);
+      // 🔧 v34: VAD removed - cleanup handled in startSpeakingFlow
       setIsSpeechDetected(false);
       setSpeakStatus('idle');
     }
   }
 
-  const startRecording = async () => {
-    
-    // If there's a microphone error, try to reinitialize
-    if (microphoneError || !mediaRecorder) {
-      setFeedback('Reconnecting microphone...');
-      setFeedbackType('info');
-      await initializeRecorder(false);
+  // 🔧 v23: local startRecording and stopRecording REMOVED
+  // These used MediaRecorder which is now replaced by micEngine.ts
+  // Speech recognition is handled by recognizeOnce() -> micStartRecording() in startSpeakingFlow()
 
-      // Wait a moment for initialization - track timeout to prevent leak
-      const retryTimeoutId = setTimeout(() => {
-        if (mediaRecorder && mediaRecorder.state === 'inactive') {
-          startRecording();
-        }
-      }, 1000);
-      lessonTimeoutsRef.current.add(retryTimeoutId);
-      return;
-    }
-    
-    if (mediaRecorder && mediaRecorder.state === 'inactive') {
-      try {
-        setIsRecording(true);
-        setFeedback('');
-        setMicrophoneError(null);
-        
-        // Record minimum of 2 seconds, maximum of 10 seconds
-        const startTime = Date.now();
-        mediaRecorder.start(1000); // Collect data every 1 second
-        
-        // Store the start time for minimum duration check
-        (mediaRecorder as any)._recordingStartTime = startTime;
-
-        // Auto-stop after 10 seconds - CRITICAL: Must track to prevent mic leak
-        const autoStopTimeoutId = setTimeout(() => {
-          if (mediaRecorder.state === 'recording') {
-            stopRecording();
-          }
-        }, 10000);
-        lessonTimeoutsRef.current.add(autoStopTimeoutId);
-        
-      } catch (error: any) {
-        setIsRecording(false);
-        
-        // More specific error handling
-        let errorMessage = 'Failed to start recording. ';
-        if (error.name === 'InvalidStateError') {
-          errorMessage += 'Microphone is busy. Please try again.';
-        } else if (error.name === 'NotSupportedError') {
-          errorMessage += 'Your browser doesn\'t support audio recording.';
-        } else {
-          errorMessage += 'Please check your microphone and try again.';
-        }
-        
-        setFeedback(errorMessage);
-        setFeedbackType('error');
-
-        // Auto-retry after 2 seconds - track timeout to prevent leak
-        const autoRetryTimeoutId = setTimeout(() => {
-          setFeedback('');
-          initializeRecorder(true);
-        }, 2000);
-        lessonTimeoutsRef.current.add(autoRetryTimeoutId);
-      }
-    } else {
-      setFeedback('Microphone not ready. Trying to reconnect...');
-      setFeedbackType('info');
-      
-      // Try to reinitialize
-      await initializeRecorder(true);
-    }
-  };
-
-  const stopRecording = () => {
-    
-    if (mediaRecorder && mediaRecorder.state === 'recording') {
-      // Check minimum recording duration (2 seconds)
-      const startTime = (mediaRecorder as any)._recordingStartTime;
-      const currentTime = Date.now();
-      const recordingDuration = currentTime - startTime;
-      
-      if (recordingDuration < 2000) { // Less than 2 seconds
-        setFeedback('Please speak for at least 2 seconds. Keep recording...');
-        setFeedbackType('info');
-        return; // Don't stop recording yet
-      }
-      
-      mediaRecorder.stop();
-      setIsRecording(false);
-    } else {
-      setIsRecording(false);
-    }
-  };
-
-
+  // Speak the ANSWER for "Listen to Answer" button
   const speakCurrentSentence = () => {
-    const { prompt } = getCurrentPromptAndTarget();
+    const { target } = getCurrentPromptAndTarget();
     narration.cancel();
-    narration.speak(prompt);
+    narration.speak(target);
   };
 
   // Set up lesson-specific voice command handlers (must be after handler functions are defined)
@@ -3531,47 +3236,47 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
                 if (canProceedToSpeaking) {
                   return (
                     <>
+                      {/* 🔧 v32: Using native button (like SpeakingApp) - no Button component CSS conflicts */}
                       <div className="mb-4 text-center">
-                        <div className="relative inline-block">
-                          {/* Pulsing rings when recording */}
-                          {speakStatus === 'recording' && (
-                            <>
-                              <div className="absolute inset-0 rounded-full bg-red-500/30 animate-ping" style={{ animationDuration: '1s' }} />
-                              <div className="absolute inset-0 rounded-full bg-red-500/20 animate-ping" style={{ animationDuration: '1.5s' }} />
-                            </>
-                          )}
-
-                          <Button
+                        <div className="relative inline-flex items-center justify-center">
+                          <button
                             id="micButton"
-                            key={`mic-${speakingIndex}`}
-                            onClick={() => {
-                              const canSpeak = viewState === 'lesson' && currentPhase === 'speaking';
-                              if (!canSpeak) return;
-                              // single-source speaking entry; safe-guard inside
-                              startSpeakingFlow();
-                            }}
-                            disabled={false}
-                            aria-disabled={false}
-                            aria-label={speakStatus === 'recording' ? 'Stop recording' : 'Start speaking practice'}
-                            style={{
-                              pointerEvents: 'auto',
-                              zIndex: 5,
-                              touchAction: 'manipulation',
-                              transition: 'all 0.3s ease'
-                            }}
-                            size="lg"
-                            className={`mic-button rounded-full w-20 h-20 shadow-lg transform transition-all duration-300 ${
+                            className={`pointer-events-auto w-20 h-20 rounded-full shadow-2xl flex items-center justify-center relative focus:outline-none focus:ring-4 focus:ring-blue-400/50 active:scale-95 transition-all duration-200 text-white ${
                               speakStatus === 'recording'
-                                ? 'bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 scale-110'
-                                : 'bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 hover:scale-105'
+                                ? 'bg-gradient-to-br from-red-500 to-red-600'
+                                : 'bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700'
                             }`}
+                            style={{
+                              boxShadow: speakStatus === 'recording'
+                                ? '0 10px 40px rgba(239, 68, 68, 0.4)'
+                                : '0 10px 40px rgba(59, 130, 246, 0.4)'
+                            }}
+                            onClick={() => {
+                              // 🔧 v32: No early return guard - always handle clicks
+                              if (speakStatus === 'recording') {
+                                console.log('[MicButton] v32: Stopping recording...');
+                                stopSpeakingFlow();
+                              } else {
+                                console.log('[MicButton] v32: Starting recording...');
+                                startSpeakingFlow();
+                              }
+                            }}
+                            aria-label={speakStatus === 'recording' ? 'Stop recording' : 'Start speaking practice'}
                           >
-                            {speakStatus === 'recording' ? (
-                              <MicOff className="h-8 w-8 animate-pulse" />
-                            ) : (
-                              <Mic className="h-8 w-8" />
+                            {/* 🔧 v32: Pulsing rings INSIDE button (like SpeakingApp) */}
+                            {speakStatus === 'recording' && (
+                              <>
+                                <div className="absolute inset-0 rounded-full bg-red-400/30 animate-ping" />
+                                <div className="absolute inset-0 rounded-full bg-red-400/20 animate-ping" style={{ animationDelay: '0.5s' }} />
+                              </>
                             )}
-                          </Button>
+                            {/* Icon */}
+                            {speakStatus === 'recording' ? (
+                              <MicOff className="h-8 w-8 animate-pulse relative z-10" />
+                            ) : (
+                              <Mic className="h-8 w-8 relative z-10" />
+                            )}
+                          </button>
                         </div>
                       </div>
 
@@ -3619,9 +3324,9 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
                               </span>
                             </div>
 
-                            {/* Timer */}
+                            {/* Timer - 🔧 v34: Use local timer instead of vad.elapsedTime */}
                             <p className="text-white/40 text-xs">
-                              {Math.floor(vad.elapsedTime / 1000)}s
+                              {Math.floor(recordingElapsedTime / 1000)}s
                             </p>
                           </div>
                         )}
@@ -3699,23 +3404,26 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
         )}
       </div>
 
-      {/* Voice Controls */}
+      {/* Voice Controls - v31: Wrapped to disable pointer-events during recording */}
       {viewState === 'lesson' && voiceCommands.isSupported && (
         <>
-          <VoiceControls
-            visible={true}
-            position="bottom-right"
-            autoHide={true}
-            autoHideDelay={5000}
-            showHelp={true}
-            compact={false}
-            onVisibilityChange={(visible) => {
-              // Voice controls visibility changed
-            }}
-          />
-          
+          <div style={speakStatus === 'recording' ? { pointerEvents: 'none' } : undefined}>
+            <VoiceControls
+              visible={true}
+              position="bottom-right"
+              autoHide={true}
+              autoHideDelay={5000}
+              showHelp={true}
+              compact={false}
+              onVisibilityChange={(visible) => {
+                // Voice controls visibility changed
+              }}
+            />
+          </div>
+
+          {/* v31: Hide ResumeChip during active recording to prevent blocking mic button */}
           <ResumeChip
-            visible={voiceCommands.speechState.isPaused}
+            visible={voiceCommands.speechState.isPaused && speakStatus !== 'recording'}
             pausedSince={Date.now() - 1000} // Approximate pause time
             onResume={voiceCommands.resumeSpeech}
             onCancel={voiceCommands.stopSpeech}

@@ -503,6 +503,120 @@ class LessonProgressService {
   }
 
   /**
+   * PRODUCTION FIX: Load all progress from cloud and merge with local
+   * Called on sign-in to get progress from other devices
+   */
+  async loadProgressFromCloud(userId: string): Promise<void> {
+    if (!userId) return;
+
+    console.log('[LessonProgress] Loading progress from cloud for user:', userId);
+
+    try {
+      const { data, error } = await supabase
+        .from('lesson_progress')
+        .select('*')
+        .eq('user_id', userId);
+
+      if (error) {
+        // Table might not exist or other error
+        if (error.code !== 'PGRST116' && error.code !== '42P01') {
+          console.error('[LessonProgress] Cloud load error:', error);
+        }
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        console.log('[LessonProgress] No cloud progress found');
+        return;
+      }
+
+      console.log(`[LessonProgress] Found ${data.length} modules in cloud`);
+
+      // Convert to local format and save
+      for (const row of data) {
+        const checkpoint: LessonCheckpoint = {
+          user_id: userId,
+          level: row.level,
+          module_id: row.module_id,
+          question_index: row.question_index || 0,
+          total_questions: row.total_questions || 0,
+          question_phase: row.question_phase || 'MCQ',
+          mcq_selected_choice: row.mcq_selected_choice,
+          mcq_is_correct: row.mcq_is_correct,
+          is_module_completed: row.is_module_completed || false,
+          device_id: row.device_id,
+          timestamp: new Date(row.updated_at || Date.now()).getTime()
+        };
+
+        // Save to local storage
+        await this.saveLocalProgress(checkpoint);
+      }
+
+      console.log('[LessonProgress] Cloud progress loaded successfully');
+    } catch (err) {
+      console.error('[LessonProgress] Failed to load cloud progress:', err);
+    }
+  }
+
+  /**
+   * PRODUCTION FIX: Sync ALL local progress to cloud
+   * Called on sign-in to upload local progress
+   */
+  async syncAllProgressToCloud(userId: string): Promise<void> {
+    if (!userId) return;
+
+    console.log('[LessonProgress] Syncing all progress to cloud for user:', userId);
+
+    try {
+      // Get all local checkpoints
+      const localCheckpoints = await this.getAllLocalCheckpoints();
+
+      if (localCheckpoints.length === 0) {
+        console.log('[LessonProgress] No local progress to sync');
+        return;
+      }
+
+      console.log(`[LessonProgress] Found ${localCheckpoints.length} local checkpoints to sync`);
+
+      // Build batch records
+      const records = localCheckpoints.map(cp => ({
+        user_id: userId,
+        level: cp.level,
+        module_id: cp.module_id,
+        question_index: cp.question_index || 0,
+        total_questions: cp.total_questions || 0,
+        question_phase: cp.question_phase || 'MCQ',
+        mcq_selected_choice: cp.mcq_selected_choice || null,
+        mcq_is_correct: cp.mcq_is_correct || false,
+        is_module_completed: cp.is_module_completed || false,
+        device_id: cp.device_id || null,
+        updated_at: new Date(cp.timestamp || Date.now()).toISOString()
+      }));
+
+      // Upsert in batches of 50
+      const batchSize = 50;
+      for (let i = 0; i < records.length; i += batchSize) {
+        const batch = records.slice(i, i + batchSize);
+
+        const { error } = await supabase
+          .from('lesson_progress')
+          .upsert(batch, { onConflict: 'user_id,level,module_id' });
+
+        if (error) {
+          console.error('[LessonProgress] Batch upsert failed:', error);
+          // Continue with next batch instead of failing completely
+        } else {
+          console.log(`[LessonProgress] Batch ${Math.floor(i / batchSize) + 1} synced successfully`);
+        }
+      }
+
+      console.log('[LessonProgress] Cloud sync complete');
+    } catch (err) {
+      console.error('[LessonProgress] Failed to sync to cloud:', err);
+    }
+  }
+
+  /**
    * Clean up resources and event listeners
    */
   public cleanup(): void {

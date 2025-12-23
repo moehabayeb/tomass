@@ -1,32 +1,69 @@
+import { Capacitor } from '@capacitor/core';
+import { TextToSpeech } from '@capacitor-community/text-to-speech';
 import { configureUtterance } from '@/config/voice';
 
+/**
+ * NarrationController - Cross-platform TTS for "Listen to Answer" and other narration
+ *
+ * PRODUCTION FIX: Now uses Capacitor TTS on native platforms (Android/iOS)
+ * because window.speechSynthesis doesn't work reliably on Android WebView.
+ */
 export class NarrationController {
   private synth: SpeechSynthesis;
   private utterance: SpeechSynthesisUtterance | null = null;
+  private isNative: boolean;
+  private isSpeakingNative: boolean = false;
 
   constructor() {
+    // Check if running on native platform (Android/iOS)
+    this.isNative = Capacitor.isNativePlatform();
+
     // Guard for SSR or environments without window
     this.synth = typeof window !== 'undefined' && window.speechSynthesis
       ? window.speechSynthesis
       : ({} as SpeechSynthesis);
   }
 
-  speak(text: string) {
+  async speak(text: string) {
     if (!text || !text.trim()) return;
-    this.cancel();
+    await this.cancel();
+
     try {
-      this.utterance = new SpeechSynthesisUtterance(text);
-      // Configure with consistent Thomas voice settings
-      configureUtterance(this.utterance, text);
-      this.synth.speak(this.utterance);
+      // Use Capacitor TTS on native platforms (Android/iOS)
+      if (this.isNative) {
+        this.isSpeakingNative = true;
+        await TextToSpeech.speak({
+          text,
+          lang: 'en-US',
+          rate: 0.9,
+          pitch: 1.0,
+          volume: 1.0,
+          category: 'playback',
+        });
+        this.isSpeakingNative = false;
+      } else {
+        // Web Speech API for browsers
+        this.utterance = new SpeechSynthesisUtterance(text);
+        // Configure with consistent Thomas voice settings
+        configureUtterance(this.utterance, text);
+        this.synth.speak(this.utterance);
+      }
     } catch (e) {
+      console.error('[Narration] TTS error:', e);
+      this.isSpeakingNative = false;
       // noop - fallback to hook TTS flows
     }
   }
 
-  cancel() {
+  async cancel() {
     try {
-      if ((this.synth as any)?.speaking || (this.synth as any)?.pending) {
+      if (this.isNative) {
+        // Stop native TTS
+        if (this.isSpeakingNative) {
+          await TextToSpeech.stop();
+          this.isSpeakingNative = false;
+        }
+      } else if ((this.synth as any)?.speaking || (this.synth as any)?.pending) {
         this.synth.cancel();
       }
     } catch (e) {

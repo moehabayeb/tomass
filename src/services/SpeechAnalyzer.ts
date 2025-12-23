@@ -1,3 +1,6 @@
+import { Capacitor } from '@capacitor/core';
+import { SpeechRecognition as CapacitorSpeechRecognition } from '@capacitor-community/speech-recognition';
+
 interface SpeechAnalysisResult {
   transcript: string;
   confidence: number;
@@ -34,6 +37,9 @@ export class SpeechAnalyzer {
   private transcript = '';
   private confidenceScores: number[] = [];
   private wordTimestamps: { word: string; timestamp: number; confidence: number }[] = [];
+
+  // 🔧 GOD-TIER v18: Use Capacitor plugin on Android for reliable first-try speech recognition
+  private isNativeAndroid = Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android';
 
   constructor() {
     if ('webkitSpeechRecognition' in window) {
@@ -91,6 +97,11 @@ export class SpeechAnalyzer {
   }
 
   async startRecording(): Promise<void> {
+    // 🔧 GOD-TIER v18: Route to Capacitor on Android for first-try reliability
+    if (this.isNativeAndroid) {
+      return this.startCapacitorRecording();
+    }
+
     if (!this.recognition) {
       throw new Error('Speech recognition not supported');
     }
@@ -136,21 +147,176 @@ export class SpeechAnalyzer {
     });
   }
 
+  // 🔧 GOD-TIER v19: Capacitor-based recording for Android - FIXED word timestamps
+  private async startCapacitorRecording(): Promise<void> {
+    // Check availability
+    const { available } = await CapacitorSpeechRecognition.available();
+    if (!available) {
+      throw new Error('Speech recognition not available on this device');
+    }
+
+    // Request permissions
+    const permResult = await CapacitorSpeechRecognition.requestPermissions();
+    if (permResult.speechRecognition !== 'granted') {
+      throw new Error('Microphone access denied');
+    }
+
+    // Prevent multiple instances
+    if (this.isRecording) {
+      throw new Error('Recognition already in progress');
+    }
+
+    // Reset state
+    this.isRecording = true;
+    this.startTime = Date.now();
+    this.transcript = '';
+    this.confidenceScores = [];
+    this.wordTimestamps = [];
+
+    // 🔧 v19: Track previous word count to avoid duplicate timestamps
+    let previousWordCount = 0;
+
+    // Add listener for partial results
+    await CapacitorSpeechRecognition.addListener('partialResults', (data: any) => {
+      let newTranscript = '';
+      if (data.matches) {
+        newTranscript = Array.isArray(data.matches) ? data.matches[0] : data.matches;
+      } else if (data.value) {
+        newTranscript = Array.isArray(data.value) ? data.value[0] : data.value;
+      }
+      if (newTranscript) {
+        this.transcript = newTranscript;
+
+        // 🔧 v19: Only add timestamps for NEW words (avoid duplicates)
+        const words = newTranscript.trim().split(/\s+/).filter((w: string) => w.length > 0);
+        const newWordCount = words.length;
+
+        if (newWordCount > previousWordCount) {
+          // Only process the NEW words
+          const newWords = words.slice(previousWordCount);
+          const currentTime = Date.now() - this.startTime;
+
+          newWords.forEach((word: string) => {
+            this.wordTimestamps.push({
+              word: word.toLowerCase().replace(/[^\w]/g, ''),
+              timestamp: currentTime,
+              confidence: 0.85 // Higher default confidence for Capacitor (more reliable)
+            });
+            this.confidenceScores.push(0.85);
+          });
+
+          previousWordCount = newWordCount;
+        }
+      }
+    });
+
+    // Start recognition
+    await CapacitorSpeechRecognition.start({
+      language: 'en-US',
+      maxResults: 5,
+      partialResults: true,
+      popup: false
+    });
+
+    console.log('[SpeechAnalyzer] ✅ v19: Capacitor speech recognition started');
+  }
+
   stopRecording(): Promise<SpeechAnalysisResult> {
+    // 🔧 GOD-TIER v18: Route to Capacitor on Android
+    if (this.isNativeAndroid) {
+      return this.stopCapacitorRecording();
+    }
+
     return new Promise((resolve) => {
       if (!this.recognition || !this.isRecording) {
         resolve(this.getEmptyResult());
         return;
       }
 
-      this.recognition.onend = () => {
+      // 🎯 ANDROID FIX: Add timeout protection
+      // Android Web Speech API often doesn't fire onend event
+      const STOP_TIMEOUT_MS = 3000;
+      let resolved = false;
+
+      const resolveOnce = (result: SpeechAnalysisResult) => {
+        if (resolved) return;
+        resolved = true;
         this.isRecording = false;
-        const result = this.analyzeRecording();
         resolve(result);
       };
 
-      this.recognition.stop();
+      // Timeout fallback - resolve with current data after 3 seconds
+      const timeoutId = setTimeout(() => {
+        if (!resolved) {
+          console.warn('[SpeechAnalyzer] onend timeout - resolving with current transcript');
+          resolveOnce(this.analyzeRecording());
+        }
+      }, STOP_TIMEOUT_MS);
+
+      // Normal completion handler
+      this.recognition.onend = () => {
+        clearTimeout(timeoutId);
+        resolveOnce(this.analyzeRecording());
+      };
+
+      // Error handler - also should resolve to prevent hang
+      this.recognition.onerror = (event) => {
+        clearTimeout(timeoutId);
+        if (event.error !== 'aborted') {
+          console.warn('[SpeechAnalyzer] recognition error:', event.error);
+        }
+        resolveOnce(this.analyzeRecording());
+      };
+
+      // Attempt to stop recognition
+      try {
+        this.recognition.stop();
+      } catch (error) {
+        // If stop() throws, still resolve after timeout
+        console.warn('[SpeechAnalyzer] stop() error:', error);
+      }
     });
+  }
+
+  // 🔧 GOD-TIER v19: Capacitor stop recording with TIMEOUT protection
+  private async stopCapacitorRecording(): Promise<SpeechAnalysisResult> {
+    if (!this.isRecording) {
+      return this.getEmptyResult();
+    }
+
+    // 🔧 v19: Timeout protection - don't hang forever
+    const STOP_TIMEOUT_MS = 3000;
+
+    const stopWithTimeout = async () => {
+      try {
+        // Race between stop and timeout
+        await Promise.race([
+          CapacitorSpeechRecognition.stop(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Stop timeout')), STOP_TIMEOUT_MS))
+        ]);
+      } catch (e) {
+        console.warn('[SpeechAnalyzer] v19: Capacitor stop timeout/error:', e);
+      }
+
+      // Wait a moment for any final results to arrive
+      await new Promise(r => setTimeout(r, 300));
+
+      // Cleanup listeners with timeout
+      try {
+        await Promise.race([
+          CapacitorSpeechRecognition.removeAllListeners(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Cleanup timeout')), 1000))
+        ]);
+      } catch (e) {
+        console.warn('[SpeechAnalyzer] v19: Cleanup timeout/error:', e);
+      }
+    };
+
+    await stopWithTimeout();
+
+    this.isRecording = false;
+    console.log('[SpeechAnalyzer] ✅ v19: Capacitor recording stopped, transcript:', this.transcript.substring(0, 50));
+    return this.analyzeRecording();
   }
 
   // 🔧 FIX #9: Cleanup method to remove event listeners and prevent memory leaks
@@ -291,7 +457,8 @@ export class SpeechAnalyzer {
   }
 
   private calculatePronunciationScore(): number {
-    if (this.confidenceScores.length === 0) return 0;
+    // 🔧 v19: If no confidence scores, give a fair default instead of 0
+    if (this.confidenceScores.length === 0) return 70;
 
     // Start from perfect score and deduct for issues
     let score = 100;
@@ -299,46 +466,46 @@ export class SpeechAnalyzer {
     // Confidence-based deductions
     const averageConfidence = this.confidenceScores.reduce((sum, score) => sum + score, 0) / this.confidenceScores.length;
 
-    // Much stricter confidence thresholds
+    // 🔧 v19: More generous confidence thresholds
     if (averageConfidence < 0.3) {
-      score -= 50; // Very poor pronunciation
+      score -= 30; // Very poor pronunciation
     } else if (averageConfidence < 0.5) {
-      score -= 35; // Poor pronunciation
+      score -= 20; // Poor pronunciation
     } else if (averageConfidence < 0.7) {
-      score -= 20; // Below average
+      score -= 10; // Below average
     } else if (averageConfidence < 0.8) {
-      score -= 10; // Slightly below average
+      score -= 5; // Slightly below average
     }
 
-    // Individual word confidence penalties
-    const lowConfidenceWords = this.confidenceScores.filter(score => score < 0.6).length;
-    const veryLowConfidenceWords = this.confidenceScores.filter(score => score < 0.4).length;
+    // 🔧 v19: Lighter individual word confidence penalties
+    const lowConfidenceWords = this.confidenceScores.filter(score => score < 0.5).length;
+    const veryLowConfidenceWords = this.confidenceScores.filter(score => score < 0.3).length;
 
-    score -= lowConfidenceWords * 3; // 3 points per unclear word
-    score -= veryLowConfidenceWords * 7; // Additional 7 points for very unclear words
+    score -= lowConfidenceWords * 1; // 1 point per unclear word
+    score -= veryLowConfidenceWords * 2; // Additional 2 points for very unclear words
 
-    // Pronunciation issues analysis
+    // Pronunciation issues analysis - lighter penalties
     const issues = this.identifyPronunciationIssues();
     const issueDeduction = issues.reduce((total, issue) => {
       switch (issue.severity) {
-        case 'high': return total + 15; // Major pronunciation problems
-        case 'medium': return total + 8; // Noticeable issues
-        case 'low': return total + 3; // Minor issues
+        case 'high': return total + 5; // Major issues
+        case 'medium': return total + 3; // Noticeable issues
+        case 'low': return total + 1; // Minor issues
         default: return total;
       }
     }, 0);
 
-    score -= issueDeduction;
+    score -= Math.min(20, issueDeduction); // Cap total issue deduction
 
-    // Word clarity ratio penalty
+    // Word clarity ratio penalty - lighter
     const totalWords = this.wordTimestamps.length;
     if (totalWords > 0) {
       const unclearWordsRatio = (lowConfidenceWords / totalWords);
-      if (unclearWordsRatio > 0.5) {
-        score -= 25; // More than half unclear
+      if (unclearWordsRatio > 0.7) {
+        score -= 15; // Most words unclear
+      } else if (unclearWordsRatio > 0.5) {
+        score -= 10; // Many unclear words
       } else if (unclearWordsRatio > 0.3) {
-        score -= 15; // Many unclear words
-      } else if (unclearWordsRatio > 0.1) {
         score -= 5; // Some unclear words
       }
     }
@@ -350,72 +517,72 @@ export class SpeechAnalyzer {
   }
 
   private applyPronunciationCEFRCaps(score: number, averageConfidence: number, issueCount: number): number {
-    // A1 level cap (max 25%) - very poor pronunciation
-    if (averageConfidence < 0.4 || issueCount >= 8) {
-      return Math.min(score, 25);
-    }
+    // 🔧 v19: Made CEFR caps more generous for language learners
+    // The old caps were too strict and unfair
 
-    // A2 level cap (max 40%) - poor pronunciation
-    if (averageConfidence < 0.5 || issueCount >= 6) {
+    // A1 level cap (max 40%) - only for VERY poor pronunciation
+    if (averageConfidence < 0.3 || issueCount >= 12) {
       return Math.min(score, 40);
     }
 
-    // B1 level cap (max 55%) - below average pronunciation
-    if (averageConfidence < 0.65 || issueCount >= 4) {
+    // A2 level cap (max 55%) - poor pronunciation
+    if (averageConfidence < 0.4 || issueCount >= 10) {
       return Math.min(score, 55);
     }
 
-    // B2 level cap (max 70%) - acceptable pronunciation
-    if (averageConfidence < 0.75 || issueCount >= 3) {
+    // B1 level cap (max 70%) - below average pronunciation
+    if (averageConfidence < 0.5 || issueCount >= 8) {
       return Math.min(score, 70);
     }
 
-    // C1+ requires very clear pronunciation
-    if (averageConfidence < 0.85 && score > 85) {
+    // B2 level cap (max 85%) - acceptable pronunciation
+    if (averageConfidence < 0.6 || issueCount >= 6) {
       return Math.min(score, 85);
     }
 
+    // No cap for good pronunciation - let the score through
     return score;
   }
 
   private calculateFluencyScore(metrics: SpeechMetrics, wordsPerMinute: number): number {
     let score = 100;
 
-    // Much stricter WPM evaluation
-    if (wordsPerMinute < 60) {
-      score -= 40; // Very slow speech
-    } else if (wordsPerMinute < 90) {
-      score -= 25; // Slow speech
-    } else if (wordsPerMinute < 120) {
-      score -= 10; // Below average
+    // 🔧 v19: More generous WPM evaluation for language learners
+    // Slow speech is OK for learners - they're thinking in a second language!
+    if (wordsPerMinute < 40) {
+      score -= 20; // Very slow speech - still acceptable
+    } else if (wordsPerMinute < 70) {
+      score -= 10; // Slow but thoughtful
+    } else if (wordsPerMinute < 100) {
+      score -= 5; // Slightly below average
     } else if (wordsPerMinute > 200) {
-      score -= 15; // Too fast, unclear
+      score -= 10; // Too fast
     }
 
-    // Severe penalties for pauses
-    const pausesPenalty = Math.min(35, metrics.totalPauses * 4);
+    // 🔧 v19: Gentler penalties for pauses (language learners pause to think)
+    const pausesPenalty = Math.min(20, metrics.totalPauses * 2);
     score -= pausesPenalty;
 
-    // Heavy penalty for filler words
-    const fillerPenalty = Math.min(25, metrics.fillerWords.length * 3);
+    // 🔧 v19: Lighter penalty for filler words (natural in conversation)
+    const fillerPenalty = Math.min(15, metrics.fillerWords.length * 2);
     score -= fillerPenalty;
 
-    // Repetition penalty
-    const repetitionPenalty = Math.min(20, metrics.repetitions.length * 4);
+    // Repetition penalty (minimal)
+    const repetitionPenalty = Math.min(10, metrics.repetitions.length * 2);
     score -= repetitionPenalty;
 
-    // Self-correction penalty (natural corrections are ok, but too many indicate struggle)
-    const correctionPenalty = Math.min(15, Math.max(0, metrics.selfCorrections - 2) * 5);
+    // Self-correction penalty (self-correction is actually GOOD - shows awareness!)
+    const correctionPenalty = Math.min(5, Math.max(0, metrics.selfCorrections - 3) * 2);
     score -= correctionPenalty;
 
     // Speaking time ratio (should speak more than pause)
     const speakingTimeRatio = metrics.totalSpeakingTime > 0 ?
       (metrics.totalSpeakingTime - (metrics.totalPauses * metrics.averagePauseLength)) / metrics.totalSpeakingTime : 0;
 
-    if (speakingTimeRatio < 0.6) {
-      score -= 20; // Too much pausing relative to speaking
-    } else if (speakingTimeRatio < 0.8) {
-      score -= 10; // Some hesitation
+    if (speakingTimeRatio < 0.4) {
+      score -= 15; // Too much pausing
+    } else if (speakingTimeRatio < 0.6) {
+      score -= 8; // Some hesitation
     }
 
     // Apply CEFR fluency caps
@@ -425,31 +592,26 @@ export class SpeechAnalyzer {
   }
 
   private applyFluencyCEFRCaps(score: number, wpm: number, metrics: SpeechMetrics): number {
-    // A1 level cap (max 25%) - very hesitant speech
-    if (wpm < 60 || metrics.totalPauses >= 8 || metrics.fillerWords.length >= 6) {
-      return Math.min(score, 25);
+    // 🔧 v19: Made fluency caps MUCH more generous
+    // Language learners often speak slowly but correctly - that's OK!
+
+    // A1 level cap (max 50%) - only for EXTREMELY hesitant speech
+    if (wpm < 30 || metrics.totalPauses >= 15 || metrics.fillerWords.length >= 10) {
+      return Math.min(score, 50);
     }
 
-    // A2 level cap (max 40%) - hesitant speech
-    if (wpm < 80 || metrics.totalPauses >= 6 || metrics.fillerWords.length >= 4) {
-      return Math.min(score, 40);
+    // A2 level cap (max 65%) - very hesitant speech
+    if (wpm < 50 || metrics.totalPauses >= 12 || metrics.fillerWords.length >= 8) {
+      return Math.min(score, 65);
     }
 
-    // B1 level cap (max 55%) - somewhat fluent
-    if (wpm < 100 || metrics.totalPauses >= 4 || metrics.fillerWords.length >= 3) {
-      return Math.min(score, 55);
+    // B1 level cap (max 80%) - somewhat hesitant
+    if (wpm < 70 || metrics.totalPauses >= 10 || metrics.fillerWords.length >= 6) {
+      return Math.min(score, 80);
     }
 
-    // B2 level cap (max 70%) - generally fluent
-    if (wpm < 120 || metrics.totalPauses >= 3 || metrics.fillerWords.length >= 2) {
-      return Math.min(score, 70);
-    }
-
-    // C1+ requires very fluent speech
-    if (wpm < 140 && score > 85) {
-      return Math.min(score, 85);
-    }
-
+    // No more strict caps - let the natural score through
+    // Language learners deserve fair scores even if they speak slowly
     return score;
   }
 
@@ -498,6 +660,10 @@ export class SpeechAnalyzer {
   }
 
   isSupported(): boolean {
+    // 🔧 GOD-TIER v18: On Android, we use Capacitor plugin which is always supported
+    if (this.isNativeAndroid) {
+      return true;
+    }
     return this.recognition !== null;
   }
 

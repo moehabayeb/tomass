@@ -1,5 +1,10 @@
 import { configureUtterance } from '@/config/voice';
 import { BilingualTTS } from './BilingualTTS';
+import { Capacitor } from '@capacitor/core';
+import { UnifiedTTSService } from '@/services/UnifiedTTSService';
+
+// Check if running on native platform
+const isNativePlatform = () => Capacitor.isNativePlatform();
 
 interface SpeechOptions {
   interrupt?: boolean;
@@ -126,20 +131,50 @@ class TomasVoiceService {
   }
 
   private speakText(text: string): Promise<SpeechResult> {
+    // Use native TTS on Android/iOS
+    if (isNativePlatform()) {
+      return new Promise(async (resolve) => {
+        const startTime = Date.now();
+        try {
+          this.emitEvent('speech:start', { text });
+          this.emitEvent('avatar:talking:start');
+
+          await UnifiedTTSService.speak({
+            text,
+            lang: 'en-US',
+            rate: 1.0,
+            pitch: 1.0,
+            volume: 1.0
+          });
+
+          const duration = Date.now() - startTime;
+          this.emitEvent('speech:end', { text, duration });
+          this.emitEvent('avatar:talking:end');
+          resolve({ durationMs: duration });
+        } catch (error) {
+          console.error('[TomasVoice] Native speak error:', error);
+          this.emitEvent('speech:end', { text, error });
+          this.emitEvent('avatar:talking:end');
+          resolve({ durationMs: 0 });
+        }
+      });
+    }
+
+    // Web Speech API for browsers
     return new Promise((resolve, reject) => {
       // Wait for voices to be ready
       const speakWhenReady = () => {
         try {
           const utterance = new SpeechSynthesisUtterance(text);
           configureUtterance(utterance, text);
-          
+
           const startTime = Date.now();
-          
+
           utterance.onstart = () => {
             this.emitEvent('speech:start', { text });
             this.emitEvent('avatar:talking:start');
           };
-          
+
           utterance.onend = () => {
             const duration = Date.now() - startTime;
             this.currentUtterance = null;
@@ -147,7 +182,7 @@ class TomasVoiceService {
             this.emitEvent('avatar:talking:end');
             resolve({ durationMs: duration });
           };
-          
+
           utterance.onerror = (event) => {
             this.currentUtterance = null;
             this.emitEvent('speech:end', { text, error: event.error });
@@ -155,10 +190,10 @@ class TomasVoiceService {
             // Don't reject - fallback gracefully
             resolve({ durationMs: 0 });
           };
-          
+
           this.currentUtterance = utterance;
           speechSynthesis.speak(utterance);
-          
+
         } catch (error) {
           this.emitEvent('avatar:talking:end');
           resolve({ durationMs: 0 }); // Graceful fallback
@@ -177,9 +212,9 @@ class TomasVoiceService {
           speechSynthesis.removeEventListener('voiceschanged', voicesHandler);
           speakWhenReady();
         };
-        
+
         speechSynthesis.addEventListener('voiceschanged', voicesHandler);
-        
+
         // Fallback timeout - speak anyway after 1 second
         timeoutId = setTimeout(() => {
           speechSynthesis.removeEventListener('voiceschanged', voicesHandler);
@@ -191,9 +226,13 @@ class TomasVoiceService {
 
   stop(): void {
     try {
-      BilingualTTS.stop(); // Stop bilingual TTS too
-      if (speechSynthesis.speaking || speechSynthesis.pending) {
-        speechSynthesis.cancel();
+      BilingualTTS.stop(); // Stop bilingual TTS too (handles native TTS)
+      if (isNativePlatform()) {
+        UnifiedTTSService.stop();
+      } else {
+        if (speechSynthesis.speaking || speechSynthesis.pending) {
+          speechSynthesis.cancel();
+        }
       }
       this.currentUtterance = null;
       this.emitEvent('speech:end', { interrupted: true });
@@ -227,6 +266,9 @@ class TomasVoiceService {
 
   // Get speaking status
   get isSpeaking(): boolean {
+    if (isNativePlatform()) {
+      return UnifiedTTSService.isSpeaking() || this.isProcessing;
+    }
     return speechSynthesis.speaking || this.currentUtterance !== null;
   }
 }

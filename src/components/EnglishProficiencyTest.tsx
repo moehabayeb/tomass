@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Mic, MicOff, CheckCircle } from 'lucide-react';
 import { SpeechAnalyzer } from '@/services/SpeechAnalyzer';
+import { microphoneGuardian } from '@/services/MicrophoneGuardian';
 import { GrammarChecker } from '@/services/GrammarChecker';
 import { VocabularyAnalyzer } from '@/services/VocabularyAnalyzer';
 import { speakingTestService, TestPrompt, TestResult } from '@/services/speakingTestService';
@@ -63,8 +64,24 @@ export default function EnglishProficiencyTest({
   // Cleanup on unmount - prevent memory leaks
   useEffect(() => {
     setIsMounted(true);
+
+    // Ensure microphone is ready when entering test
+    microphoneGuardian.ensureReady().then(status => {
+      if (status !== 'ready') {
+        const message = microphoneGuardian.getStatusMessage();
+        if (message) {
+          toast({
+            title: "Microphone",
+            description: message.replace(/^[^\s]+\s*/, ''), // Remove emoji prefix
+            variant: "destructive"
+          });
+        }
+      }
+    });
+
     return () => {
       setIsMounted(false);
+      microphoneGuardian.stopMonitoring();
       // Clear phase transition timer using ref
       if (phaseTransitionTimerRef.current) {
         clearTimeout(phaseTransitionTimerRef.current);
@@ -144,6 +161,17 @@ export default function EnglishProficiencyTest({
         toast({
           title: "Speech Recognition Not Supported",
           description: "Your browser doesn't support speech recognition. Please use Chrome or Edge.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Pre-flight check for microphone reliability
+      const preflight = await microphoneGuardian.preflightCheck();
+      if (!preflight.ready) {
+        toast({
+          title: "Microphone Issue",
+          description: preflight.userMessage.replace(/^[^\s]+\s*/, ''), // Remove emoji prefix
           variant: "destructive"
         });
         return;

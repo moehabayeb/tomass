@@ -1,4 +1,6 @@
 import { configureUtterance, VoiceConsistencyManager } from '@/config/voice';
+import { Capacitor } from '@capacitor/core';
+import { UnifiedTTSService } from './UnifiedTTSService';
 
 interface TTSChunk {
   text: string;
@@ -385,12 +387,17 @@ class TTSManagerService {
   }
 
   public async speak(text: string, options: TTSOptions = {}): Promise<TTSResult> {
+    // 🎯 ANDROID FIX: Route to native TTS on Android/iOS
+    if (Capacitor.isNativePlatform()) {
+      return this.speakNative(text, options);
+    }
+
     // 🎯 CRITICAL: Ensure voice consistency is initialized before speaking
     if (!VoiceConsistencyManager.getVoiceInfo().isInitialized) {
       // Apple Store Compliance: Silent initialization before first speak
       await VoiceConsistencyManager.initialize();
     }
-    
+
     // Check global sound setting first
     const globalSoundEnabled = this.getGlobalSoundEnabled();
     if (!globalSoundEnabled || !this.isEnabled) {
@@ -444,6 +451,57 @@ class TTSManagerService {
     });
   }
 
+  // 🎯 ANDROID FIX: Native TTS implementation using UnifiedTTSService
+  private async speakNative(text: string, options: TTSOptions): Promise<TTSResult> {
+    const startTime = Date.now();
+
+    // Check global sound setting first
+    const globalSoundEnabled = this.getGlobalSoundEnabled();
+    if (!globalSoundEnabled || !this.isEnabled) {
+      return {
+        completed: false,
+        skipped: true,
+        chunksSpoken: 0,
+        totalChunks: 0,
+        durationMs: 0
+      };
+    }
+
+    this.busy = true;
+    this.isSkipped = false;
+
+    try {
+      const normalizedText = this.normalizeText(text);
+
+      await UnifiedTTSService.speak({
+        text: normalizedText,
+        lang: 'en-US',
+        rate: 1.0,
+        pitch: 1.0,
+        volume: 1.0
+      });
+
+      this.busy = false;
+      return {
+        completed: true,
+        skipped: false,
+        chunksSpoken: 1,
+        totalChunks: 1,
+        durationMs: Date.now() - startTime
+      };
+    } catch (error) {
+      console.error('[TTSManager] Native TTS error:', error);
+      this.busy = false;
+      return {
+        completed: false,
+        skipped: false,
+        chunksSpoken: 0,
+        totalChunks: 1,
+        durationMs: Date.now() - startTime
+      };
+    }
+  }
+
   public skip(): void {
     if (!this.busy) {
       return;
@@ -467,10 +525,19 @@ class TTSManagerService {
   }
 
   public isSpeaking(): boolean {
+    if (Capacitor.isNativePlatform()) {
+      return UnifiedTTSService.isSpeaking() || this.busy;
+    }
     return this.busy;
   }
 
   public stop(): void {
+    if (Capacitor.isNativePlatform()) {
+      UnifiedTTSService.stop();
+      this.busy = false;
+      this.isSkipped = true;
+      return;
+    }
     this.skip();
   }
 }
