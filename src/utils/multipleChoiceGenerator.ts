@@ -2862,7 +2862,32 @@ function generateDynamicAnswer(match: RegExpMatchArray, sentence: string): strin
     }
   }
 
-  // Simple Present patterns (fallback)
+  // v35 GOD-TIER FIX: Comprehensive irregular past tense verb detection
+  // These are already-conjugated past forms - DO NOT add -s/-es suffixes
+  const irregularPastVerbs = new Set([
+    // Common irregular past verbs (100+)
+    'went', 'came', 'saw', 'ate', 'drank', 'bought', 'got', 'made', 'took', 'gave',
+    'had', 'did', 'was', 'were', 'said', 'told', 'thought', 'knew', 'found', 'felt',
+    'left', 'met', 'heard', 'paid', 'read', 'ran', 'sat', 'slept', 'spoke', 'stood',
+    'swam', 'taught', 'threw', 'understood', 'woke', 'won', 'wore', 'wrote', 'broke',
+    'brought', 'built', 'caught', 'chose', 'drew', 'drove', 'fell', 'flew', 'forgot',
+    'grew', 'held', 'hid', 'kept', 'led', 'lost', 'meant', 'rode', 'sang', 'sent',
+    'set', 'shook', 'shot', 'showed', 'shut', 'spent', 'stole', 'struck', 'swept',
+    'sold', 'hung', 'cut', 'put', 'hurt', 'hit', 'let', 'cost', 'quit', 'bet',
+    'began', 'bit', 'blew', 'bound', 'bled', 'bred', 'burnt', 'burst', 'clung',
+    'crept', 'dealt', 'dug', 'fed', 'fought', 'fled', 'flung', 'froze', 'ground',
+    'knelt', 'laid', 'leant', 'leapt', 'learnt', 'lent', 'lit', 'rung', 'rose',
+    'sank', 'sought', 'sewn', 'shone', 'shrunk', 'slung', 'slit', 'smelt', 'sown',
+    'spat', 'sped', 'spelt', 'spilt', 'spun', 'split', 'spoilt', 'spread', 'sprung',
+    'stuck', 'stung', 'stunk', 'strung', 'swore', 'swung', 'tore', 'wept',
+    'wound', 'wrung'
+  ]);
+
+  if (verb && irregularPastVerbs.has(verb.toLowerCase())) {
+    return verb;  // Return unchanged - don't add -s!
+  }
+
+  // Simple Present patterns (fallback) - only for regular verbs now
   if (['he', 'she', 'it'].includes(pronoun)) {
     return addThirdPersonS(verb);
   }
@@ -3190,7 +3215,9 @@ function generateDynamicWrongAnswers(match: RegExpMatchArray, sentence: string, 
 
 // Helper functions for specific word types
 function getIrregularVerbAlternatives(correctVerb: string): string[] {
+  // v35 GOD-TIER: Comprehensive irregular verb pairs (past → base, present 3rd person)
   const irregularPairs: { [key: string]: string[] } = {
+    // Original 10
     'went': ['go', 'goes'],
     'came': ['come', 'comes'],
     'saw': ['see', 'sees'],
@@ -3200,10 +3227,80 @@ function getIrregularVerbAlternatives(correctVerb: string): string[] {
     'got': ['get', 'gets'],
     'made': ['make', 'makes'],
     'took': ['take', 'takes'],
-    'gave': ['give', 'gives']
+    'gave': ['give', 'gives'],
+    // Additional common irregular verbs
+    'had': ['have', 'has'],
+    'did': ['do', 'does'],
+    'was': ['be', 'is'],
+    'were': ['be', 'are'],
+    'said': ['say', 'says'],
+    'told': ['tell', 'tells'],
+    'thought': ['think', 'thinks'],
+    'knew': ['know', 'knows'],
+    'found': ['find', 'finds'],
+    'felt': ['feel', 'feels'],
+    'left': ['leave', 'leaves'],
+    'met': ['meet', 'meets'],
+    'heard': ['hear', 'hears'],
+    'paid': ['pay', 'pays'],
+    'read': ['read', 'reads'],
+    'ran': ['run', 'runs'],
+    'sat': ['sit', 'sits'],
+    'slept': ['sleep', 'sleeps'],
+    'spoke': ['speak', 'speaks'],
+    'stood': ['stand', 'stands'],
+    'swam': ['swim', 'swims'],
+    'taught': ['teach', 'teaches'],
+    'threw': ['throw', 'throws'],
+    'understood': ['understand', 'understands'],
+    'woke': ['wake', 'wakes'],
+    'won': ['win', 'wins'],
+    'wore': ['wear', 'wears'],
+    'wrote': ['write', 'writes'],
+    'broke': ['break', 'breaks'],
+    'brought': ['bring', 'brings'],
+    'built': ['build', 'builds'],
+    'caught': ['catch', 'catches'],
+    'chose': ['choose', 'chooses'],
+    'drew': ['draw', 'draws'],
+    'drove': ['drive', 'drives'],
+    'fell': ['fall', 'falls'],
+    'flew': ['fly', 'flies'],
+    'forgot': ['forget', 'forgets'],
+    'grew': ['grow', 'grows'],
+    'held': ['hold', 'holds'],
+    'hid': ['hide', 'hides'],
+    'kept': ['keep', 'keeps'],
+    'led': ['lead', 'leads'],
+    'lost': ['lose', 'loses'],
+    'meant': ['mean', 'means'],
+    'rode': ['ride', 'rides'],
+    'sang': ['sing', 'sings'],
+    'sent': ['send', 'sends'],
+    'set': ['set', 'sets'],
+    'shook': ['shake', 'shakes'],
+    'shot': ['shoot', 'shoots'],
+    'showed': ['show', 'shows'],
+    'shut': ['shut', 'shuts'],
+    'spent': ['spend', 'spends'],
+    'stole': ['steal', 'steals'],
+    'struck': ['strike', 'strikes'],
+    'swept': ['sweep', 'sweeps'],
+    'sold': ['sell', 'sells'],
+    'hung': ['hang', 'hangs'],
+    // Unchanging verbs (past = base)
+    'cut': ['cut', 'cuts'],
+    'put': ['put', 'puts'],
+    'hurt': ['hurt', 'hurts'],
+    'hit': ['hit', 'hits'],
+    'let': ['let', 'lets'],
+    'cost': ['cost', 'costs'],
+    'quit': ['quit', 'quits'],
+    'bet': ['bet', 'bets']
   };
 
-  return irregularPairs[correctVerb] || [correctVerb.slice(0, -2), correctVerb + 's'];
+  // Return from map, or safe fallback (just the verb + 's')
+  return irregularPairs[correctVerb.toLowerCase()] || [correctVerb, correctVerb + 's'];
 }
 
 function getComparativeAlternatives(correctAnswer: string): string[] {
