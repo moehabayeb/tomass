@@ -1156,13 +1156,11 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       try {
         await executeTeacherLoop(finalTranscript);
         console.log('[SpeakingApp] ✅ executeTeacherLoop completed successfully');
-        // 🔧 GOD-TIER v6: Safety net - transition to LISTENING if not already there
-        // The transitionInProgressRef guard prevents race condition with tts-complete
-        // If TTS plays: 'tts-complete' runs first, guard blocks this call
-        // If TTS skipped: this call recovers the app from stuck state
-        if (isMountedRef.current && flowStateRef.current !== 'LISTENING') {
-          await forceToListening('teacher-loop-success');
-        }
+        // 🔧 v36 GOD-TIER FIX: Safety net REMOVED - it was causing TTS cancellation!
+        // The forceToListening('tts-complete') in speakExistingMessage's finally block
+        // already handles the transition. This extra call was racing with TTS and
+        // calling TTSManager.stop() which killed the audio mid-playback.
+        // The 'tts-complete' transition is sufficient and properly awaited.
       } catch (teacherError: any) {
         console.error('[SpeakingApp] ❌ executeTeacherLoop FAILED:', teacherError);
         // Show error to user so they know what happened
