@@ -1482,24 +1482,41 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
       const aiResponse = data;
 
-      // 🔧 v36.1 GOD-TIER FIX: Helper to strip correction prefix from AI response
+      // 🔧 v36.2 GOD-TIER FIX: Robust helper to strip correction prefix from AI response
       // Used when client-side validation rejects a false positive correction
       const stripCorrectionPrefix = (response: string): string => {
-        const patterns = [
-          /^Great!\s*Just a quick tip:.*?😊\s*\n\n/i,
-          /^Great!\s*Just a quick tip:.*?😊\s*/i,
-          /^Excellent!\s*Just a quick tip:.*?😊\s*\n\n/i,
-          /^Excellent!\s*Just a quick tip:.*?😊\s*/i,
-          /^Nice!\s*Just a quick tip:.*?😊\s*\n\n/i,
-          /^Nice!\s*Just a quick tip:.*?😊\s*/i,
-          /^Nice!\s*You could also say:.*?😊\s*\n\n/i,
-          /^Nice!\s*You could also say:.*?😊\s*/i,
-        ];
-        let cleaned = response;
-        for (const pattern of patterns) {
-          cleaned = cleaned.replace(pattern, '');
+        // Check if response starts with correction pattern
+        if (!response.match(/^(?:Great!|Nice!|Excellent!)\s*(?:Just a quick tip|You could also say)/i)) {
+          return response; // Doesn't start with correction pattern, return as-is
         }
-        return cleaned.trim();
+
+        // Find first emoji (😊 or similar) and strip everything before it
+        // Using explicit emoji characters to ensure matching works
+        const emojis = ['😊', '😃', '😄', '🙂', '👍', '🎉', '😁', '🤗'];
+        let emojiIndex = -1;
+        let emojiLength = 2; // Most emojis are 2 chars in JS strings
+
+        for (const emoji of emojis) {
+          const idx = response.indexOf(emoji);
+          if (idx !== -1 && (emojiIndex === -1 || idx < emojiIndex)) {
+            emojiIndex = idx;
+            emojiLength = emoji.length;
+          }
+        }
+
+        if (emojiIndex !== -1) {
+          // Return everything after the emoji, trimmed
+          return response.substring(emojiIndex + emojiLength).replace(/^[\s\n]+/, '').trim();
+        }
+
+        // Fallback: No emoji found, try to find closing quote and strip
+        const quoteMatch = response.match(/['"][.!?]?\s*(?=[A-Z])/);
+        if (quoteMatch && quoteMatch.index) {
+          return response.substring(quoteMatch.index + quoteMatch[0].length).trim();
+        }
+
+        // Last resort: return original
+        return response;
       };
 
       // 🔧 GOD-TIER v16: Strip sentence-ending punctuation from corrections
