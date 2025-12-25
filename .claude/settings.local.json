@@ -130,7 +130,8 @@
       "Bash(adb kill-server:*)",
       "Bash(adb start-server:*)",
       "Bash(timeout 5 adb wait-for-device:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(about you\" → \"I love lions. What about you?\"\\) even though client-side validation\nrejected it. The tip still appeared in chat because the response wasn''t stripped.\n\nFIX: Added stripCorrectionPrefix\\(\\) helper that removes \"Just a quick tip\" patterns\nfrom AI response when client-side validation rejects the correction as a false\npositive \\(punctuation/capitalization only\\).\n\nNow users won''t see unnecessary punctuation tips in casual conversation.\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
     ],
     "deny": [],
     "ask": []

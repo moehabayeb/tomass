@@ -1482,31 +1482,62 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
       const aiResponse = data;
 
+      // 🔧 v36.1 GOD-TIER FIX: Helper to strip correction prefix from AI response
+      // Used when client-side validation rejects a false positive correction
+      const stripCorrectionPrefix = (response: string): string => {
+        const patterns = [
+          /^Great!\s*Just a quick tip:.*?😊\s*\n\n/i,
+          /^Great!\s*Just a quick tip:.*?😊\s*/i,
+          /^Excellent!\s*Just a quick tip:.*?😊\s*\n\n/i,
+          /^Excellent!\s*Just a quick tip:.*?😊\s*/i,
+          /^Nice!\s*Just a quick tip:.*?😊\s*\n\n/i,
+          /^Nice!\s*Just a quick tip:.*?😊\s*/i,
+          /^Nice!\s*You could also say:.*?😊\s*\n\n/i,
+          /^Nice!\s*You could also say:.*?😊\s*/i,
+        ];
+        let cleaned = response;
+        for (const pattern of patterns) {
+          cleaned = cleaned.replace(pattern, '');
+        }
+        return cleaned.trim();
+      };
+
+      // 🔧 GOD-TIER v16: Strip sentence-ending punctuation from corrections
+      const stripSentencePunctuation = (text: string): string => {
+        return text
+          .replace(/[.!?]+$/g, '')  // Remove trailing . ! ?
+          .replace(/\s*[.!?]\s+/g, ' ')  // Remove mid-sentence . ! ? (added by AI)
+          .trim();
+      };
+
+      // v36.1: Track final response (may be stripped of correction prefix)
+      let finalResponse = aiResponse.response;
+
       // Client-side validation: Only show if it's a REAL grammatical error
       if (aiResponse.hadGrammarIssue && aiResponse.originalPhrase && aiResponse.correctedPhrase) {
         // Validate before showing
         const isValid = isValidGrammarCorrection(aiResponse.originalPhrase, aiResponse.correctedPhrase);
 
         if (isValid) {
-          // 🔧 GOD-TIER v16: Strip sentence-ending punctuation from corrections
-          // (Can't hear periods, question marks, etc. - only fix GRAMMAR)
-          const stripSentencePunctuation = (text: string): string => {
-            return text
-              .replace(/[.!?]+$/g, '')  // Remove trailing . ! ?
-              .replace(/\s*[.!?]\s+/g, ' ')  // Remove mid-sentence . ! ? (added by AI)
-              .trim();
-          };
-
           setGrammarCorrections([{
             originalPhrase: stripSentencePunctuation(aiResponse.originalPhrase),
             correctedPhrase: stripSentencePunctuation(aiResponse.correctedPhrase)
           }]);
+        } else {
+          // v36.1: Rejected by client validation (punctuation/capitalization only)
+          // Strip the correction tip from response so user doesn't see it
+          console.log('[executeTeacherLoop] 🚫 Grammar correction rejected by client validation - stripping tip');
+          finalResponse = stripCorrectionPrefix(aiResponse.response);
         }
+      } else if (aiResponse.hadGrammarIssue) {
+        // v36.1: hadGrammarIssue=true but missing phrases - strip tip anyway
+        console.log('[executeTeacherLoop] 🚫 hadGrammarIssue but missing phrases - stripping tip');
+        finalResponse = stripCorrectionPrefix(aiResponse.response);
       }
 
-      // Add the AI's response to chat
-      console.log('[executeTeacherLoop] 💬 Adding AI response to chat:', aiResponse.response?.substring(0, 50) + '...');
-      await addAssistantMessage(aiResponse.response, 'feedback');
+      // Add the AI's response to chat (using finalResponse which may have tip stripped)
+      console.log('[executeTeacherLoop] 💬 Adding AI response to chat:', finalResponse?.substring(0, 50) + '...');
+      await addAssistantMessage(finalResponse, 'feedback');
       console.log('[executeTeacherLoop] ✅ AI response added successfully');
 
       // Update conversation context
