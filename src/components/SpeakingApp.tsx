@@ -1482,41 +1482,22 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
       const aiResponse = data;
 
-      // 🔧 v36.2 GOD-TIER FIX: Robust helper to strip correction prefix from AI response
-      // Used when client-side validation rejects a false positive correction
-      const stripCorrectionPrefix = (response: string): string => {
-        // Check if response starts with correction pattern
-        if (!response.match(/^(?:Great!|Nice!|Excellent!)\s*(?:Just a quick tip|You could also say)/i)) {
-          return response; // Doesn't start with correction pattern, return as-is
+      // 🔧 v36.3 GOD-TIER FIX: ALWAYS strip punctuation tips from AI response
+      // This runs on EVERY response regardless of hadGrammarIssue value
+      // Spoken language doesn't have punctuation - users don't "yell out" commas and periods
+      const stripAllPunctuationTips = (response: string): string => {
+        // Pattern: "Just a quick tip:" or "You could also say:" followed by quoted text and emoji
+        // Find ANYWHERE in response (no ^ anchor) - tip might be at start, middle, or end
+        const tipPattern = /(?:Great!|Nice!|Excellent!|Good!)?\s*(?:Just a quick tip|You could also say):\s*(?:it's\s*)?['"].*?['"]\s*[.!?]?\s*(?:😊|😃|😄|🙂|👍|🎉|😁|🤗)/gi;
+
+        const stripped = response.replace(tipPattern, '').replace(/\s+/g, ' ').trim();
+
+        // If stripping removed everything, return original (safety)
+        if (!stripped || stripped.length < 5) {
+          return response;
         }
 
-        // Find first emoji (😊 or similar) and strip everything before it
-        // Using explicit emoji characters to ensure matching works
-        const emojis = ['😊', '😃', '😄', '🙂', '👍', '🎉', '😁', '🤗'];
-        let emojiIndex = -1;
-        let emojiLength = 2; // Most emojis are 2 chars in JS strings
-
-        for (const emoji of emojis) {
-          const idx = response.indexOf(emoji);
-          if (idx !== -1 && (emojiIndex === -1 || idx < emojiIndex)) {
-            emojiIndex = idx;
-            emojiLength = emoji.length;
-          }
-        }
-
-        if (emojiIndex !== -1) {
-          // Return everything after the emoji, trimmed
-          return response.substring(emojiIndex + emojiLength).replace(/^[\s\n]+/, '').trim();
-        }
-
-        // Fallback: No emoji found, try to find closing quote and strip
-        const quoteMatch = response.match(/['"][.!?]?\s*(?=[A-Z])/);
-        if (quoteMatch && quoteMatch.index) {
-          return response.substring(quoteMatch.index + quoteMatch[0].length).trim();
-        }
-
-        // Last resort: return original
-        return response;
+        return stripped;
       };
 
       // 🔧 GOD-TIER v16: Strip sentence-ending punctuation from corrections
@@ -1527,12 +1508,14 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           .trim();
       };
 
-      // v36.1: Track final response (may be stripped of correction prefix)
-      let finalResponse = aiResponse.response;
+      // v36.3 GOD-TIER FIX: ALWAYS strip punctuation tips from EVERY response
+      // This runs regardless of hadGrammarIssue - spoken language doesn't need punctuation corrections
+      let finalResponse = stripAllPunctuationTips(aiResponse.response);
 
-      // Client-side validation: Only show if it's a REAL grammatical error
+      // Client-side validation: Only show grammar corrections UI if it's a REAL grammatical error
+      // (Subject-verb disagreement, wrong verb form, etc. - NOT punctuation)
       if (aiResponse.hadGrammarIssue && aiResponse.originalPhrase && aiResponse.correctedPhrase) {
-        // Validate before showing
+        // Validate before showing the correction UI
         const isValid = isValidGrammarCorrection(aiResponse.originalPhrase, aiResponse.correctedPhrase);
 
         if (isValid) {
@@ -1540,17 +1523,10 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
             originalPhrase: stripSentencePunctuation(aiResponse.originalPhrase),
             correctedPhrase: stripSentencePunctuation(aiResponse.correctedPhrase)
           }]);
-        } else {
-          // v36.1: Rejected by client validation (punctuation/capitalization only)
-          // Strip the correction tip from response so user doesn't see it
-          console.log('[executeTeacherLoop] 🚫 Grammar correction rejected by client validation - stripping tip');
-          finalResponse = stripCorrectionPrefix(aiResponse.response);
         }
-      } else if (aiResponse.hadGrammarIssue) {
-        // v36.1: hadGrammarIssue=true but missing phrases - strip tip anyway
-        console.log('[executeTeacherLoop] 🚫 hadGrammarIssue but missing phrases - stripping tip');
-        finalResponse = stripCorrectionPrefix(aiResponse.response);
+        // Note: v36.3 - No need to strip here anymore, we already stripped ALL tips above
       }
+      // Note: v36.3 - Removed the else-if branch, we already stripped ALL tips above
 
       // Add the AI's response to chat (using finalResponse which may have tip stripped)
       console.log('[executeTeacherLoop] 💬 Adding AI response to chat:', finalResponse?.substring(0, 50) + '...');

@@ -7,7 +7,7 @@ import { microphoneGuardian } from '@/services/MicrophoneGuardian';
 // ============= CONSTANTS =============
 // 🔧 GOD-TIER v17: Increased timeouts for language learners who need time to think
 export const INITIAL_SILENCE_MS = 30000; // 30 seconds for initial silence - more time to think before speaking
-export const SILENCE_TIMEOUT_MS = 10000; // 10 seconds of silence to stop - more time to think between words
+export const SILENCE_TIMEOUT_MS = 15000; // v36.3: 15 seconds for language learners who pause between words
 export const INIT_DELAY_MS = 600;
 export const MAX_RETRIES = 2;
 export const RETRY_DELAYS = [400, 800];
