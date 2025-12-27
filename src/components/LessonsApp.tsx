@@ -2602,6 +2602,13 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
     narration.speak(target);
   };
 
+  // v37 FIX: Speak the QUESTION for "Listen to Question" button
+  const speakCurrentQuestion = () => {
+    const { prompt } = getCurrentPromptAndTarget();
+    narration.cancel();
+    narration.speak(prompt);
+  };
+
   // Set up lesson-specific voice command handlers (must be after handler functions are defined)
   // 🔧 FLAWLESS FIX: Now uses currentModuleData from state instead of getCurrentModuleData()
   useEffect(() => {
@@ -3114,7 +3121,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
                         </p>
                         
                         <Button
-                          onClick={speakCurrentSentence}
+                          onClick={speakCurrentQuestion}
                           variant="ghost"
                           size="sm"
                           className="text-white/70 hover:text-white hover:bg-white/10"
