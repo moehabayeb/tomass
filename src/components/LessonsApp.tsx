@@ -3291,12 +3291,12 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
                         <p className="text-white/90 text-sm mb-2 font-medium">
                           {speakStatus === 'recording'
                             ? '🎤 Listening... Speak now!'
-                            : '🎯 Press once and speak'}
+                            : '🎯 Bir kez bas ve konuş'}
                         </p>
                         <p className="text-white/60 text-xs mb-3">
                           {speakStatus === 'recording'
                             ? "I'll stop automatically when you finish"
-                            : 'One press - hands free recording'}
+                            : 'Tek basış — eller serbest kayıt'}
                         </p>
 
                         {/* Volume Meter and Speech Detection - Show during recording */}
