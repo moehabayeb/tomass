@@ -2639,6 +2639,73 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
     });
   }, [currentPhase, speakingIndex, selectedModule, selectedLevel, currentModuleData]); // ✅ Added currentModuleData dependency
 
+  // ===== v40 GOD-TIER: Turkish option to start with A1 directly =====
+  const handleStartA1Direct = useCallback(async () => {
+    console.log('[LessonsApp] v40: User chose A1 direct start (Turkish option)');
+
+    // Create minimal test result with A1
+    const a1Result = {
+      id: `direct_a1_${Date.now()}`,
+      user_id: user?.id,
+      test_date: new Date().toISOString(),
+      overall_score: 0,
+      recommended_level: 'A1',
+      pronunciation_score: 0,
+      grammar_score: 0,
+      vocabulary_score: 0,
+      fluency_score: 0,
+      comprehension_score: 0,
+      test_duration: 0,
+      transcript: [],
+      detailed_feedback: { skipped: true, reason: 'direct_a1_turkish' },
+      test_type: 'placement'
+    };
+
+    // Save to ALL localStorage keys (same as real test)
+    const storage = safeLocalStorage();
+    storage.setItem('lastTestResult', JSON.stringify(a1Result));
+    storage.setItem('recommendedStartLevel', 'A1');
+    storage.setItem('currentLevel', 'A1');
+    storage.setItem('placementTestCompleted', 'true');
+    storage.setItem('userPlacement', JSON.stringify({
+      level: 'A1', scores: a1Result, at: Date.now()
+    }));
+    storage.setItem(STORAGE_KEYS.PLACEMENT_TEST, JSON.stringify(a1Result));
+    storage.setItem('unlocks', JSON.stringify({ A1: true }));
+
+    // Database save for authenticated users
+    if (isAuthenticated && user?.id) {
+      try {
+        await supabase.rpc('save_speaking_test_result', {
+          p_overall_score: 0,
+          p_recommended_level: 'A1',
+          p_pronunciation_score: 0,
+          p_grammar_score: 0,
+          p_vocabulary_score: 0,
+          p_fluency_score: 0,
+          p_comprehension_score: 0,
+          p_test_duration: 0,
+          p_transcript: [],
+          p_detailed_feedback: { skipped: true, reason: 'direct_a1_turkish' },
+          p_words_per_minute: 0,
+          p_unique_words_count: 0,
+          p_grammar_errors_count: 0,
+          p_pronunciation_issues: [],
+          p_test_type: 'placement'
+        });
+        console.log('[LessonsApp] v40: A1 result saved to database');
+      } catch (e) {
+        console.log('[LessonsApp] v40: DB save failed (OK, localStorage is primary):', e);
+      }
+    }
+
+    // Unlock lessons
+    setHasPlacementTest(true);
+    setShowPlacementRequired(false);
+    setSelectedLevel('A1');
+    console.log('[LessonsApp] v40: A1 direct start complete - user can now access A1 lessons');
+  }, [user, isAuthenticated]);
+
   // ===== RENDER LOGIC =====
   // PlacementTestModal MUST render at top level (before any early returns)
   // so it's accessible in all view states
@@ -2662,6 +2729,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
               onBack(); // Fallback to main view
             }
           }}
+          onStartA1Direct={handleStartA1Direct}
         />
         <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700">
           <div className="p-4 max-w-4xl mx-auto">
@@ -2693,6 +2761,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
               onBack(); // Fallback to main view
             }
           }}
+          onStartA1Direct={handleStartA1Direct}
         />
         <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: 'hsl(var(--app-bg))' }}>
           <div className="relative z-10 p-4 max-w-sm mx-auto">
@@ -2941,6 +3010,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
             onBack(); // Fallback to main view
           }
         }}
+        onStartA1Direct={handleStartA1Direct}
       />
 
       {/* Resume Progress Dialog */}

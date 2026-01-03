@@ -18,9 +18,10 @@ interface PlacementTestModalProps {
   isOpen: boolean;
   onClose: () => void;
   onStartTest: () => void;
+  onStartA1Direct?: () => void;  // v40: Turkish option to start with A1 directly
 }
 
-export const PlacementTestModal = ({ isOpen, onClose, onStartTest }: PlacementTestModalProps) => {
+export const PlacementTestModal = ({ isOpen, onClose, onStartTest, onStartA1Direct }: PlacementTestModalProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md bg-gradient-to-b from-blue-900/95 to-purple-900/95 backdrop-blur-xl border-white/20 text-white">
@@ -81,6 +82,19 @@ export const PlacementTestModal = ({ isOpen, onClose, onStartTest }: PlacementTe
             <Zap className="w-5 h-5 mr-2" />
             Start Placement Test
           </Button>
+
+          {/* v40: Turkish option to start with A1 directly */}
+          {onStartA1Direct && (
+            <Button
+              variant="outline"
+              onClick={onStartA1Direct}
+              className="w-full border-amber-500/50 text-amber-200 hover:bg-amber-500/20 hover:border-amber-400"
+            >
+              <span className="text-sm">
+                Ingilizce bilmiyorum, A1 seviyesinden baslamak istiyorum
+              </span>
+            </Button>
+          )}
 
           <Button
             variant="outline"
