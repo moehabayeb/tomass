@@ -546,6 +546,11 @@ async function startCapacitorSpeechRecognition(id: number, maxSec: number): Prom
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
     let silenceTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
+    // 🎯 v39 GOD-TIER: Auto-restart tracking for natural pauses
+    let restartCount = 0;
+    const MAX_RESTARTS = 10; // Allow up to 10 pauses (language learners pause a lot!)
+    let lastSpeechTime = Date.now(); // Track when user last spoke
+
     const cleanup = async () => {
       console.log('[CapacitorSpeech] Cleanup...');
       if (timeoutId) clearTimeout(timeoutId);
@@ -640,6 +645,7 @@ async function startCapacitorSpeechRecognition(id: number, maxSec: number): Prom
 
         if (newTranscript) {
           transcript = newTranscript;
+          lastSpeechTime = Date.now(); // 🎯 v39: Track when user last spoke
           console.log('[CapacitorSpeech] Transcript:', transcript);
 
           // Reset silence timeout on speech
@@ -667,12 +673,62 @@ async function startCapacitorSpeechRecognition(id: number, maxSec: number): Prom
           hasStarted = true;
           console.log('[CapacitorSpeech] ✓ Recording STARTED');
         } else if (data.status === 'stopped') {
-          // 🎯 ULTIMATE FIX: Finish immediately with current transcript
-          // The delay was causing issues - interim caption already has the text
+          // 🎯 v39 ULTRA GOD-TIER: Auto-restart instead of finishing immediately
+          // Android's native silence detection (~1-3s) is too aggressive for language learners
+          // We use setTimeout to schedule restart AFTER listener returns (prevents race conditions)
           console.log('[CapacitorSpeech] Recording STOPPED, transcript so far:', transcript);
-          if (!isFinished) {
-            finish(transcript, 'android_stopped');
+
+          if (isFinished) return;
+
+          // Check if user has been silent for too long (genuinely done speaking)
+          const timeSinceLastSpeech = Date.now() - lastSpeechTime;
+          if (timeSinceLastSpeech > 10000) {
+            // 10+ seconds since last speech - user is truly done
+            console.log('[CapacitorSpeech] v39: Extended silence detected, finishing');
+            finish(transcript, 'extended_silence');
+            return;
           }
+
+          // Check restart limit
+          if (restartCount >= MAX_RESTARTS) {
+            console.log('[CapacitorSpeech] v39: Max restarts reached, finishing');
+            finish(transcript, 'max_restarts_reached');
+            return;
+          }
+
+          // Schedule restart AFTER listener returns (prevents race conditions)
+          setTimeout(async () => {
+            if (isFinished) return; // Check again - user may have manually stopped
+
+            restartCount++;
+            const savedTranscript = transcript;
+            console.log(`[CapacitorSpeech] v39: Auto-restart #${restartCount}/${MAX_RESTARTS}...`);
+
+            try {
+              // Stop current session
+              await CapacitorSpeechRecognition.stop();
+              await new Promise(r => setTimeout(r, 300)); // Android needs time to release resources
+
+              // Restart recognition
+              await CapacitorSpeechRecognition.start({
+                language: 'en-US',
+                maxResults: 5,
+                prompt: 'Continue speaking',
+                partialResults: true,
+                popup: false
+              });
+
+              // Prepend saved transcript (with space for continuation)
+              transcript = savedTranscript ? savedTranscript + ' ' : '';
+              console.log('[CapacitorSpeech] v39: Restarted successfully, waiting for more speech...');
+
+            } catch (restartError) {
+              console.log('[CapacitorSpeech] v39: Restart failed, finishing with current:', savedTranscript);
+              if (!isFinished) {
+                finish(savedTranscript, 'restart_failed');
+              }
+            }
+          }, 100); // Small delay to let listener complete first
         }
       });
 
@@ -686,7 +742,8 @@ async function startCapacitorSpeechRecognition(id: number, maxSec: number): Prom
       });
 
       // Step 7: Small delay for listeners to register
-      await new Promise(r => setTimeout(r, 100));
+      // 🎯 v39: Increased from 100ms to 300ms for first-word capture
+      await new Promise(r => setTimeout(r, 300));
 
       // Step 8: START RECOGNITION
       console.log('[CapacitorSpeech] Calling start()...');
