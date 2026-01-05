@@ -547,6 +547,10 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   const ttsListenerActiveRef = useRef(false);
   // 🔧 GOD-TIER v9: Prevent concurrent mic captures (race condition fix)
   const micCaptureInProgressRef = useRef(false);
+  // 🎯 v41: Track if mic is paused for TTS (prevents echo)
+  const micPausedForTTSRef = useRef(false);
+  // 🎯 v41: TTS authority mutex to prevent overlapping speech
+  const ttsAuthorityMutexRef = useRef(false);
   const TURN_DEBOUNCE_MS = 300;
 
   // 2) When starting a turn, always pass a token and always call completion
@@ -797,15 +801,30 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     }
     // D) Sound toggle compliance: Check if sound is enabled before TTS
     if (speakingSoundEnabled) {
+      // 🎯 v41: TTS authority mutex - prevent overlapping speech
+      if (ttsAuthorityMutexRef.current) {
+        console.log('[speakExistingMessage] v41: TTS authority mutex held, skipping');
+        return messageKey;
+      }
+      ttsAuthorityMutexRef.current = true;
+
       // On first Play: Autoplay policy compliance - resume AudioContext
       if (!audioContextResumed) {
         const resumed = await enableAudioContext();
         if (!resumed) {
+          ttsAuthorityMutexRef.current = false; // v41: Release mutex on early return
           // Show tooltip: "Tap Play to enable sound" but don't mark as complete
           setErrorMessage("Tap Play to enable sound");
           return messageKey;
         }
       }
+
+      // 🎯 v41: Pause mic BEFORE TTS starts to prevent echo
+      micPausedForTTSRef.current = true;
+      try {
+        await micStopRecording();
+        console.log('[speakExistingMessage] v41: Mic paused for TTS');
+      } catch { /* OK if not recording */ }
 
       // A) State transition: Enter READING state for TTS
       setFlowState('READING');
@@ -837,6 +856,12 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         // 🔧 GOD-TIER v5: All cleanup and transition happens here, PROPERLY AWAITED
         resolved = true;
         clearTimeout(wd);
+
+        // 🎯 v41: Release TTS authority mutex
+        ttsAuthorityMutexRef.current = false;
+
+        // 🎯 v41: Resume mic (will be started by forceToListening)
+        micPausedForTTSRef.current = false;
 
         setIsSpeaking(false);
         setAvatarState('idle');
@@ -972,18 +997,22 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       transitionInProgressRef.current = false;
     }
 
-    // 🔧 GOD-TIER v14: Clear mic guards BEFORE triggering Turn 2+
+    // 🎯 v41 ULTRA GOD-TIER: Clear mic guards BEFORE triggering Turn 2+
     // This ensures the mic can start even if previous turn didn't clean up properly
     micCaptureInProgressRef.current = false;
-    console.log('[forceToListening] v14: Cleared mic guards before trigger');
+    console.log('[forceToListening] v41: Cleared mic guards before trigger');
 
-    // 🔧 GOD-TIER v8: Fire and forget mic capture - DON'T AWAIT!
-    // This allows nested forceToListening calls from the conversation loop
-    // The guard is already reset, so subsequent calls can proceed
+    // 🎯 v41 ULTRA GOD-TIER: PROPERLY AWAIT mic capture!
+    // Previous fire-and-forget caused state machine to think LISTENING was active
+    // before mic actually started, leading to race conditions
     if (!isMountedRef.current) return;
-    startHandsFreeMicCaptureSafe(true).catch(err => {
+
+    try {
+      await startHandsFreeMicCaptureSafe(true);
+      console.log('[forceToListening] v41: Mic capture started successfully');
+    } catch (err) {
       // If mic fails, notify user and reset to IDLE
-      console.error('[forceToListening] Mic capture failed:', err);
+      console.error('[forceToListening] v41: Mic capture failed:', err);
       toast({
         title: "Could not start listening",
         description: "Please check microphone permissions",
@@ -992,7 +1021,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       if (isMountedRef.current) {
         setFlowState('IDLE');
       }
-    });
+    }
   };
 
   // A) TTS → LISTENING (always) - FSM enforced completion
@@ -1125,10 +1154,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     finalTranscript = (result.transcript || '').trim();
     console.log(`[MicTrigger] ✅ v14: Mic started successfully${micRetryCount > 0 ? ` after ${micRetryCount} retries` : ''}`);
 
-    // 🔧 GOD-TIER v10: Release guard IMMEDIATELY after recording completes
-    // This allows new mic capture to start when TTS finishes
-    micCaptureInProgressRef.current = false;
-    console.log('[startHandsFreeMicCaptureSafe] 🎤 Recording complete, guard released');
+    // 🎯 v41: DON'T release guard yet - wait until executeTeacherLoop completes
+    // This prevents concurrent mic captures during processing
 
     // C) Final ASR → single user bubble → evaluation
     if (finalTranscript) {
@@ -1136,11 +1163,15 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       if (micButtonSubmittedRef.current) {
         console.log('[SpeakingApp] Mic button already submitted - skipping duplicate');
         micButtonSubmittedRef.current = false;
+        micCaptureInProgressRef.current = false; // v41: Release guard on early return
         return;
       }
 
       // 🔧 PHASE 2 FIX: Check if mounted after async operation
-      if (!isMountedRef.current) return;
+      if (!isMountedRef.current) {
+        micCaptureInProgressRef.current = false; // v41: Release guard on early return
+        return;
+      }
 
       // Append ONE user bubble with EXACT transcript (preserve accents like "café")
       addChatBubble(finalTranscript, 'user');
@@ -1173,6 +1204,10 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         if (isMountedRef.current) {
           await forceToListening('teacher-loop-error-recovery');
         }
+      } finally {
+        // 🎯 v41: Release guard AFTER everything completes (including TTS from AI response)
+        micCaptureInProgressRef.current = false;
+        console.log('[startHandsFreeMicCaptureSafe] v41: Guard released after full completion');
       }
     } else {
       // 🎯 FIX: Check if mic button already took over before retrying
@@ -1500,11 +1535,12 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         return stripped;
       };
 
-      // 🔧 GOD-TIER v16: Strip sentence-ending punctuation from corrections
-      const stripSentencePunctuation = (text: string): string => {
+      // 🎯 v42 GOD-TIER: Strip ALL punctuation from corrections
+      // Users don't speak punctuation - grammar tips should only show word changes
+      const stripAllPunctuationFromCorrection = (text: string): string => {
         return text
-          .replace(/[.!?]+$/g, '')  // Remove trailing . ! ?
-          .replace(/\s*[.!?]\s+/g, ' ')  // Remove mid-sentence . ! ? (added by AI)
+          .replace(/[.,!?;:'"()\[\]{}<>]/g, '')  // Remove ALL punctuation including commas
+          .replace(/\s+/g, ' ')  // Normalize whitespace
           .trim();
       };
 
@@ -1520,8 +1556,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
         if (isValid) {
           setGrammarCorrections([{
-            originalPhrase: stripSentencePunctuation(aiResponse.originalPhrase),
-            correctedPhrase: stripSentencePunctuation(aiResponse.correctedPhrase)
+            originalPhrase: stripAllPunctuationFromCorrection(aiResponse.originalPhrase),
+            correctedPhrase: stripAllPunctuationFromCorrection(aiResponse.correctedPhrase)
           }]);
         }
         // Note: v36.3 - No need to strip here anymore, we already stripped ALL tips above
