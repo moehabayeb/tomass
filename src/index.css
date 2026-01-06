@@ -764,6 +764,19 @@
   padding-right: env(safe-area-inset-right);
 }
 
+/* v47: iOS Safe Area - Top offset utilities for fixed elements */
+.top-safe {
+  top: calc(1rem + env(safe-area-inset-top, 0px));
+}
+
+.pt-safe {
+  padding-top: calc(1rem + env(safe-area-inset-top, 0px));
+}
+
+.mt-safe {
+  margin-top: env(safe-area-inset-top, 0px);
+}
+
 /* Prevent overscroll bounce on mobile */
 .overscroll-behavior-contain {
   overscroll-behavior: contain;

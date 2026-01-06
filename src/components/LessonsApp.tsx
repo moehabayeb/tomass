@@ -43,7 +43,7 @@ import { useAuthReady } from '../hooks/useAuthReady';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
 // 🔧 GOD-TIER v24: Use micEngine EXCLUSIVELY (removed unifiedSpeechRecognition which was causing issues)
 // micEngine.ts is the PROVEN working engine used by SpeakingApp
-import { startRecording as micStartRecording, stopRecording as micStopRecording, cleanup as micCleanup } from '@/lib/audio/micEngine';
+import { startRecording as micStartRecording, stopRecording as micStopRecording, cleanup as micCleanup, releasePersistentStream } from '@/lib/audio/micEngine';
 // 🛡️ Microphone Guardian: Ensures bulletproof mic reliability
 import { microphoneGuardian } from '../services/MicrophoneGuardian';
 // 🚀 BUNDLE OPTIMIZATION: Dynamic module loading to reduce initial bundle size by ~80%
@@ -1317,8 +1317,9 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
         throw new Error('aborted');
       }
 
-      // Return empty string on other errors (let caller handle with proper feedback)
-      return '';
+      // 🎯 v45: Propagate errors so caller can show appropriate feedback
+      // Previously returned '' which silenced all errors as "No speech detected"
+      throw err;
     } finally {
       // Clean up abort handler
       if (abortHandler && abortSignal) {
@@ -1332,14 +1333,16 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
   function isStale(id: string) { return speechRunIdRef.current !== id; }
 
   // 🔧 GOD-TIER v22/v25: Cancel any live recognition on nav/module change using micEngine
-  // 🔧 v25: Guard - don't cleanup if actively recording (prevents premature cancellation)
+  // 🎯 v45: Always reset runId to prevent stale references, but guard mic cleanup
   useEffect(() => {
+    // v45: ALWAYS reset runId even if recording, to prevent stale references on navigation
+    speechRunIdRef.current = null;
+
     if (speakStatus !== 'idle') {
-      console.log('[LessonsApp] Cleanup skipped - currently recording:', speakStatus);
-      return; // Don't interrupt active recording
+      console.log('[LessonsApp] Mic cleanup skipped - currently recording:', speakStatus);
+      return; // Don't interrupt active recording with mic operations
     }
 
-    speechRunIdRef.current = null;
     try {
       micStopRecording();  // Use renamed micEngine's stop (avoids shadowing)
       micCleanup();        // Full cleanup of mic resources
@@ -1818,8 +1821,10 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
 
     // Skip check for first modules of each level (but respect placement)
     if (moduleId === 1 || moduleId === 51 || moduleId === 101 || moduleId === 151 || moduleId === 201 || moduleId === 251) {
-      // These are level starting points - check if we're at or past placement
-      return moduleId >= placedModule;
+      // v43: Fixed logic - only unlock level starting points AT OR BELOW user's placement
+      // Was: moduleId >= placedModule (WRONG - unlocked higher levels)
+      // Now: moduleId <= placedModule (CORRECT - only unlocks at or below placement)
+      return moduleId <= placedModule;
     }
 
     // Phase 6: Previous module must be completed
@@ -2039,9 +2044,10 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
       // Ignore cleanup errors
     }
 
-    // Phase 1.4: Clean up speech recognition
+    // 🎯 v45: Release persistent mic stream on unmount (prevents battery drain)
+    // Replaces deprecated unifiedSpeechRecognition.stop() - now using micEngine exclusively
     try {
-      unifiedSpeechRecognition.stop();
+      releasePersistentStream();
     } catch (err) {
       // Ignore cleanup errors
     }
@@ -2477,6 +2483,9 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
       // 🔧 v34: Listen for speech:interim events to show "Speech detected" indicator
       window.addEventListener('speech:interim', handleInterim);
 
+      // 🎯 v45: Small safety delay to ensure listener is fully registered before recording
+      await new Promise(r => setTimeout(r, 50));
+
       // 🔧 v34: Start local recording timer
       setRecordingElapsedTime(0);
       recordingTimerRef.current = setInterval(() => {
@@ -2766,7 +2775,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
         <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: 'hsl(var(--app-bg))' }}>
           <div className="relative z-10 p-4 max-w-sm mx-auto">
             {/* Header */}
-            <div className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-3xl p-6 mb-6 mt-safe-area-inset-top">
+            <div className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-3xl p-6 mb-6 mt-safe">
               <div className="flex items-center justify-between mb-4">
                 <Button
                   onClick={onBack}
@@ -2823,7 +2832,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
       <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: 'hsl(var(--app-bg))' }}>
         <div className="relative z-10 p-4 max-w-sm mx-auto">
           {/* Header */}
-          <div className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-3xl p-6 mb-6 mt-safe-area-inset-top">
+          <div className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-3xl p-6 mb-6 mt-safe">
             <div className="flex items-center justify-between mb-4">
               <Button
                 onClick={() => setViewState('levels')}
@@ -2946,7 +2955,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
         {showConfetti && <Confetti width={width} height={height} />}
         
         <div className="relative z-10 p-4 max-w-sm mx-auto">
-          <div className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-3xl p-6 mt-safe-area-inset-top text-center">
+          <div className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-3xl p-6 mt-safe text-center">
             <div className="flex justify-center mb-4">
               <div className="bg-green-500/20 rounded-full p-4">
                 <CheckCircle className="h-12 w-12 text-green-400" />
@@ -3037,7 +3046,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
 
       <div className="relative z-10 p-3 max-w-sm mx-auto">
         {/* Compact Header - iPhone Optimized */}
-        <div className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-2xl p-4 mb-4 mt-safe-area-inset-top shadow-lg shadow-black/20">
+        <div className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-2xl p-4 mb-4 mt-safe shadow-lg shadow-black/20">
           <div className="flex items-center justify-between mb-3">
             <Button
               onClick={() => { narration.cancel(); setViewState('modules'); }}
@@ -3190,11 +3199,12 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
                           {currentPracticeItem.question}
                         </p>
                         
+                        {/* v44: Made button more obvious with pill shape + border */}
                         <Button
                           onClick={speakCurrentQuestion}
                           variant="ghost"
                           size="sm"
-                          className="text-white/70 hover:text-white hover:bg-white/10"
+                          className="text-white/90 hover:text-white bg-white/10 hover:bg-white/20 border border-white/30 hover:border-white/50 rounded-full px-4"
                           aria-label="Listen to question"
                         >
                           <Volume2 className="h-4 w-4 mr-2" />
@@ -3279,12 +3289,13 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
                             "{currentPracticeItem.answer}"
                           </p>
                           
+                          {/* v44: Made button more obvious with pill shape + border */}
                           <div className="text-center">
                             <Button
                               onClick={speakCurrentSentence}
                               variant="ghost"
                               size="sm"
-                              className="text-white/70 hover:text-white hover:bg-white/10 mb-4"
+                              className="text-white/90 hover:text-white bg-white/10 hover:bg-white/20 border border-white/30 hover:border-white/50 rounded-full px-4 mb-4"
                               aria-label="Listen to answer"
                             >
                               <Volume2 className="h-4 w-4 mr-2" />

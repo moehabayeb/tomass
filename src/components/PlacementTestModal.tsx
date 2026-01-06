@@ -24,7 +24,7 @@ interface PlacementTestModalProps {
 export const PlacementTestModal = ({ isOpen, onClose, onStartTest, onStartA1Direct }: PlacementTestModalProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md bg-gradient-to-b from-blue-900/95 to-purple-900/95 backdrop-blur-xl border-white/20 text-white">
+      <DialogContent className="max-w-lg bg-gradient-to-b from-blue-900/95 to-purple-900/95 backdrop-blur-xl border-white/20 text-white">
         <DialogHeader>
           {/* Large centered icon */}
           <div className="flex justify-center mb-4">
@@ -84,13 +84,14 @@ export const PlacementTestModal = ({ isOpen, onClose, onStartTest, onStartA1Dire
           </Button>
 
           {/* v40: Turkish option to start with A1 directly */}
+          {/* v43: Fixed button overflow with h-auto py-3 and text wrap */}
           {onStartA1Direct && (
             <Button
               variant="outline"
               onClick={onStartA1Direct}
-              className="w-full border-amber-500/50 text-amber-200 hover:bg-amber-500/20 hover:border-amber-400"
+              className="w-full border-amber-500/50 text-amber-200 hover:bg-amber-500/20 hover:border-amber-400 h-auto py-3"
             >
-              <span className="text-sm">
+              <span className="text-sm text-center whitespace-normal">
                 Ingilizce bilmiyorum, A1 seviyesinden baslamak istiyorum
               </span>
             </Button>

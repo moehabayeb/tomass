@@ -338,8 +338,8 @@ export default function AppNavigation() {
         />
       </ErrorBoundary>
 
-      {/* User Authentication Section */}
-      <div className="fixed top-4 left-4 z-20">
+      {/* User Authentication Section - v47: Added top-safe for iPhone Dynamic Island */}
+      <div className="fixed top-safe left-4 z-20">
         {user && isAuthenticated ? (
           <UserDropdown 
             user={user} 
@@ -362,8 +362,8 @@ export default function AppNavigation() {
         )}
       </div>
 
-      {/* Navigation Dropdown and Sound Toggle */}
-      <div className="fixed top-4 right-4 z-20 flex items-center gap-3">
+      {/* Navigation Dropdown and Sound Toggle - v47: Added top-safe for iPhone Dynamic Island */}
+      <div className="fixed top-safe right-4 z-20 flex items-center gap-3">
         {/* Global Sound Toggle - Only visible on speaking pages */}
         {(currentMode === 'speaking' || currentMode === 'placement-test') && (
           <button

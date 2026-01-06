@@ -1018,6 +1018,18 @@ export async function startRecording(opts: { maxSec?: number; bypassDebounce?: b
   // 🎯 ULTIMATE FIX: Allow bypassing debounce for internal retries
   if (!opts.bypassDebounce && debounceButton()) return Promise.reject(new Error('Button debounced'));
 
+  // 🎯 v45 ULTRA GOD-TIER: Enforce minimum delay between Capacitor sessions
+  // This MUST be checked here, not just in startCapacitorSpeechRecognition()
+  // Without this, Turn 2+ fails because Android's SpeechRecognizer listener registry corrupts
+  if (Capacitor.isNativePlatform()) {
+    const elapsed = Date.now() - capacitorLastStopTime;
+    if (capacitorLastStopTime > 0 && elapsed < CAPACITOR_MIN_RESTART_DELAY_MS) {
+      const waitTime = CAPACITOR_MIN_RESTART_DELAY_MS - elapsed;
+      console.log(`[startRecording] v45: Waiting ${waitTime}ms for Android cleanup...`);
+      await new Promise(r => setTimeout(r, waitTime));
+    }
+  }
+
   // 🔧 GOD-TIER v15: Force reset stuck state instead of throwing
   // This is the ONLY place that can fix Turn 2+ failures
   // v14 failed because the reset was AFTER this check - it never ran!

@@ -24,7 +24,8 @@ export type GrammarCorrection = {
 
 const YES = ["yes","yeah","yep","sure","of course","correct","that's right","indeed"];
 const NO  = ["no","nope","nah","not really","negative"];
-const FILLERS = ["uh","um","erm","hmm","well","please","teacher","sir","madam"];
+// v46: Removed "teacher","sir","madam" - these are content words, not fillers!
+const FILLERS = ["uh","um","erm","hmm","well","please"];
 
 export function normalize(s: string) {
   return s
@@ -36,21 +37,21 @@ export function normalize(s: string) {
     .trim();
 }
 
-// allow minor typos: token distance ≤ 1
+// v46: Allow minor typos: token distance ≤ 2 (increased from 1 for accent tolerance)
 function lev1(a:string,b:string){
   if (a===b) return true;
-  if (Math.abs(a.length-b.length)>1) return false;
+  if (Math.abs(a.length-b.length)>2) return false;  // v46: was >1
   // small, fast check
   let i=0,j=0,edits=0;
   while(i<a.length && j<b.length){
     if (a[i]===b[j]) { i++; j++; continue; }
     edits++;
-    if (edits>1) return false;
+    if (edits>2) return false;  // v46: was >1
     if (a.length> b.length) i++;
     else if (a.length< b.length) j++;
     else { i++; j++; }
   }
-  return (edits + (a.length-i) + (b.length-j)) <= 1;
+  return (edits + (a.length-i) + (b.length-j)) <= 2;  // v46: was <= 1
 }
 
 function tokens(s:string){
@@ -145,7 +146,8 @@ export function evaluateAnswer(userInput: string, opt: EvalOptions): boolean {
   }
   const ratio = matched / Math.max(1,a.length);
 
-  const result = ratio >= 0.9; // forgiving but still targeted
+  // v46: Reduced from 0.9 to 0.7 for accent/slow speech tolerance
+  const result = ratio >= 0.7;
   return result;
 }
 
