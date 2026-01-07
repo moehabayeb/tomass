@@ -1,5 +1,5 @@
 // Robust answer evaluator for all modules - Module 51 proven logic
-// v51: More lenient for accents/speech variations while still catching grammar errors
+// v52: CRITICAL FIX - Grammar errors (verb agreement) must be REJECTED, not just flagged
 
 export type EvalOptions = {
   expected: string;                 // canonical answer from content
@@ -107,6 +107,23 @@ export function evaluateAnswer(userInput: string, opt: EvalOptions): boolean {
     }
   }
 
+  // v52: CRITICAL - Reject verb agreement errors immediately (before fuzzy matching)
+  const verbErrors = [
+    /\bi\s+is\b/i,      // "I is" → should be "I am"
+    /\byou\s+is\b/i,    // "you is" → should be "you are"
+    /\bhe\s+are\b/i,    // "he are" → should be "he is"
+    /\bshe\s+are\b/i,   // "she are" → should be "she is"
+    /\bit\s+are\b/i,    // "it are" → should be "it is"
+    /\bwe\s+is\b/i,     // "we is" → should be "we are"
+    /\bthey\s+is\b/i,   // "they is" → should be "they are"
+  ];
+  const userLower = userInput.toLowerCase();
+  for (const errPattern of verbErrors) {
+    if (errPattern.test(userLower)) {
+      return false; // Grammar error = WRONG, no exceptions
+    }
+  }
+
   // 2) Fast exacts: expected or any accepted variant (normalized/relaxed)
   const candidates = [
     opt.expected,
@@ -148,8 +165,8 @@ export function evaluateAnswer(userInput: string, opt: EvalOptions): boolean {
   }
   const ratio = matched / Math.max(1,a.length);
 
-  // v51: Reduced from 0.7 to 0.6 for better accent/slow speech tolerance
-  const result = ratio >= 0.6;
+  // v52: Back to 0.7 - 60% was too lenient and accepted grammar errors
+  const result = ratio >= 0.7;
   return result;
 }
 
@@ -185,15 +202,30 @@ export function evaluateAnswerDetailed(userInput: string, opt: EvalOptions, atte
   const grammarCorrections = detectGrammarDifferences(userInput, opt.expected);
 
   if (isSemanticallySimilar) {
-    // Correct meaning but has grammar issues
+    // v52: Check for verb agreement errors - these must be REJECTED
+    const hasVerbError = grammarCorrections.some(c => c.type === 'verb_agreement');
+
+    if (hasVerbError) {
+      // Verb agreement errors = WRONG (not just feedback)
+      return {
+        isCorrect: false,
+        confidence: 'retry',
+        grammarCorrections,
+        feedback: "Almost! But check your grammar:",
+        hint: `The correct answer is: "${opt.expected}"`,
+      };
+    }
+
+    // Minor corrections (contractions, articles) - still count as correct
     if (grammarCorrections.length > 0) {
       return {
         isCorrect: true,
         confidence: 'good',
         grammarCorrections,
-        feedback: "Good job! 👍 You got the meaning right! Let me help you with a small correction:",
+        feedback: "Good job! 👍 Small tip:",
       };
     }
+
     // Semantically correct, no grammar issues detected
     return {
       isCorrect: true,
