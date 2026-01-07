@@ -1,4 +1,5 @@
 // Robust answer evaluator for all modules - Module 51 proven logic
+// v51: More lenient for accents/speech variations while still catching grammar errors
 
 export type EvalOptions = {
   expected: string;                 // canonical answer from content
@@ -25,7 +26,8 @@ export type GrammarCorrection = {
 const YES = ["yes","yeah","yep","sure","of course","correct","that's right","indeed"];
 const NO  = ["no","nope","nah","not really","negative"];
 // v46: Removed "teacher","sir","madam" - these are content words, not fillers!
-const FILLERS = ["uh","um","erm","hmm","well","please"];
+// v51: Added more fillers for accent/speech recognition tolerance
+const FILLERS = ["uh","um","erm","hmm","well","please","like","so","okay","oh","i","mean"];
 
 export function normalize(s: string) {
   return s
@@ -37,21 +39,21 @@ export function normalize(s: string) {
     .trim();
 }
 
-// v46: Allow minor typos: token distance ≤ 2 (increased from 1 for accent tolerance)
+// v51: Allow minor typos: token distance ≤ 3 (increased from 2 for better accent tolerance)
 function lev1(a:string,b:string){
   if (a===b) return true;
-  if (Math.abs(a.length-b.length)>2) return false;  // v46: was >1
+  if (Math.abs(a.length-b.length)>3) return false;  // v51: was >2
   // small, fast check
   let i=0,j=0,edits=0;
   while(i<a.length && j<b.length){
     if (a[i]===b[j]) { i++; j++; continue; }
     edits++;
-    if (edits>2) return false;  // v46: was >1
+    if (edits>3) return false;  // v51: was >2
     if (a.length> b.length) i++;
     else if (a.length< b.length) j++;
     else { i++; j++; }
   }
-  return (edits + (a.length-i) + (b.length-j)) <= 2;  // v46: was <= 1
+  return (edits + (a.length-i) + (b.length-j)) <= 3;  // v51: was <= 2
 }
 
 function tokens(s:string){
@@ -146,8 +148,8 @@ export function evaluateAnswer(userInput: string, opt: EvalOptions): boolean {
   }
   const ratio = matched / Math.max(1,a.length);
 
-  // v46: Reduced from 0.9 to 0.7 for accent/slow speech tolerance
-  const result = ratio >= 0.7;
+  // v51: Reduced from 0.7 to 0.6 for better accent/slow speech tolerance
+  const result = ratio >= 0.6;
   return result;
 }
 
