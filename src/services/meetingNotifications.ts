@@ -1,18 +1,20 @@
 /**
  * Meeting Notifications Service
- * Handles browser notifications for upcoming meetings
- * 🔧 REFACTORED: Fixed all critical bugs (#1, #2, #3, #4, #5, #6, #7)
+ * v50: Fixed blocking permission check that caused Speaking page timeout on Android
+ * v49: Updated to use native Capacitor notifications for Android/iOS
+ * Falls back to browser notifications for web
  */
 
 import { MeetingsService, type AdminMeeting } from './meetingsService';
+import { LocalNotifications } from '@capacitor/local-notifications';
+import { Capacitor } from '@capacitor/core';
 
-// 🔧 FIX BUG #4: Safe localStorage wrapper
+// Safe localStorage wrapper
 const safeStorage = {
   get: (key: string): string | null => {
     try {
       return localStorage.getItem(key);
     } catch (error) {
-      // Storage read error - silent fail for Apple Store compliance
       return null;
     }
   },
@@ -22,12 +24,10 @@ const safeStorage = {
       return true;
     } catch (error) {
       if (error instanceof DOMException && error.name === 'QuotaExceededError') {
-        // Storage quota exceeded - attempt to clear old data
         try {
-          // Clear old data and retry
           const data = JSON.parse(localStorage.getItem(key) || '{}');
           if (data.notifications?.length > 10) {
-            data.notifications = data.notifications.slice(-5); // Keep only last 5
+            data.notifications = data.notifications.slice(-5);
             localStorage.setItem(key, JSON.stringify(data));
           }
           localStorage.setItem(key, value);
@@ -36,7 +36,6 @@ const safeStorage = {
           return false;
         }
       }
-      // Storage write error - silent fail for Apple Store compliance
       return false;
     }
   }
@@ -45,16 +44,13 @@ const safeStorage = {
 export class MeetingNotificationsService {
   private static instance: MeetingNotificationsService;
   private checkInterval: number | null = null;
-  private notificationPermission: NotificationPermission = 'default';
+  private notificationPermission: NotificationPermission | 'granted' | 'denied' | 'default' = 'default';
   private shownNotifications = new Set<string>();
-
-  // 🔧 FIX BUG #3: Retry mechanism for failed API calls
   private failedChecks = 0;
   private maxRetries = 3;
-  private retryDelay = 60000; // 1 minute
-
-  // 🔧 FIX BUG #2: Track active notification timers for cleanup
+  private retryDelay = 60000;
   private activeTimers = new Map<string, NodeJS.Timeout>();
+  private isNative: boolean;
 
   static getInstance(): MeetingNotificationsService {
     if (!this.instance) {
@@ -64,19 +60,18 @@ export class MeetingNotificationsService {
   }
 
   private constructor() {
-    // 🔧 FIX BUG #5: Initialize permission status, will be refreshed on use
-    if ('Notification' in window) {
-      this.notificationPermission = Notification.permission;
-    }
+    // Check if running on native platform (Android/iOS)
+    this.isNative = Capacitor.isNativePlatform();
+
+    // v50: Removed initializePermissionStatus() - was blocking native bridge on Android
+    // Permission is checked lazily in requestPermission(), startNotificationService(), getPermissionStatus()
     this.loadShownNotifications();
 
-    // 🔧 FIX BUG #6: Setup cleanup on page unload
     if (typeof window !== 'undefined') {
       window.addEventListener('beforeunload', () => {
         this.cleanup();
       });
 
-      // Also cleanup on visibility change (tab switch)
       document.addEventListener('visibilitychange', () => {
         if (document.hidden) {
           this.cleanup();
@@ -85,69 +80,89 @@ export class MeetingNotificationsService {
     }
   }
 
-  /**
-   * 🔧 FIX BUG #6: Comprehensive cleanup method
-   */
   private cleanup(): void {
-    // Clear interval
     if (this.checkInterval) {
       clearInterval(this.checkInterval);
       this.checkInterval = null;
     }
-
-    // Clear all active timers
     this.activeTimers.forEach(timer => clearTimeout(timer));
     this.activeTimers.clear();
-
-    // Service cleaned up successfully
   }
 
   /**
-   * Request notification permission (must be called from user action)
-   * 🔧 FIX BUG #5: Always refresh permission status
+   * Request notification permission
+   * v49: Uses native Capacitor permissions on Android/iOS
    */
   async requestPermission(): Promise<boolean> {
-    if (!('Notification' in window)) {
-      // Browser does not support notifications
-      return false;
-    }
-
-    // 🔧 FIX BUG #5: Refresh current permission status
-    this.notificationPermission = Notification.permission;
-
-    // Only request if not already decided
-    if (this.notificationPermission === 'default') {
+    if (this.isNative) {
+      // Native Android/iOS - use Capacitor LocalNotifications
       try {
-        this.notificationPermission = await Notification.requestPermission();
+        const status = await LocalNotifications.checkPermissions();
+
+        if (status.display === 'granted') {
+          this.notificationPermission = 'granted';
+          return true;
+        }
+
+        if (status.display === 'denied') {
+          this.notificationPermission = 'denied';
+          return false;
+        }
+
+        // Request permission
+        const result = await LocalNotifications.requestPermissions();
+        this.notificationPermission = result.display;
+        return result.display === 'granted';
       } catch (error) {
-        // Permission request error - silent fail for Apple Store compliance
+        console.error('Error requesting native notification permission:', error);
         return false;
       }
-    }
+    } else {
+      // Web browser - use browser Notification API
+      if (!('Notification' in window)) {
+        return false;
+      }
 
-    return this.notificationPermission === 'granted';
+      this.notificationPermission = Notification.permission;
+
+      if (this.notificationPermission === 'default') {
+        try {
+          this.notificationPermission = await Notification.requestPermission();
+        } catch (error) {
+          return false;
+        }
+      }
+
+      return this.notificationPermission === 'granted';
+    }
   }
 
   /**
    * Start checking for upcoming meetings
-   * 🔧 FIX BUG #1: Manual initialization only, returns boolean
    */
   async startNotificationService(): Promise<boolean> {
-    // Check permission status (don't request, just check)
-    if (!('Notification' in window)) {
-      // Browser does not support notifications
-      return false;
+    // Check permission based on platform
+    if (this.isNative) {
+      try {
+        const status = await LocalNotifications.checkPermissions();
+        this.notificationPermission = status.display;
+
+        if (status.display !== 'granted') {
+          return false;
+        }
+      } catch {
+        return false;
+      }
+    } else {
+      if (!('Notification' in window)) {
+        return false;
+      }
+      this.notificationPermission = Notification.permission;
+      if (this.notificationPermission !== 'granted') {
+        return false;
+      }
     }
 
-    // 🔧 FIX BUG #5: Refresh permission before starting
-    this.notificationPermission = Notification.permission;
-
-    if (this.notificationPermission !== 'granted') {
-      // Notification permission not granted
-      return false;
-    }
-
-    // Stop existing interval if any (prevent multiple intervals)
     this.cleanup();
 
     // Check every 2 minutes
@@ -155,66 +170,42 @@ export class MeetingNotificationsService {
       this.checkUpcomingMeetings();
     }, 2 * 60 * 1000);
 
-    // Initial check
     await this.checkUpcomingMeetings();
-    // Service started successfully
     return true;
   }
 
-  /**
-   * Stop the notification service
-   * 🔧 FIX BUG #6: Use cleanup method
-   */
   stopNotificationService(): void {
     this.cleanup();
-    // Service stopped successfully
   }
 
-  /**
-   * Check for meetings starting soon and show notifications
-   * 🔧 FIX BUG #3: Added retry logic and error recovery
-   * 🔧 FIX BUG #7: Fixed timezone handling
-   */
   private async checkUpcomingMeetings(): Promise<void> {
     try {
       const upcomingMeetings = await MeetingsService.getUpcomingMeetings();
-
-      // 🔧 FIX BUG #3: Reset failed checks on success
       this.failedChecks = 0;
 
-      // 🔧 FIX BUG #7: Use UTC-aware date comparison
       const nowUtc = Date.now();
 
       for (const meeting of upcomingMeetings) {
-        // scheduled_at is already in UTC from the server
         const meetingTimeUtc = new Date(meeting.scheduled_at).getTime();
         const timeUntilMeeting = meetingTimeUtc - nowUtc;
 
-        // Show notification 10 minutes before
         const tenMinutes = 10 * 60 * 1000;
         const shouldNotify = timeUntilMeeting <= tenMinutes && timeUntilMeeting > 0;
 
         if (shouldNotify && !this.hasShownNotification(meeting.id)) {
-          this.showMeetingNotification(meeting);
+          await this.showMeetingNotification(meeting);
           this.markNotificationShown(meeting.id);
         }
       }
 
-      // Clean up old notification records (older than 24 hours)
       this.cleanupOldNotifications();
     } catch (error) {
-      // Error checking upcoming meetings - silent fail for Apple Store compliance
-
-      // 🔧 FIX BUG #3: Retry logic
       this.failedChecks++;
 
       if (this.failedChecks >= this.maxRetries) {
-        // Max retries reached, stopping service
         this.stopNotificationService();
 
-        // Attempt restart after delay
         setTimeout(() => {
-          // Attempting to restart service
           this.failedChecks = 0;
           this.startNotificationService();
         }, this.retryDelay);
@@ -223,87 +214,101 @@ export class MeetingNotificationsService {
   }
 
   /**
-   * Show browser notification for a meeting
-   * 🔧 FIX BUG #2: Proper timer cleanup with tracking
+   * Show notification for a meeting
+   * v49: Uses native notifications on Android/iOS
    */
-  private showMeetingNotification(meeting: AdminMeeting): void {
+  private async showMeetingNotification(meeting: AdminMeeting): Promise<void> {
     if (this.notificationPermission !== 'granted') return;
 
     const timeInfo = MeetingsService.getTimeUntilMeeting(meeting.scheduled_at);
     const title = `Meeting Starting Soon: ${meeting.title}`;
-    const body = `Meeting starts ${timeInfo.timeString}. Click to join.`;
+    const body = `Meeting starts ${timeInfo.timeString}. Tap to join.`;
 
-    try {
-      // Safari-compatible options (no actions, badge, or requireInteraction)
-      const notificationOptions: NotificationOptions = {
-        body,
-        icon: '/favicon.ico',
-        tag: `meeting_${meeting.id}`, // Prevent duplicate notifications
-        silent: false
-      };
+    if (this.isNative) {
+      // Native Android/iOS notification
+      try {
+        await LocalNotifications.schedule({
+          notifications: [
+            {
+              id: this.generateNotificationId(meeting.id),
+              title: title,
+              body: body,
+              largeBody: `${meeting.title} with ${meeting.teacher_name} starts ${timeInfo.timeString}. Tap to open the app and join.`,
+              smallIcon: 'ic_launcher_foreground',
+              largeIcon: 'ic_launcher',
+              sound: 'default',
+              actionTypeId: 'MEETING_REMINDER',
+              extra: {
+                meetingId: meeting.id,
+                meetingUrl: meeting.meeting_url
+              }
+            }
+          ]
+        });
+      } catch (error) {
+        console.error('Error showing native notification:', error);
+      }
+    } else {
+      // Browser notification (web fallback)
+      try {
+        const notificationOptions: NotificationOptions = {
+          body,
+          icon: '/favicon.ico',
+          tag: `meeting_${meeting.id}`,
+          silent: false
+        };
 
-      const notification = new Notification(title, notificationOptions);
+        const notification = new Notification(title, notificationOptions);
 
-      // Handle notification click
-      notification.onclick = () => {
-        window.focus();
-        window.open(meeting.meeting_url, '_blank');
-        notification.close();
-      };
+        notification.onclick = () => {
+          window.focus();
+          window.open(meeting.meeting_url, '_blank');
+          notification.close();
+        };
 
-      // 🔧 FIX BUG #2: Track timer for proper cleanup
-      const timerId = meeting.id;
-      const closeTimer = setTimeout(() => {
-        notification.close();
-        this.activeTimers.delete(timerId);
-      }, 30 * 1000);
-
-      // Store timer for cleanup
-      this.activeTimers.set(timerId, closeTimer);
-
-      // Clear timer if user closes notification manually
-      notification.onclose = () => {
-        const timer = this.activeTimers.get(timerId);
-        if (timer) {
-          clearTimeout(timer);
+        const timerId = meeting.id;
+        const closeTimer = setTimeout(() => {
+          notification.close();
           this.activeTimers.delete(timerId);
-        }
-      };
+        }, 30 * 1000);
 
-      // Handle notification errors
-      notification.onerror = (error) => {
-        // Notification error - silent fail for Apple Store compliance
-        const timer = this.activeTimers.get(timerId);
-        if (timer) {
-          clearTimeout(timer);
-          this.activeTimers.delete(timerId);
-        }
-      };
+        this.activeTimers.set(timerId, closeTimer);
 
-      // Notification shown successfully
-    } catch (error) {
-      // Error showing notification - silent fail for Apple Store compliance
+        notification.onclose = () => {
+          const timer = this.activeTimers.get(timerId);
+          if (timer) {
+            clearTimeout(timer);
+            this.activeTimers.delete(timerId);
+          }
+        };
+      } catch (error) {
+        console.error('Error showing browser notification:', error);
+      }
     }
   }
 
   /**
-   * Check if notification was already shown for this meeting
+   * Generate a numeric ID for native notifications
    */
+  private generateNotificationId(meetingId: string): number {
+    let hash = 0;
+    for (let i = 0; i < meetingId.length; i++) {
+      const char = meetingId.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash;
+    }
+    return Math.abs(hash);
+  }
+
   private hasShownNotification(meetingId: string): boolean {
     return this.shownNotifications.has(meetingId);
   }
 
-  /**
-   * Mark notification as shown and persist to localStorage
-   */
   private markNotificationShown(meetingId: string): void {
     this.shownNotifications.add(meetingId);
     this.saveShownNotifications();
   }
 
-  /**
-   * Load shown notifications from localStorage
-   */
   private loadShownNotifications(): void {
     const stored = safeStorage.get('meeting_notifications_shown');
     if (stored) {
@@ -311,15 +316,11 @@ export class MeetingNotificationsService {
         const data = JSON.parse(stored);
         this.shownNotifications = new Set(data.notifications || []);
       } catch (error) {
-        // Error loading shown notifications - reset to empty set
         this.shownNotifications = new Set();
       }
     }
   }
 
-  /**
-   * Save shown notifications to localStorage
-   */
   private saveShownNotifications(): void {
     const data = {
       notifications: Array.from(this.shownNotifications),
@@ -328,9 +329,6 @@ export class MeetingNotificationsService {
     safeStorage.set('meeting_notifications_shown', JSON.stringify(data));
   }
 
-  /**
-   * Clean up old notification records
-   */
   private cleanupOldNotifications(): void {
     try {
       const stored = safeStorage.get('meeting_notifications_shown');
@@ -340,63 +338,83 @@ export class MeetingNotificationsService {
       const lastCleanup = data.lastCleanup || 0;
       const now = Date.now();
 
-      // Clean up every 24 hours
       const oneDayMs = 24 * 60 * 60 * 1000;
       if (now - lastCleanup > oneDayMs) {
-        // Clear all shown notifications (they're old now)
         this.shownNotifications.clear();
         this.saveShownNotifications();
-        // Cleaned up old notification records successfully
       }
     } catch (error) {
-      // Error cleaning up notifications - silent fail for Apple Store compliance
+      // Silent fail
     }
   }
 
   /**
-   * Test notification (for debugging)
+   * Test notification
    */
   async testNotification(): Promise<void> {
     const hasPermission = await this.requestPermission();
     if (!hasPermission) {
-      // Apple Store Compliance: Silent fail - notification permission denied
       return;
     }
 
-    const notification = new Notification('Test Notification', {
-      body: 'This is a test notification from the meeting system.',
-      icon: '/favicon.ico'
-    });
+    if (this.isNative) {
+      await LocalNotifications.schedule({
+        notifications: [
+          {
+            id: 99999,
+            title: 'Test Notification',
+            body: 'This is a test notification from Tomas Hoca.',
+            sound: 'default'
+          }
+        ]
+      });
+    } else {
+      const notification = new Notification('Test Notification', {
+        body: 'This is a test notification from the meeting system.',
+        icon: '/favicon.ico'
+      });
 
-    const closeTimer = setTimeout(() => notification.close(), 5000);
-
-    // Clear timer if user closes notification manually
-    notification.onclose = () => {
-      clearTimeout(closeTimer);
-    };
+      const closeTimer = setTimeout(() => notification.close(), 5000);
+      notification.onclose = () => clearTimeout(closeTimer);
+    }
   }
 
   /**
    * Get notification permission status
-   * 🔧 FIX BUG #5: Always return fresh status
    */
-  getPermissionStatus(): NotificationPermission {
-    if ('Notification' in window) {
+  async getPermissionStatus(): Promise<'granted' | 'denied' | 'default'> {
+    if (this.isNative) {
+      try {
+        const status = await LocalNotifications.checkPermissions();
+        this.notificationPermission = status.display;
+        return status.display as 'granted' | 'denied' | 'default';
+      } catch {
+        return 'default';
+      }
+    } else if ('Notification' in window) {
       this.notificationPermission = Notification.permission;
+      return Notification.permission;
     }
-    return this.notificationPermission;
+    return 'default';
   }
 
   /**
    * Check if notifications are supported
    */
   static isSupported(): boolean {
+    if (Capacitor.isNativePlatform()) {
+      return true; // Native always supports local notifications
+    }
     return 'Notification' in window;
+  }
+
+  /**
+   * Check if running on native platform
+   */
+  static isNativePlatform(): boolean {
+    return Capacitor.isNativePlatform();
   }
 }
 
 // Export singleton instance
 export const meetingNotifications = MeetingNotificationsService.getInstance();
-
-// 🔧 FIX BUG #1: Remove auto-start - must be manually initialized by user action
-// No automatic initialization - service must be started explicitly by user interaction
