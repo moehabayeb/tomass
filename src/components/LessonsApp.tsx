@@ -1630,7 +1630,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
     const evalOptions: EvalOptions = {
       expected: targetRaw,
       accepted: questionItem?.acceptedAlternatives || [],
-      requireAffirmationPolarity: questionItem?.requiresYesNo ?? true,
+      requireAffirmationPolarity: questionItem?.requiresYesNo ?? false, // v53: Default to false - only enforce when explicitly required
       keyLemmas: questionItem?.keyLemmas || []
     };
 

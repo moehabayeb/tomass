@@ -1,5 +1,8 @@
 // Robust answer evaluator for all modules - Module 51 proven logic
-// v52: CRITICAL FIX - Grammar errors (verb agreement) must be REJECTED, not just flagged
+// v53: THE GODLY FIX - Perfect balance between acceptance and grammar checking
+// - Removed "i" from FILLERS (it's a pronoun, not a filler!)
+// - Smart verb error check (only rejects if expected has correct form)
+// - 65% threshold (balanced between strict 70% and lenient 60%)
 
 export type EvalOptions = {
   expected: string;                 // canonical answer from content
@@ -27,7 +30,8 @@ const YES = ["yes","yeah","yep","sure","of course","correct","that's right","ind
 const NO  = ["no","nope","nah","not really","negative"];
 // v46: Removed "teacher","sir","madam" - these are content words, not fillers!
 // v51: Added more fillers for accent/speech recognition tolerance
-const FILLERS = ["uh","um","erm","hmm","well","please","like","so","okay","oh","i","mean"];
+// v53: CRITICAL - Removed "i" which is a PRONOUN, not a filler!
+const FILLERS = ["uh","um","erm","hmm","well","please","like","so","okay","oh","mean"];
 
 export function normalize(s: string) {
   return s
@@ -107,20 +111,38 @@ export function evaluateAnswer(userInput: string, opt: EvalOptions): boolean {
     }
   }
 
-  // v52: CRITICAL - Reject verb agreement errors immediately (before fuzzy matching)
-  const verbErrors = [
-    /\bi\s+is\b/i,      // "I is" → should be "I am"
-    /\byou\s+is\b/i,    // "you is" → should be "you are"
-    /\bhe\s+are\b/i,    // "he are" → should be "he is"
-    /\bshe\s+are\b/i,   // "she are" → should be "she is"
-    /\bit\s+are\b/i,    // "it are" → should be "it is"
-    /\bwe\s+is\b/i,     // "we is" → should be "we are"
-    /\bthey\s+is\b/i,   // "they is" → should be "they are"
+  // v53: SMART grammar check - only reject if expected has the CORRECT form
+  // This prevents false positives when the expected answer itself is unusual
+  const verbErrorChecks = [
+    // "to be" errors
+    { wrong: /\bi\s+is\b/i, correct: /\bi\s+(am|'m)\b/i },
+    { wrong: /\byou\s+is\b/i, correct: /\byou\s+(are|'re)\b/i },
+    { wrong: /\bhe\s+are\b/i, correct: /\bhe\s+(is|'s)\b/i },
+    { wrong: /\bshe\s+are\b/i, correct: /\bshe\s+(is|'s)\b/i },
+    { wrong: /\bit\s+are\b/i, correct: /\bit\s+(is|'s)\b/i },
+    { wrong: /\bwe\s+is\b/i, correct: /\bwe\s+(are|'re)\b/i },
+    { wrong: /\bthey\s+is\b/i, correct: /\bthey\s+(are|'re)\b/i },
+    // "have/has" errors
+    { wrong: /\bhe\s+have\b/i, correct: /\bhe\s+has\b/i },
+    { wrong: /\bshe\s+have\b/i, correct: /\bshe\s+has\b/i },
+    { wrong: /\bit\s+have\b/i, correct: /\bit\s+has\b/i },
+    { wrong: /\bi\s+has\b/i, correct: /\bi\s+have\b/i },
+    { wrong: /\bwe\s+has\b/i, correct: /\bwe\s+have\b/i },
+    { wrong: /\bthey\s+has\b/i, correct: /\bthey\s+have\b/i },
+    // "do/does" errors
+    { wrong: /\bhe\s+do\b/i, correct: /\bhe\s+does\b/i },
+    { wrong: /\bshe\s+do\b/i, correct: /\bshe\s+does\b/i },
+    { wrong: /\bit\s+do\b/i, correct: /\bit\s+does\b/i },
+    { wrong: /\bi\s+does\b/i, correct: /\bi\s+do\b/i },
+    { wrong: /\bwe\s+does\b/i, correct: /\bwe\s+do\b/i },
+    { wrong: /\bthey\s+does\b/i, correct: /\bthey\s+do\b/i },
   ];
   const userLower = userInput.toLowerCase();
-  for (const errPattern of verbErrors) {
-    if (errPattern.test(userLower)) {
-      return false; // Grammar error = WRONG, no exceptions
+  const expectedLower = opt.expected.toLowerCase();
+  for (const check of verbErrorChecks) {
+    // Only reject if: user has WRONG form AND expected has CORRECT form
+    if (check.wrong.test(userLower) && check.correct.test(expectedLower)) {
+      return false; // Grammar error = WRONG
     }
   }
 
@@ -165,8 +187,9 @@ export function evaluateAnswer(userInput: string, opt: EvalOptions): boolean {
   }
   const ratio = matched / Math.max(1,a.length);
 
-  // v52: Back to 0.7 - 60% was too lenient and accepted grammar errors
-  const result = ratio >= 0.7;
+  // v53: 65% threshold - balanced between strict (70%) and lenient (60%)
+  // Now that "i" is no longer filtered, this works correctly
+  const result = ratio >= 0.65;
   return result;
 }
 
@@ -252,11 +275,10 @@ export function evaluateAnswerDetailed(userInput: string, opt: EvalOptions, atte
  */
 function detectGrammarDifferences(userAnswer: string, expectedAnswer: string): GrammarCorrection[] {
   const corrections: GrammarCorrection[] = [];
-  const userWords = userAnswer.toLowerCase().split(/\s+/);
-  const expectedWords = expectedAnswer.toLowerCase().split(/\s+/);
 
-  // Check verb "to be" agreement
-  const verbBeErrors = [
+  // Check verb agreement errors (to be, have/has, do/does)
+  const verbErrors = [
+    // "to be" errors
     { wrong: "i is", correct: "i am", type: 'verb_agreement' as const, explanation: "Use 'am' with 'I'" },
     { wrong: "you is", correct: "you are", type: 'verb_agreement' as const, explanation: "Use 'are' with 'you'" },
     { wrong: "he are", correct: "he is", type: 'verb_agreement' as const, explanation: "Use 'is' with 'he'" },
@@ -264,12 +286,26 @@ function detectGrammarDifferences(userAnswer: string, expectedAnswer: string): G
     { wrong: "it are", correct: "it is", type: 'verb_agreement' as const, explanation: "Use 'is' with 'it'" },
     { wrong: "we is", correct: "we are", type: 'verb_agreement' as const, explanation: "Use 'are' with 'we'" },
     { wrong: "they is", correct: "they are", type: 'verb_agreement' as const, explanation: "Use 'are' with 'they'" },
+    // "have/has" errors
+    { wrong: "he have", correct: "he has", type: 'verb_agreement' as const, explanation: "Use 'has' with 'he'" },
+    { wrong: "she have", correct: "she has", type: 'verb_agreement' as const, explanation: "Use 'has' with 'she'" },
+    { wrong: "it have", correct: "it has", type: 'verb_agreement' as const, explanation: "Use 'has' with 'it'" },
+    { wrong: "i has", correct: "i have", type: 'verb_agreement' as const, explanation: "Use 'have' with 'I'" },
+    { wrong: "we has", correct: "we have", type: 'verb_agreement' as const, explanation: "Use 'have' with 'we'" },
+    { wrong: "they has", correct: "they have", type: 'verb_agreement' as const, explanation: "Use 'have' with 'they'" },
+    // "do/does" errors
+    { wrong: "he do", correct: "he does", type: 'verb_agreement' as const, explanation: "Use 'does' with 'he'" },
+    { wrong: "she do", correct: "she does", type: 'verb_agreement' as const, explanation: "Use 'does' with 'she'" },
+    { wrong: "it do", correct: "it does", type: 'verb_agreement' as const, explanation: "Use 'does' with 'it'" },
+    { wrong: "i does", correct: "i do", type: 'verb_agreement' as const, explanation: "Use 'do' with 'I'" },
+    { wrong: "we does", correct: "we do", type: 'verb_agreement' as const, explanation: "Use 'do' with 'we'" },
+    { wrong: "they does", correct: "they do", type: 'verb_agreement' as const, explanation: "Use 'do' with 'they'" },
   ];
 
   const userLower = userAnswer.toLowerCase();
   const expectedLower = expectedAnswer.toLowerCase();
 
-  for (const error of verbBeErrors) {
+  for (const error of verbErrors) {
     if (userLower.includes(error.wrong) && expectedLower.includes(error.correct)) {
       corrections.push({
         type: error.type,
