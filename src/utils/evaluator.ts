@@ -43,9 +43,21 @@ export function normalize(s: string) {
     .trim();
 }
 
+// v58: Critical verb forms that should NEVER fuzzy-match each other
+// "is" should never match "are", "am" should never match "is", etc.
+const CRITICAL_VERBS = new Set(['is', 'are', 'am', 'was', 'were', 'has', 'have', 'do', 'does', 'did']);
+
 // v51: Allow minor typos: token distance ≤ 3 (increased from 2 for better accent tolerance)
+// v58: BUT critical verbs must match exactly
 function lev1(a:string,b:string){
   if (a===b) return true;
+
+  // v58: NEVER fuzzy-match critical verb forms with each other
+  // This prevents "is" matching "are", which would accept grammar errors
+  if (CRITICAL_VERBS.has(a) && CRITICAL_VERBS.has(b)) {
+    return false; // "is" should NEVER match "are"
+  }
+
   if (Math.abs(a.length-b.length)>3) return false;  // v51: was >2
   // small, fast check
   let i=0,j=0,edits=0;
@@ -111,37 +123,42 @@ export function evaluateAnswer(userInput: string, opt: EvalOptions): boolean {
     }
   }
 
-  // v53: SMART grammar check - only reject if expected has the CORRECT form
-  // This prevents false positives when the expected answer itself is unusual
+  // v58: ROBUST grammar check - uses both regex AND string matching for reliability
+  // This is critical for a grammar learning app - verb errors MUST be rejected
   const verbErrorChecks = [
-    // "to be" errors
-    { wrong: /\bi\s+is\b/i, correct: /\bi\s+(am|'m)\b/i },
-    { wrong: /\byou\s+is\b/i, correct: /\byou\s+(are|'re)\b/i },
-    { wrong: /\bhe\s+are\b/i, correct: /\bhe\s+(is|'s)\b/i },
-    { wrong: /\bshe\s+are\b/i, correct: /\bshe\s+(is|'s)\b/i },
-    { wrong: /\bit\s+are\b/i, correct: /\bit\s+(is|'s)\b/i },
-    { wrong: /\bwe\s+is\b/i, correct: /\bwe\s+(are|'re)\b/i },
-    { wrong: /\bthey\s+is\b/i, correct: /\bthey\s+(are|'re)\b/i },
+    // "to be" errors - these are FUNDAMENTAL and must be caught
+    { wrongStr: 'i is', correctStr: 'i am', wrong: /\bi\s+is\b/i, correct: /\bi\s+(am|'m)\b/i },
+    { wrongStr: 'you is', correctStr: 'you are', wrong: /\byou\s+is\b/i, correct: /\byou\s+(are|'re)\b/i },
+    { wrongStr: 'he are', correctStr: 'he is', wrong: /\bhe\s+are\b/i, correct: /\bhe\s+(is|'s)\b/i },
+    { wrongStr: 'she are', correctStr: 'she is', wrong: /\bshe\s+are\b/i, correct: /\bshe\s+(is|'s)\b/i },
+    { wrongStr: 'it are', correctStr: 'it is', wrong: /\bit\s+are\b/i, correct: /\bit\s+(is|'s)\b/i },
+    { wrongStr: 'we is', correctStr: 'we are', wrong: /\bwe\s+is\b/i, correct: /\bwe\s+(are|'re)\b/i },
+    { wrongStr: 'they is', correctStr: 'they are', wrong: /\bthey\s+is\b/i, correct: /\bthey\s+(are|'re)\b/i },
     // "have/has" errors
-    { wrong: /\bhe\s+have\b/i, correct: /\bhe\s+has\b/i },
-    { wrong: /\bshe\s+have\b/i, correct: /\bshe\s+has\b/i },
-    { wrong: /\bit\s+have\b/i, correct: /\bit\s+has\b/i },
-    { wrong: /\bi\s+has\b/i, correct: /\bi\s+have\b/i },
-    { wrong: /\bwe\s+has\b/i, correct: /\bwe\s+have\b/i },
-    { wrong: /\bthey\s+has\b/i, correct: /\bthey\s+have\b/i },
+    { wrongStr: 'he have', correctStr: 'he has', wrong: /\bhe\s+have\b/i, correct: /\bhe\s+has\b/i },
+    { wrongStr: 'she have', correctStr: 'she has', wrong: /\bshe\s+have\b/i, correct: /\bshe\s+has\b/i },
+    { wrongStr: 'it have', correctStr: 'it has', wrong: /\bit\s+have\b/i, correct: /\bit\s+has\b/i },
+    { wrongStr: 'i has', correctStr: 'i have', wrong: /\bi\s+has\b/i, correct: /\bi\s+have\b/i },
+    { wrongStr: 'we has', correctStr: 'we have', wrong: /\bwe\s+has\b/i, correct: /\bwe\s+have\b/i },
+    { wrongStr: 'they has', correctStr: 'they have', wrong: /\bthey\s+has\b/i, correct: /\bthey\s+have\b/i },
     // "do/does" errors
-    { wrong: /\bhe\s+do\b/i, correct: /\bhe\s+does\b/i },
-    { wrong: /\bshe\s+do\b/i, correct: /\bshe\s+does\b/i },
-    { wrong: /\bit\s+do\b/i, correct: /\bit\s+does\b/i },
-    { wrong: /\bi\s+does\b/i, correct: /\bi\s+do\b/i },
-    { wrong: /\bwe\s+does\b/i, correct: /\bwe\s+do\b/i },
-    { wrong: /\bthey\s+does\b/i, correct: /\bthey\s+do\b/i },
+    { wrongStr: 'he do', correctStr: 'he does', wrong: /\bhe\s+do\b/i, correct: /\bhe\s+does\b/i },
+    { wrongStr: 'she do', correctStr: 'she does', wrong: /\bshe\s+do\b/i, correct: /\bshe\s+does\b/i },
+    { wrongStr: 'it do', correctStr: 'it does', wrong: /\bit\s+do\b/i, correct: /\bit\s+does\b/i },
+    { wrongStr: 'i does', correctStr: 'i do', wrong: /\bi\s+does\b/i, correct: /\bi\s+do\b/i },
+    { wrongStr: 'we does', correctStr: 'we do', wrong: /\bwe\s+does\b/i, correct: /\bwe\s+do\b/i },
+    { wrongStr: 'they does', correctStr: 'they do', wrong: /\bthey\s+does\b/i, correct: /\bthey\s+do\b/i },
   ];
   const userLower = userInput.toLowerCase();
   const expectedLower = opt.expected.toLowerCase();
   for (const check of verbErrorChecks) {
-    // Only reject if: user has WRONG form AND expected has CORRECT form
-    if (check.wrong.test(userLower) && check.correct.test(expectedLower)) {
+    // v58: Check BOTH string includes AND regex for maximum reliability
+    const hasWrongForm = userLower.includes(check.wrongStr) || check.wrong.test(userLower);
+    const hasCorrectForm = expectedLower.includes(check.correctStr) || check.correct.test(expectedLower);
+
+    if (hasWrongForm && hasCorrectForm) {
+      // v58: Log rejection for debugging
+      console.log(`[evaluateAnswer] v58 REJECTED: User said "${check.wrongStr}" but expected "${check.correctStr}"`);
       return false; // Grammar error = WRONG
     }
   }

@@ -1634,6 +1634,34 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
       keyLemmas: questionItem?.keyLemmas || []
     };
 
+    // v58: STRICT GRAMMAR CHECK - Catch critical verb agreement errors BEFORE evaluator
+    // This is a backup layer to ensure grammar errors like "they is" are NEVER accepted
+    const spokenLower = spokenRaw.toLowerCase();
+    const targetLower = targetRaw.toLowerCase();
+
+    const criticalGrammarErrors = [
+      { wrong: /\bthey\s+is\b/i, correct: /\bthey\s+(are|'re)\b/i, wrongText: 'they is', correctText: 'they are' },
+      { wrong: /\bwe\s+is\b/i, correct: /\bwe\s+(are|'re)\b/i, wrongText: 'we is', correctText: 'we are' },
+      { wrong: /\bi\s+is\b/i, correct: /\bi\s+(am|'m)\b/i, wrongText: 'I is', correctText: 'I am' },
+      { wrong: /\byou\s+is\b/i, correct: /\byou\s+(are|'re)\b/i, wrongText: 'you is', correctText: 'you are' },
+      { wrong: /\bhe\s+are\b/i, correct: /\bhe\s+(is|'s)\b/i, wrongText: 'he are', correctText: 'he is' },
+      { wrong: /\bshe\s+are\b/i, correct: /\bshe\s+(is|'s)\b/i, wrongText: 'she are', correctText: 'she is' },
+      { wrong: /\bit\s+are\b/i, correct: /\bit\s+(is|'s)\b/i, wrongText: 'it are', correctText: 'it is' },
+    ];
+
+    for (const check of criticalGrammarErrors) {
+      if (check.wrong.test(spokenLower) && check.correct.test(targetLower)) {
+        // REJECT - this is a fundamental grammar error
+        console.log(`[isAnswerCorrect] v58 REJECTED: User said "${check.wrongText}" but expected "${check.correctText}"`);
+        setFeedback(`Grammar error: "${check.wrongText}" should be "${check.correctText}"`);
+        setFeedbackType('error');
+        setCurrentAttemptNumber(prev => prev + 1);
+        setEvaluationResult({ isCorrect: false, feedback: `Grammar error: "${check.wrongText}" should be "${check.correctText}"`, grammarCorrections: [] });
+        setGrammarCorrections([{ type: 'verb_agreement', expected: check.correctText, actual: check.wrongText }]);
+        return false;
+      }
+    }
+
     // Use the enhanced evaluator with detailed feedback
     const detailedResult = evaluateAnswerDetailed(spokenRaw, evalOptions, currentAttemptNumber);
 
