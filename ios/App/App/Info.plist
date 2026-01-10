@@ -49,5 +49,24 @@
 	<string>This app needs microphone access for speech recognition during English lessons to help you practice pronunciation.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>This app uses speech recognition to evaluate your pronunciation and provide feedback on your English speaking skills.</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<false/>
+		<key>NSExceptionDomains</key>
+		<dict>
+			<key>supabase.co</key>
+			<dict>
+				<key>NSIncludesSubdomains</key>
+				<true/>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<false/>
+				<key>NSExceptionRequiresForwardSecrecy</key>
+				<true/>
+				<key>NSExceptionMinimumTLSVersion</key>
+				<string>TLSv1.2</string>
+			</dict>
+		</dict>
+	</dict>
 </dict>
 </plist>

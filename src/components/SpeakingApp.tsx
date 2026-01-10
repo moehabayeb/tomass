@@ -1492,6 +1492,18 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
       // 🔧 FIX #9: Comprehensive error handling with user-friendly messages
       if (error) {
+        // 🔧 iOS DEBUG: Log detailed error for debugging iOS-specific issues
+        console.error('🔴 Supabase function error:', {
+          message: error.message,
+          name: error.name,
+          code: (error as any).code,
+          details: (error as any).details,
+          hint: (error as any).hint,
+          status: (error as any).status,
+          platform: Capacitor.getPlatform(),
+          isNative: Capacitor.isNativePlatform()
+        });
+
         // Apple Store Compliance: Silent fail with user-friendly error message
 
         // Provide specific error messages based on error type
