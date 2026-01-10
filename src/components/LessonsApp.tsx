@@ -2772,10 +2772,10 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
           }}
           onStartA1Direct={handleStartA1Direct}
         />
-        <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: 'hsl(var(--app-bg))' }}>
+        <div className="min-h-screen relative pt-20 overflow-y-auto" style={{ backgroundColor: 'hsl(var(--app-bg))' }}>
           <div className="relative z-10 p-4 max-w-sm mx-auto">
             {/* Header */}
-            <div className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-3xl p-6 mb-6 mt-safe">
+            <div className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-3xl p-6 mb-6">
               <div className="flex items-center justify-between mb-4">
                 <Button
                   onClick={onBack}
@@ -2829,10 +2829,10 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
   // Render modules view
   if (viewState === 'modules') {
     return (
-      <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: 'hsl(var(--app-bg))' }}>
+      <div className="min-h-screen relative pt-20 overflow-y-auto" style={{ backgroundColor: 'hsl(var(--app-bg))' }}>
         <div className="relative z-10 p-4 max-w-sm mx-auto">
           {/* Header */}
-          <div className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-3xl p-6 mb-6 mt-safe">
+          <div className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-3xl p-6 mb-6">
             <div className="flex items-center justify-between mb-4">
               <Button
                 onClick={() => setViewState('levels')}
@@ -2842,7 +2842,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
               >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
-              
+
               <div className="text-center">
                 <h1 className="text-lg font-bold text-white">{selectedLevel} Modules</h1>
                 <p className="text-sm text-white/70">Choose a module to start</p>
@@ -2951,11 +2951,11 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
   // Lesson completion view
   if (currentPhase === 'completed') {
     return (
-      <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: 'hsl(var(--app-bg))' }}>
+      <div className="min-h-screen relative pt-20 overflow-y-auto" style={{ backgroundColor: 'hsl(var(--app-bg))' }}>
         {showConfetti && <Confetti width={width} height={height} />}
-        
+
         <div className="relative z-10 p-4 max-w-sm mx-auto">
-          <div className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-3xl p-6 mt-safe text-center">
+          <div className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-3xl p-6 text-center">
             <div className="flex justify-center mb-4">
               <div className="bg-green-500/20 rounded-full p-4">
                 <CheckCircle className="h-12 w-12 text-green-400" />
@@ -3003,7 +3003,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
 
   // Render lesson content
   return (
-    <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: 'hsl(var(--app-bg))' }}>
+    <div className="min-h-screen relative pt-20 overflow-y-auto" style={{ backgroundColor: 'hsl(var(--app-bg))' }}>
       {/* Placement Test Modal - Clean separation */}
       <PlacementTestModal
         isOpen={showPlacementRequired}
@@ -3046,7 +3046,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
 
       <div className="relative z-10 p-3 max-w-sm mx-auto">
         {/* Compact Header - iPhone Optimized */}
-        <div className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-2xl p-4 mb-4 mt-safe shadow-lg shadow-black/20">
+        <div className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-2xl p-4 mb-4 shadow-lg shadow-black/20">
           <div className="flex items-center justify-between mb-3">
             <Button
               onClick={() => { narration.cancel(); setViewState('modules'); }}

@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'Tomas Hoca',
   webDir: 'dist',
   ios: {
-    contentInset: 'always',
+    contentInset: 'never',
     allowsLinkPreview: false,
     backgroundColor: '#1e1b4b',
     scrollEnabled: true,
