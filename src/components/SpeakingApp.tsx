@@ -2018,7 +2018,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     }, [user_level]);
 
     return (
-      <div className="fixed top-0 left-0 right-0 z-30 pointer-events-none pt-safe">
+      <div className="fixed top-0 left-0 right-0 z-10 pointer-events-none pt-safe">
         {/* Floating XP Display & Difficulty - Clean minimal header - v47: Added pt-safe for iPhone Dynamic Island */}
         <div className="px-4 py-4 flex items-center justify-center gap-2 pointer-events-auto">
           <div className="px-4 py-2 rounded-full text-sm bg-white/15 text-white backdrop-blur-xl font-bold tracking-wide shadow-lg">
@@ -2355,8 +2355,10 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
-              className="bg-black/95 backdrop-blur-xl border-white/20 text-white mb-2 mr-4"
+              className="bg-black/95 backdrop-blur-xl border-white/20 text-white mb-2 z-[100]"
               align="end"
+              side="top"
+              sideOffset={8}
             >
               <DropdownMenuItem
                 onClick={toggleSpeakingSound}
