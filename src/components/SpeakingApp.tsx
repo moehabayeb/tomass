@@ -2020,7 +2020,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     return (
       <div className="fixed top-0 left-0 right-0 z-10 pointer-events-none pt-safe">
         {/* Floating XP Display & Difficulty - Clean minimal header - v47: Added pt-safe for iPhone Dynamic Island */}
-        <div className="px-4 py-4 flex items-center justify-center gap-2 pointer-events-auto">
+        <div className="px-4 py-4 mt-14 flex items-center justify-center gap-2 pointer-events-none">
           <div className="px-4 py-2 rounded-full text-sm bg-white/15 text-white backdrop-blur-xl font-bold tracking-wide shadow-lg">
             ⚡ {formattedXP} XP
           </div>
@@ -2220,10 +2220,10 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         </div>
 
       {/* 🔧 FIX #12: Floating Action Button (FAB) - iPhone optimized with keyboard support */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 pointer-events-none">
+      <div className="fixed bottom-0 left-0 right-0 z-40">
         <div className="safe-bottom pb-6 px-6 flex justify-center items-end gap-3">
           <button
-            className="pointer-events-auto w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-2xl active:scale-95 transition-all duration-200 flex items-center justify-center relative focus:outline-none focus:ring-4 focus:ring-purple-400/50"
+            className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-2xl active:scale-95 transition-all duration-200 flex items-center justify-center relative focus:outline-none focus:ring-4 focus:ring-purple-400/50 touch-manipulation"
             style={{
               boxShadow: '0 10px 40px rgba(168, 85, 247, 0.4)'
             }}
@@ -2348,7 +2348,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
-                className="pointer-events-auto w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm text-white shadow-lg active:scale-95 transition-all duration-200 flex items-center justify-center"
+                className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm text-white shadow-lg active:scale-95 transition-all duration-200 flex items-center justify-center touch-manipulation"
                 aria-label="More options"
               >
                 <MoreHorizontal className="w-5 h-5" />

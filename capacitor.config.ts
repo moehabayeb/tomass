@@ -5,8 +5,10 @@ const config: CapacitorConfig = {
   appName: 'Tomas Hoca',
   webDir: 'dist',
   ios: {
-    contentInset: 'automatic',
+    contentInset: 'always',
     allowsLinkPreview: false,
+    backgroundColor: '#1e1b4b',
+    scrollEnabled: true,
   },
   server: {
     allowNavigation: ['*.supabase.co']
