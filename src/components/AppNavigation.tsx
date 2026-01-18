@@ -84,6 +84,9 @@ export default function AppNavigation() {
   const { streakData, streakReward } = useStreakTracker(addXP);
   const { newlyUnlockedBadge, closeBadgeNotification } = useBadgeSystem();
 
+  // v59: Detect Android for conditional styling (fixes mirror/glass effect)
+  const isAndroid = typeof navigator !== 'undefined' && /android/i.test(navigator.userAgent);
+
   // Show streak welcome popup on first load
   useEffect(() => {
     const hasShownToday = safeSessionStorage.getItem('streakWelcomeShown');
@@ -338,53 +341,62 @@ export default function AppNavigation() {
         />
       </ErrorBoundary>
 
-      {/* User Authentication Section - v47: Added top-safe for iPhone Dynamic Island */}
-      <div className="fixed top-safe left-4 z-20">
-        {user && isAuthenticated ? (
-          <UserDropdown 
-            user={user} 
-            profile={profile} 
-          />
-        ) : (
-          <a
-            href="/auth"
-            className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70
-                     text-primary-foreground font-semibold
-                     rounded-full px-6 py-3 min-h-[44px]
-                     shadow-lg hover:shadow-xl hover:shadow-primary/25
-                     transition-all duration-300 ease-out
-                     hover:scale-105 hover:-translate-y-0.5
-                     border border-primary/20 hover:border-primary/40
-                     flex items-center gap-2 no-underline"
-          >
-            <span>Sign In</span>
-          </a>
-        )}
-      </div>
-
-      {/* Navigation Dropdown and Sound Toggle - v47: Added top-safe for iPhone Dynamic Island */}
-      <div className="fixed top-safe right-4 z-20 flex items-center gap-3">
-        {/* Global Sound Toggle - Only visible on speaking pages */}
-        {(currentMode === 'speaking' || currentMode === 'placement-test') && (
-          <button
-            onClick={toggleSound}
-            className="bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full p-3 text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white/30 shadow-lg hover:shadow-xl min-w-[44px] min-h-[44px] flex items-center justify-center"
-            aria-label={soundEnabled ? "Mute sound" : "Enable sound"}
-            title={soundEnabled ? "Sound is ON - Click to mute" : "Sound is OFF - Click to enable"}
-          >
-            {soundEnabled ? (
-              <Volume2 className="w-5 h-5" />
+      {/* v48: Unified Header Bar - Clean layout with proper Dynamic Island spacing */}
+      {/* v59: Remove glass effect on Android to fix mirror artifact */}
+      <header className={`fixed top-0 left-0 right-0 z-20 header-bar ${
+        isAndroid ? '' : 'bg-gradient-to-b from-black/30 via-black/10 to-transparent backdrop-blur-md'
+      }`}>
+        <div className="flex items-center justify-between">
+          {/* Left: Sign In / User Avatar - v59: Only visible on Speaking page */}
+          {currentMode === 'speaking' ? (
+            user && isAuthenticated ? (
+              <UserDropdown
+                user={user}
+                profile={profile}
+              />
             ) : (
-              <VolumeX className="w-5 h-5" />
-            )}
-          </button>
-        )}
+              <a
+                href="/auth"
+                className="bg-white/95 text-gray-900 font-semibold
+                         rounded-full px-5 py-2.5 min-h-[44px]
+                         shadow-lg hover:shadow-xl
+                         transition-all duration-200
+                         hover:bg-white
+                         flex items-center no-underline"
+              >
+                <span>Sign In</span>
+              </a>
+            )
+          ) : (
+            /* Spacer when Sign In not visible - keeps menu on right */
+            <div />
+          )}
 
-        <NavigationDropdown
-          currentMode={currentMode}
-          onModeChange={handleModeChange}
-        />
-      </div>
+          {/* Right: Sound Toggle + Menu */}
+          <div className="flex items-center gap-2">
+            {/* Global Sound Toggle - Only visible on speaking pages */}
+            {(currentMode === 'speaking' || currentMode === 'placement-test') && (
+              <button
+                onClick={toggleSound}
+                className="bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full p-3 text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white/30 shadow-lg hover:shadow-xl min-w-[44px] min-h-[44px] flex items-center justify-center"
+                aria-label={soundEnabled ? "Mute sound" : "Enable sound"}
+                title={soundEnabled ? "Sound is ON - Click to mute" : "Sound is OFF - Click to enable"}
+              >
+                {soundEnabled ? (
+                  <Volume2 className="w-5 h-5" />
+                ) : (
+                  <VolumeX className="w-5 h-5" />
+                )}
+              </button>
+            )}
+
+            <NavigationDropdown
+              currentMode={currentMode}
+              onModeChange={handleModeChange}
+            />
+          </div>
+        </div>
+      </header>
 
       {/* Meetings Widget - Show on speaking page */}
       {currentMode === 'speaking' && (
