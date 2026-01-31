@@ -9,8 +9,8 @@ import { microphoneGuardian } from '@/services/MicrophoneGuardian';
 export const INITIAL_SILENCE_MS = 30000; // 30 seconds for initial silence - more time to think before speaking
 export const SILENCE_TIMEOUT_MS = 15000; // v36.3: 15 seconds for language learners who pause between words
 export const INIT_DELAY_MS = 600;
-export const MAX_RETRIES = 2;
-export const RETRY_DELAYS = [400, 800];
+export const MAX_RETRIES = 4;
+export const RETRY_DELAYS = [300, 500, 800, 1200];
 export const MAX_SECONDS = 90; // 90 seconds hard maximum
 export const BUTTON_DEBOUNCE_MS = 300;
 

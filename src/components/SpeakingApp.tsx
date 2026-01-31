@@ -1112,30 +1112,47 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     // 🔧 GOD-TIER v10: Set guard ONLY for recording phase
     micCaptureInProgressRef.current = true;
 
-    // 🔧 GOD-TIER v14: Retry mechanism for bulletproof mic trigger
-    const MAX_MIC_RETRIES = 3;
-    const MIC_RETRY_DELAY_MS = 300;
+    // 🔧 v62: Enhanced retry mechanism with exponential backoff for bulletproof mic trigger
+    const MAX_MIC_RETRIES = 5;
+    const MIC_RETRY_DELAYS = [300, 500, 800, 1200, 1500];  // Exponential backoff delays
     let micRetryCount = 0;
     let finalTranscript = '';
     let result: { transcript: string; durationSec: number } | null = null;
 
-    const tryStartMic = async (): Promise<{ transcript: string; durationSec: number } | null> => {
-      try {
-        // 🎯 ULTIMATE FIX: Bypass debounce for internal calls (debounce is for button clicks)
-        return await startRecording({ bypassDebounce: true });
-      } catch (err) {
-        console.error(`[MicTrigger] Attempt ${micRetryCount + 1} failed:`, err);
-        return null;
+    // 🔧 v62: Pre-flight health check before recording
+    const healthResult = await microphoneGuardian.healthCheck(3000);
+    if (!healthResult.healthy) {
+      console.warn('[MicTrigger] Pre-flight failed:', healthResult.message);
+      if (healthResult.canRecover) {
+        await microphoneGuardian.recoverFromStuck();
       }
+    }
+
+    // 🔧 v62: Wrap tryStartMic with timeout to prevent infinite hangs
+    const tryStartMicWithTimeout = async (): Promise<{ transcript: string; durationSec: number } | null> => {
+      const timeoutPromise = new Promise<null>((resolve) =>
+        setTimeout(() => resolve(null), 3000)
+      );
+      const micPromise = (async () => {
+        try {
+          // 🎯 ULTIMATE FIX: Bypass debounce for internal calls (debounce is for button clicks)
+          return await startRecording({ bypassDebounce: true });
+        } catch (err) {
+          console.error(`[MicTrigger] Attempt ${micRetryCount + 1} failed:`, err);
+          return null;
+        }
+      })();
+      return Promise.race([micPromise, timeoutPromise]);
     };
 
-    // Try to start mic with retries
-    result = await tryStartMic();
+    // Try to start mic with retries and exponential backoff
+    result = await tryStartMicWithTimeout();
     while (!result && micRetryCount < MAX_MIC_RETRIES) {
       micRetryCount++;
-      console.log(`[MicTrigger] 🔄 v14: Retry ${micRetryCount}/${MAX_MIC_RETRIES}...`);
-      await new Promise(r => setTimeout(r, MIC_RETRY_DELAY_MS));
-      result = await tryStartMic();
+      const delay = MIC_RETRY_DELAYS[micRetryCount - 1] || 1500;
+      console.log(`[MicTrigger] 🔄 v62: Retry ${micRetryCount}/${MAX_MIC_RETRIES} after ${delay}ms...`);
+      await new Promise(r => setTimeout(r, delay));
+      result = await tryStartMicWithTimeout();
     }
 
     // If all retries failed, show error
@@ -2063,26 +2080,15 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
                 {/* Animated Avatar */}
                 <TomasAvatarImage isSpeaking={isSpeaking} className="w-full h-full object-cover rounded-full" />
 
-                {/* Animated Pulsing Rings - State-based */}
+                {/* 🔧 v62: Optimized single-ring pulse animation (GPU-efficient) */}
                 {flowState === 'LISTENING' && (
-                  <>
-                    <div className="absolute -inset-3 rounded-full bg-green-400/30 animate-ping" style={{ animationDuration: '1.2s' }} />
-                    <div className="absolute -inset-6 rounded-full bg-green-400/20 animate-ping" style={{ animationDuration: '1.8s' }} />
-                    <div className="absolute -inset-9 rounded-full bg-green-400/10 animate-ping" style={{ animationDuration: '2.4s' }} />
-                  </>
+                  <div className="absolute -inset-4 rounded-full bg-green-400/40 listening-pulse-ring" />
                 )}
                 {flowState === 'READING' && (
-                  <>
-                    <div className="absolute -inset-3 rounded-full bg-blue-400/30 animate-ping" style={{ animationDuration: '1.2s' }} />
-                    <div className="absolute -inset-6 rounded-full bg-blue-400/20 animate-ping" style={{ animationDuration: '1.8s' }} />
-                    <div className="absolute -inset-9 rounded-full bg-blue-400/10 animate-ping" style={{ animationDuration: '2.4s' }} />
-                  </>
+                  <div className="absolute -inset-4 rounded-full bg-blue-400/40 listening-pulse-ring" />
                 )}
                 {flowState === 'PROCESSING' && (
-                  <>
-                    <div className="absolute -inset-3 rounded-full bg-yellow-400/30 animate-ping" style={{ animationDuration: '1s' }} />
-                    <div className="absolute -inset-6 rounded-full bg-yellow-400/20 animate-ping" style={{ animationDuration: '1.5s' }} />
-                  </>
+                  <div className="absolute -inset-4 rounded-full bg-yellow-400/40 listening-pulse-ring" />
                 )}
               </div>
 
@@ -2358,12 +2364,9 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
               }
             }}
           >
-            {/* Pulsing ring when listening */}
+            {/* 🔧 v62: Optimized single pulse ring for FAB (GPU-efficient) */}
             {flowState === 'LISTENING' && (
-              <>
-                <div className="absolute inset-0 rounded-full bg-green-400/30 animate-ping" style={{ animationDuration: '1.5s' }} />
-                <div className="absolute inset-0 rounded-full bg-green-400/20 animate-ping" style={{ animationDuration: '2s' }} />
-              </>
+              <div className="absolute inset-0 rounded-full bg-green-400/40 listening-pulse-ring" />
             )}
 
             {/* Icon */}
