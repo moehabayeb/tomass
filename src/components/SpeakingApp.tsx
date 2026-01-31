@@ -1903,6 +1903,27 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     };
   }, [flowState, toast]);
 
+  // 🔧 PRODUCTION FIX: Samsung/Android GPU optimization and horizontal scroll prevention
+  useEffect(() => {
+    // Detect Samsung devices by user agent
+    const ua = navigator.userAgent.toLowerCase();
+    const isSamsung = ua.includes('samsung') || ua.includes('sm-g') || ua.includes('sm-a') || ua.includes('sm-n') || ua.includes('sm-s');
+
+    if (isSamsung) {
+      document.body.classList.add('samsung-gpu-fix');
+    }
+
+    // Prevent horizontal scroll globally (fixes black screen on rapid scroll)
+    document.body.style.overflowX = 'hidden';
+    document.body.style.maxWidth = '100vw';
+
+    return () => {
+      document.body.classList.remove('samsung-gpu-fix');
+      document.body.style.overflowX = '';
+      document.body.style.maxWidth = '';
+    };
+  }, []);
+
   // 🔧 FIX #1, #2, #3: Comprehensive cleanup on component unmount (prevents memory leaks)
   useEffect(() => {
     // Mark component as mounted
@@ -2018,7 +2039,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     }, [user_level]);
 
     return (
-      <div className="fixed top-0 left-0 right-0 z-10 pointer-events-none pt-safe">
+      <div className="fixed top-0 left-0 right-0 z-[100] pointer-events-none pt-safe">
         {/* Floating XP Display & Difficulty - Clean minimal header - v47: Added pt-safe for iPhone Dynamic Island */}
         <div className="px-4 py-4 mt-14 flex items-center justify-center gap-2 pointer-events-none">
           <div className="px-4 py-2 rounded-full text-sm bg-white/15 text-white backdrop-blur-xl font-bold tracking-wide shadow-lg">
@@ -2111,7 +2132,10 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
   // Mobile-First Full-Screen Layout
   return (
-    <div className="fixed inset-0 flex flex-col bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 overflow-hidden">
+    <div
+      className="fixed inset-0 flex flex-col bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900"
+      style={{ touchAction: 'pan-y', overscrollBehavior: 'contain' }}
+    >
       {/* 🔧 PHASE 3: Skip link for screen readers */}
       <a
         href="#main-content"
@@ -2125,7 +2149,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
       {/* 🔧 FIX #7: iOS Audio Unlock Prompt - Prominent banner with clear CTA */}
       {showAudioUnlockPrompt && isIOS && (
-        <div className="fixed top-20 left-4 right-4 z-50 animate-slide-in-up" role="alert" aria-live="assertive">
+        <div className="fixed top-20 left-4 right-4 z-[200] animate-slide-in-up" role="alert" aria-live="assertive">
           <div className="bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl shadow-2xl border-2 border-white/30 overflow-hidden">
             <div className="p-4 flex items-center gap-4">
               <div className="flex-shrink-0 w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
@@ -2153,7 +2177,12 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       {/* Full-Screen Scrollable Chat Area - adjusted for floating header */}
       <div
         id="main-content"
-        className="flex-1 overflow-y-auto pt-[240px] pb-24 px-4 overscroll-behavior-contain"
+        className="flex-1 overflow-y-auto overflow-x-hidden pt-[240px] pb-24 px-4"
+        style={{
+          overscrollBehaviorY: 'contain',
+          overscrollBehaviorX: 'none',
+          touchAction: 'pan-y'
+        }}
         role="log"
         aria-live="polite"
         aria-label="Conversation messages"
@@ -2220,7 +2249,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         </div>
 
       {/* 🔧 FIX #12: Floating Action Button (FAB) - iPhone optimized with keyboard support */}
-      <div className="fixed bottom-0 left-0 right-0 z-40">
+      <div className="fixed bottom-0 left-0 right-0 z-[150]">
         <div className="safe-bottom pb-6 px-6 flex justify-center items-end gap-3">
           <button
             className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-2xl active:scale-95 transition-all duration-200 flex items-center justify-center relative focus:outline-none focus:ring-4 focus:ring-purple-400/50 touch-manipulation"
@@ -2410,7 +2439,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
       {/* Error Toast - Mobile optimized */}
       {errorMessage && (
-        <div className="fixed bottom-32 left-4 right-4 z-50 animate-slide-in-up">
+        <div className="fixed bottom-32 left-4 right-4 z-[200] animate-slide-in-up">
           <div className="bg-red-500/90 backdrop-blur-sm text-white px-4 py-3 rounded-xl shadow-2xl text-center text-sm">
             {errorMessage}
           </div>

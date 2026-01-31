@@ -72,6 +72,7 @@ let capacitorCleanupInProgress = false;
 // This is the EXACT pattern used by Duolingo/Google for bulletproof speech recognition
 let capacitorLastStopTime: number = 0;
 const CAPACITOR_MIN_RESTART_DELAY_MS = 200; // Android needs 200ms to release native resources!
+const CAPACITOR_RESTART_DELAY_MS = 300; // Delay for Android to release resources during auto-restart
 
 // Timers
 let countdownTimerRef: number | undefined;
@@ -725,7 +726,7 @@ async function startCapacitorSpeechRecognition(id: number, maxSec: number): Prom
               }
 
               // Wait for Android to release resources
-              await new Promise(r => setTimeout(r, 300));
+              await new Promise(r => setTimeout(r, CAPACITOR_RESTART_DELAY_MS));
 
               // Check again after delay
               if (isFinished) {

@@ -59,8 +59,11 @@ export default function DIDAvatar({
   }, []);
 
   const initializeDIDAgent = async () => {
+    // Script load timeout (5 seconds as per plan)
+    const SCRIPT_LOAD_TIMEOUT_MS = 5000;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
     try {
-      
       // Remove any existing script
       const existingScript = document.querySelector('script[src*="agent.d-id.com"]');
       if (existingScript) {
@@ -79,16 +82,37 @@ export default function DIDAvatar({
       script.setAttribute('data-orientation', 'horizontal');
       script.setAttribute('data-position', 'right');
 
+      // Set up script load timeout
+      timeoutId = setTimeout(() => {
+        console.warn('[DIDAvatar] Script load timeout - falling back to animated avatar');
+        setAgentFailed(true);
+        // Clean up script if it's still loading
+        if (script.parentNode) {
+          script.parentNode.removeChild(script);
+        }
+      }, SCRIPT_LOAD_TIMEOUT_MS);
+
       // Hide the default D-ID interface and embed in our container
       script.onload = () => {
-        
-        // Wait for agent to initialize
+        // Clear timeout since script loaded
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+          timeoutId = null;
+        }
+
+        // Wait for agent to initialize (with additional timeout protection)
+        const initTimeoutId = setTimeout(() => {
+          console.warn('[DIDAvatar] Agent initialization timeout - falling back to animated avatar');
+          setAgentFailed(true);
+        }, 3000);
+
         setTimeout(() => {
           try {
             const agent = window['did-agent'];
             if (agent) {
+              clearTimeout(initTimeoutId);
               agentRef.current = agent;
-              
+
               // Try to find and move the D-ID element into our container
               const didElement = document.querySelector('[data-name="did-agent"]');
               if (didElement && containerRef.current) {
@@ -97,29 +121,46 @@ export default function DIDAvatar({
                 (didElement as HTMLElement).style.height = '100%';
                 (didElement as HTMLElement).style.borderRadius = '50%';
                 (didElement as HTMLElement).style.overflow = 'hidden';
-                
+
                 // Move it into our container
                 containerRef.current.appendChild(didElement);
                 setAgentLoaded(true);
+                console.log('[DIDAvatar] Agent loaded successfully');
               } else {
                 setAgentLoaded(true);
+                console.log('[DIDAvatar] Agent loaded (no container move needed)');
               }
             } else {
+              clearTimeout(initTimeoutId);
+              console.warn('[DIDAvatar] Agent not found on window - falling back');
               setAgentFailed(true);
             }
           } catch (error) {
+            clearTimeout(initTimeoutId);
+            console.error('[DIDAvatar] Agent initialization error:', error);
             setAgentFailed(true);
           }
         }, 2000);
       };
 
-      script.onerror = () => {
+      script.onerror = (event) => {
+        // Clear timeout since we got an error
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+          timeoutId = null;
+        }
+        console.error('[DIDAvatar] Script load error:', event);
         setAgentFailed(true);
       };
 
       document.head.appendChild(script);
-      
+
     } catch (error) {
+      // Clear timeout on any error
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      console.error('[DIDAvatar] Initialization error:', error);
       setAgentFailed(true);
     }
   };

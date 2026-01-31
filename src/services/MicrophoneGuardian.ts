@@ -402,6 +402,197 @@ class MicrophoneGuardianService {
   }
 
   /**
+   * Comprehensive health check that tests actual audio capture with timeout
+   * Use before each recording session for maximum reliability
+   */
+  async healthCheck(timeoutMs: number = 3000): Promise<{
+    healthy: boolean;
+    status: MicStatus;
+    message: string;
+    canRecover: boolean;
+  }> {
+    console.log('[MicGuardian] Running comprehensive health check...');
+
+    // Check permission first
+    const permissionStatus = await this.checkPermission();
+    if (permissionStatus === 'denied') {
+      return {
+        healthy: false,
+        status: 'no_permission',
+        message: 'Microphone permission denied. Please allow access in Settings.',
+        canRecover: true,
+      };
+    }
+
+    // Check network (for Google Speech Services)
+    if (this.config.enableNetworkCheck && !navigator.onLine) {
+      return {
+        healthy: false,
+        status: 'network_offline',
+        message: 'No internet connection. Speech recognition requires network.',
+        canRecover: true,
+      };
+    }
+
+    // Check service availability
+    const serviceAvailable = await this.checkServiceAvailability();
+    if (!serviceAvailable) {
+      return {
+        healthy: false,
+        status: 'service_unavailable',
+        message: 'Speech recognition service unavailable.',
+        canRecover: false,
+      };
+    }
+
+    // Test actual audio capture with timeout
+    return new Promise(async (resolve) => {
+      let stream: MediaStream | null = null;
+      let audioContext: AudioContext | null = null;
+      let timeoutId: ReturnType<typeof setTimeout> | null = null;
+      let resolved = false;
+
+      const cleanup = () => {
+        if (timeoutId) clearTimeout(timeoutId);
+        if (stream) stream.getTracks().forEach(t => t.stop());
+        if (audioContext && audioContext.state !== 'closed') {
+          audioContext.close().catch(() => {});
+        }
+      };
+
+      const resolveOnce = (result: {
+        healthy: boolean;
+        status: MicStatus;
+        message: string;
+        canRecover: boolean;
+      }) => {
+        if (!resolved) {
+          resolved = true;
+          cleanup();
+          resolve(result);
+        }
+      };
+
+      // Set overall timeout
+      timeoutId = setTimeout(() => {
+        console.warn('[MicGuardian] Health check timed out');
+        resolveOnce({
+          healthy: false,
+          status: 'mic_in_use',
+          message: 'Microphone may be in use by another app.',
+          canRecover: true,
+        });
+      }, timeoutMs);
+
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+        });
+
+        // Verify stream is active
+        if (!stream.active || stream.getAudioTracks().length === 0) {
+          resolveOnce({
+            healthy: false,
+            status: 'no_microphone',
+            message: 'No active microphone found.',
+            canRecover: true,
+          });
+          return;
+        }
+
+        // Test audio context
+        audioContext = new AudioContext();
+        if (audioContext.state === 'suspended') {
+          await audioContext.resume();
+        }
+
+        const analyser = audioContext.createAnalyser();
+        const source = audioContext.createMediaStreamSource(stream);
+        source.connect(analyser);
+
+        // Verify we can read audio data
+        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+        analyser.getByteFrequencyData(dataArray);
+
+        this.lastHealthCheckTime = Date.now();
+        console.log('[MicGuardian] Comprehensive health check passed');
+
+        resolveOnce({
+          healthy: true,
+          status: 'ready',
+          message: 'Microphone ready',
+          canRecover: false,
+        });
+
+      } catch (error: any) {
+        console.error('[MicGuardian] Comprehensive health check failed:', error);
+
+        if (error.name === 'NotAllowedError') {
+          resolveOnce({
+            healthy: false,
+            status: 'no_permission',
+            message: 'Microphone permission denied.',
+            canRecover: true,
+          });
+        } else if (error.name === 'NotFoundError') {
+          resolveOnce({
+            healthy: false,
+            status: 'no_microphone',
+            message: 'No microphone detected.',
+            canRecover: false,
+          });
+        } else {
+          resolveOnce({
+            healthy: false,
+            status: 'error',
+            message: 'Microphone error: ' + (error.message || 'Unknown error'),
+            canRecover: true,
+          });
+        }
+      }
+    });
+  }
+
+  /**
+   * Attempt to recover from a stuck microphone state
+   */
+  async recoverFromStuck(): Promise<boolean> {
+    console.log('[MicGuardian] Attempting recovery from stuck state...');
+
+    try {
+      // Stop any active recording
+      if (Capacitor.isNativePlatform()) {
+        try {
+          await SpeechRecognition.stop();
+          await SpeechRecognition.removeAllListeners();
+        } catch {
+          // Ignore errors during cleanup
+        }
+      }
+
+      // Wait for resources to release
+      await this.sleep(300);
+
+      // Verify recovery worked
+      const healthResult = await this.healthCheck(2000);
+
+      if (healthResult.healthy) {
+        console.log('[MicGuardian] Recovery successful');
+        this.emitStatusChange('ready');
+        return true;
+      }
+
+      console.warn('[MicGuardian] Recovery failed:', healthResult.message);
+      this.emitStatusChange(healthResult.status);
+      return false;
+
+    } catch (error) {
+      console.error('[MicGuardian] Recovery error:', error);
+      return false;
+    }
+  }
+
+  /**
    * Setup permission monitoring for runtime changes
    */
   private setupPermissionMonitoring(): void {

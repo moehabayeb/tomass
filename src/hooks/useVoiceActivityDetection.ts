@@ -25,9 +25,9 @@ export function useVoiceActivityDetection(options: VADOptions = {}) {
     onSpeechStart,
     onSpeechEnd,
     onVolumeChange,
-    silenceThreshold = 20, // Adjust based on testing (0-255)
-    silenceDuration = 2000, // 2 seconds of silence
-    minSpeechDuration = 500, // Minimum 0.5 seconds of speech
+    silenceThreshold = 12, // Lower threshold for quiet speakers/accents (0-255)
+    silenceDuration = 4000, // 4 seconds - more tolerant pauses for language learners
+    minSpeechDuration = 300, // Capture shorter responses (300ms)
   } = options;
 
   const [state, setState] = useState<VADState>({
