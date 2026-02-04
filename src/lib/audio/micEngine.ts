@@ -245,35 +245,50 @@ function clearAllTimers() {
   if (processingWatchdogRef) { clearTimeout(processingWatchdogRef); processingWatchdogRef = undefined; }
 }
 
-// ============= v66 BULLETPROOF iOS: ENSURE CLEAN SLATE =============
+// ============= v67 BULLETPROOF iOS: ENSURE CLEAN SLATE WITH TIMEOUTS =============
 // This function guarantees a clean state before starting any new speech recognition session
 // It prevents the "Ongoing speech recognition" error on iOS by:
 // 1. Stopping any existing recognition session
 // 2. Removing ALL listeners (prevents listener accumulation)
 // 3. Waiting for iOS audio session to settle
+// v67: All operations have timeouts to prevent hanging
 
 async function ensureCleanSlate(): Promise<void> {
-  // Wait for any pending cleanup to complete
+  const CLEANUP_TIMEOUT = 500; // Never wait more than 500ms
+
+  // Wait for pending cleanup with timeout
   if (cleanupPromise) {
     try {
-      await cleanupPromise;
+      await Promise.race([
+        cleanupPromise,
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Cleanup timeout')), CLEANUP_TIMEOUT)
+        )
+      ]);
     } catch (e) {
-      // Ignore errors from pending cleanup
+      console.warn('[MicEngine] v67: Cleanup timeout, forcing continue');
+      cleanupPromise = null; // Clear stale promise
     }
   }
 
-  // Force stop any running recognition - ignore errors (might not be running)
+  // Stop with timeout
   try {
-    await CapacitorSpeechRecognition.stop();
-    console.log('[MicEngine] v66: Stopped any existing recognition');
+    await Promise.race([
+      CapacitorSpeechRecognition.stop(),
+      new Promise(r => setTimeout(r, 300))
+    ]);
+    console.log('[MicEngine] v67: Stopped any existing recognition');
   } catch (e) {
     // Expected: might not be running
   }
 
-  // Remove ALL listeners to prevent accumulation (listener IDs jumping)
+  // Remove listeners with timeout
   try {
-    await CapacitorSpeechRecognition.removeAllListeners();
-    console.log('[MicEngine] v66: Removed all listeners');
+    await Promise.race([
+      CapacitorSpeechRecognition.removeAllListeners(),
+      new Promise(r => setTimeout(r, 300))
+    ]);
+    console.log('[MicEngine] v67: Removed all listeners');
   } catch (e) {
     // Ignore errors
   }
@@ -281,14 +296,14 @@ async function ensureCleanSlate(): Promise<void> {
   // iOS needs extra time for audio session to settle between mode switches
   // This prevents "AudioSession::beginInterruption but session is already interrupted!" error
   if (Capacitor.getPlatform() === 'ios') {
-    console.log('[MicEngine] v66: iOS audio session settling (150ms)...');
+    console.log('[MicEngine] v67: iOS audio session settling (150ms)...');
     await new Promise(r => setTimeout(r, 150));
   } else {
     // Android also benefits from a small delay
     await new Promise(r => setTimeout(r, 50));
   }
 
-  console.log('[MicEngine] v66: Clean slate ready');
+  console.log('[MicEngine] v67: Clean slate ready');
 }
 
 // ============= AUDIO CONTEXT MANAGEMENT =============
@@ -1327,7 +1342,7 @@ export function getDiagnostics() {
 if (typeof window !== 'undefined') {
   // Cleanup on page unload
   window.addEventListener('beforeunload', cleanup);
-  
+
   // Visibility watchdog - cleanup when returning from background
   window.addEventListener('visibilitychange', () => {
     if (document.hidden && state !== 'idle') {
@@ -1338,6 +1353,22 @@ if (typeof window !== 'undefined') {
       cleanup();
     }
   });
+
+  // v67: Handle iOS audio interruptions (phone calls, Siri, etc.)
+  if (Capacitor.getPlatform() === 'ios') {
+    // Listen for audio session interruption events
+    document.addEventListener('pause', () => {
+      console.log('[MicEngine] v67: iOS audio interrupted (pause event)');
+      // Force stop recording
+      stopRecording().catch(() => {});
+    });
+
+    document.addEventListener('resume', () => {
+      console.log('[MicEngine] v67: iOS audio resumed');
+      // Reset audio state - ensureCleanSlate now has timeouts
+      ensureCleanSlate().catch(() => {});
+    });
+  }
   
   // Debug overlay
   if (DEBUG_MODE) {

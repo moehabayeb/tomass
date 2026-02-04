@@ -18,7 +18,9 @@ import { SampleAnswerButton } from './SampleAnswerButton';
 import BookmarkButton from './BookmarkButton';
 import { startRecording, stopRecording, getState, onState, cleanup, acquirePersistentStream, releasePersistentStream, type MicState } from '@/lib/audio/micEngine';
 import { Capacitor } from '@capacitor/core';
+import { SpeechRecognition as CapacitorSpeechRecognition } from '@capacitor-community/speech-recognition';
 import { microphoneGuardian } from '@/services/MicrophoneGuardian';
+import { speechWatchdog } from '@/services/SpeechWatchdog';
 import { useToast } from '@/hooks/use-toast';
 import { TTSManager } from '@/services/TTSManager';
 import { runVoiceConsistencyTestSuite } from '@/utils/voiceConsistencyTest';
@@ -340,8 +342,18 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   const [flowState, setFlowState] = useState<'IDLE' | 'READING' | 'LISTENING' | 'PROCESSING' | 'PAUSED'>('IDLE');
 
   // 🔧 GOD-TIER v4: Sync flowStateRef with flowState (refs are synchronous, state is async)
+  // v67: Also update watchdog state
   useEffect(() => {
     flowStateRef.current = flowState;
+
+    // v67: Update watchdog when flowState changes
+    switch (flowState) {
+      case 'IDLE': speechWatchdog.setState('idle'); break;
+      case 'LISTENING': speechWatchdog.setState('listening'); break;
+      case 'PROCESSING': speechWatchdog.setState('processing'); break;
+      case 'READING': speechWatchdog.setState('speaking'); break;
+      // PAUSED doesn't need watchdog - it's intentional
+    }
   }, [flowState]);
 
   // 🔧 GOD-TIER v7: Sync ttsListenerActiveRef with ttsListenerActive (closure staleness fix)
@@ -1024,6 +1036,84 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     }
   };
 
+  /**
+   * v67: Nuclear Reset - Force everything back to clean state
+   * Call this on ANY unrecoverable error
+   */
+  const nuclearReset = async () => {
+    console.warn('[SpeakingApp] v67: NUCLEAR RESET INITIATED');
+
+    // 1. Stop all audio
+    try { TTSManager.stop(); } catch (e) { /* ignore */ }
+    try { await stopRecording(); } catch (e) { /* ignore */ }
+
+    // 2. Clear all speech recognition state
+    if (Capacitor.isNativePlatform()) {
+      try {
+        await Promise.race([
+          CapacitorSpeechRecognition.stop(),
+          new Promise(r => setTimeout(r, 500))
+        ]);
+        await Promise.race([
+          CapacitorSpeechRecognition.removeAllListeners(),
+          new Promise(r => setTimeout(r, 300))
+        ]);
+      } catch (e) { /* ignore */ }
+    }
+
+    // 3. Reset all React state
+    setFlowState('IDLE');
+    setInterimCaption('');
+    setIsSpeaking(false);
+    setAvatarState('idle');
+
+    // 4. Reset micEngine state
+    cleanup();
+
+    // 5. Reset watchdog
+    speechWatchdog.reset();
+
+    // 6. Small delay for iOS to settle
+    await new Promise(r => setTimeout(r, 200));
+
+    // 7. Notify user
+    toast({
+      title: "Conversation reset",
+      description: "Tap microphone to try again.",
+      duration: 3000,
+    });
+
+    console.warn('[SpeakingApp] v67: NUCLEAR RESET COMPLETE');
+  };
+
+  /**
+   * v67: Wrap Capacitor calls with error recovery and timeout
+   */
+  const safeCapacitorCall = async <T,>(
+    operation: () => Promise<T>,
+    fallback: T,
+    retries = 2
+  ): Promise<T> => {
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        return await Promise.race([
+          operation(),
+          new Promise<T>((_, reject) =>
+            setTimeout(() => reject(new Error('Timeout')), 5000)
+          )
+        ]);
+      } catch (e) {
+        console.warn(`[SafeCall] v67: Attempt ${attempt + 1} failed:`, e);
+        if (attempt === retries) {
+          console.error('[SafeCall] v67: All retries failed, using fallback');
+          return fallback;
+        }
+        await new Promise(r => setTimeout(r, 500 * (attempt + 1)));
+      }
+    }
+    return fallback;
+  };
+
   // A) TTS → LISTENING (always) - FSM enforced completion
   const handleTTSCompletion = async (token: string, messageId?: string) => {
     // Guard: Drop if token stale
@@ -1200,6 +1290,9 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       // Set state=PROCESSING and call existing executeTeacherLoop
       setFlowState('PROCESSING');
       console.log('[SpeakingApp] 🔄 State set to PROCESSING, calling executeTeacherLoop...');
+
+      // v67: Yield to let React render user message before heavy processing
+      await new Promise(r => requestAnimationFrame(() => setTimeout(r, 0)));
 
       try {
         await executeTeacherLoop(finalTranscript);
@@ -1606,12 +1699,15 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       const grammarBonus = !aiResponse.hadGrammarIssue ? 5 : 0; // +5 XP for correct grammar
       const xpToAward = baseXP + grammarBonus;
 
-      const success = await awardXp(xpToAward);
-      if (success) {
-        // 🔧 FIX #30: Removed console.log for production (XP award logging)
-        // Show floating XP animation
-        setFloatingXP(xpToAward);
-      }
+      // v67: Fire-and-forget XP - don't block conversation for XP award
+      awardXp(xpToAward)
+        .then(success => {
+          if (success && isMountedRef.current) {
+            // Show floating XP animation
+            setFloatingXP(xpToAward);
+          }
+        })
+        .catch(e => console.warn('[SpeakingApp] v67: XP award failed:', e));
 
     } catch (error) {
       // Phase 1.4: Add nested error handling to prevent unhandled promise rejection
@@ -1664,9 +1760,9 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     };
   }, [flowState]); // Re-subscribe when flowState changes
    
-  // Clear interim caption when flowState leaves LISTENING
+  // v67: Only clear interim caption when returning to IDLE (keep visible during PROCESSING/READING)
   useEffect(() => {
-    if (flowState !== 'LISTENING') {
+    if (flowState === 'IDLE') {
       setInterimCaption('');
     }
   }, [flowState]);
@@ -1738,12 +1834,45 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     }
   }, [lastLevelUpTime, level]);
 
-  // 🔧 FIX #8: iOS audio session configuration - handle interruptions and visibility changes
+  // v67: Accessibility - Announce state changes for VoiceOver
+  useEffect(() => {
+    const announcements: Record<string, string> = {
+      'LISTENING': 'Listening for your voice',
+      'PROCESSING': 'Processing your message',
+      'READING': 'Tomas is responding',
+      'IDLE': 'Ready to listen',
+      'PAUSED': 'Conversation paused',
+    };
+
+    const message = announcements[flowState];
+    if (message) {
+      // Create live region announcement
+      const announcement = document.createElement('div');
+      announcement.setAttribute('role', 'status');
+      announcement.setAttribute('aria-live', 'polite');
+      announcement.setAttribute('aria-atomic', 'true');
+      announcement.className = 'sr-only';
+      announcement.textContent = message;
+      document.body.appendChild(announcement);
+      setTimeout(() => announcement.remove(), 1000);
+    }
+  }, [flowState]);
+
+  // 🔧 FIX #8 + v67: iOS audio session configuration - handle interruptions and visibility changes
+  // v67: Enhanced with state backup and recovery
   useEffect(() => {
     if (!isIOS) return; // Only needed for iOS
 
     const handleVisibilityChange = () => {
       if (document.hidden) {
+        // v67: App going to background
+        console.log('[SpeakingApp] v67: App backgrounded, pausing...');
+
+        // Stop any active recording
+        if (flowState === 'LISTENING') {
+          stopRecording().catch(() => {});
+        }
+
         // Page is hidden - pause TTS if speaking
         if (TTSManager.isSpeaking()) {
           TTSManager.stop();
@@ -1752,7 +1881,21 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         if (audioContextRef.current && audioContextRef.current.state === 'running') {
           audioContextRef.current.suspend();
         }
+
+        // v67: Save state for resume
+        try {
+          sessionStorage.setItem('speaking_state_backup', JSON.stringify({
+            flowState,
+            conversationContext,
+            timestamp: Date.now(),
+          }));
+        } catch (e) {
+          // Ignore storage errors
+        }
       } else {
+        // v67: App coming to foreground
+        console.log('[SpeakingApp] v67: App foregrounded, resuming...');
+
         // Page is visible - resume audio context if needed
         if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
           audioContextRef.current.resume().catch(() => {
@@ -1760,11 +1903,28 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
             setShowAudioUnlockPrompt(true);
           });
         }
+
+        // v67: Check if we were mid-conversation
+        try {
+          const backup = sessionStorage.getItem('speaking_state_backup');
+          if (backup) {
+            const { timestamp } = JSON.parse(backup);
+            // If more than 5 minutes, reset to clean state
+            if (Date.now() - timestamp > 300000) {
+              console.log('[SpeakingApp] v67: Session expired, triggering nuclear reset');
+              nuclearReset();
+            }
+            sessionStorage.removeItem('speaking_state_backup');
+          }
+        } catch (e) {
+          // Ignore storage errors
+        }
       }
     };
 
     const handleAudioInterruption = () => {
       // Handle audio interruptions (phone calls, etc.)
+      console.log('[SpeakingApp] v67: Audio interruption detected');
       if (TTSManager.isSpeaking()) {
         TTSManager.stop();
       }
@@ -1799,7 +1959,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         window.removeEventListener('webkitaudiointerrupted', handleAudioInterruption as EventListener);
       }
     };
-  }, [isIOS, micState]);
+  }, [isIOS, micState, flowState, conversationContext]);
 
   // 🔧 FIX #12: Keyboard navigation support for accessibility
   useEffect(() => {
@@ -1946,6 +2106,12 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     // Mark component as mounted
     isMountedRef.current = true;
 
+    // v67: Setup watchdog to detect stuck states
+    speechWatchdog.onStuck(() => {
+      console.error('[SpeakingApp] v67: Watchdog triggered - forcing recovery');
+      nuclearReset();
+    });
+
     // 🔧 PRODUCTION FIX: Ensure microphone is ready when entering Speaking page
     microphoneGuardian.ensureReady().then(status => {
       if (status !== 'ready' && isMountedRef.current) {
@@ -2032,6 +2198,9 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           // Ignore errors during cleanup
         }
       }
+
+      // v67: Reset watchdog on unmount
+      speechWatchdog.reset();
     };
   }, []); // Empty deps = run only on mount/unmount
 
@@ -2213,8 +2382,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
               />
             )}
 
-            {/* Live captions (Mobile optimized) */}
-            {flowState === 'LISTENING' && interimCaption && (
+            {/* Live captions (Mobile optimized) - v67: Show during LISTENING, PROCESSING, and READING */}
+            {(['LISTENING', 'PROCESSING', 'READING'].includes(flowState)) && interimCaption && (
               <div className="text-center py-2" role="status" aria-live="polite" aria-atomic="true" aria-label="Live transcript of your speech">
                 <div className="inline-block px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm">
                   <span className="text-white/70 italic text-sm">"{interimCaption}"</span>
