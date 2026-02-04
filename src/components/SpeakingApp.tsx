@@ -1756,7 +1756,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       window.removeEventListener('speech:interim', handleInterimCaption as EventListener);
       unsubscribeMicState();
     };
-  }, [flowState]); // Re-subscribe when flowState changes
+  }, []); // v67.2: Subscribe once on mount - ref handles state checks, no re-subscription needed
    
   // v67.1: Clear interim caption when starting new recording (entering LISTENING)
   // This ensures old caption doesn't persist, but keeps caption visible during PROCESSING/READING
