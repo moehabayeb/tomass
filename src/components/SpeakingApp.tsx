@@ -1758,11 +1758,13 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     };
   }, []); // v67.2: Subscribe once on mount - ref handles state checks, no re-subscription needed
    
-  // v67.1: Clear interim caption when starting new recording (entering LISTENING)
-  // This ensures old caption doesn't persist, but keeps caption visible during PROCESSING/READING
+  // v67.3: Clear interim caption ONLY when returning to IDLE (conversation turn complete)
+  // DON'T clear on LISTENING entry - this caused a smoothness regression where
+  // first words appeared delayed due to race condition with speech events arriving.
+  // New speech events will naturally overwrite the old caption.
   useEffect(() => {
-    if (flowState === 'LISTENING') {
-      // Clear caption when starting new recording, not on IDLE
+    if (flowState === 'IDLE') {
+      // Clear caption when conversation turn fully completes
       setInterimCaption('');
     }
   }, [flowState]);

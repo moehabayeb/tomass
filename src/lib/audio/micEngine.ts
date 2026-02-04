@@ -288,19 +288,22 @@ async function ensureCleanSlate(): Promise<void> {
     // Expected: might not be running
   }
 
-  // v67.2: CRITICAL FIX - Only remove listeners if background cleanup didn't already do it
+  // v67.3: CRITICAL FIX - NEVER double-call removeAllListeners!
+  // Check BOTH listenersAlreadyRemoved AND capacitorCleanupInProgress.
   // Calling removeAllListeners() twice corrupts iOS/Android listener registry,
   // causing Turn 2+ to have dead listeners that don't receive events!
-  if (!listenersAlreadyRemoved) {
+  if (!listenersAlreadyRemoved && !capacitorCleanupInProgress) {
     try {
       await Promise.race([
         CapacitorSpeechRecognition.removeAllListeners(),
         new Promise(r => setTimeout(r, 300))
       ]);
-      console.log('[MicEngine] v67.2: Removed all listeners (first time)');
+      console.log('[MicEngine] v67.3: Removed listeners (ensureCleanSlate)');
     } catch (e) {
-      // Ignore errors
+      // Ignore - timeout or error
     }
+  } else {
+    console.log('[MicEngine] v67.3: Skipping removeAllListeners (already removed or in progress)');
   }
 
   // iOS needs extra time for audio session to settle between mode switches
@@ -711,21 +714,29 @@ async function startCapacitorSpeechRecognition(id: number, maxSec: number): Prom
       capacitorLastStopTime = Date.now();
       resolve(finalResult.trim());  // <-- RESOLVE IMMEDIATELY!
 
+      // 🔧 v67.3: CRITICAL FIX - Release mutex IMMEDIATELY after resolve!
+      // This prevents Turn 2 from being blocked by Turn 1's background cleanup.
+      // If cleanup hangs (iOS removeAllListeners can hang), Turn 2 can still start.
+      speechRecognitionMutex = false;
+      console.log('[CapacitorSpeech] v67.3: Mutex released immediately after resolve');
+
       // Now do cleanup in background (non-blocking)
-      // If this hangs, it doesn't matter - promise already resolved
+      // If this hangs, it doesn't matter - promise already resolved AND mutex released
       cleanupPromise = (async () => {
         try {
           capacitorCleanupInProgress = true;
           await cleanup();
-          await CapacitorSpeechRecognition.removeAllListeners();
-          console.log('[CapacitorSpeech] v67.2: Cleanup completed after resolve (listeners removed)');
+          // 🔧 v67.3: Wrap removeAllListeners with aggressive 300ms timeout
+          // iOS removeAllListeners can hang indefinitely - don't let it block
+          await Promise.race([
+            CapacitorSpeechRecognition.removeAllListeners(),
+            new Promise(r => setTimeout(r, 300))
+          ]);
+          console.log('[CapacitorSpeech] v67.3: Cleanup completed after resolve (listeners removed)');
         } catch (e) {
-          console.log('[CapacitorSpeech] Cleanup error (safe - promise already resolved):', e);
+          console.log('[CapacitorSpeech] v67.3: Cleanup error (safe - promise already resolved):', e);
         } finally {
           capacitorCleanupInProgress = false;
-          // 🔧 v66: Release mutex AFTER cleanup completes
-          speechRecognitionMutex = false;
-          console.log('[CapacitorSpeech] v67.2: Mutex released');
         }
       })();
     };
