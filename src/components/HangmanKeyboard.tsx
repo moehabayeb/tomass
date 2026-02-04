@@ -75,7 +75,7 @@ export const HangmanKeyboard = memo<HangmanKeyboardProps>(({
                 aria-pressed={state !== 'default'}
                 className={`
                   hangman-key
-                  w-8 h-8 sm:w-11 sm:h-11
+                  w-10 h-10 sm:w-11 sm:h-11
                   p-0
                   text-sm sm:text-lg
                   font-bold
@@ -85,8 +85,8 @@ export const HangmanKeyboard = memo<HangmanKeyboardProps>(({
                   ${isDisabled ? '' : 'active:scale-90 transition-transform duration-75'}
                 `}
                 style={{
-                  minWidth: '2rem',
-                  minHeight: '2rem',
+                  minWidth: '2.5rem',
+                  minHeight: '2.5rem',
                   touchAction: 'manipulation',
                   WebkitTapHighlightColor: 'transparent'
                 }}

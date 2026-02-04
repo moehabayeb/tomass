@@ -21,7 +21,7 @@ export function LessonHeader({
   onToggleSound
 }: LessonHeaderProps) {
   return (
-    <div className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-3xl p-6 mb-6 mt-safe-area-inset-top">
+    <div className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-3xl p-6 mb-6 mt-safe">
       <div className="flex items-center justify-between mb-4">
         <Button
           onClick={onBack}
