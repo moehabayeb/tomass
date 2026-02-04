@@ -11,6 +11,7 @@
 
 import { Capacitor } from '@capacitor/core';
 import { SpeechRecognition } from '@capacitor-community/speech-recognition';
+import { TTSManager } from './TTSManager';
 
 // Status types
 export type MicStatus =
@@ -151,6 +152,13 @@ class MicrophoneGuardianService {
     this.emitStatusChange('checking');
 
     try {
+      // 🔧 v66 BULLETPROOF iOS FIX: Wait for TTS to complete first
+      try {
+        await this.waitForTTSComplete();
+      } catch (e) {
+        console.warn('[MicGuardian] v66: TTS wait error (continuing):', e);
+      }
+
       // Step 1: Check permission
       const permissionStatus = await this.checkPermission();
       if (permissionStatus === 'denied') {
@@ -205,10 +213,42 @@ class MicrophoneGuardianService {
   }
 
   /**
+   * 🔧 v66 BULLETPROOF iOS FIX: Wait for TTS to complete before allowing mic start
+   * This prevents TTS/STT audio session conflicts that cause iOS to crash/lag
+   */
+  private async waitForTTSComplete(): Promise<void> {
+    // Check if TTS is currently speaking
+    if (TTSManager.isSpeaking()) {
+      console.log('[MicGuardian] v66: Waiting for TTS to complete...');
+
+      // Wait for TTS to finish and audio session to settle
+      await TTSManager.waitForAudioSessionRelease(5000);
+
+      console.log('[MicGuardian] v66: TTS complete, proceeding with mic');
+    } else {
+      // Even if not speaking, ensure audio session has settled
+      const timeSinceLastSpeak = TTSManager.getTimeSinceLastSpeak();
+      if (timeSinceLastSpeak < 150) {
+        const waitTime = 150 - timeSinceLastSpeak;
+        console.log(`[MicGuardian] v66: Waiting ${waitTime}ms for audio session to settle`);
+        await new Promise(r => setTimeout(r, waitTime));
+      }
+    }
+  }
+
+  /**
    * Pre-flight check before EACH recording attempt
    */
   async preflightCheck(): Promise<PreflightResult> {
     console.log('[MicGuardian] preflightCheck() called');
+
+    // 🔧 v66 BULLETPROOF iOS FIX: Wait for TTS to complete first
+    // This prevents "AudioSession::beginInterruption but session is already interrupted!" error
+    try {
+      await this.waitForTTSComplete();
+    } catch (e) {
+      console.warn('[MicGuardian] v66: TTS wait error (continuing):', e);
+    }
 
     // Quick permission check
     const permissionStatus = await this.checkPermission();

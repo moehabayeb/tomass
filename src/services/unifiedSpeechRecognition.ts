@@ -7,7 +7,7 @@
  * 3. MediaRecorder + Supabase (fallback) - Universal fallback
  */
 
-import { SpeechRecognition } from '@capacitor-community/speech-recognition';
+import { SpeechRecognition, PluginListenerHandle } from '@capacitor-community/speech-recognition';
 import { Capacitor } from '@capacitor/core';
 
 export type RecognitionMode = 'capacitor' | 'web-speech-api' | 'media-recorder';
@@ -39,11 +39,42 @@ class UnifiedSpeechRecognitionService {
   private lastStopTime: number = 0;
   private readonly MIN_RESTART_DELAY_MS = 200;
 
+  // 🔧 v66 BULLETPROOF iOS FIX: Track listener handles for proper cleanup
+  // This prevents listener accumulation (listener IDs jumping from 1 to 100+)
+  private listenerHandles: PluginListenerHandle[] = [];
+  private currentSessionId = 0; // Track sessions to ignore stale events
+
   constructor() {
     this.mode = this.detectBestMode();
     if (import.meta.env.DEV) {
       console.log('🎤 Unified Speech Recognition initialized with mode:', this.mode);
     }
+  }
+
+  /**
+   * 🔧 v66 BULLETPROOF iOS FIX: Cleanup all tracked listener handles
+   * This prevents listener accumulation that causes iOS audio session issues
+   */
+  private async cleanupListeners(): Promise<void> {
+    console.log(`[SPEECH] v66: Cleaning up ${this.listenerHandles.length} listener handles...`);
+
+    for (const handle of this.listenerHandles) {
+      try {
+        await handle.remove();
+      } catch (e) {
+        // Ignore errors - listener may already be removed
+      }
+    }
+    this.listenerHandles = [];
+
+    // Also call removeAllListeners as a safety net
+    try {
+      await SpeechRecognition.removeAllListeners();
+    } catch (e) {
+      // Ignore errors
+    }
+
+    console.log('[SPEECH] v66: Listeners cleaned up');
   }
 
   /**
@@ -254,20 +285,23 @@ class UnifiedSpeechRecognitionService {
    * partial results we have at that point.
    */
   private async startCapacitorRecognition(language: string): Promise<void> {
-    // PRODUCTION FIX: Small delay to ensure Android fully releases previous recognition resources
-    // Without this, rapid successive start/stop can leave the native SpeechRecognizer in a bad state
-    await new Promise(resolve => setTimeout(resolve, 100));
+    // 🔧 v66 BULLETPROOF: Increment session ID to track and ignore stale events
+    this.currentSessionId++;
+    const sessionId = this.currentSessionId;
+    console.log(`[SPEECH] v66: Starting session #${sessionId}`);
+
+    // 🔧 v66 BULLETPROOF: ALWAYS cleanup listeners FIRST before adding new ones
+    // This prevents listener accumulation that causes iOS issues
+    await this.cleanupListeners();
+
+    // PRODUCTION FIX: Small delay to ensure platform releases previous recognition resources
+    // iOS needs more time than Android for audio session to settle
+    const platform = Capacitor.getPlatform();
+    const settleDelay = platform === 'ios' ? 150 : 100;
+    await new Promise(resolve => setTimeout(resolve, settleDelay));
 
     // PRODUCTION DEBUG: Log all steps to track down why speech recognition fails
     console.log('[SPEECH] Starting Capacitor recognition for language:', language);
-
-    // CRITICAL FIX: Remove any existing listeners BEFORE adding new ones
-    try {
-      await SpeechRecognition.removeAllListeners();
-      console.log('[SPEECH] Cleared previous listeners');
-    } catch (e) {
-      console.log('[SPEECH] No previous listeners to clear');
-    }
 
     // AVAILABILITY CHECK: Verify speech recognition service is available
     try {
@@ -298,7 +332,13 @@ class UnifiedSpeechRecognitionService {
 
       // Listen for partial results - save transcript for listeningState fallback
       // 🔧 GOD-TIER v20: Use extractTranscript() to handle all data formats
-      SpeechRecognition.addListener('partialResults', (data: any) => {
+      // 🔧 v66: Track listener handle and check session ID
+      const partialHandle = await SpeechRecognition.addListener('partialResults', (data: any) => {
+        // 🔧 v66: Ignore events from stale sessions
+        if (sessionId !== this.currentSessionId) {
+          console.log(`[SPEECH] v66: Ignoring stale partialResults from session #${sessionId}`);
+          return;
+        }
         console.log('[SPEECH] EVENT: partialResults', JSON.stringify(data));
         const transcript = this.extractTranscript(data);
         if (transcript) {
@@ -313,10 +353,17 @@ class UnifiedSpeechRecognitionService {
           }
         }
       });
+      this.listenerHandles.push(partialHandle);
 
       // Listen for final results (may not fire on all Android devices)
       // 🔧 GOD-TIER v20: Use extractTranscript() to handle all data formats
-      SpeechRecognition.addListener('finalResults', (data: any) => {
+      // 🔧 v66: Track listener handle and check session ID
+      const finalHandle = await SpeechRecognition.addListener('finalResults', (data: any) => {
+        // 🔧 v66: Ignore events from stale sessions
+        if (sessionId !== this.currentSessionId) {
+          console.log(`[SPEECH] v66: Ignoring stale finalResults from session #${sessionId}`);
+          return;
+        }
         console.log('[SPEECH] EVENT: finalResults', JSON.stringify(data));
         hasReceivedFinalResult = true;
         const transcript = this.extractTranscript(data);
@@ -336,10 +383,17 @@ class UnifiedSpeechRecognitionService {
           this.onEndCallback();
         }
       });
+      this.listenerHandles.push(finalHandle);
 
       // CRITICAL: Listen for listeningState - this fires when user stops speaking
+      // 🔧 v66: Track listener handle and check session ID
       let startConfirmed = false;
-      SpeechRecognition.addListener('listeningState', (data: any) => {
+      const stateHandle = await SpeechRecognition.addListener('listeningState', (data: any) => {
+        // 🔧 v66: Ignore events from stale sessions
+        if (sessionId !== this.currentSessionId) {
+          console.log(`[SPEECH] v66: Ignoring stale listeningState from session #${sessionId}`);
+          return;
+        }
         console.log('[SPEECH] EVENT: listeningState', data.status);
 
         // Confirm recognition started when we get 'started' status
@@ -369,9 +423,16 @@ class UnifiedSpeechRecognitionService {
           }
         }
       });
+      this.listenerHandles.push(stateHandle);
 
       // CRITICAL: Listen for native errors
-      SpeechRecognition.addListener('error', (data: any) => {
+      // 🔧 v66: Track listener handle and check session ID
+      const errorHandle = await SpeechRecognition.addListener('error', (data: any) => {
+        // 🔧 v66: Ignore events from stale sessions
+        if (sessionId !== this.currentSessionId) {
+          console.log(`[SPEECH] v66: Ignoring stale error from session #${sessionId}`);
+          return;
+        }
         console.error('[SPEECH] EVENT: error', JSON.stringify(data));
         const errorMessage = data.message || data.error || 'Speech recognition failed';
         this.isListening = false;
@@ -383,6 +444,7 @@ class UnifiedSpeechRecognitionService {
           this.onEndCallback();
         }
       });
+      this.listenerHandles.push(errorHandle);
 
       console.log('[SPEECH] All listeners registered. Starting recognition...');
 
@@ -526,14 +588,15 @@ class UnifiedSpeechRecognitionService {
         // ALWAYS stop and remove listeners, even if isListening is false
         // This ensures cleanup in all edge cases
         await SpeechRecognition.stop();
-        await SpeechRecognition.removeAllListeners();
+        // 🔧 v66: Use proper listener cleanup method
+        await this.cleanupListeners();
       } else if (this.mode === 'web-speech-api' && this.webRecognition) {
         this.webRecognition.stop();
         this.webRecognition = null;
       }
 
       this.isListening = false;
-      console.log('[SPEECH] Stopped and cleaned up');
+      console.log('[SPEECH] v66: Stopped and cleaned up');
     } catch (error) {
       // Log but don't throw - cleanup should be best-effort
       console.error('[SPEECH] Error stopping:', error);

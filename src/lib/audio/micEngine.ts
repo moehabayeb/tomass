@@ -88,6 +88,11 @@ let capacitorLastStopTime: number = 0;
 const CAPACITOR_MIN_RESTART_DELAY_MS = 200; // Android needs 200ms to release native resources!
 const CAPACITOR_RESTART_DELAY_MS = 300; // Delay for Android to release resources during auto-restart
 
+// 🔧 v66 BULLETPROOF iOS FIX: Mutex lock to prevent concurrent speech recognition starts
+// This prevents "Ongoing speech recognition" error when starting new session while one is running
+let speechRecognitionMutex = false;
+let cleanupPromise: Promise<void> | null = null;
+
 // Timers
 let countdownTimerRef: number | undefined;
 let retryTimerRef: number | undefined;
@@ -238,6 +243,52 @@ function clearAllTimers() {
   if (maxTimerRef) { clearTimeout(maxTimerRef); maxTimerRef = undefined; }
   if (ttsTimeoutRef) { clearTimeout(ttsTimeoutRef); ttsTimeoutRef = undefined; }
   if (processingWatchdogRef) { clearTimeout(processingWatchdogRef); processingWatchdogRef = undefined; }
+}
+
+// ============= v66 BULLETPROOF iOS: ENSURE CLEAN SLATE =============
+// This function guarantees a clean state before starting any new speech recognition session
+// It prevents the "Ongoing speech recognition" error on iOS by:
+// 1. Stopping any existing recognition session
+// 2. Removing ALL listeners (prevents listener accumulation)
+// 3. Waiting for iOS audio session to settle
+
+async function ensureCleanSlate(): Promise<void> {
+  // Wait for any pending cleanup to complete
+  if (cleanupPromise) {
+    try {
+      await cleanupPromise;
+    } catch (e) {
+      // Ignore errors from pending cleanup
+    }
+  }
+
+  // Force stop any running recognition - ignore errors (might not be running)
+  try {
+    await CapacitorSpeechRecognition.stop();
+    console.log('[MicEngine] v66: Stopped any existing recognition');
+  } catch (e) {
+    // Expected: might not be running
+  }
+
+  // Remove ALL listeners to prevent accumulation (listener IDs jumping)
+  try {
+    await CapacitorSpeechRecognition.removeAllListeners();
+    console.log('[MicEngine] v66: Removed all listeners');
+  } catch (e) {
+    // Ignore errors
+  }
+
+  // iOS needs extra time for audio session to settle between mode switches
+  // This prevents "AudioSession::beginInterruption but session is already interrupted!" error
+  if (Capacitor.getPlatform() === 'ios') {
+    console.log('[MicEngine] v66: iOS audio session settling (150ms)...');
+    await new Promise(r => setTimeout(r, 150));
+  } else {
+    // Android also benefits from a small delay
+    await new Promise(r => setTimeout(r, 50));
+  }
+
+  console.log('[MicEngine] v66: Clean slate ready');
 }
 
 // ============= AUDIO CONTEXT MANAGEMENT =============
@@ -557,15 +608,42 @@ async function startSpeechRecognition(id: number, maxSec: number): Promise<strin
 }
 
 // ============= CAPACITOR SPEECH RECOGNITION (ANDROID/iOS) =============
-// 🎯 BULLETPROOF VERSION - Handles all Android edge cases
+// 🎯 BULLETPROOF VERSION v66 - Handles iOS "Ongoing speech recognition" error
 async function startCapacitorSpeechRecognition(id: number, maxSec: number): Promise<string> {
-  console.log('[CapacitorSpeech] ========== STARTING ==========');
+  console.log('[CapacitorSpeech] ========== STARTING v66 ==========');
+
+  // 🔧 v66 BULLETPROOF: Mutex check - prevent concurrent start attempts
+  if (speechRecognitionMutex) {
+    console.log('[CapacitorSpeech] v66: Already starting, waiting for mutex...');
+    // Wait for current operation to complete
+    let attempts = 0;
+    while (speechRecognitionMutex && attempts < 20) {
+      await new Promise(r => setTimeout(r, 100));
+      attempts++;
+    }
+    if (speechRecognitionMutex) {
+      console.error('[CapacitorSpeech] v66: Mutex timeout - forcing release');
+      speechRecognitionMutex = false;
+    }
+  }
+
+  // Acquire mutex
+  speechRecognitionMutex = true;
+  console.log('[CapacitorSpeech] v66: Mutex acquired');
 
   // 🔧 GOD-TIER v14: Force reset state to ensure clean start
   // This prevents "state stuck" issues from blocking Turn 2+
   if (state !== 'idle' && state !== 'initializing') {
     console.warn(`[CapacitorSpeech] ⚠️ v14: State was "${state}", forcing to idle for Turn 2+`);
     state = 'idle';
+  }
+
+  // 🔧 v66 BULLETPROOF: ALWAYS ensure clean slate before starting
+  // This is the KEY fix for iOS "Ongoing speech recognition" error
+  try {
+    await ensureCleanSlate();
+  } catch (e) {
+    console.warn('[CapacitorSpeech] v66: ensureCleanSlate error (continuing):', e);
   }
 
   return new Promise(async (resolve, reject) => {
@@ -610,16 +688,21 @@ async function startCapacitorSpeechRecognition(id: number, maxSec: number): Prom
 
       // Now do cleanup in background (non-blocking)
       // If this hangs, it doesn't matter - promise already resolved
-      try {
-        capacitorCleanupInProgress = true;
-        await cleanup();
-        await CapacitorSpeechRecognition.removeAllListeners();
-        console.log('[CapacitorSpeech] v33: Cleanup completed after resolve');
-      } catch (e) {
-        console.log('[CapacitorSpeech] Cleanup error (safe - promise already resolved):', e);
-      } finally {
-        capacitorCleanupInProgress = false;
-      }
+      cleanupPromise = (async () => {
+        try {
+          capacitorCleanupInProgress = true;
+          await cleanup();
+          await CapacitorSpeechRecognition.removeAllListeners();
+          console.log('[CapacitorSpeech] v66: Cleanup completed after resolve');
+        } catch (e) {
+          console.log('[CapacitorSpeech] Cleanup error (safe - promise already resolved):', e);
+        } finally {
+          capacitorCleanupInProgress = false;
+          // 🔧 v66: Release mutex AFTER cleanup completes
+          speechRecognitionMutex = false;
+          console.log('[CapacitorSpeech] v66: Mutex released');
+        }
+      })();
     };
 
     // 🔧 v27: Store the finish callback so stopRecording() can force-finish
@@ -630,6 +713,8 @@ async function startCapacitorSpeechRecognition(id: number, maxSec: number): Prom
       const { available } = await CapacitorSpeechRecognition.available();
       console.log('[CapacitorSpeech] Available:', available);
       if (!available) {
+        // 🔧 v66: Release mutex on early return
+        speechRecognitionMutex = false;
         reject(new Error('Speech recognition not available'));
         return;
       }
@@ -638,6 +723,8 @@ async function startCapacitorSpeechRecognition(id: number, maxSec: number): Prom
       const permResult = await CapacitorSpeechRecognition.requestPermissions();
       console.log('[CapacitorSpeech] Permission:', permResult.speechRecognition);
       if (permResult.speechRecognition !== 'granted') {
+        // 🔧 v66: Release mutex on early return
+        speechRecognitionMutex = false;
         reject(new Error('Microphone access denied'));
         return;
       }
@@ -839,6 +926,9 @@ async function startCapacitorSpeechRecognition(id: number, maxSec: number): Prom
     } catch (error: any) {
       console.error('[CapacitorSpeech] CRITICAL ERROR:', error);
       await cleanup();
+      // 🔧 v66: Release mutex on error
+      speechRecognitionMutex = false;
+      console.log('[CapacitorSpeech] v66: Mutex released (error path)');
       reject(new Error(error.message || 'Speech recognition failed'));
     }
   });

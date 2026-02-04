@@ -55,6 +55,12 @@ class TTSManagerService {
 
   public busy = false;
 
+  // 🔧 v66 BULLETPROOF iOS FIX: Track speaking state for STT coordination
+  // This prevents TTS/STT audio session conflicts on iOS
+  private _isSpeakingInternal = false;
+  private lastSpeakEndTime = 0;
+  private readonly AUDIO_SESSION_SETTLE_MS = 150; // iOS needs time to switch audio modes
+
   constructor() {
     // Ensure audio context is unlocked on first user gesture
     this.ensureAudioContextUnlocked();
@@ -299,11 +305,11 @@ class TTSManagerService {
 
   private complete(skipped: boolean): void {
     const duration = Date.now() - this.startTime;
-    
+
     if (skipped) {
       this.logQueueEvent('TTS_SKIP');
     }
-    
+
     this.log({
       event: skipped ? 'TTS_SKIP' : 'TTS_COMPLETE',
       textLength: this.currentChunks.join(' ').length,
@@ -314,6 +320,12 @@ class TTSManagerService {
     this.busy = false;
     this.clearWatchdog();
     this.currentUtterance = null;
+
+    // 🔧 v66 BULLETPROOF iOS FIX: Signal audio session release
+    // This allows STT to safely start after TTS completes
+    this._isSpeakingInternal = false;
+    this.lastSpeakEndTime = Date.now();
+    console.log('[TTSManager] v66: Audio session released, STT can start');
 
     if (this.currentResolve) {
       this.currentResolve({
@@ -420,6 +432,8 @@ class TTSManagerService {
     return new Promise((resolve, reject) => {
       this.busy = true;
       this.isSkipped = false;
+      // 🔧 v66 BULLETPROOF iOS FIX: Track speaking state
+      this._isSpeakingInternal = true;
       this.currentResolve = resolve;
       this.currentReject = reject;
       this.startTime = Date.now();
@@ -469,6 +483,8 @@ class TTSManagerService {
 
     this.busy = true;
     this.isSkipped = false;
+    // 🔧 v66 BULLETPROOF iOS FIX: Track speaking state for native TTS
+    this._isSpeakingInternal = true;
 
     try {
       const normalizedText = this.normalizeText(text);
@@ -482,6 +498,11 @@ class TTSManagerService {
       });
 
       this.busy = false;
+      // 🔧 v66: Signal audio session release after native TTS completes
+      this._isSpeakingInternal = false;
+      this.lastSpeakEndTime = Date.now();
+      console.log('[TTSManager] v66: Native TTS complete, audio session released');
+
       return {
         completed: true,
         skipped: false,
@@ -492,6 +513,9 @@ class TTSManagerService {
     } catch (error) {
       console.error('[TTSManager] Native TTS error:', error);
       this.busy = false;
+      // 🔧 v66: Also release on error
+      this._isSpeakingInternal = false;
+      this.lastSpeakEndTime = Date.now();
       return {
         completed: false,
         skipped: false,
@@ -539,6 +563,44 @@ class TTSManagerService {
       return;
     }
     this.skip();
+  }
+
+  /**
+   * 🔧 v66 BULLETPROOF iOS FIX: Wait for TTS to complete and audio session to settle
+   * Call this before starting STT to prevent audio session conflicts
+   * @param timeoutMs Maximum time to wait (default 5000ms)
+   */
+  public async waitForAudioSessionRelease(timeoutMs: number = 5000): Promise<void> {
+    const startTime = Date.now();
+
+    // Wait for TTS to stop speaking
+    while (this.isSpeaking() && (Date.now() - startTime) < timeoutMs) {
+      console.log('[TTSManager] v66: Waiting for TTS to complete...');
+      await new Promise(r => setTimeout(r, 100));
+    }
+
+    // If still speaking after timeout, force stop
+    if (this.isSpeaking()) {
+      console.warn('[TTSManager] v66: TTS timeout, forcing stop');
+      this.stop();
+    }
+
+    // Wait for audio session to settle (iOS needs time to switch modes)
+    const timeSinceEnd = Date.now() - this.lastSpeakEndTime;
+    if (timeSinceEnd < this.AUDIO_SESSION_SETTLE_MS) {
+      const waitTime = this.AUDIO_SESSION_SETTLE_MS - timeSinceEnd;
+      console.log(`[TTSManager] v66: Waiting ${waitTime}ms for audio session to settle`);
+      await new Promise(r => setTimeout(r, waitTime));
+    }
+
+    console.log('[TTSManager] v66: Audio session ready for STT');
+  }
+
+  /**
+   * 🔧 v66: Get time since last TTS ended (for debugging)
+   */
+  public getTimeSinceLastSpeak(): number {
+    return Date.now() - this.lastSpeakEndTime;
   }
 }
 
