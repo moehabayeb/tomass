@@ -81,7 +81,7 @@ const App = () => (
             v7_relativeSplatPath: true,
           }}
         >
-          <>
+          <div className="ios-viewport-fix">
             <Suspense fallback={
               <div className="min-h-screen flex items-center justify-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -104,7 +104,7 @@ const App = () => (
               </Routes>
             </Suspense>
             <ConditionalFooter />
-          </>
+          </div>
           </BrowserRouter>
       </ThemeProvider>
     </QueryClientProvider>

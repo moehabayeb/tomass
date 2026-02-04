@@ -4,6 +4,20 @@ import { Capacitor } from '@capacitor/core';
 import { SpeechRecognition as CapacitorSpeechRecognition } from '@capacitor-community/speech-recognition';
 import { microphoneGuardian } from '@/services/MicrophoneGuardian';
 
+// ============= iOS PLATFORM DETECTION =============
+// iOS Safari does NOT support Web Speech API - must use Capacitor or fallback
+const isIOSSafari = (): boolean => {
+  const ua = navigator.userAgent;
+  const isIOS = /iPad|iPhone|iPod/.test(ua);
+  const isWebkit = /WebKit/.test(ua);
+  const isChrome = /CriOS/.test(ua); // Chrome on iOS
+  return isIOS && isWebkit && !isChrome;
+};
+
+const isIOSDevice = (): boolean => {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent);
+};
+
 // ============= CONSTANTS =============
 // 🔧 GOD-TIER v17: Increased timeouts for language learners who need time to think
 export const INITIAL_SILENCE_MS = 30000; // 30 seconds for initial silence - more time to think before speaking
@@ -229,11 +243,25 @@ function clearAllTimers() {
 // ============= AUDIO CONTEXT MANAGEMENT =============
 async function ensureAudioContext(): Promise<void> {
   if (!audioContextRef) {
-    audioContextRef = new AudioContext({ sampleRate: 44100 });
+    // iOS requires specific sample rate
+    const isIOS = isIOSDevice();
+    audioContextRef = new (window.AudioContext || (window as any).webkitAudioContext)({
+      sampleRate: isIOS ? 44100 : 48000,
+      latencyHint: 'interactive',
+    });
   }
-  
+
+  // iOS suspends AudioContext by default - must resume on user gesture
   if (audioContextRef.state === 'suspended') {
-    await audioContextRef.resume();
+    try {
+      await audioContextRef.resume();
+      // iOS needs extra time after resume
+      if (isIOSDevice()) {
+        await new Promise(r => setTimeout(r, 100));
+      }
+    } catch (e) {
+      console.warn('[MicEngine] AudioContext resume failed:', e);
+    }
   }
 }
 
@@ -875,9 +903,27 @@ async function startMediaRecorder(id: number, maxSec: number): Promise<string> {
 
 // ============= MAIN ENGINE =============
 async function internalStart(id: number, maxSec: number): Promise<MicResult> {
-  // 🎯 ANDROID FIX: On native platforms, try Capacitor first, fallback to MediaRecorder + Whisper
+  // 🎯 iOS/ANDROID FIX: On native platforms, try Capacitor first, fallback to MediaRecorder + Whisper
   if (Capacitor.isNativePlatform()) {
-    console.log('[MicEngine] ===== NATIVE PLATFORM DETECTED =====');
+    const platform = Capacitor.getPlatform();
+    console.log('[MicEngine] ===== NATIVE PLATFORM DETECTED =====', platform);
+
+    // 🎯 iOS: Always request permission first before checking availability
+    if (platform === 'ios') {
+      try {
+        const permResult = await CapacitorSpeechRecognition.requestPermissions();
+        console.log('[MicEngine] iOS permission result:', permResult);
+
+        if (permResult.speechRecognition !== 'granted') {
+          console.warn('[MicEngine] iOS speech permission denied, using fallback');
+          emitMetrics('engine_start', { mode: 'whisper-fallback-ios-denied', maxSec });
+          // Fall through to web path below
+        }
+      } catch (permError) {
+        console.error('[MicEngine] iOS permission request failed:', permError);
+        // Fall through to web path below
+      }
+    }
 
     // 🎯 EMULATOR FIX: Check if speech recognition is actually available
     try {
@@ -887,7 +933,7 @@ async function internalStart(id: number, maxSec: number): Promise<MicResult> {
       if (available) {
         // Native speech recognition IS available - use Capacitor (fast path)
         console.log('[MicEngine] Using Capacitor speech recognition');
-        emitMetrics('engine_start', { mode: 'capacitor-native', maxSec });
+        emitMetrics('engine_start', { mode: 'capacitor-native', maxSec, platform });
 
         try {
           // Cancel any ongoing TTS
@@ -934,9 +980,14 @@ async function internalStart(id: number, maxSec: number): Promise<MicResult> {
   }
 
   // ============= WEB ONLY BELOW THIS LINE =============
-  const engineMode: EngineMode = USE_FALLBACK || !('webkitSpeechRecognition' in window)
+  // iOS Safari NEVER supports Web Speech API - always use MediaRecorder + Whisper fallback
+  const isIOSWeb = isIOSSafari();
+  const engineMode: EngineMode = USE_FALLBACK || isIOSWeb || !('webkitSpeechRecognition' in window)
     ? 'media-recorder'
     : 'speech-recognition';
+
+  // Log for debugging
+  console.log('[MicEngine] Platform:', { isIOSWeb, engineMode });
 
   emitMetrics('engine_start', { mode: engineMode, maxSec });
 
@@ -955,9 +1006,15 @@ async function internalStart(id: number, maxSec: number): Promise<MicResult> {
 
     if (isStale(id)) throw new Error('Operation cancelled');
 
-    // Request microphone
+    // Request microphone with iOS-optimized settings
+    const isIOS = isIOSDevice();
     streamRef = await navigator.mediaDevices.getUserMedia({
-      audio: {
+      audio: isIOS ? {
+        // iOS-optimized settings - iOS ignores sampleRate/channelCount constraints
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+      } : {
         sampleRate: 44100,
         channelCount: 1,
         echoCancellation: true,

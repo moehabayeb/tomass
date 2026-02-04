@@ -8,7 +8,9 @@ const config: CapacitorConfig = {
     contentInset: 'never',
     allowsLinkPreview: false,
     backgroundColor: '#1e1b4b',
-    scrollEnabled: true,
+    scrollEnabled: false,  // Disable native scroll to prevent horizontal overflow
+    overrideUserAgent: 'TomasHoca-iOS',
+    webContentsDebuggingEnabled: false,
   },
   server: {
     allowNavigation: ['*.supabase.co']

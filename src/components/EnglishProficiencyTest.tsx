@@ -652,43 +652,54 @@ export default function EnglishProficiencyTest({
   const progress = ((currentPhase + 1) / testPrompts.length) * 100;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 to-purple-900 p-4">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <Button
-            variant="ghost"
-            onClick={onBack}
-            className="text-white hover:bg-white/10"
-          >
-            ← Back
-          </Button>
+    <div className="min-h-screen bg-gradient-to-br from-blue-900 to-purple-900 p-4 pt-safe pb-safe"
+         style={{
+           WebkitOverflowScrolling: 'touch',
+           overscrollBehavior: 'none'
+         }}>
+      <div className="max-w-4xl mx-auto overflow-hidden">
+        {/* Header - FIXED: Proper spacing to prevent overlap */}
+        <div className="flex items-center justify-between mb-6 pt-safe gap-2">
+          {/* Back button - fixed width */}
+          <div className="w-16 flex-shrink-0">
+            <Button
+              variant="ghost"
+              onClick={onBack}
+              className="text-white hover:bg-white/10 p-2"
+            >
+              ← Back
+            </Button>
+          </div>
 
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-white mb-2">
+          {/* Title - centered, flexible */}
+          <div className="text-center flex-1 min-w-0 px-2">
+            <h1 className="text-lg sm:text-2xl font-bold text-white truncate">
               {testType === 'practice' ? 'Practice Test' : 'English Proficiency Test'}
             </h1>
-            <p className="text-blue-200">
+            <p className="text-blue-200 text-sm truncate">
               Phase {currentPhase + 1} of {testPrompts.length}: {currentPrompt.phase_name}
             </p>
           </div>
 
-          <div className="text-right">
-            <div className="text-white font-mono text-lg">
-              {formatTime(timeRemaining)}
-            </div>
-            <div className="text-blue-200 text-sm">Time remaining</div>
+          {/* Timer - fixed width */}
+          <div className="w-20 flex-shrink-0 text-right">
+            <div className="text-white font-mono text-lg">{formatTime(timeRemaining)}</div>
+            <div className="text-blue-200 text-xs">remaining</div>
           </div>
         </div>
 
-        {/* Progress Bar */}
+        {/* Progress Bar - FIXED: Pill-style phase tabs with proper spacing */}
         <div className="mb-8">
           <Progress value={progress} className="h-2" />
-          <div className="flex justify-between mt-2 text-sm text-blue-200">
+          <div className="flex mt-2 overflow-x-auto gap-3 pb-1 scrollbar-hide">
             {testPrompts.map((prompt, index) => (
               <span
                 key={index}
-                className={index <= currentPhase ? 'text-white font-semibold' : ''}
+                className={`text-xs whitespace-nowrap px-2 py-1 rounded-full flex-shrink-0 ${
+                  index <= currentPhase
+                    ? 'text-white font-semibold bg-white/20'
+                    : 'text-blue-200/70 bg-white/5'
+                }`}
               >
                 {prompt.phase_name}
               </span>
