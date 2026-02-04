@@ -256,6 +256,9 @@ function clearAllTimers() {
 async function ensureCleanSlate(): Promise<void> {
   const CLEANUP_TIMEOUT = 500; // Never wait more than 500ms
 
+  // v67.2: Track if background cleanup already removed listeners
+  let listenersAlreadyRemoved = false;
+
   // Wait for pending cleanup with timeout
   if (cleanupPromise) {
     try {
@@ -265,6 +268,9 @@ async function ensureCleanSlate(): Promise<void> {
           setTimeout(() => reject(new Error('Cleanup timeout')), CLEANUP_TIMEOUT)
         )
       ]);
+      // v67.2: If cleanupPromise resolved, listeners were already removed in finish()
+      listenersAlreadyRemoved = true;
+      console.log('[MicEngine] v67.2: Background cleanup completed, listeners already removed');
     } catch (e) {
       console.warn('[MicEngine] v67: Cleanup timeout, forcing continue');
       cleanupPromise = null; // Clear stale promise
@@ -282,28 +288,32 @@ async function ensureCleanSlate(): Promise<void> {
     // Expected: might not be running
   }
 
-  // Remove listeners with timeout
-  try {
-    await Promise.race([
-      CapacitorSpeechRecognition.removeAllListeners(),
-      new Promise(r => setTimeout(r, 300))
-    ]);
-    console.log('[MicEngine] v67: Removed all listeners');
-  } catch (e) {
-    // Ignore errors
+  // v67.2: CRITICAL FIX - Only remove listeners if background cleanup didn't already do it
+  // Calling removeAllListeners() twice corrupts iOS/Android listener registry,
+  // causing Turn 2+ to have dead listeners that don't receive events!
+  if (!listenersAlreadyRemoved) {
+    try {
+      await Promise.race([
+        CapacitorSpeechRecognition.removeAllListeners(),
+        new Promise(r => setTimeout(r, 300))
+      ]);
+      console.log('[MicEngine] v67.2: Removed all listeners (first time)');
+    } catch (e) {
+      // Ignore errors
+    }
   }
 
   // iOS needs extra time for audio session to settle between mode switches
   // This prevents "AudioSession::beginInterruption but session is already interrupted!" error
   if (Capacitor.getPlatform() === 'ios') {
-    console.log('[MicEngine] v67: iOS audio session settling (150ms)...');
+    console.log('[MicEngine] v67.2: iOS audio session settling (150ms)...');
     await new Promise(r => setTimeout(r, 150));
   } else {
     // Android also benefits from a small delay
     await new Promise(r => setTimeout(r, 50));
   }
 
-  console.log('[MicEngine] v67: Clean slate ready');
+  console.log('[MicEngine] v67.2: Clean slate ready');
 }
 
 // ============= AUDIO CONTEXT MANAGEMENT =============
@@ -708,14 +718,14 @@ async function startCapacitorSpeechRecognition(id: number, maxSec: number): Prom
           capacitorCleanupInProgress = true;
           await cleanup();
           await CapacitorSpeechRecognition.removeAllListeners();
-          console.log('[CapacitorSpeech] v66: Cleanup completed after resolve');
+          console.log('[CapacitorSpeech] v67.2: Cleanup completed after resolve (listeners removed)');
         } catch (e) {
           console.log('[CapacitorSpeech] Cleanup error (safe - promise already resolved):', e);
         } finally {
           capacitorCleanupInProgress = false;
           // 🔧 v66: Release mutex AFTER cleanup completes
           speechRecognitionMutex = false;
-          console.log('[CapacitorSpeech] v66: Mutex released');
+          console.log('[CapacitorSpeech] v67.2: Mutex released');
         }
       })();
     };
