@@ -1733,21 +1733,19 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   // Event listeners for mic state and interim captions (LISTENING only)
   useEffect(() => {
     // B) Listen for speech:interim events when flowState==='LISTENING' only
+    // v67.1: Use flowStateRef.current instead of flowState to avoid stale closure
     const handleInterimCaption = (event: CustomEvent) => {
-      if (flowState === 'LISTENING') {
+      if (flowStateRef.current === 'LISTENING') {
         const transcript = event.detail?.transcript || '';
         setInterimCaption(transcript);
       }
     };
     
-    // Listen for mic state changes to clear captions
+    // Listen for mic state changes
     const handleMicStateChange = (newState: MicState) => {
       setMicState(newState);
-      
-      // Clear interim caption when mic stops or when not in LISTENING state
-      if (newState !== 'recording' || flowState !== 'LISTENING') {
-        setInterimCaption('');
-      }
+      // v67.1: Don't clear caption here - let the flowState useEffect handle it
+      // This prevents stale closure race condition where flowState is stale
     };
     
     // Add event listeners
@@ -1760,9 +1758,11 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     };
   }, [flowState]); // Re-subscribe when flowState changes
    
-  // v67: Only clear interim caption when returning to IDLE (keep visible during PROCESSING/READING)
+  // v67.1: Clear interim caption when starting new recording (entering LISTENING)
+  // This ensures old caption doesn't persist, but keeps caption visible during PROCESSING/READING
   useEffect(() => {
-    if (flowState === 'IDLE') {
+    if (flowState === 'LISTENING') {
+      // Clear caption when starting new recording, not on IDLE
       setInterimCaption('');
     }
   }, [flowState]);
