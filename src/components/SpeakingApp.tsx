@@ -76,7 +76,7 @@ const FloatingXP = ({ amount, onComplete }: { amount: number; onComplete: () => 
 
   return (
     <div
-      className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 pointer-events-none"
+      className="fixed top-20 left-1/2 transform -translate-x-1/2 z-[150] pointer-events-none"
       style={{
         animation: 'floatUpFade 2s ease-out forwards'
       }}
@@ -161,7 +161,7 @@ const ChatBubble = ({
   >
     <div className={`flex items-end gap-2 max-w-[85%] ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
       <div
-        className={`px-3 py-2 rounded-[18px] text-[15px] leading-[1.4] shadow-md ${
+        className={`px-3 py-2 rounded-[18px] text-[15px] leading-[1.4] shadow-md break-words ${
           isUser
             ? 'bg-gradient-to-br from-purple-500 to-pink-500 text-white rounded-br-[4px]'
             : 'bg-white text-gray-800 rounded-bl-[4px]'
@@ -336,6 +336,15 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   useEffect(() => {
     // No explicit TTS manager sync needed - we check speakingSoundEnabled directly
   }, []);
+
+  // v68: Initialize XP on mount - fetch from database and subscribe to updates
+  useEffect(() => {
+    if (user?.id) {
+      fetchProgress();
+      const unsubscribe = subscribeToProgress(user.id);
+      return () => unsubscribe?.();
+    }
+  }, [user?.id, fetchProgress, subscribeToProgress]);
   
   // A) Authoritative flow (finite-state machine)
   // States: IDLE / READING / LISTENING / PROCESSING / PAUSED
@@ -343,8 +352,16 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
   // 🔧 GOD-TIER v4: Sync flowStateRef with flowState (refs are synchronous, state is async)
   // v67: Also update watchdog state
+  // v68: Added FSM audit logging for debugging
   useEffect(() => {
     flowStateRef.current = flowState;
+
+    // v68: FSM audit logging to track state machine behavior
+    console.log('[FSM-AUDIT]', {
+      newState: flowState,
+      micCapture: micCaptureInProgressRef.current,
+      ttsMutex: ttsAuthorityMutexRef.current
+    });
 
     // v67: Update watchdog when flowState changes
     switch (flowState) {
@@ -460,6 +477,11 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   const [interimCaption, setInterimCaption] = useState<string>(''); // live mic caption text
   const [speakingMessageKey, setSpeakingMessageKey] = useState<string | null>(null);
 
+  // v68: Sync interimCaptionRef with interimCaption state to prevent stale closures
+  useEffect(() => {
+    interimCaptionRef.current = interimCaption;
+  }, [interimCaption]);
+
   // Helper to check if server bubble exists for a given key
   const hasServerAssistant = (key: string) =>
     messages.some(m => m.role === 'assistant' && stableMessageKey(m.text, m.id) === key);
@@ -564,6 +586,11 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   // 🎯 v41: TTS authority mutex to prevent overlapping speech
   const ttsAuthorityMutexRef = useRef(false);
   const TURN_DEBOUNCE_MS = 300;
+  // v68: FAB button debounce to prevent rapid clicks causing duplicate AI responses
+  const lastFabClickRef = useRef(0);
+  const FAB_DEBOUNCE_MS = 500;
+  // v68: Ref for interimCaption to prevent stale closure issues
+  const interimCaptionRef = useRef('');
 
   // 2) When starting a turn, always pass a token and always call completion
   const startNewTurn = () => {
@@ -834,7 +861,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       // 🎯 v41: Pause mic BEFORE TTS starts to prevent echo
       micPausedForTTSRef.current = true;
       try {
-        await micStopRecording();
+        await stopRecording();
         console.log('[speakExistingMessage] v41: Mic paused for TTS');
       } catch { /* OK if not recording */ }
 
@@ -1261,8 +1288,10 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     finalTranscript = (result.transcript || '').trim();
     console.log(`[MicTrigger] ✅ v14: Mic started successfully${micRetryCount > 0 ? ` after ${micRetryCount} retries` : ''}`);
 
-    // 🎯 v41: DON'T release guard yet - wait until executeTeacherLoop completes
-    // This prevents concurrent mic captures during processing
+    // v68: Release recording guard immediately - user can now tap mic again
+    // Processing guard will be handled separately by flowState
+    micCaptureInProgressRef.current = false;
+    console.log('[startHandsFreeMicCaptureSafe] v68: Recording guard released');
 
     // C) Final ASR → single user bubble → evaluation
     if (finalTranscript) {
@@ -1270,13 +1299,11 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       if (micButtonSubmittedRef.current) {
         console.log('[SpeakingApp] Mic button already submitted - skipping duplicate');
         micButtonSubmittedRef.current = false;
-        micCaptureInProgressRef.current = false; // v41: Release guard on early return
         return;
       }
 
       // 🔧 PHASE 2 FIX: Check if mounted after async operation
       if (!isMountedRef.current) {
-        micCaptureInProgressRef.current = false; // v41: Release guard on early return
         return;
       }
 
@@ -1315,9 +1342,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           await forceToListening('teacher-loop-error-recovery');
         }
       } finally {
-        // 🎯 v41: Release guard AFTER everything completes (including TTS from AI response)
-        micCaptureInProgressRef.current = false;
-        console.log('[startHandsFreeMicCaptureSafe] v41: Guard released after full completion');
+        // v68: Guard already released at recording completion - no action needed
+        console.log('[startHandsFreeMicCaptureSafe] v68: Processing complete');
       }
     } else {
       // 🎯 FIX: Check if mic button already took over before retrying
@@ -2208,8 +2234,11 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
   // Modern Floating Header - Minimal, Clean Design (No Background Container)
   const MobileHeader = () => {
+    // v68: Fix XP fallback to show "0" instead of "—" when xp_current is 0
     const formattedXP = useMemo(() => {
-      return xp_current ? xp_current.toLocaleString() : "—";
+      return xp_current !== null && xp_current !== undefined
+        ? xp_current.toLocaleString()
+        : "0";
     }, [xp_current]);
 
     // Get difficulty indicator data
@@ -2229,7 +2258,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     return (
       <div className="fixed top-0 left-0 right-0 z-[100] pointer-events-none pt-safe">
         {/* Floating XP Display & Difficulty - Clean minimal header - v47: Added pt-safe for iPhone Dynamic Island */}
-        <div className="px-4 py-4 mt-14 flex items-center justify-center gap-2 pointer-events-none">
+        <div className="px-4 py-4 mt-14 flex flex-wrap items-center justify-center gap-2 pointer-events-none">
           <div className="px-4 py-2 rounded-full text-sm bg-white/15 text-white backdrop-blur-xl font-bold tracking-wide shadow-lg">
             ⚡ {formattedXP} XP
           </div>
@@ -2241,8 +2270,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         {/* Floating Avatar - Centered, No Container */}
         <div className="px-4 pt-6 flex flex-col items-center pointer-events-none">
           <div className="flex flex-col items-center gap-3">
-            <div className="relative pointer-events-auto">
-              {/* Floating Avatar Container - Dramatic shadow, no borders */}
+            <div className="relative pointer-events-auto z-[101]">
+              {/* Floating Avatar Container - Dramatic shadow, no borders - v68: Added z-[101] for proper stacking */}
               <div className={cn(
                 "w-32 h-32 rounded-full relative transition-all duration-300",
                 isSpeaking && "ring-4 ring-green-400/60 shadow-[0_0_40px_rgba(74,222,128,0.5)]",
@@ -2354,7 +2383,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       {/* Full-Screen Scrollable Chat Area - adjusted for floating header */}
       <div
         id="main-content"
-        className="flex-1 overflow-y-auto overflow-x-hidden pt-[240px] pb-24 px-4"
+        className="flex-1 overflow-y-auto overflow-x-hidden pt-[300px] pb-24 px-4 z-[1]"
         style={{
           overscrollBehaviorY: 'contain',
           overscrollBehaviorX: 'none',
@@ -2442,6 +2471,14 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
             tabIndex={0}
             role="button"
             onClick={async () => {
+              // v68: Debounce rapid clicks to prevent duplicate AI responses
+              const now = Date.now();
+              if (now - lastFabClickRef.current < FAB_DEBOUNCE_MS) {
+                console.log('[FAB] Debounced rapid click');
+                return;
+              }
+              lastFabClickRef.current = now;
+
               triggerHaptic('light');
               if (flowState === 'IDLE') {
                 const text = 'What would you like to talk about?';
@@ -2486,7 +2523,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
                 }
               } else if (flowState === 'LISTENING') {
                 // 🎯 DEFINITIVE FIX: Capture and submit DIRECTLY - no async waiting, no stale closures
-                const capturedTranscript = interimCaption?.trim() || '';
+                // v68: Use ref instead of state to avoid stale closure issues
+                const capturedTranscript = interimCaptionRef.current?.trim() || '';
                 console.log('[SpeakingApp] Mic tapped during LISTENING. Captured:', capturedTranscript);
 
                 // Clear caption immediately to signal we're handling this
@@ -2558,7 +2596,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
-              className="bg-black/95 backdrop-blur-xl border-white/20 text-white mb-2 z-[100]"
+              className="bg-black/95 backdrop-blur-xl border-white/20 text-white mb-2 z-[110]"
               align="end"
               side="top"
               sideOffset={8}
