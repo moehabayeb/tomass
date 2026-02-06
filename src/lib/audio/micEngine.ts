@@ -20,13 +20,14 @@ const isIOSDevice = (): boolean => {
 
 // ============= CONSTANTS =============
 // 🔧 GOD-TIER v17: Increased timeouts for language learners who need time to think
-export const INITIAL_SILENCE_MS = 30000; // 30 seconds for initial silence - more time to think before speaking
-export const SILENCE_TIMEOUT_MS = 15000; // v36.3: 15 seconds for language learners who pause between words
+export const INITIAL_SILENCE_MS = 10000; // v70: 10s is enough to start talking
+export const SILENCE_TIMEOUT_MS = 8000; // v70: More responsive after speech stops
 export const INIT_DELAY_MS = 600;
 export const MAX_RETRIES = 4;
 export const RETRY_DELAYS = [300, 500, 800, 1200];
-export const MAX_SECONDS = 90; // 90 seconds hard maximum
+export const MAX_SECONDS = 60; // v70: 60s max listen
 export const BUTTON_DEBOUNCE_MS = 300;
+export const SILENCE_WARNING_MS = 5000; // v70: Warn user after 5s of no audio/interim
 
 // ============= TYPES =============
 export type MicState = 'idle' | 'prompting' | 'initializing' | 'recording' | 'processing';
@@ -106,6 +107,19 @@ let processingWatchdogRef: number | undefined;
 
 // State subscribers
 const stateSubscribers: ((state: MicState) => void)[] = [];
+
+// v70: WEB AUDIO LEVEL MONITORING
+let levelMonitorAnimFrameId: number | undefined;
+let levelMonitorAnalyser: AnalyserNode | null = null;
+let levelMonitorSource: MediaStreamAudioSourceNode | null = null;
+let levelMonitorAudioCtx: AudioContext | null = null;
+let levelMonitorActive = false;
+let levelMonitorSilenceStart = 0;
+let levelMonitorLastWarningTime = 0;
+
+// v70: NATIVE INTERIM-BASED ACTIVITY PROXY
+let lastInterimEventTime = 0;
+let interimActivityIntervalId: ReturnType<typeof setInterval> | undefined;
 
 // ============= UTILITIES =============
 function newRunId(): number {
@@ -369,9 +383,12 @@ function attachStreamToContext(stream: MediaStream) {
 
 // ============= CLEANUP =============
 function cleanupResources() {
-  
+
   clearAllTimers();
-  
+  stopLevelMonitor(); // v70: Stop web audio level monitor
+  // v70: native activity interval
+  if (interimActivityIntervalId) { clearInterval(interimActivityIntervalId); interimActivityIntervalId = undefined; }
+
   // Cancel TTS - silent fail: synthesis may not be active
   try { window?.speechSynthesis?.cancel(); } catch { /* Expected: synthesis may not be active */ }
   
@@ -525,6 +542,95 @@ export function getPersistentAudioContext(): AudioContext | null {
   return persistentAudioContextRef;
 }
 
+// ============= v70: WEB AUDIO LEVEL MONITORING =============
+
+function startLevelMonitor(): void {
+  if (Capacitor.isNativePlatform()) return;
+  if (levelMonitorActive) return;
+
+  try {
+    const stream = getPersistentStream();
+    if (!stream || !stream.active) {
+      console.log('[LevelMonitor] No active stream, skipping');
+      return;
+    }
+
+    let audioCtx = getPersistentAudioContext();
+    if (!audioCtx || audioCtx.state === 'closed') {
+      audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      levelMonitorAudioCtx = audioCtx;
+    }
+
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume().catch(() => {});
+    }
+
+    const analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 256;
+    analyser.smoothingTimeConstant = 0.8;
+    levelMonitorAnalyser = analyser;
+
+    const source = audioCtx.createMediaStreamSource(stream);
+    source.connect(analyser);
+    levelMonitorSource = source;
+
+    levelMonitorActive = true;
+    levelMonitorSilenceStart = Date.now();
+
+    const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+    const tick = () => {
+      if (!levelMonitorActive) return;
+      analyser.getByteFrequencyData(dataArray);
+
+      let sum = 0;
+      for (let i = 0; i < dataArray.length; i++) {
+        const v = dataArray[i] / 255;
+        sum += v * v;
+      }
+      const rms = Math.sqrt(sum / dataArray.length);
+      const level = Math.min(1, rms * 3);
+
+      window.dispatchEvent(new CustomEvent('speech:level', { detail: { level } }));
+
+      if (level < 0.05) {
+        if (Date.now() - levelMonitorSilenceStart > SILENCE_WARNING_MS && Date.now() - levelMonitorLastWarningTime > 10000) {
+          window.dispatchEvent(new CustomEvent('speech:silence-warning'));
+          levelMonitorLastWarningTime = Date.now();
+          levelMonitorSilenceStart = Date.now();
+        }
+      } else {
+        levelMonitorSilenceStart = Date.now();
+      }
+
+      levelMonitorAnimFrameId = requestAnimationFrame(tick);
+    };
+
+    levelMonitorAnimFrameId = requestAnimationFrame(tick);
+    console.log('[LevelMonitor] Started');
+  } catch (e) {
+    console.warn('[LevelMonitor] Failed to start:', e);
+    levelMonitorActive = false;
+  }
+}
+
+function stopLevelMonitor(): void {
+  levelMonitorActive = false;
+  if (levelMonitorAnimFrameId !== undefined) {
+    cancelAnimationFrame(levelMonitorAnimFrameId);
+    levelMonitorAnimFrameId = undefined;
+  }
+  if (levelMonitorSource) {
+    try { levelMonitorSource.disconnect(); } catch { /* ignore */ }
+    levelMonitorSource = null;
+  }
+  levelMonitorAnalyser = null;
+  if (levelMonitorAudioCtx) {
+    try { levelMonitorAudioCtx.close(); } catch { /* ignore */ }
+    levelMonitorAudioCtx = null;
+  }
+}
+
 // ============= SPEECH RECOGNITION ENGINE (WEB ONLY) =============
 async function startSpeechRecognition(id: number, maxSec: number): Promise<string> {
   // Note: Capacitor check is now in internalStart() - this function is web-only
@@ -557,8 +663,9 @@ async function startSpeechRecognition(id: number, maxSec: number): Promise<strin
     function finish(transcript: string) {
       if (isFinished || isStale(id)) return;
       isFinished = true;
-      
+
       clearTimeout(silenceTimer);
+      stopLevelMonitor(); // v70: Stop web audio level monitor
       try { recognitionRef?.stop(); } catch { /* Expected: recognition may already be stopped */ }
 
       resolve(transcript.trim());
@@ -598,9 +705,12 @@ async function startSpeechRecognition(id: number, maxSec: number): Promise<strin
       if (interimText) {
         interimTranscript = interimText;
         // Emit interim result event for live captions
-        window.dispatchEvent(new CustomEvent('speech:interim', { 
+        window.dispatchEvent(new CustomEvent('speech:interim', {
           detail: { transcript: interimText }
         }));
+        // v70: Activity tracking
+        lastInterimEventTime = Date.now();
+        window.dispatchEvent(new CustomEvent('speech:activity'));
       }
       
     };
@@ -632,6 +742,7 @@ async function startSpeechRecognition(id: number, maxSec: number): Promise<strin
     
     try {
       recognitionRef.start();
+      startLevelMonitor(); // v70: Start web audio level monitor
     } catch (error) {
       clearTimeout(silenceTimer);
       reject(error);
@@ -719,6 +830,8 @@ async function startCapacitorSpeechRecognition(id: number, maxSec: number, shoul
       const finalResult = result || transcript;
       console.log(`[CapacitorSpeech] FINISH: "${finalResult}" (${reason})`);
       isFinished = true;
+      // v70: Stop native activity interval
+      if (interimActivityIntervalId) { clearInterval(interimActivityIntervalId); interimActivityIntervalId = undefined; }
       activeFinishCallback = null; // 🔧 v27: Clear callback so stopRecording() doesn't double-finish
 
       // 🔧 v33: RESOLVE FIRST! Then cleanup (cleanup can hang on Android)
@@ -830,6 +943,9 @@ async function startCapacitorSpeechRecognition(id: number, maxSec: number, shoul
           window.dispatchEvent(new CustomEvent('speech:interim', {
             detail: { transcript }
           }));
+          // v70: Activity tracking for native pulse ring proxy
+          lastInterimEventTime = Date.now();
+          window.dispatchEvent(new CustomEvent('speech:activity'));
         }
       });
 
@@ -886,6 +1002,12 @@ async function startCapacitorSpeechRecognition(id: number, maxSec: number, shoul
               // Stop current session
               await CapacitorSpeechRecognition.stop();
 
+              // v70: iOS audio session settle time before restart
+              if (Capacitor.getPlatform() === 'ios') {
+                console.log('[CapacitorSpeech] v70: iOS pre-restart settle (300ms)');
+                await new Promise(r => setTimeout(r, 300));
+              }
+
               // Check if user stopped during our await
               if (isFinished) {
                 console.log('[CapacitorSpeech] v41: User stopped during restart, aborting');
@@ -917,10 +1039,11 @@ async function startCapacitorSpeechRecognition(id: number, maxSec: number, shoul
 
               // Preserve saved transcript (with space for continuation)
               transcript = savedTranscript ? savedTranscript + ' ' : '';
-              console.log('[CapacitorSpeech] v41: Restart #' + restartCount + ' successful');
+              console.log(`[CapacitorSpeech] v70: Auto-restart #${restartCount} successful`);
+              lastInterimEventTime = Date.now(); // v70: Reset activity tracking for new session
 
             } catch (restartError) {
-              console.log('[CapacitorSpeech] v41: Restart failed:', restartError);
+              console.log(`[CapacitorSpeech] v70: Auto-restart #${restartCount} FAILED:`, restartError);
               if (!isFinished) {
                 finish(savedTranscript, 'restart_failed');
               }
@@ -972,6 +1095,24 @@ async function startCapacitorSpeechRecognition(id: number, maxSec: number, shoul
 
       // 🔧 GOD-TIER v14: Explicit confirmation that mic started
       console.log('[CapacitorSpeech] ✅ v14: MIC CONFIRMED STARTED - Now listening!');
+
+      // v70: Start native interim-based silence monitoring
+      lastInterimEventTime = Date.now();
+      if (interimActivityIntervalId) clearInterval(interimActivityIntervalId);
+      let lastNativeWarningTime = 0;
+      interimActivityIntervalId = setInterval(() => {
+        if (isFinished) {
+          clearInterval(interimActivityIntervalId);
+          interimActivityIntervalId = undefined;
+          return;
+        }
+        const elapsed = Date.now() - lastInterimEventTime;
+        if (elapsed > SILENCE_WARNING_MS && Date.now() - lastNativeWarningTime > 10000) {
+          window.dispatchEvent(new CustomEvent('speech:silence-warning'));
+          lastNativeWarningTime = Date.now();
+          lastInterimEventTime = Date.now();
+        }
+      }, 500);
 
       // Step 9: Initial silence timeout (if no speech detected)
       silenceTimeoutId = setTimeout(() => {

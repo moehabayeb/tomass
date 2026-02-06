@@ -301,8 +301,8 @@ class MicrophoneGuardianService {
       if (Capacitor.isNativePlatform()) {
         const result = await SpeechRecognition.checkPermissions();
         const status = result.speechRecognition;
-        if (status === 'granted') return 'granted';
-        if (status === 'denied') return 'denied';
+        if (status === 'granted') { this.cachePermissionResult('granted'); return 'granted'; }
+        if (status === 'denied') { this.cachePermissionResult('denied'); return 'denied'; }
         return 'prompt';
       }
 
@@ -310,18 +310,42 @@ class MicrophoneGuardianService {
       if ('permissions' in navigator) {
         try {
           const result = await navigator.permissions.query({ name: 'microphone' as PermissionName });
+          this.cachePermissionResult(result.state); // v70: cache result
           return result.state;
         } catch {
-          // Permissions API not supported for microphone, assume prompt needed
+          // Permissions API not supported for microphone, check cache
+          const cached = this.getCachedPermission();
+          if (cached) return cached;
           return 'prompt';
         }
       }
 
+      const cached = this.getCachedPermission(); // v70: check cache as fallback
+      if (cached) return cached;
       return 'prompt';
     } catch (error) {
       console.error('[MicGuardian] Permission check error:', error);
+      const cached = this.getCachedPermission(); // v70: check cache on error
+      if (cached) return cached;
       return 'prompt';
     }
+  }
+
+  // v70: Permission result caching
+  private cachePermissionResult(state: PermissionState): void {
+    try {
+      if (state === 'granted') {
+        localStorage.setItem('mic_permission_granted', 'true');
+      } else if (state === 'denied') {
+        localStorage.removeItem('mic_permission_granted');
+      }
+    } catch { /* Silent fail: Safari Private Mode */ }
+  }
+
+  private getCachedPermission(): PermissionState | null {
+    try {
+      return localStorage.getItem('mic_permission_granted') === 'true' ? 'granted' : null;
+    } catch { return null; }
   }
 
   /**
@@ -659,6 +683,7 @@ class MicrophoneGuardianService {
    */
   private handlePermissionRevoked(): void {
     console.warn('[MicGuardian] Permission revoked!');
+    this.cachePermissionResult('denied'); // v70: Clear permission cache
     this.emitStatusChange('no_permission');
     this.emitIssue('permission_revoked', 'Microphone permission was revoked');
 

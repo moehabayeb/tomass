@@ -356,6 +356,12 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   useEffect(() => {
     flowStateRef.current = flowState;
 
+    // v70: Reset audio level and silence warning when leaving LISTENING
+    if (flowState !== 'LISTENING') {
+      setAudioLevel(0);
+      silenceWarningShownRef.current = false;
+    }
+
     // v68: FSM audit logging to track state machine behavior
     console.log('[FSM-AUDIT]', {
       newState: flowState,
@@ -495,6 +501,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   // Remove useSpeakingTTS hook - we'll use strict turn-taking logic instead
   
   const [micState, setMicState] = useState<MicState>('idle');
+  const [audioLevel, setAudioLevel] = useState(0); // v70: 0-1 audio level for pulse ring
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [history, setHistory] = useState<Array<{input: string; corrected: string; time: string}>>([]);
   const [currentQuestion, setCurrentQuestion] = useState("What did you have for lunch today?");
@@ -600,6 +607,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   // 🔧 v69 CRASH FIX: AbortController to cancel stale mic retry loops
   // Prevents retries from firing during PROCESSING/READING states which cause concurrent start() → crash
   const micRetryAbortRef = useRef<AbortController | null>(null);
+  const silenceWarningShownRef = useRef(false); // v70: Prevent duplicate silence toasts per session
+  const audioLevelDecayRef = useRef<ReturnType<typeof setTimeout> | null>(null); // v70: Native activity decay
 
   // 2) When starting a turn, always pass a token and always call completion
   const startNewTurn = () => {
@@ -1795,21 +1804,53 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         setInterimCaption(transcript);
       }
     };
-    
+
     // Listen for mic state changes
     const handleMicStateChange = (newState: MicState) => {
       setMicState(newState);
       // v67.1: Don't clear caption here - let the flowState useEffect handle it
       // This prevents stale closure race condition where flowState is stale
     };
-    
+
+    // v70: Continuous audio levels (web only, ~60fps via rAF)
+    const handleAudioLevel = (event: CustomEvent) => {
+      if (flowStateRef.current === 'LISTENING') {
+        setAudioLevel(event.detail?.level || 0);
+      }
+    };
+
+    // v70: Binary activity pulse (native proxy — fires on each interim result)
+    const handleActivity = () => {
+      if (flowStateRef.current === 'LISTENING') {
+        setAudioLevel(0.6);
+        if (audioLevelDecayRef.current) clearTimeout(audioLevelDecayRef.current);
+        audioLevelDecayRef.current = setTimeout(() => setAudioLevel(0), 300);
+      }
+    };
+
+    // v70: Silence warning (both platforms)
+    const handleSilenceWarning = () => {
+      if (flowStateRef.current !== 'LISTENING') return;
+      if (silenceWarningShownRef.current) return;
+      silenceWarningShownRef.current = true;
+      toast({ title: "Can't hear you", description: "Try speaking louder or closer to the mic", duration: 4000 });
+      setTimeout(() => { silenceWarningShownRef.current = false; }, 15000);
+    };
+
     // Add event listeners
     window.addEventListener('speech:interim', handleInterimCaption as EventListener);
+    window.addEventListener('speech:level', handleAudioLevel as EventListener);
+    window.addEventListener('speech:activity', handleActivity as EventListener);
+    window.addEventListener('speech:silence-warning', handleSilenceWarning);
     const unsubscribeMicState = onState(handleMicStateChange);
-    
+
     return () => {
       window.removeEventListener('speech:interim', handleInterimCaption as EventListener);
+      window.removeEventListener('speech:level', handleAudioLevel as EventListener);
+      window.removeEventListener('speech:activity', handleActivity as EventListener);
+      window.removeEventListener('speech:silence-warning', handleSilenceWarning);
       unsubscribeMicState();
+      if (audioLevelDecayRef.current) clearTimeout(audioLevelDecayRef.current);
     };
   }, []); // v67.2: Subscribe once on mount - ref handles state checks, no re-subscription needed
    
@@ -2309,9 +2350,15 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
                 {/* Animated Avatar */}
                 <TomasAvatarImage isSpeaking={isSpeaking} className="w-full h-full object-cover rounded-full" />
 
-                {/* 🔧 v62: Optimized single-ring pulse animation (GPU-efficient) */}
+                {/* v70: Dynamic audio-reactive pulse ring */}
                 {flowState === 'LISTENING' && (
-                  <div className="absolute -inset-4 rounded-full bg-green-400/40 listening-pulse-ring" />
+                  <div
+                    className="absolute -inset-4 rounded-full bg-green-400/40 transition-transform duration-75"
+                    style={{
+                      transform: `scale(${1 + audioLevel * 0.4})`,
+                      opacity: 0.3 + audioLevel * 0.5,
+                    }}
+                  />
                 )}
                 {flowState === 'READING' && (
                   <div className="absolute -inset-4 rounded-full bg-blue-400/40 listening-pulse-ring" />
@@ -2353,7 +2400,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
                 aria-atomic="true"
               >
                 {flowState === 'READING' ? '🗣️ Speaking...' :
-                 flowState === 'LISTENING' ? '👂 Listening...' :
+                 flowState === 'LISTENING' ? (interimCaption ? '👂 Listening...' : '👂 Speak now...') :
                  flowState === 'PROCESSING' ? '💭 Thinking...' :
                  flowState === 'PAUSED' ? '⏸️ Paused' :
                  '✨ Ready to chat'}
@@ -2447,6 +2494,15 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
               <div className="text-center py-2" role="status" aria-live="polite" aria-atomic="true" aria-label="Live transcript of your speech">
                 <div className="inline-block px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm">
                   <span className="text-white/70 italic text-sm">"{interimCaption}"</span>
+                </div>
+              </div>
+            )}
+
+            {/* v70: Helper text when LISTENING but no speech detected yet */}
+            {flowState === 'LISTENING' && !interimCaption && (
+              <div className="text-center py-2">
+                <div className="inline-block px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm">
+                  <span className="text-white/50 italic text-sm">Listening... speak now</span>
                 </div>
               </div>
             )}
@@ -2602,9 +2658,15 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
               }
             }}
           >
-            {/* 🔧 v62: Optimized single pulse ring for FAB (GPU-efficient) */}
+            {/* v70: Dynamic audio-reactive FAB ring */}
             {flowState === 'LISTENING' && (
-              <div className="absolute inset-0 rounded-full bg-green-400/40 listening-pulse-ring" />
+              <div
+                className="absolute inset-0 rounded-full bg-green-400/40 transition-transform duration-75"
+                style={{
+                  transform: `scale(${1 + audioLevel * 0.3})`,
+                  opacity: 0.3 + audioLevel * 0.5,
+                }}
+              />
             )}
 
             {/* Icon */}
