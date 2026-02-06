@@ -416,6 +416,14 @@ class MicrophoneGuardianService {
   async micHealthCheck(): Promise<boolean> {
     console.log('[MicGuardian] Running health check...');
 
+    // v70.1: NEVER call getUserMedia on native — it steals the iOS audio session
+    // from Capacitor's SpeechRecognition plugin, causing speech recognition to fail.
+    if (Capacitor.isNativePlatform()) {
+      console.log('[MicGuardian] v70.1: Skipping getUserMedia health check on native');
+      this.lastHealthCheckTime = Date.now();
+      return true;
+    }
+
     return new Promise(async (resolve) => {
       let stream: MediaStream | null = null;
       let audioContext: AudioContext | null = null;
@@ -505,6 +513,19 @@ class MicrophoneGuardianService {
         healthy: false,
         status: 'service_unavailable',
         message: 'Speech recognition service unavailable.',
+        canRecover: false,
+      };
+    }
+
+    // v70.1: On native, permission + network + service checks are sufficient.
+    // Skip getUserMedia audio capture test — Capacitor manages its own audio session.
+    if (Capacitor.isNativePlatform()) {
+      console.log('[MicGuardian] v70.1: Skipping getUserMedia test on native');
+      this.lastHealthCheckTime = Date.now();
+      return {
+        healthy: true,
+        status: 'ready' as MicStatus,
+        message: 'Native platform ready',
         canRecover: false,
       };
     }

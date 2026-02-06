@@ -1264,12 +1264,15 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     let finalTranscript = '';
     let result: { transcript: string; durationSec: number } | null = null;
 
-    // 🔧 v62: Pre-flight health check before recording
-    const healthResult = await microphoneGuardian.healthCheck(3000);
-    if (!healthResult.healthy) {
-      console.warn('[MicTrigger] Pre-flight failed:', healthResult.message);
-      if (healthResult.canRecover) {
-        await microphoneGuardian.recoverFromStuck();
+    // v70.1: Skip getUserMedia-based health check on native — Capacitor manages audio session.
+    // preflightCheck() above already validates permission + network on native.
+    if (!Capacitor.isNativePlatform()) {
+      const healthResult = await microphoneGuardian.healthCheck(3000);
+      if (!healthResult.healthy) {
+        console.warn('[MicTrigger] Pre-flight failed:', healthResult.message);
+        if (healthResult.canRecover) {
+          await microphoneGuardian.recoverFromStuck();
+        }
       }
     }
 
