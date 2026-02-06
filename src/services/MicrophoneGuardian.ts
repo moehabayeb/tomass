@@ -228,8 +228,8 @@ class MicrophoneGuardianService {
     } else {
       // Even if not speaking, ensure audio session has settled
       const timeSinceLastSpeak = TTSManager.getTimeSinceLastSpeak();
-      if (timeSinceLastSpeak < 150) {
-        const waitTime = 150 - timeSinceLastSpeak;
+      if (timeSinceLastSpeak < 300) {
+        const waitTime = 300 - timeSinceLastSpeak;
         console.log(`[MicGuardian] v66: Waiting ${waitTime}ms for audio session to settle`);
         await new Promise(r => setTimeout(r, waitTime));
       }

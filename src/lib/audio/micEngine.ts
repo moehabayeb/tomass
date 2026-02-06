@@ -91,6 +91,10 @@ const CAPACITOR_RESTART_DELAY_MS = 300; // Delay for Android to release resource
 // 🔧 v66 BULLETPROOF iOS FIX: Mutex lock to prevent concurrent speech recognition starts
 // This prevents "Ongoing speech recognition" error when starting new session while one is running
 let speechRecognitionMutex = false;
+// 🔧 v69 CRASH FIX: Hard gate to reject concurrent Capacitor start() calls immediately
+// The mutex spin-wait force-releases after 2s, letting both callers through → crash.
+// This gate rejects the second caller instantly instead of queuing it.
+let capacitorStartInProgress = false;
 let cleanupPromise: Promise<void> | null = null;
 
 // Timers
@@ -309,8 +313,8 @@ async function ensureCleanSlate(): Promise<void> {
   // iOS needs extra time for audio session to settle between mode switches
   // This prevents "AudioSession::beginInterruption but session is already interrupted!" error
   if (Capacitor.getPlatform() === 'ios') {
-    console.log('[MicEngine] v67.2: iOS audio session settling (150ms)...');
-    await new Promise(r => setTimeout(r, 150));
+    console.log('[MicEngine] v69: iOS audio session settling (300ms)...');
+    await new Promise(r => setTimeout(r, 300));
   } else {
     // Android also benefits from a small delay
     await new Promise(r => setTimeout(r, 50));
@@ -637,12 +641,21 @@ async function startSpeechRecognition(id: number, maxSec: number): Promise<strin
 
 // ============= CAPACITOR SPEECH RECOGNITION (ANDROID/iOS) =============
 // 🎯 BULLETPROOF VERSION v66 - Handles iOS "Ongoing speech recognition" error
-async function startCapacitorSpeechRecognition(id: number, maxSec: number): Promise<string> {
-  console.log('[CapacitorSpeech] ========== STARTING v66 ==========');
+async function startCapacitorSpeechRecognition(id: number, maxSec: number, shouldContinue?: () => boolean): Promise<string> {
+  console.log('[CapacitorSpeech] ========== STARTING v69 ==========');
+
+  // 🔧 v69 CRASH FIX: Hard gate - reject concurrent callers IMMEDIATELY
+  // The old mutex spin-wait would force-release after 2s, letting both callers through
+  // and causing a fatal crash in the Swift plugin (force-unwrap nil SFSpeechRecognizer).
+  if (capacitorStartInProgress) {
+    console.error('[CapacitorSpeech] v69: HARD GATE - another start() is in progress, rejecting immediately');
+    throw new Error('Speech recognition start already in progress');
+  }
+  capacitorStartInProgress = true;
 
   // 🔧 v66 BULLETPROOF: Mutex check - prevent concurrent start attempts
   if (speechRecognitionMutex) {
-    console.log('[CapacitorSpeech] v66: Already starting, waiting for mutex...');
+    console.log('[CapacitorSpeech] v69: Already starting, waiting for mutex...');
     // Wait for current operation to complete
     let attempts = 0;
     while (speechRecognitionMutex && attempts < 20) {
@@ -650,14 +663,14 @@ async function startCapacitorSpeechRecognition(id: number, maxSec: number): Prom
       attempts++;
     }
     if (speechRecognitionMutex) {
-      console.error('[CapacitorSpeech] v66: Mutex timeout - forcing release');
+      console.error('[CapacitorSpeech] v69: Mutex timeout - forcing release');
       speechRecognitionMutex = false;
     }
   }
 
   // Acquire mutex
   speechRecognitionMutex = true;
-  console.log('[CapacitorSpeech] v66: Mutex acquired');
+  console.log('[CapacitorSpeech] v69: Mutex acquired');
 
   // 🔧 GOD-TIER v14: Force reset state to ensure clean start
   // This prevents "state stuck" issues from blocking Turn 2+
@@ -718,7 +731,9 @@ async function startCapacitorSpeechRecognition(id: number, maxSec: number): Prom
       // This prevents Turn 2 from being blocked by Turn 1's background cleanup.
       // If cleanup hangs (iOS removeAllListeners can hang), Turn 2 can still start.
       speechRecognitionMutex = false;
-      console.log('[CapacitorSpeech] v67.3: Mutex released immediately after resolve');
+      // 🔧 v69: Release hard gate so next caller can enter
+      capacitorStartInProgress = false;
+      console.log('[CapacitorSpeech] v69: Mutex + hard gate released after resolve');
 
       // Now do cleanup in background (non-blocking)
       // If this hangs, it doesn't matter - promise already resolved AND mutex released
@@ -751,6 +766,7 @@ async function startCapacitorSpeechRecognition(id: number, maxSec: number): Prom
       if (!available) {
         // 🔧 v66: Release mutex on early return
         speechRecognitionMutex = false;
+        capacitorStartInProgress = false;
         reject(new Error('Speech recognition not available'));
         return;
       }
@@ -761,6 +777,7 @@ async function startCapacitorSpeechRecognition(id: number, maxSec: number): Prom
       if (permResult.speechRecognition !== 'granted') {
         // 🔧 v66: Release mutex on early return
         speechRecognitionMutex = false;
+        capacitorStartInProgress = false;
         reject(new Error('Microphone access denied'));
         return;
       }
@@ -929,6 +946,19 @@ async function startCapacitorSpeechRecognition(id: number, maxSec: number): Prom
       await new Promise(r => setTimeout(r, 500));
 
       // Step 8: START RECOGNITION
+      // 🔧 v69 CRASH FIX: Last-chance check before native start()
+      // If flowState moved away from LISTENING during the ~1s setup, abort to prevent
+      // starting speech recognition when we're already in PROCESSING/READING
+      if (shouldContinue && !shouldContinue()) {
+        console.warn('[CapacitorSpeech] v69: shouldContinue=false, aborting before start()');
+        // Clean up listeners we just registered
+        try { await CapacitorSpeechRecognition.removeAllListeners(); } catch { /* ignore */ }
+        speechRecognitionMutex = false;
+        capacitorStartInProgress = false;
+        reject(new Error('Speech recognition aborted: state changed during setup'));
+        return;
+      }
+
       console.log('[CapacitorSpeech] Calling start()...');
       setState('recording');
 
@@ -962,9 +992,10 @@ async function startCapacitorSpeechRecognition(id: number, maxSec: number): Prom
     } catch (error: any) {
       console.error('[CapacitorSpeech] CRITICAL ERROR:', error);
       await cleanup();
-      // 🔧 v66: Release mutex on error
+      // 🔧 v69: Release mutex + hard gate on error
       speechRecognitionMutex = false;
-      console.log('[CapacitorSpeech] v66: Mutex released (error path)');
+      capacitorStartInProgress = false;
+      console.log('[CapacitorSpeech] v69: Mutex + hard gate released (error path)');
       reject(new Error(error.message || 'Speech recognition failed'));
     }
   });
@@ -1028,7 +1059,7 @@ async function startMediaRecorder(id: number, maxSec: number): Promise<string> {
 }
 
 // ============= MAIN ENGINE =============
-async function internalStart(id: number, maxSec: number): Promise<MicResult> {
+async function internalStart(id: number, maxSec: number, shouldContinue?: () => boolean): Promise<MicResult> {
   // 🎯 iOS/ANDROID FIX: On native platforms, try Capacitor first, fallback to MediaRecorder + Whisper
   if (Capacitor.isNativePlatform()) {
     const platform = Capacitor.getPlatform();
@@ -1070,7 +1101,7 @@ async function internalStart(id: number, maxSec: number): Promise<MicResult> {
           console.log('[MicEngine] State set to initializing, calling startCapacitorSpeechRecognition...');
 
           // Use Capacitor speech recognition directly - NO getUserMedia needed
-          const transcript = await startCapacitorSpeechRecognition(id, maxSec);
+          const transcript = await startCapacitorSpeechRecognition(id, maxSec, shouldContinue);
 
           console.log('[MicEngine] Capacitor speech recognition returned:', transcript || '(empty)');
           const durationSec = (Date.now() - startTime) / 1000;
@@ -1198,7 +1229,7 @@ async function internalStart(id: number, maxSec: number): Promise<MicResult> {
 }
 
 // ============= PUBLIC API =============
-export async function startRecording(opts: { maxSec?: number; bypassDebounce?: boolean } = {}): Promise<MicResult> {
+export async function startRecording(opts: { maxSec?: number; bypassDebounce?: boolean; shouldContinue?: () => boolean } = {}): Promise<MicResult> {
   // 🎯 ULTIMATE FIX: Allow bypassing debounce for internal retries
   if (!opts.bypassDebounce && debounceButton()) return Promise.reject(new Error('Button debounced'));
 
@@ -1243,8 +1274,8 @@ export async function startRecording(opts: { maxSec?: number; bypassDebounce?: b
   const maxSec = opts.maxSec || MAX_SECONDS;
 
   try {
-    const result = await internalStart(id, maxSec);
-    
+    const result = await internalStart(id, maxSec, opts.shouldContinue);
+
     // Auto-retry logic for empty transcripts
     if (!result.transcript && retryCount < MAX_RETRIES) {
       retryCount++;
@@ -1330,6 +1361,9 @@ export async function stopRecording(): Promise<void> {
 export function cleanup(): void {
   runId = 0;
   retryCount = 0;
+  // 🔧 v69: Reset concurrency gates on cleanup to prevent permanent lockout
+  capacitorStartInProgress = false;
+  speechRecognitionMutex = false;
   cleanupResources();
   setState('idle');
   emitMetrics('cleanup_complete');

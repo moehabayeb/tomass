@@ -363,6 +363,12 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       ttsMutex: ttsAuthorityMutexRef.current
     });
 
+    // 🔧 v69 CRASH FIX: Abort stale mic retries when leaving LISTENING
+    // This prevents retry loops from firing start() during PROCESSING/READING → concurrent calls → crash
+    if (flowState !== 'LISTENING') {
+      micRetryAbortRef.current?.abort();
+    }
+
     // v67: Update watchdog when flowState changes
     switch (flowState) {
       case 'IDLE': speechWatchdog.setState('idle'); break;
@@ -591,6 +597,9 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   const FAB_DEBOUNCE_MS = 500;
   // v68: Ref for interimCaption to prevent stale closure issues
   const interimCaptionRef = useRef('');
+  // 🔧 v69 CRASH FIX: AbortController to cancel stale mic retry loops
+  // Prevents retries from firing during PROCESSING/READING states which cause concurrent start() → crash
+  const micRetryAbortRef = useRef<AbortController | null>(null);
 
   // 2) When starting a turn, always pass a token and always call completion
   const startNewTurn = () => {
@@ -858,6 +867,9 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         }
       }
 
+      // 🔧 v69: Abort any pending mic retries before TTS starts
+      micRetryAbortRef.current?.abort();
+
       // 🎯 v41: Pause mic BEFORE TTS starts to prevent echo
       micPausedForTTSRef.current = true;
       try {
@@ -1002,6 +1014,9 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   };
 
   // 🔧 DIVINE FIX: Helper - Force transition to LISTENING with mic activation (unconditional)
+  // 🔧 v69 CRASH FIX: Restructured so transitionInProgressRef wraps the ENTIRE function
+  // including startHandsFreeMicCaptureSafe. Previously the guard was released in finally
+  // BEFORE the mic start, allowing a second forceToListening to overlap → concurrent start() → crash.
   const forceToListening = async (reason: string) => {
     // 🔧 GOD-TIER v5: Prevent concurrent transitions (race condition fix)
     if (transitionInProgressRef.current) {
@@ -1030,36 +1045,35 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         clearTimeout(stateTransitionTimeoutRef.current);
         stateTransitionTimeoutRef.current = null;
       }
-    } finally {
-      // 🔧 GOD-TIER v8: Always reset guard IMMEDIATELY after state transition
-      // This allows nested forceToListening calls from the conversation loop
-      transitionInProgressRef.current = false;
-    }
 
-    // 🎯 v41 ULTRA GOD-TIER: Clear mic guards BEFORE triggering Turn 2+
-    // This ensures the mic can start even if previous turn didn't clean up properly
-    micCaptureInProgressRef.current = false;
-    console.log('[forceToListening] v41: Cleared mic guards before trigger');
+      // 🎯 v41 ULTRA GOD-TIER: Clear mic guards BEFORE triggering Turn 2+
+      // This ensures the mic can start even if previous turn didn't clean up properly
+      micCaptureInProgressRef.current = false;
+      console.log('[forceToListening] v69: Cleared mic guards before trigger');
 
-    // 🎯 v41 ULTRA GOD-TIER: PROPERLY AWAIT mic capture!
-    // Previous fire-and-forget caused state machine to think LISTENING was active
-    // before mic actually started, leading to race conditions
-    if (!isMountedRef.current) return;
+      // 🎯 v41 ULTRA GOD-TIER: PROPERLY AWAIT mic capture!
+      // Previous fire-and-forget caused state machine to think LISTENING was active
+      // before mic actually started, leading to race conditions
+      if (!isMountedRef.current) return;
 
-    try {
-      await startHandsFreeMicCaptureSafe(true);
-      console.log('[forceToListening] v41: Mic capture started successfully');
-    } catch (err) {
-      // If mic fails, notify user and reset to IDLE
-      console.error('[forceToListening] v41: Mic capture failed:', err);
-      toast({
-        title: "Could not start listening",
-        description: "Please check microphone permissions",
-        variant: "destructive"
-      });
-      if (isMountedRef.current) {
-        setFlowState('IDLE');
+      try {
+        await startHandsFreeMicCaptureSafe(true);
+        console.log('[forceToListening] v69: Mic capture started successfully');
+      } catch (err) {
+        // If mic fails, notify user and reset to IDLE
+        console.error('[forceToListening] v69: Mic capture failed:', err);
+        toast({
+          title: "Could not start listening",
+          description: "Please check microphone permissions",
+          variant: "destructive"
+        });
+        if (isMountedRef.current) {
+          setFlowState('IDLE');
+        }
       }
+    } finally {
+      // 🔧 v69: Release guard AFTER the entire function including mic start
+      transitionInProgressRef.current = false;
     }
   };
 
@@ -1171,6 +1185,11 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
   // B) Mic + interim captions (LISTENING only) - FSM enforced guards
   const startHandsFreeMicCaptureSafe = async (force = false) => {
+    // 🔧 v69 CRASH FIX: Abort previous retry loop and create new AbortController
+    micRetryAbortRef.current?.abort();
+    const abortController = new AbortController();
+    micRetryAbortRef.current = abortController;
+
     // 🔧 GOD-TIER v10: Guard ONLY protects mic recording phase, NOT the entire function
     // This allows new mic capture to start when TTS finishes, while previous turn processes
     if (micCaptureInProgressRef.current) {
@@ -1253,7 +1272,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       const micPromise = (async () => {
         try {
           // 🎯 ULTIMATE FIX: Bypass debounce for internal calls (debounce is for button clicks)
-          return await startRecording({ bypassDebounce: true });
+          // 🔧 v69: Pass shouldContinue to abort if flowState leaves LISTENING during setup
+          return await startRecording({ bypassDebounce: true, shouldContinue: () => flowStateRef.current === 'LISTENING' });
         } catch (err) {
           console.error(`[MicTrigger] Attempt ${micRetryCount + 1} failed:`, err);
           return null;
@@ -1263,12 +1283,18 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     };
 
     // Try to start mic with retries and exponential backoff
+    // 🔧 v69 CRASH FIX: Check abort signal before AND after each delay
     result = await tryStartMicWithTimeout();
-    while (!result && micRetryCount < MAX_MIC_RETRIES) {
+    while (!result && micRetryCount < MAX_MIC_RETRIES && !abortController.signal.aborted) {
       micRetryCount++;
       const delay = MIC_RETRY_DELAYS[micRetryCount - 1] || 1500;
-      console.log(`[MicTrigger] 🔄 v62: Retry ${micRetryCount}/${MAX_MIC_RETRIES} after ${delay}ms...`);
+      console.log(`[MicTrigger] 🔄 v69: Retry ${micRetryCount}/${MAX_MIC_RETRIES} after ${delay}ms...`);
       await new Promise(r => setTimeout(r, delay));
+      // Check abort signal after delay - state may have changed during wait
+      if (abortController.signal.aborted) {
+        console.log('[MicTrigger] v69: Retry aborted after delay (state changed)');
+        break;
+      }
       result = await tryStartMicWithTimeout();
     }
 
@@ -1313,6 +1339,9 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
       // 🔧 GOD-TIER FIX: Reset response flag for new turn (allows ONE AI response per user input)
       responseSpokenForTurnRef.current = false;
+
+      // 🔧 v69: Abort any pending mic retries before entering PROCESSING
+      micRetryAbortRef.current?.abort();
 
       // Set state=PROCESSING and call existing executeTeacherLoop
       setFlowState('PROCESSING');

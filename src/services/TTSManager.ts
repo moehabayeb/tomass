@@ -59,7 +59,7 @@ class TTSManagerService {
   // This prevents TTS/STT audio session conflicts on iOS
   private _isSpeakingInternal = false;
   private lastSpeakEndTime = 0;
-  private readonly AUDIO_SESSION_SETTLE_MS = 150; // iOS needs time to switch audio modes
+  private readonly AUDIO_SESSION_SETTLE_MS = 300; // v69: Increased from 150ms - iOS needs more time to switch audio modes
 
   constructor() {
     // Ensure audio context is unlocked on first user gesture
