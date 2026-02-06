@@ -1278,6 +1278,17 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
     // 🔧 v62: Wrap tryStartMic with timeout to prevent infinite hangs
     const tryStartMicWithTimeout = async (): Promise<{ transcript: string; durationSec: number } | null> => {
+      // v70.2: On native, don't use 3s timeout — Capacitor manages its own recording lifecycle
+      // (initial silence timeout + max duration timeout). The 3s timeout was for web getUserMedia hangs,
+      // but on native it fires while the user is still speaking, triggering retry loop → stale runId → stuck gate.
+      if (Capacitor.isNativePlatform()) {
+        try {
+          return await startRecording({ bypassDebounce: true, shouldContinue: () => flowStateRef.current === 'LISTENING' });
+        } catch (err) {
+          console.error(`[MicTrigger] Attempt ${micRetryCount + 1} failed:`, err);
+          return null;
+        }
+      }
       const timeoutPromise = new Promise<null>((resolve) =>
         setTimeout(() => resolve(null), 3000)
       );
@@ -2497,15 +2508,6 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
               <div className="text-center py-2" role="status" aria-live="polite" aria-atomic="true" aria-label="Live transcript of your speech">
                 <div className="inline-block px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm">
                   <span className="text-white/70 italic text-sm">"{interimCaption}"</span>
-                </div>
-              </div>
-            )}
-
-            {/* v70: Helper text when LISTENING but no speech detected yet */}
-            {flowState === 'LISTENING' && !interimCaption && (
-              <div className="text-center py-2">
-                <div className="inline-block px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm">
-                  <span className="text-white/50 italic text-sm">Listening... speak now</span>
                 </div>
               </div>
             )}

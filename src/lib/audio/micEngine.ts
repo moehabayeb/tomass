@@ -824,7 +824,20 @@ async function startCapacitorSpeechRecognition(id: number, maxSec: number, shoul
     };
 
     const finish = async (result: string, reason: string) => {
-      if (isFinished || isStale(id)) return;
+      if (isFinished) return;
+      // v70.2: Even if stale, MUST release global locks to prevent permanent lockout.
+      // When retry loop increments runId, the original recording's finish() becomes stale,
+      // but it still holds the hard gate — release it so the next caller can enter.
+      if (isStale(id)) {
+        console.log(`[CapacitorSpeech] v70.2: Stale finish (reason: ${reason}), releasing locks`);
+        if (timeoutId) clearTimeout(timeoutId);
+        if (silenceTimeoutId) clearTimeout(silenceTimeoutId);
+        if (interimActivityIntervalId) { clearInterval(interimActivityIntervalId); interimActivityIntervalId = undefined; }
+        activeFinishCallback = null;
+        speechRecognitionMutex = false;
+        capacitorStartInProgress = false;
+        return;
+      }
       // 🔧 v27: Use closure transcript if external call passes empty result
       // This allows stopRecording() to finish with the current transcript
       const finalResult = result || transcript;
