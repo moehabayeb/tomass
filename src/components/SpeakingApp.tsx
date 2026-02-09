@@ -1226,8 +1226,10 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       return;
     }
 
-    // Always make sure audio context is unlocked
-    try { await enableAudioContext(); } catch { /* Silent fail: non-critical */ }
+    // 🔧 v71: Skip WebAudio context on native — Capacitor manages its own audio session
+    if (!Capacitor.isNativePlatform()) {
+      try { await enableAudioContext(); } catch { /* Silent fail: non-critical */ }
+    }
 
     // 🔧 GOD-TIER v11.1: Only acquire persistent stream on WEB
     // On native (Android/iOS), Capacitor plugin manages mic internally - no getUserMedia needed

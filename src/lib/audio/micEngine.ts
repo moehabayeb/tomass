@@ -3,6 +3,7 @@ import { enqueueMetric } from '@/lib/metrics';
 import { Capacitor } from '@capacitor/core';
 import { SpeechRecognition as CapacitorSpeechRecognition } from '@capacitor-community/speech-recognition';
 import { microphoneGuardian } from '@/services/MicrophoneGuardian';
+import { TTSManager } from '@/services/TTSManager';
 
 // ============= iOS PLATFORM DETECTION =============
 // iOS Safari does NOT support Web Speech API - must use Capacitor or fallback
@@ -326,9 +327,17 @@ async function ensureCleanSlate(): Promise<void> {
 
   // iOS needs extra time for audio session to settle between mode switches
   // This prevents "AudioSession::beginInterruption but session is already interrupted!" error
+  // 🔧 v71: TTS-aware settle — skip wait if enough time already passed since TTS ended
   if (Capacitor.getPlatform() === 'ios') {
-    console.log('[MicEngine] v69: iOS audio session settling (300ms)...');
-    await new Promise(r => setTimeout(r, 300));
+    const REQUIRED_SETTLE_MS = 300;
+    const timeSinceTTS = TTSManager.getTimeSinceLastSpeak();
+    const remainingSettle = Math.max(0, REQUIRED_SETTLE_MS - timeSinceTTS);
+    if (remainingSettle > 0) {
+      console.log(`[MicEngine] v71: iOS audio settle (${remainingSettle}ms remaining)...`);
+      await new Promise(r => setTimeout(r, remainingSettle));
+    } else {
+      console.log('[MicEngine] v71: iOS audio already settled');
+    }
   } else {
     // Android also benefits from a small delay
     await new Promise(r => setTimeout(r, 50));
@@ -919,167 +928,171 @@ async function startCapacitorSpeechRecognition(id: number, maxSec: number, shoul
       }
       console.log('[CapacitorSpeech] Android cleanup delay completed, ready to add listeners');
 
-      // Step 4: Add partialResults listener - HANDLE BOTH ARRAY AND STRING
-      await CapacitorSpeechRecognition.addListener('partialResults', (data: any) => {
-        console.log('[CapacitorSpeech] partialResults:', JSON.stringify(data));
-        // 🎯 GOD-TIER FIX: Only exit on stale, NOT on isFinished
-        // Allow late results to update transcript even after stop initiated
-        if (isStale(id)) return;
+      // 🔧 v71: Parallelize listener registration — saves 20-40ms vs sequential awaits
+      await Promise.all([
+        // Step 4: Add partialResults listener - HANDLE BOTH ARRAY AND STRING
+        CapacitorSpeechRecognition.addListener('partialResults', (data: any) => {
+          console.log('[CapacitorSpeech] partialResults:', JSON.stringify(data));
+          // 🎯 GOD-TIER FIX: Only exit on stale, NOT on isFinished
+          // Allow late results to update transcript even after stop initiated
+          if (isStale(id)) return;
 
-        // 🎯 CRITICAL FIX: Handle both array and string formats from Android
-        let newTranscript = '';
-        if (data.matches) {
-          if (Array.isArray(data.matches) && data.matches.length > 0) {
-            newTranscript = data.matches[0];
-          } else if (typeof data.matches === 'string') {
-            newTranscript = data.matches;
-          }
-        } else if (data.value) {
-          // Some Android versions use 'value' instead of 'matches'
-          newTranscript = Array.isArray(data.value) ? data.value[0] : data.value;
-        }
-
-        if (newTranscript) {
-          transcript = newTranscript;
-          lastSpeechTime = Date.now(); // 🎯 v39: Track when user last spoke
-          console.log('[CapacitorSpeech] Transcript:', transcript);
-
-          // Reset silence timeout on speech
-          if (silenceTimeoutId) clearTimeout(silenceTimeoutId);
-          silenceTimeoutId = setTimeout(() => {
-            if (!isFinished && transcript) {
-              finish(transcript, 'silence_after_speech');
+          // 🎯 CRITICAL FIX: Handle both array and string formats from Android
+          let newTranscript = '';
+          if (data.matches) {
+            if (Array.isArray(data.matches) && data.matches.length > 0) {
+              newTranscript = data.matches[0];
+            } else if (typeof data.matches === 'string') {
+              newTranscript = data.matches;
             }
-          }, SILENCE_TIMEOUT_MS);
-
-          // Emit interim event for live captions
-          window.dispatchEvent(new CustomEvent('speech:interim', {
-            detail: { transcript }
-          }));
-          // v70: Activity tracking for native pulse ring proxy
-          lastInterimEventTime = Date.now();
-          window.dispatchEvent(new CustomEvent('speech:activity'));
-        }
-      });
-
-      // Step 5: Add listeningState listener - HANDLE ALL STATES
-      await CapacitorSpeechRecognition.addListener('listeningState', (data: any) => {
-        console.log('[CapacitorSpeech] listeningState:', JSON.stringify(data));
-        if (isStale(id) || isFinished) return;
-
-        // 🎯 CRITICAL FIX: Handle 'started' status too
-        if (data.status === 'started') {
-          hasStarted = true;
-          console.log('[CapacitorSpeech] ✓ Recording STARTED');
-        } else if (data.status === 'stopped') {
-          // 🎯 v41 ULTRA GOD-TIER: Complete rewrite of auto-restart with proper state management
-          // Fixes: race conditions, duplicate restarts, stale timeouts, infinite loops
-          console.log('[CapacitorSpeech] Recording STOPPED, transcript so far:', transcript);
-
-          // Guard: Already finished or restart in progress
-          if (isFinished || isRestartInProgress) {
-            console.log('[CapacitorSpeech] v41: Skipping - isFinished:', isFinished, 'isRestartInProgress:', isRestartInProgress);
-            return;
+          } else if (data.value) {
+            // Some Android versions use 'value' instead of 'matches'
+            newTranscript = Array.isArray(data.value) ? data.value[0] : data.value;
           }
 
-          // Check if user has been silent for too long (genuinely done speaking)
-          const timeSinceLastSpeech = Date.now() - lastSpeechTime;
-          if (timeSinceLastSpeech > 10000) {
-            console.log('[CapacitorSpeech] v41: Extended silence (10s+), finishing');
-            finish(transcript, 'extended_silence');
-            return;
+          if (newTranscript) {
+            transcript = newTranscript;
+            lastSpeechTime = Date.now(); // 🎯 v39: Track when user last spoke
+            console.log('[CapacitorSpeech] Transcript:', transcript);
+
+            // Reset silence timeout on speech
+            if (silenceTimeoutId) clearTimeout(silenceTimeoutId);
+            silenceTimeoutId = setTimeout(() => {
+              if (!isFinished && transcript) {
+                finish(transcript, 'silence_after_speech');
+              }
+            }, SILENCE_TIMEOUT_MS);
+
+            // Emit interim event for live captions
+            window.dispatchEvent(new CustomEvent('speech:interim', {
+              detail: { transcript }
+            }));
+            // v70: Activity tracking for native pulse ring proxy
+            lastInterimEventTime = Date.now();
+            window.dispatchEvent(new CustomEvent('speech:activity'));
           }
+        }),
 
-          // Check restart limit
-          if (restartCount >= MAX_RESTARTS) {
-            console.log('[CapacitorSpeech] v41: Max restarts reached, finishing');
-            finish(transcript, 'max_restarts_reached');
-            return;
-          }
+        // Step 5: Add listeningState listener - HANDLE ALL STATES
+        CapacitorSpeechRecognition.addListener('listeningState', (data: any) => {
+          console.log('[CapacitorSpeech] listeningState:', JSON.stringify(data));
+          if (isStale(id) || isFinished) return;
 
-          // v41: Use async IIFE with proper state tracking (no setTimeout race conditions)
-          (async () => {
-            // Set restart flag IMMEDIATELY to prevent concurrent restarts
-            isRestartInProgress = true;
-            const savedTranscript = transcript;
-            restartCount++;
-            console.log(`[CapacitorSpeech] v41: Auto-restart #${restartCount}/${MAX_RESTARTS}...`);
+          // 🎯 CRITICAL FIX: Handle 'started' status too
+          if (data.status === 'started') {
+            hasStarted = true;
+            console.log('[CapacitorSpeech] ✓ Recording STARTED');
+          } else if (data.status === 'stopped') {
+            // 🎯 v41 ULTRA GOD-TIER: Complete rewrite of auto-restart with proper state management
+            // Fixes: race conditions, duplicate restarts, stale timeouts, infinite loops
+            console.log('[CapacitorSpeech] Recording STOPPED, transcript so far:', transcript);
 
-            // v41 CRITICAL: Clear existing silence timeout before restart
-            if (silenceTimeoutId) {
-              clearTimeout(silenceTimeoutId);
-              silenceTimeoutId = null;
+            // Guard: Already finished or restart in progress
+            if (isFinished || isRestartInProgress) {
+              console.log('[CapacitorSpeech] v41: Skipping - isFinished:', isFinished, 'isRestartInProgress:', isRestartInProgress);
+              return;
             }
 
-            try {
-              // Stop current session
-              await CapacitorSpeechRecognition.stop();
+            // Check if user has been silent for too long (genuinely done speaking)
+            const timeSinceLastSpeech = Date.now() - lastSpeechTime;
+            if (timeSinceLastSpeech > 10000) {
+              console.log('[CapacitorSpeech] v41: Extended silence (10s+), finishing');
+              finish(transcript, 'extended_silence');
+              return;
+            }
 
-              // v70: iOS audio session settle time before restart
-              if (Capacitor.getPlatform() === 'ios') {
-                console.log('[CapacitorSpeech] v70: iOS pre-restart settle (300ms)');
-                await new Promise(r => setTimeout(r, 300));
+            // Check restart limit
+            if (restartCount >= MAX_RESTARTS) {
+              console.log('[CapacitorSpeech] v41: Max restarts reached, finishing');
+              finish(transcript, 'max_restarts_reached');
+              return;
+            }
+
+            // v41: Use async IIFE with proper state tracking (no setTimeout race conditions)
+            (async () => {
+              // Set restart flag IMMEDIATELY to prevent concurrent restarts
+              isRestartInProgress = true;
+              const savedTranscript = transcript;
+              restartCount++;
+              console.log(`[CapacitorSpeech] v41: Auto-restart #${restartCount}/${MAX_RESTARTS}...`);
+
+              // v41 CRITICAL: Clear existing silence timeout before restart
+              if (silenceTimeoutId) {
+                clearTimeout(silenceTimeoutId);
+                silenceTimeoutId = null;
               }
 
-              // Check if user stopped during our await
-              if (isFinished) {
-                console.log('[CapacitorSpeech] v41: User stopped during restart, aborting');
+              try {
+                // Stop current session
+                await CapacitorSpeechRecognition.stop();
+
+                // v70: iOS audio session settle time before restart
+                if (Capacitor.getPlatform() === 'ios') {
+                  console.log('[CapacitorSpeech] v70: iOS pre-restart settle (300ms)');
+                  await new Promise(r => setTimeout(r, 300));
+                }
+
+                // Check if user stopped during our await
+                if (isFinished) {
+                  console.log('[CapacitorSpeech] v41: User stopped during restart, aborting');
+                  isRestartInProgress = false;
+                  return;
+                }
+
+                // Wait for Android to release resources
+                await new Promise(r => setTimeout(r, CAPACITOR_RESTART_DELAY_MS));
+
+                // Check again after delay
+                if (isFinished) {
+                  console.log('[CapacitorSpeech] v41: User stopped during delay, aborting');
+                  isRestartInProgress = false;
+                  return;
+                }
+
+                // Restart recognition
+                await CapacitorSpeechRecognition.start({
+                  language: 'en-US',
+                  maxResults: 5,
+                  prompt: 'Continue speaking',
+                  partialResults: true,
+                  popup: false
+                });
+
+                // v41 CRITICAL: Update lastSpeechTime for new session
+                lastSpeechTime = Date.now();
+
+                // Preserve saved transcript (with space for continuation)
+                transcript = savedTranscript ? savedTranscript + ' ' : '';
+                console.log(`[CapacitorSpeech] v70: Auto-restart #${restartCount} successful`);
+                lastInterimEventTime = Date.now(); // v70: Reset activity tracking for new session
+
+              } catch (restartError) {
+                console.log(`[CapacitorSpeech] v70: Auto-restart #${restartCount} FAILED:`, restartError);
+                if (!isFinished) {
+                  finish(savedTranscript, 'restart_failed');
+                }
+              } finally {
+                // Always clear restart flag
                 isRestartInProgress = false;
-                return;
               }
+            })();
+          }
+        }),
 
-              // Wait for Android to release resources
-              await new Promise(r => setTimeout(r, CAPACITOR_RESTART_DELAY_MS));
-
-              // Check again after delay
-              if (isFinished) {
-                console.log('[CapacitorSpeech] v41: User stopped during delay, aborting');
-                isRestartInProgress = false;
-                return;
-              }
-
-              // Restart recognition
-              await CapacitorSpeechRecognition.start({
-                language: 'en-US',
-                maxResults: 5,
-                prompt: 'Continue speaking',
-                partialResults: true,
-                popup: false
-              });
-
-              // v41 CRITICAL: Update lastSpeechTime for new session
-              lastSpeechTime = Date.now();
-
-              // Preserve saved transcript (with space for continuation)
-              transcript = savedTranscript ? savedTranscript + ' ' : '';
-              console.log(`[CapacitorSpeech] v70: Auto-restart #${restartCount} successful`);
-              lastInterimEventTime = Date.now(); // v70: Reset activity tracking for new session
-
-            } catch (restartError) {
-              console.log(`[CapacitorSpeech] v70: Auto-restart #${restartCount} FAILED:`, restartError);
-              if (!isFinished) {
-                finish(savedTranscript, 'restart_failed');
-              }
-            } finally {
-              // Always clear restart flag
-              isRestartInProgress = false;
-            }
-          })();
-        }
-      });
-
-      // Step 6: ADD ERROR LISTENER - CRITICAL FOR DEBUGGING
-      await CapacitorSpeechRecognition.addListener('error', (data: any) => {
-        console.error('[CapacitorSpeech] ERROR EVENT:', JSON.stringify(data));
-        if (!isFinished) {
-          // Don't reject - just finish with empty string
-          finish('', 'error_event');
-        }
-      });
+        // Step 6: ADD ERROR LISTENER - CRITICAL FOR DEBUGGING
+        CapacitorSpeechRecognition.addListener('error', (data: any) => {
+          console.error('[CapacitorSpeech] ERROR EVENT:', JSON.stringify(data));
+          if (!isFinished) {
+            // Don't reject - just finish with empty string
+            finish('', 'error_event');
+          }
+        }),
+      ]);
 
       // Step 7: Small delay for listeners to register
-      // 🎯 v42: Increased from 300ms to 500ms - Android hardware needs more init time
-      await new Promise(r => setTimeout(r, 500));
+      // 🎯 v71: Platform-specific settle - iOS listeners are confirmed by native await, Android needs more
+      const listenerSettleMs = Capacitor.getPlatform() === 'ios' ? 150 : 250;
+      await new Promise(r => setTimeout(r, listenerSettleMs));
 
       // Step 8: START RECOGNITION
       // 🔧 v69 CRASH FIX: Last-chance check before native start()
@@ -1215,77 +1228,32 @@ async function startMediaRecorder(id: number, maxSec: number): Promise<string> {
 // ============= MAIN ENGINE =============
 async function internalStart(id: number, maxSec: number, shouldContinue?: () => boolean): Promise<MicResult> {
   // 🎯 iOS/ANDROID FIX: On native platforms, try Capacitor first, fallback to MediaRecorder + Whisper
+  // 🔧 v71: Removed duplicate available() + requestPermissions() calls — startCapacitorSpeechRecognition checks both
   if (Capacitor.isNativePlatform()) {
     const platform = Capacitor.getPlatform();
-    console.log('[MicEngine] ===== NATIVE PLATFORM DETECTED =====', platform);
+    emitMetrics('engine_start', { mode: 'capacitor-native', maxSec, platform });
 
-    // 🎯 iOS: Always request permission first before checking availability
-    if (platform === 'ios') {
-      try {
-        const permResult = await CapacitorSpeechRecognition.requestPermissions();
-        console.log('[MicEngine] iOS permission result:', permResult);
-
-        if (permResult.speechRecognition !== 'granted') {
-          console.warn('[MicEngine] iOS speech permission denied, using fallback');
-          emitMetrics('engine_start', { mode: 'whisper-fallback-ios-denied', maxSec });
-          // Fall through to web path below
-        }
-      } catch (permError) {
-        console.error('[MicEngine] iOS permission request failed:', permError);
-        // Fall through to web path below
-      }
-    }
-
-    // 🎯 EMULATOR FIX: Check if speech recognition is actually available
     try {
-      const { available } = await CapacitorSpeechRecognition.available();
-      console.log('[MicEngine] Speech recognition available:', available);
+      // Cancel any ongoing TTS
+      try { window?.speechSynthesis?.cancel(); } catch { /* ignore */ }
 
-      if (available) {
-        // Native speech recognition IS available - use Capacitor (fast path)
-        console.log('[MicEngine] Using Capacitor speech recognition');
-        emitMetrics('engine_start', { mode: 'capacitor-native', maxSec, platform });
+      setState('initializing');
+      startTime = Date.now();
 
-        try {
-          // Cancel any ongoing TTS
-          try { window?.speechSynthesis?.cancel(); } catch { /* ignore */ }
+      // Use Capacitor speech recognition directly — it handles available() + permissions internally
+      const transcript = await startCapacitorSpeechRecognition(id, maxSec, shouldContinue);
 
-          setState('initializing');
-          startTime = Date.now();
-          console.log('[MicEngine] State set to initializing, calling startCapacitorSpeechRecognition...');
+      console.log('[MicEngine] Capacitor speech recognition returned:', transcript || '(empty)');
+      const durationSec = (Date.now() - startTime) / 1000;
+      setState('processing');
 
-          // Use Capacitor speech recognition directly - NO getUserMedia needed
-          const transcript = await startCapacitorSpeechRecognition(id, maxSec, shouldContinue);
+      emitMetrics('recording_complete', { transcript: transcript.substring(0, 50), durationSec });
 
-          console.log('[MicEngine] Capacitor speech recognition returned:', transcript || '(empty)');
-          const durationSec = (Date.now() - startTime) / 1000;
-          setState('processing');
+      return { transcript: transcript.trim(), durationSec };
 
-          emitMetrics('recording_complete', { transcript: transcript.substring(0, 50), durationSec });
-
-          return { transcript: transcript.trim(), durationSec };
-
-        } catch (error: any) {
-          console.error('[MicEngine] NATIVE ERROR:', error);
-          emitMetrics('recording_error', { error: error.message });
-
-          if (error.message?.includes('denied') || error.name === 'NotAllowedError') {
-            throw new Error('Microphone access denied. Allow mic in Settings.');
-          }
-          throw error;
-        }
-      } else {
-        // 🎯 EMULATOR/NO-GOOGLE-SERVICES: Fall through to MediaRecorder + Whisper
-        console.log('[MicEngine] ⚠️ Native speech NOT available (emulator or no Google Services)');
-        console.log('[MicEngine] Falling back to MediaRecorder + Whisper API');
-        emitMetrics('engine_start', { mode: 'whisper-fallback', maxSec });
-        // Fall through to web path below
-      }
-    } catch (availabilityError) {
-      // Availability check failed - fall back to MediaRecorder + Whisper
-      console.log('[MicEngine] ⚠️ Availability check failed:', availabilityError);
-      console.log('[MicEngine] Falling back to MediaRecorder + Whisper API');
-      emitMetrics('engine_start', { mode: 'whisper-fallback-error', maxSec });
+    } catch (error: any) {
+      console.warn('[MicEngine] v71: Native SR failed, falling back to web:', error.message);
+      emitMetrics('recording_error', { error: error.message });
       // Fall through to web path below
     }
   }
@@ -1387,17 +1355,7 @@ export async function startRecording(opts: { maxSec?: number; bypassDebounce?: b
   // 🎯 ULTIMATE FIX: Allow bypassing debounce for internal retries
   if (!opts.bypassDebounce && debounceButton()) return Promise.reject(new Error('Button debounced'));
 
-  // 🎯 v45 ULTRA GOD-TIER: Enforce minimum delay between Capacitor sessions
-  // This MUST be checked here, not just in startCapacitorSpeechRecognition()
-  // Without this, Turn 2+ fails because Android's SpeechRecognizer listener registry corrupts
-  if (Capacitor.isNativePlatform()) {
-    const elapsed = Date.now() - capacitorLastStopTime;
-    if (capacitorLastStopTime > 0 && elapsed < CAPACITOR_MIN_RESTART_DELAY_MS) {
-      const waitTime = CAPACITOR_MIN_RESTART_DELAY_MS - elapsed;
-      console.log(`[startRecording] v45: Waiting ${waitTime}ms for Android cleanup...`);
-      await new Promise(r => setTimeout(r, waitTime));
-    }
-  }
+  // 🔧 v71: Removed duplicate CAPACITOR_MIN_RESTART_DELAY_MS check — authoritative check is in startCapacitorSpeechRecognition()
 
   // 🔧 GOD-TIER v15: Force reset stuck state instead of throwing
   // This is the ONLY place that can fix Turn 2+ failures
@@ -1408,19 +1366,22 @@ export async function startRecording(opts: { maxSec?: number; bypassDebounce?: b
     // DON'T throw - continue with recording
   }
 
-  // 🔧 PRODUCTION FIX: Pre-flight check via MicrophoneGuardian for bulletproof reliability
-  try {
-    const preflight = await microphoneGuardian.preflightCheck();
-    if (!preflight.ready) {
-      emitMetrics('preflight_failed', { status: preflight.status });
-      throw new Error(preflight.userMessage || 'Microphone not ready');
-    }
-  } catch (preflightError: any) {
-    // If guardian check itself fails, log but continue (don't block recording)
-    emitMetrics('preflight_error', { error: preflightError.message });
-    // Re-throw if it's an actual "not ready" error
-    if (preflightError.message?.includes('not ready') || preflightError.message?.includes('Microphone')) {
-      throw preflightError;
+  // 🔧 v71: Skip duplicate preflight on native — SpeakingApp.tsx already runs preflightCheck() before calling startRecording
+  if (!Capacitor.isNativePlatform()) {
+    // 🔧 PRODUCTION FIX: Pre-flight check via MicrophoneGuardian for bulletproof reliability (web only)
+    try {
+      const preflight = await microphoneGuardian.preflightCheck();
+      if (!preflight.ready) {
+        emitMetrics('preflight_failed', { status: preflight.status });
+        throw new Error(preflight.userMessage || 'Microphone not ready');
+      }
+    } catch (preflightError: any) {
+      // If guardian check itself fails, log but continue (don't block recording)
+      emitMetrics('preflight_error', { error: preflightError.message });
+      // Re-throw if it's an actual "not ready" error
+      if (preflightError.message?.includes('not ready') || preflightError.message?.includes('Microphone')) {
+        throw preflightError;
+      }
     }
   }
 
