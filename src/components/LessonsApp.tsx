@@ -3250,14 +3250,17 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
                             <div className="w-2 h-2 bg-blue-300 rounded-full ml-1"></div>
                           </div>
                           <h3 className="text-blue-300 text-lg font-semibold mb-4 text-center mt-2">
-                            🎯 Multiple Choice Quiz
+                            🎯 Choose the correct answer:
                           </h3>
-                          <p className="text-white text-xl font-medium mb-6 text-center">
-                            {currentPracticeItem.multipleChoice.prompt}
-                          </p>
-                          
+
                           <div className="grid grid-cols-1 gap-3 max-w-md mx-auto">
-                            {currentPracticeItem.multipleChoice.options.map((option) => (
+                            {currentPracticeItem.multipleChoice.options.map((option) => {
+                              // Build full sentence by replacing ___ in the cloze prompt with this option's text
+                              const prompt = currentPracticeItem.multipleChoice!.prompt;
+                              const fullSentence = prompt.includes('___')
+                                ? prompt.replace('___', option.text)
+                                : option.text;
+                              return (
                               <Button
                                 key={option.letter}
                                 onClick={() => handleMultipleChoiceSelect(option.letter, option.correct)}
@@ -3276,10 +3279,11 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
                                   {option.letter}.
                                 </span>
                                 <span className="text-lg">
-                                  {option.text}
+                                  {fullSentence}
                                 </span>
                               </Button>
-                            ))}
+                              );
+                            })}
                           </div>
                           
                           {currentState.selectedChoice && (
