@@ -126,6 +126,8 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
   const [hasPlayedPronunciation, setHasPlayedPronunciation] = useState(false);
   // 🔧 FIX #2: Race condition protection - prevent double submission
   const [isProcessing, setIsProcessing] = useState(false);
+  // v74: Animation transition lock — prevents conflicting state updates during card flip/transition
+  const [isAnimating, setIsAnimating] = useState(false);
 
   // 🔧 FIX #8: Mounted ref to prevent setState after unmount
   const isMountedRef = useRef(true);
@@ -148,9 +150,27 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
   // Phase 3.2: XP retry queue for network failures
   const xpRetryQueueRef = useRef<Array<{ amount: number; reason: string }>>([]);
 
+  // v74: Restore last selected tier from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('flashcards.lastTier');
+      if (saved) {
+        const tier = parseInt(saved, 10);
+        if (tier >= 1 && tier <= 5 && isTierUnlocked(tier)) {
+          setSelectedTier(tier);
+        }
+      }
+    } catch {
+      // Safari Private Mode - ignore
+    }
+  }, [isTierUnlocked]);
+
   // Start a tier
   const startTier = useCallback((tier: number) => {
     if (!isTierUnlocked(tier)) return;
+
+    // v74: Persist selected tier
+    try { localStorage.setItem('flashcards.lastTier', String(tier)); } catch { /* ignore */ }
 
     const words = getWordsByTier(tier);
     setSelectedTier(tier);
@@ -162,6 +182,7 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
     setTotalXPEarned(0);
     setHasPlayedPronunciation(false);
     setIsProcessing(false); // 🔧 FIX #2: Reset processing lock on new tier
+    setIsAnimating(false); // v74: Reset animation lock on new tier
     setScreen('playing');
   }, [isTierUnlocked, getWordsByTier]);
 
@@ -177,7 +198,8 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
   // Check if answer is correct (with fuzzy matching for typos)
   const checkAnswer = useCallback((answerOverride?: string) => {
     // 🔧 FIX #2: Prevent race condition - only process if not already processing
-    if (isProcessing) return;
+    // v74: Also block during animation transitions
+    if (isProcessing || isAnimating) return;
     setIsProcessing(true);
 
     // Use override if provided (for voice input), otherwise use state
@@ -223,7 +245,7 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
     // Move to answer phase and release processing lock
     setGamePhase('answer');
     setIsProcessing(false);
-  }, [userAnswer, currentCard, addXP, isProcessing, updateWordProgress]);
+  }, [userAnswer, currentCard, addXP, isProcessing, isAnimating, updateWordProgress]);
 
   // Handle voice input
   const handleVoiceInput = useCallback(async () => {
@@ -265,21 +287,29 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
   const nextCard = useCallback(() => {
     // 🔧 FIX #2: Reset processing lock when moving to next card
     setIsProcessing(false);
+    // v74: Set animating flag during card transition
+    setIsAnimating(true);
 
     if (currentCardIndex < flashcardWords.length - 1) {
       setCurrentCardIndex(prev => prev + 1);
       setGamePhase('question');
       setUserAnswer('');
       setHasPlayedPronunciation(false);
+      // v74: Clear animation lock after transition (300ms matches CSS transition duration)
+      setTimeout(() => setIsAnimating(false), 300);
     } else {
-      // Tier complete - save results and show results screen
-      if (selectedTier) {
-        completeTier(
-          selectedTier,
-          cardResults.map(r => ({ word: r.word.english, correct: r.correct }))
-        );
-      }
-      setScreen('results');
+      // v74: Delay completion to let the last card's flip animation finish (Fix 3.6)
+      setTimeout(() => {
+        // Tier complete - save results and show results screen
+        if (selectedTier) {
+          completeTier(
+            selectedTier,
+            cardResults.map(r => ({ word: r.word.english, correct: r.correct }))
+          );
+        }
+        setScreen('results');
+        setIsAnimating(false);
+      }, 400);
     }
   }, [currentCardIndex, flashcardWords.length, selectedTier, cardResults, completeTier]);
 

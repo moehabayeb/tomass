@@ -322,6 +322,8 @@ class BillingServiceClass {
 
       if (result.success) {
         console.log('[Billing] Purchase verified successfully');
+        // v74: Clear subscription cache so UI immediately reflects the new tier
+        SubscriptionService.clearCache();
         return {
           success: true,
           productId,
@@ -367,12 +369,9 @@ class BillingServiceClass {
 
       await this.NativePurchasesPlugin.restorePurchases();
 
-      // After restore, we need to query active purchases
-      // The plugin doesn't return purchases directly from restore
-      // We'll need to verify with backend that subscriptions are active
-
-      // For now, refresh subscription status from backend
-      console.log('[Billing] Restore initiated - subscription status will be refreshed');
+      // v74: Clear subscription cache and trigger a fresh status check so UI updates immediately
+      SubscriptionService.clearCache();
+      console.log('[Billing] Restore complete - subscription cache cleared, UI will refresh');
 
       return [{
         success: true,

@@ -60,6 +60,7 @@ class TTSManagerService {
   private _isSpeakingInternal = false;
   private lastSpeakEndTime = 0;
   private readonly AUDIO_SESSION_SETTLE_MS = 300; // v69: Increased from 150ms - iOS needs more time to switch audio modes
+  private isDestroyed = false;
 
   constructor() {
     // Ensure audio context is unlocked on first user gesture
@@ -175,7 +176,9 @@ class TTSManagerService {
   private startWatchdog(chunkIndex: number): void {
     this.clearWatchdog();
     this.watchdogTimer = window.setTimeout(() => {
-      
+      // v74: Guard against firing on a destroyed instance
+      if (this.isDestroyed) return;
+
       if (this.retryCount < this.maxRetries) {
         this.retryCount++;
         this.log({
@@ -335,6 +338,38 @@ class TTSManagerService {
         totalChunks: this.currentChunks.length,
         durationMs: duration
       });
+      this.currentResolve = null;
+      this.currentReject = null;
+    }
+  }
+
+  /**
+   * v74: Destroy the TTS instance — cancels in-progress speech, clears watchdog,
+   * and prevents any further callbacks from firing.
+   */
+  public destroy(): void {
+    this.isDestroyed = true;
+    this.clearWatchdog();
+    this.isSkipped = true;
+
+    // Cancel in-progress speech
+    try {
+      if (Capacitor.isNativePlatform()) {
+        UnifiedTTSService.stop();
+      } else {
+        speechSynthesis.cancel();
+      }
+    } catch {
+      // Ignore errors during teardown
+    }
+
+    this.busy = false;
+    this._isSpeakingInternal = false;
+    this.currentUtterance = null;
+
+    // Reject any pending promise so callers don't hang
+    if (this.currentReject) {
+      this.currentReject(new Error('TTSManager destroyed'));
       this.currentResolve = null;
       this.currentReject = null;
     }

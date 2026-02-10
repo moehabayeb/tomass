@@ -241,7 +241,7 @@ import { useVoiceActivityDetection } from '../hooks/useVoiceActivityDetection';
 
 // Enhanced progress saving with new progress system
 function saveModuleProgress(userId: string | undefined, level: string, moduleId: number, phase: LessonPhaseType, questionIndex: number = 0) {
-  try {
+  const doSave = () => {
     // Save to both old and new systems for compatibility
     const progressData: StoreModuleProgress = {
       level: level,
@@ -265,10 +265,24 @@ function saveModuleProgress(userId: string | undefined, level: string, moduleId:
     const completed = phase === 'complete';
 
     saveProgress(userId, level, String(moduleId), questionIndex, total, correct, completed);
+  };
 
+  try {
+    doSave();
   } catch (error) {
-    // Silent fail - progress save is non-critical
-    // User can continue without interruption
+    // v74: Retry once after 2s; show toast on persistent failure
+    console.warn('[LessonsApp] saveModuleProgress failed, retrying in 2s:', error);
+    setTimeout(() => {
+      try {
+        doSave();
+      } catch (retryError) {
+        console.error('[LessonsApp] saveModuleProgress retry failed:', retryError);
+        // Dynamic import of sonner to show toast
+        import('sonner').then(({ toast }) => {
+          toast.warning('Progress could not be saved. Your work is still available locally.', { duration: 4000 });
+        }).catch(() => { /* ignore toast import failure */ });
+      }
+    }, 2000);
   }
 }
 
@@ -1520,6 +1534,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
           setSpeakingIndex(0);
           setCurrentPhase('intro');
           setSelectedModule(nextId);
+          setQuestionStates({}); // v74: Reset MCQ state when switching modules
           setFeedback('');
         }, 3000);
         lessonTimeoutsRef.current.add(timeoutId4);
@@ -2357,6 +2372,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
       if (nextModule != null) {
         // reset lesson state for the next module
         setSelectedModule(nextModule);
+        setQuestionStates({}); // v74: Reset MCQ state when switching modules
         // restoredOnceRef needs to be reset so the new module can be restored
         restoredOnceRef.current = false;
         // dialogShownRef needs to be reset so the new module can show dialog if needed
@@ -2563,7 +2579,8 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
         setCorrectAnswers(prev => prev + 1);
         setFeedback('🎉 Excellent! Moving to the next question...');
         setFeedbackType('success');
-        earnXPForGrammarLesson(true);
+        // v74: Removed earnXPForGrammarLesson(true) — XP is now awarded once on module completion
+        // via addXP(100, 'grammar') in celebrateAndAdvance(), preventing double XP on last question.
         incrementTotalExercises();
         setSpeakStatus('advancing');
         console.log('[startSpeakingFlow] Correct! Calling advanceSpeakingOnce()');

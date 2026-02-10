@@ -173,7 +173,25 @@ export const useAuthReady = () => {
       setIsLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    // v74: Validate session server-side when app resumes from background.
+    // An expired/revoked session should be detected immediately, not on next API call.
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        supabase.auth.getSession().then(({ data: { session: freshSession } }) => {
+          setSession(freshSession);
+          setUser(freshSession?.user ?? null);
+          setIsAuthenticated(!!freshSession);
+        }).catch(() => {
+          // Network error on resume — don't redirect to login, just keep stale session
+        });
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      subscription.unsubscribe();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
