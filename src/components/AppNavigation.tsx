@@ -344,7 +344,9 @@ export default function AppNavigation() {
       {/* v48: Unified Header Bar - Clean layout with proper Dynamic Island spacing */}
       {/* v59: Remove glass effect on Android to fix mirror artifact */}
       <header className={`fixed top-0 left-0 right-0 z-20 header-bar ${
-        isAndroid ? '' : 'bg-gradient-to-b from-black/30 via-black/10 to-transparent backdrop-blur-md'
+        isAndroid ? '' : (currentMode === 'speaking' || currentMode === 'placement-test')
+          ? 'bg-gradient-to-b from-black/30 via-black/10 to-transparent backdrop-blur-md'
+          : ''
       }`}>
         <div className="flex items-center justify-between">
           {/* Left: Sign In / User Avatar - v59: Only visible on Speaking page */}
