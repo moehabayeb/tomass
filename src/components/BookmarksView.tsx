@@ -207,7 +207,7 @@ export default function BookmarksView({ onBack, onContinueFromMessage }: Bookmar
       <div className="relative z-10 p-2 sm:p-4 max-w-sm sm:max-w-md lg:max-w-2xl mx-auto">
         {/* Header */}
         <div
-          className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-2xl sm:rounded-3xl p-4 sm:p-6 mb-4 sm:mb-6 mt-safe"
+          className="bg-gradient-to-b from-white/15 to-white/5 rounded-2xl sm:rounded-3xl p-4 sm:p-6 mb-4 sm:mb-6 mt-safe"
           style={{ boxShadow: 'var(--shadow-medium), inset 0 1px 0 rgba(255,255,255,0.1)' }}
         >
           <div className="flex items-center justify-between mb-3 sm:mb-4">

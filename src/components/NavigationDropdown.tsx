@@ -93,7 +93,7 @@ export function NavigationDropdown({ currentMode, onModeChange }: NavigationDrop
           <Button
             variant="ghost"
             size="sm"
-            className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-2xl border border-white/20 text-white/90 hover:bg-white/10 hover:text-white transition-all duration-200 px-4 py-2 h-auto relative min-w-[44px] min-h-[44px]"
+            className="bg-gradient-to-b from-white/15 to-white/5 rounded-2xl border border-white/20 text-white/90 hover:bg-white/10 hover:text-white transition-all duration-200 px-4 py-2 h-auto relative min-w-[44px] min-h-[44px]"
             style={{ boxShadow: 'var(--shadow-medium)' }}
             aria-label="Navigation menu"
           >
@@ -107,7 +107,7 @@ export function NavigationDropdown({ currentMode, onModeChange }: NavigationDrop
         </DropdownMenuTrigger>
           <DropdownMenuContent
             align="end"
-            className="w-48 bg-gradient-to-b from-white/95 to-white/90 backdrop-blur-xl border border-white/20 rounded-xl shadow-lg"
+            className="w-48 bg-gradient-to-b from-white/95 to-white/90 border border-white/20 rounded-xl shadow-lg"
             style={{ boxShadow: 'var(--shadow-medium)' }}
             role="menu"
             aria-label="App navigation"
