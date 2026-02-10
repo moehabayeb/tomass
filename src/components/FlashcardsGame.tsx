@@ -485,16 +485,16 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
 
                     <div className="space-y-2 mb-4">
                       <div className="flex justify-between text-sm">
-                        <span className="text-white/60">Words:</span>
+                        <span className="text-white/70">Words:</span>
                         <span className="font-bold">{tierInfo.wordCount}</span>
                       </div>
                       <div className="flex justify-between text-sm">
-                        <span className="text-white/60">Pass Requirement:</span>
+                        <span className="text-white/70">Pass Requirement:</span>
                         <span className="font-bold text-yellow-400">{tierInfo.passThreshold}%</span>
                       </div>
                       {bestScore > 0 && (
                         <div className="flex justify-between text-sm">
-                          <span className="text-white/60">Best Score:</span>
+                          <span className="text-white/70">Best Score:</span>
                           <span className={`font-bold ${isPassed ? 'text-green-400' : 'text-orange-400'}`}>
                             {Math.round(bestScore)}%
                           </span>
@@ -502,7 +502,7 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
                       )}
                       {attempts > 0 && (
                         <div className="flex justify-between text-sm">
-                          <span className="text-white/60">Attempts:</span>
+                          <span className="text-white/70">Attempts:</span>
                           <span className="font-bold">{attempts}</span>
                         </div>
                       )}
@@ -868,7 +868,7 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
                         aria-label="Type your answer for the current flashcard"
                         className="text-lg py-6 bg-white/90 text-gray-900 placeholder:text-gray-500 border-white/50"
                       />
-                      <p className="text-white/60 text-sm mt-2">⌨️ Press Enter to submit</p>
+                      <p className="text-white/70 text-sm mt-2">⌨️ Press Enter to submit</p>
                     </div>
 
                     <Button

@@ -1163,7 +1163,7 @@ export default function GrammarModules({ onBack }: GrammarModulesProps) {
             <p className="text-white/80 text-sm">
               Master {currentLevel} grammar step by step
             </p>
-            <div className="mt-3 text-white/60 text-xs">
+            <div className="mt-3 text-white/70 text-xs">
               {completedModules.filter(id => 
                 currentLevel === "A1" ? id <= 6 : id > 6
               ).length} / {currentTopics.length} completed
@@ -1517,7 +1517,7 @@ function ModulePractice({ module, onComplete, onBack }: ModulePracticeProps) {
                 </div>
                 <h2 className="text-white font-bold text-lg">Let's Learn!</h2>
                 {/* Debug info */}
-                <div className="text-white/60 text-xs mt-1">
+                <div className="text-white/70 text-xs mt-1">
                   Module: {module?.title || 'No module'} | Lesson: {module?.lesson ? 'Found' : 'Missing'}
                 </div>
               </div>
@@ -1635,7 +1635,7 @@ function ModulePractice({ module, onComplete, onBack }: ModulePracticeProps) {
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <span className="text-white/60 text-sm">
+            <span className="text-white/70 text-sm">
               {currentExercise + 1} / {module.exercises.length}
             </span>
             <div className="w-10" />

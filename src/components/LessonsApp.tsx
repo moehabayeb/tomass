@@ -2858,7 +2858,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
                     <div className="flex-1">
                       <h3 className="font-semibold text-white">{level.name}</h3>
                       <p className="text-white/70 text-sm">{level.description}</p>
-                      <p className="text-white/60 text-xs">{level.moduleCount} modules</p>
+                      <p className="text-white/70 text-xs">{level.moduleCount} modules</p>
                     </div>
                   </div>
                 </CardContent>
@@ -3140,7 +3140,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
             <CardContent className="p-8 flex flex-col items-center justify-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mb-4"></div>
               <p className="text-white text-lg">Loading module {selectedModule}...</p>
-              <p className="text-white/60 text-sm mt-2">Please wait</p>
+              <p className="text-white/70 text-sm mt-2">Please wait</p>
             </CardContent>
           </Card>
         )}
@@ -3425,7 +3425,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
                             ? '🎤 Listening... Speak now!'
                             : '🎯 Bir kez bas ve konuş'}
                         </p>
-                        <p className="text-white/60 text-xs mb-3">
+                        <p className="text-white/70 text-xs mb-3">
                           {speakStatus === 'recording'
                             ? "I'll stop automatically when you finish"
                             : 'Tek basış — eller serbest kayıt'}
@@ -3456,7 +3456,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
                               />
                               <span
                                 className={`text-xs transition-colors duration-300 ${
-                                  isSpeechDetected ? 'text-green-300 font-semibold' : 'text-white/50'
+                                  isSpeechDetected ? 'text-green-300 font-semibold' : 'text-white/70'
                                 }`}
                               >
                                 {isSpeechDetected ? 'Speech detected' : 'Waiting for speech...'}
@@ -3464,7 +3464,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
                             </div>
 
                             {/* Timer - 🔧 v34: Use local timer instead of vad.elapsedTime */}
-                            <p className="text-white/60 text-xs">
+                            <p className="text-white/70 text-xs">
                               {Math.floor(recordingElapsedTime / 1000)}s
                             </p>
                           </div>

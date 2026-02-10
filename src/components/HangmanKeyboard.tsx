@@ -99,7 +99,7 @@ export const HangmanKeyboard = memo<HangmanKeyboardProps>(({
       ))}
 
       <div className="text-center mt-3">
-        <p className="text-white/60 text-xs">
+        <p className="text-white/70 text-xs">
           <span aria-hidden="true">💡</span> Tap letters to guess
         </p>
       </div>

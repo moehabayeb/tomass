@@ -1778,7 +1778,7 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
               {/* Live transcript display */}
               {SPEAKING_TEST_LIVE_TRANSCRIPT && (displayTranscript || finalRawTranscript) && (
                 <div className="bg-white/5 rounded-xl p-4">
-                  <div className="text-white/60 text-xs font-medium mb-2 text-center">
+                  <div className="text-white/70 text-xs font-medium mb-2 text-center">
                     {micState === 'listening' ? 'You\'re saying:' : 'You said:'}
                   </div>
                   <div 

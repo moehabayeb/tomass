@@ -143,7 +143,7 @@ export function ResumeProgressDialog({
 
           {/* Helper Text */}
           <div className="text-center">
-            <p className="text-xs text-white/60">
+            <p className="text-xs text-white/70">
               Your progress is automatically saved as you learn
             </p>
           </div>

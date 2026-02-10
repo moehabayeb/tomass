@@ -413,7 +413,7 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
                     />
                   ))}
                 </div>
-                <p className="text-white/60 text-xs">
+                <p className="text-white/70 text-xs">
                   {maxWrong - wrong} {maxWrong - wrong === 1 ? 'life' : 'lives'} left
                 </p>
               </div>

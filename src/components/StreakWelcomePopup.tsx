@@ -110,7 +110,7 @@ export const StreakWelcomePopup: React.FC<StreakWelcomePopupProps> = ({
           )}
 
           {/* Tap to dismiss hint */}
-          <div className="text-white/60 text-xs">
+          <div className="text-white/70 text-xs">
             Tap anywhere to continue
           </div>
         </div>

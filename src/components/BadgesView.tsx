@@ -123,7 +123,7 @@ export default function BadgesView({ onBack }: BadgesViewProps) {
           <div className="text-center py-12">
             <div className="text-5xl mb-4">🏅</div>
             <h3 className="text-xl font-semibold text-white mb-2">No Badges Yet</h3>
-            <p className="text-white/60 text-sm max-w-xs mx-auto">
+            <p className="text-white/70 text-sm max-w-xs mx-auto">
               Complete lessons and challenges to earn badges. Keep practicing to unlock your first badge!
             </p>
           </div>
@@ -217,7 +217,7 @@ export default function BadgesView({ onBack }: BadgesViewProps) {
                 const date = new Date(badge.unlockedAt);
                 if (isNaN(date.getTime())) return null;
                 return (
-                  <div className="text-center mt-2 text-xs text-white/60">
+                  <div className="text-center mt-2 text-xs text-white/70">
                     Unlocked {date.toLocaleDateString()}
                   </div>
                 );

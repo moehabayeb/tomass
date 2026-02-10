@@ -228,7 +228,7 @@ export default function BookmarksView({ onBack, onContinueFromMessage }: Bookmar
             <p className="text-white/80 text-xs sm:text-sm">
               Saved messages, lessons & tips
             </p>
-            <div className="mt-1 sm:mt-2 text-white/60 text-xs">
+            <div className="mt-1 sm:mt-2 text-white/70 text-xs">
               {bookmarks.length} bookmark{bookmarks.length !== 1 ? 's' : ''}
             </div>
           </div>

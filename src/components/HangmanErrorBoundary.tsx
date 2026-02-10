@@ -59,7 +59,7 @@ export class HangmanErrorBoundary extends Component<Props, State> {
                   <summary className="text-red-300 text-sm cursor-pointer hover:text-red-200">
                     Technical Details
                   </summary>
-                  <p className="text-white/60 text-xs mt-2 font-mono">
+                  <p className="text-white/70 text-xs mt-2 font-mono">
                     {this.state.error.toString()}
                   </p>
                 </details>

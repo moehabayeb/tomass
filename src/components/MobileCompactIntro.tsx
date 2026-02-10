@@ -300,7 +300,7 @@ export default function MobileCompactIntro({
           {isExpanded && tablesToRender.length > 0 && (
             <div className="space-y-2">
               {totalTables > 1 && (
-                <div className="text-white/60 text-xs text-center mb-2">
+                <div className="text-white/70 text-xs text-center mb-2">
                   📚 {totalTables} Reference Tables
                 </div>
               )}

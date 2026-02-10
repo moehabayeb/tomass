@@ -229,7 +229,7 @@ export default function DIDAvatar({
         
         {!agentLoaded && !agentFailed && !hideLoadingText && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-white/60 text-xs">Loading...</div>
+            <div className="text-white/70 text-xs">Loading...</div>
           </div>
         )}
         

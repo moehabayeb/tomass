@@ -499,8 +499,8 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
                       <div>
                         <h4 className="font-semibold">{meeting.title}</h4>
                         <p className="text-sm text-white/80">{meeting.focus_topic}</p>
-                        <p className="text-sm text-white/60">with {meeting.teacher_name}</p>
-                        <p className="text-sm text-white/60">
+                        <p className="text-sm text-white/70">with {meeting.teacher_name}</p>
+                        <p className="text-sm text-white/70">
                           <span className="bg-accent/20 text-accent-foreground px-2 py-1 rounded text-xs font-medium mr-2">
                             {meeting.level_code}
                           </span>

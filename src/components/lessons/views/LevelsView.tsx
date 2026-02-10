@@ -53,7 +53,7 @@ export function LevelsView({ onBack, onSelectLevel }: LevelsViewProps) {
                   <div className="flex-1">
                     <h3 className="font-semibold text-white">{level.name}</h3>
                     <p className="text-white/70 text-sm">{level.description}</p>
-                    <p className="text-white/60 text-xs">{level.moduleCount} modules</p>
+                    <p className="text-white/70 text-xs">{level.moduleCount} modules</p>
                   </div>
                 </div>
               </CardContent>
