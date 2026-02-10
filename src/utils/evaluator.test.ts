@@ -329,5 +329,55 @@ describe('evaluator', () => {
         expect(evaluateAnswer('She is a nurse', options)).toBe(false); // Wrong profession
       });
     });
+
+    describe('v76: missing verb rejection', () => {
+      it('rejects utterance missing verb when expected has one', () => {
+        const options: EvalOptions = { expected: 'She is a student' };
+        expect(evaluateAnswer('She student', options)).toBe(false);
+      });
+
+      it('rejects verbless utterance for "He is a doctor"', () => {
+        const options: EvalOptions = { expected: 'He is a doctor' };
+        expect(evaluateAnswer('He doctor', options)).toBe(false);
+      });
+
+      it('still passes when user includes verb', () => {
+        const options: EvalOptions = { expected: 'She is a student' };
+        expect(evaluateAnswer("She's a student", options)).toBe(true);
+        expect(evaluateAnswer('She is a student', options)).toBe(true);
+      });
+    });
+
+    describe('v76: minimum token count', () => {
+      it('rejects too few content tokens when expected has 3+', () => {
+        // "I go to school by bus" relaxed = ["i","go","to","school","by","bus"] = 6 tokens
+        // "bus school" relaxed = ["bus","school"] = 2 tokens, needs at least 5
+        const options: EvalOptions = { expected: 'I go to school by bus' };
+        expect(evaluateAnswer('bus school', options)).toBe(false);
+      });
+
+      it('still passes with expected-1 tokens', () => {
+        // "I go school by bus" -> has 5 content tokens vs expected 6 -> passes token count
+        const options: EvalOptions = { expected: 'I go to school by bus' };
+        expect(evaluateAnswer('I go school by bus', options)).toBe(true);
+      });
+    });
+
+    describe('v76: word-order penalty', () => {
+      it('still passes near-correct word order', () => {
+        const options: EvalOptions = {
+          expected: 'She is a doctor',
+          keyLemmas: ['doctor']
+        };
+        // "A doctor she is" — order penalty should be mild enough to pass
+        expect(evaluateAnswer('A doctor she is', options)).toBe(true);
+      });
+
+      it('existing tests still pass with order penalty', () => {
+        const options: EvalOptions = { expected: 'I go to school by bus' };
+        expect(evaluateAnswer('I go to school by bus', options)).toBe(true);
+        expect(evaluateAnswer('I go school by bus', options)).toBe(true);
+      });
+    });
   });
 });

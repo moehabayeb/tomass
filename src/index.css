@@ -804,17 +804,16 @@ body {
   overscroll-behavior: contain;
 }
 
-/* Hangman keyboard buttons - Apple HIG requires 44px minimum touch targets */
+/* Hangman keyboard buttons - responsive sizing */
 .hangman-key {
-  min-width: 44px !important;
-  min-height: 44px !important;
+  min-width: 28px !important;
+  min-height: 32px !important;
 }
 
-/* Desktop: allow larger buttons */
 @media (min-width: 640px) {
   .hangman-key {
-    min-width: 48px !important;
-    min-height: 48px !important;
+    min-width: 36px !important;
+    min-height: 40px !important;
   }
 }
 

@@ -29,7 +29,7 @@ export const HangmanSVG = memo<HangmanSVGProps>(({ wrongCount, maxWrong }) => {
   return (
     <svg
       viewBox="0 0 200 250"
-      className="w-full max-w-[280px] mx-auto drop-shadow-2xl"
+      className="w-full max-w-[280px] max-h-[140px] sm:max-h-none mx-auto drop-shadow-2xl"
       style={{ filter: 'drop-shadow(0 10px 30px rgba(0,0,0,0.3))' }}
     >
       {/* Gallows structure */}

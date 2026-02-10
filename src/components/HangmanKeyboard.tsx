@@ -52,7 +52,7 @@ export const HangmanKeyboard = memo<HangmanKeyboardProps>(({
         <div
           key={rowIndex}
           role="row"
-          className={`flex justify-center gap-1 sm:gap-1.5 ${
+          className={`flex justify-center gap-[3px] sm:gap-1.5 ${
             rowIndex === 1 ? 'sm:pl-4' : rowIndex === 2 ? 'sm:pl-8' : ''
           }`}
         >
@@ -75,9 +75,9 @@ export const HangmanKeyboard = memo<HangmanKeyboardProps>(({
                 aria-pressed={state !== 'default'}
                 className={`
                   hangman-key
-                  w-10 h-10 sm:w-11 sm:h-11
+                  w-7 h-8 sm:w-9 sm:h-10
                   p-0
-                  text-sm sm:text-lg
+                  text-[11px] sm:text-base
                   font-bold
                   rounded-lg
                   border-2
@@ -85,8 +85,6 @@ export const HangmanKeyboard = memo<HangmanKeyboardProps>(({
                   ${isDisabled ? '' : 'active:scale-90 transition-transform duration-75'}
                 `}
                 style={{
-                  minWidth: '2.5rem',
-                  minHeight: '2.5rem',
                   touchAction: 'manipulation',
                   WebkitTapHighlightColor: 'transparent'
                 }}
@@ -98,7 +96,7 @@ export const HangmanKeyboard = memo<HangmanKeyboardProps>(({
         </div>
       ))}
 
-      <div className="text-center mt-3">
+      <div className="text-center mt-1 sm:mt-3 hidden sm:block">
         <p className="text-white/70 text-xs">
           <span aria-hidden="true">💡</span> Tap letters to guess
         </p>

@@ -80,7 +80,7 @@ export function ModulesView({ selectedLevel, onBack, onSelectModule }: ModulesVi
     <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: 'hsl(var(--app-bg))' }}>
       <div className="relative z-10 p-4 max-w-sm mx-auto">
         {/* Header */}
-        <div className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-3xl p-6 mb-6 mt-safe-area-inset-top">
+        <div className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-3xl p-6 mb-6 mt-safe">
           <div className="flex items-center justify-between mb-4">
             <Button
               onClick={onBack}

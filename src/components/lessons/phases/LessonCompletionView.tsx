@@ -35,7 +35,7 @@ export function LessonCompletionView({
       {showConfetti && <Confetti width={width} height={height} />}
       
       <div className="relative z-10 p-4 max-w-sm mx-auto">
-        <div className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-3xl p-6 mt-safe-area-inset-top text-center">
+        <div className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-3xl p-6 mt-safe text-center">
           <div className="flex justify-center mb-4">
             <div className="bg-green-500/20 rounded-full p-4">
               <CheckCircle className="h-12 w-12 text-green-400" />

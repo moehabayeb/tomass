@@ -388,7 +388,7 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
           </p>
         </div>
 
-        <div className="flex flex-col gap-2 space-y-2">
+        <div className="flex flex-col gap-1 space-y-1 sm:gap-2 sm:space-y-2">
           {/* Hangman Visual */}
           <Card className="bg-gradient-to-br from-violet-500/30 to-purple-500/20 backdrop-blur-xl border border-purple-300/50 text-white shadow-lg">
             <CardContent className="p-3">
@@ -492,7 +492,7 @@ export const HangmanGame: React.FC<HangmanGameProps> = ({ onBack }) => {
               <Card className="bg-gradient-to-br from-violet-500/30 to-purple-500/20 backdrop-blur-xl border border-purple-300/50 text-white shadow-lg">
                 <CardContent className="p-3 space-y-2">
                   {/* Keyboard */}
-                  <div className="pt-4" role="group" aria-label="Letter selection keyboard">
+                  <div className="pt-1 sm:pt-4" role="group" aria-label="Letter selection keyboard">
                     <HangmanKeyboard
                       guessedLetters={guessed}
                       correctLetters={correctLetters}

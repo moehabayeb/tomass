@@ -109,6 +109,30 @@ function polarity(str:string){
   return "unknown";
 }
 
+// v76: Word-order penalty using LCS with fuzzy matching
+// Returns 0.0 (perfect order) to 0.3 (fully scrambled)
+function orderPenalty(expected: string[], user: string[]): number {
+  if (expected.length === 0 || user.length === 0) return 0;
+  // LCS length using lev1 fuzzy matching
+  const m = expected.length;
+  const n = user.length;
+  const dp: number[][] = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      if (lev1(expected[i - 1], user[j - 1])) {
+        dp[i][j] = dp[i - 1][j - 1] + 1;
+      } else {
+        dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+      }
+    }
+  }
+  const lcsLen = dp[m][n];
+  const maxLen = Math.max(m, n);
+  if (maxLen === 0) return 0;
+  const orderRatio = lcsLen / maxLen; // 1.0 = perfect order, 0.0 = no common subsequence
+  return (1 - orderRatio) * 0.3; // scale to 0.0–0.3
+}
+
 export function evaluateAnswer(userInput: string, opt: EvalOptions): boolean {
   if (!userInput) return false;
   const uNorm = normalize(userInput);
@@ -197,6 +221,26 @@ export function evaluateAnswer(userInput: string, opt: EvalOptions): boolean {
   const a = tokens(relax(opt.expected));
   const b = tokens(uRelax);
 
+  // v76: Missing verb check — if expected has a verb but user's short utterance doesn't, reject
+  // Only applies to fuzzy path (not exact matches) and short utterances (≤3 relaxed tokens)
+  // Uses word-boundary regex to avoid false matches (e.g., "do" inside "doctor")
+  if (b.length <= 3) {
+    const verbPatterns = [/\bis\b/,/\bare\b/,/\bam\b/,/\bwas\b/,/\bwere\b/,
+      /\bhas\b/,/\bhave\b/,/\bdo\b/,/\bdoes\b/,/\bdid\b/,/'m\b/,/'s\b/,/'re\b/];
+    const expectedHasVerb = verbPatterns.some(r => r.test(expectedLower));
+    const userHasVerb = verbPatterns.some(r => r.test(userLower));
+    if (expectedHasVerb && !userHasVerb) {
+      console.log(`[evaluateAnswer] v76 REJECTED: Expected has verb but user doesn't`);
+      return false;
+    }
+  }
+
+  // v76: Minimum token count — if expected has 3+ tokens, user must have at least expected-1
+  if (a.length >= 3 && b.length < a.length - 1) {
+    console.log(`[evaluateAnswer] v76 REJECTED: Too few tokens (${b.length} vs expected ${a.length})`);
+    return false;
+  }
+
   // require high overlap with typo tolerance
   let matched = 0;
   for (const at of a) {
@@ -204,9 +248,13 @@ export function evaluateAnswer(userInput: string, opt: EvalOptions): boolean {
   }
   const ratio = matched / Math.max(1,a.length);
 
+  // v76: Apply word-order penalty before threshold check
+  const penalty = orderPenalty(a, b);
+  const adjustedRatio = ratio - penalty;
+
   // v53: 65% threshold - balanced between strict (70%) and lenient (60%)
-  // Now that "i" is no longer filtered, this works correctly
-  const result = ratio >= 0.65;
+  // v76: Now uses adjustedRatio (ratio minus order penalty)
+  const result = adjustedRatio >= 0.65;
   return result;
 }
 
