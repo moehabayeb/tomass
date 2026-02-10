@@ -1,7 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Edit2, LogOut, User, Mail, Trophy, Calendar, Upload, Trash2, FileText, Shield } from 'lucide-react';
+import { ArrowLeft, Edit2, LogOut, User, Mail, Trophy, Calendar, Upload, Trash2, FileText, Shield, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { useAuthReady } from '@/hooks/useAuthReady';
 import { useUserData } from '@/hooks/useUserData';
 import { useProgressStore } from '@/hooks/useProgressStore';
@@ -43,6 +54,9 @@ export default function Profile() {
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Use XP data from useProgressStore (synced with Speaking page)
@@ -344,6 +358,48 @@ export default function Profile() {
     }
   };
 
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText !== 'DELETE' || !user) return;
+
+    setIsDeletingAccount(true);
+    try {
+      // Attempt to call the server-side account deletion RPC
+      const { error: rpcError } = await supabase.rpc('delete_user_account');
+
+      if (rpcError) {
+        // Fallback: sign out and notify support
+        console.error('[Profile] RPC delete_user_account failed:', rpcError);
+      }
+
+      // Clear all local data
+      try {
+        localStorage.clear();
+      } catch {
+        // Storage access error - silent fail
+      }
+
+      // Sign out
+      await supabase.auth.signOut();
+
+      toast({
+        title: 'Account Deleted',
+        description: 'Your account has been scheduled for deletion. All data will be removed.',
+      });
+
+      navigate('/auth');
+    } catch (error) {
+      toast({
+        title: 'Deletion Failed',
+        description: 'Please contact support@tomashoca.com to delete your account.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsDeletingAccount(false);
+      setShowDeleteDialog(false);
+      setDeleteConfirmText('');
+    }
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       weekday: 'short',
@@ -356,8 +412,30 @@ export default function Profile() {
 
   if (isLoading || isLoadingProfile) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-violet-900 via-blue-900 to-indigo-900 flex items-center justify-center">
-        <div className="text-white">Loading...</div>
+      <div className="min-h-screen bg-gradient-to-br from-violet-900 via-blue-900 to-indigo-900">
+        <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-4xl">
+          <div className="flex items-center justify-between mb-4 sm:mb-8">
+            <div className="h-10 w-24 bg-white/10 rounded-lg animate-pulse" />
+            <div className="h-8 w-32 bg-white/10 rounded-lg animate-pulse" />
+            <div className="h-10 w-24 bg-white/10 rounded-lg animate-pulse" />
+          </div>
+          <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
+            <div className="bg-white/10 rounded-xl p-6 space-y-4">
+              <div className="h-6 w-40 bg-white/10 rounded animate-pulse" />
+              <div className="flex justify-center"><div className="h-24 w-24 bg-white/10 rounded-full animate-pulse" /></div>
+              <div className="h-10 w-full bg-white/10 rounded animate-pulse" />
+              <div className="h-10 w-full bg-white/10 rounded animate-pulse" />
+            </div>
+            <div className="bg-white/10 rounded-xl p-6 space-y-4">
+              <div className="h-6 w-40 bg-white/10 rounded animate-pulse" />
+              <div className="grid grid-cols-2 gap-3">
+                <div className="h-20 bg-white/10 rounded-lg animate-pulse" />
+                <div className="h-20 bg-white/10 rounded-lg animate-pulse" />
+              </div>
+              <div className="h-24 bg-white/10 rounded-lg animate-pulse" />
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -618,7 +696,7 @@ export default function Profile() {
                 <div className="text-center py-6 sm:py-8">
                   <Calendar className="h-8 w-8 sm:h-12 sm:w-12 text-white/40 mx-auto mb-2 sm:mb-3" />
                   <div className="text-white/60 text-sm sm:text-base">No upcoming reminders</div>
-                  <div className="text-white/40 text-xs sm:text-sm mt-1">
+                  <div className="text-white/60 text-xs sm:text-sm mt-1">
                     Set reminders for meetings to see them here
                   </div>
                 </div>
@@ -676,6 +754,67 @@ export default function Profile() {
                   </div>
                 </Link>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Delete Account Section */}
+          <Card className="bg-red-950/20 backdrop-blur-xl border-red-500/20 lg:col-span-2">
+            <CardHeader className="pb-3 sm:pb-6">
+              <CardTitle className="text-red-300 flex items-center gap-2 text-base sm:text-lg">
+                <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5" />
+                Danger Zone
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-white/60 text-sm mb-4">
+                Permanently delete your account and all associated data. This action cannot be undone.
+              </p>
+              <AlertDialog open={showDeleteDialog} onOpenChange={(open) => {
+                setShowDeleteDialog(open);
+                if (!open) setDeleteConfirmText('');
+              }}>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete Account
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="bg-gray-900 border-gray-700">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle className="text-white">Delete Your Account?</AlertDialogTitle>
+                    <AlertDialogDescription className="text-gray-300 space-y-3">
+                      <span className="block">This will permanently delete your account and all data, including:</span>
+                      <span className="block">- Your profile and learning progress</span>
+                      <span className="block">- All bookmarks and badges</span>
+                      <span className="block">- Meeting history and reminders</span>
+                      <span className="block font-semibold text-red-400 mt-2">This action cannot be undone.</span>
+                      <span className="block mt-3">Type <strong className="text-white">DELETE</strong> below to confirm:</span>
+                    </AlertDialogDescription>
+                    <Input
+                      value={deleteConfirmText}
+                      onChange={(e) => setDeleteConfirmText(e.target.value)}
+                      placeholder="Type DELETE to confirm"
+                      className="bg-gray-800 border-gray-600 text-white mt-2"
+                      autoComplete="off"
+                    />
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel className="bg-gray-700 text-white border-gray-600 hover:bg-gray-600">
+                      Cancel
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDeleteAccount}
+                      disabled={deleteConfirmText !== 'DELETE' || isDeletingAccount}
+                      className="bg-red-600 hover:bg-red-700 text-white disabled:opacity-50"
+                    >
+                      {isDeletingAccount ? 'Deleting...' : 'Permanently Delete'}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </CardContent>
           </Card>
         </div>

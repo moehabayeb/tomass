@@ -222,10 +222,11 @@ export default function BookmarkButton({
       disabled={isLoading}
       variant="ghost"
       size="sm"
+      aria-label={isBookmarked ? 'Remove bookmark' : 'Add bookmark'}
       className={`
         h-8 w-8 p-0 transition-all duration-200 hover:scale-110
-        ${isBookmarked 
-          ? 'text-yellow-500 hover:text-yellow-600' 
+        ${isBookmarked
+          ? 'text-yellow-500 hover:text-yellow-600'
           : 'text-gray-400 hover:text-yellow-500'
         }
         ${className}

@@ -11,6 +11,13 @@ const config: CapacitorConfig = {
     scrollEnabled: false,  // Disable native scroll to prevent horizontal overflow
     overrideUserAgent: 'TomasHoca-iOS',
     webContentsDebuggingEnabled: false,
+    preferredContentMode: 'mobile',
+  },
+  plugins: {
+    Keyboard: {
+      resize: 'body',
+      resizeOnFullScreen: true,
+    },
   },
   server: {
     allowNavigation: ['*.supabase.co']

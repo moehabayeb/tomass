@@ -2867,6 +2867,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
                 variant="ghost"
                 size="icon"
                 className="text-white hover:bg-white/10 rounded-full"
+                aria-label="Back to levels"
               >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
@@ -3081,6 +3082,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
               variant="ghost"
               size="icon"
               className="text-white hover:bg-white/10 rounded-full w-10 h-10"
+              aria-label="Back to modules"
             >
               <ArrowLeft className="h-4 w-4" />
             </Button>
@@ -3445,7 +3447,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
                             </div>
 
                             {/* Timer - 🔧 v34: Use local timer instead of vad.elapsedTime */}
-                            <p className="text-white/40 text-xs">
+                            <p className="text-white/60 text-xs">
                               {Math.floor(recordingElapsedTime / 1000)}s
                             </p>
                           </div>

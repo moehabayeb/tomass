@@ -77,6 +77,9 @@ export const LevelUpPopup = ({ show, newLevel, onClose }: LevelUpPopupProps) => 
         isVisible ? "opacity-100" : "opacity-0"
       )}
       data-level-popup
+      role="dialog"
+      aria-modal="true"
+      aria-label="Level up celebration"
     >
       {/* Confetti Animation */}
       {showConfetti && (

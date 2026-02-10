@@ -169,7 +169,7 @@ export function ModulesView({ selectedLevel, onBack, onSelectModule }: ModulesVi
                           )}
                           {!isImplemented && <Badge variant="outline" className="text-xs">Coming Soon</Badge>}
                         </div>
-                        <p className={`text-xs line-clamp-2 ${isUnlocked ? 'text-white/70' : 'text-white/40'}`}>
+                        <p className={`text-xs line-clamp-2 ${isUnlocked ? 'text-white/70' : 'text-white/60'}`}>
                           {module.description}
                         </p>
                       </div>

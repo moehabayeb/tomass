@@ -1,40 +1,54 @@
 /**
  * Pricing Page
  * Displays 3-tier subscription plans with upgrade/downgrade options
+ * Supports native billing on iOS (StoreKit) and Android (Google Play)
  */
 
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Check, Crown, Zap, Users, ArrowLeft, Sparkles, Star, Smartphone, Shield, FileText, Bell, Clock } from 'lucide-react';
+import { Check, Crown, Zap, ArrowLeft, Sparkles, Star, Shield, FileText, Bell, Clock, Loader2, RefreshCw, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useSubscription } from '@/hooks/useSubscription';
+import { useBilling } from '@/hooks/useBilling';
 import { useAuthReady } from '@/hooks/useAuthReady';
 import { PRICING_CONFIG, type TierCode } from '@/types/subscription';
 import { useToast } from '@/hooks/use-toast';
-import { detectPlatform, isMobile, getAppStoreName } from '@/lib/platform';
+import { detectPlatform, isMobile } from '@/lib/platform';
 import { WaitlistModal } from '@/components/WaitlistModal';
 
 export default function Pricing() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { isAuthenticated, user } = useAuthReady();
-  const { currentTier, isOnTrial, trialDaysRemaining, isLoading } = useSubscription();
+  const { currentTier, isOnTrial, trialDaysRemaining, isLoading, isSubscribed } = useSubscription();
+  const {
+    isAvailable: billingAvailable,
+    isPurchasing,
+    isRestoring,
+    isLoadingProducts,
+    products,
+    purchaseTier,
+    restorePurchases,
+    openSubscriptionManagement,
+    getProductForTier,
+  } = useBilling();
 
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'quarterly'>('monthly');
-  const [loadingTier, setLoadingTier] = useState<TierCode | null>(null);
   const [waitlistModalOpen, setWaitlistModalOpen] = useState(false);
   const [selectedTierForWaitlist, setSelectedTierForWaitlist] = useState<TierCode>('ai_only');
 
-  // 🔧 FIX #14: Use platform detection for specific messaging
   const platform = detectPlatform();
   const isOnMobile = isMobile();
-  const storeName = getAppStoreName();
   const isIOS = platform === 'ios';
   const isAndroid = platform === 'android';
+  const isNative = isIOS || isAndroid;
+
+  // On native platforms (iOS/Android), check if we can actually purchase
+  const canPurchaseNative = isNative && billingAvailable && products.length > 0;
 
   const handleSelectPlan = async (tierCode: TierCode) => {
     // Free tier - navigate to start using app
@@ -59,9 +73,38 @@ export default function Pricing() {
       return;
     }
 
-    // For paid tiers, open waitlist modal
+    // Must be authenticated to purchase
+    if (!isAuthenticated) {
+      toast({
+        title: 'Sign In Required',
+        description: 'Please sign in to subscribe.',
+      });
+      navigate('/auth');
+      return;
+    }
+
+    // Native (iOS/Android) with billing available - initiate purchase
+    if (canPurchaseNative) {
+      const result = await purchaseTier(tierCode, billingCycle);
+      if (result.success) {
+        // Success toast handled by useBilling hook
+        navigate('/');
+      }
+      // Error toast handled by useBilling hook
+      return;
+    }
+
+    // Web or billing unavailable - open waitlist modal
     setSelectedTierForWaitlist(tierCode);
     setWaitlistModalOpen(true);
+  };
+
+  const handleRestorePurchases = async () => {
+    await restorePurchases();
+  };
+
+  const handleManageSubscription = async () => {
+    await openSubscriptionManagement();
   };
 
   const getTierIcon = (tierCode: TierCode) => {
@@ -86,12 +129,54 @@ export default function Pricing() {
     }
   };
 
+  const getButtonText = (tierCode: TierCode, isCurrentTier: boolean) => {
+    if (isCurrentTier) {
+      return 'Current Plan';
+    }
+
+    if (tierCode === 'free') {
+      return 'Start Free';
+    }
+
+    // Check if purchase is in progress for this tier
+    if (isPurchasing) {
+      return (
+        <>
+          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+          Processing...
+        </>
+      );
+    }
+
+    // Native with billing - show Subscribe button
+    if (canPurchaseNative) {
+      const product = getProductForTier(tierCode, billingCycle);
+      if (product) {
+        return `Subscribe - ${product.price}`;
+      }
+      return 'Subscribe Now';
+    }
+
+    // Web or billing unavailable - show waitlist
+    return (
+      <>
+        <Bell className="w-4 h-4 mr-2" />
+        Join Waitlist
+      </>
+    );
+  };
+
   const renderPricingCard = (tierCode: TierCode) => {
     const config = PRICING_CONFIG[tierCode];
     const isCurrentTier = currentTier === tierCode;
     const isPopular = config.isPopular;
 
-    const displayPrice = billingCycle === 'monthly' ? config.monthlyPrice : config.quarterlyMonthlyEquivalent;
+    // Get price from Google Play products if available, otherwise use config
+    const product = canPurchaseNative ? getProductForTier(tierCode, billingCycle) : null;
+
+    const displayPrice = product
+      ? product.price.replace(/[^\d.,]/g, '') // Extract number from formatted price
+      : billingCycle === 'monthly' ? config.monthlyPrice : config.quarterlyMonthlyEquivalent;
     const totalPrice = billingCycle === 'monthly' ? config.monthlyPrice : config.quarterlyPrice;
     const savings = billingCycle === 'quarterly' ? config.savings : 0;
 
@@ -136,17 +221,31 @@ export default function Pricing() {
             ) : (
               <div>
                 <div className="flex items-baseline justify-center gap-1">
-                  <span className="text-4xl font-extrabold">₺{displayPrice}</span>
-                  <span className="text-muted-foreground">/month</span>
+                  {product ? (
+                    <span className="text-4xl font-extrabold">{product.price}</span>
+                  ) : (
+                    <>
+                      <span className="text-4xl font-extrabold">₺{displayPrice}</span>
+                      <span className="text-muted-foreground">/month</span>
+                    </>
+                  )}
                 </div>
 
-                {billingCycle === 'quarterly' && (
+                {billingCycle === 'quarterly' && !product && (
                   <div className="mt-2">
                     <p className="text-sm text-muted-foreground">
                       Billed ₺{totalPrice} every 3 months
                     </p>
                     <Badge variant="secondary" className="mt-1 bg-green-100 text-green-700">
                       Save ₺{savings}
+                    </Badge>
+                  </div>
+                )}
+
+                {billingCycle === 'quarterly' && product && (
+                  <div className="mt-2">
+                    <Badge variant="secondary" className="mt-1 bg-green-100 text-green-700">
+                      Save 20%
                     </Badge>
                   </div>
                 )}
@@ -171,19 +270,10 @@ export default function Pricing() {
             className="w-full"
             variant={isPopular ? 'default' : 'outline'}
             size="lg"
-            disabled={isCurrentTier || isLoading}
+            disabled={isCurrentTier || isLoading || isPurchasing || isLoadingProducts}
             onClick={() => handleSelectPlan(tierCode)}
           >
-            {isCurrentTier ? (
-              'Current Plan'
-            ) : tierCode === 'free' ? (
-              'Start Free'
-            ) : (
-              <>
-                <Bell className="w-4 h-4 mr-2" />
-                Join Waitlist
-              </>
-            )}
+            {getButtonText(tierCode, isCurrentTier)}
           </Button>
         </CardFooter>
       </Card>
@@ -219,19 +309,56 @@ export default function Pricing() {
           )}
         </div>
 
-        {/* Coming Soon Banner - App Store Compliant */}
-        <Alert className="max-w-2xl mx-auto mb-8 bg-amber-500/10 border-amber-500/50">
-          <Clock className="h-4 w-4 text-amber-400" />
-          <AlertTitle className="text-white">Premium Subscriptions Coming Soon</AlertTitle>
-          <AlertDescription className="text-slate-300">
-            Premium plans are currently in development. Join our waitlist to be notified when they launch
-            and receive an exclusive early-bird discount!
-          </AlertDescription>
-          <p className="text-xs text-slate-400 mt-2">
-            When available, subscriptions will be processed through {isIOS ? 'Apple App Store' : isAndroid ? 'Google Play Store' : 'your device\'s app store'}.
-            You can manage or cancel subscriptions anytime in your device settings.
-          </p>
-        </Alert>
+        {/* Coming Soon Banner - Only show for web or when billing unavailable */}
+        {!canPurchaseNative && (
+          <Alert className="max-w-2xl mx-auto mb-8 bg-amber-500/10 border-amber-500/50">
+            <Clock className="h-4 w-4 text-amber-400" />
+            <AlertTitle className="text-white">
+              {isNative ? 'Connecting to Store...' : 'Premium Subscriptions Coming Soon'}
+            </AlertTitle>
+            <AlertDescription className="text-slate-300">
+              {isNative && !billingAvailable
+                ? 'Please update the app to enable purchases.'
+                : !isOnMobile
+                  ? 'Download our mobile app to purchase subscriptions.'
+                  : 'Premium plans are currently in development. Join our waitlist to be notified when they launch and receive an exclusive early-bird discount!'
+              }
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Subscription Management for existing subscribers */}
+        {isNative && isSubscribed && currentTier !== 'free' && (
+          <div className="max-w-2xl mx-auto mb-8 flex flex-col sm:flex-row gap-3 justify-center">
+            <Button
+              variant="outline"
+              onClick={handleManageSubscription}
+              className="bg-white/10 border-white/20 hover:bg-white/20"
+            >
+              <Settings className="w-4 h-4 mr-2" />
+              Manage Subscription
+            </Button>
+          </div>
+        )}
+
+        {/* Restore Purchases button for native platforms */}
+        {isNative && billingAvailable && (
+          <div className="max-w-2xl mx-auto mb-8 flex justify-center">
+            <Button
+              variant="ghost"
+              onClick={handleRestorePurchases}
+              disabled={isRestoring}
+              className="text-slate-300 hover:text-white hover:bg-white/10"
+            >
+              {isRestoring ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <RefreshCw className="w-4 h-4 mr-2" />
+              )}
+              Restore Purchases
+            </Button>
+          </div>
+        )}
 
         {/* Billing Cycle Toggle */}
         <div className="flex justify-center mb-12">
@@ -279,7 +406,7 @@ export default function Pricing() {
               </CardHeader>
               <CardContent>
                 <p className="text-slate-300">
-                  Payments are securely processed through Apple App Store (iOS) or Google Play Store (Android).
+                  Payments are securely processed through {isIOS ? 'Apple App Store' : isAndroid ? 'Google Play Store' : 'your device\'s app store'}.
                   All payment methods supported by your app store account are accepted, including credit/debit cards and store credit.
                   Turkish Lira (₺) pricing is displayed for your convenience.
                 </p>

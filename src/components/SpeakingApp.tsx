@@ -118,13 +118,18 @@ const XPProgressBar = ({ current, max, className }: { current: number; max: numb
   
   return (
     <div className={`relative ${className}`}>
-      <div 
+      <div
         className="w-full h-4 rounded-full overflow-hidden bg-black/20 backdrop-blur-sm"
         style={{ boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)' }}
+        role="progressbar"
+        aria-valuenow={current}
+        aria-valuemin={0}
+        aria-valuemax={max}
+        aria-label={`XP progress: ${current} of ${max}`}
       >
-        <div 
+        <div
           className="h-full transition-all duration-700 ease-out rounded-full relative overflow-hidden"
-          style={{ 
+          style={{
             width: `${percentage}%`,
             background: 'var(--gradient-xp)',
             boxShadow: 'var(--shadow-glow)'
@@ -2345,10 +2350,10 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       <div className="fixed top-0 left-0 right-0 z-[100] pointer-events-none pt-safe">
         {/* Floating XP Display & Difficulty - Clean minimal header - v47: Added pt-safe for iPhone Dynamic Island */}
         <div className="px-4 py-4 mt-14 flex flex-wrap items-center justify-center gap-2 pointer-events-none">
-          <div className="px-4 py-2 rounded-full text-sm bg-white/15 text-white backdrop-blur-xl font-bold tracking-wide shadow-lg">
+          <div className="px-4 py-2 rounded-full text-sm bg-white/15 text-white backdrop-blur-xl font-bold tracking-wide shadow-lg" role="status" aria-label={`${formattedXP} experience points`}>
             ⚡ {formattedXP} XP
           </div>
-          <div className={`px-3 py-1.5 rounded-full text-xs backdrop-blur-xl font-semibold tracking-wide shadow-lg border bg-gradient-to-br ${difficultyData.color}`}>
+          <div className={`px-3 py-1.5 rounded-full text-xs backdrop-blur-xl font-semibold tracking-wide shadow-lg border bg-gradient-to-br ${difficultyData.color}`} aria-label={`Difficulty level: ${difficultyData.label}`}>
             {difficultyData.icon} {difficultyData.label}
           </div>
         </div>
@@ -2385,14 +2390,17 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
               </div>
 
               {/* Floating Status Indicator */}
-              <div className={cn(
-                "absolute bottom-1 right-1 w-7 h-7 rounded-full border-4 border-purple-900 flex items-center justify-center shadow-2xl transition-all duration-300",
-                flowState === 'LISTENING' && 'bg-green-400 shadow-green-400/60 animate-pulse',
-                flowState === 'READING' && 'bg-blue-400 shadow-blue-400/60 animate-pulse',
-                flowState === 'PROCESSING' && 'bg-yellow-400 shadow-yellow-400/60 animate-pulse',
-                flowState === 'IDLE' && 'bg-gray-400 shadow-gray-400/40',
-                flowState === 'PAUSED' && 'bg-orange-400 shadow-orange-400/60'
-              )}>
+              <div
+                className={cn(
+                  "absolute bottom-1 right-1 w-7 h-7 rounded-full border-4 border-purple-900 flex items-center justify-center shadow-2xl transition-all duration-300",
+                  flowState === 'LISTENING' && 'bg-green-400 shadow-green-400/60 animate-pulse',
+                  flowState === 'READING' && 'bg-blue-400 shadow-blue-400/60 animate-pulse',
+                  flowState === 'PROCESSING' && 'bg-yellow-400 shadow-yellow-400/60 animate-pulse',
+                  flowState === 'IDLE' && 'bg-gray-400 shadow-gray-400/40',
+                  flowState === 'PAUSED' && 'bg-orange-400 shadow-orange-400/60'
+                )}
+                aria-hidden="true"
+              >
                 <div className="w-3 h-3 rounded-full bg-white" />
               </div>
             </div>
@@ -2534,7 +2542,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
                       >
                         <div className="flex items-center gap-2 text-xs">
                           <span className="text-red-300 line-through">{correction.originalPhrase}</span>
-                          <span className="text-white/50">→</span>
+                          <span className="text-white/60">→</span>
                           <span className="text-green-300 font-semibold">{correction.correctedPhrase}</span>
                         </div>
                       </div>
@@ -2749,7 +2757,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
       {/* Error Toast - Mobile optimized */}
       {errorMessage && (
-        <div className="fixed bottom-32 left-4 right-4 z-[200] animate-slide-in-up">
+        <div className="fixed bottom-32 left-4 right-4 z-[200] animate-slide-in-up" role="alert" aria-live="assertive">
           <div className="bg-red-500/90 backdrop-blur-sm text-white px-4 py-3 rounded-xl shadow-2xl text-center text-sm">
             {errorMessage}
           </div>

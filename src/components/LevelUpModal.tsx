@@ -19,6 +19,9 @@ export const LevelUpModal = ({ level, onClose }: LevelUpModalProps) => {
       style={{
         animation: 'fadeIn 0.3s ease-out'
       }}
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Level up! You reached level ${level}`}
     >
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm pointer-events-auto" onClick={onClose} />

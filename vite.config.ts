@@ -39,6 +39,10 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  esbuild: {
+    drop: mode === 'production' ? ['debugger'] : [],
+    pure: mode === 'production' ? ['console.log'] : [],
+  },
   build: {
     chunkSizeWarningLimit: 500,
     rollupOptions: {

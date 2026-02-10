@@ -534,6 +534,7 @@ body {
                 radial-gradient(circle, rgba(255,69,0,0.8) 1px, transparent 1px);
     background-size: 50px 50px, 80px 80px, 40px 40px, 60px 60px;
     animation: confetti-fall 3s ease-out infinite;
+    will-change: background-position, opacity;
   }
 
   @keyframes confetti-fall {
@@ -804,21 +805,16 @@ body {
 }
 
 /* Hangman keyboard buttons - Apple HIG requires 44px minimum touch targets */
-/* Using 40px minimum to fit 10 buttons while maintaining accessibility */
 .hangman-key {
-  min-width: 40px !important;
-  max-width: 40px !important;
-  min-height: 40px !important;
-  max-height: 40px !important;
+  min-width: 44px !important;
+  min-height: 44px !important;
 }
 
 /* Desktop: allow larger buttons */
 @media (min-width: 640px) {
   .hangman-key {
-    min-width: 44px !important;
-    max-width: 44px !important;
-    min-height: 44px !important;
-    max-height: 44px !important;
+    min-width: 48px !important;
+    min-height: 48px !important;
   }
 }
 

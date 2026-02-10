@@ -217,7 +217,7 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
       if (!hasPermission) {
         toast({
           title: "Notifications blocked",
-          description: "Please enable notifications in your browser settings.",
+          description: "Please enable notifications in your device settings to receive meeting reminders.",
           variant: "destructive"
         });
         return;
@@ -278,10 +278,19 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary via-primary-glow to-accent p-4 flex items-center justify-center">
-        <div className="text-white text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-          <p>Loading meetings...</p>
+      <div className="min-h-screen bg-gradient-to-br from-primary via-primary-glow to-accent p-4">
+        <div className="max-w-md mx-auto space-y-4 pt-8">
+          <div className="h-8 w-48 bg-white/10 rounded-lg animate-pulse mx-auto" />
+          <div className="bg-white/10 rounded-2xl p-6 space-y-4">
+            <div className="h-6 w-32 bg-white/10 rounded animate-pulse" />
+            <div className="h-16 w-full bg-white/10 rounded-lg animate-pulse" />
+            <div className="h-12 w-full bg-white/10 rounded-lg animate-pulse" />
+          </div>
+          <div className="bg-white/10 rounded-2xl p-6 space-y-3">
+            <div className="h-6 w-40 bg-white/10 rounded animate-pulse" />
+            <div className="h-20 w-full bg-white/10 rounded-lg animate-pulse" />
+            <div className="h-20 w-full bg-white/10 rounded-lg animate-pulse" />
+          </div>
         </div>
       </div>
     );
@@ -451,7 +460,7 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
                 className={`flex-1 text-lg py-3 ${
                   canJoin 
                     ? 'bg-accent hover:bg-accent/90 text-accent-foreground' 
-                    : 'bg-white/10 text-white/50 cursor-not-allowed'
+                    : 'bg-white/10 text-white/60 cursor-not-allowed'
                 }`}
               >
                 <Users className="h-5 w-5 mr-2" />

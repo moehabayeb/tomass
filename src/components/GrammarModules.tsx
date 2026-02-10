@@ -1517,7 +1517,7 @@ function ModulePractice({ module, onComplete, onBack }: ModulePracticeProps) {
                 </div>
                 <h2 className="text-white font-bold text-lg">Let's Learn!</h2>
                 {/* Debug info */}
-                <div className="text-white/50 text-xs mt-1">
+                <div className="text-white/60 text-xs mt-1">
                   Module: {module?.title || 'No module'} | Lesson: {module?.lesson ? 'Found' : 'Missing'}
                 </div>
               </div>

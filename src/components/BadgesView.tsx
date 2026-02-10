@@ -119,6 +119,15 @@ export default function BadgesView({ onBack }: BadgesViewProps) {
         </div>
 
         {/* Badges Grid */}
+        {badges.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="text-5xl mb-4">🏅</div>
+            <h3 className="text-xl font-semibold text-white mb-2">No Badges Yet</h3>
+            <p className="text-white/60 text-sm max-w-xs mx-auto">
+              Complete lessons and challenges to earn badges. Keep practicing to unlock your first badge!
+            </p>
+          </div>
+        ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {badges.map((badge) => {
           const isVisible = visibleBadges.has(badge.id);
@@ -208,7 +217,7 @@ export default function BadgesView({ onBack }: BadgesViewProps) {
                 const date = new Date(badge.unlockedAt);
                 if (isNaN(date.getTime())) return null;
                 return (
-                  <div className="text-center mt-2 text-xs text-white/50">
+                  <div className="text-center mt-2 text-xs text-white/60">
                     Unlocked {date.toLocaleDateString()}
                   </div>
                 );
@@ -220,6 +229,7 @@ export default function BadgesView({ onBack }: BadgesViewProps) {
           );
         })}
         </div>
+        )}
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { Menu, Mic, BookOpen, Bookmark, Award, Gamepad2, Users, Lightbulb, Crown, Sparkles } from 'lucide-react';
+import { Menu, Mic, BookOpen, Bookmark, Award, Gamepad2, Users, Lightbulb, Crown, Sparkles, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 // Admin functionality removed for Apple App Store compliance
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,7 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import DailyTips, { hasTodaysTipBeenViewed } from './DailyTips';
+import { useGamification } from '@/hooks/useGamification';
 
 type AppMode = 'speaking' | 'lessons' | 'bookmarks' | 'badges' | 'placement-test' | 'games' | 'meetings';
 
@@ -61,6 +62,8 @@ export function NavigationDropdown({ currentMode, onModeChange }: NavigationDrop
   const [open, setOpen] = useState(false);
   const [showDailyTips, setShowDailyTips] = useState(false);
   const navigate = useNavigate();
+  const { getXPProgress } = useGamification();
+  const xpProgress = getXPProgress();
 
   // 🔧 FIX: Memoize handlers to prevent re-creation on every render
   const handleItemClick = useCallback((mode: AppMode) => {
@@ -92,6 +95,7 @@ export function NavigationDropdown({ currentMode, onModeChange }: NavigationDrop
             size="sm"
             className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-2xl border border-white/20 text-white/90 hover:bg-white/10 hover:text-white transition-all duration-200 px-4 py-2 h-auto relative min-w-[44px] min-h-[44px]"
             style={{ boxShadow: 'var(--shadow-medium)' }}
+            aria-label="Navigation menu"
           >
             <Menu className="h-4 w-4 mr-2" />
             <span className="hidden sm:inline">{currentItem?.label}</span>
@@ -105,7 +109,21 @@ export function NavigationDropdown({ currentMode, onModeChange }: NavigationDrop
             align="end"
             className="w-48 bg-gradient-to-b from-white/95 to-white/90 backdrop-blur-xl border border-white/20 rounded-xl shadow-lg"
             style={{ boxShadow: 'var(--shadow-medium)' }}
+            role="menu"
+            aria-label="App navigation"
           >
+            {/* v48: XP Progress - moved from header */}
+            <div className="px-3 py-2.5 flex items-center gap-2 border-b border-gray-200/50">
+              <Zap className="h-4 w-4 text-yellow-500" />
+              <span className="text-sm font-medium text-gray-700">{xpProgress.current} XP</span>
+              <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden ml-1">
+                <div
+                  className="h-full bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full transition-all"
+                  style={{ width: `${xpProgress.percentage}%` }}
+                />
+              </div>
+            </div>
+
             {/* Pricing - Premium Feature */}
             <DropdownMenuItem
               onClick={handlePricingClick}

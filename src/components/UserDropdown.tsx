@@ -84,6 +84,7 @@ export function UserDropdown({ user, profile, className }: UserDropdownProps) {
           size="sm"
           className={`relative h-10 w-10 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-200 border border-white/20 ${className}`}
           title={`Signed in as ${displayName}`}
+          aria-label="User menu"
         >
           <Avatar className="h-8 w-8">
             <AvatarImage src={profile?.avatar_url || undefined} alt={displayName} />
