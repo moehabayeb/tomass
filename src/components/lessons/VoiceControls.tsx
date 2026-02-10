@@ -414,7 +414,6 @@ const voiceControlsStyles = `
   background: rgba(0, 0, 0, 0.9);
   border-radius: 12px;
   padding: 8px;
-  backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   transition: all 0.3s ease;
