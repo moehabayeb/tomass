@@ -341,43 +341,36 @@ export default function AppNavigation() {
         />
       </ErrorBoundary>
 
-      {/* v48: Unified Header Bar - Clean layout with proper Dynamic Island spacing */}
-      {/* v59: Remove glass effect on Android to fix mirror artifact */}
-      <header className={`fixed top-0 left-0 right-0 z-20 header-bar ${
-        isAndroid ? '' : (currentMode === 'speaking' || currentMode === 'placement-test')
-          ? 'bg-gradient-to-b from-black/30 via-black/10 to-transparent backdrop-blur-md'
-          : ''
-      }`}>
-        <div className="flex items-center justify-between">
-          {/* Left: Sign In / User Avatar - v59: Only visible on Speaking page */}
-          {currentMode === 'speaking' ? (
-            user && isAuthenticated ? (
-              <UserDropdown
-                user={user}
-                profile={profile}
-              />
+      {/* v78: Conditionally render header — full glass header on speaking/placement-test,
+           floating dropdown only on all other screens to eliminate glass artifact on iOS */}
+      {(currentMode === 'speaking' || currentMode === 'placement-test') ? (
+        <header className={`fixed top-0 left-0 right-0 z-20 header-bar ${
+          isAndroid ? '' : 'bg-gradient-to-b from-black/30 via-black/10 to-transparent backdrop-blur-md'
+        }`}>
+          <div className="flex items-center justify-between">
+            {currentMode === 'speaking' ? (
+              user && isAuthenticated ? (
+                <UserDropdown
+                  user={user}
+                  profile={profile}
+                />
+              ) : (
+                <a
+                  href="/auth"
+                  className="bg-white/95 text-gray-900 font-semibold
+                           rounded-full px-5 py-2.5 min-h-[44px]
+                           shadow-lg hover:shadow-xl
+                           transition-all duration-200
+                           hover:bg-white
+                           flex items-center no-underline"
+                >
+                  <span>Sign In</span>
+                </a>
+              )
             ) : (
-              <a
-                href="/auth"
-                className="bg-white/95 text-gray-900 font-semibold
-                         rounded-full px-5 py-2.5 min-h-[44px]
-                         shadow-lg hover:shadow-xl
-                         transition-all duration-200
-                         hover:bg-white
-                         flex items-center no-underline"
-              >
-                <span>Sign In</span>
-              </a>
-            )
-          ) : (
-            /* Spacer when Sign In not visible - keeps menu on right */
-            <div />
-          )}
-
-          {/* Right: Sound Toggle + Menu */}
-          <div className="flex items-center gap-2">
-            {/* Global Sound Toggle - Only visible on speaking pages */}
-            {(currentMode === 'speaking' || currentMode === 'placement-test') && (
+              <div />
+            )}
+            <div className="flex items-center gap-2">
               <button
                 onClick={toggleSound}
                 className="bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full p-3 text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white/30 shadow-lg hover:shadow-xl min-w-[44px] min-h-[44px] flex items-center justify-center"
@@ -390,15 +383,24 @@ export default function AppNavigation() {
                   <VolumeX className="w-5 h-5" />
                 )}
               </button>
-            )}
-
+              <NavigationDropdown
+                currentMode={currentMode}
+                onModeChange={handleModeChange}
+              />
+            </div>
+          </div>
+        </header>
+      ) : (
+        /* All other screens: Floating NavigationDropdown only — no header bar blocking content */
+        <div className="fixed top-0 right-0 z-20 header-bar pointer-events-none">
+          <div className="flex justify-end pointer-events-auto">
             <NavigationDropdown
               currentMode={currentMode}
               onModeChange={handleModeChange}
             />
           </div>
         </div>
-      </header>
+      )}
 
       {/* Meetings Widget - Show on speaking page */}
       {currentMode === 'speaking' && (
