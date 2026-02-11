@@ -2820,7 +2820,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
         <div className="min-h-screen relative pt-20 overflow-y-auto" style={{ backgroundColor: 'hsl(var(--app-bg))' }}>
           <div className="relative z-10 p-4 max-w-sm mx-auto">
             {/* Header */}
-            <div className="bg-gradient-to-b from-white/15 to-white/5 rounded-3xl p-6 mb-6">
+            <div className="rounded-3xl p-6 mb-6 border border-white/10">
               <div className="flex items-center justify-between mb-4">
                 <Button
                   onClick={onBack}
@@ -2877,7 +2877,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
       <div className="min-h-screen relative pt-20 overflow-y-auto" style={{ backgroundColor: 'hsl(var(--app-bg))' }}>
         <div className="relative z-10 p-4 max-w-sm mx-auto">
           {/* Header */}
-          <div className="bg-gradient-to-b from-white/15 to-white/5 rounded-3xl p-6 mb-6">
+          <div className="rounded-3xl p-6 mb-6 border border-white/10">
             <div className="flex items-center justify-between mb-4">
               <Button
                 onClick={() => setViewState('levels')}
@@ -3001,7 +3001,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
         {showConfetti && <Confetti width={width} height={height} />}
 
         <div className="relative z-10 p-4 max-w-sm mx-auto">
-          <div className="bg-gradient-to-b from-white/15 to-white/5 rounded-3xl p-6 text-center">
+          <div className="rounded-3xl p-6 text-center border border-white/10">
             <div className="flex justify-center mb-4">
               <div className="bg-green-500/20 rounded-full p-4">
                 <CheckCircle className="h-12 w-12 text-green-400" />
@@ -3092,7 +3092,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
 
       <div className="relative z-10 p-3 max-w-sm mx-auto">
         {/* Compact Header - iPhone Optimized */}
-        <div className="bg-gradient-to-b from-white/15 to-white/5 rounded-2xl p-4 mb-4 shadow-lg shadow-black/20">
+        <div className="rounded-2xl p-4 mb-4 shadow-lg shadow-black/20 border border-white/10">
           <div className="flex items-center justify-between mb-3">
             <Button
               onClick={() => { narration.cancel(); setViewState('modules'); }}

@@ -763,7 +763,7 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
                         onClick={playCardPronunciation}
                         size="lg"
                         variant="outline"
-                        className="border-white/40 text-white hover:bg-white/20 bg-gradient-to-r from-white/15 to-white/5"
+                        className="border-white/40 text-white hover:bg-white/20"
                       >
                         <Volume2 className="h-5 w-5 mr-2" />
                         {hasPlayedPronunciation ? '🔊 Hear Again' : '🔊 Hear the Word'}
