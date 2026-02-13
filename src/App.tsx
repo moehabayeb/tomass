@@ -6,11 +6,17 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Footer } from "@/components/Footer";
-import { ConsentBanner } from "@/components/ConsentBanner";
-import { AgeVerificationModal } from "@/components/AgeVerificationModal";
 import { initSentry } from "@/lib/sentry";
 import { initAmplitude } from "@/lib/amplitude";
 import { hasConsent } from "@/lib/analyticsConsent";
+
+// Lazy-load modals to keep them off the critical rendering path
+const ConsentBanner = React.lazy(() =>
+  import("@/components/ConsentBanner").then(m => ({ default: m.ConsentBanner }))
+);
+const AgeVerificationModal = React.lazy(() =>
+  import("@/components/AgeVerificationModal").then(m => ({ default: m.AgeVerificationModal }))
+);
 
 // Initialize analytics ONLY if user has previously consented
 // New users will see consent banner and analytics will init after consent
@@ -29,6 +35,27 @@ const TermsOfService = React.lazy(() => import("./pages/TermsOfService"));
 // Admin panel removed for Apple App Store compliance - use web dashboard instead
 const TestB2Modules = React.lazy(() => import("./pages/TestB2Modules"));
 const NotFound = React.lazy(() => import("./pages/NotFound"));
+
+// Defer modals until after first paint so they don't become the LCP element
+function DeferredModals() {
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    if ('requestIdleCallback' in window) {
+      const id = requestIdleCallback(() => setReady(true), { timeout: 2000 });
+      return () => cancelIdleCallback(id);
+    } else {
+      const timer = setTimeout(() => setReady(true), 100);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+  if (!ready) return null;
+  return (
+    <Suspense fallback={null}>
+      <ConsentBanner />
+      <AgeVerificationModal />
+    </Suspense>
+  );
+}
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -73,8 +100,7 @@ const App = () => (
       >
         <Toaster />
         <Sonner />
-        <ConsentBanner />
-        <AgeVerificationModal />
+        <DeferredModals />
         <BrowserRouter
           future={{
             v7_startTransition: true,

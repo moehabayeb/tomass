@@ -22,6 +22,8 @@
     "@capacitor/core": "^7.4.4",
     "@capacitor/ios": "^7.4.4",
     "@capacitor/local-notifications": "^7.0.4",
+    "@capgo/native-purchases": "7.6.0",
+    "@fontsource-variable/inter": "^5.2.8",
     "@hookform/resolvers": "^3.9.0",
     "@lottiefiles/react-lottie-player": "^3.6.0",
     "@playwright/test": "^1.54.2",

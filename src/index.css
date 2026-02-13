@@ -1,3 +1,5 @@
+@import '@fontsource-variable/inter';
+
 /* iOS Full Viewport - Let pages control their own overflow */
 html, body, #root {
   width: 100%;

@@ -62,17 +62,6 @@ export default defineConfig(({ mode }) => ({
           'ui-vendor': ['@radix-ui/react-accordion', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
           'query-vendor': ['@tanstack/react-query'],
           'supabase-vendor': ['@supabase/supabase-js'],
-          
-          // App-specific chunks
-          'lessons': [
-            './src/components/LessonsApp.tsx',
-            './src/components/lessons/views/LevelsView.tsx',
-            './src/components/lessons/views/ModulesView.tsx'
-          ],
-          'games': [
-            './src/components/FlashcardsGame.tsx',
-            './src/components/HangmanGame.tsx'
-          ],
           'speech': [
             './src/voice/TomasVoice.ts',
             './src/voice/SimpleTTS.ts',

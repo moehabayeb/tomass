@@ -1,17 +1,23 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { UserDropdown } from './UserDropdown';
 import { NavigationDropdown } from './NavigationDropdown';
 import { useAuthReady } from '@/hooks/useAuthReady';
 import { useGlobalSound } from '@/hooks/useGlobalSound';
 import { Volume2, VolumeX } from 'lucide-react';
 import SpeakingApp from './SpeakingApp';
-import EnglishProficiencyTest from './EnglishProficiencyTest';
-import LessonsApp from './LessonsApp';
-import { SpeakingPlacementTest } from './SpeakingPlacementTest';
-import { GamesApp } from './GamesApp';
-import MeetingsApp from './MeetingsApp';
-import BookmarksView from './BookmarksView';
-import BadgesView from './BadgesView';
+
+// Lazy-load non-default tabs to reduce critical bundle size
+const LessonsApp = React.lazy(() => import('./LessonsApp'));
+const EnglishProficiencyTest = React.lazy(() => import('./EnglishProficiencyTest'));
+const MeetingsApp = React.lazy(() => import('./MeetingsApp'));
+const BookmarksView = React.lazy(() => import('./BookmarksView'));
+const BadgesView = React.lazy(() => import('./BadgesView'));
+const SpeakingPlacementTest = React.lazy(() =>
+  import('./SpeakingPlacementTest').then(m => ({ default: m.SpeakingPlacementTest }))
+);
+const GamesApp = React.lazy(() =>
+  import('./GamesApp').then(m => ({ default: m.GamesApp }))
+);
 import { LevelUpPopup } from './LevelUpPopup';
 import { StreakRewardPopup } from './StreakRewardPopup';
 import { StreakWelcomePopup } from './StreakWelcomePopup';
@@ -70,6 +76,12 @@ const safeSessionStorage = {
     }
   }
 };
+
+const TabFallback = (
+  <div className="min-h-screen flex items-center justify-center">
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white/60"></div>
+  </div>
+);
 
 type AppMode = 'speaking' | 'lessons' | 'bookmarks' | 'badges' | 'placement-test' | 'games' | 'meetings';
 
@@ -417,48 +429,60 @@ export default function AppNavigation() {
 
       {/* Content based on current mode */}
       {currentMode === 'lessons' && (
-        <LessonsApp
-          onBack={() => setCurrentMode('speaking')}
-          onNavigateToPlacementTest={handleNavigateToPlacementTest}
-          {...getInitialLessonParams()}
-        />
-      )}
-      
-      {currentMode === 'bookmarks' && (
-        <ErrorBoundary>
-          <BookmarksView
+        <Suspense fallback={TabFallback}>
+          <LessonsApp
             onBack={() => setCurrentMode('speaking')}
-            onContinueFromMessage={(content) => {
-              setContinuedMessage(content);
-              setCurrentMode('speaking');
-            }}
+            onNavigateToPlacementTest={handleNavigateToPlacementTest}
+            {...getInitialLessonParams()}
           />
-        </ErrorBoundary>
+        </Suspense>
       )}
-      
+
+      {currentMode === 'bookmarks' && (
+        <Suspense fallback={TabFallback}>
+          <ErrorBoundary>
+            <BookmarksView
+              onBack={() => setCurrentMode('speaking')}
+              onContinueFromMessage={(content) => {
+                setContinuedMessage(content);
+                setCurrentMode('speaking');
+              }}
+            />
+          </ErrorBoundary>
+        </Suspense>
+      )}
+
       {currentMode === 'badges' && (
-        <ErrorBoundary>
-          <BadgesView onBack={() => setCurrentMode('speaking')} />
-        </ErrorBoundary>
+        <Suspense fallback={TabFallback}>
+          <ErrorBoundary>
+            <BadgesView onBack={() => setCurrentMode('speaking')} />
+          </ErrorBoundary>
+        </Suspense>
       )}
-      
+
       {currentMode === 'placement-test' && (
-        <EnglishProficiencyTest
-          onComplete={handleTestComplete}
-          onBack={() => setCurrentMode('speaking')}
-          onGoToLessons={handleGoToLessons}
-          testType="placement"
-        />
+        <Suspense fallback={TabFallback}>
+          <EnglishProficiencyTest
+            onComplete={handleTestComplete}
+            onBack={() => setCurrentMode('speaking')}
+            onGoToLessons={handleGoToLessons}
+            testType="placement"
+          />
+        </Suspense>
       )}
-      
+
       {currentMode === 'games' && (
-        <GamesApp onBack={() => setCurrentMode('speaking')} />
+        <Suspense fallback={TabFallback}>
+          <GamesApp onBack={() => setCurrentMode('speaking')} />
+        </Suspense>
       )}
-      
+
       {currentMode === 'meetings' && (
-        <ErrorBoundary>
-          <MeetingsApp onBack={() => setCurrentMode('speaking')} />
-        </ErrorBoundary>
+        <Suspense fallback={TabFallback}>
+          <ErrorBoundary>
+            <MeetingsApp onBack={() => setCurrentMode('speaking')} />
+          </ErrorBoundary>
+        </Suspense>
       )}
 
       {currentMode === 'speaking' && (
