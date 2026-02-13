@@ -207,6 +207,7 @@ export default function DailyTips({ onClose }: DailyTipsProps) {
                 onClick={onClose}
                 variant="ghost"
                 size="icon"
+                aria-label="Close"
                 className="absolute top-1 right-1 sm:top-2 sm:right-2 text-white hover:bg-white/20 rounded-full h-8 w-8 sm:h-10 sm:w-10"
               >
                 <X className="h-4 w-4 sm:h-5 sm:w-5" />
