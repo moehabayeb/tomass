@@ -13,6 +13,15 @@ export default defineConfig(({ mode }) => ({
     react(),
     mode === 'development' &&
     componentTagger(),
+    {
+      name: 'css-preload',
+      transformIndexHtml(html) {
+        return html.replace(
+          /<link rel="stylesheet" crossorigin href="(\/assets\/[^"]+\.css)">/g,
+          '<link rel="preload" as="style" crossorigin href="$1">\n    <link rel="stylesheet" crossorigin href="$1" media="print" onload="this.media=\'all\'">'
+        );
+      }
+    },
   ].filter(Boolean),
   optimizeDeps: {
     include: [
