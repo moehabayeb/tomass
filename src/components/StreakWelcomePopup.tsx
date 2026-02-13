@@ -63,6 +63,7 @@ export const StreakWelcomePopup: React.FC<StreakWelcomePopupProps> = ({
         {/* Close button */}
         <button
           onClick={handleClose}
+          aria-label="Close"
           className="absolute top-4 right-4 w-8 h-8 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition-colors"
         >
           <X className="w-4 h-4 text-white" />
