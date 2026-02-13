@@ -18,6 +18,7 @@ export const TomasAvatarImage: React.FC<TomasAvatarImageProps> = ({
     <img
       src={tomasAvatar}
       alt="Tomas AI"
+      fetchPriority="high"
       className={className}
       style={{
         transition: 'transform 0.2s ease-in-out, filter 0.2s ease-in-out',
