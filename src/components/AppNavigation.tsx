@@ -18,17 +18,27 @@ const SpeakingPlacementTest = React.lazy(() =>
 const GamesApp = React.lazy(() =>
   import('./GamesApp').then(m => ({ default: m.GamesApp }))
 );
-import { LevelUpPopup } from './LevelUpPopup';
-import { StreakRewardPopup } from './StreakRewardPopup';
-import { StreakWelcomePopup } from './StreakWelcomePopup';
-import { BadgeAchievement } from './BadgeAchievement';
+// Lazy-load popup/widget components to reduce initial bundle size
+const LevelUpPopup = React.lazy(() =>
+  import('./LevelUpPopup').then(m => ({ default: m.LevelUpPopup }))
+);
+const StreakRewardPopup = React.lazy(() =>
+  import('./StreakRewardPopup').then(m => ({ default: m.StreakRewardPopup }))
+);
+const StreakWelcomePopup = React.lazy(() =>
+  import('./StreakWelcomePopup').then(m => ({ default: m.StreakWelcomePopup }))
+);
+const BadgeAchievement = React.lazy(() =>
+  import('./BadgeAchievement').then(m => ({ default: m.BadgeAchievement }))
+);
+const MeetingsWidget = React.lazy(() =>
+  import('@/components/meetings/MeetingsWidget').then(m => ({ default: m.MeetingsWidget }))
+);
 import { useGamification } from '@/hooks/useGamification';
 import { useStreakTracker } from '@/hooks/useStreakTracker';
 import { useBadgeSystem } from '@/hooks/useBadgeSystem';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
-// Admin panel removed for Apple App Store compliance
-import { MeetingsWidget } from '@/components/meetings/MeetingsWidget';
 import { TestResult } from '@/services/speakingTestService';
 import { ErrorBoundary } from './ErrorBoundary';
 import { MODULE_RANGES } from '@/constants/moduleRanges';
@@ -323,35 +333,30 @@ export default function AppNavigation() {
            style={{ backgroundImage: 'radial-gradient(2px 2px at 20px 30px, #fff, transparent), radial-gradient(2px 2px at 40px 70px, #fff, transparent), radial-gradient(1px 1px at 90px 40px, #fff, transparent)', backgroundSize: '100px 100px' }} 
       />
       
-      {/* Level Up Popup */}
-      <LevelUpPopup 
-        show={showLevelUpPopup} 
-        newLevel={pendingLevelUp || 1} 
-        onClose={closeLevelUpPopup} 
-      />
-
-      {/* Streak Welcome Popup */}
-      <StreakWelcomePopup
-        currentStreak={streakData.currentStreak}
-        bestStreak={streakData.bestStreak}
-        isVisible={showStreakWelcome}
-        onClose={() => setShowStreakWelcome(false)}
-      />
-
-      {/* Streak Reward Popup */}
-      <StreakRewardPopup
-        reward={streakReward}
-        onClose={() => {}} // Auto-closes after timer
-      />
-
-      {/* Badge Achievement Popup */}
-      {/* Phase 2.2: Add ErrorBoundary for consistency with BadgesView */}
-      <ErrorBoundary>
-        <BadgeAchievement
-          badge={newlyUnlockedBadge}
-          onClose={closeBadgeNotification}
+      {/* Popup components (lazy-loaded) */}
+      <Suspense fallback={null}>
+        <LevelUpPopup
+          show={showLevelUpPopup}
+          newLevel={pendingLevelUp || 1}
+          onClose={closeLevelUpPopup}
         />
-      </ErrorBoundary>
+        <StreakWelcomePopup
+          currentStreak={streakData.currentStreak}
+          bestStreak={streakData.bestStreak}
+          isVisible={showStreakWelcome}
+          onClose={() => setShowStreakWelcome(false)}
+        />
+        <StreakRewardPopup
+          reward={streakReward}
+          onClose={() => {}} // Auto-closes after timer
+        />
+        <ErrorBoundary>
+          <BadgeAchievement
+            badge={newlyUnlockedBadge}
+            onClose={closeBadgeNotification}
+          />
+        </ErrorBoundary>
+      </Suspense>
 
       {/* v78: Conditionally render header — full glass header on speaking/placement-test,
            floating dropdown only on all other screens to eliminate glass artifact on iOS */}
@@ -418,9 +423,11 @@ export default function AppNavigation() {
       {currentMode === 'speaking' && (
         <div className="fixed bottom-4 right-4 z-10 max-w-sm">
           <ErrorBoundary>
-            <MeetingsWidget
-              className="border-white/20 bg-white/10 backdrop-blur-xl text-white"
-            />
+            <Suspense fallback={null}>
+              <MeetingsWidget
+                className="border-white/20 bg-white/10 backdrop-blur-xl text-white"
+              />
+            </Suspense>
           </ErrorBoundary>
         </div>
       )}

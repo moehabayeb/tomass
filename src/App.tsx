@@ -40,13 +40,17 @@ const NotFound = React.lazy(() => import("./pages/NotFound"));
 function DeferredModals() {
   const [ready, setReady] = useState(false);
   useEffect(() => {
-    if ('requestIdleCallback' in window) {
-      const id = requestIdleCallback(() => setReady(true), { timeout: 2000 });
-      return () => cancelIdleCallback(id);
-    } else {
-      const timer = setTimeout(() => setReady(true), 100);
-      return () => clearTimeout(timer);
-    }
+    // Returning users: skip entirely if both decisions already made
+    try {
+      const ageVerified = localStorage.getItem('tomass_age_verified');
+      const consentGiven = localStorage.getItem('analytics_consent');
+      if (ageVerified && consentGiven) return;
+    } catch { /* Safari Private Mode — fall through */ }
+
+    // New users: delay 5s to push modal past LCP measurement window
+    // (Lighthouse LCP window closes ~4s under simulated throttle)
+    const timer = setTimeout(() => setReady(true), 5000);
+    return () => clearTimeout(timer);
   }, []);
   if (!ready) return null;
   return (

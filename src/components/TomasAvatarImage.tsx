@@ -1,5 +1,5 @@
 import React from 'react';
-import tomasAvatar from '../assets/tomas-avatar-512.webp';
+import tomasAvatar from '../assets/tomas-avatar-256.webp';
 
 interface TomasAvatarImageProps {
   isSpeaking?: boolean;
