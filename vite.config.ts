@@ -13,13 +13,24 @@ export default defineConfig(({ mode }) => ({
     react(),
     mode === 'development' &&
     componentTagger(),
+    // Inject modulepreload for the lazy Index chunk so the browser starts
+    // downloading it at HTML parse time (before main JS executes).
     {
-      name: 'css-preload',
-      transformIndexHtml(html) {
-        return html.replace(
-          /<link rel="stylesheet" crossorigin href="(\/assets\/[^"]+\.css)">/g,
-          '<link rel="preload" as="style" crossorigin href="$1">\n    <link rel="stylesheet" crossorigin href="$1" media="print" onload="this.media=\'all\'">'
+      name: 'preload-index-chunk',
+      enforce: 'post' as const,
+      transformIndexHtml(html, ctx) {
+        if (!ctx.bundle) return html;
+        const indexChunk = Object.values(ctx.bundle).find(
+          (chunk): chunk is import('rollup').OutputChunk =>
+            chunk.type === 'chunk' && chunk.name === 'Index'
         );
+        if (indexChunk) {
+          return html.replace(
+            '</head>',
+            `    <link rel="modulepreload" crossorigin href="/${indexChunk.fileName}">\n  </head>`
+          );
+        }
+        return html;
       }
     },
   ].filter(Boolean),

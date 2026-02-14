@@ -6,14 +6,8 @@ import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
 
-// Preload LCP image so the browser discovers it before React renders the <img>
-import tomasAvatar from './assets/tomas-avatar-256.webp';
-const preloadLink = document.createElement('link');
-preloadLink.rel = 'preload';
-preloadLink.as = 'image';
-preloadLink.href = tomasAvatar;
-preloadLink.setAttribute('fetchpriority', 'high');
-document.head.appendChild(preloadLink);
+// Eager preload: start downloading Index chunk immediately (parallel with React init)
+import("./pages/Index");
 
 // Version stamp for deployment verification (dev only)
 if (import.meta.env.DEV) {
@@ -25,3 +19,12 @@ createRoot(document.getElementById("root")!).render(
     <App />
   </React.StrictMode>
 );
+
+// Hide the splash screen after React paints
+requestAnimationFrame(() => {
+  const splash = document.getElementById('splash');
+  if (splash) {
+    splash.classList.add('hide');
+    setTimeout(() => splash.remove(), 300);
+  }
+});

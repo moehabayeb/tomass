@@ -1,5 +1,6 @@
 import React from 'react';
-import tomasAvatar from '../assets/tomas-avatar-256.webp';
+
+const tomasAvatar = '/tomas-avatar-256.webp';
 
 interface TomasAvatarImageProps {
   isSpeaking?: boolean;

@@ -32,6 +32,9 @@
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="apple-touch-icon" href="/tomas-avatar.png" />
 
+    <!-- Preload LCP avatar image for instant FCP -->
+    <link rel="preload" as="image" href="/tomas-avatar-256.webp" fetchpriority="high">
+
     <!-- Open Graph Meta Tags -->
     <meta property="og:title" content="Tomas Hoca - Master English Speaking with AI" />
     <meta property="og:description" content="Master English speaking with AI-powered lessons, speech recognition, and 300+ interactive modules across 6 CEFR levels" />
@@ -47,14 +50,20 @@
   </head>
 
   <body>
-    <div id="root">
-      <style>
-        .loading-shell{min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;background:hsl(238,63%,25%)}
-        .loading-spinner{width:48px;height:48px;border-radius:50%;border:3px solid rgba(255,255,255,.15);border-top-color:rgba(255,255,255,.7);animation:ss .8s linear infinite}
-        @keyframes ss{to{transform:rotate(360deg)}}
-      </style>
-      <div class="loading-shell"><div class="loading-spinner"></div></div>
+    <style>
+      #splash{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:hsl(238,63%,25%);z-index:9999}
+      #splash.hide{opacity:0;pointer-events:none;transition:opacity .2s}
+      #splash img{width:160px;height:160px;border-radius:50%;object-fit:cover}
+      #splash .sp-title{color:#fff;font:700 22px/1 system-ui,-apple-system,sans-serif;margin:16px 0 20px}
+      #splash .sp-spin{width:32px;height:32px;border:3px solid rgba(255,255,255,.15);border-top-color:rgba(255,255,255,.7);border-radius:50%;animation:ss .8s linear infinite}
+      @keyframes ss{to{transform:rotate(360deg)}}
+    </style>
+    <div id="splash">
+      <img src="/tomas-avatar-256.webp" alt="" width="160" height="160">
+      <div class="sp-title">Tomas Hoca</div>
+      <div class="sp-spin"></div>
     </div>
+    <div id="root"></div>
     <script type="module" src="/src/main.tsx?v=absolute-final-1760358400"></script>
   </body>
 </html>
