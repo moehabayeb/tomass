@@ -111,6 +111,7 @@ class TTSManagerService {
 
   private chunkText(text: string, maxLength = 190): string[] {
     const normalized = this.normalizeText(text);
+    if (!normalized) return [];
     if (normalized.length <= maxLength) {
       return [normalized];
     }
@@ -523,6 +524,13 @@ class TTSManagerService {
 
     try {
       const normalizedText = this.normalizeText(text);
+
+      // Guard: skip native TTS for empty/whitespace-only text to avoid iOS AVAudioBuffer errors
+      if (!normalizedText) {
+        this.busy = false;
+        this._isSpeakingInternal = false;
+        return { completed: true, skipped: true, chunksSpoken: 0, totalChunks: 0, durationMs: 0 };
+      }
 
       await UnifiedTTSService.speak({
         text: normalizedText,
