@@ -363,7 +363,7 @@ class MicrophoneGuardianService {
       stream.getTracks().forEach(track => track.stop());
       return true;
     } catch (error) {
-      console.error('[MicGuardian] Permission request error:', error);
+      console.warn('[MicGuardian] Permission request error:', error);
       return false;
     }
   }
