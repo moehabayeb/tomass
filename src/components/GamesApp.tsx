@@ -38,13 +38,13 @@ export const GamesApp: React.FC<GamesAppProps> = ({ onBack }) => {
            style={{ backgroundImage: 'radial-gradient(2px 2px at 20px 30px, #fff, transparent), radial-gradient(2px 2px at 40px 70px, #fff, transparent), radial-gradient(1px 1px at 90px 40px, #fff, transparent)', backgroundSize: '100px 100px' }} 
       />
       
-      <div className="relative max-w-2xl mx-auto pt-8">
+      <div className="relative max-w-2xl mx-auto pt-safe">
         <div className="flex items-center justify-between mb-8">
           <Button
             onClick={onBack}
             variant="ghost"
             size="sm"
-            className="text-white/70 hover:text-white"
+            className="text-white/70 hover:text-white min-h-[44px] min-w-[44px]"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back

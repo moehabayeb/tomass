@@ -79,13 +79,13 @@ export default function BadgesView({ onBack }: BadgesViewProps) {
       />
       
       {/* Header */}
-      <div className="relative z-10 p-4 sm:p-6">
+      <div className="relative z-10 pt-safe px-4 pb-4 sm:px-6 sm:pb-6">
         <div className="flex items-center gap-2 sm:gap-4 mb-6 sm:mb-8">
           <Button
             onClick={onBack}
             variant="ghost"
             size="sm"
-            className="text-white hover:bg-white/10 rounded-xl p-2 sm:p-3"
+            className="text-white hover:bg-white/10 rounded-xl p-2 sm:p-3 min-h-[44px] min-w-[44px]"
           >
             <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
           </Button>

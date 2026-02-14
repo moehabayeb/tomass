@@ -80,22 +80,22 @@ export function ModulesView({ selectedLevel, onBack, onSelectModule }: ModulesVi
     <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: 'hsl(var(--app-bg))' }}>
       <div className="relative z-10 p-4 max-w-sm mx-auto">
         {/* Header */}
-        <div className="bg-gradient-to-b from-white/15 to-white/5 rounded-3xl p-6 mb-6 mt-safe">
+        <div className="rounded-3xl p-6 mb-6 mt-safe border border-white/10">
           <div className="flex items-center justify-between mb-4">
             <Button
               onClick={onBack}
               variant="ghost"
               size="icon"
-              className="text-white hover:bg-white/10 rounded-full"
+              className="text-white hover:bg-white/10 rounded-full min-h-[44px] min-w-[44px]"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            
+
             <div className="text-center">
               <h1 className="text-lg font-bold text-white">{selectedLevel} Modules</h1>
               <p className="text-sm text-white/70">Choose a module to start</p>
             </div>
-            <div className="w-10"></div>
+            <div className="w-11"></div>
           </div>
         </div>
 

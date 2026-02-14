@@ -455,26 +455,26 @@ export default function Profile() {
         }} 
       />
 
-      <div className="relative z-10 container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-4xl">
+      <div className="relative z-10 container mx-auto px-2 sm:px-4 pt-safe pb-4 sm:pb-8 max-w-4xl">
         {/* Header */}
         <div className="flex items-center justify-between mb-4 sm:mb-8 gap-2">
           <Button
             onClick={() => navigate('/?tab=meetings')}
             variant="ghost"
             size="sm"
-            className="text-white/70 hover:text-white hover:bg-white/10 p-2 sm:px-4"
+            className="text-white/70 hover:text-white hover:bg-white/10 p-2 sm:px-4 min-h-[44px] min-w-[44px]"
           >
             <ArrowLeft className="h-4 w-4 sm:mr-2" />
             <span className="hidden sm:inline">Back to Meetings</span>
           </Button>
-          
+
           <h1 className="text-xl sm:text-3xl font-bold text-white text-center">My Profile</h1>
-          
+
           <Button
             onClick={handleSignOut}
             variant="outline"
             size="sm"
-            className="text-white border-white/20 hover:bg-white/10 p-2 sm:px-4"
+            className="text-white border-white/20 hover:bg-white/10 p-2 sm:px-4 min-h-[44px] min-w-[44px]"
           >
             <LogOut className="h-4 w-4 sm:mr-2" />
             <span className="hidden sm:inline">Sign Out</span>

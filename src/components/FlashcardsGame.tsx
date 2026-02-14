@@ -393,14 +393,14 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
              style={{ backgroundImage: 'radial-gradient(2px 2px at 20px 30px, #fff, transparent), radial-gradient(2px 2px at 40px 70px, #fff, transparent), radial-gradient(1px 1px at 90px 40px, #fff, transparent)', backgroundSize: '100px 100px' }}
         />
 
-        <div className="relative max-w-4xl mx-auto pt-8">
+        <div className="relative max-w-4xl mx-auto pt-safe">
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <Button
               onClick={onBack}
               variant="ghost"
               size="sm"
-              className="text-white/70 hover:text-white hover:bg-white/10"
+              className="text-white/70 hover:text-white hover:bg-white/10 min-h-[44px] min-w-[44px]"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back
@@ -702,14 +702,14 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
              style={{ backgroundImage: 'radial-gradient(2px 2px at 20px 30px, #fff, transparent), radial-gradient(2px 2px at 40px 70px, #fff, transparent), radial-gradient(1px 1px at 90px 40px, #fff, transparent)', backgroundSize: '100px 100px' }}
         />
 
-        <div className="relative max-w-2xl mx-auto pt-8">
+        <div className="relative max-w-2xl mx-auto pt-safe">
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <Button
               onClick={backToTierSelection}
               variant="ghost"
               size="sm"
-              className="text-white/70 hover:text-white hover:bg-white/10"
+              className="text-white/70 hover:text-white hover:bg-white/10 min-h-[44px] min-w-[44px]"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Tiers
