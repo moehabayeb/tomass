@@ -159,24 +159,24 @@ export function TestResults({ result, onRestart, onBack, onGoToLessons }: TestRe
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 to-purple-900 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-900 to-purple-900 px-4 pb-4 pt-safe">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-6 gap-2">
           <Button
             variant="ghost"
             onClick={onBack}
             disabled={!onBack}
-            className="text-white hover:bg-white/10"
+            className="text-white hover:bg-white/10 min-h-[44px] min-w-[44px] flex-shrink-0"
             aria-label="Go back to main menu"
           >
-            ← Back to Menu
+            ←<span className="hidden sm:inline ml-1">Back</span>
           </Button>
 
-          <div className="text-center">
-            <h1 className="text-3xl font-bold text-white mb-2">Test Results</h1>
-            <p className="text-blue-200">
-              Completed on {new Date(result.test_date ?? Date.now()).toLocaleDateString('en-US', {
+          <div className="text-center min-w-0 flex-1">
+            <h1 className="text-xl sm:text-3xl font-bold text-white mb-1">Test Results</h1>
+            <p className="text-blue-200 text-xs sm:text-base truncate">
+              {new Date(result.test_date ?? Date.now()).toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric'
@@ -184,45 +184,43 @@ export function TestResults({ result, onRestart, onBack, onGoToLessons }: TestRe
             </p>
           </div>
 
-          <div className="flex space-x-2">
+          <div className="flex space-x-1 flex-shrink-0">
             <Button
               variant="ghost"
               onClick={shareResults}
-              className="text-white hover:bg-white/10"
+              className="text-white hover:bg-white/10 min-h-[44px] min-w-[44px] p-2"
               aria-label="Share your test results"
             >
-              <Share2 className="w-4 h-4 mr-2" />
-              Share
+              <Share2 className="w-4 h-4" />
             </Button>
             <Button
               variant="ghost"
               onClick={generateCertificate}
-              className="text-white hover:bg-white/10"
+              className="text-white hover:bg-white/10 min-h-[44px] min-w-[44px] p-2"
               aria-label="Download certificate"
             >
-              <Download className="w-4 h-4 mr-2" />
-              Certificate
+              <Download className="w-4 h-4" />
             </Button>
           </div>
         </div>
 
         {/* Overall Score Card */}
         <Card className="bg-white/10 backdrop-blur-lg border-white/20 mb-8">
-          <CardContent className="p-8">
+          <CardContent className="p-4 sm:p-8">
             <div className="text-center">
               {/* Level Badge */}
               <div className="flex justify-center mb-4">
-                <Badge className={`${getLevelColor(result.recommended_level)} text-white text-lg px-6 py-2`}>
+                <Badge className={`${getLevelColor(result.recommended_level)} text-white text-base sm:text-lg px-4 sm:px-6 py-2`}>
                   CEFR Level: {result.recommended_level}
                 </Badge>
               </div>
 
               {/* Overall Score */}
               <div className="mb-6">
-                <div className={`text-6xl font-bold ${getScoreColor(result.overall_score)} mb-2`}>
+                <div className={`text-5xl sm:text-6xl font-bold ${getScoreColor(result.overall_score)} mb-2`}>
                   {result.overall_score}%
                 </div>
-                <div className="text-white text-xl">
+                <div className="text-white text-lg sm:text-xl">
                   Overall Score - {getPerformanceLevel(result.overall_score)}
                 </div>
               </div>
@@ -257,14 +255,14 @@ export function TestResults({ result, onRestart, onBack, onGoToLessons }: TestRe
         {/* Detailed Results Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-3 bg-white/10 backdrop-blur-lg">
-            <TabsTrigger value="overview" className="text-white data-[state=active]:bg-white/20">
+            <TabsTrigger value="overview" className="text-white data-[state=active]:bg-white/20 text-xs sm:text-sm px-1 sm:px-3">
               Overview
             </TabsTrigger>
-            <TabsTrigger value="breakdown" className="text-white data-[state=active]:bg-white/20">
-              Skill Breakdown
+            <TabsTrigger value="breakdown" className="text-white data-[state=active]:bg-white/20 text-xs sm:text-sm px-1 sm:px-3">
+              Skills
             </TabsTrigger>
-            <TabsTrigger value="feedback" className="text-white data-[state=active]:bg-white/20">
-              Detailed Feedback
+            <TabsTrigger value="feedback" className="text-white data-[state=active]:bg-white/20 text-xs sm:text-sm px-1 sm:px-3">
+              Feedback
             </TabsTrigger>
           </TabsList>
 
@@ -368,13 +366,13 @@ export function TestResults({ result, onRestart, onBack, onGoToLessons }: TestRe
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
+                        <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 mb-4">
                           {Object.entries(phase.scores || {}).map(([skill, score]) => (
                             <div key={skill} className="text-center">
-                              <div className={`text-2xl font-bold ${getScoreColor(score as number)}`}>
+                              <div className={`text-xl sm:text-2xl font-bold ${getScoreColor(score as number)}`}>
                                 {score ?? 0}%
                               </div>
-                              <div className="text-white text-sm capitalize">{skill}</div>
+                              <div className="text-white text-xs sm:text-sm capitalize truncate">{skill}</div>
                             </div>
                           ))}
                         </div>

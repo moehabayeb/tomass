@@ -785,11 +785,11 @@ export default function EnglishProficiencyTest({
                   <CheckCircle className="w-5 h-5 mr-2" />
                   Phase Complete!
                 </div>
-                <div className="grid grid-cols-5 gap-2 text-sm">
+                <div className="grid grid-cols-3 gap-3 text-sm">
                   {Object.entries(phaseData[currentPhase].analysisResult).map(([key, value]) => (
                     <div key={key} className="text-center">
                       <div className="text-white font-semibold">{value}%</div>
-                      <div className="text-green-200 capitalize text-xs">{key}</div>
+                      <div className="text-green-200 capitalize text-xs truncate">{key}</div>
                     </div>
                   ))}
                 </div>
