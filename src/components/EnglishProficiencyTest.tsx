@@ -486,6 +486,9 @@ export default function EnglishProficiencyTest({
     );
 
     const count = phaseData.length;
+    if (count === 0) {
+      return { overall: 0, pronunciation: 0, grammar: 0, vocabulary: 0, fluency: 0, comprehension: 0 };
+    }
     const scores = {
       pronunciation: Math.round(totals.pronunciation / count),
       grammar: Math.round(totals.grammar / count),

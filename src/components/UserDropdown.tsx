@@ -45,9 +45,11 @@ export function UserDropdown({ user, profile, className }: UserDropdownProps) {
     });
 
     // Clear local storage immediately (don't wait for network)
-    localStorage.removeItem('userProfile');
-    localStorage.removeItem('streakData');
-    localStorage.removeItem('badgeProgress');
+    try {
+      localStorage.removeItem('userProfile');
+      localStorage.removeItem('streakData');
+      localStorage.removeItem('badgeProgress');
+    } catch { /* Safari Private Mode */ }
 
     // Show feedback and navigate immediately
     toast({
@@ -82,7 +84,7 @@ export function UserDropdown({ user, profile, className }: UserDropdownProps) {
         <Button
           variant="ghost"
           size="sm"
-          className={`relative h-10 w-10 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-200 border border-white/20 ${className}`}
+          className={`relative h-10 w-10 min-h-[44px] min-w-[44px] rounded-full bg-white/10 hover:bg-white/20 transition-all duration-200 border border-white/20 ${className}`}
           title={`Signed in as ${displayName}`}
           aria-label="User menu"
         >

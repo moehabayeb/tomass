@@ -586,7 +586,8 @@ export default function Profile() {
                       onClick={() => setIsEditingName(true)}
                       variant="ghost"
                       size="sm"
-                      className="text-white/70 hover:text-white p-1 sm:p-2"
+                      className="text-white/70 hover:text-white p-1 sm:p-2 min-h-[44px] min-w-[44px]"
+                      aria-label="Edit display name"
                     >
                       <Edit2 className="h-3 w-3 sm:h-4 sm:w-4" />
                     </Button>

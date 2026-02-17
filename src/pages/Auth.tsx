@@ -120,7 +120,7 @@ export default function Auth() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-indigo-900 via-indigo-950 to-[#0B0E2C] text-white">
       {/* Header */}
-      <header className="pt-10 pb-6 text-center">
+      <header className="pt-safe pb-6 text-center">
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
           Welcome to <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-300 via-cyan-300 to-sky-300">English Learning</span>
         </h1>
@@ -134,16 +134,20 @@ export default function Auth() {
           <div className="grid grid-cols-2">
             <button
               onClick={() => handleTabChange('signin')}
-              className={`py-3 text-sm font-semibold transition-colors ${
-                activeTab === 'signin' ? 'text-white' : 'text-slate-300 hover:text-white/90'
+              role="tab"
+              aria-selected={activeTab === 'signin'}
+              className={`py-3 min-h-[44px] text-sm font-semibold transition-colors border-b-2 ${
+                activeTab === 'signin' ? 'text-white border-white' : 'text-slate-300 hover:text-white/90 border-transparent'
               }`}
             >
               Sign In
             </button>
             <button
               onClick={() => handleTabChange('signup')}
-              className={`py-3 text-sm font-semibold transition-colors ${
-                activeTab === 'signup' ? 'text-white' : 'text-slate-300 hover:text-white/90'
+              role="tab"
+              aria-selected={activeTab === 'signup'}
+              className={`py-3 min-h-[44px] text-sm font-semibold transition-colors border-b-2 ${
+                activeTab === 'signup' ? 'text-white border-white' : 'text-slate-300 hover:text-white/90 border-transparent'
               }`}
             >
               Sign Up
@@ -291,9 +295,10 @@ export default function Auth() {
         </div>
 
         <div className="text-center mt-6">
-          <button 
+          <button
             onClick={() => navigate('/')}
-            className="text-slate-300/80 hover:text-white transition-colors"
+            className="text-slate-300/80 hover:text-white transition-colors min-h-[44px] px-4"
+            aria-label="Back to Home"
           >
             ← Back to Home
           </button>

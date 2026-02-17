@@ -3018,7 +3018,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
               </div>
               <div className="flex justify-between text-white/90">
                 <span>Success Rate:</span>
-                <span className="font-semibold">{Math.round((correctAnswers / attempts) * 100)}%</span>
+                <span className="font-semibold">{Math.round(attempts > 0 ? (correctAnswers / attempts) * 100 : 0)}%</span>
               </div>
             </div>
 

@@ -13,12 +13,12 @@ export default function PrivacyPolicy() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-indigo-950 via-purple-900 to-indigo-950 text-white">
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="container mx-auto px-4 pt-safe pb-8 max-w-4xl">
         {/* Header */}
         <Button
           variant="ghost"
           onClick={() => navigate(-1)}
-          className="mb-6 text-white hover:bg-white/10"
+          className="mb-6 text-white hover:bg-white/10 min-h-[44px]"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back

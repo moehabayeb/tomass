@@ -532,7 +532,7 @@ export const FlashcardsGame: React.FC<FlashcardsGameProps> = ({ onBack }) => {
     const rating = getStarRating();
     const correctCount = cardResults.filter(result => result.correct).length;
     const totalCount = cardResults.length;
-    const percentage = (correctCount / totalCount) * 100;
+    const percentage = totalCount > 0 ? (correctCount / totalCount) * 100 : 0;
     const tierInfo = getTierInfo(selectedTier);
     const passed = percentage >= tierInfo.passThreshold;
     const isPerfect = percentage === 100;

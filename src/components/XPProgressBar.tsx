@@ -16,7 +16,7 @@ export const XPProgressBar = ({
   className = ''
 }: XPProgressBarProps) => {
   const safeCurrentXP = Math.max(0, currentXP);
-  const percentage = (safeCurrentXP / totalXP) * 100;
+  const percentage = totalXP > 0 ? (safeCurrentXP / totalXP) * 100 : 0;
   
   const getHeight = () => {
     switch (size) {

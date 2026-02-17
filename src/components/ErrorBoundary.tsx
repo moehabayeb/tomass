@@ -60,28 +60,28 @@ export class ErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'hsl(238, 63%, 25%)' }}>
           <div className="max-w-md w-full text-center space-y-6">
-            <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
-              <AlertTriangle className="w-8 h-8 text-red-600" />
+            <div className="mx-auto w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center">
+              <AlertTriangle className="w-8 h-8 text-red-400" />
             </div>
-            
+
             <div className="space-y-2">
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h1 className="text-2xl font-bold text-white">
                 Something went wrong
               </h1>
-              <p className="text-gray-600">
+              <p className="text-white/70">
                 We apologize for the inconvenience. An unexpected error occurred.
               </p>
             </div>
 
             {/* 🔧 FIX #21: Only show error details in development mode */}
             {import.meta.env.DEV && this.state.error && (
-              <details className="text-left bg-gray-50 p-4 rounded-lg">
-                <summary className="cursor-pointer font-medium text-gray-700 mb-2">
+              <details className="text-left bg-white/10 p-4 rounded-lg">
+                <summary className="cursor-pointer font-medium text-white/80 mb-2">
                   Error Details (Development)
                 </summary>
-                <div className="text-sm text-gray-600 space-y-2">
+                <div className="text-sm text-white/60 space-y-2">
                   <div>
                     <strong>Error:</strong> {this.state.error.message}
                   </div>
@@ -98,10 +98,10 @@ export class ErrorBoundary extends Component<Props, State> {
             )}
 
             <div className="flex gap-3 justify-center">
-              <Button onClick={this.handleReset} variant="outline">
+              <Button onClick={this.handleReset} variant="outline" className="border-white/30 text-white hover:bg-white/10">
                 Try Again
               </Button>
-              <Button onClick={this.handleReload} className="gap-2">
+              <Button onClick={this.handleReload} className="gap-2 bg-white/20 text-white hover:bg-white/30">
                 <RefreshCw className="w-4 h-4" />
                 Reload Page
               </Button>

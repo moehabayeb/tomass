@@ -174,7 +174,7 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
   const handleJoinClass = () => {
     if (canJoin && nextMeeting) {
       const meetingUrl = nextMeeting.meeting_url || nextMeeting.zoom_link;
-      window.open(meetingUrl, '_blank');
+      window.open(meetingUrl, '_blank', 'noopener,noreferrer');
       toast({
         title: "Joining class...",
         description: "Opening meeting in a new window. See you in class!",
@@ -278,7 +278,7 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary via-primary-glow to-accent p-4">
+      <div className="min-h-screen bg-gradient-to-br from-primary via-primary-glow to-accent pt-safe px-4 pb-4">
         <div className="max-w-md mx-auto space-y-4 pt-8">
           <div className="h-8 w-48 bg-white/10 rounded-lg animate-pulse mx-auto" />
           <div className="bg-white/10 rounded-2xl p-6 space-y-4">
@@ -298,14 +298,15 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
 
   if (!nextMeeting) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary via-primary-glow to-accent p-4">
+      <div className="min-h-screen bg-gradient-to-br from-primary via-primary-glow to-accent pt-safe px-4 pb-4">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <Button
             onClick={onBack}
             variant="ghost"
             size="sm"
-            className="text-white/80 hover:text-white hover:bg-white/10"
+            className="text-white/80 hover:text-white hover:bg-white/10 min-h-[44px]"
+            aria-label="Go back"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
@@ -335,26 +336,28 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary via-primary-glow to-accent p-4">
+    <div className="min-h-screen bg-gradient-to-br from-primary via-primary-glow to-accent pt-safe px-4 pb-4">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <Button
           onClick={onBack}
           variant="ghost"
           size="sm"
-          className="text-white/80 hover:text-white hover:bg-white/10"
+          className="text-white/80 hover:text-white hover:bg-white/10 min-h-[44px]"
+          aria-label="Go back"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back
         </Button>
-        
+
         {isAuthenticated ? (
           <div className="flex items-center gap-3">
             <Button
               onClick={() => navigate('/profile')}
               variant="ghost"
               size="sm"
-              className="text-white/80 hover:text-white hover:bg-white/10"
+              className="text-white/80 hover:text-white hover:bg-white/10 min-h-[44px]"
+              aria-label="View profile"
             >
               <User className="h-4 w-4 mr-2" />
               Profile
@@ -363,7 +366,7 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
               onClick={signOut}
               variant="ghost"
               size="sm"
-              className="text-white/80 hover:text-white hover:bg-white/10"
+              className="text-white/80 hover:text-white hover:bg-white/10 min-h-[44px]"
             >
               Sign Out
             </Button>
@@ -373,7 +376,7 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
             onClick={() => navigate('/auth')}
             variant="ghost"
             size="sm"
-            className="text-white/80 hover:text-white hover:bg-white/10 gap-2"
+            className="text-white/80 hover:text-white hover:bg-white/10 gap-2 min-h-[44px]"
           >
             <LogIn className="h-4 w-4" />
             Sign In

@@ -35,7 +35,7 @@ export function LessonCompletionView({
       {showConfetti && <Confetti width={width} height={height} />}
       
       <div className="relative z-10 p-4 max-w-sm mx-auto">
-        <div className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl rounded-3xl p-6 mt-safe text-center">
+        <div className="rounded-3xl p-6 mt-safe text-center border border-white/10">
           <div className="flex justify-center mb-4">
             <div className="bg-green-500/20 rounded-full p-4">
               <CheckCircle className="h-12 w-12 text-green-400" />
@@ -52,7 +52,7 @@ export function LessonCompletionView({
             </div>
             <div className="flex justify-between text-white/90">
               <span>Success Rate:</span>
-              <span className="font-semibold">{Math.round((correctAnswers / attempts) * 100)}%</span>
+              <span className="font-semibold">{Math.round(attempts > 0 ? (correctAnswers / attempts) * 100 : 0)}%</span>
             </div>
           </div>
 

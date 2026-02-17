@@ -283,11 +283,11 @@ export default function Pricing() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-indigo-950 via-purple-900 to-indigo-950 text-white">
       {/* Header */}
-      <div className="container mx-auto px-4 pt-8">
+      <div className="container mx-auto px-4 pt-safe">
         <Button
           variant="ghost"
           onClick={() => navigate('/')}
-          className="mb-6 text-white hover:bg-white/10"
+          className="mb-6 text-white hover:bg-white/10 min-h-[44px]"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to App
