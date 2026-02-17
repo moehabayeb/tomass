@@ -62,10 +62,12 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
 
   // ROUTING/UNLOCK HELPERS (use your existing app context if available)
   function unlockLevel(level: 'A1'|'A2'|'B1') {
-    const key = 'unlocks';
-    const data = JSON.parse(localStorage.getItem(key) || '{}');
-    data[level] = true;
-    localStorage.setItem(key, JSON.stringify(data));
+    try {
+      const key = 'unlocks';
+      const data = JSON.parse(localStorage.getItem(key) || '{}');
+      data[level] = true;
+      localStorage.setItem(key, JSON.stringify(data));
+    } catch { /* corrupted localStorage — non-fatal */ }
   }
   // Phase 2.1: State-based navigation (no hard redirects)
   function routeToLessons(level: string, moduleId: number, questionIndex: number) {

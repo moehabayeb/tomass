@@ -1385,7 +1385,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
         } else {
           console.log('[LessonsApp] Microphone ready for speaking practice');
         }
-      });
+      }).catch(() => {});
     }
   }, [currentPhase]);
 

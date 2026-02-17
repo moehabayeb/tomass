@@ -90,7 +90,7 @@ export const useProgressStore = create<ProgressStore>((set, get) => ({
         body: { points }
       });
 
-      if (error) {
+      if (error || !data) {
         return false;
       }
 

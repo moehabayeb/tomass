@@ -114,7 +114,7 @@ const FloatingXP = ({ amount, onComplete }: { amount: number; onComplete: () => 
 
 // Premium XP Progress Bar component
 const XPProgressBar = ({ current, max, className }: { current: number; max: number; className?: string }) => {
-  const percentage = (current / max) * 100;
+  const percentage = max > 0 ? (current / max) * 100 : 0;
   
   return (
     <div className={`relative ${className}`}>
@@ -2031,7 +2031,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
             // If more than 5 minutes, reset to clean state
             if (Date.now() - timestamp > 300000) {
               console.log('[SpeakingApp] v67: Session expired, triggering nuclear reset');
-              nuclearReset();
+              nuclearReset().catch(e => console.warn('Nuclear reset failed:', e));
             }
             sessionStorage.removeItem('speaking_state_backup');
           }
@@ -2228,7 +2228,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     // v67: Setup watchdog to detect stuck states
     speechWatchdog.onStuck(() => {
       console.error('[SpeakingApp] v67: Watchdog triggered - forcing recovery');
-      nuclearReset();
+      nuclearReset().catch(e => console.warn('Nuclear reset failed:', e));
     });
 
     // 🔧 PRODUCTION FIX: Ensure microphone is ready when entering Speaking page
@@ -2243,7 +2243,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           });
         }
       }
-    });
+    }).catch(() => {});
 
     return () => {
       // 🔧 FIX #3: Mark component as unmounted to prevent setState

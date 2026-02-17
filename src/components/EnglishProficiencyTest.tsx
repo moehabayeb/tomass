@@ -77,7 +77,7 @@ export default function EnglishProficiencyTest({
           });
         }
       }
-    });
+    }).catch(() => {});
 
     return () => {
       setIsMounted(false);
