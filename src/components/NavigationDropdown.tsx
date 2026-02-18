@@ -93,7 +93,7 @@ export function NavigationDropdown({ currentMode, onModeChange }: NavigationDrop
           <Button
             variant="ghost"
             size="sm"
-            className="bg-gradient-to-b from-white/15 to-white/5 rounded-2xl border border-white/20 text-white/90 hover:bg-white/10 hover:text-white transition-all duration-200 px-4 py-2 h-auto relative min-w-[44px] min-h-[44px]"
+            className="rounded-2xl border border-white/20 text-white/90 hover:bg-white/10 hover:text-white transition-all duration-200 px-4 py-2 h-auto relative min-w-[44px] min-h-[44px]"
             style={{ boxShadow: 'var(--shadow-medium)' }}
             aria-label="Navigation menu"
           >
