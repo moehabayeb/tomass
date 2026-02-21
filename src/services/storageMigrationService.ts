@@ -16,6 +16,7 @@ import {
   getProgressKey,
   getLegacyProgressKey
 } from '@/constants/storageKeys';
+import { logger } from '@/lib/logger';
 
 export interface PlacementTestData {
   level?: string;
@@ -47,13 +48,13 @@ class StorageMigrationServiceClass {
    * Returns the placement data if found, null otherwise
    */
   migratePlacementTest(): PlacementTestData | null {
-    console.log('[Migration] Checking for legacy placement test keys...');
+    logger.log('[Migration] Checking for legacy placement test keys...');
 
     for (const key of LEGACY_PLACEMENT_KEYS) {
       try {
         const data = localStorage.getItem(key);
         if (data) {
-          console.log(`[Migration] Found placement data in legacy key: ${key}`);
+          logger.log(`[Migration] Found placement data in legacy key: ${key}`);
 
           // Parse the data
           let parsed: PlacementTestData;
@@ -72,15 +73,15 @@ class StorageMigrationServiceClass {
           LEGACY_PLACEMENT_KEYS.forEach(legacyKey => {
             if (localStorage.getItem(legacyKey)) {
               localStorage.removeItem(legacyKey);
-              console.log(`[Migration] Removed legacy key: ${legacyKey}`);
+              logger.log(`[Migration] Removed legacy key: ${legacyKey}`);
             }
           });
 
-          console.log('[Migration] Placement test migrated successfully');
+          logger.log('[Migration] Placement test migrated successfully');
           return parsed;
         }
       } catch (err) {
-        console.error(`[Migration] Error processing key ${key}:`, err);
+        logger.error(`[Migration] Error processing key ${key}:`, err);
       }
     }
 
@@ -94,7 +95,7 @@ class StorageMigrationServiceClass {
       }
     }
 
-    console.log('[Migration] No placement test data found');
+    logger.log('[Migration] No placement test data found');
     return null;
   }
 
@@ -103,7 +104,7 @@ class StorageMigrationServiceClass {
    * Called when a guest user signs in
    */
   migrateGuestProgress(userId: string): ProgressData | null {
-    console.log(`[Migration] Migrating guest progress for user: ${userId}`);
+    logger.log(`[Migration] Migrating guest progress for user: ${userId}`);
 
     const guestKey = getLegacyProgressKey(null); // speakflow:v2:guest
     const legacyUserKey = getLegacyProgressKey(userId); // speakflow:v2:{userId}
@@ -115,7 +116,7 @@ class StorageMigrationServiceClass {
       // Check for guest data first
       const guestData = localStorage.getItem(guestKey);
       if (guestData) {
-        console.log('[Migration] Found guest progress data');
+        logger.log('[Migration] Found guest progress data');
         migratedData = JSON.parse(guestData);
 
         // Check if user already has data (from previous login)
@@ -126,7 +127,7 @@ class StorageMigrationServiceClass {
           // Merge: keep higher progress for each module
           const existing = JSON.parse(existingUserData);
           migratedData = this.mergeProgress(existing, migratedData!);
-          console.log('[Migration] Merged guest progress with existing user progress');
+          logger.log('[Migration] Merged guest progress with existing user progress');
         }
 
         // Save to new unified key
@@ -136,7 +137,7 @@ class StorageMigrationServiceClass {
         localStorage.removeItem(guestKey);
         this.migrationLog.push(`Migrated guest progress to user ${userId}`);
 
-        console.log('[Migration] Guest progress migrated successfully');
+        logger.log('[Migration] Guest progress migrated successfully');
       }
 
       // Also migrate from legacy user key to new key if exists
@@ -145,7 +146,7 @@ class StorageMigrationServiceClass {
         localStorage.setItem(newUserKey, legacyData);
         localStorage.removeItem(legacyUserKey);
         this.migrationLog.push(`Migrated legacy user progress to new key`);
-        console.log('[Migration] Legacy user progress migrated to new key');
+        logger.log('[Migration] Legacy user progress migrated to new key');
 
         if (!migratedData) {
           migratedData = JSON.parse(legacyData);
@@ -153,7 +154,7 @@ class StorageMigrationServiceClass {
       }
 
     } catch (err) {
-      console.error('[Migration] Error migrating guest progress:', err);
+      logger.error('[Migration] Error migrating guest progress:', err);
     }
 
     return migratedData;
@@ -232,13 +233,13 @@ class StorageMigrationServiceClass {
     placementTest: PlacementTestData | null;
     progress: ProgressData | null;
   } {
-    console.log('[Migration] Running full migration...');
+    logger.log('[Migration] Running full migration...');
     this.migrationLog = [];
 
     const placementTest = this.migratePlacementTest();
     const progress = userId ? this.migrateGuestProgress(userId) : this.getProgress(null);
 
-    console.log('[Migration] Full migration complete. Log:', this.migrationLog);
+    logger.log('[Migration] Full migration complete. Log:', this.migrationLog);
 
     return { placementTest, progress };
   }
@@ -260,7 +261,7 @@ class StorageMigrationServiceClass {
     localStorage.removeItem(newKey);
     localStorage.removeItem(legacyKey);
 
-    console.log(`[Migration] Cleared data for user: ${userId}`);
+    logger.log(`[Migration] Cleared data for user: ${userId}`);
   }
 }
 

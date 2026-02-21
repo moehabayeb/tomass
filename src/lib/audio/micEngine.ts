@@ -4,6 +4,7 @@ import { Capacitor } from '@capacitor/core';
 import { SpeechRecognition as CapacitorSpeechRecognition } from '@capacitor-community/speech-recognition';
 import { microphoneGuardian } from '@/services/MicrophoneGuardian';
 import { TTSManager } from '@/services/TTSManager';
+import { logger } from '@/lib/logger';
 
 // ============= iOS PLATFORM DETECTION =============
 // iOS Safari does NOT support Web Speech API - must use Capacitor or fallback
@@ -37,6 +38,7 @@ export type EngineMode = 'speech-recognition' | 'media-recorder';
 
 // ============= FEATURE FLAGS =============
 const getFeatureFlag = (key: string, defaultValue: boolean = false): boolean => {
+  if (!import.meta.env.DEV) return defaultValue; // Production: always use defaults
   if (typeof window !== 'undefined') {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has(key)) return urlParams.get(key) === '1';
@@ -289,9 +291,9 @@ async function ensureCleanSlate(): Promise<void> {
       ]);
       // v67.2: If cleanupPromise resolved, listeners were already removed in finish()
       listenersAlreadyRemoved = true;
-      console.log('[MicEngine] v67.2: Background cleanup completed, listeners already removed');
+      logger.log('[MicEngine] v67.2: Background cleanup completed, listeners already removed');
     } catch (e) {
-      console.warn('[MicEngine] v67: Cleanup timeout, forcing continue');
+      logger.warn('[MicEngine] v67: Cleanup timeout, forcing continue');
       cleanupPromise = null; // Clear stale promise
     }
   }
@@ -302,7 +304,7 @@ async function ensureCleanSlate(): Promise<void> {
       CapacitorSpeechRecognition.stop(),
       new Promise(r => setTimeout(r, 300))
     ]);
-    console.log('[MicEngine] v67: Stopped any existing recognition');
+    logger.log('[MicEngine] v67: Stopped any existing recognition');
   } catch (e) {
     // Expected: might not be running
   }
@@ -317,12 +319,12 @@ async function ensureCleanSlate(): Promise<void> {
         CapacitorSpeechRecognition.removeAllListeners(),
         new Promise(r => setTimeout(r, 300))
       ]);
-      console.log('[MicEngine] v67.3: Removed listeners (ensureCleanSlate)');
+      logger.log('[MicEngine] v67.3: Removed listeners (ensureCleanSlate)');
     } catch (e) {
       // Ignore - timeout or error
     }
   } else {
-    console.log('[MicEngine] v67.3: Skipping removeAllListeners (already removed or in progress)');
+    logger.log('[MicEngine] v67.3: Skipping removeAllListeners (already removed or in progress)');
   }
 
   // iOS needs extra time for audio session to settle between mode switches
@@ -333,17 +335,17 @@ async function ensureCleanSlate(): Promise<void> {
     const timeSinceTTS = TTSManager.getTimeSinceLastSpeak();
     const remainingSettle = Math.max(0, REQUIRED_SETTLE_MS - timeSinceTTS);
     if (remainingSettle > 0) {
-      console.log(`[MicEngine] v71: iOS audio settle (${remainingSettle}ms remaining)...`);
+      logger.log(`[MicEngine] v71: iOS audio settle (${remainingSettle}ms remaining)...`);
       await new Promise(r => setTimeout(r, remainingSettle));
     } else {
-      console.log('[MicEngine] v71: iOS audio already settled');
+      logger.log('[MicEngine] v71: iOS audio already settled');
     }
   } else {
     // Android also benefits from a small delay
     await new Promise(r => setTimeout(r, 50));
   }
 
-  console.log('[MicEngine] v67.2: Clean slate ready');
+  logger.log('[MicEngine] v67.2: Clean slate ready');
 }
 
 // ============= AUDIO CONTEXT MANAGEMENT =============
@@ -366,7 +368,7 @@ async function ensureAudioContext(): Promise<void> {
         await new Promise(r => setTimeout(r, 100));
       }
     } catch (e) {
-      console.warn('[MicEngine] AudioContext resume failed:', e);
+      logger.warn('[MicEngine] AudioContext resume failed:', e);
     }
   }
 }
@@ -443,7 +445,7 @@ function cleanupResources() {
       audioContextRef = null;
     }
   } else {
-    console.log('[MicEngine] 🎤 Skipping stream cleanup - persistent stream active');
+    logger.log('[MicEngine] 🎤 Skipping stream cleanup - persistent stream active');
   }
 
 }
@@ -459,12 +461,12 @@ function cleanupResources() {
 export async function acquirePersistentStream(): Promise<MediaStream> {
   // If we already have an active persistent stream, reuse it
   if (persistentStreamRef && persistentStreamRef.active) {
-    console.log('[MicEngine] 🎤 Reusing existing persistent stream');
+    logger.log('[MicEngine] 🎤 Reusing existing persistent stream');
     persistentStreamActive = true;
     return persistentStreamRef;
   }
 
-  console.log('[MicEngine] 🎤 Acquiring NEW persistent stream...');
+  logger.log('[MicEngine] 🎤 Acquiring NEW persistent stream...');
 
   try {
     // Acquire new stream - this turns ON the green mic indicator
@@ -487,12 +489,12 @@ export async function acquirePersistentStream(): Promise<MediaStream> {
     }
 
     persistentStreamActive = true;
-    console.log('[MicEngine] 🎤 Persistent stream acquired - GREEN INDICATOR ON');
+    logger.log('[MicEngine] 🎤 Persistent stream acquired - GREEN INDICATOR ON');
     emitMetrics('persistent_stream_acquired');
 
     return persistentStreamRef;
   } catch (error) {
-    console.error('[MicEngine] Failed to acquire persistent stream:', error);
+    logger.error('[MicEngine] Failed to acquire persistent stream:', error);
     persistentStreamActive = false;
     throw error;
   }
@@ -503,7 +505,7 @@ export async function acquirePersistentStream(): Promise<MediaStream> {
  * This turns OFF the green mic indicator.
  */
 export function releasePersistentStream(): void {
-  console.log('[MicEngine] 🎤 Releasing persistent stream...');
+  logger.log('[MicEngine] 🎤 Releasing persistent stream...');
 
   // Stop all tracks on the persistent stream
   if (persistentStreamRef) {
@@ -526,7 +528,7 @@ export function releasePersistentStream(): void {
   }
 
   persistentStreamActive = false;
-  console.log('[MicEngine] 🎤 Persistent stream released - GREEN INDICATOR OFF');
+  logger.log('[MicEngine] 🎤 Persistent stream released - GREEN INDICATOR OFF');
   emitMetrics('persistent_stream_released');
 }
 
@@ -560,7 +562,7 @@ function startLevelMonitor(): void {
   try {
     const stream = getPersistentStream();
     if (!stream || !stream.active) {
-      console.log('[LevelMonitor] No active stream, skipping');
+      logger.log('[LevelMonitor] No active stream, skipping');
       return;
     }
 
@@ -616,9 +618,9 @@ function startLevelMonitor(): void {
     };
 
     levelMonitorAnimFrameId = requestAnimationFrame(tick);
-    console.log('[LevelMonitor] Started');
+    logger.log('[LevelMonitor] Started');
   } catch (e) {
-    console.warn('[LevelMonitor] Failed to start:', e);
+    logger.warn('[LevelMonitor] Failed to start:', e);
     levelMonitorActive = false;
   }
 }
@@ -762,20 +764,20 @@ async function startSpeechRecognition(id: number, maxSec: number): Promise<strin
 // ============= CAPACITOR SPEECH RECOGNITION (ANDROID/iOS) =============
 // 🎯 BULLETPROOF VERSION v66 - Handles iOS "Ongoing speech recognition" error
 async function startCapacitorSpeechRecognition(id: number, maxSec: number, shouldContinue?: () => boolean): Promise<string> {
-  console.log('[CapacitorSpeech] ========== STARTING v69 ==========');
+  logger.log('[CapacitorSpeech] ========== STARTING v69 ==========');
 
   // 🔧 v69 CRASH FIX: Hard gate - reject concurrent callers IMMEDIATELY
   // The old mutex spin-wait would force-release after 2s, letting both callers through
   // and causing a fatal crash in the Swift plugin (force-unwrap nil SFSpeechRecognizer).
   if (capacitorStartInProgress) {
-    console.error('[CapacitorSpeech] v69: HARD GATE - another start() is in progress, rejecting immediately');
+    logger.error('[CapacitorSpeech] v69: HARD GATE - another start() is in progress, rejecting immediately');
     throw new Error('Speech recognition start already in progress');
   }
   capacitorStartInProgress = true;
 
   // 🔧 v66 BULLETPROOF: Mutex check - prevent concurrent start attempts
   if (speechRecognitionMutex) {
-    console.log('[CapacitorSpeech] v69: Already starting, waiting for mutex...');
+    logger.log('[CapacitorSpeech] v69: Already starting, waiting for mutex...');
     // Wait for current operation to complete
     let attempts = 0;
     while (speechRecognitionMutex && attempts < 20) {
@@ -783,19 +785,19 @@ async function startCapacitorSpeechRecognition(id: number, maxSec: number, shoul
       attempts++;
     }
     if (speechRecognitionMutex) {
-      console.error('[CapacitorSpeech] v69: Mutex timeout - forcing release');
+      logger.error('[CapacitorSpeech] v69: Mutex timeout - forcing release');
       speechRecognitionMutex = false;
     }
   }
 
   // Acquire mutex
   speechRecognitionMutex = true;
-  console.log('[CapacitorSpeech] v69: Mutex acquired');
+  logger.log('[CapacitorSpeech] v69: Mutex acquired');
 
   // 🔧 GOD-TIER v14: Force reset state to ensure clean start
   // This prevents "state stuck" issues from blocking Turn 2+
   if (state !== 'idle' && state !== 'initializing') {
-    console.warn(`[CapacitorSpeech] ⚠️ v14: State was "${state}", forcing to idle for Turn 2+`);
+    logger.warn(`[CapacitorSpeech] ⚠️ v14: State was "${state}", forcing to idle for Turn 2+`);
     state = 'idle';
   }
 
@@ -804,7 +806,7 @@ async function startCapacitorSpeechRecognition(id: number, maxSec: number, shoul
   try {
     await ensureCleanSlate();
   } catch (e) {
-    console.warn('[CapacitorSpeech] v66: ensureCleanSlate error (continuing):', e);
+    logger.warn('[CapacitorSpeech] v66: ensureCleanSlate error (continuing):', e);
   }
 
   return new Promise(async (resolve, reject) => {
@@ -821,7 +823,7 @@ async function startCapacitorSpeechRecognition(id: number, maxSec: number, shoul
     let isRestartInProgress = false; // v41: Prevent concurrent restart attempts
 
     const cleanup = async () => {
-      console.log('[CapacitorSpeech] Cleanup...');
+      logger.log('[CapacitorSpeech] Cleanup...');
       if (timeoutId) clearTimeout(timeoutId);
       if (silenceTimeoutId) clearTimeout(silenceTimeoutId);
 
@@ -838,7 +840,7 @@ async function startCapacitorSpeechRecognition(id: number, maxSec: number, shoul
       // When retry loop increments runId, the original recording's finish() becomes stale,
       // but it still holds the hard gate — release it so the next caller can enter.
       if (isStale(id)) {
-        console.log(`[CapacitorSpeech] v70.2: Stale finish (reason: ${reason}), releasing locks`);
+        logger.log(`[CapacitorSpeech] v70.2: Stale finish (reason: ${reason}), releasing locks`);
         if (timeoutId) clearTimeout(timeoutId);
         if (silenceTimeoutId) clearTimeout(silenceTimeoutId);
         if (interimActivityIntervalId) { clearInterval(interimActivityIntervalId); interimActivityIntervalId = undefined; }
@@ -850,7 +852,7 @@ async function startCapacitorSpeechRecognition(id: number, maxSec: number, shoul
       // 🔧 v27: Use closure transcript if external call passes empty result
       // This allows stopRecording() to finish with the current transcript
       const finalResult = result || transcript;
-      console.log(`[CapacitorSpeech] FINISH: "${finalResult}" (${reason})`);
+      logger.log(`[CapacitorSpeech] FINISH: "${finalResult}" (${reason})`);
       isFinished = true;
       // v70: Stop native activity interval
       if (interimActivityIntervalId) { clearInterval(interimActivityIntervalId); interimActivityIntervalId = undefined; }
@@ -868,7 +870,7 @@ async function startCapacitorSpeechRecognition(id: number, maxSec: number, shoul
       speechRecognitionMutex = false;
       // 🔧 v69: Release hard gate so next caller can enter
       capacitorStartInProgress = false;
-      console.log('[CapacitorSpeech] v69: Mutex + hard gate released after resolve');
+      logger.log('[CapacitorSpeech] v69: Mutex + hard gate released after resolve');
 
       // Now do cleanup in background (non-blocking)
       // If this hangs, it doesn't matter - promise already resolved AND mutex released
@@ -882,9 +884,9 @@ async function startCapacitorSpeechRecognition(id: number, maxSec: number, shoul
             CapacitorSpeechRecognition.removeAllListeners(),
             new Promise(r => setTimeout(r, 300))
           ]);
-          console.log('[CapacitorSpeech] v67.3: Cleanup completed after resolve (listeners removed)');
+          logger.log('[CapacitorSpeech] v67.3: Cleanup completed after resolve (listeners removed)');
         } catch (e) {
-          console.log('[CapacitorSpeech] v67.3: Cleanup error (safe - promise already resolved):', e);
+          logger.log('[CapacitorSpeech] v67.3: Cleanup error (safe - promise already resolved):', e);
         } finally {
           capacitorCleanupInProgress = false;
         }
@@ -897,7 +899,7 @@ async function startCapacitorSpeechRecognition(id: number, maxSec: number, shoul
     try {
       // Step 1: Check availability
       const { available } = await CapacitorSpeechRecognition.available();
-      console.log('[CapacitorSpeech] Available:', available);
+      logger.log('[CapacitorSpeech] Available:', available);
       if (!available) {
         // 🔧 v66: Release mutex on early return
         speechRecognitionMutex = false;
@@ -908,7 +910,7 @@ async function startCapacitorSpeechRecognition(id: number, maxSec: number, shoul
 
       // Step 2: Request permissions
       const permResult = await CapacitorSpeechRecognition.requestPermissions();
-      console.log('[CapacitorSpeech] Permission:', permResult.speechRecognition);
+      logger.log('[CapacitorSpeech] Permission:', permResult.speechRecognition);
       if (permResult.speechRecognition !== 'granted') {
         // 🔧 v66: Release mutex on early return
         speechRecognitionMutex = false;
@@ -923,16 +925,16 @@ async function startCapacitorSpeechRecognition(id: number, maxSec: number, shoul
       const elapsed = Date.now() - capacitorLastStopTime;
       if (capacitorLastStopTime > 0 && elapsed < CAPACITOR_MIN_RESTART_DELAY_MS) {
         const waitTime = CAPACITOR_MIN_RESTART_DELAY_MS - elapsed;
-        console.log(`[CapacitorSpeech] 🔧 v13: Waiting ${waitTime}ms for Android cleanup...`);
+        logger.log(`[CapacitorSpeech] 🔧 v13: Waiting ${waitTime}ms for Android cleanup...`);
         await new Promise(r => setTimeout(r, waitTime));
       }
-      console.log('[CapacitorSpeech] Android cleanup delay completed, ready to add listeners');
+      logger.log('[CapacitorSpeech] Android cleanup delay completed, ready to add listeners');
 
       // 🔧 v71: Parallelize listener registration — saves 20-40ms vs sequential awaits
       await Promise.all([
         // Step 4: Add partialResults listener - HANDLE BOTH ARRAY AND STRING
         CapacitorSpeechRecognition.addListener('partialResults', (data: any) => {
-          console.log('[CapacitorSpeech] partialResults:', JSON.stringify(data));
+          logger.log('[CapacitorSpeech] partialResults:', JSON.stringify(data));
           // 🎯 GOD-TIER FIX: Only exit on stale, NOT on isFinished
           // Allow late results to update transcript even after stop initiated
           if (isStale(id)) return;
@@ -953,7 +955,7 @@ async function startCapacitorSpeechRecognition(id: number, maxSec: number, shoul
           if (newTranscript) {
             transcript = newTranscript;
             lastSpeechTime = Date.now(); // 🎯 v39: Track when user last spoke
-            console.log('[CapacitorSpeech] Transcript:', transcript);
+            logger.log('[CapacitorSpeech] Transcript:', transcript);
 
             // Reset silence timeout on speech
             if (silenceTimeoutId) clearTimeout(silenceTimeoutId);
@@ -975,35 +977,35 @@ async function startCapacitorSpeechRecognition(id: number, maxSec: number, shoul
 
         // Step 5: Add listeningState listener - HANDLE ALL STATES
         CapacitorSpeechRecognition.addListener('listeningState', (data: any) => {
-          console.log('[CapacitorSpeech] listeningState:', JSON.stringify(data));
+          logger.log('[CapacitorSpeech] listeningState:', JSON.stringify(data));
           if (isStale(id) || isFinished) return;
 
           // 🎯 CRITICAL FIX: Handle 'started' status too
           if (data.status === 'started') {
             hasStarted = true;
-            console.log('[CapacitorSpeech] ✓ Recording STARTED');
+            logger.log('[CapacitorSpeech] ✓ Recording STARTED');
           } else if (data.status === 'stopped') {
             // 🎯 v41 ULTRA GOD-TIER: Complete rewrite of auto-restart with proper state management
             // Fixes: race conditions, duplicate restarts, stale timeouts, infinite loops
-            console.log('[CapacitorSpeech] Recording STOPPED, transcript so far:', transcript);
+            logger.log('[CapacitorSpeech] Recording STOPPED, transcript so far:', transcript);
 
             // Guard: Already finished or restart in progress
             if (isFinished || isRestartInProgress) {
-              console.log('[CapacitorSpeech] v41: Skipping - isFinished:', isFinished, 'isRestartInProgress:', isRestartInProgress);
+              logger.log('[CapacitorSpeech] v41: Skipping - isFinished:', isFinished, 'isRestartInProgress:', isRestartInProgress);
               return;
             }
 
             // Check if user has been silent for too long (genuinely done speaking)
             const timeSinceLastSpeech = Date.now() - lastSpeechTime;
             if (timeSinceLastSpeech > 10000) {
-              console.log('[CapacitorSpeech] v41: Extended silence (10s+), finishing');
+              logger.log('[CapacitorSpeech] v41: Extended silence (10s+), finishing');
               finish(transcript, 'extended_silence');
               return;
             }
 
             // Check restart limit
             if (restartCount >= MAX_RESTARTS) {
-              console.log('[CapacitorSpeech] v41: Max restarts reached, finishing');
+              logger.log('[CapacitorSpeech] v41: Max restarts reached, finishing');
               finish(transcript, 'max_restarts_reached');
               return;
             }
@@ -1014,7 +1016,7 @@ async function startCapacitorSpeechRecognition(id: number, maxSec: number, shoul
               isRestartInProgress = true;
               const savedTranscript = transcript;
               restartCount++;
-              console.log(`[CapacitorSpeech] v41: Auto-restart #${restartCount}/${MAX_RESTARTS}...`);
+              logger.log(`[CapacitorSpeech] v41: Auto-restart #${restartCount}/${MAX_RESTARTS}...`);
 
               // v41 CRITICAL: Clear existing silence timeout before restart
               if (silenceTimeoutId) {
@@ -1028,13 +1030,13 @@ async function startCapacitorSpeechRecognition(id: number, maxSec: number, shoul
 
                 // v70: iOS audio session settle time before restart
                 if (Capacitor.getPlatform() === 'ios') {
-                  console.log('[CapacitorSpeech] v70: iOS pre-restart settle (300ms)');
+                  logger.log('[CapacitorSpeech] v70: iOS pre-restart settle (300ms)');
                   await new Promise(r => setTimeout(r, 300));
                 }
 
                 // Check if user stopped during our await
                 if (isFinished) {
-                  console.log('[CapacitorSpeech] v41: User stopped during restart, aborting');
+                  logger.log('[CapacitorSpeech] v41: User stopped during restart, aborting');
                   isRestartInProgress = false;
                   return;
                 }
@@ -1044,7 +1046,7 @@ async function startCapacitorSpeechRecognition(id: number, maxSec: number, shoul
 
                 // Check again after delay
                 if (isFinished) {
-                  console.log('[CapacitorSpeech] v41: User stopped during delay, aborting');
+                  logger.log('[CapacitorSpeech] v41: User stopped during delay, aborting');
                   isRestartInProgress = false;
                   return;
                 }
@@ -1063,11 +1065,11 @@ async function startCapacitorSpeechRecognition(id: number, maxSec: number, shoul
 
                 // Preserve saved transcript (with space for continuation)
                 transcript = savedTranscript ? savedTranscript + ' ' : '';
-                console.log(`[CapacitorSpeech] v70: Auto-restart #${restartCount} successful`);
+                logger.log(`[CapacitorSpeech] v70: Auto-restart #${restartCount} successful`);
                 lastInterimEventTime = Date.now(); // v70: Reset activity tracking for new session
 
               } catch (restartError) {
-                console.log(`[CapacitorSpeech] v70: Auto-restart #${restartCount} FAILED:`, restartError);
+                logger.log(`[CapacitorSpeech] v70: Auto-restart #${restartCount} FAILED:`, restartError);
                 if (!isFinished) {
                   finish(savedTranscript, 'restart_failed');
                 }
@@ -1081,7 +1083,7 @@ async function startCapacitorSpeechRecognition(id: number, maxSec: number, shoul
 
         // Step 6: ADD ERROR LISTENER - CRITICAL FOR DEBUGGING
         CapacitorSpeechRecognition.addListener('error', (data: any) => {
-          console.error('[CapacitorSpeech] ERROR EVENT:', JSON.stringify(data));
+          logger.error('[CapacitorSpeech] ERROR EVENT:', JSON.stringify(data));
           if (!isFinished) {
             // Don't reject - just finish with empty string
             finish('', 'error_event');
@@ -1099,7 +1101,7 @@ async function startCapacitorSpeechRecognition(id: number, maxSec: number, shoul
       // If flowState moved away from LISTENING during the ~1s setup, abort to prevent
       // starting speech recognition when we're already in PROCESSING/READING
       if (shouldContinue && !shouldContinue()) {
-        console.warn('[CapacitorSpeech] v69: shouldContinue=false, aborting before start()');
+        logger.warn('[CapacitorSpeech] v69: shouldContinue=false, aborting before start()');
         // Clean up listeners we just registered
         try { await CapacitorSpeechRecognition.removeAllListeners(); } catch { /* ignore */ }
         speechRecognitionMutex = false;
@@ -1108,7 +1110,7 @@ async function startCapacitorSpeechRecognition(id: number, maxSec: number, shoul
         return;
       }
 
-      console.log('[CapacitorSpeech] Calling start()...');
+      logger.log('[CapacitorSpeech] Calling start()...');
       setState('recording');
 
       await CapacitorSpeechRecognition.start({
@@ -1120,7 +1122,7 @@ async function startCapacitorSpeechRecognition(id: number, maxSec: number, shoul
       });
 
       // 🔧 GOD-TIER v14: Explicit confirmation that mic started
-      console.log('[CapacitorSpeech] ✅ v14: MIC CONFIRMED STARTED - Now listening!');
+      logger.log('[CapacitorSpeech] ✅ v14: MIC CONFIRMED STARTED - Now listening!');
 
       // v70: Start native interim-based silence monitoring
       lastInterimEventTime = Date.now();
@@ -1143,7 +1145,7 @@ async function startCapacitorSpeechRecognition(id: number, maxSec: number, shoul
       // Step 9: Initial silence timeout (if no speech detected)
       silenceTimeoutId = setTimeout(() => {
         if (!isFinished && !transcript) {
-          console.log('[CapacitorSpeech] Initial silence - no speech');
+          logger.log('[CapacitorSpeech] Initial silence - no speech');
           finish('', 'initial_silence');
         }
       }, INITIAL_SILENCE_MS);
@@ -1151,18 +1153,18 @@ async function startCapacitorSpeechRecognition(id: number, maxSec: number, shoul
       // Step 10: Max duration timeout
       timeoutId = setTimeout(() => {
         if (!isFinished) {
-          console.log('[CapacitorSpeech] Max timeout reached');
+          logger.log('[CapacitorSpeech] Max timeout reached');
           finish(transcript, 'max_timeout');
         }
       }, maxSec * 1000);
 
     } catch (error: any) {
-      console.error('[CapacitorSpeech] CRITICAL ERROR:', error);
+      logger.error('[CapacitorSpeech] CRITICAL ERROR:', error);
       await cleanup();
       // 🔧 v69: Release mutex + hard gate on error
       speechRecognitionMutex = false;
       capacitorStartInProgress = false;
-      console.log('[CapacitorSpeech] v69: Mutex + hard gate released (error path)');
+      logger.log('[CapacitorSpeech] v69: Mutex + hard gate released (error path)');
       reject(new Error(error.message || 'Speech recognition failed'));
     }
   });
@@ -1243,7 +1245,7 @@ async function internalStart(id: number, maxSec: number, shouldContinue?: () => 
       // Use Capacitor speech recognition directly — it handles available() + permissions internally
       const transcript = await startCapacitorSpeechRecognition(id, maxSec, shouldContinue);
 
-      console.log('[MicEngine] Capacitor speech recognition returned:', transcript || '(empty)');
+      logger.log('[MicEngine] Capacitor speech recognition returned:', transcript || '(empty)');
       const durationSec = (Date.now() - startTime) / 1000;
       setState('processing');
 
@@ -1252,7 +1254,7 @@ async function internalStart(id: number, maxSec: number, shouldContinue?: () => 
       return { transcript: transcript.trim(), durationSec };
 
     } catch (error: any) {
-      console.warn('[MicEngine] v71: Native SR failed, falling back to web:', error.message);
+      logger.warn('[MicEngine] v71: Native SR failed, falling back to web:', error.message);
       emitMetrics('recording_error', { error: error.message });
       // Fall through to web path below
     }
@@ -1266,7 +1268,7 @@ async function internalStart(id: number, maxSec: number, shouldContinue?: () => 
     : 'speech-recognition';
 
   // Log for debugging
-  console.log('[MicEngine] Platform:', { isIOSWeb, engineMode });
+  logger.log('[MicEngine] Platform:', { isIOSWeb, engineMode });
 
   emitMetrics('engine_start', { mode: engineMode, maxSec });
 
@@ -1361,7 +1363,7 @@ export async function startRecording(opts: { maxSec?: number; bypassDebounce?: b
   // This is the ONLY place that can fix Turn 2+ failures
   // v14 failed because the reset was AFTER this check - it never ran!
   if (state !== 'idle' && state !== 'prompting') {
-    console.warn(`[MicEngine] ⚠️ v15: State was "${state}", forcing to idle for Turn 2+`);
+    logger.warn(`[MicEngine] ⚠️ v15: State was "${state}", forcing to idle for Turn 2+`);
     state = 'idle';
     // DON'T throw - continue with recording
   }
@@ -1455,7 +1457,7 @@ export async function stopRecording(): Promise<void> {
       // Android's CapacitorSpeechRecognition.stop() can hang indefinitely
       // By calling the callback first, we guarantee the UI responds immediately
       if (activeFinishCallback) {
-        console.log('[MicEngine] v30: Force-finishing via callback BEFORE stop');
+        logger.log('[MicEngine] v30: Force-finishing via callback BEFORE stop');
         const cb = activeFinishCallback;
         activeFinishCallback = null; // Clear to prevent race conditions/double-calls
         await cb('', 'manual_stop'); // 🔧 v30: AWAIT the async callback so promise resolves!
@@ -1463,10 +1465,10 @@ export async function stopRecording(): Promise<void> {
 
       // Now stop Capacitor (may hang, but promise already resolved above)
       await CapacitorSpeechRecognition.stop();
-      console.log('[MicEngine] Capacitor speech recognition stopped');
+      logger.log('[MicEngine] Capacitor speech recognition stopped');
     } catch (e) {
       // Expected: may already be stopped or not started
-      console.log('[MicEngine] Capacitor stop error:', e);
+      logger.log('[MicEngine] Capacitor stop error:', e);
     }
   }
 
@@ -1528,13 +1530,13 @@ if (typeof window !== 'undefined') {
   if (Capacitor.getPlatform() === 'ios') {
     // Listen for audio session interruption events
     document.addEventListener('pause', () => {
-      console.log('[MicEngine] v67: iOS audio interrupted (pause event)');
+      logger.log('[MicEngine] v67: iOS audio interrupted (pause event)');
       // Force stop recording
       stopRecording().catch(() => {});
     });
 
     document.addEventListener('resume', () => {
-      console.log('[MicEngine] v67: iOS audio resumed');
+      logger.log('[MicEngine] v67: iOS audio resumed');
       // Reset audio state - ensureCleanSlate now has timeouts
       ensureCleanSlate().catch(() => {});
     });

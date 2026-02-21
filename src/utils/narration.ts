@@ -1,6 +1,7 @@
 import { Capacitor } from '@capacitor/core';
 import { TextToSpeech } from '@capacitor-community/text-to-speech';
 import { configureUtterance } from '@/config/voice';
+import { logger } from '@/lib/logger';
 
 /**
  * NarrationController - Cross-platform TTS for "Listen to Answer" and other narration
@@ -49,7 +50,7 @@ export class NarrationController {
         this.synth.speak(this.utterance);
       }
     } catch (e) {
-      console.error('[Narration] TTS error:', e);
+      logger.error('[Narration] TTS error:', e);
       this.isSpeakingNative = false;
       // noop - fallback to hook TTS flows
     }

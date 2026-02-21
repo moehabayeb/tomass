@@ -18,6 +18,7 @@ import {
   type BillingError,
 } from '@/services/billingService';
 import type { TierCode } from '@/types/subscription';
+import { logger } from '@/lib/logger';
 
 interface UseBillingReturn {
   // Availability
@@ -82,7 +83,7 @@ export const useBilling = (): UseBillingReturn => {
           const loadedProducts = await BillingService.queryProducts();
           setProducts(loadedProducts);
         } catch (err) {
-          console.error('[useBilling] Failed to load products:', err);
+          logger.error('[useBilling] Failed to load products:', err);
         } finally {
           setIsLoadingProducts(false);
         }
@@ -90,7 +91,7 @@ export const useBilling = (): UseBillingReturn => {
 
       return connected;
     } catch (err) {
-      console.error('[useBilling] Connection error:', err);
+      logger.error('[useBilling] Connection error:', err);
       setIsConnected(false);
       return false;
     }

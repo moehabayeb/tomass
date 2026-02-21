@@ -6,6 +6,7 @@ import { lessonProgressService } from '@/services/lessonProgressService';
 import { speakingTestService } from '@/services/speakingTestService';
 import { StorageMigrationService } from '@/services/storageMigrationService';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
+import { logger } from '@/lib/logger';
 
 export const useAuthReady = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -25,14 +26,14 @@ export const useAuthReady = () => {
         // PRODUCTION FIX: Handle login event - robust sync with verification
         if (event === 'SIGNED_IN' && session?.user) {
           const userId = session.user.id;
-          console.log('[Auth] User signed in, starting progress sync for:', userId);
+          logger.log('[Auth] User signed in, starting progress sync for:', userId);
 
           try {
             toast.info('Syncing your progress...');
 
             // Step 1: Run migration service to unify all legacy keys
             const { placementTest, progress } = StorageMigrationService.runFullMigration(userId);
-            console.log('[Auth] Migration complete. Placement:', !!placementTest, 'Progress:', !!progress);
+            logger.log('[Auth] Migration complete. Placement:', !!placementTest, 'Progress:', !!progress);
 
             // Step 2: Sync placement test to Supabase with VERIFICATION
             if (placementTest) {
@@ -75,17 +76,17 @@ export const useAuthReady = () => {
                     .limit(1);
 
                   if (verifyTest && verifyTest.length > 0) {
-                    console.log('[Auth] Placement test synced and VERIFIED');
+                    logger.log('[Auth] Placement test synced and VERIFIED');
                     toast.success('Placement test synced!');
                   } else {
-                    console.error('[Auth] Placement sync verification FAILED');
+                    logger.error('[Auth] Placement sync verification FAILED');
                     // Keep local data as backup
                   }
                 } else {
-                  console.log('[Auth] Placement test already exists in database');
+                  logger.log('[Auth] Placement test already exists in database');
                 }
               } catch (err) {
-                console.error('[Auth] Failed to sync placement test:', err);
+                logger.error('[Auth] Failed to sync placement test:', err);
                 // Don't clear local - keep as backup
               }
             }
@@ -93,9 +94,9 @@ export const useAuthReady = () => {
             // Step 3: Load existing progress from cloud (in case user has progress on other devices)
             try {
               await lessonProgressService.loadProgressFromCloud(userId);
-              console.log('[Auth] Cloud progress loaded');
+              logger.log('[Auth] Cloud progress loaded');
             } catch (err) {
-              console.log('[Auth] No cloud progress to load or load failed');
+              logger.log('[Auth] No cloud progress to load or load failed');
             }
 
             // Step 4: Sync local progress to cloud
@@ -112,10 +113,10 @@ export const useAuthReady = () => {
               toast.success('Welcome back! Your progress is up to date.');
             }
 
-            console.log('[Auth] Full sync complete');
+            logger.log('[Auth] Full sync complete');
 
           } catch (error) {
-            console.error('[Auth] Progress sync failed:', error);
+            logger.error('[Auth] Progress sync failed:', error);
             toast.warning('Progress sync failed. Some data may not be saved.');
 
             // Still dispatch event so UI doesn't hang

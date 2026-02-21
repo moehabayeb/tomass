@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { SpeechRecognition as CapacitorSpeechRecognition } from '@capacitor-community/speech-recognition';
+import { logger } from '@/lib/logger';
 
 // TypeScript interfaces for Web Speech API
 export interface SpeechRecognition extends EventTarget {
@@ -53,7 +54,7 @@ export function useSpeechRecognition() {
   useEffect(() => {
     if (isNative) {
       CapacitorSpeechRecognition.requestPermissions().catch(err => {
-        console.error('[useSpeechRecognition] Permission request failed:', err);
+        logger.error('[useSpeechRecognition] Permission request failed:', err);
       });
     }
   }, [isNative]);

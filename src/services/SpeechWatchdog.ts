@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * SpeechWatchdog - Detects stuck states and auto-recovers
  * v67: Apple-Ready - Ensures app NEVER gets permanently stuck
@@ -23,7 +24,7 @@ class SpeechWatchdogService {
     this.currentState = state;
     this.stateStartTime = Date.now();
     this.startWatchdog();
-    console.log(`[Watchdog] v67: State: ${state}`);
+    logger.log(`[Watchdog] v67: State: ${state}`);
   }
 
   onStuck(callback: () => void): void {
@@ -40,7 +41,7 @@ class SpeechWatchdogService {
 
     this.watchdogTimer = window.setTimeout(() => {
       const elapsed = Date.now() - this.stateStartTime;
-      console.error(`[Watchdog] v67: STUCK DETECTED! State: ${this.currentState}, Duration: ${elapsed}ms`);
+      logger.error(`[Watchdog] v67: STUCK DETECTED! State: ${this.currentState}, Duration: ${elapsed}ms`);
 
       if (this.onStuckCallback) {
         this.onStuckCallback();
@@ -82,14 +83,14 @@ class SpeechWatchdogService {
 
     this.watchdogTimer = window.setTimeout(() => {
       const totalElapsed = Date.now() - this.stateStartTime;
-      console.error(`[Watchdog] v67: STUCK DETECTED (extended)! State: ${this.currentState}, Duration: ${totalElapsed}ms`);
+      logger.error(`[Watchdog] v67: STUCK DETECTED (extended)! State: ${this.currentState}, Duration: ${totalElapsed}ms`);
 
       if (this.onStuckCallback) {
         this.onStuckCallback();
       }
     }, newTimeout);
 
-    console.log(`[Watchdog] v67: Extended timeout by ${additionalMs}ms, new remaining: ${newTimeout}ms`);
+    logger.log(`[Watchdog] v67: Extended timeout by ${additionalMs}ms, new remaining: ${newTimeout}ms`);
   }
 }
 

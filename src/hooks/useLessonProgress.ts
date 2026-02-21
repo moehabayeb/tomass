@@ -12,6 +12,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuthReady } from './useAuthReady';
 import { useSyncStatus } from './useNetworkStatus';
 import { lessonProgressService, type LessonCheckpoint, type ProgressSyncResult } from '@/services/lessonProgressService';
+import { logger } from '@/lib/logger';
 
 export interface LessonProgressState {
   // Current progress data
@@ -153,7 +154,7 @@ export function useLessonProgress(level?: string, moduleId?: number) {
     if (level && moduleId !== undefined) {
       // Wrap in try-catch to prevent blocking
       loadProgress(level, moduleId).catch(error => {
-        if (import.meta.env.DEV) console.warn('🔧 Progress load failed (non-critical):', error);
+        if (import.meta.env.DEV) logger.warn('🔧 Progress load failed (non-critical):', error);
         // Silent fail - module can still work without progress
       });
     }
@@ -164,7 +165,7 @@ export function useLessonProgress(level?: string, moduleId?: number) {
   // This was triggering infinite Supabase calls - will re-enable after fixing
   useEffect(() => {
     if (isAuthenticated && user?.id) {
-      if (import.meta.env.DEV) console.log('🔧 Auto-merge temporarily disabled to prevent infinite loop');
+      if (import.meta.env.DEV) logger.log('🔧 Auto-merge temporarily disabled to prevent infinite loop');
       // try {
       //   const hasLocalProgress = localStorage.getItem('ll_progress_v1');
       //   if (hasLocalProgress) {

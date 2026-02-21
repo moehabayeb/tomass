@@ -10,6 +10,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { UnifiedTTSService, TTSOptions } from '../services/UnifiedTTSService';
+import { logger } from '@/lib/logger';
 
 export interface UseUnifiedTextToSpeechOptions {
   lang?: string;
@@ -57,7 +58,7 @@ export function useUnifiedTextToSpeech(
           setIsAvailable(available);
         }
       } catch (error) {
-        console.error('[useUnifiedTextToSpeech] Error checking availability:', error);
+        logger.error('[useUnifiedTextToSpeech] Error checking availability:', error);
         if (mountedRef.current) {
           setIsAvailable(false);
         }
@@ -97,7 +98,7 @@ export function useUnifiedTextToSpeech(
         onEnd?.();
       }
     } catch (error) {
-      console.error('[useUnifiedTextToSpeech] Speak error:', error);
+      logger.error('[useUnifiedTextToSpeech] Speak error:', error);
       if (mountedRef.current) {
         setIsSpeaking(false);
         onError?.(error instanceof Error ? error : new Error(String(error)));
@@ -112,7 +113,7 @@ export function useUnifiedTextToSpeech(
         setIsSpeaking(false);
       }
     } catch (error) {
-      console.error('[useUnifiedTextToSpeech] Stop error:', error);
+      logger.error('[useUnifiedTextToSpeech] Stop error:', error);
     }
   }, []);
 

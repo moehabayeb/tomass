@@ -10,6 +10,7 @@
 
 import { Capacitor } from '@capacitor/core';
 import { TextToSpeech } from '@capacitor-community/text-to-speech';
+import { logger } from '@/lib/logger';
 
 export interface TTSOptions {
   text: string;
@@ -35,7 +36,7 @@ class UnifiedTTSServiceClass {
 
   constructor() {
     this.isNative = Capacitor.isNativePlatform();
-    console.log(`[UnifiedTTS] Platform: ${this.isNative ? 'Native (Capacitor)' : 'Web'}`);
+    logger.log(`[UnifiedTTS] Platform: ${this.isNative ? 'Native (Capacitor)' : 'Web'}`);
   }
 
   /**
@@ -68,7 +69,7 @@ class UnifiedTTSServiceClass {
           default: false
         }));
       } catch (error) {
-        console.error('[UnifiedTTS] Error getting native voices:', error);
+        logger.error('[UnifiedTTS] Error getting native voices:', error);
         return [];
       }
     } else {
@@ -117,7 +118,7 @@ class UnifiedTTSServiceClass {
         this.isSpeakingNative = false;
       } catch (error) {
         this.isSpeakingNative = false;
-        console.error('[UnifiedTTS] Native speak error:', error);
+        logger.error('[UnifiedTTS] Native speak error:', error);
         throw error;
       }
     } else {
@@ -176,7 +177,7 @@ class UnifiedTTSServiceClass {
         await TextToSpeech.stop();
         this.isSpeakingNative = false;
       } catch (error) {
-        console.error('[UnifiedTTS] Native stop error:', error);
+        logger.error('[UnifiedTTS] Native stop error:', error);
       }
     } else {
       if (window.speechSynthesis) {
@@ -206,7 +207,7 @@ class UnifiedTTSServiceClass {
         const result = await TextToSpeech.getSupportedLanguages();
         return result.languages;
       } catch (error) {
-        console.error('[UnifiedTTS] Error getting languages:', error);
+        logger.error('[UnifiedTTS] Error getting languages:', error);
         return ['en-US', 'en-GB', 'tr-TR'];
       }
     } else {
@@ -224,7 +225,7 @@ class UnifiedTTSServiceClass {
       try {
         await TextToSpeech.openInstall();
       } catch (error) {
-        console.error('[UnifiedTTS] Error opening settings:', error);
+        logger.error('[UnifiedTTS] Error opening settings:', error);
       }
     }
   }

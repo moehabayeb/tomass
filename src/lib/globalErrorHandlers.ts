@@ -12,6 +12,7 @@
 
 import { Sentry } from '@/lib/sentry';
 import { toast } from '@/components/ui/use-toast';
+import { logger } from '@/lib/logger';
 
 /**
  * Initialize global error handlers
@@ -22,7 +23,7 @@ export function initGlobalErrorHandlers() {
   window.onerror = (message, source, lineno, colno, error) => {
     // Only log in development
     if (import.meta.env.DEV) {
-      console.error('Uncaught error:', { message, source, lineno, colno, error });
+      logger.error('Uncaught error:', { message, source, lineno, colno, error });
     }
 
     // Report to Sentry
@@ -75,7 +76,7 @@ export function initGlobalErrorHandlers() {
   window.addEventListener('unhandledrejection', (event) => {
     // Only log in development
     if (import.meta.env.DEV) {
-      console.error('Unhandled promise rejection:', event.reason);
+      logger.error('Unhandled promise rejection:', event.reason);
     }
 
     // Report to Sentry
@@ -124,7 +125,7 @@ export function initGlobalErrorHandlers() {
     navigator.serviceWorker.addEventListener('error', (event) => {
       // Only log in development
       if (import.meta.env.DEV) {
-        console.error('Service Worker error:', event);
+        logger.error('Service Worker error:', event);
       }
 
       Sentry.captureMessage('Service Worker error', {

@@ -1,6 +1,7 @@
 import { configureUtterance, VoiceConsistencyManager } from '@/config/voice';
 import { Capacitor } from '@capacitor/core';
 import { UnifiedTTSService } from './UnifiedTTSService';
+import { logger } from '@/lib/logger';
 
 interface TTSChunk {
   text: string;
@@ -329,7 +330,7 @@ class TTSManagerService {
     // This allows STT to safely start after TTS completes
     this._isSpeakingInternal = false;
     this.lastSpeakEndTime = Date.now();
-    console.log('[TTSManager] v66: Audio session released, STT can start');
+    logger.log('[TTSManager] v66: Audio session released, STT can start');
 
     if (this.currentResolve) {
       this.currentResolve({
@@ -544,7 +545,7 @@ class TTSManagerService {
       // 🔧 v66: Signal audio session release after native TTS completes
       this._isSpeakingInternal = false;
       this.lastSpeakEndTime = Date.now();
-      console.log('[TTSManager] v66: Native TTS complete, audio session released');
+      logger.log('[TTSManager] v66: Native TTS complete, audio session released');
 
       return {
         completed: true,
@@ -554,7 +555,7 @@ class TTSManagerService {
         durationMs: Date.now() - startTime
       };
     } catch (error) {
-      console.error('[TTSManager] Native TTS error:', error);
+      logger.error('[TTSManager] Native TTS error:', error);
       this.busy = false;
       // 🔧 v66: Also release on error
       this._isSpeakingInternal = false;
@@ -618,13 +619,13 @@ class TTSManagerService {
 
     // Wait for TTS to stop speaking
     while (this.isSpeaking() && (Date.now() - startTime) < timeoutMs) {
-      console.log('[TTSManager] v66: Waiting for TTS to complete...');
+      logger.log('[TTSManager] v66: Waiting for TTS to complete...');
       await new Promise(r => setTimeout(r, 100));
     }
 
     // If still speaking after timeout, force stop
     if (this.isSpeaking()) {
-      console.warn('[TTSManager] v66: TTS timeout, forcing stop');
+      logger.warn('[TTSManager] v66: TTS timeout, forcing stop');
       this.stop();
     }
 
@@ -632,11 +633,11 @@ class TTSManagerService {
     const timeSinceEnd = Date.now() - this.lastSpeakEndTime;
     if (timeSinceEnd < this.AUDIO_SESSION_SETTLE_MS) {
       const waitTime = this.AUDIO_SESSION_SETTLE_MS - timeSinceEnd;
-      console.log(`[TTSManager] v66: Waiting ${waitTime}ms for audio session to settle`);
+      logger.log(`[TTSManager] v66: Waiting ${waitTime}ms for audio session to settle`);
       await new Promise(r => setTimeout(r, waitTime));
     }
 
-    console.log('[TTSManager] v66: Audio session ready for STT');
+    logger.log('[TTSManager] v66: Audio session ready for STT');
   }
 
   /**

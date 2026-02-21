@@ -24,6 +24,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { logger } from '@/lib/logger';
 
 interface Reminder {
   id: string;
@@ -368,7 +369,7 @@ export default function Profile() {
 
       if (rpcError) {
         // Fallback: sign out and notify support
-        console.error('[Profile] RPC delete_user_account failed:', rpcError);
+        logger.error('[Profile] RPC delete_user_account failed:', rpcError);
       }
 
       // Clear all local data
@@ -377,6 +378,17 @@ export default function Profile() {
       } catch {
         // Storage access error - silent fail
       }
+
+      // Clear IndexedDB offline progress
+      try {
+        const { default: indexedDBStore } = await import('@/utils/indexedDBStore');
+        await indexedDBStore.clearAll();
+      } catch { /* silent */ }
+
+      // Clear sessionStorage
+      try {
+        sessionStorage.clear();
+      } catch { /* silent */ }
 
       // Sign out
       await supabase.auth.signOut();

@@ -7,6 +7,7 @@
 import { Capacitor } from '@capacitor/core';
 import { SubscriptionService } from './subscriptionService';
 import type { TierCode } from '@/types/subscription';
+import { logger } from '@/lib/logger';
 
 // Product IDs (must match App Store Connect AND Google Play Console)
 export const STORE_PRODUCTS = {
@@ -113,12 +114,12 @@ class BillingServiceClass {
    */
   async connect(): Promise<boolean> {
     if (!this.isAvailable()) {
-      console.log('[Billing] Not available - not on native platform');
+      logger.log('[Billing] Not available - not on native platform');
       return false;
     }
 
     if (this.isConnected) {
-      console.log('[Billing] Already connected');
+      logger.log('[Billing] Already connected');
       return true;
     }
 
@@ -133,14 +134,14 @@ class BillingServiceClass {
 
       if (isBillingSupported) {
         this.isConnected = true;
-        console.log('[Billing] Connected successfully');
+        logger.log('[Billing] Connected successfully');
         return true;
       } else {
-        console.error('[Billing] Billing not supported on this device/platform');
+        logger.error('[Billing] Billing not supported on this device/platform');
         return false;
       }
     } catch (error) {
-      console.error('[Billing] Connection error:', error);
+      logger.error('[Billing] Connection error:', error);
       return false;
     }
   }
@@ -150,7 +151,7 @@ class BillingServiceClass {
    */
   async disconnect(): Promise<void> {
     this.isConnected = false;
-    console.log('[Billing] Disconnected');
+    logger.log('[Billing] Disconnected');
   }
 
   /**
@@ -170,7 +171,7 @@ class BillingServiceClass {
       });
 
       if (!products || products.length === 0) {
-        console.warn('[Billing] No products found');
+        logger.warn('[Billing] No products found');
         return [];
       }
 
@@ -193,10 +194,10 @@ class BillingServiceClass {
       });
 
       this.cachedProducts = mappedProducts;
-      console.log('[Billing] Products loaded:', mappedProducts.length);
+      logger.log('[Billing] Products loaded:', mappedProducts.length);
       return mappedProducts;
     } catch (error) {
-      console.error('[Billing] Query products error:', error);
+      logger.error('[Billing] Query products error:', error);
       throw this.createError(BillingErrorCode.NETWORK_ERROR, 'Failed to load products', error);
     }
   }
@@ -245,7 +246,7 @@ class BillingServiceClass {
         };
       }
 
-      console.log('[Billing] Starting purchase for:', productId);
+      logger.log('[Billing] Starting purchase for:', productId);
 
       // For subscriptions on Android, we need the planIdentifier
       // The planIdentifier should match the base plan ID in Google Play Console
@@ -257,7 +258,7 @@ class BillingServiceClass {
         quantity: 1,
       });
 
-      console.log('[Billing] Purchase result:', purchaseResult);
+      logger.log('[Billing] Purchase result:', purchaseResult);
 
       if (purchaseResult && purchaseResult.transactionId) {
         // Purchase successful - verify with backend
@@ -274,7 +275,7 @@ class BillingServiceClass {
         };
       }
     } catch (error: any) {
-      console.error('[Billing] Purchase error:', error);
+      logger.error('[Billing] Purchase error:', error);
 
       // Check for specific error types
       const errorMessage = error?.message?.toLowerCase() || '';
@@ -310,7 +311,7 @@ class BillingServiceClass {
     userId: string
   ): Promise<PurchaseResult> {
     try {
-      console.log('[Billing] Verifying purchase with backend...');
+      logger.log('[Billing] Verifying purchase with backend...');
 
       const platform = Capacitor.getPlatform() as 'ios' | 'android';
       const result = await SubscriptionService.syncSubscriptionFromReceipt(
@@ -321,7 +322,7 @@ class BillingServiceClass {
       );
 
       if (result.success) {
-        console.log('[Billing] Purchase verified successfully');
+        logger.log('[Billing] Purchase verified successfully');
         // v74: Clear subscription cache so UI immediately reflects the new tier
         SubscriptionService.clearCache();
         return {
@@ -331,7 +332,7 @@ class BillingServiceClass {
           tierCode: PRODUCT_TO_TIER[productId],
         };
       } else {
-        console.error('[Billing] Verification failed:', result.error);
+        logger.error('[Billing] Verification failed:', result.error);
         return {
           success: false,
           productId,
@@ -340,7 +341,7 @@ class BillingServiceClass {
         };
       }
     } catch (error) {
-      console.error('[Billing] Verification error:', error);
+      logger.error('[Billing] Verification error:', error);
       return {
         success: false,
         productId,
@@ -365,19 +366,19 @@ class BillingServiceClass {
     }
 
     try {
-      console.log('[Billing] Restoring purchases...');
+      logger.log('[Billing] Restoring purchases...');
 
       await this.NativePurchasesPlugin.restorePurchases();
 
       // v74: Clear subscription cache and trigger a fresh status check so UI updates immediately
       SubscriptionService.clearCache();
-      console.log('[Billing] Restore complete - subscription cache cleared, UI will refresh');
+      logger.log('[Billing] Restore complete - subscription cache cleared, UI will refresh');
 
       return [{
         success: true,
       }];
     } catch (error) {
-      console.error('[Billing] Restore error:', error);
+      logger.error('[Billing] Restore error:', error);
       return [{
         success: false,
         error: this.createError(BillingErrorCode.NETWORK_ERROR, 'Failed to restore purchases', error),
@@ -393,7 +394,7 @@ class BillingServiceClass {
       try {
         await this.NativePurchasesPlugin.manageSubscriptions();
       } catch (error) {
-        console.error('[Billing] Failed to open subscription management:', error);
+        logger.error('[Billing] Failed to open subscription management:', error);
         this.openSubscriptionManagementFallback();
       }
     } else {

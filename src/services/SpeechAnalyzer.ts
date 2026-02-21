@@ -1,5 +1,6 @@
 import { Capacitor } from '@capacitor/core';
 import { SpeechRecognition as CapacitorSpeechRecognition } from '@capacitor-community/speech-recognition';
+import { logger } from '@/lib/logger';
 
 interface SpeechAnalysisResult {
   transcript: string;
@@ -218,7 +219,7 @@ export class SpeechAnalyzer {
       popup: false
     });
 
-    console.log('[SpeechAnalyzer] ✅ v19: Capacitor speech recognition started');
+    logger.log('[SpeechAnalyzer] ✅ v19: Capacitor speech recognition started');
   }
 
   stopRecording(): Promise<SpeechAnalysisResult> {
@@ -248,7 +249,7 @@ export class SpeechAnalyzer {
       // Timeout fallback - resolve with current data after 3 seconds
       const timeoutId = setTimeout(() => {
         if (!resolved) {
-          console.warn('[SpeechAnalyzer] onend timeout - resolving with current transcript');
+          logger.warn('[SpeechAnalyzer] onend timeout - resolving with current transcript');
           resolveOnce(this.analyzeRecording());
         }
       }, STOP_TIMEOUT_MS);
@@ -263,7 +264,7 @@ export class SpeechAnalyzer {
       this.recognition.onerror = (event) => {
         clearTimeout(timeoutId);
         if (event.error !== 'aborted') {
-          console.warn('[SpeechAnalyzer] recognition error:', event.error);
+          logger.warn('[SpeechAnalyzer] recognition error:', event.error);
         }
         resolveOnce(this.analyzeRecording());
       };
@@ -273,7 +274,7 @@ export class SpeechAnalyzer {
         this.recognition.stop();
       } catch (error) {
         // If stop() throws, still resolve after timeout
-        console.warn('[SpeechAnalyzer] stop() error:', error);
+        logger.warn('[SpeechAnalyzer] stop() error:', error);
       }
     });
   }
@@ -295,7 +296,7 @@ export class SpeechAnalyzer {
           new Promise((_, reject) => setTimeout(() => reject(new Error('Stop timeout')), STOP_TIMEOUT_MS))
         ]);
       } catch (e) {
-        console.warn('[SpeechAnalyzer] v19: Capacitor stop timeout/error:', e);
+        logger.warn('[SpeechAnalyzer] v19: Capacitor stop timeout/error:', e);
       }
 
       // Wait a moment for any final results to arrive
@@ -308,14 +309,14 @@ export class SpeechAnalyzer {
           new Promise((_, reject) => setTimeout(() => reject(new Error('Cleanup timeout')), 1000))
         ]);
       } catch (e) {
-        console.warn('[SpeechAnalyzer] v19: Cleanup timeout/error:', e);
+        logger.warn('[SpeechAnalyzer] v19: Cleanup timeout/error:', e);
       }
     };
 
     await stopWithTimeout();
 
     this.isRecording = false;
-    console.log('[SpeechAnalyzer] ✅ v19: Capacitor recording stopped, transcript:', this.transcript.substring(0, 50));
+    logger.log('[SpeechAnalyzer] ✅ v19: Capacitor recording stopped, transcript:', this.transcript.substring(0, 50));
     return this.analyzeRecording();
   }
 

@@ -12,6 +12,7 @@
 import { Capacitor } from '@capacitor/core';
 import { SpeechRecognition } from '@capacitor-community/speech-recognition';
 import { TTSManager } from './TTSManager';
+import { logger } from '@/lib/logger';
 
 // Status types
 export type MicStatus =
@@ -73,7 +74,7 @@ class MicrophoneGuardianService {
     if (config) {
       this.config = { ...this.config, ...config };
     }
-    console.log('[MicGuardian] Initialized');
+    logger.log('[MicGuardian] Initialized');
   }
 
   /**
@@ -118,13 +119,13 @@ class MicrophoneGuardianService {
    */
   private emitStatusChange(newStatus: MicStatus): void {
     if (this.status !== newStatus) {
-      console.log(`[MicGuardian] Status: ${this.status} → ${newStatus}`);
+      logger.log(`[MicGuardian] Status: ${this.status} → ${newStatus}`);
       this.status = newStatus;
       this.statusListeners.forEach(cb => {
         try {
           cb(newStatus);
         } catch (e) {
-          console.error('[MicGuardian] Status listener error:', e);
+          logger.error('[MicGuardian] Status listener error:', e);
         }
       });
     }
@@ -134,12 +135,12 @@ class MicrophoneGuardianService {
    * Emit issue to all listeners
    */
   private emitIssue(issue: MicIssue, message: string): void {
-    console.warn(`[MicGuardian] Issue: ${issue} - ${message}`);
+    logger.warn(`[MicGuardian] Issue: ${issue} - ${message}`);
     this.issueCallbacks.forEach(cb => {
       try {
         cb(issue, message);
       } catch (e) {
-        console.error('[MicGuardian] Issue listener error:', e);
+        logger.error('[MicGuardian] Issue listener error:', e);
       }
     });
   }
@@ -148,7 +149,7 @@ class MicrophoneGuardianService {
    * Ensure microphone is ready - call when entering a speaking-enabled page
    */
   async ensureReady(): Promise<MicStatus> {
-    console.log('[MicGuardian] ensureReady() called');
+    logger.log('[MicGuardian] ensureReady() called');
     this.emitStatusChange('checking');
 
     try {
@@ -156,7 +157,7 @@ class MicrophoneGuardianService {
       try {
         await this.waitForTTSComplete();
       } catch (e) {
-        console.warn('[MicGuardian] v66: TTS wait error (continuing):', e);
+        logger.warn('[MicGuardian] v66: TTS wait error (continuing):', e);
       }
 
       // Step 1: Check permission
@@ -206,7 +207,7 @@ class MicrophoneGuardianService {
       return 'ready';
 
     } catch (error) {
-      console.error('[MicGuardian] ensureReady error:', error);
+      logger.error('[MicGuardian] ensureReady error:', error);
       this.emitStatusChange('error');
       return 'error';
     }
@@ -219,18 +220,18 @@ class MicrophoneGuardianService {
   private async waitForTTSComplete(): Promise<void> {
     // Check if TTS is currently speaking
     if (TTSManager.isSpeaking()) {
-      console.log('[MicGuardian] v66: Waiting for TTS to complete...');
+      logger.log('[MicGuardian] v66: Waiting for TTS to complete...');
 
       // Wait for TTS to finish and audio session to settle
       await TTSManager.waitForAudioSessionRelease(5000);
 
-      console.log('[MicGuardian] v66: TTS complete, proceeding with mic');
+      logger.log('[MicGuardian] v66: TTS complete, proceeding with mic');
     } else {
       // Even if not speaking, ensure audio session has settled
       const timeSinceLastSpeak = TTSManager.getTimeSinceLastSpeak();
       if (timeSinceLastSpeak < 300) {
         const waitTime = 300 - timeSinceLastSpeak;
-        console.log(`[MicGuardian] v66: Waiting ${waitTime}ms for audio session to settle`);
+        logger.log(`[MicGuardian] v66: Waiting ${waitTime}ms for audio session to settle`);
         await new Promise(r => setTimeout(r, waitTime));
       }
     }
@@ -240,14 +241,14 @@ class MicrophoneGuardianService {
    * Pre-flight check before EACH recording attempt
    */
   async preflightCheck(): Promise<PreflightResult> {
-    console.log('[MicGuardian] preflightCheck() called');
+    logger.log('[MicGuardian] preflightCheck() called');
 
     // 🔧 v66 BULLETPROOF iOS FIX: Wait for TTS to complete first
     // This prevents "AudioSession::beginInterruption but session is already interrupted!" error
     try {
       await this.waitForTTSComplete();
     } catch (e) {
-      console.warn('[MicGuardian] v66: TTS wait error (continuing):', e);
+      logger.warn('[MicGuardian] v66: TTS wait error (continuing):', e);
     }
 
     // Quick permission check
@@ -324,7 +325,7 @@ class MicrophoneGuardianService {
       if (cached) return cached;
       return 'prompt';
     } catch (error) {
-      console.error('[MicGuardian] Permission check error:', error);
+      logger.error('[MicGuardian] Permission check error:', error);
       const cached = this.getCachedPermission(); // v70: check cache on error
       if (cached) return cached;
       return 'prompt';
@@ -363,7 +364,7 @@ class MicrophoneGuardianService {
       stream.getTracks().forEach(track => track.stop());
       return true;
     } catch (error) {
-      console.warn('[MicGuardian] Permission request error:', error);
+      logger.warn('[MicGuardian] Permission request error:', error);
       return false;
     }
   }
@@ -414,12 +415,12 @@ class MicrophoneGuardianService {
    * Quick microphone health check - verifies mic can capture audio
    */
   async micHealthCheck(): Promise<boolean> {
-    console.log('[MicGuardian] Running health check...');
+    logger.log('[MicGuardian] Running health check...');
 
     // v70.1: NEVER call getUserMedia on native — it steals the iOS audio session
     // from Capacitor's SpeechRecognition plugin, causing speech recognition to fail.
     if (Capacitor.isNativePlatform()) {
-      console.log('[MicGuardian] v70.1: Skipping getUserMedia health check on native');
+      logger.log('[MicGuardian] v70.1: Skipping getUserMedia health check on native');
       this.lastHealthCheckTime = Date.now();
       return true;
     }
@@ -457,7 +458,7 @@ class MicrophoneGuardianService {
             // The fact that we got here without error means mic is working
             cleanup();
             this.lastHealthCheckTime = Date.now();
-            console.log('[MicGuardian] Health check passed');
+            logger.log('[MicGuardian] Health check passed');
             resolve(true);
           } catch {
             cleanup();
@@ -466,7 +467,7 @@ class MicrophoneGuardianService {
         }, this.config.healthCheckTimeoutMs);
 
       } catch (error) {
-        console.error('[MicGuardian] Health check failed:', error);
+        logger.error('[MicGuardian] Health check failed:', error);
         cleanup();
         resolve(false);
       }
@@ -483,7 +484,7 @@ class MicrophoneGuardianService {
     message: string;
     canRecover: boolean;
   }> {
-    console.log('[MicGuardian] Running comprehensive health check...');
+    logger.log('[MicGuardian] Running comprehensive health check...');
 
     // Check permission first
     const permissionStatus = await this.checkPermission();
@@ -520,7 +521,7 @@ class MicrophoneGuardianService {
     // v70.1: On native, permission + network + service checks are sufficient.
     // Skip getUserMedia audio capture test — Capacitor manages its own audio session.
     if (Capacitor.isNativePlatform()) {
-      console.log('[MicGuardian] v70.1: Skipping getUserMedia test on native');
+      logger.log('[MicGuardian] v70.1: Skipping getUserMedia test on native');
       this.lastHealthCheckTime = Date.now();
       return {
         healthy: true,
@@ -560,7 +561,7 @@ class MicrophoneGuardianService {
 
       // Set overall timeout
       timeoutId = setTimeout(() => {
-        console.warn('[MicGuardian] Health check timed out');
+        logger.warn('[MicGuardian] Health check timed out');
         resolveOnce({
           healthy: false,
           status: 'mic_in_use',
@@ -600,7 +601,7 @@ class MicrophoneGuardianService {
         analyser.getByteFrequencyData(dataArray);
 
         this.lastHealthCheckTime = Date.now();
-        console.log('[MicGuardian] Comprehensive health check passed');
+        logger.log('[MicGuardian] Comprehensive health check passed');
 
         resolveOnce({
           healthy: true,
@@ -610,7 +611,7 @@ class MicrophoneGuardianService {
         });
 
       } catch (error: any) {
-        console.error('[MicGuardian] Comprehensive health check failed:', error);
+        logger.error('[MicGuardian] Comprehensive health check failed:', error);
 
         if (error.name === 'NotAllowedError') {
           resolveOnce({
@@ -642,7 +643,7 @@ class MicrophoneGuardianService {
    * Attempt to recover from a stuck microphone state
    */
   async recoverFromStuck(): Promise<boolean> {
-    console.log('[MicGuardian] Attempting recovery from stuck state...');
+    logger.log('[MicGuardian] Attempting recovery from stuck state...');
 
     try {
       // Stop any active recording
@@ -662,17 +663,17 @@ class MicrophoneGuardianService {
       const healthResult = await this.healthCheck(2000);
 
       if (healthResult.healthy) {
-        console.log('[MicGuardian] Recovery successful');
+        logger.log('[MicGuardian] Recovery successful');
         this.emitStatusChange('ready');
         return true;
       }
 
-      console.warn('[MicGuardian] Recovery failed:', healthResult.message);
+      logger.warn('[MicGuardian] Recovery failed:', healthResult.message);
       this.emitStatusChange(healthResult.status);
       return false;
 
     } catch (error) {
-      console.error('[MicGuardian] Recovery error:', error);
+      logger.error('[MicGuardian] Recovery error:', error);
       return false;
     }
   }
@@ -703,7 +704,7 @@ class MicrophoneGuardianService {
    * Handle permission being revoked mid-session
    */
   private handlePermissionRevoked(): void {
-    console.warn('[MicGuardian] Permission revoked!');
+    logger.warn('[MicGuardian] Permission revoked!');
     this.cachePermissionResult('denied'); // v70: Clear permission cache
     this.emitStatusChange('no_permission');
     this.emitIssue('permission_revoked', 'Microphone permission was revoked');
@@ -737,7 +738,7 @@ class MicrophoneGuardianService {
       }
     }, 5000) as unknown as ReturnType<typeof setInterval>;
 
-    console.log('[MicGuardian] Monitoring started');
+    logger.log('[MicGuardian] Monitoring started');
   }
 
   /**
@@ -751,14 +752,14 @@ class MicrophoneGuardianService {
       this.monitoringInterval = null;
     }
 
-    console.log('[MicGuardian] Monitoring stopped');
+    logger.log('[MicGuardian] Monitoring stopped');
   }
 
   /**
    * Emergency stop - called when critical issue detected during recording
    */
   emergencyStop(): void {
-    console.warn('[MicGuardian] Emergency stop triggered');
+    logger.warn('[MicGuardian] Emergency stop triggered');
     this.isRecording = false;
     this.stopMonitoring();
   }
@@ -843,7 +844,7 @@ class MicrophoneGuardianService {
       this.permissionListener = null;
     }
 
-    console.log('[MicGuardian] Cleaned up');
+    logger.log('[MicGuardian] Cleaned up');
   }
 }
 

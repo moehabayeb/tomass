@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Speech Synthesis Polyfill for Android WebView
  *
@@ -13,7 +14,7 @@
 if (typeof window !== 'undefined') {
   // Check if speechSynthesis is already available
   if (!('speechSynthesis' in window)) {
-    console.log('[TTS Polyfill] speechSynthesis not available, installing polyfill');
+    logger.log('[TTS Polyfill] speechSynthesis not available, installing polyfill');
 
     // Create a mock SpeechSynthesisUtterance class
     class MockSpeechSynthesisUtterance {
@@ -56,7 +57,7 @@ if (typeof window !== 'undefined') {
 
       speak(utterance: SpeechSynthesisUtterance): void {
         // Log for debugging - actual TTS handled by UnifiedTTSService
-        console.log('[TTS Polyfill] speak() called - use UnifiedTTSService for actual TTS');
+        logger.log('[TTS Polyfill] speak() called - use UnifiedTTSService for actual TTS');
 
         // Simulate the speech lifecycle for callbacks
         setTimeout(() => {
@@ -124,9 +125,9 @@ if (typeof window !== 'undefined') {
       (window as any).SpeechSynthesisUtterance = MockSpeechSynthesisUtterance;
     }
 
-    console.log('[TTS Polyfill] Polyfill installed successfully');
+    logger.log('[TTS Polyfill] Polyfill installed successfully');
   } else {
-    console.log('[TTS Polyfill] Native speechSynthesis available');
+    logger.log('[TTS Polyfill] Native speechSynthesis available');
   }
 }
 

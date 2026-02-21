@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { indexedDBStore, type LessonCheckpoint } from '@/utils/indexedDBStore';
 import { getProgress as getLocalProgress, setProgress as setLocalProgress } from '@/utils/ProgressStore';
 import type { ModuleProgress } from '@/utils/ProgressStore';
+import { logger } from '@/lib/logger';
 
 export interface LessonProgressServiceConfig {
   enableOfflineQueue: boolean;
@@ -39,7 +40,7 @@ class LessonProgressService {
 
   constructor(config: Partial<LessonProgressServiceConfig> = {}) {
     if (import.meta.env.DEV) {
-      console.log('🚀 LessonProgressService v3.0 - Production Ready');
+      logger.log('🚀 LessonProgressService v3.0 - Production Ready');
     }
 
     this.config = {
@@ -265,7 +266,7 @@ class LessonProgressService {
       if (error) {
         // 🔧 EMERGENCY FIX: Log but don't throw - RPC might not exist
         if (import.meta.env.DEV) {
-          console.warn('Supabase RPC error (upsert_lesson_progress):', error.code, error.message);
+          logger.warn('Supabase RPC error (upsert_lesson_progress):', error.code, error.message);
         }
         // Don't throw - allow fallback to local storage
         return;
@@ -275,7 +276,7 @@ class LessonProgressService {
     } catch (error) {
       // 🔧 EMERGENCY FIX: Catch network/RPC errors - don't block saving
       if (import.meta.env.DEV) {
-        console.warn('Supabase save failed - using local storage fallback:', error);
+        logger.warn('Supabase save failed - using local storage fallback:', error);
       }
       // Don't re-throw - this is already handled by caller's offline queue
     }
@@ -300,7 +301,7 @@ class LessonProgressService {
       // 🔧 GOD-LEVEL FIX: Don't throw - gracefully fallback to local storage
       // This prevents infinite loop when Supabase table doesn't exist
       if (import.meta.env.DEV) {
-        console.warn('Supabase progress load error:', error.code, error.message);
+        logger.warn('Supabase progress load error:', error.code, error.message);
       }
       return null;
     }
@@ -509,7 +510,7 @@ class LessonProgressService {
   async loadProgressFromCloud(userId: string): Promise<void> {
     if (!userId) return;
 
-    console.log('[LessonProgress] Loading progress from cloud for user:', userId);
+    logger.log('[LessonProgress] Loading progress from cloud for user:', userId);
 
     try {
       const { data, error } = await supabase
@@ -520,17 +521,17 @@ class LessonProgressService {
       if (error) {
         // Table might not exist or other error
         if (error.code !== 'PGRST116' && error.code !== '42P01') {
-          console.error('[LessonProgress] Cloud load error:', error);
+          logger.error('[LessonProgress] Cloud load error:', error);
         }
         return;
       }
 
       if (!data || data.length === 0) {
-        console.log('[LessonProgress] No cloud progress found');
+        logger.log('[LessonProgress] No cloud progress found');
         return;
       }
 
-      console.log(`[LessonProgress] Found ${data.length} modules in cloud`);
+      logger.log(`[LessonProgress] Found ${data.length} modules in cloud`);
 
       // Convert to local format and save
       for (const row of data) {
@@ -552,9 +553,9 @@ class LessonProgressService {
         await this.saveLocalProgress(checkpoint);
       }
 
-      console.log('[LessonProgress] Cloud progress loaded successfully');
+      logger.log('[LessonProgress] Cloud progress loaded successfully');
     } catch (err) {
-      console.error('[LessonProgress] Failed to load cloud progress:', err);
+      logger.error('[LessonProgress] Failed to load cloud progress:', err);
     }
   }
 
@@ -565,18 +566,18 @@ class LessonProgressService {
   async syncAllProgressToCloud(userId: string): Promise<void> {
     if (!userId) return;
 
-    console.log('[LessonProgress] Syncing all progress to cloud for user:', userId);
+    logger.log('[LessonProgress] Syncing all progress to cloud for user:', userId);
 
     try {
       // Get all local checkpoints
       const localCheckpoints = await this.getAllLocalCheckpoints();
 
       if (localCheckpoints.length === 0) {
-        console.log('[LessonProgress] No local progress to sync');
+        logger.log('[LessonProgress] No local progress to sync');
         return;
       }
 
-      console.log(`[LessonProgress] Found ${localCheckpoints.length} local checkpoints to sync`);
+      logger.log(`[LessonProgress] Found ${localCheckpoints.length} local checkpoints to sync`);
 
       // Build batch records
       const records = localCheckpoints.map(cp => ({
@@ -603,16 +604,16 @@ class LessonProgressService {
           .upsert(batch, { onConflict: 'user_id,level,module_id' });
 
         if (error) {
-          console.error('[LessonProgress] Batch upsert failed:', error);
+          logger.error('[LessonProgress] Batch upsert failed:', error);
           // Continue with next batch instead of failing completely
         } else {
-          console.log(`[LessonProgress] Batch ${Math.floor(i / batchSize) + 1} synced successfully`);
+          logger.log(`[LessonProgress] Batch ${Math.floor(i / batchSize) + 1} synced successfully`);
         }
       }
 
-      console.log('[LessonProgress] Cloud sync complete');
+      logger.log('[LessonProgress] Cloud sync complete');
     } catch (err) {
-      console.error('[LessonProgress] Failed to sync to cloud:', err);
+      logger.error('[LessonProgress] Failed to sync to cloud:', err);
     }
   }
 

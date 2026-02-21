@@ -9,6 +9,7 @@
 
 import { SpeechRecognition, PluginListenerHandle } from '@capacitor-community/speech-recognition';
 import { Capacitor } from '@capacitor/core';
+import { logger } from '@/lib/logger';
 
 export type RecognitionMode = 'capacitor' | 'web-speech-api' | 'media-recorder';
 
@@ -47,7 +48,7 @@ class UnifiedSpeechRecognitionService {
   constructor() {
     this.mode = this.detectBestMode();
     if (import.meta.env.DEV) {
-      console.log('🎤 Unified Speech Recognition initialized with mode:', this.mode);
+      logger.log('🎤 Unified Speech Recognition initialized with mode:', this.mode);
     }
   }
 
@@ -56,7 +57,7 @@ class UnifiedSpeechRecognitionService {
    * This prevents listener accumulation that causes iOS audio session issues
    */
   private async cleanupListeners(): Promise<void> {
-    console.log(`[SPEECH] v66: Cleaning up ${this.listenerHandles.length} listener handles...`);
+    logger.log(`[SPEECH] v66: Cleaning up ${this.listenerHandles.length} listener handles...`);
 
     for (const handle of this.listenerHandles) {
       try {
@@ -74,7 +75,7 @@ class UnifiedSpeechRecognitionService {
       // Ignore errors
     }
 
-    console.log('[SPEECH] v66: Listeners cleaned up');
+    logger.log('[SPEECH] v66: Listeners cleaned up');
   }
 
   /**
@@ -158,7 +159,7 @@ class UnifiedSpeechRecognitionService {
         const result = await SpeechRecognition.checkPermissions();
         return result.speechRecognition === 'granted';
       } catch (error) {
-        if (import.meta.env.DEV) console.error('Error checking Capacitor permissions:', error);
+        if (import.meta.env.DEV) logger.error('Error checking Capacitor permissions:', error);
         return false;
       }
     }
@@ -176,7 +177,7 @@ class UnifiedSpeechRecognitionService {
         const result = await SpeechRecognition.requestPermissions();
         return result.speechRecognition === 'granted';
       } catch (error) {
-        if (import.meta.env.DEV) console.error('Error requesting Capacitor permissions:', error);
+        if (import.meta.env.DEV) logger.error('Error requesting Capacitor permissions:', error);
         if (this.onErrorCallback) {
           this.onErrorCallback(new Error('Microphone permission denied'));
         }
@@ -197,7 +198,7 @@ class UnifiedSpeechRecognitionService {
         const result = await SpeechRecognition.available();
         return result.available;
       } catch (error) {
-        if (import.meta.env.DEV) console.error('Capacitor speech recognition not available:', error);
+        if (import.meta.env.DEV) logger.error('Capacitor speech recognition not available:', error);
         return false;
       }
     }
@@ -221,7 +222,7 @@ class UnifiedSpeechRecognitionService {
           // Ensure minimum delay since last stop to let Android release resources
           const elapsed = Date.now() - this.lastStopTime;
           if (elapsed < this.MIN_RESTART_DELAY_MS) {
-            console.log(`[SPEECH] Waiting ${this.MIN_RESTART_DELAY_MS - elapsed}ms before restart`);
+            logger.log(`[SPEECH] Waiting ${this.MIN_RESTART_DELAY_MS - elapsed}ms before restart`);
             await new Promise(r => setTimeout(r, this.MIN_RESTART_DELAY_MS - elapsed));
           }
 
@@ -241,7 +242,7 @@ class UnifiedSpeechRecognitionService {
     const language = config.language || 'en-US';
 
     if (this.isListening) {
-      console.log('[SPEECH] Already listening, stopping first');
+      logger.log('[SPEECH] Already listening, stopping first');
       await this.doStop();
     }
 
@@ -288,7 +289,7 @@ class UnifiedSpeechRecognitionService {
     // 🔧 v66 BULLETPROOF: Increment session ID to track and ignore stale events
     this.currentSessionId++;
     const sessionId = this.currentSessionId;
-    console.log(`[SPEECH] v66: Starting session #${sessionId}`);
+    logger.log(`[SPEECH] v66: Starting session #${sessionId}`);
 
     // 🔧 v66 BULLETPROOF: ALWAYS cleanup listeners FIRST before adding new ones
     // This prevents listener accumulation that causes iOS issues
@@ -301,25 +302,25 @@ class UnifiedSpeechRecognitionService {
     await new Promise(resolve => setTimeout(resolve, settleDelay));
 
     // PRODUCTION DEBUG: Log all steps to track down why speech recognition fails
-    console.log('[SPEECH] Starting Capacitor recognition for language:', language);
+    logger.log('[SPEECH] Starting Capacitor recognition for language:', language);
 
     // AVAILABILITY CHECK: Verify speech recognition service is available
     try {
-      console.log('[SPEECH] Checking availability...');
+      logger.log('[SPEECH] Checking availability...');
       const availability = await SpeechRecognition.available();
-      console.log('[SPEECH] Availability result:', availability);
+      logger.log('[SPEECH] Availability result:', availability);
       if (!availability.available) {
         const error = new Error('Speech recognition not available. Please install/enable Google app.');
         this.isListening = false;
-        console.error('[SPEECH] ERROR: Service unavailable');
+        logger.error('[SPEECH] ERROR: Service unavailable');
         if (this.onErrorCallback) {
           this.onErrorCallback(error);
         }
         throw error;
       }
-      console.log('[SPEECH] Service is available');
+      logger.log('[SPEECH] Service is available');
     } catch (e: any) {
-      console.warn('[SPEECH] Availability check failed:', e.message);
+      logger.warn('[SPEECH] Availability check failed:', e.message);
       // Continue anyway - the check itself might fail but recognition might work
     }
 
@@ -328,7 +329,7 @@ class UnifiedSpeechRecognitionService {
     let hasReceivedFinalResult = false;
 
     try {
-      console.log('[SPEECH] Setting up event listeners...');
+      logger.log('[SPEECH] Setting up event listeners...');
 
       // Listen for partial results - save transcript for listeningState fallback
       // 🔧 GOD-TIER v20: Use extractTranscript() to handle all data formats
@@ -336,14 +337,14 @@ class UnifiedSpeechRecognitionService {
       const partialHandle = await SpeechRecognition.addListener('partialResults', (data: any) => {
         // 🔧 v66: Ignore events from stale sessions
         if (sessionId !== this.currentSessionId) {
-          console.log(`[SPEECH] v66: Ignoring stale partialResults from session #${sessionId}`);
+          logger.log(`[SPEECH] v66: Ignoring stale partialResults from session #${sessionId}`);
           return;
         }
-        console.log('[SPEECH] EVENT: partialResults', JSON.stringify(data));
+        logger.log('[SPEECH] EVENT: partialResults', JSON.stringify(data));
         const transcript = this.extractTranscript(data);
         if (transcript) {
           currentTranscript = transcript;
-          console.log('[SPEECH] Partial transcript:', currentTranscript);
+          logger.log('[SPEECH] Partial transcript:', currentTranscript);
           if (this.onResultCallback) {
             this.onResultCallback({
               transcript: currentTranscript,
@@ -361,15 +362,15 @@ class UnifiedSpeechRecognitionService {
       const finalHandle = await SpeechRecognition.addListener('finalResults', (data: any) => {
         // 🔧 v66: Ignore events from stale sessions
         if (sessionId !== this.currentSessionId) {
-          console.log(`[SPEECH] v66: Ignoring stale finalResults from session #${sessionId}`);
+          logger.log(`[SPEECH] v66: Ignoring stale finalResults from session #${sessionId}`);
           return;
         }
-        console.log('[SPEECH] EVENT: finalResults', JSON.stringify(data));
+        logger.log('[SPEECH] EVENT: finalResults', JSON.stringify(data));
         hasReceivedFinalResult = true;
         const transcript = this.extractTranscript(data);
         if (transcript) {
           currentTranscript = transcript;
-          console.log('[SPEECH] Final transcript:', currentTranscript);
+          logger.log('[SPEECH] Final transcript:', currentTranscript);
           if (this.onResultCallback) {
             this.onResultCallback({
               transcript: currentTranscript,
@@ -391,30 +392,30 @@ class UnifiedSpeechRecognitionService {
       const stateHandle = await SpeechRecognition.addListener('listeningState', (data: any) => {
         // 🔧 v66: Ignore events from stale sessions
         if (sessionId !== this.currentSessionId) {
-          console.log(`[SPEECH] v66: Ignoring stale listeningState from session #${sessionId}`);
+          logger.log(`[SPEECH] v66: Ignoring stale listeningState from session #${sessionId}`);
           return;
         }
-        console.log('[SPEECH] EVENT: listeningState', data.status);
+        logger.log('[SPEECH] EVENT: listeningState', data.status);
 
         // Confirm recognition started when we get 'started' status
         if (data.status === 'started') {
           startConfirmed = true;
-          console.log('[SPEECH] Recognition STARTED successfully');
+          logger.log('[SPEECH] Recognition STARTED successfully');
         }
 
         if (data.status === 'stopped') {
-          console.log('[SPEECH] Recognition STOPPED. isListening:', this.isListening, 'hasReceivedFinal:', hasReceivedFinalResult, 'transcript:', currentTranscript);
+          logger.log('[SPEECH] Recognition STOPPED. isListening:', this.isListening, 'hasReceivedFinal:', hasReceivedFinalResult, 'transcript:', currentTranscript);
           if (this.isListening && !hasReceivedFinalResult) {
             // Use whatever transcript we captured from partial results
             if (currentTranscript && this.onResultCallback) {
-              console.log('[SPEECH] Using partial as final:', currentTranscript);
+              logger.log('[SPEECH] Using partial as final:', currentTranscript);
               this.onResultCallback({
                 transcript: currentTranscript,
                 confidence: 1.0,
                 isFinal: true,
               });
             } else {
-              console.log('[SPEECH] No transcript captured!');
+              logger.log('[SPEECH] No transcript captured!');
             }
             this.isListening = false;
             if (this.onEndCallback) {
@@ -430,10 +431,10 @@ class UnifiedSpeechRecognitionService {
       const errorHandle = await SpeechRecognition.addListener('error', (data: any) => {
         // 🔧 v66: Ignore events from stale sessions
         if (sessionId !== this.currentSessionId) {
-          console.log(`[SPEECH] v66: Ignoring stale error from session #${sessionId}`);
+          logger.log(`[SPEECH] v66: Ignoring stale error from session #${sessionId}`);
           return;
         }
-        console.error('[SPEECH] EVENT: error', JSON.stringify(data));
+        logger.error('[SPEECH] EVENT: error', JSON.stringify(data));
         const errorMessage = data.message || data.error || 'Speech recognition failed';
         this.isListening = false;
 
@@ -446,7 +447,7 @@ class UnifiedSpeechRecognitionService {
       });
       this.listenerHandles.push(errorHandle);
 
-      console.log('[SPEECH] All listeners registered. Starting recognition...');
+      logger.log('[SPEECH] All listeners registered. Starting recognition...');
 
       // Now start recognition
       await SpeechRecognition.start({
@@ -457,12 +458,12 @@ class UnifiedSpeechRecognitionService {
         popup: false,
       });
 
-      console.log('[SPEECH] SpeechRecognition.start() completed');
+      logger.log('[SPEECH] SpeechRecognition.start() completed');
 
       // START CONFIRMATION: Detect silent failures within 3 seconds
       setTimeout(async () => {
         if (!startConfirmed && this.isListening) {
-          console.error('[SPEECH] TIMEOUT: No start event after 3s!');
+          logger.error('[SPEECH] TIMEOUT: No start event after 3s!');
           // Force stop and report error
           try {
             await this.stop();
@@ -531,7 +532,7 @@ class UnifiedSpeechRecognitionService {
       this.webRecognition.start();
 
       if (import.meta.env.DEV) {
-        console.log('✅ Web Speech API started');
+        logger.log('✅ Web Speech API started');
       }
     } catch (error: any) {
       this.isListening = false;
@@ -596,10 +597,10 @@ class UnifiedSpeechRecognitionService {
       }
 
       this.isListening = false;
-      console.log('[SPEECH] v66: Stopped and cleaned up');
+      logger.log('[SPEECH] v66: Stopped and cleaned up');
     } catch (error) {
       // Log but don't throw - cleanup should be best-effort
-      console.error('[SPEECH] Error stopping:', error);
+      logger.error('[SPEECH] Error stopping:', error);
       this.isListening = false;
     }
   }

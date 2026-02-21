@@ -29,6 +29,7 @@ import { Play, Pause, MoreHorizontal, RotateCcw, Square } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { LevelUpModal } from './LevelUpModal';
+import { logger } from '@/lib/logger';
 
 // 🔧 FIX #13: Type declaration for Safari's webkitAudioContext
 declare global {
@@ -368,7 +369,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     }
 
     // v68: FSM audit logging to track state machine behavior
-    console.log('[FSM-AUDIT]', {
+    logger.log('[FSM-AUDIT]', {
       newState: flowState,
       micCapture: micCaptureInProgressRef.current,
       ttsMutex: ttsAuthorityMutexRef.current
@@ -678,7 +679,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         } catch (err) {
           // Silent fail for production - AudioContext resume errors are non-critical
           if (import.meta.env.DEV) {
-            console.error('Failed to resume AudioContext:', err);
+            logger.error('Failed to resume AudioContext:', err);
           }
         }
       }
@@ -751,7 +752,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     // This prevents duplicate bot messages even when called rapidly in succession
     if (type === 'bot') {
       if (recentBotTextsRef.current.includes(trimmedText)) {
-        console.log('[addChatBubble] ⛔ BLOCKED duplicate (ref check):', trimmedText.substring(0, 30));
+        logger.log('[addChatBubble] ⛔ BLOCKED duplicate (ref check):', trimmedText.substring(0, 30));
         return { id: '', seq: -1, messageKey: '' };
       }
       // Add to ref IMMEDIATELY (synchronous) BEFORE adding to state
@@ -799,7 +800,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     // State machine: Only speak during READING state
     // 🔧 GOD-TIER v7: Use REF for check (refs are synchronous, state is STALE in closures!)
     if (flowStateRef.current !== 'READING' && !isRepeat) {
-      console.log('[speakExistingMessage] ⛔ TTS skipped - flowState is', flowStateRef.current, 'not READING');
+      logger.log('[speakExistingMessage] ⛔ TTS skipped - flowState is', flowStateRef.current, 'not READING');
       return messageKey;
     }
     
@@ -853,7 +854,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     // C) Single authority: TTS can only be triggered by the hands-free controller when it has authority
     // 🔧 GOD-TIER v7: Use REF for check (refs are synchronous, state is STALE in closures!)
     if (!ttsListenerActiveRef.current) {
-      console.log('[speakExistingMessage] ⛔ TTS skipped - ttsListenerActive is false');
+      logger.log('[speakExistingMessage] ⛔ TTS skipped - ttsListenerActive is false');
       return messageKey;
     }
     
@@ -865,7 +866,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     if (speakingSoundEnabled) {
       // 🎯 v41: TTS authority mutex - prevent overlapping speech
       if (ttsAuthorityMutexRef.current) {
-        console.log('[speakExistingMessage] v41: TTS authority mutex held, skipping');
+        logger.log('[speakExistingMessage] v41: TTS authority mutex held, skipping');
         return messageKey;
       }
       ttsAuthorityMutexRef.current = true;
@@ -888,7 +889,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       micPausedForTTSRef.current = true;
       try {
         await stopRecording();
-        console.log('[speakExistingMessage] v41: Mic paused for TTS');
+        logger.log('[speakExistingMessage] v41: Mic paused for TTS');
       } catch { /* OK if not recording */ }
 
       // A) State transition: Enter READING state for TTS
@@ -913,10 +914,10 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       try {
         await TTSManager.speak(stripEmojisForTTS(text), { canSkip: false }); // 🚨 CRITICAL FIX: Disabled skip to prevent interruption
         // TTS completed successfully
-        console.log('[speakExistingMessage] ✅ TTS completed successfully');
+        logger.log('[speakExistingMessage] ✅ TTS completed successfully');
       } catch (error) {
         // TTS error - log but continue to transition
-        console.warn('[speakExistingMessage] ⚠️ TTS error:', error);
+        logger.warn('[speakExistingMessage] ⚠️ TTS error:', error);
       } finally {
         // 🔧 GOD-TIER v5: All cleanup and transition happens here, PROPERLY AWAITED
         resolved = true;
@@ -975,11 +976,11 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
   // Only append new messages from backend, never fabricate client-side
   const addAssistantMessage = async (message: string, phase: 'prompt' | 'feedback' = 'feedback') => {
-    console.log('[addAssistantMessage] 🤖 Adding AI bubble:', message?.substring(0, 50) + '...');
+    logger.log('[addAssistantMessage] 🤖 Adding AI bubble:', message?.substring(0, 50) + '...');
 
     // 🔧 GOD-TIER FIX: Prevent duplicate AI responses per turn
     if (responseSpokenForTurnRef.current && phase === 'feedback') {
-      console.log('[addAssistantMessage] ⚠️ SKIPPING - Response already spoken for this turn');
+      logger.log('[addAssistantMessage] ⚠️ SKIPPING - Response already spoken for this turn');
       return '';
     }
 
@@ -991,7 +992,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
     // Add to chat and get sequence number - this is the ONLY place we append assistant messages
     const { id, seq } = addChatBubble(message, "bot", messageId);
-    console.log('[addAssistantMessage] 💭 Bubble added with id:', id, 'seq:', seq);
+    logger.log('[addAssistantMessage] 💭 Bubble added with id:', id, 'seq:', seq);
 
     // Generate messageKey for this new message (use stable key)
     const messageKey = stableMessageKey(message, id);
@@ -1004,7 +1005,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
     // 🔧 GOD-TIER v7: Update REFS FIRST for synchronous access (closure staleness fix)
     // flushSync ensures render, but refs must be updated directly for closure checks
-    console.log('[addAssistantMessage] 🔊 Setting state to READING and triggering TTS...');
+    logger.log('[addAssistantMessage] 🔊 Setting state to READING and triggering TTS...');
     flowStateRef.current = 'READING';
     ttsListenerActiveRef.current = true;
     flushSync(() => {
@@ -1014,7 +1015,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
     // Now speak this newly added message (refs are guaranteed to be updated)
     await speakExistingMessage(message, messageKey, phase, false, { token: turnToken });
-    console.log('[addAssistantMessage] ✅ TTS complete, returning messageId:', messageId);
+    logger.log('[addAssistantMessage] ✅ TTS complete, returning messageId:', messageId);
 
     return messageId;
   };
@@ -1034,7 +1035,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   const forceToListening = async (reason: string) => {
     // 🔧 GOD-TIER v5: Prevent concurrent transitions (race condition fix)
     if (transitionInProgressRef.current) {
-      console.log('[forceToListening] ⚠️ Transition already in progress, skipping:', reason);
+      logger.log('[forceToListening] ⚠️ Transition already in progress, skipping:', reason);
       return;
     }
     transitionInProgressRef.current = true;
@@ -1043,7 +1044,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       // Check if component is mounted before setState
       if (!isMountedRef.current) return;
 
-      console.log('[forceToListening] 🎯 Starting transition:', reason);
+      logger.log('[forceToListening] 🎯 Starting transition:', reason);
 
       // Stop ALL TTS immediately (both custom and browser) - silent fail: may not be active
       try { TTSManager.stop(); } catch { /* Expected: TTS may not be active */ }
@@ -1063,7 +1064,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       // 🎯 v41 ULTRA GOD-TIER: Clear mic guards BEFORE triggering Turn 2+
       // This ensures the mic can start even if previous turn didn't clean up properly
       micCaptureInProgressRef.current = false;
-      console.log('[forceToListening] v69: Cleared mic guards before trigger');
+      logger.log('[forceToListening] v69: Cleared mic guards before trigger');
 
       // 🎯 v41 ULTRA GOD-TIER: PROPERLY AWAIT mic capture!
       // Previous fire-and-forget caused state machine to think LISTENING was active
@@ -1072,10 +1073,10 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
       try {
         await startHandsFreeMicCaptureSafe(true);
-        console.log('[forceToListening] v69: Mic capture started successfully');
+        logger.log('[forceToListening] v69: Mic capture started successfully');
       } catch (err) {
         // If mic fails, notify user and reset to IDLE
-        console.error('[forceToListening] v69: Mic capture failed:', err);
+        logger.error('[forceToListening] v69: Mic capture failed:', err);
         toast({
           title: "Could not start listening",
           description: "Please check microphone permissions",
@@ -1096,7 +1097,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
    * Call this on ANY unrecoverable error
    */
   const nuclearReset = async () => {
-    console.warn('[SpeakingApp] v67: NUCLEAR RESET INITIATED');
+    logger.warn('[SpeakingApp] v67: NUCLEAR RESET INITIATED');
 
     // 1. Stop all audio
     try { TTSManager.stop(); } catch (e) { /* ignore */ }
@@ -1138,7 +1139,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       duration: 3000,
     });
 
-    console.warn('[SpeakingApp] v67: NUCLEAR RESET COMPLETE');
+    logger.warn('[SpeakingApp] v67: NUCLEAR RESET COMPLETE');
   };
 
   /**
@@ -1158,9 +1159,9 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           )
         ]);
       } catch (e) {
-        console.warn(`[SafeCall] v67: Attempt ${attempt + 1} failed:`, e);
+        logger.warn(`[SafeCall] v67: Attempt ${attempt + 1} failed:`, e);
         if (attempt === retries) {
-          console.error('[SafeCall] v67: All retries failed, using fallback');
+          logger.error('[SafeCall] v67: All retries failed, using fallback');
           return fallback;
         }
         await new Promise(r => setTimeout(r, 500 * (attempt + 1)));
@@ -1207,7 +1208,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     // 🔧 GOD-TIER v10: Guard ONLY protects mic recording phase, NOT the entire function
     // This allows new mic capture to start when TTS finishes, while previous turn processes
     if (micCaptureInProgressRef.current) {
-      console.log('[startHandsFreeMicCaptureSafe] ⚠️ Mic recording in progress, skipping');
+      logger.log('[startHandsFreeMicCaptureSafe] ⚠️ Mic recording in progress, skipping');
       return;
     }
 
@@ -1242,7 +1243,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       try {
         await acquirePersistentStream();
       } catch (streamError) {
-        console.error('[startHandsFreeMicCaptureSafe] Failed to acquire persistent stream:', streamError);
+        logger.error('[startHandsFreeMicCaptureSafe] Failed to acquire persistent stream:', streamError);
         toast({
           title: "Microphone error",
           description: "Could not access microphone",
@@ -1276,7 +1277,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     if (!Capacitor.isNativePlatform()) {
       const healthResult = await microphoneGuardian.healthCheck(3000);
       if (!healthResult.healthy) {
-        console.warn('[MicTrigger] Pre-flight failed:', healthResult.message);
+        logger.warn('[MicTrigger] Pre-flight failed:', healthResult.message);
         if (healthResult.canRecover) {
           await microphoneGuardian.recoverFromStuck();
         }
@@ -1292,7 +1293,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         try {
           return await startRecording({ bypassDebounce: true, shouldContinue: () => flowStateRef.current === 'LISTENING' });
         } catch (err) {
-          console.error(`[MicTrigger] Attempt ${micRetryCount + 1} failed:`, err);
+          logger.error(`[MicTrigger] Attempt ${micRetryCount + 1} failed:`, err);
           return null;
         }
       }
@@ -1305,7 +1306,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           // 🔧 v69: Pass shouldContinue to abort if flowState leaves LISTENING during setup
           return await startRecording({ bypassDebounce: true, shouldContinue: () => flowStateRef.current === 'LISTENING' });
         } catch (err) {
-          console.error(`[MicTrigger] Attempt ${micRetryCount + 1} failed:`, err);
+          logger.error(`[MicTrigger] Attempt ${micRetryCount + 1} failed:`, err);
           return null;
         }
       })();
@@ -1318,11 +1319,11 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     while (!result && micRetryCount < MAX_MIC_RETRIES && !abortController.signal.aborted) {
       micRetryCount++;
       const delay = MIC_RETRY_DELAYS[micRetryCount - 1] || 1500;
-      console.log(`[MicTrigger] 🔄 v69: Retry ${micRetryCount}/${MAX_MIC_RETRIES} after ${delay}ms...`);
+      logger.log(`[MicTrigger] 🔄 v69: Retry ${micRetryCount}/${MAX_MIC_RETRIES} after ${delay}ms...`);
       await new Promise(r => setTimeout(r, delay));
       // Check abort signal after delay - state may have changed during wait
       if (abortController.signal.aborted) {
-        console.log('[MicTrigger] v69: Retry aborted after delay (state changed)');
+        logger.log('[MicTrigger] v69: Retry aborted after delay (state changed)');
         break;
       }
       result = await tryStartMicWithTimeout();
@@ -1330,7 +1331,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
     // If all retries failed, show error
     if (!result) {
-      console.error('[startHandsFreeMicCaptureSafe] ❌ All mic retries failed');
+      logger.error('[startHandsFreeMicCaptureSafe] ❌ All mic retries failed');
       micCaptureInProgressRef.current = false;
       toast({
         title: "Microphone error",
@@ -1342,18 +1343,18 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     }
 
     finalTranscript = (result.transcript || '').trim();
-    console.log(`[MicTrigger] ✅ v14: Mic started successfully${micRetryCount > 0 ? ` after ${micRetryCount} retries` : ''}`);
+    logger.log(`[MicTrigger] ✅ v14: Mic started successfully${micRetryCount > 0 ? ` after ${micRetryCount} retries` : ''}`);
 
     // v68: Release recording guard immediately - user can now tap mic again
     // Processing guard will be handled separately by flowState
     micCaptureInProgressRef.current = false;
-    console.log('[startHandsFreeMicCaptureSafe] v68: Recording guard released');
+    logger.log('[startHandsFreeMicCaptureSafe] v68: Recording guard released');
 
     // C) Final ASR → single user bubble → evaluation
     if (finalTranscript) {
       // 🎯 DEFINITIVE FIX: Check if mic button already handled submission
       if (micButtonSubmittedRef.current) {
-        console.log('[SpeakingApp] Mic button already submitted - skipping duplicate');
+        logger.log('[SpeakingApp] Mic button already submitted - skipping duplicate');
         micButtonSubmittedRef.current = false;
         return;
       }
@@ -1365,7 +1366,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
       // Append ONE user bubble with EXACT transcript (preserve accents like "café")
       addChatBubble(finalTranscript, 'user');
-      console.log('[SpeakingApp] 📝 User bubble added:', finalTranscript.substring(0, 50));
+      logger.log('[SpeakingApp] 📝 User bubble added:', finalTranscript.substring(0, 50));
 
       // 🔧 GOD-TIER FIX: Reset response flag for new turn (allows ONE AI response per user input)
       responseSpokenForTurnRef.current = false;
@@ -1375,21 +1376,21 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
       // Set state=PROCESSING and call existing executeTeacherLoop
       setFlowState('PROCESSING');
-      console.log('[SpeakingApp] 🔄 State set to PROCESSING, calling executeTeacherLoop...');
+      logger.log('[SpeakingApp] 🔄 State set to PROCESSING, calling executeTeacherLoop...');
 
       // v67: Yield to let React render user message before heavy processing
       await new Promise(r => requestAnimationFrame(() => setTimeout(r, 0)));
 
       try {
         await executeTeacherLoop(finalTranscript);
-        console.log('[SpeakingApp] ✅ executeTeacherLoop completed successfully');
+        logger.log('[SpeakingApp] ✅ executeTeacherLoop completed successfully');
         // 🔧 v36 GOD-TIER FIX: Safety net REMOVED - it was causing TTS cancellation!
         // The forceToListening('tts-complete') in speakExistingMessage's finally block
         // already handles the transition. This extra call was racing with TTS and
         // calling TTSManager.stop() which killed the audio mid-playback.
         // The 'tts-complete' transition is sufficient and properly awaited.
       } catch (teacherError: any) {
-        console.error('[SpeakingApp] ❌ executeTeacherLoop FAILED:', teacherError);
+        logger.error('[SpeakingApp] ❌ executeTeacherLoop FAILED:', teacherError);
         // Show error to user so they know what happened
         toast({
           title: "AI couldn't respond",
@@ -1402,12 +1403,12 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         }
       } finally {
         // v68: Guard already released at recording completion - no action needed
-        console.log('[startHandsFreeMicCaptureSafe] v68: Processing complete');
+        logger.log('[startHandsFreeMicCaptureSafe] v68: Processing complete');
       }
     } else {
       // 🎯 FIX: Check if mic button already took over before retrying
       if (micButtonSubmittedRef.current) {
-        console.log('[SpeakingApp] Mic button submitted - not retrying empty transcript');
+        logger.log('[SpeakingApp] Mic button submitted - not retrying empty transcript');
         micButtonSubmittedRef.current = false;
         return;
       }
@@ -1649,8 +1650,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
       let data, error;
       try {
-        console.log('[executeTeacherLoop] 🌐 Making API call to conversational-ai...');
-        console.log('[executeTeacherLoop] 📤 Payload:', {
+        logger.log('[executeTeacherLoop] 🌐 Making API call to conversational-ai...');
+        logger.log('[executeTeacherLoop] 📤 Payload:', {
           userMessage: transcript.substring(0, 50) + '...',
           userLevel: user_level,
           hasConversationHistory: !!conversationContext
@@ -1669,7 +1670,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         data = response.data;
         error = response.error;
 
-        console.log('[executeTeacherLoop] 📥 API Response received:', {
+        logger.log('[executeTeacherLoop] 📥 API Response received:', {
           hasData: !!data,
           hasError: !!error,
           errorMessage: error?.message,
@@ -1688,7 +1689,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       // 🔧 FIX #9: Comprehensive error handling with user-friendly messages
       if (error) {
         // 🔧 iOS DEBUG: Log detailed error for debugging iOS-specific issues
-        console.error('🔴 Supabase function error:', {
+        logger.error('🔴 Supabase function error:', {
           message: error.message,
           name: error.name,
           code: (error as any).code,
@@ -1772,9 +1773,9 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       // Note: v36.3 - Removed the else-if branch, we already stripped ALL tips above
 
       // Add the AI's response to chat (using finalResponse which may have tip stripped)
-      console.log('[executeTeacherLoop] 💬 Adding AI response to chat:', finalResponse?.substring(0, 50) + '...');
+      logger.log('[executeTeacherLoop] 💬 Adding AI response to chat:', finalResponse?.substring(0, 50) + '...');
       await addAssistantMessage(finalResponse, 'feedback');
-      console.log('[executeTeacherLoop] ✅ AI response added successfully');
+      logger.log('[executeTeacherLoop] ✅ AI response added successfully');
 
       // Update conversation context
       setConversationContext(prev => `${prev}\nUser: ${transcript}\nAssistant: ${aiResponse.response}`.trim());
@@ -1792,7 +1793,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
             setFloatingXP(xpToAward);
           }
         })
-        .catch(e => console.warn('[SpeakingApp] v67: XP award failed:', e));
+        .catch(e => logger.warn('[SpeakingApp] v67: XP award failed:', e));
 
     } catch (error) {
       // Phase 1.4: Add nested error handling to prevent unhandled promise rejection
@@ -1910,7 +1911,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         // BUT only if mic wasn't started in the last 3 seconds (prevent overlap)
         const timeSinceMicStart = Date.now() - lastMicStartTimeRef.current;
         if (flowState === 'LISTENING' && micState === 'idle' && timeSinceMicStart > 3000) {
-          console.log('[SpeakingApp] Watchdog: Mic idle for 2s, retrying (last start was', timeSinceMicStart, 'ms ago)');
+          logger.log('[SpeakingApp] Watchdog: Mic idle for 2s, retrying (last start was', timeSinceMicStart, 'ms ago)');
           // Auto-retry mic start
           (async () => {
             try {
@@ -1926,7 +1927,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
             }
           })();
         } else if (timeSinceMicStart <= 3000) {
-          console.log('[SpeakingApp] Watchdog: Skipping retry - mic was started', timeSinceMicStart, 'ms ago');
+          logger.log('[SpeakingApp] Watchdog: Skipping retry - mic was started', timeSinceMicStart, 'ms ago');
         }
       }, 2000);
       return () => clearTimeout(timer);
@@ -1936,7 +1937,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     if (flowState === 'PROCESSING') {
       const timer = setTimeout(() => {
         if (flowState === 'PROCESSING' && isMountedRef.current) {
-          console.warn('[SpeakingApp] Watchdog: PROCESSING stuck for 20s, forcing to LISTENING');
+          logger.warn('[SpeakingApp] Watchdog: PROCESSING stuck for 20s, forcing to LISTENING');
           forceToListening('processing-watchdog');
         }
       }, 20000); // 20 second timeout
@@ -1985,7 +1986,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     const handleVisibilityChange = () => {
       if (document.hidden) {
         // v67: App going to background
-        console.log('[SpeakingApp] v67: App backgrounded, pausing...');
+        logger.log('[SpeakingApp] v67: App backgrounded, pausing...');
 
         // Stop any active recording
         if (flowState === 'LISTENING') {
@@ -2013,7 +2014,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         }
       } else {
         // v67: App coming to foreground
-        console.log('[SpeakingApp] v67: App foregrounded, resuming...');
+        logger.log('[SpeakingApp] v67: App foregrounded, resuming...');
 
         // Page is visible - resume audio context if needed
         if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
@@ -2030,8 +2031,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
             const { timestamp } = JSON.parse(backup);
             // If more than 5 minutes, reset to clean state
             if (Date.now() - timestamp > 300000) {
-              console.log('[SpeakingApp] v67: Session expired, triggering nuclear reset');
-              nuclearReset().catch(e => console.warn('Nuclear reset failed:', e));
+              logger.log('[SpeakingApp] v67: Session expired, triggering nuclear reset');
+              nuclearReset().catch(e => logger.warn('Nuclear reset failed:', e));
             }
             sessionStorage.removeItem('speaking_state_backup');
           }
@@ -2043,7 +2044,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
     const handleAudioInterruption = () => {
       // Handle audio interruptions (phone calls, etc.)
-      console.log('[SpeakingApp] v67: Audio interruption detected');
+      logger.log('[SpeakingApp] v67: Audio interruption detected');
       if (TTSManager.isSpeaking()) {
         TTSManager.stop();
       }
@@ -2227,8 +2228,8 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
     // v67: Setup watchdog to detect stuck states
     speechWatchdog.onStuck(() => {
-      console.error('[SpeakingApp] v67: Watchdog triggered - forcing recovery');
-      nuclearReset().catch(e => console.warn('Nuclear reset failed:', e));
+      logger.error('[SpeakingApp] v67: Watchdog triggered - forcing recovery');
+      nuclearReset().catch(e => logger.warn('Nuclear reset failed:', e));
     });
 
     // 🔧 PRODUCTION FIX: Ensure microphone is ready when entering Speaking page
@@ -2574,7 +2575,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
               // v68: Debounce rapid clicks to prevent duplicate AI responses
               const now = Date.now();
               if (now - lastFabClickRef.current < FAB_DEBOUNCE_MS) {
-                console.log('[FAB] Debounced rapid click');
+                logger.log('[FAB] Debounced rapid click');
                 return;
               }
               lastFabClickRef.current = now;
@@ -2625,7 +2626,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
                 // 🎯 DEFINITIVE FIX: Capture and submit DIRECTLY - no async waiting, no stale closures
                 // v68: Use ref instead of state to avoid stale closure issues
                 const capturedTranscript = interimCaptionRef.current?.trim() || '';
-                console.log('[SpeakingApp] Mic tapped during LISTENING. Captured:', capturedTranscript);
+                logger.log('[SpeakingApp] Mic tapped during LISTENING. Captured:', capturedTranscript);
 
                 // Clear caption immediately to signal we're handling this
                 setInterimCaption('');
@@ -2645,7 +2646,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
                   try {
                     await executeTeacherLoop(capturedTranscript);
                   } catch (err: any) {
-                    console.error('[SpeakingApp] Submit failed:', err);
+                    logger.error('[SpeakingApp] Submit failed:', err);
                     toast({
                       title: "AI couldn't respond",
                       description: err?.message || "Please try again",
@@ -2655,7 +2656,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
                   }
                 } else {
                   // No text captured - just stay in listening
-                  console.log('[SpeakingApp] No text captured from mic button press');
+                  logger.log('[SpeakingApp] No text captured from mic button press');
                   micButtonSubmittedRef.current = false; // Reset flag since we didn't actually submit
                 }
               } else if (flowState === 'READING' || flowState === 'PROCESSING') {

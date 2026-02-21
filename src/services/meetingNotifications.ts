@@ -8,6 +8,7 @@
 import { MeetingsService, type AdminMeeting } from './meetingsService';
 import { LocalNotifications } from '@capacitor/local-notifications';
 import { Capacitor } from '@capacitor/core';
+import { logger } from '@/lib/logger';
 
 // Safe localStorage wrapper
 const safeStorage = {
@@ -114,7 +115,7 @@ export class MeetingNotificationsService {
         this.notificationPermission = result.display;
         return result.display === 'granted';
       } catch (error) {
-        console.error('Error requesting native notification permission:', error);
+        logger.error('Error requesting native notification permission:', error);
         return false;
       }
     } else {
@@ -246,7 +247,7 @@ export class MeetingNotificationsService {
           ]
         });
       } catch (error) {
-        console.error('Error showing native notification:', error);
+        logger.error('Error showing native notification:', error);
       }
     } else {
       // Browser notification (web fallback)
@@ -282,7 +283,7 @@ export class MeetingNotificationsService {
           }
         };
       } catch (error) {
-        console.error('Error showing browser notification:', error);
+        logger.error('Error showing browser notification:', error);
       }
     }
   }

@@ -2,6 +2,7 @@ import { configureUtterance } from '@/config/voice';
 import { BilingualTTS } from './BilingualTTS';
 import { Capacitor } from '@capacitor/core';
 import { UnifiedTTSService } from '@/services/UnifiedTTSService';
+import { logger } from '@/lib/logger';
 
 // Check if running on native platform
 const isNativePlatform = () => Capacitor.isNativePlatform();
@@ -152,7 +153,7 @@ class TomasVoiceService {
           this.emitEvent('avatar:talking:end');
           resolve({ durationMs: duration });
         } catch (error) {
-          console.error('[TomasVoice] Native speak error:', error);
+          logger.error('[TomasVoice] Native speak error:', error);
           this.emitEvent('speech:end', { text, error });
           this.emitEvent('avatar:talking:end');
           resolve({ durationMs: 0 });

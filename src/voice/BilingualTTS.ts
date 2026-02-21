@@ -1,6 +1,7 @@
 import { getBestEnglishVoice, getBestTurkishVoice, configureUtterance, VOICE_CONFIG } from '@/config/voice';
 import { Capacitor } from '@capacitor/core';
 import { UnifiedTTSService } from '@/services/UnifiedTTSService';
+import { logger } from '@/lib/logger';
 
 // Feature flag for bilingual TTS (controlled by voice upgrade)
 const TTS_MULTI_LANG_ENABLED = () => VOICE_CONFIG.UPGRADE_ENABLED;
@@ -320,7 +321,7 @@ class BilingualTTSService {
           const duration = Date.now() - startTime;
           resolve(duration);
         } catch (error) {
-          console.error('[BilingualTTS] Native speak error:', error);
+          logger.error('[BilingualTTS] Native speak error:', error);
           resolve(0);
         }
       });
@@ -400,7 +401,7 @@ class BilingualTTSService {
         });
         return { durationMs: Date.now() - startTime, segmentsSpoken: 1 };
       } catch (error) {
-        console.error('[BilingualTTS] Native fallback error:', error);
+        logger.error('[BilingualTTS] Native fallback error:', error);
         return { durationMs: 0, segmentsSpoken: 0 };
       }
     }

@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 // Robust answer evaluator for all modules - Module 51 proven logic
 // v53: THE GODLY FIX - Perfect balance between acceptance and grammar checking
 // - Removed "i" from FILLERS (it's a pronoun, not a filler!)
@@ -182,7 +183,7 @@ export function evaluateAnswer(userInput: string, opt: EvalOptions): boolean {
 
     if (hasWrongForm && hasCorrectForm) {
       // v58: Log rejection for debugging
-      console.log(`[evaluateAnswer] v58 REJECTED: User said "${check.wrongStr}" but expected "${check.correctStr}"`);
+      logger.log(`[evaluateAnswer] v58 REJECTED: User said "${check.wrongStr}" but expected "${check.correctStr}"`);
       return false; // Grammar error = WRONG
     }
   }
@@ -230,14 +231,14 @@ export function evaluateAnswer(userInput: string, opt: EvalOptions): boolean {
     const expectedHasVerb = verbPatterns.some(r => r.test(expectedLower));
     const userHasVerb = verbPatterns.some(r => r.test(userLower));
     if (expectedHasVerb && !userHasVerb) {
-      console.log(`[evaluateAnswer] v76 REJECTED: Expected has verb but user doesn't`);
+      logger.log(`[evaluateAnswer] v76 REJECTED: Expected has verb but user doesn't`);
       return false;
     }
   }
 
   // v76: Minimum token count — if expected has 3+ tokens, user must have at least expected-1
   if (a.length >= 3 && b.length < a.length - 1) {
-    console.log(`[evaluateAnswer] v76 REJECTED: Too few tokens (${b.length} vs expected ${a.length})`);
+    logger.log(`[evaluateAnswer] v76 REJECTED: Too few tokens (${b.length} vs expected ${a.length})`);
     return false;
   }
 

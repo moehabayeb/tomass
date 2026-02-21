@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { logger } from '@/lib/logger';
 
 // D-ID agent interface for better type safety
 interface DIDAgent {
@@ -84,7 +85,7 @@ export default function DIDAvatar({
 
       // Set up script load timeout
       timeoutId = setTimeout(() => {
-        console.warn('[DIDAvatar] Script load timeout - falling back to animated avatar');
+        logger.warn('[DIDAvatar] Script load timeout - falling back to animated avatar');
         setAgentFailed(true);
         // Clean up script if it's still loading
         if (script.parentNode) {
@@ -102,7 +103,7 @@ export default function DIDAvatar({
 
         // Wait for agent to initialize (with additional timeout protection)
         const initTimeoutId = setTimeout(() => {
-          console.warn('[DIDAvatar] Agent initialization timeout - falling back to animated avatar');
+          logger.warn('[DIDAvatar] Agent initialization timeout - falling back to animated avatar');
           setAgentFailed(true);
         }, 3000);
 
@@ -125,19 +126,19 @@ export default function DIDAvatar({
                 // Move it into our container
                 containerRef.current.appendChild(didElement);
                 setAgentLoaded(true);
-                console.log('[DIDAvatar] Agent loaded successfully');
+                logger.log('[DIDAvatar] Agent loaded successfully');
               } else {
                 setAgentLoaded(true);
-                console.log('[DIDAvatar] Agent loaded (no container move needed)');
+                logger.log('[DIDAvatar] Agent loaded (no container move needed)');
               }
             } else {
               clearTimeout(initTimeoutId);
-              console.warn('[DIDAvatar] Agent not found on window - falling back');
+              logger.warn('[DIDAvatar] Agent not found on window - falling back');
               setAgentFailed(true);
             }
           } catch (error) {
             clearTimeout(initTimeoutId);
-            console.error('[DIDAvatar] Agent initialization error:', error);
+            logger.error('[DIDAvatar] Agent initialization error:', error);
             setAgentFailed(true);
           }
         }, 2000);
@@ -149,7 +150,7 @@ export default function DIDAvatar({
           clearTimeout(timeoutId);
           timeoutId = null;
         }
-        console.error('[DIDAvatar] Script load error:', event);
+        logger.error('[DIDAvatar] Script load error:', event);
         setAgentFailed(true);
       };
 
@@ -160,7 +161,7 @@ export default function DIDAvatar({
       if (timeoutId) {
         clearTimeout(timeoutId);
       }
-      console.error('[DIDAvatar] Initialization error:', error);
+      logger.error('[DIDAvatar] Initialization error:', error);
       setAgentFailed(true);
     }
   };

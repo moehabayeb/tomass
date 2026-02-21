@@ -46,6 +46,7 @@ import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { startRecording as micStartRecording, stopRecording as micStopRecording, cleanup as micCleanup, releasePersistentStream } from '@/lib/audio/micEngine';
 // 🛡️ Microphone Guardian: Ensures bulletproof mic reliability
 import { microphoneGuardian } from '../services/MicrophoneGuardian';
+import { logger } from '@/lib/logger';
 // 🚀 BUNDLE OPTIMIZATION: Dynamic module loading to reduce initial bundle size by ~80%
 // Modules are now loaded on-demand when user accesses a specific lesson
 
@@ -175,7 +176,7 @@ async function loadModuleData(moduleId: number): Promise<ModuleData | null> {
   } catch (error) {
     // Only log errors in development
     if (import.meta.env.DEV) {
-      console.error(`Error loading module ${moduleId}:`, error);
+      logger.error(`Error loading module ${moduleId}:`, error);
     }
     return null;
   }
@@ -271,12 +272,12 @@ function saveModuleProgress(userId: string | undefined, level: string, moduleId:
     doSave();
   } catch (error) {
     // v74: Retry once after 2s; show toast on persistent failure
-    console.warn('[LessonsApp] saveModuleProgress failed, retrying in 2s:', error);
+    logger.warn('[LessonsApp] saveModuleProgress failed, retrying in 2s:', error);
     setTimeout(() => {
       try {
         doSave();
       } catch (retryError) {
-        console.error('[LessonsApp] saveModuleProgress retry failed:', retryError);
+        logger.error('[LessonsApp] saveModuleProgress retry failed:', retryError);
         // Dynamic import of sonner to show toast
         import('sonner').then(({ toast }) => {
           toast.warning('Progress could not be saved. Your work is still available locally.', { duration: 4000 });
@@ -982,7 +983,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
   // PRODUCTION FIX: Listen for auth sync completion event
   useEffect(() => {
     const handleSyncComplete = (event: CustomEvent) => {
-      console.log('[LessonsApp] Auth sync complete event received:', event.detail);
+      logger.log('[LessonsApp] Auth sync complete event received:', event.detail);
       setSyncComplete(true);
     };
 
@@ -1011,14 +1012,14 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
                             safeLocalStorage().getItem('lastTestResult');
 
       if (localPlacement) {
-        console.log('[LessonsApp] Found local placement data');
+        logger.log('[LessonsApp] Found local placement data');
         setHasPlacementTest(true);
         return;
       }
 
       // Guest users - if no localStorage, require placement test
       if (!isAuthenticated || !user?.id) {
-        console.log('[LessonsApp] Guest user without placement test');
+        logger.log('[LessonsApp] Guest user without placement test');
         setHasPlacementTest(false);
         setShowPlacementRequired(true);
         return;
@@ -1027,12 +1028,12 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
       // PRODUCTION FIX: For authenticated users, WAIT for sync to complete
       // This prevents the race condition where we check DB before sync finishes
       if (!syncComplete) {
-        console.log('[LessonsApp] Waiting for auth sync to complete before checking placement...');
+        logger.log('[LessonsApp] Waiting for auth sync to complete before checking placement...');
         return; // Will re-run when syncComplete becomes true
       }
 
       // Authenticated users - check database (sync is now complete)
-      console.log('[LessonsApp] Checking database for placement test...');
+      logger.log('[LessonsApp] Checking database for placement test...');
       try {
         const { data, error } = await withTimeout(
           supabase
@@ -1044,21 +1045,21 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
         );
 
         if (error) {
-          console.error('[LessonsApp] Error checking placement test:', error);
+          logger.error('[LessonsApp] Error checking placement test:', error);
           setHasPlacementTest(false);
           setShowPlacementRequired(true);
           return;
         }
 
         const hasTest = (data && data.length > 0);
-        console.log('[LessonsApp] Database placement test check result:', hasTest);
+        logger.log('[LessonsApp] Database placement test check result:', hasTest);
         setHasPlacementTest(hasTest);
 
         if (!hasTest) {
           setShowPlacementRequired(true);
         }
       } catch (err) {
-        console.error('[LessonsApp] Placement test check failed:', err);
+        logger.error('[LessonsApp] Placement test check failed:', err);
         setHasPlacementTest(false);
         setShowPlacementRequired(true);
       }
@@ -1097,7 +1098,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
 
         // 🔧 FINAL FIX: Debug logging (development only)
         if (import.meta.env.DEV) {
-          console.log('🔍 Module load complete:', {
+          logger.log('🔍 Module load complete:', {
             selectedModule,
             hasData: !!data,
             isMounted: isMountedRef.current,
@@ -1108,7 +1109,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
         // 🔧 FINAL FIX: Relaxed guard - only check mounted, not load ID
         // Load ID check was blocking legitimate updates
         if (!isMountedRef.current) {
-          if (import.meta.env.DEV) console.warn('⚠️ Component unmounted during load - skipping state update');
+          if (import.meta.env.DEV) logger.warn('⚠️ Component unmounted during load - skipping state update');
           return;
         }
 
@@ -1124,12 +1125,12 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
             setModuleData(null);
           }
         } else {
-          if (import.meta.env.DEV) console.log('✅ Setting module data for module', selectedModule);
+          if (import.meta.env.DEV) logger.log('✅ Setting module data for module', selectedModule);
           setModuleData(data);
         }
       } catch (error: any) {
         // 🔧 FINAL FIX: Only check mounted, allow error state update
-        if (import.meta.env.DEV) console.error('Module load error:', error);
+        if (import.meta.env.DEV) logger.error('Module load error:', error);
         if (!isMountedRef.current) return;
         // Set error state for UI display
         setModuleLoadError(error.message || 'Failed to load module');
@@ -1138,7 +1139,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
         // 🔧 FINAL FIX: ALWAYS clear loading state if mounted
         // Don't check load ID - loading MUST be cleared
         if (isMountedRef.current) {
-          if (import.meta.env.DEV) console.log('✅ Clearing loading state for module', selectedModule);
+          if (import.meta.env.DEV) logger.log('✅ Clearing loading state for module', selectedModule);
           setIsLoadingModule(false);
         }
       }
@@ -1182,9 +1183,9 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
   // Handles React.StrictMode remount by setting isMountedRef = true on EVERY mount
   useEffect(() => {
     isMountedRef.current = true;
-    if (import.meta.env.DEV) console.log('🔍 Component mounted, isMountedRef =', true);
+    if (import.meta.env.DEV) logger.log('🔍 Component mounted, isMountedRef =', true);
     return () => {
-      if (import.meta.env.DEV) console.log('🔍 Component unmounting, isMountedRef =', false);
+      if (import.meta.env.DEV) logger.log('🔍 Component unmounting, isMountedRef =', false);
       isMountedRef.current = false;
     };
   }, []);
@@ -1238,7 +1239,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
       const customEvent = e as CustomEvent;
       const transcript = customEvent.detail?.transcript;
       if (transcript && speakStatus === 'recording') {
-        console.log('[LessonsApp] Speech detected via interim:', transcript.substring(0, 30));
+        logger.log('[LessonsApp] Speech detected via interim:', transcript.substring(0, 30));
         setIsSpeechDetected(true);
       }
     };
@@ -1305,14 +1306,14 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
     let abortHandler: (() => void) | null = null;
     if (abortSignal) {
       abortHandler = () => {
-        console.log('[recognizeOnce] Abort signal received, stopping recording...');
+        logger.log('[recognizeOnce] Abort signal received, stopping recording...');
         micStopRecording();  // 🔧 v22: Use renamed micEngine function
       };
       abortSignal.addEventListener('abort', abortHandler, { once: true });
     }
 
     try {
-      console.log('[recognizeOnce] 🔧 v22: Starting micEngine recording (same engine as SpeakingApp)...');
+      logger.log('[recognizeOnce] 🔧 v22: Starting micEngine recording (same engine as SpeakingApp)...');
 
       // Use micEngine's block-and-wait pattern (same as SpeakingApp)
       // This is the PROVEN working approach - no callback race conditions!
@@ -1320,11 +1321,11 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
       const result = await micStartRecording({ bypassDebounce: true });
 
       const transcript = result?.transcript?.trim() || '';
-      console.log('[recognizeOnce] Got transcript:', transcript || '(empty)');
+      logger.log('[recognizeOnce] Got transcript:', transcript || '(empty)');
 
       return transcript;
     } catch (err: any) {
-      console.error('[recognizeOnce] Error:', err);
+      logger.error('[recognizeOnce] Error:', err);
 
       // If aborted, throw abort error
       if (abortSignal?.aborted) {
@@ -1353,7 +1354,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
     speechRunIdRef.current = null;
 
     if (speakStatus !== 'idle') {
-      console.log('[LessonsApp] Mic cleanup skipped - currently recording:', speakStatus);
+      logger.log('[LessonsApp] Mic cleanup skipped - currently recording:', speakStatus);
       return; // Don't interrupt active recording with mic operations
     }
 
@@ -1375,7 +1376,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
       // 🛡️ Microphone Guardian: Ensure mic is ready before user needs it
       microphoneGuardian.ensureReady().then(status => {
         if (status !== 'ready') {
-          console.warn('[LessonsApp] Microphone not ready:', status);
+          logger.warn('[LessonsApp] Microphone not ready:', status);
           // Show feedback to user if mic isn't ready
           const message = microphoneGuardian.getStatusMessage();
           if (message) {
@@ -1383,7 +1384,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
             setFeedbackType('info');
           }
         } else {
-          console.log('[LessonsApp] Microphone ready for speaking practice');
+          logger.log('[LessonsApp] Microphone ready for speaking practice');
         }
       }).catch(() => {});
     }
@@ -1667,7 +1668,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
     for (const check of criticalGrammarErrors) {
       if (check.wrong.test(spokenLower) && check.correct.test(targetLower)) {
         // REJECT - this is a fundamental grammar error
-        console.log(`[isAnswerCorrect] v58 REJECTED: User said "${check.wrongText}" but expected "${check.correctText}"`);
+        logger.log(`[isAnswerCorrect] v58 REJECTED: User said "${check.wrongText}" but expected "${check.correctText}"`);
         setFeedback(`Grammar error: "${check.wrongText}" should be "${check.correctText}"`);
         setFeedbackType('error');
         setCurrentAttemptNumber(prev => prev + 1);
@@ -2495,11 +2496,11 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
 
   // Single-source speaking start with internal guard
   async function startSpeakingFlow() {
-    console.log('[startSpeakingFlow] Starting, speakStatus:', speakStatus, 'phase:', currentPhase);
+    logger.log('[startSpeakingFlow] Starting, speakStatus:', speakStatus, 'phase:', currentPhase);
 
     // block parallel runs here (not via disabled button)
     if (speakStatus !== 'idle' || currentPhase !== 'speaking' || viewState !== 'lesson') {
-      console.log('[startSpeakingFlow] Guard blocked - returning');
+      logger.log('[startSpeakingFlow] Guard blocked - returning');
       return;
     }
 
@@ -2510,14 +2511,14 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
       // 🛡️ Pre-flight check: Ensure microphone is ready before recording
       const preflight = await microphoneGuardian.preflightCheck();
       if (!preflight.ready) {
-        console.warn('[startSpeakingFlow] Pre-flight failed:', preflight.status);
+        logger.warn('[startSpeakingFlow] Pre-flight failed:', preflight.status);
         setFeedback(preflight.userMessage);
         setFeedbackType('error');
         return;
       }
 
       setSpeakStatus('recording');
-      console.log('[startSpeakingFlow] Set to recording');
+      logger.log('[startSpeakingFlow] Set to recording');
 
       // 🔧 v34: DON'T start VAD - it blocks Capacitor's mic access on Android!
       // VAD opens its own MediaStream which prevents Capacitor from accessing the mic.
@@ -2538,19 +2539,19 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
 
       // Start monitoring for issues during recording
       microphoneGuardian.startMonitoring((issue, message) => {
-        console.warn('[startSpeakingFlow] Mic issue during recording:', issue, message);
+        logger.warn('[startSpeakingFlow] Mic issue during recording:', issue, message);
         // Don't interrupt recording, just log - let it finish naturally
       });
 
       await unlockAudioOnce();          // iOS resume AudioContext
-      console.log('[startSpeakingFlow] Calling recognizeOnce()...');
+      logger.log('[startSpeakingFlow] Calling recognizeOnce()...');
       const transcript = await recognizeOnce(); // from our robust ASR helper
-      console.log('[startSpeakingFlow] recognizeOnce returned:', transcript);
+      logger.log('[startSpeakingFlow] recognizeOnce returned:', transcript);
 
       // PRODUCTION FIX: Check for empty/null transcript with proper user feedback
       // Instead of silently returning or showing "Not quite right", give clear guidance
       if (!transcript || transcript.trim() === '') {
-        console.log('[startSpeakingFlow] Empty transcript - showing feedback');
+        logger.log('[startSpeakingFlow] Empty transcript - showing feedback');
         microphoneGuardian.stopMonitoring();
         window.removeEventListener('speech:interim', handleInterim); // 🔧 v34: Cleanup listener
         if (recordingTimerRef.current) { clearInterval(recordingTimerRef.current); recordingTimerRef.current = null; } // 🔧 v34: Stop timer
@@ -2568,12 +2569,12 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
       setIsSpeechDetected(false);
 
       setSpeakStatus('evaluating');
-      console.log('[startSpeakingFlow] Evaluating transcript:', transcript);
+      logger.log('[startSpeakingFlow] Evaluating transcript:', transcript);
 
       // Evaluate against the CURRENT card only
       const { prompt, target } = getCurrentPromptAndTarget();
       const ok = isExactlyCorrect(transcript, target);
-      console.log('[startSpeakingFlow] Evaluation result:', ok, 'target was:', target);
+      logger.log('[startSpeakingFlow] Evaluation result:', ok, 'target was:', target);
 
       if (ok) {
         setCorrectAnswers(prev => prev + 1);
@@ -2583,17 +2584,17 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
         // via addXP(100, 'grammar') in celebrateAndAdvance(), preventing double XP on last question.
         incrementTotalExercises();
         setSpeakStatus('advancing');
-        console.log('[startSpeakingFlow] Correct! Calling advanceSpeakingOnce()');
+        logger.log('[startSpeakingFlow] Correct! Calling advanceSpeakingOnce()');
         advanceSpeakingOnce();              // centralized progression
       } else {
         setFeedback(`❌ Not quite right. The correct answer is: "${target}"`);
         setFeedbackType('error');
         setSpeakStatus('idle');
-        console.log('[startSpeakingFlow] Wrong answer, allowing retry');
+        logger.log('[startSpeakingFlow] Wrong answer, allowing retry');
       }
     } catch (error: any) {
       // Speech recognition error - cleanup and show feedback
-      console.error('[startSpeakingFlow] Error:', error);
+      logger.error('[startSpeakingFlow] Error:', error);
 
       // Stop mic monitoring on error
       microphoneGuardian.stopMonitoring();
@@ -2621,24 +2622,24 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
   // Stop speaking flow when user taps mic during recording
   // This allows users to manually stop and submit their speech
   async function stopSpeakingFlow() {
-    console.log('[stopSpeakingFlow] Stopping, current speakStatus:', speakStatus);
+    logger.log('[stopSpeakingFlow] Stopping, current speakStatus:', speakStatus);
 
     if (speakStatus !== 'recording') {
-      console.log('[stopSpeakingFlow] Not recording - ignoring');
+      logger.log('[stopSpeakingFlow] Not recording - ignoring');
       return;
     }
 
     try {
       // 🔧 v24: Use micEngine to stop recording (matches recognizeOnce which uses micStartRecording)
       // This fixes the engine mismatch where we started with micEngine but tried to stop with unifiedSpeechRecognition
-      console.log('[stopSpeakingFlow] Calling micStopRecording()');
+      logger.log('[stopSpeakingFlow] Calling micStopRecording()');
       await micStopRecording();
 
       // The micEngine will resolve the recognizeOnce() promise with current transcript
       // and the flow will continue in startSpeakingFlow
-      console.log('[stopSpeakingFlow] Stop completed - flow will continue in startSpeakingFlow');
+      logger.log('[stopSpeakingFlow] Stop completed - flow will continue in startSpeakingFlow');
     } catch (error) {
-      console.error('[stopSpeakingFlow] Error:', error);
+      logger.error('[stopSpeakingFlow] Error:', error);
       // 🔧 v34: VAD removed - cleanup handled in startSpeakingFlow
       setIsSpeechDetected(false);
       setSpeakStatus('idle');
@@ -2695,7 +2696,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
 
   // ===== v40 GOD-TIER: Turkish option to start with A1 directly =====
   const handleStartA1Direct = useCallback(async () => {
-    console.log('[LessonsApp] v40: User chose A1 direct start (Turkish option)');
+    logger.log('[LessonsApp] v40: User chose A1 direct start (Turkish option)');
 
     // Create minimal test result with A1
     const a1Result = {
@@ -2747,9 +2748,9 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
           p_pronunciation_issues: [],
           p_test_type: 'placement'
         });
-        console.log('[LessonsApp] v40: A1 result saved to database');
+        logger.log('[LessonsApp] v40: A1 result saved to database');
       } catch (e) {
-        console.log('[LessonsApp] v40: DB save failed (OK, localStorage is primary):', e);
+        logger.log('[LessonsApp] v40: DB save failed (OK, localStorage is primary):', e);
       }
     }
 
@@ -2757,7 +2758,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
     setHasPlacementTest(true);
     setShowPlacementRequired(false);
     setSelectedLevel('A1');
-    console.log('[LessonsApp] v40: A1 direct start complete - user can now access A1 lessons');
+    logger.log('[LessonsApp] v40: A1 direct start complete - user can now access A1 lessons');
   }, [user, isAuthenticated]);
 
   // ===== RENDER LOGIC =====
@@ -3393,10 +3394,10 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
                             onClick={() => {
                               // 🔧 v32: No early return guard - always handle clicks
                               if (speakStatus === 'recording') {
-                                console.log('[MicButton] v32: Stopping recording...');
+                                logger.log('[MicButton] v32: Stopping recording...');
                                 stopSpeakingFlow();
                               } else {
-                                console.log('[MicButton] v32: Starting recording...');
+                                logger.log('[MicButton] v32: Starting recording...');
                                 startSpeakingFlow();
                               }
                             }}

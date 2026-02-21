@@ -5,6 +5,7 @@
  */
 
 import * as Sentry from "@sentry/react";
+import { logger } from '@/lib/logger';
 
 let isInitialized = false;
 
@@ -67,7 +68,7 @@ export function initSentry() {
       if (import.meta.env.MODE === 'development') {
         // Only log in dev mode
         if (import.meta.env.DEV) {
-          console.error('Sentry captured error:', hint.originalException || hint.syntheticException);
+          logger.error('Sentry captured error:', hint.originalException || hint.syntheticException);
         }
         return null; // Don't send to Sentry in dev
       }
