@@ -7,6 +7,8 @@ import { Mic, Volume2, ArrowLeft, CheckCircle, AlertCircle } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast';
 import { useTextToSpeech } from '@/hooks/useTextToSpeech';
 import { supabase } from '@/integrations/supabase/client';
+import { hasAIConsent, needsAIConsentDialog } from '@/lib/aiConsent';
+import { AIConsentModal } from '@/components/AIConsentModal';
 
 interface Question {
   id: number;
@@ -142,7 +144,8 @@ export default function PlacementTest({ onBack, onComplete }: PlacementTestProps
   const [finalLevel, setFinalLevel] = useState<string>('');
   const [recommendedModule, setRecommendedModule] = useState<number>(1);
   const [testProgress, setTestProgress] = useState(0);
-  
+  const [showAIConsent, setShowAIConsent] = useState(false);
+
   const { toast } = useToast();
   const { speak, isSpeaking } = useTextToSpeech();
 
@@ -169,7 +172,32 @@ export default function PlacementTest({ onBack, onComplete }: PlacementTestProps
     setSelectedOption(optionIndex);
   };
 
+  const handleAIConsentResult = (granted: boolean) => {
+    setShowAIConsent(false);
+    if (!granted) {
+      toast({
+        title: "Speaking exercises unavailable",
+        description: "AI data processing consent is required for speaking questions.",
+        variant: "destructive"
+      });
+    }
+  };
+
   const startRecording = async () => {
+    // Check AI consent before recording (audio sent to OpenAI Whisper)
+    if (!hasAIConsent()) {
+      if (needsAIConsentDialog()) {
+        setShowAIConsent(true);
+        return;
+      }
+      toast({
+        title: "AI Consent Required",
+        description: "Please enable AI data processing in Settings to use speaking exercises.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
       setIsRecording(true);
       
@@ -502,6 +530,11 @@ export default function PlacementTest({ onBack, onComplete }: PlacementTestProps
           </CardContent>
         </Card>
       </div>
+
+      <AIConsentModal
+        isOpen={showAIConsent}
+        onConsent={handleAIConsentResult}
+      />
     </div>
   );
 }

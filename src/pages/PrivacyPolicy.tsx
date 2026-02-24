@@ -30,7 +30,7 @@ export default function PrivacyPolicy() {
           </div>
           <div>
             <h1 className="text-4xl font-extrabold">Privacy Policy</h1>
-            <p className="text-slate-300">Last updated: January 31, 2025</p>
+            <p className="text-slate-300">Last updated: February 24, 2026</p>
           </div>
         </div>
 
@@ -165,6 +165,32 @@ export default function PrivacyPolicy() {
               <ul className="list-disc list-inside space-y-2 ml-4">
                 <li>Apple Privacy Policy: <a href="https://www.apple.com/legal/privacy" className="text-blue-400 hover:underline">apple.com/legal/privacy</a></li>
                 <li>Google Privacy Policy: <a href="https://policies.google.com/privacy" className="text-blue-400 hover:underline">policies.google.com/privacy</a></li>
+              </ul>
+
+              <h3 className="text-xl font-semibold text-white mb-3 mt-6">4.5 OpenAI (AI Language Processing)</h3>
+              <p className="leading-relaxed mb-3">
+                We use OpenAI's technology to power our AI-assisted speaking practice features:
+              </p>
+              <ul className="list-disc list-inside space-y-2 ml-4">
+                <li><strong>Speech-to-text transcription</strong> (Whisper) — converts your spoken responses to text for analysis</li>
+                <li><strong>Conversational AI feedback</strong> (GPT-4o-mini) — provides grammar corrections and conversation responses</li>
+              </ul>
+              <p className="leading-relaxed mt-3 mb-3">
+                <strong>Data sent to OpenAI:</strong>
+              </p>
+              <ul className="list-disc list-inside space-y-2 ml-4">
+                <li>Your transcribed speech responses (text only, not audio recordings)</li>
+                <li>Your English proficiency level (beginner, intermediate, or advanced)</li>
+                <li>Conversation context within the current session</li>
+              </ul>
+              <p className="leading-relaxed mt-3 mb-3">
+                OpenAI processes this data solely to provide instant language feedback. We use OpenAI's
+                API with data processing agreements in place. Your personal information (email, name,
+                account details) is never sent to OpenAI.
+              </p>
+              <ul className="list-disc list-inside space-y-2 ml-4">
+                <li>Website: <a href="https://openai.com" className="text-blue-400 hover:underline">openai.com</a></li>
+                <li>Privacy Policy: <a href="https://openai.com/privacy" className="text-blue-400 hover:underline">openai.com/privacy</a></li>
               </ul>
             </section>
 

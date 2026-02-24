@@ -49,6 +49,10 @@
 	<string>This app needs microphone access for speech recognition during English lessons to help you practice pronunciation.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>This app uses speech recognition to evaluate your pronunciation and provide feedback on your English speaking skills.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Tomas Hoca needs camera access so you can take a photo for your profile picture.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Tomas Hoca needs photo library access so you can choose a profile picture.</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>

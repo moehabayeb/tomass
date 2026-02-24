@@ -237,26 +237,54 @@ export default function Profile() {
     }
   };
 
+  const compressImage = (file: File, maxDimension = 800, quality = 0.85): Promise<Blob> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+
+      img.onload = () => {
+        try {
+          URL.revokeObjectURL(url);
+
+          let { width, height } = img;
+          if (width > maxDimension || height > maxDimension) {
+            if (width > height) {
+              height = Math.round((height * maxDimension) / width);
+              width = maxDimension;
+            } else {
+              width = Math.round((width * maxDimension) / height);
+              height = maxDimension;
+            }
+          }
+
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) { reject(new Error('Canvas context unavailable')); return; }
+
+          ctx.drawImage(img, 0, 0, width, height);
+          canvas.toBlob(
+            (blob) => blob ? resolve(blob) : reject(new Error('Compression failed')),
+            'image/jpeg',
+            quality
+          );
+        } catch (err) { reject(err); }
+      };
+
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Failed to load image')); };
+      img.src = url;
+    });
+  };
+
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file || !user) return;
 
-    // Validate file type
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-    if (!allowedTypes.includes(file.type)) {
+    if (!file.type.startsWith('image/')) {
       toast({
         title: "Invalid file type",
-        description: "Please upload a JPG, PNG, or WebP image.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Validate file size (2MB limit)
-    if (file.size > 2 * 1024 * 1024) {
-      toast({
-        title: "File too large",
-        description: "Please upload an image smaller than 2MB.",
+        description: "Please upload an image file.",
         variant: "destructive",
       });
       return;
@@ -264,6 +292,9 @@ export default function Profile() {
 
     setIsUploadingAvatar(true);
     try {
+      // Compress image to max 800x800 JPEG
+      const compressedBlob = await compressImage(file);
+
       // Delete existing avatar if it exists
       if (profile?.avatar_url) {
         const oldPath = profile.avatar_url.split('/').pop();
@@ -274,14 +305,13 @@ export default function Profile() {
         }
       }
 
-      // Upload new avatar
-      const fileExt = file.name.split('.').pop();
-      const fileName = `avatar-${Date.now()}.${fileExt}`;
+      // Upload compressed avatar
+      const fileName = `avatar-${Date.now()}.jpg`;
       const filePath = `${user.id}/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('avatars')
-        .upload(filePath, file);
+        .upload(filePath, compressedBlob, { contentType: 'image/jpeg' });
 
       if (uploadError) throw uploadError;
 
@@ -298,7 +328,6 @@ export default function Profile() {
 
       if (updateError) throw updateError;
 
-      // Update local state to reflect changes
       setProfile(prev => prev ? { ...prev, avatar_url: publicUrl } : null);
 
       toast({
@@ -308,12 +337,11 @@ export default function Profile() {
     } catch (error) {
       toast({
         title: "Upload failed",
-        description: "Failed to upload avatar. Please try again.",
+        description: "Failed to process or upload image. Please try again with a different photo.",
         variant: "destructive",
       });
     } finally {
       setIsUploadingAvatar(false);
-      // Clear the file input
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -523,7 +551,7 @@ export default function Profile() {
                     <input
                       ref={fileInputRef}
                       type="file"
-                      accept=".jpg,.jpeg,.png,.webp"
+                      accept="image/*"
                       onChange={handleAvatarUpload}
                       className="hidden"
                     />
@@ -551,7 +579,7 @@ export default function Profile() {
                     )}
                   </div>
                   <p className="text-white/60 text-xs text-center">
-                    JPG, PNG, or WebP up to 2MB
+                    Any image format - automatically optimized
                   </p>
                 </div>
               </div>

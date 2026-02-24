@@ -30,6 +30,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { cn } from '@/lib/utils';
 import { LevelUpModal } from './LevelUpModal';
 import { logger } from '@/lib/logger';
+import { hasAIConsent, needsAIConsentDialog } from '@/lib/aiConsent';
+import { AIConsentModal } from '@/components/AIConsentModal';
 
 // 🔧 FIX #13: Type declaration for Safari's webkitAudioContext
 declare global {
@@ -219,6 +221,10 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   // 🔧 FIX #7: iOS autoplay handling - detect iOS and show unlock prompt
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   const [showAudioUnlockPrompt, setShowAudioUnlockPrompt] = useState(false);
+
+  // AI consent state (Apple 5.1.1 compliance)
+  const [showAIConsent, setShowAIConsent] = useState(false);
+  const pendingTranscriptRef = useRef<string | null>(null);
 
   // 🔧 FIX #13: iOS haptic feedback utility
   const triggerHaptic = (type: 'light' | 'medium' | 'heavy' = 'light') => {
@@ -1625,8 +1631,32 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     return true;
   };
 
+  // AI consent callback handler
+  const handleAIConsentResult = async (granted: boolean) => {
+    setShowAIConsent(false);
+    if (granted && pendingTranscriptRef.current) {
+      await executeTeacherLoop(pendingTranscriptRef.current);
+    } else if (!granted) {
+      addChatBubble("AI features require data processing consent. You can enable this in Settings.", 'system');
+      setFlowState('IDLE');
+    }
+    pendingTranscriptRef.current = null;
+  };
+
   // C) Smart executeTeacherLoop - unified conversational AI with grammar correction
   const executeTeacherLoop = async (transcript: string) => {
+    // Check AI consent before sending data to OpenAI (Apple 5.1.1)
+    if (!hasAIConsent()) {
+      if (needsAIConsentDialog()) {
+        pendingTranscriptRef.current = transcript;
+        setShowAIConsent(true);
+        return;
+      }
+      addChatBubble("AI speaking practice requires data processing consent. Please enable it in Settings to continue.", 'system');
+      setFlowState('IDLE');
+      return;
+    }
+
     // 🔧 GOD-TIER v16: Force reset response flag at START of each teacher loop
     // This ensures AI can ALWAYS respond, even if previous turn had issues
     responseSpokenForTurnRef.current = false;
@@ -2783,6 +2813,11 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           }}
         />
       )}
+
+      <AIConsentModal
+        isOpen={showAIConsent}
+        onConsent={handleAIConsentResult}
+      />
     </div>
   );
 }

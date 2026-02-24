@@ -94,7 +94,16 @@ export default function Pricing() {
       return;
     }
 
-    // Web or billing unavailable - open waitlist modal
+    // iOS but products not loaded yet - don't show waitlist (App Store 3.1.1)
+    if (isIOS) {
+      toast({
+        title: 'Store Loading',
+        description: 'In-app purchase products are still loading. Please wait a moment and try again.',
+      });
+      return;
+    }
+
+    // Web or Android fallback - open waitlist modal
     setSelectedTierForWaitlist(tierCode);
     setWaitlistModalOpen(true);
   };
@@ -157,7 +166,17 @@ export default function Pricing() {
       return 'Subscribe Now';
     }
 
-    // Web or billing unavailable - show waitlist
+    // iOS but products not loaded - show loading (App Store 3.1.1)
+    if (isIOS) {
+      return (
+        <>
+          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+          Loading...
+        </>
+      );
+    }
+
+    // Web or Android fallback - show waitlist
     return (
       <>
         <Bell className="w-4 h-4 mr-2" />
@@ -223,6 +242,11 @@ export default function Pricing() {
                 <div className="flex items-baseline justify-center gap-1">
                   {product ? (
                     <span className="text-4xl font-extrabold">{product.price}</span>
+                  ) : isIOS ? (
+                    <>
+                      <Loader2 className="w-6 h-6 animate-spin text-muted-foreground mr-2" />
+                      <span className="text-2xl text-muted-foreground">Loading price...</span>
+                    </>
                   ) : (
                     <>
                       <span className="text-4xl font-extrabold">₺{displayPrice}</span>
@@ -231,7 +255,7 @@ export default function Pricing() {
                   )}
                 </div>
 
-                {billingCycle === 'quarterly' && !product && (
+                {billingCycle === 'quarterly' && !product && !isIOS && (
                   <div className="mt-2">
                     <p className="text-sm text-muted-foreground">
                       Billed ₺{totalPrice} every 3 months
@@ -270,7 +294,7 @@ export default function Pricing() {
             className="w-full"
             variant={isPopular ? 'default' : 'outline'}
             size="lg"
-            disabled={isCurrentTier || isLoading || isPurchasing || isLoadingProducts}
+            disabled={isCurrentTier || isLoading || isPurchasing || isLoadingProducts || (isIOS && !canPurchaseNative && tierCode !== 'free')}
             onClick={() => handleSelectPlan(tierCode)}
           >
             {getButtonText(tierCode, isCurrentTier)}
@@ -309,19 +333,25 @@ export default function Pricing() {
           )}
         </div>
 
-        {/* Coming Soon Banner - Only show for web or when billing unavailable */}
+        {/* Banner - Only show for web or when billing unavailable */}
         {!canPurchaseNative && (
           <Alert className="max-w-2xl mx-auto mb-8 bg-amber-500/10 border-amber-500/50">
             <Clock className="h-4 w-4 text-amber-400" />
             <AlertTitle className="text-white">
-              {isNative ? 'Connecting to Store...' : 'Premium Subscriptions Coming Soon'}
+              {isIOS
+                ? 'Loading Store Products...'
+                : isNative
+                  ? 'Connecting to Store...'
+                  : 'Premium Subscriptions Coming Soon'}
             </AlertTitle>
             <AlertDescription className="text-slate-300">
-              {isNative && !billingAvailable
-                ? 'Please update the app to enable purchases.'
-                : !isOnMobile
-                  ? 'Download our mobile app to purchase subscriptions.'
-                  : 'Premium plans are currently in development. Join our waitlist to be notified when they launch and receive an exclusive early-bird discount!'
+              {isIOS
+                ? 'Please wait while we load available subscription plans from the App Store.'
+                : isNative && !billingAvailable
+                  ? 'Please update the app to enable purchases.'
+                  : !isOnMobile
+                    ? 'Download our mobile app to purchase subscriptions.'
+                    : 'Premium plans are currently in development. Join our waitlist to be notified when they launch and receive an exclusive early-bird discount!'
               }
             </AlertDescription>
           </Alert>
@@ -383,6 +413,22 @@ export default function Pricing() {
           {renderPricingCard('ai_only')}
           {renderPricingCard('ai_plus_live')}
         </div>
+
+        {/* Apple Subscription Legal Disclosure (App Store 3.1.1) */}
+        {isIOS && (
+          <div className="mt-8 max-w-3xl mx-auto text-center">
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Subscriptions automatically renew unless auto-renew is turned off at least 24 hours before the end of the current period.
+              Your Apple ID account will be charged for renewal within 24 hours prior to the end of the current period.
+              You can manage and cancel your subscriptions by going to your App Store account settings after purchase.
+              Any unused portion of a free trial period will be forfeited when you purchase a subscription.
+            </p>
+            <div className="mt-2 flex justify-center gap-4">
+              <Link to="/privacy" className="text-xs text-blue-400 hover:underline">Privacy Policy</Link>
+              <Link to="/terms" className="text-xs text-blue-400 hover:underline">Terms of Service</Link>
+            </div>
+          </div>
+        )}
 
         {/* FAQ Section */}
         <div className="mt-20 max-w-3xl mx-auto">
@@ -470,13 +516,15 @@ export default function Pricing() {
         </div>
       </div>
 
-      {/* Waitlist Modal */}
-      <WaitlistModal
-        isOpen={waitlistModalOpen}
-        onClose={() => setWaitlistModalOpen(false)}
-        tierCode={selectedTierForWaitlist}
-        userEmail={user?.email}
-      />
+      {/* Waitlist Modal - never render on iOS (App Store 3.1.1) */}
+      {!isIOS && (
+        <WaitlistModal
+          isOpen={waitlistModalOpen}
+          onClose={() => setWaitlistModalOpen(false)}
+          tierCode={selectedTierForWaitlist}
+          userEmail={user?.email}
+        />
+      )}
     </div>
   );
 }
