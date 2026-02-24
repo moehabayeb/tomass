@@ -454,7 +454,7 @@ export default function Pricing() {
                 <p className="text-slate-300">
                   Payments are securely processed through {isIOS ? 'Apple App Store' : isAndroid ? 'Google Play Store' : 'your device\'s app store'}.
                   All payment methods supported by your app store account are accepted, including credit/debit cards and store credit.
-                  Turkish Lira (₺) pricing is displayed for your convenience.
+                  {!isIOS && 'Turkish Lira (₺) pricing is displayed for your convenience.'}
                 </p>
               </CardContent>
             </Card>
