@@ -243,6 +243,14 @@ export default function PlacementTest({ onBack, onComplete }: PlacementTestProps
   };
 
   const sendToTranscribe = async (audioBlob: Blob) => {
+    if (!hasAIConsent()) {
+      toast({
+        title: "Consent Required",
+        description: "AI data processing consent is needed for speech transcription.",
+        variant: "destructive"
+      });
+      return;
+    }
     try {
       const reader = new FileReader();
       reader.onload = async () => {

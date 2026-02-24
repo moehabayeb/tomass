@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Edit2, LogOut, User, Mail, Trophy, Calendar, Upload, Trash2, FileText, Shield, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Edit2, LogOut, User, Mail, Trophy, Calendar, Upload, Trash2, FileText, Shield, AlertTriangle, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -25,6 +25,9 @@ import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { logger } from '@/lib/logger';
+import { Switch } from '@/components/ui/switch';
+import { hasConsent, grantConsent, denyConsent } from '@/lib/analyticsConsent';
+import { hasAIConsent, grantAIConsent, denyAIConsent } from '@/lib/aiConsent';
 
 interface Reminder {
   id: string;
@@ -58,6 +61,8 @@ export default function Profile() {
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [analyticsEnabled, setAnalyticsEnabled] = useState(hasConsent());
+  const [aiEnabled, setAiEnabled] = useState(hasAIConsent());
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Use XP data from useProgressStore (synced with Speaking page)
@@ -794,6 +799,52 @@ export default function Profile() {
                     <div className="text-white/60 text-xs">Our terms and conditions</div>
                   </div>
                 </Link>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Privacy Settings */}
+          <Card className="bg-white/10 backdrop-blur-xl border-white/20 lg:col-span-2">
+            <CardHeader className="pb-3 sm:pb-6">
+              <CardTitle className="text-white flex items-center gap-2 text-base sm:text-lg">
+                <Eye className="h-4 w-4 sm:h-5 sm:w-5" />
+                Privacy Settings
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/20">
+                <div className="flex-1 mr-4">
+                  <div className="text-white font-medium text-sm sm:text-base">Analytics & Error Tracking</div>
+                  <div className="text-white/60 text-xs mt-1">Help us improve the app by sharing usage data and crash reports</div>
+                </div>
+                <Switch
+                  checked={analyticsEnabled}
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      grantConsent();
+                    } else {
+                      denyConsent();
+                    }
+                    setAnalyticsEnabled(checked);
+                  }}
+                />
+              </div>
+              <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/20">
+                <div className="flex-1 mr-4">
+                  <div className="text-white font-medium text-sm sm:text-base">AI Data Processing</div>
+                  <div className="text-white/60 text-xs mt-1">Allow speech transcripts to be processed by AI for speaking practice feedback</div>
+                </div>
+                <Switch
+                  checked={aiEnabled}
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      grantAIConsent();
+                    } else {
+                      denyAIConsent();
+                    }
+                    setAiEnabled(checked);
+                  }}
+                />
               </div>
             </CardContent>
           </Card>
