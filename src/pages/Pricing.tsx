@@ -31,10 +31,12 @@ export default function Pricing() {
     isRestoring,
     isLoadingProducts,
     products,
+    productLoadFailed,
     purchaseTier,
     restorePurchases,
     openSubscriptionManagement,
     getProductForTier,
+    retryLoadProducts,
   } = useBilling();
 
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'quarterly'>('monthly');
@@ -91,6 +93,16 @@ export default function Pricing() {
         navigate('/');
       }
       // Error toast handled by useBilling hook
+      return;
+    }
+
+    // iOS but products failed to load - prompt retry
+    if (isIOS && productLoadFailed) {
+      toast({
+        title: 'Products Unavailable',
+        description: 'Please use the Retry button above to reload App Store products.',
+        variant: 'destructive',
+      });
       return;
     }
 
@@ -166,7 +178,12 @@ export default function Pricing() {
       return 'Subscribe Now';
     }
 
-    // iOS but products not loaded - show loading (App Store 3.1.1)
+    // iOS but products failed to load - show unavailable
+    if (isIOS && productLoadFailed) {
+      return 'Unavailable';
+    }
+
+    // iOS but products not loaded yet - show loading (App Store 3.1.1)
     if (isIOS) {
       return (
         <>
@@ -242,6 +259,8 @@ export default function Pricing() {
                 <div className="flex items-baseline justify-center gap-1">
                   {product ? (
                     <span className="text-4xl font-extrabold">{product.price}</span>
+                  ) : isIOS && productLoadFailed ? (
+                    <span className="text-2xl text-muted-foreground">Price unavailable</span>
                   ) : isIOS ? (
                     <>
                       <Loader2 className="w-6 h-6 animate-spin text-muted-foreground mr-2" />
@@ -294,7 +313,7 @@ export default function Pricing() {
             className="w-full"
             variant={isPopular ? 'default' : 'outline'}
             size="lg"
-            disabled={isCurrentTier || isLoading || isPurchasing || isLoadingProducts || (isIOS && !canPurchaseNative && tierCode !== 'free')}
+            disabled={isCurrentTier || isLoading || isPurchasing || isLoadingProducts || (isIOS && !canPurchaseNative && !productLoadFailed && tierCode !== 'free')}
             onClick={() => handleSelectPlan(tierCode)}
           >
             {getButtonText(tierCode, isCurrentTier)}
@@ -333,8 +352,28 @@ export default function Pricing() {
           )}
         </div>
 
-        {/* Banner - Only show for web or when billing unavailable */}
-        {!canPurchaseNative && (
+        {/* Banner - Error state for failed product load on iOS */}
+        {isIOS && productLoadFailed && (
+          <Alert className="max-w-2xl mx-auto mb-8 bg-red-500/10 border-red-500/50">
+            <Clock className="h-4 w-4 text-red-400" />
+            <AlertTitle className="text-white">Unable to load App Store products</AlertTitle>
+            <AlertDescription className="text-slate-300">
+              Please check your connection and try again.
+            </AlertDescription>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={retryLoadProducts}
+              className="mt-3 bg-white/10 border-white/20 hover:bg-white/20 text-white"
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Retry
+            </Button>
+          </Alert>
+        )}
+
+        {/* Banner - Only show for web or when billing unavailable (not on failed load) */}
+        {!canPurchaseNative && !(isIOS && productLoadFailed) && (
           <Alert className="max-w-2xl mx-auto mb-8 bg-amber-500/10 border-amber-500/50">
             <Clock className="h-4 w-4 text-amber-400" />
             <AlertTitle className="text-white">

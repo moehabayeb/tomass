@@ -29,6 +29,7 @@ interface UseBillingReturn {
   isPurchasing: boolean;
   isLoadingProducts: boolean;
   isRestoring: boolean;
+  productLoadFailed: boolean;
 
   // Products
   products: ProductDetails[];
@@ -40,6 +41,7 @@ interface UseBillingReturn {
   purchaseTier: (tier: TierCode, billingCycle: 'monthly' | 'quarterly') => Promise<PurchaseResult>;
   restorePurchases: () => Promise<void>;
   openSubscriptionManagement: () => Promise<void>;
+  retryLoadProducts: () => void;
 
   // Error handling
   error: BillingError | null;
@@ -57,6 +59,7 @@ export const useBilling = (): UseBillingReturn => {
   const [isRestoring, setIsRestoring] = useState(false);
   const [products, setProducts] = useState<ProductDetails[]>([]);
   const [error, setError] = useState<BillingError | null>(null);
+  const [productLoadFailed, setProductLoadFailed] = useState(false);
 
   const hasInitialized = useRef(false);
 
@@ -73,29 +76,49 @@ export const useBilling = (): UseBillingReturn => {
 
     try {
       setError(null);
-      const connected = await BillingService.connect();
-      setIsConnected(connected);
+      setProductLoadFailed(false);
 
-      if (connected) {
-        // Load products after connecting
-        setIsLoadingProducts(true);
-        try {
+      const TIMEOUT_MS = 10_000;
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Product loading timed out')), TIMEOUT_MS)
+      );
+
+      const loadProducts = async (): Promise<boolean> => {
+        const connected = await BillingService.connect();
+        setIsConnected(connected);
+
+        if (connected) {
+          setIsLoadingProducts(true);
           const loadedProducts = await BillingService.queryProducts();
+          if (!loadedProducts || loadedProducts.length === 0) {
+            throw new Error('No products returned from store');
+          }
           setProducts(loadedProducts);
-        } catch (err) {
-          logger.error('[useBilling] Failed to load products:', err);
-        } finally {
-          setIsLoadingProducts(false);
         }
-      }
 
+        return connected;
+      };
+
+      const connected = await Promise.race([loadProducts(), timeoutPromise]);
+      setIsLoadingProducts(false);
       return connected;
     } catch (err) {
-      logger.error('[useBilling] Connection error:', err);
+      logger.error('[useBilling] Connection/product load error:', err);
+      setProductLoadFailed(true);
+      setIsLoadingProducts(false);
       setIsConnected(false);
       return false;
     }
   }, [isAvailable]);
+
+  /**
+   * Retry loading products after a failure
+   */
+  const retryLoadProducts = useCallback(() => {
+    setProductLoadFailed(false);
+    hasInitialized.current = false;
+    connect();
+  }, [connect]);
 
   /**
    * Purchase a subscription by product ID
@@ -303,6 +326,7 @@ export const useBilling = (): UseBillingReturn => {
     isPurchasing,
     isLoadingProducts,
     isRestoring,
+    productLoadFailed,
     products,
     getProductForTier,
     connect,
@@ -310,6 +334,7 @@ export const useBilling = (): UseBillingReturn => {
     purchaseTier,
     restorePurchases,
     openSubscriptionManagement,
+    retryLoadProducts,
     error,
     clearError,
   };
