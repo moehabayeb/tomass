@@ -137,8 +137,7 @@ class BillingServiceClass {
         logger.log('[Billing] Connected successfully');
         return true;
       } else {
-        logger.error('[Billing] Billing not supported on this device/platform');
-        return false;
+        throw this.createError(BillingErrorCode.BILLING_UNAVAILABLE, 'Billing not supported on this device');
       }
     } catch (error) {
       logger.error('[Billing] Connection error:', error);

@@ -4,7 +4,7 @@
  * Supports native billing on iOS (StoreKit) and Android (Google Play)
  */
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Check, Crown, Zap, ArrowLeft, Sparkles, Star, Shield, FileText, Bell, Clock, Loader2, RefreshCw, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -51,6 +51,21 @@ export default function Pricing() {
 
   // On native platforms (iOS/Android), check if we can actually purchase
   const canPurchaseNative = isNative && billingAvailable && products.length > 0;
+
+  // Safety net: if on iOS and products haven't loaded after 8s, force error state
+  const safetyTriggered = useRef(false);
+  useEffect(() => {
+    if (!isIOS || canPurchaseNative || productLoadFailed) return;
+
+    const timer = setTimeout(() => {
+      if (!safetyTriggered.current && !canPurchaseNative && !productLoadFailed) {
+        safetyTriggered.current = true;
+        retryLoadProducts();
+      }
+    }, 8_000);
+
+    return () => clearTimeout(timer);
+  }, [isIOS, canPurchaseNative, productLoadFailed, retryLoadProducts]);
 
   const handleSelectPlan = async (tierCode: TierCode) => {
     // Free tier - navigate to start using app

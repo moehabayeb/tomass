@@ -78,7 +78,7 @@ export const useBilling = (): UseBillingReturn => {
       setError(null);
       setProductLoadFailed(false);
 
-      const TIMEOUT_MS = 10_000;
+      const TIMEOUT_MS = 5_000;
       const timeoutPromise = new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error('Product loading timed out')), TIMEOUT_MS)
       );
@@ -101,6 +101,12 @@ export const useBilling = (): UseBillingReturn => {
 
       const connected = await Promise.race([loadProducts(), timeoutPromise]);
       setIsLoadingProducts(false);
+
+      // If connect resolved but returned false (billing unavailable), mark as failed
+      if (!connected) {
+        setProductLoadFailed(true);
+      }
+
       return connected;
     } catch (err) {
       logger.error('[useBilling] Connection/product load error:', err);
@@ -305,13 +311,13 @@ export const useBilling = (): UseBillingReturn => {
     setError(null);
   }, []);
 
-  // Auto-connect on Android when authenticated
+  // Auto-connect on native platforms (product loading doesn't need auth)
   useEffect(() => {
-    if (isAvailable && isAuthenticated && !hasInitialized.current) {
+    if (isAvailable && !hasInitialized.current) {
       hasInitialized.current = true;
       connect();
     }
-  }, [isAvailable, isAuthenticated, connect]);
+  }, [isAvailable, connect]);
 
   // Sync connection status
   useEffect(() => {
