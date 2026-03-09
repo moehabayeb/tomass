@@ -54,10 +54,10 @@ workflows:
         script: |
           cd ios/App && pod install
 
-      - name: Increment iOS build number
+      - name: Force iOS build number
         script: |
           cd ios/App
-          agvtool new-version -all $BUILD_NUMBER
+          agvtool new-version -all 92
 
       - name: Build iOS app
         script: |
