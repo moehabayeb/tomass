@@ -2,7 +2,6 @@ import React, { ReactElement, ReactNode } from 'react';
 import { render, RenderOptions } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
-import { ThemeProvider } from 'next-themes';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { vi } from 'vitest';
 
@@ -40,18 +39,11 @@ function AllTheProviders({
 }) {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="system"
-        enableSystem
-        disableTransitionOnChange
-      >
-        <TooltipProvider>
-          <BrowserRouter>
-            {children}
-          </BrowserRouter>
-        </TooltipProvider>
-      </ThemeProvider>
+      <TooltipProvider>
+        <BrowserRouter>
+          {children}
+        </BrowserRouter>
+      </TooltipProvider>
     </QueryClientProvider>
   );
 }

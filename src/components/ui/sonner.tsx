@@ -1,4 +1,3 @@
-import { useTheme } from "next-themes"
 import { Toaster as Sonner, toast } from "sonner"
 import { useEffect, useRef, useState } from "react"
 
@@ -32,16 +31,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
     return () => observer.disconnect()
   }, [mounted])
 
-  // Try to get theme, with fallback
-  let theme: ToasterProps["theme"] = "system"
-
-  try {
-    const themeData = useTheme()
-    theme = (themeData?.theme as ToasterProps["theme"]) || "system"
-  } catch (error) {
-    // Silently fallback to system theme if context not available
-    // This handles React.StrictMode double-rendering and HMR edge cases
-  }
+  const theme: ToasterProps["theme"] = "dark"
 
   // Don't render until mounted to avoid SSR/hydration issues
   if (!mounted) {

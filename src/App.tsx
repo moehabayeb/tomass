@@ -2,7 +2,10 @@ import React, { Suspense, useEffect, useState } from 'react';
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-import { ThemeProvider } from "next-themes";
+// next-themes removed: this is a Vite app, not Next.js.
+// Apply dark class directly to <html> for Tailwind dark mode.
+document.documentElement.classList.add("dark");
+
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Footer } from "@/components/Footer";
 import { initSentry } from "@/lib/sentry";
@@ -95,12 +98,6 @@ const ConditionalFooter = () => {
 const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="system"
-        enableSystem
-        disableTransitionOnChange
-      >
         <Sonner />
         <DeferredModals />
         <BrowserRouter
@@ -134,7 +131,6 @@ const App = () => (
             <ConditionalFooter />
           </div>
           </BrowserRouter>
-      </ThemeProvider>
     </QueryClientProvider>
   </ErrorBoundary>
 );

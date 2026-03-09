@@ -1,7 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render as rtlRender, screen } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ThemeProvider } from 'next-themes';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import App from './App';
 
@@ -43,11 +42,9 @@ const renderApp = () => {
 
   return rtlRender(
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-        <TooltipProvider>
-          <App />
-        </TooltipProvider>
-      </ThemeProvider>
+      <TooltipProvider>
+        <App />
+      </TooltipProvider>
     </QueryClientProvider>
   );
 };
