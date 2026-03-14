@@ -12,9 +12,9 @@ import { logger } from '@/lib/logger';
 // Product IDs (must match App Store Connect AND Google Play Console)
 export const STORE_PRODUCTS = {
   ai_only_monthly: 'ai_only_monthly',
-  ai_only_quarterly: 'ai_only_quarterly',
-  ai_plus_live_monthly: 'ai_plus_live_monthly',
-  ai_plus_live_quarterly: 'ai_plus_live_quarterly',
+  ai_only_quarterly: 'ai_only_quarterly_v2',
+  ai_plus_live_monthly: 'ai_plus_live_monthly_v2',
+  ai_plus_live_quarterly: 'ai_plus_live_quarterly_v2',
 } as const;
 
 /** @deprecated Use STORE_PRODUCTS instead */
@@ -27,15 +27,16 @@ export type GooglePlayProductId = StoreProductId;
 // Map products to subscription tiers
 export const PRODUCT_TO_TIER: Record<string, TierCode> = {
   ai_only_monthly: 'ai_only',
-  ai_only_quarterly: 'ai_only',
-  ai_plus_live_monthly: 'ai_plus_live',
-  ai_plus_live_quarterly: 'ai_plus_live',
+  ai_only_quarterly_v2: 'ai_only',
+  ai_plus_live_monthly_v2: 'ai_plus_live',
+  ai_plus_live_quarterly_v2: 'ai_plus_live',
 };
 
 // Map tier + billing cycle to product ID
 export const getTierProductId = (tier: TierCode, billingCycle: 'monthly' | 'quarterly'): string | null => {
   if (tier === 'free') return null;
-  return `${tier}_${billingCycle}`;
+  const key = `${tier}_${billingCycle}` as keyof typeof STORE_PRODUCTS;
+  return STORE_PRODUCTS[key] ?? null;
 };
 
 // Error codes for user-friendly messages
@@ -114,33 +115,35 @@ class BillingServiceClass {
    */
   async connect(): Promise<boolean> {
     if (!this.isAvailable()) {
-      logger.log('[Billing] Not available - not on native platform');
+      console.log('[IAP] connect() — skipped, not on native platform');
       return false;
     }
 
     if (this.isConnected) {
-      logger.log('[Billing] Already connected');
+      console.log('[IAP] connect() — already connected');
       return true;
     }
 
     try {
-      // Dynamically import the billing plugin
+      console.log('[IAP] connect() — importing @capgo/native-purchases...');
       const { NativePurchases, PURCHASE_TYPE } = await import('@capgo/native-purchases');
       this.NativePurchasesPlugin = NativePurchases;
       this.PURCHASE_TYPE = PURCHASE_TYPE;
+      console.log('[IAP] connect() — plugin imported, checking isBillingSupported...');
 
-      // Check if billing is supported
       const { isBillingSupported } = await this.NativePurchasesPlugin.isBillingSupported();
+      console.log('[IAP] connect() — isBillingSupported:', isBillingSupported);
 
       if (isBillingSupported) {
         this.isConnected = true;
-        logger.log('[Billing] Connected successfully');
+        console.log('[IAP] connect() — connected successfully');
         return true;
       } else {
+        console.error('[IAP] connect() — billing NOT supported on this device');
         throw this.createError(BillingErrorCode.BILLING_UNAVAILABLE, 'Billing not supported on this device');
       }
-    } catch (error) {
-      logger.error('[Billing] Connection error:', error);
+    } catch (error: any) {
+      console.error('[IAP] connect() error:', { message: error?.message, code: error?.code });
       return false;
     }
   }
@@ -158,19 +161,23 @@ class BillingServiceClass {
    */
   async queryProducts(): Promise<ProductDetails[]> {
     if (!this.isConnected || !this.NativePurchasesPlugin) {
+      console.error('[IAP] queryProducts called but not connected. isConnected:', this.isConnected, 'plugin:', !!this.NativePurchasesPlugin);
       throw this.createError(BillingErrorCode.NOT_CONNECTED, 'Billing service not connected');
     }
 
     try {
       const productIds = Object.values(STORE_PRODUCTS);
+      console.log('[IAP] Requesting product IDs:', JSON.stringify(productIds));
 
       const { products } = await this.NativePurchasesPlugin.getProducts({
         productIdentifiers: productIds,
         productType: this.PURCHASE_TYPE.SUBS,
       });
 
+      console.log('[IAP] StoreKit returned', products?.length ?? 0, 'products');
+
       if (!products || products.length === 0) {
-        logger.warn('[Billing] No products found');
+        console.warn('[IAP] StoreKit returned EMPTY products array. Requested:', productIds);
         return [];
       }
 
@@ -178,6 +185,8 @@ class BillingServiceClass {
         const productId = product.identifier;
         const tierCode = PRODUCT_TO_TIER[productId] || 'free';
         const billingCycle = productId.includes('quarterly') ? 'quarterly' : 'monthly';
+
+        console.log('[IAP] Product:', productId, '→ price:', product.priceString, 'currency:', product.currencyCode);
 
         return {
           productId,
@@ -192,11 +201,23 @@ class BillingServiceClass {
         };
       });
 
+      // Log any product IDs that were requested but NOT returned
+      const returnedIds = mappedProducts.map(p => p.productId);
+      const missingIds = productIds.filter(id => !returnedIds.includes(id));
+      if (missingIds.length > 0) {
+        console.warn('[IAP] Missing products (requested but not returned by StoreKit):', missingIds);
+      }
+
       this.cachedProducts = mappedProducts;
-      logger.log('[Billing] Products loaded:', mappedProducts.length);
+      console.log('[IAP] Products loaded successfully:', mappedProducts.length, 'IDs:', returnedIds);
       return mappedProducts;
-    } catch (error) {
-      logger.error('[Billing] Query products error:', error);
+    } catch (error: any) {
+      console.error('[IAP] queryProducts StoreKit error:', {
+        message: error?.message,
+        code: error?.code,
+        name: error?.name,
+        stack: error?.stack?.split('\n').slice(0, 3).join('\n'),
+      });
       throw this.createError(BillingErrorCode.NETWORK_ERROR, 'Failed to load products', error);
     }
   }

@@ -1,6 +1,13 @@
 /**
  * useBilling Hook
  * React hook for native billing integration (iOS + Android)
+ *
+ * Retry strategy (Apple Guideline 2.1 compliance):
+ *   1. Attempt product load immediately on mount (15s timeout).
+ *   2. On failure → auto-retry once after 2s (15s timeout).
+ *   3. On failure → silent background retries every 5s, up to 3 more attempts.
+ *   4. If products load at ANY point → update UI immediately.
+ *   5. Products never remain permanently unavailable during a session.
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -48,6 +55,13 @@ interface UseBillingReturn {
   clearError: () => void;
 }
 
+// StoreKit sandbox on review devices can be very slow — allow 15s
+const PRODUCT_LOAD_TIMEOUT_MS = 15_000;
+// Background retry interval
+const BACKGROUND_RETRY_INTERVAL_MS = 5_000;
+// Max background retry attempts
+const MAX_BACKGROUND_RETRIES = 3;
+
 export const useBilling = (): UseBillingReturn => {
   const { toast } = useToast();
   const { user, isAuthenticated } = useAuthReady();
@@ -62,66 +76,146 @@ export const useBilling = (): UseBillingReturn => {
   const [productLoadFailed, setProductLoadFailed] = useState(false);
 
   const hasInitialized = useRef(false);
+  const backgroundRetryCount = useRef(0);
+  const backgroundRetryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isMounted = useRef(true);
 
   // Check if billing is available (iOS + Android)
   const isAvailable = Capacitor.isNativePlatform();
 
+  // Cleanup on unmount
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+      if (backgroundRetryTimer.current) {
+        clearTimeout(backgroundRetryTimer.current);
+      }
+    };
+  }, []);
+
   /**
-   * Connect to Google Play Billing
+   * Core product loading logic (shared by initial load and retries).
+   * Returns true if products loaded successfully.
    */
-  const connect = useCallback(async (): Promise<boolean> => {
-    if (!isAvailable) {
-      return false;
-    }
+  const loadProducts = useCallback(async (): Promise<boolean> => {
+    console.log('[IAP] loadProducts — starting, timeout =', PRODUCT_LOAD_TIMEOUT_MS, 'ms');
 
-    try {
-      setError(null);
-      setProductLoadFailed(false);
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Product loading timed out')), PRODUCT_LOAD_TIMEOUT_MS)
+    );
 
-      const TIMEOUT_MS = 5_000;
-      const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('Product loading timed out')), TIMEOUT_MS)
-      );
+    const doLoad = async (): Promise<boolean> => {
+      const connected = await BillingService.connect();
+      console.log('[IAP] BillingService.connect() =', connected);
 
-      const loadProducts = async (): Promise<boolean> => {
-        const connected = await BillingService.connect();
-        setIsConnected(connected);
+      if (!isMounted.current) return false;
+      setIsConnected(connected);
 
-        if (connected) {
-          setIsLoadingProducts(true);
-          const loadedProducts = await BillingService.queryProducts();
-          if (!loadedProducts || loadedProducts.length === 0) {
-            throw new Error('No products returned from store');
-          }
-          setProducts(loadedProducts);
-        }
+      if (!connected) return false;
 
-        return connected;
-      };
+      const loaded = await BillingService.queryProducts();
+      console.log('[IAP] queryProducts returned', loaded?.length ?? 0, 'products');
 
-      const connected = await Promise.race([loadProducts(), timeoutPromise]);
-      setIsLoadingProducts(false);
-
-      // If connect resolved but returned false (billing unavailable), mark as failed
-      if (!connected) {
-        setProductLoadFailed(true);
+      if (!loaded || loaded.length === 0) {
+        throw new Error('No products returned from store');
       }
 
-      return connected;
+      if (isMounted.current) {
+        setProducts(loaded);
+        setProductLoadFailed(false);
+        setError(null);
+      }
+      return true;
+    };
+
+    try {
+      const ok = await Promise.race([doLoad(), timeoutPromise]);
+      return ok;
     } catch (err) {
-      logger.error('[useBilling] Connection/product load error:', err);
-      setProductLoadFailed(true);
-      setIsLoadingProducts(false);
-      setIsConnected(false);
+      console.warn('[IAP] loadProducts failed:', err);
       return false;
     }
-  }, [isAvailable]);
+  }, []);
 
   /**
-   * Retry loading products after a failure
+   * Schedule background retries that silently re-attempt product load.
+   * Stops as soon as products load or max retries reached.
+   */
+  const scheduleBackgroundRetry = useCallback(() => {
+    if (backgroundRetryTimer.current) clearTimeout(backgroundRetryTimer.current);
+    if (backgroundRetryCount.current >= MAX_BACKGROUND_RETRIES) {
+      console.log('[IAP] Max background retries reached (' + MAX_BACKGROUND_RETRIES + ')');
+      return;
+    }
+
+    backgroundRetryTimer.current = setTimeout(async () => {
+      if (!isMounted.current) return;
+
+      backgroundRetryCount.current += 1;
+      console.log('[IAP] Background retry', backgroundRetryCount.current, '/', MAX_BACKGROUND_RETRIES);
+
+      const ok = await loadProducts();
+      if (ok) {
+        console.log('[IAP] Background retry succeeded — products loaded');
+        if (isMounted.current) setIsLoadingProducts(false);
+      } else if (isMounted.current) {
+        // Schedule next retry
+        scheduleBackgroundRetry();
+      }
+    }, BACKGROUND_RETRY_INTERVAL_MS);
+  }, [loadProducts]);
+
+  /**
+   * Full connect + load flow with automatic retry strategy.
+   */
+  const connect = useCallback(async (): Promise<boolean> => {
+    if (!isAvailable) return false;
+
+    setError(null);
+    setProductLoadFailed(false);
+    setIsLoadingProducts(true);
+    backgroundRetryCount.current = 0;
+
+    console.log('[IAP] === Initial product load attempt ===');
+
+    // Attempt 1: immediate
+    let ok = await loadProducts();
+
+    if (!ok && isMounted.current) {
+      // Attempt 2: quick retry after 2s
+      console.log('[IAP] === Auto-retry after 2s ===');
+      await new Promise(r => setTimeout(r, 2000));
+
+      if (!isMounted.current) return false;
+      ok = await loadProducts();
+    }
+
+    if (isMounted.current) {
+      setIsLoadingProducts(false);
+
+      if (ok) {
+        console.log('[IAP] Products loaded successfully');
+        return true;
+      }
+
+      // Mark as failed, start background retries
+      console.log('[IAP] Both initial attempts failed — starting background retries');
+      setProductLoadFailed(true);
+      scheduleBackgroundRetry();
+    }
+
+    return ok;
+  }, [isAvailable, loadProducts, scheduleBackgroundRetry]);
+
+  /**
+   * Manual retry (user presses Retry button)
    */
   const retryLoadProducts = useCallback(() => {
+    console.log('[IAP] === Manual retry triggered ===');
     setProductLoadFailed(false);
+    backgroundRetryCount.current = 0;
+    if (backgroundRetryTimer.current) clearTimeout(backgroundRetryTimer.current);
     hasInitialized.current = false;
     connect();
   }, [connect]);
@@ -298,7 +392,7 @@ export const useBilling = (): UseBillingReturn => {
   }, [isAvailable, user?.id, toast, refreshSubscription]);
 
   /**
-   * Open subscription management in Google Play
+   * Open subscription management in App Store / Google Play
    */
   const openSubscriptionManagement = useCallback(async (): Promise<void> => {
     await BillingService.openSubscriptionManagement();

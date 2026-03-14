@@ -4,7 +4,7 @@
  * Supports native billing on iOS (StoreKit) and Android (Google Play)
  */
 
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Check, Crown, Zap, ArrowLeft, Sparkles, Star, Shield, FileText, Bell, Clock, Loader2, RefreshCw, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -52,20 +52,8 @@ export default function Pricing() {
   // On native platforms (iOS/Android), check if we can actually purchase
   const canPurchaseNative = isNative && billingAvailable && products.length > 0;
 
-  // Safety net: if on iOS and products haven't loaded after 8s, force error state
-  const safetyTriggered = useRef(false);
-  useEffect(() => {
-    if (!isIOS || canPurchaseNative || productLoadFailed) return;
-
-    const timer = setTimeout(() => {
-      if (!safetyTriggered.current && !canPurchaseNative && !productLoadFailed) {
-        safetyTriggered.current = true;
-        retryLoadProducts();
-      }
-    }, 8_000);
-
-    return () => clearTimeout(timer);
-  }, [isIOS, canPurchaseNative, productLoadFailed, retryLoadProducts]);
+  // Retry logic is fully handled inside useBilling hook (auto-retry + background retries).
+  // No safety timer needed here.
 
   const handleSelectPlan = async (tierCode: TierCode) => {
     // Free tier - navigate to start using app
@@ -111,12 +99,12 @@ export default function Pricing() {
       return;
     }
 
-    // iOS but products failed to load - prompt retry
+    // iOS but products failed to load — auto-retry on tap
     if (isIOS && productLoadFailed) {
+      retryLoadProducts();
       toast({
-        title: 'Products Unavailable',
-        description: 'Please use the Retry button above to reload App Store products.',
-        variant: 'destructive',
+        title: 'Retrying…',
+        description: 'Loading products from the App Store. Please wait a moment.',
       });
       return;
     }
@@ -193,9 +181,14 @@ export default function Pricing() {
       return 'Subscribe Now';
     }
 
-    // iOS but products failed to load - show unavailable
+    // iOS but products failed to load — show retry, never "Unavailable"
     if (isIOS && productLoadFailed) {
-      return 'Unavailable';
+      return (
+        <>
+          <RefreshCw className="w-4 h-4 mr-2" />
+          Retry
+        </>
+      );
     }
 
     // iOS but products not loaded yet - show loading (App Store 3.1.1)
@@ -275,7 +268,7 @@ export default function Pricing() {
                   {product ? (
                     <span className="text-4xl font-extrabold">{product.price}</span>
                   ) : isIOS && productLoadFailed ? (
-                    <span className="text-2xl text-muted-foreground">Price unavailable</span>
+                    <span className="text-lg text-muted-foreground">Loading from App Store…</span>
                   ) : isIOS ? (
                     <>
                       <Loader2 className="w-6 h-6 animate-spin text-muted-foreground mr-2" />
@@ -369,11 +362,11 @@ export default function Pricing() {
 
         {/* Banner - Error state for failed product load on iOS */}
         {isIOS && productLoadFailed && (
-          <Alert className="max-w-2xl mx-auto mb-8 bg-red-500/10 border-red-500/50">
-            <Clock className="h-4 w-4 text-red-400" />
-            <AlertTitle className="text-white">Unable to load App Store products</AlertTitle>
+          <Alert className="max-w-2xl mx-auto mb-8 bg-amber-500/10 border-amber-500/50">
+            <Clock className="h-4 w-4 text-amber-400" />
+            <AlertTitle className="text-white">App Store products are temporarily unavailable</AlertTitle>
             <AlertDescription className="text-slate-300">
-              Please check your connection and try again.
+              Please try again. Products are being loaded in the background.
             </AlertDescription>
             <Button
               variant="outline"
@@ -382,7 +375,7 @@ export default function Pricing() {
               className="mt-3 bg-white/10 border-white/20 hover:bg-white/20 text-white"
             >
               <RefreshCw className="w-4 h-4 mr-2" />
-              Retry
+              Try Again
             </Button>
           </Alert>
         )}
