@@ -294,11 +294,16 @@ class BillingServiceClass {
         // No userId — purchase succeeded via StoreKit but skip backend sync.
         // Receipt will be synced when user creates an account and restores purchases.
         logger.log('[Billing] Purchase succeeded without user account — skipping backend verification');
+        // Store purchased tier locally so the app reflects the subscription without an account
+        const purchasedTier = PRODUCT_TO_TIER[productId];
+        if (purchasedTier) {
+          localStorage.setItem('storekit_purchased_tier', purchasedTier);
+        }
         return {
           success: true,
           productId,
           purchaseToken: purchaseResult.transactionId,
-          tierCode: PRODUCT_TO_TIER[productId],
+          tierCode: purchasedTier,
         };
       } else {
         return {

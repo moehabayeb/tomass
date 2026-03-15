@@ -241,6 +241,10 @@ export const useBilling = (): UseBillingReturn => {
       const result = await BillingService.purchaseSubscription(productId, user?.id);
 
       if (result.success) {
+        // If user is logged in, clear any localStorage fallback — backend is now source of truth
+        if (user?.id) {
+          localStorage.removeItem('storekit_purchased_tier');
+        }
         toast({
           title: 'Purchase Successful!',
           description: 'Your subscription is now active',
@@ -342,6 +346,8 @@ export const useBilling = (): UseBillingReturn => {
       const successCount = results.filter(r => r.success).length;
 
       if (successCount > 0) {
+        // Backend is now source of truth — clear localStorage fallback
+        localStorage.removeItem('storekit_purchased_tier');
         toast({
           title: 'Purchases Restored',
           description: `${successCount} subscription(s) restored successfully`,

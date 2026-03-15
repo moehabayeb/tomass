@@ -579,7 +579,7 @@ export default function Pricing() {
               Subscription Activated!
             </DialogTitle>
             <DialogDescription className="text-slate-300 text-center pt-2">
-              Create a free account to start using your premium features and sync your subscription across all your devices.
+              Your subscription is now active! Create an optional account to save your progress and sync across devices.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex flex-col gap-3 sm:flex-col">

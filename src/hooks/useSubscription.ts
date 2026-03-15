@@ -66,6 +66,27 @@ export const useSubscription = (): UseSubscriptionReturn => {
   // Fetch subscription data
   const fetchSubscriptionData = useCallback(async () => {
     if (!user?.id || !isAuthenticated) {
+      // Check localStorage fallback for unauthenticated purchases (Apple Guideline 5.1.1(v))
+      const localTier = localStorage.getItem('storekit_purchased_tier') as TierCode | null;
+      if (localTier && localTier !== 'free') {
+        setSubscriptionCheck({
+          isSubscribed: true,
+          tier: localTier,
+          status: 'active',
+          hasAccessToAI: true,
+          hasAccessToLiveLessons: localTier === 'ai_plus_live',
+          aiDailyLimit: null,
+          aiUsedToday: 0,
+          aiRemainingToday: null,
+          liveLessonsRemaining: localTier === 'ai_plus_live' ? 16 : 0,
+          isOnTrial: false,
+          trialEndsAt: null,
+          trialDaysRemaining: null,
+          isGrandfathered: false,
+          canUpgrade: localTier !== 'ai_plus_live',
+          suggestedUpgradeTier: localTier === 'ai_only' ? 'ai_plus_live' : null,
+        });
+      }
       setIsLoading(false);
       return;
     }

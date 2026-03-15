@@ -113,6 +113,20 @@ export const useAuthReady = () => {
               toast.success('Welcome back! Your progress is up to date.');
             }
 
+            // Step 6: Auto-restore IAP purchases made before account creation (Apple 5.1.1(v))
+            const localTier = localStorage.getItem('storekit_purchased_tier');
+            if (localTier) {
+              try {
+                const { BillingService } = await import('@/services/billingService');
+                const results = await BillingService.restorePurchases(userId);
+                logger.log('[Auth] IAP purchases auto-restored on sign-in:', results);
+                localStorage.removeItem('storekit_purchased_tier');
+              } catch (err) {
+                logger.error('[Auth] Failed to auto-restore IAP purchases:', err);
+                // Don't remove localStorage — keep as fallback until successful sync
+              }
+            }
+
             logger.log('[Auth] Full sync complete');
 
           } catch (error) {
