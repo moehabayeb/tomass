@@ -232,7 +232,7 @@ class BillingServiceClass {
   /**
    * Purchase a subscription
    */
-  async purchaseSubscription(productId: string, userId: string): Promise<PurchaseResult> {
+  async purchaseSubscription(productId: string, userId?: string): Promise<PurchaseResult> {
     if (!this.isAvailable()) {
       return {
         success: false,
@@ -281,13 +281,25 @@ class BillingServiceClass {
       logger.log('[Billing] Purchase result:', purchaseResult);
 
       if (purchaseResult && purchaseResult.transactionId) {
-        // Purchase successful - verify with backend
-        const verifyResult = await this.verifyAndActivatePurchase(
-          purchaseResult.transactionId,
+        // If user is logged in, verify with backend
+        if (userId) {
+          const verifyResult = await this.verifyAndActivatePurchase(
+            purchaseResult.transactionId,
+            productId,
+            userId
+          );
+          return verifyResult;
+        }
+
+        // No userId — purchase succeeded via StoreKit but skip backend sync.
+        // Receipt will be synced when user creates an account and restores purchases.
+        logger.log('[Billing] Purchase succeeded without user account — skipping backend verification');
+        return {
+          success: true,
           productId,
-          userId
-        );
-        return verifyResult;
+          purchaseToken: purchaseResult.transactionId,
+          tierCode: PRODUCT_TO_TIER[productId],
+        };
       } else {
         return {
           success: false,

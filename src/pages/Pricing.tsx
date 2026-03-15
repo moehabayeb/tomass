@@ -19,6 +19,7 @@ import { PRICING_CONFIG, type TierCode } from '@/types/subscription';
 import { useToast } from '@/hooks/use-toast';
 import { detectPlatform, isMobile } from '@/lib/platform';
 import { WaitlistModal } from '@/components/WaitlistModal';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 
 export default function Pricing() {
   const navigate = useNavigate();
@@ -42,6 +43,7 @@ export default function Pricing() {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'quarterly'>('monthly');
   const [waitlistModalOpen, setWaitlistModalOpen] = useState(false);
   const [selectedTierForWaitlist, setSelectedTierForWaitlist] = useState<TierCode>('ai_only');
+  const [showPostPurchaseSignup, setShowPostPurchaseSignup] = useState(false);
 
   const platform = detectPlatform();
   const isOnMobile = isMobile();
@@ -78,22 +80,18 @@ export default function Pricing() {
       return;
     }
 
-    // Must be authenticated to purchase
-    if (!isAuthenticated) {
-      toast({
-        title: 'Sign In Required',
-        description: 'Please sign in to subscribe.',
-      });
-      navigate('/auth');
-      return;
-    }
-
     // Native (iOS/Android) with billing available - initiate purchase
+    // Note: No auth gate here — Apple Guideline 5.1.1(v) requires purchases without registration
     if (canPurchaseNative) {
       const result = await purchaseTier(tierCode, billingCycle);
       if (result.success) {
-        // Success toast handled by useBilling hook
-        navigate('/');
+        if (isAuthenticated) {
+          // Logged-in user — go back to app
+          navigate('/');
+        } else {
+          // Not logged in — show optional signup prompt (5.1.1(v) compliance)
+          setShowPostPurchaseSignup(true);
+        }
       }
       // Error toast handled by useBilling hook
       return;
@@ -572,6 +570,41 @@ export default function Pricing() {
           userEmail={user?.email}
         />
       )}
+
+      {/* Post-Purchase Signup Prompt — Apple Guideline 5.1.1(v) compliance */}
+      <Dialog open={showPostPurchaseSignup} onOpenChange={setShowPostPurchaseSignup}>
+        <DialogContent className="bg-indigo-950 border-white/20 text-white max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-center">
+              Subscription Activated!
+            </DialogTitle>
+            <DialogDescription className="text-slate-300 text-center pt-2">
+              Create a free account to start using your premium features and sync your subscription across all your devices.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex flex-col gap-3 sm:flex-col">
+            <Button
+              className="w-full bg-gradient-to-r from-sky-400 to-emerald-300 text-indigo-950 font-semibold"
+              onClick={() => {
+                setShowPostPurchaseSignup(false);
+                navigate('/auth');
+              }}
+            >
+              Create Account
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full text-slate-300 hover:text-white hover:bg-white/10"
+              onClick={() => {
+                setShowPostPurchaseSignup(false);
+                navigate('/');
+              }}
+            >
+              Maybe Later
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

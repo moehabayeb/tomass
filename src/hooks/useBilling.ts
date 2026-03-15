@@ -233,25 +233,12 @@ export const useBilling = (): UseBillingReturn => {
       return { success: false, error: err };
     }
 
-    if (!user?.id) {
-      const err: BillingError = {
-        code: BillingErrorCode.UNKNOWN_ERROR,
-        message: 'Please sign in to purchase',
-      };
-      setError(err);
-      toast({
-        title: 'Sign In Required',
-        description: 'Please sign in to purchase a subscription',
-        variant: 'destructive',
-      });
-      return { success: false, error: err };
-    }
-
     setIsPurchasing(true);
     setError(null);
 
     try {
-      const result = await BillingService.purchaseSubscription(productId, user.id);
+      // userId is optional — Apple Guideline 5.1.1(v) requires purchases without registration
+      const result = await BillingService.purchaseSubscription(productId, user?.id);
 
       if (result.success) {
         toast({
