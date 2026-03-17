@@ -2003,12 +2003,12 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
     // Run when module changes; restore once.
     if (!selectedModule || !currentModuleData || restoredOnceRef.current) return;
 
-    // Priority 1: Check checkpoint system first
+    // Priority 1: Check checkpoint system first — restore exact position
     const checkpointProgress = checkpoints.currentProgress;
-    if (checkpointProgress && !checkpointProgress.is_module_completed) {
-      // Don't auto-restore from checkpoint - let user choose via dialog
-      setCurrentPhase('intro'); // Start at intro, dialog will show resume option
-      setSpeakingIndex(0);
+    if (checkpointProgress && !checkpointProgress.is_module_completed && checkpointProgress.question_index > 0) {
+      // Restore exact phase and position from checkpoint
+      setCurrentPhase(checkpointProgress.phase || 'speaking');
+      setSpeakingIndex(checkpointProgress.question_index);
     } else {
       // Priority 2: Fallback to old system if no checkpoint data
       const saved = loadModuleProgress(String(selectedLevel), selectedModule);
@@ -2840,10 +2840,13 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
 
           {/* Levels Grid */}
           <div className="space-y-4">
-            {LEVELS.map((level) => (
-              <Card 
-                key={level.id} 
-                className="bg-white/10 border-white/20 cursor-pointer transition-all hover:bg-white/15"
+            {LEVELS.map((level) => {
+              const recommendedLevel = safeLocalStorage().getItem('recommendedStartLevel');
+              const isRecommended = recommendedLevel && level.id === recommendedLevel;
+              return (
+              <Card
+                key={level.id}
+                className={`bg-white/10 border-white/20 cursor-pointer transition-all hover:bg-white/15${isRecommended ? ' ring-2 ring-green-400/60' : ''}`}
                 onClick={() => {
                   narration.cancel();
                   setSelectedLevel(level.id);
@@ -2855,16 +2858,24 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
                     <div className={`w-12 h-12 rounded-full ${level.color} flex items-center justify-center flex-shrink-0`}>
                       <BookOpen className="h-6 w-6 text-white" />
                     </div>
-                    
+
                     <div className="flex-1">
-                      <h3 className="font-semibold text-white">{level.name}</h3>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold text-white">{level.name}</h3>
+                        {isRecommended && (
+                          <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-green-500/20 text-green-300 border border-green-400/30">
+                            Recommended
+                          </span>
+                        )}
+                      </div>
                       <p className="text-white/70 text-sm">{level.description}</p>
                       <p className="text-white/70 text-xs">{level.moduleCount} modules</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>

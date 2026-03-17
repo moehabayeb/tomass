@@ -66,7 +66,7 @@ export default function MultipleChoiceCard({
   };
 
   const getButtonClass = (optionIndex: number) => {
-    const baseClass = "w-full p-4 text-left text-lg font-medium rounded-lg transition-all duration-300 transform";
+    const baseClass = "w-full p-3 sm:p-4 text-left text-base sm:text-lg font-medium rounded-lg transition-all duration-300 transform";
 
     if (!showFeedback) {
       return `${baseClass} bg-white/10 hover:bg-white/20 hover:scale-102 text-white border-2 border-white/20`;
@@ -104,10 +104,10 @@ export default function MultipleChoiceCard({
             className={getButtonClass(index)}
           >
             <div className="flex items-center gap-4">
-              <span className="flex items-center justify-center w-8 h-8 rounded-full bg-white/20 font-bold">
+              <span className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/20 font-bold flex-shrink-0">
                 {getOptionLabel(index)}
               </span>
-              <span className="flex-1">{option}</span>
+              <span className="flex-1 break-words">{option}</span>
               {showFeedback && index === correct && (
                 <CheckCircle className="h-6 w-6 text-white" />
               )}

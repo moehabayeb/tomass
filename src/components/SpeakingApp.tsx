@@ -2390,12 +2390,12 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         </div>
 
         {/* Floating Avatar - Centered, No Container */}
-        <div className="px-4 pt-6 flex flex-col items-center pointer-events-none">
+        <div className="px-4 pt-3 flex flex-col items-center pointer-events-none">
           <div className="flex flex-col items-center gap-3">
             <div className="relative pointer-events-auto z-[101]">
               {/* Floating Avatar Container - Dramatic shadow, no borders - v68: Added z-[101] for proper stacking */}
               <div className={cn(
-                "w-32 h-32 rounded-full relative transition-all duration-300",
+                "w-24 h-24 rounded-full relative overflow-hidden transition-all duration-300",
                 isSpeaking && "ring-4 ring-green-400/60 shadow-[0_0_40px_rgba(74,222,128,0.5)]",
                 !isSpeaking && "shadow-[0_20px_60px_rgba(88,28,135,0.6)]"
               )}>
@@ -2423,7 +2423,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
               {/* Floating Status Indicator */}
               <div
                 className={cn(
-                  "absolute bottom-1 right-1 w-7 h-7 rounded-full border-4 border-purple-900 flex items-center justify-center shadow-2xl transition-all duration-300",
+                  "absolute bottom-1 right-1 w-6 h-6 rounded-full border-4 border-purple-900 flex items-center justify-center shadow-2xl transition-all duration-300",
                   flowState === 'LISTENING' && 'bg-green-400 shadow-green-400/60 animate-pulse',
                   flowState === 'READING' && 'bg-blue-400 shadow-blue-400/60 animate-pulse',
                   flowState === 'PROCESSING' && 'bg-yellow-400 shadow-yellow-400/60 animate-pulse',
@@ -2432,7 +2432,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
                 )}
                 aria-hidden="true"
               >
-                <div className="w-3 h-3 rounded-full bg-white" />
+                <div className="w-2.5 h-2.5 rounded-full bg-white" />
               </div>
             </div>
 
@@ -2514,7 +2514,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       {/* Full-Screen Scrollable Chat Area - adjusted for floating header */}
       <div
         id="main-content"
-        className="flex-1 overflow-y-auto overflow-x-hidden pt-[300px] pb-24 px-4 z-[1]"
+        className="flex-1 overflow-y-auto overflow-x-hidden pt-[260px] pb-24 px-4 z-[1]"
         style={{
           overscrollBehaviorY: 'contain',
           overscrollBehaviorX: 'none',
