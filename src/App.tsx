@@ -27,6 +27,8 @@ if (hasConsent()) {
   initAmplitude();
 }
 
+import { AuthGate } from "@/components/AuthGate";
+
 // Lazy load major components for better bundle splitting
 const Index = React.lazy(() => import("./pages/Index"));
 const Auth = React.lazy(() => import("./pages/Auth"));
@@ -113,10 +115,10 @@ const App = () => (
               </div>
             }>
               <Routes>
-                <Route path="/" element={<Index />} />
+                <Route path="/" element={<AuthGate><Index /></AuthGate>} />
                 <Route path="/auth" element={<Auth />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/pricing" element={<Pricing />} />
+                <Route path="/profile" element={<AuthGate><Profile /></AuthGate>} />
+                <Route path="/pricing" element={<AuthGate><Pricing /></AuthGate>} />
                 <Route path="/privacy" element={<PrivacyPolicy />} />
                 <Route path="/terms" element={<TermsOfService />} />
                 {/* Admin route removed for Apple compliance - admins use web dashboard */}

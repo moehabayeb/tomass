@@ -20,7 +20,7 @@ const config: CapacitorConfig = {
     },
   },
   server: {
-    allowNavigation: ['*.supabase.co']
+    allowNavigation: ['*.supabase.co', '*.google.com', '*.googleapis.com', 'appleid.apple.com']
   }
 };
 
