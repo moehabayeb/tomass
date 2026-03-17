@@ -41,6 +41,7 @@ import { ResumeProgressDialog, SyncStatusIndicator } from './ResumeProgressDialo
 import { useAuthReady } from '../hooks/useAuthReady';
 // Storage keys for unified progress
 import { STORAGE_KEYS } from '@/constants/storageKeys';
+import { isValidModuleId } from '@/constants/moduleRanges';
 // 🔧 GOD-TIER v24: Use micEngine EXCLUSIVELY (removed unifiedSpeechRecognition which was causing issues)
 // micEngine.ts is the PROVEN working engine used by SpeakingApp
 import { startRecording as micStartRecording, stopRecording as micStopRecording, cleanup as micCleanup, releasePersistentStream } from '@/lib/audio/micEngine';
@@ -1076,6 +1077,18 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
       setViewState('lesson');
     }
   }, [initialLevel, initialModule]);
+
+  // Persist last active level+module for session resume
+  useEffect(() => {
+    if (viewState === 'lesson' && selectedLevel && selectedModule > 0) {
+      if (!isValidModuleId(selectedModule)) return;
+      try {
+        const storage = safeLocalStorage();
+        storage.setItem('lastActiveLevel', String(selectedLevel));
+        storage.setItem('lastActiveModule', String(selectedModule));
+      } catch { /* Safari Private Mode */ }
+    }
+  }, [viewState, selectedLevel, selectedModule]);
 
   // 🔧 GOD-LEVEL FIX: Dynamic module loading - load modules on-demand
   useEffect(() => {

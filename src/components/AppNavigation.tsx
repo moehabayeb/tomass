@@ -41,7 +41,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
 import { TestResult } from '@/services/speakingTestService';
 import { ErrorBoundary } from './ErrorBoundary';
-import { MODULE_RANGES } from '@/constants/moduleRanges';
+import { MODULE_RANGES, getLevelForModule, isValidModuleId } from '@/constants/moduleRanges';
 
 // Safe storage wrappers for Safari Private Mode compatibility
 const safeLocalStorage = {
@@ -259,6 +259,27 @@ export default function AppNavigation() {
 
   // Get initial lesson parameters from test result
   const getInitialLessonParams = () => {
+    // Priority 0: Resume where user actually was (updated every lesson entry)
+    const lastLevel = safeLocalStorage.getItem('lastActiveLevel');
+    const lastModule = safeLocalStorage.getItem('lastActiveModule');
+    if (lastLevel && lastModule) {
+      const moduleNum = parseInt(lastModule);
+      if (!isNaN(moduleNum) && isValidModuleId(moduleNum)) {
+        const derivedLevel = getLevelForModule(moduleNum);
+        const safeLevel = derivedLevel || lastLevel;
+        const levelKey = safeLevel as keyof typeof MODULE_RANGES;
+        if (MODULE_RANGES[levelKey]) {
+          return { level: safeLevel, module: moduleNum };
+        }
+      }
+      // Validation failed — clean up corrupt keys, fall through to placement test
+      try {
+        safeLocalStorage.removeItem('lastActiveLevel');
+        safeLocalStorage.removeItem('lastActiveModule');
+      } catch { /* Safari Private Mode */ }
+    }
+
+    // Priority 1: Check placement test result
     const testResult = safeLocalStorage.getItem('lastTestResult');
     if (testResult) {
       try {

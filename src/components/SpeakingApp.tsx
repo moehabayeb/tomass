@@ -2380,7 +2380,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     return (
       <div className="fixed top-0 left-0 right-0 z-[100] pointer-events-none pt-safe">
         {/* Floating XP Display & Difficulty - Clean minimal header - v47: Added pt-safe for iPhone Dynamic Island */}
-        <div className="px-4 py-4 mt-14 flex flex-wrap items-center justify-center gap-2 pointer-events-none">
+        <div className="px-4 py-2 mt-10 flex flex-wrap items-center justify-center gap-2 pointer-events-none">
           <div className="px-4 py-2 rounded-full text-sm bg-white/15 text-white backdrop-blur-xl font-bold tracking-wide shadow-lg" role="status" aria-label={`${formattedXP} experience points`}>
             ⚡ {formattedXP} XP
           </div>
@@ -2391,11 +2391,11 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
         {/* Floating Avatar - Centered, No Container */}
         <div className="px-4 pt-3 flex flex-col items-center pointer-events-none">
-          <div className="flex flex-col items-center gap-3">
+          <div className="flex flex-col items-center gap-2">
             <div className="relative pointer-events-auto z-[101]">
               {/* Floating Avatar Container - Dramatic shadow, no borders - v68: Added z-[101] for proper stacking */}
               <div className={cn(
-                "w-24 h-24 rounded-full relative overflow-hidden transition-all duration-300",
+                "w-20 h-20 rounded-full relative overflow-hidden transition-all duration-300",
                 isSpeaking && "ring-4 ring-green-400/60 shadow-[0_0_40px_rgba(74,222,128,0.5)]",
                 !isSpeaking && "shadow-[0_20px_60px_rgba(88,28,135,0.6)]"
               )}>
@@ -2514,7 +2514,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       {/* Full-Screen Scrollable Chat Area - adjusted for floating header */}
       <div
         id="main-content"
-        className="flex-1 overflow-y-auto overflow-x-hidden pt-[260px] pb-24 px-4 z-[1]"
+        className="flex-1 overflow-y-auto overflow-x-hidden pt-[280px] pb-24 px-4 z-[1]"
         style={{
           overscrollBehaviorY: 'contain',
           overscrollBehaviorX: 'none',

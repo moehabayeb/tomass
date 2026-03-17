@@ -195,6 +195,9 @@ class LessonProgressService {
           localStorage.removeItem(key);
         }
       });
+      // Clear session resume keys so next user doesn't inherit stale data
+      localStorage.removeItem('lastActiveLevel');
+      localStorage.removeItem('lastActiveModule');
     } catch (error) {
       // Apple Store Compliance: Silent fail
     }
