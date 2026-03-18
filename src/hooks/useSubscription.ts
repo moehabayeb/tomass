@@ -271,10 +271,15 @@ export const useSubscription = (): UseSubscriptionReturn => {
     }
   }, [authLoading, isAuthenticated, fetchSubscriptionData]);
 
+  // Admin override for testing (email list + localStorage toggle for debugging)
+  const ADMIN_EMAILS = ['mohammadhabayeb2001@gmail.com', 'appreview@tomashoca.com'];
+  const isAdmin = ADMIN_EMAILS.includes(user?.email || '')
+    || (typeof localStorage !== 'undefined' && localStorage.getItem('admin_override') === 'true');
+
   // Convenience flags
-  const isSubscribed = subscriptionCheck?.isSubscribed || false;
-  const hasAccessToAI = subscriptionCheck?.hasAccessToAI || false;
-  const hasAccessToLiveLessons = subscriptionCheck?.hasAccessToLiveLessons || false;
+  const isSubscribed = isAdmin || subscriptionCheck?.isSubscribed || false;
+  const hasAccessToAI = isAdmin || subscriptionCheck?.hasAccessToAI || false;
+  const hasAccessToLiveLessons = isAdmin || subscriptionCheck?.hasAccessToLiveLessons || false;
   const isOnTrial = subscriptionCheck?.isOnTrial || false;
   const trialDaysRemaining = subscriptionCheck?.trialDaysRemaining || null;
   const canUpgrade = subscriptionCheck?.canUpgrade || false;

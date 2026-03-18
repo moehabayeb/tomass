@@ -4,13 +4,15 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, ExternalLink, Users, Bell, BellOff } from 'lucide-react';
+import { Calendar, Clock, ExternalLink, Users, Bell, BellOff, Crown } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useUpcomingMeetings, useMeetingRSVP } from '@/hooks/useMeetings';
 import { MeetingsService, type AdminMeeting } from '@/services/meetingsService';
 import { meetingNotifications } from '@/services/meetingNotifications';
+import { useSubscription } from '@/hooks/useSubscription';
+import { useNavigate } from 'react-router-dom';
 
 interface MeetingCardProps {
   meeting: AdminMeeting;
@@ -135,8 +137,26 @@ export function MeetingsWidget({
   showHeader = true,
   maxMeetings = 3
 }: MeetingsWidgetProps) {
+  const { hasAccessToLiveLessons } = useSubscription();
+  const navigate = useNavigate();
   const { upcomingMeetings, isLoading, error } = useUpcomingMeetings();
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+
+  // Show teaser for users without live lesson access
+  if (!hasAccessToLiveLessons) {
+    return (
+      <div className={`bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10 ${className}`}>
+        <div className="flex items-center gap-3 mb-2">
+          <Crown className="w-5 h-5 text-purple-400" />
+          <h3 className="text-white font-semibold text-sm">Live Classes</h3>
+        </div>
+        <p className="text-white/60 text-xs mb-3">Join live classes with real English teachers</p>
+        <Button size="sm" variant="outline" onClick={() => navigate('/pricing')} className="w-full text-xs">
+          Upgrade to Access
+        </Button>
+      </div>
+    );
+  }
 
   // 🔧 FIX BUG #21 OPTIMIZED: Event-based permission check (no polling)
   useEffect(() => {

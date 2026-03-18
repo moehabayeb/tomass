@@ -41,6 +41,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
 import { TestResult } from '@/services/speakingTestService';
 import { ErrorBoundary } from './ErrorBoundary';
+import { FeatureGate } from '@/components/subscription/FeatureGate';
 import { MODULE_RANGES, getLevelForModule, isValidModuleId, getStartingModule, type Level } from '@/constants/moduleRanges';
 
 // Safe storage wrappers for Safari Private Mode compatibility
@@ -486,9 +487,11 @@ export default function AppNavigation() {
 
       {currentMode === 'meetings' && (
         <Suspense fallback={TabFallback}>
-          <ErrorBoundary>
-            <MeetingsApp onBack={() => setCurrentMode('speaking')} />
-          </ErrorBoundary>
+          <FeatureGate feature="live_lessons">
+            <ErrorBoundary>
+              <MeetingsApp onBack={() => setCurrentMode('speaking')} />
+            </ErrorBoundary>
+          </FeatureGate>
         </Suspense>
       )}
 
