@@ -20,6 +20,7 @@ import {
   Zap
 } from 'lucide-react';
 import { TestResult } from '@/services/speakingTestService';
+import { getStartingModule, type Level } from '@/constants/moduleRanges';
 
 interface TestResultsProps {
   result: TestResult;
@@ -517,8 +518,13 @@ export function TestResults({ result, onRestart, onBack, onGoToLessons }: TestRe
           <Button
             onClick={useCallback(() => {
               // Always save progress data first (Safari Private Mode safe)
+              const startModule = String(getStartingModule((result.recommended_level as Level) || 'A1'));
               const saved = safeLocalStorage.setItem('recommendedStartLevel', result.recommended_level);
+              safeLocalStorage.setItem('recommendedStartModule', startModule);
               safeLocalStorage.setItem('currentLevel', result.recommended_level);
+              // Save for session resume so user lands directly in their level
+              safeLocalStorage.setItem('lastActiveLevel', result.recommended_level);
+              safeLocalStorage.setItem('lastActiveModule', startModule);
 
               // Enable access to the recommended level
               const unlocksStr = safeLocalStorage.getItem('unlocks') || '{}';

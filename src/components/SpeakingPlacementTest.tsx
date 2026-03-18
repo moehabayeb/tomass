@@ -29,6 +29,7 @@ import { processPlacementResults } from './levelPlacementLogic';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuthReady } from '@/hooks/useAuthReady';
+import { getStartingModule, type Level } from '@/constants/moduleRanges';
 
 // Utility: Add timeout to Supabase calls to prevent indefinite hangs
 function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 30000): Promise<T> {
@@ -782,9 +783,7 @@ export function SpeakingPlacementTest({ onBack, onComplete }: SpeakingPlacementT
           // Phase 1.2: Create initial lesson progress entry
           try {
             // Determine starting module based on level
-            const startingModule = scored.level === 'A1' ? 1 :
-                                   scored.level === 'A2' ? 51 :
-                                   scored.level === 'B1' ? 101 : 1;
+            const startingModule = getStartingModule((scored.level as Level) || 'A1');
 
             const { data: progressData, error: progressError } = await withTimeout(
               supabase.rpc('upsert_lesson_progress', {

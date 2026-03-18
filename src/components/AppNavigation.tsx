@@ -41,7 +41,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
 import { TestResult } from '@/services/speakingTestService';
 import { ErrorBoundary } from './ErrorBoundary';
-import { MODULE_RANGES, getLevelForModule, isValidModuleId } from '@/constants/moduleRanges';
+import { MODULE_RANGES, getLevelForModule, isValidModuleId, getStartingModule, type Level } from '@/constants/moduleRanges';
 
 // Safe storage wrappers for Safari Private Mode compatibility
 const safeLocalStorage = {
@@ -286,32 +286,11 @@ export default function AppNavigation() {
         const parsed = JSON.parse(testResult);
         const level = parsed.level;
 
-        // Determine starting module based on level
-        let startingModule = 1;
-        switch (level) {
-          case 'A1':
-            startingModule = 1;
-            break;
-          case 'A2':
-            startingModule = 51;
-            break;
-          case 'B1':
-            startingModule = 101;
-            break;
-          case 'B2':
-            startingModule = 151;
-            break;
-          case 'C1':
-            startingModule = 1; // C1 not implemented yet, fallback to A1
-            break;
-          case 'C2':
-            startingModule = 1; // C2 not implemented yet, fallback to A1
-            break;
-          default:
-            startingModule = 1;
-        }
+        // Determine starting module based on level using centralized constants
+        const levelKey = level as Level;
+        const startingModule = MODULE_RANGES[levelKey] ? getStartingModule(levelKey) : 1;
 
-        return { level: level === 'C1' || level === 'C2' ? 'A1' : level, module: startingModule };
+        return { level: MODULE_RANGES[levelKey] ? level : 'A1', module: startingModule };
       } catch {
         // Parsing failed, fall through to next check
       }

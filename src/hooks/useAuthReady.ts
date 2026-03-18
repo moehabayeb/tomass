@@ -7,6 +7,7 @@ import { speakingTestService } from '@/services/speakingTestService';
 import { StorageMigrationService } from '@/services/storageMigrationService';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { logger } from '@/lib/logger';
+import { Capacitor } from '@capacitor/core';
 
 export const useAuthReady = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -238,11 +239,18 @@ export const useAuthReady = () => {
     return { error };
   };
 
+  const getOAuthRedirectUrl = () => {
+    if (Capacitor.isNativePlatform()) {
+      return 'capacitor://localhost/';
+    }
+    return `${window.location.origin}/`;
+  };
+
   const signInWithApple = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'apple',
       options: {
-        redirectTo: `${window.location.origin}/`,
+        redirectTo: getOAuthRedirectUrl(),
       },
     });
     return { error };
@@ -252,7 +260,7 @@ export const useAuthReady = () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/`,
+        redirectTo: getOAuthRedirectUrl(),
         queryParams: {
           access_type: 'offline',
           prompt: 'consent',

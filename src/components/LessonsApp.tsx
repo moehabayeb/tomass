@@ -1877,7 +1877,8 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
     const previousModuleId = moduleId - 1;
 
     // Skip check for first modules of each level (but respect placement)
-    if (moduleId === 1 || moduleId === 51 || moduleId === 101 || moduleId === 151 || moduleId === 201 || moduleId === 251) {
+    // Values match MODULE_RANGES: A1=1, A2=51, B1=101, B2=151, C1=201, C2=217
+    if (moduleId === 1 || moduleId === 51 || moduleId === 101 || moduleId === 151 || moduleId === 201 || moduleId === 217) {
       // v43: Fixed logic - only unlock level starting points AT OR BELOW user's placement
       // Was: moduleId >= placedModule (WRONG - unlocked higher levels)
       // Now: moduleId <= placedModule (CORRECT - only unlocks at or below placement)
