@@ -271,10 +271,9 @@ export const useSubscription = (): UseSubscriptionReturn => {
     }
   }, [authLoading, isAuthenticated, fetchSubscriptionData]);
 
-  // Admin override for testing (email list + localStorage toggle for debugging)
+  // Admin override for testing (email list only — no localStorage to prevent bypass)
   const ADMIN_EMAILS = ['mohammadhabayeb2001@gmail.com', 'appreview@tomashoca.com'];
-  const isAdmin = ADMIN_EMAILS.includes(user?.email || '')
-    || (typeof localStorage !== 'undefined' && localStorage.getItem('admin_override') === 'true');
+  const isAdmin = ADMIN_EMAILS.includes(user?.email || '');
 
   // Convenience flags
   const isSubscribed = isAdmin || subscriptionCheck?.isSubscribed || false;
@@ -282,8 +281,8 @@ export const useSubscription = (): UseSubscriptionReturn => {
   const hasAccessToLiveLessons = isAdmin || subscriptionCheck?.hasAccessToLiveLessons || false;
   const isOnTrial = subscriptionCheck?.isOnTrial || false;
   const trialDaysRemaining = subscriptionCheck?.trialDaysRemaining || null;
-  const canUpgrade = subscriptionCheck?.canUpgrade || false;
-  const currentTier = subscriptionCheck?.tier || 'free';
+  const canUpgrade = isAdmin ? false : (subscriptionCheck?.canUpgrade || false);
+  const currentTier = isAdmin ? ('ai_plus_live' as const) : (subscriptionCheck?.tier || 'free');
   const aiUsedToday = subscriptionCheck?.aiUsedToday || 0;
   const aiRemainingToday = subscriptionCheck?.aiRemainingToday || null;
   const aiDailyLimit = subscriptionCheck?.aiDailyLimit || null;
