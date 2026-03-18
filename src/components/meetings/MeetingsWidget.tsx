@@ -142,22 +142,6 @@ export function MeetingsWidget({
   const { upcomingMeetings, isLoading, error } = useUpcomingMeetings();
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
 
-  // Show teaser for users without live lesson access
-  if (!hasAccessToLiveLessons) {
-    return (
-      <div className={`bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10 ${className}`}>
-        <div className="flex items-center gap-3 mb-2">
-          <Crown className="w-5 h-5 text-purple-400" />
-          <h3 className="text-white font-semibold text-sm">Live Classes</h3>
-        </div>
-        <p className="text-white/60 text-xs mb-3">Join live classes with real English teachers</p>
-        <Button size="sm" variant="outline" onClick={() => navigate('/pricing')} className="w-full text-xs">
-          Upgrade to Access
-        </Button>
-      </div>
-    );
-  }
-
   // 🔧 FIX BUG #21 OPTIMIZED: Event-based permission check (no polling)
   useEffect(() => {
     const checkNotificationStatus = () => {
@@ -187,6 +171,22 @@ export function MeetingsWidget({
       window.removeEventListener('focus', handleFocus);
     };
   }, []);
+
+  // Show teaser for users without live lesson access
+  if (!hasAccessToLiveLessons) {
+    return (
+      <div className={`bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10 ${className}`}>
+        <div className="flex items-center gap-3 mb-2">
+          <Crown className="w-5 h-5 text-purple-400" />
+          <h3 className="text-white font-semibold text-sm">Live Classes</h3>
+        </div>
+        <p className="text-white/60 text-xs mb-3">Join live classes with real English teachers</p>
+        <Button size="sm" variant="outline" onClick={() => navigate('/pricing')} className="w-full text-xs">
+          Upgrade to Access
+        </Button>
+      </div>
+    );
+  }
 
   const handleJoinMeeting = (url: string) => {
     window.open(url, '_blank', 'noopener,noreferrer');
