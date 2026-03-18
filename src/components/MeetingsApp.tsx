@@ -77,9 +77,18 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
     isMounted.current = true;
     loadMeetingsData();
 
+    // Real-time subscription: auto-refresh when meetings change in Supabase
+    const channel = supabase
+      .channel('meetings-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'meetings' }, () => {
+        if (isMounted.current) loadMeetingsData();
+      })
+      .subscribe();
+
     // 🔧 FIX: Cleanup on unmount
     return () => {
       isMounted.current = false;
+      supabase.removeChannel(channel);
     };
   }, []);
 
@@ -89,16 +98,17 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
       setLoading(true);
       setLoadError(false); // 🔧 FIX #20: Reset error state on retry
 
-      // Get all upcoming meetings (includes capacity, level_code, section_name if available)
-      const { data: meetings, error } = await supabase
-        .from('public_meetings')
+      // Use admin_meetings (same reliable source as the widget) with field mapping
+      const { data: rawMeetings, error } = await supabase
+        .from('admin_meetings')
         .select('*')
-        .order('scheduled_at', { ascending: true });
+        .eq('is_active', true)
+        .gte('starts_at', new Date().toISOString())
+        .order('starts_at', { ascending: true });
 
-      if (!isMounted.current) return; // 🔧 FIX: Check before setState
+      if (!isMounted.current) return;
 
       if (error) {
-        // 🔧 FIX #20: Set error state for retry button display
         if (isMounted.current) {
           setLoadError(true);
           toast({
@@ -110,11 +120,19 @@ export default function MeetingsApp({ onBack }: MeetingsAppProps) {
         return;
       }
 
-      if (!isMounted.current) return; // 🔧 CRITICAL FIX: Check before setState
+      if (!isMounted.current) return;
 
-      if (meetings && meetings.length > 0) {
+      // Map admin_meetings fields to MeetingsApp's Meeting interface
+      const meetings = rawMeetings?.map((m: any) => ({
+        ...m,
+        teacher_name: m.teacher_name || 'Tomas Hoca',
+        focus_topic: m.focus_topic || m.description || 'General English Practice',
+        zoom_link: m.zoom_link || m.meeting_url,
+      })) || [];
+
+      if (meetings.length > 0) {
         setNextMeeting(meetings[0]);
-        setUpcomingMeetings(meetings.slice(1, 4)); // Next 3 after the first one
+        setUpcomingMeetings(meetings.slice(1, 4));
       }
 
       // Load user reminders if user is logged in

@@ -57,7 +57,7 @@ workflows:
       - name: Force iOS build number
         script: |
           cd ios/App
-          agvtool new-version -all 98
+          agvtool new-version -all 99
 
       - name: Build iOS app
         script: |
