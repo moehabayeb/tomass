@@ -31,9 +31,7 @@ const StreakWelcomePopup = React.lazy(() =>
 const BadgeAchievement = React.lazy(() =>
   import('./BadgeAchievement').then(m => ({ default: m.BadgeAchievement }))
 );
-const MeetingsWidget = React.lazy(() =>
-  import('@/components/meetings/MeetingsWidget').then(m => ({ default: m.MeetingsWidget }))
-);
+;
 import { useGamification } from '@/hooks/useGamification';
 import { useStreakTracker } from '@/hooks/useStreakTracker';
 import { useBadgeSystem } from '@/hooks/useBadgeSystem';
@@ -420,18 +418,7 @@ export default function AppNavigation() {
         </div>
       )}
 
-      {/* Meetings Widget - Show on speaking page */}
-      {currentMode === 'speaking' && (
-        <div className="px-4 pb-4 max-w-sm mx-auto">
-          <ErrorBoundary>
-            <Suspense fallback={null}>
-              <MeetingsWidget
-                className="border-white/20 bg-white/10 backdrop-blur-xl text-white"
-              />
-            </Suspense>
-          </ErrorBoundary>
-        </div>
-      )}
+      {/* Meetings Widget removed from speaking page — accessible via navigation menu with proper FeatureGate */}
 
       {/* User Avatar with Streak Badge - Hidden on speaking page for cleaner mobile experience */}
 
