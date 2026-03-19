@@ -178,6 +178,17 @@ export function useLessonProgress(level?: string, moduleId?: number) {
     }
   }, [isAuthenticated, user?.id]);
 
+  // Re-load progress after cloud sync completes (fixes stale data after login)
+  useEffect(() => {
+    const handleSyncComplete = () => {
+      if (level && moduleId !== undefined) {
+        loadProgress(level, moduleId).catch(() => {});
+      }
+    };
+    window.addEventListener('auth:sync-complete', handleSyncComplete);
+    return () => window.removeEventListener('auth:sync-complete', handleSyncComplete);
+  }, [level, moduleId, loadProgress]);
+
   // Listen for sync triggers
   useEffect(() => {
     const handleTriggerSync = () => {

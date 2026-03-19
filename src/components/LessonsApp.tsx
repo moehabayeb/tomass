@@ -3311,7 +3311,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
                                 onClick={() => handleMultipleChoiceSelect(option.letter, option.correct)}
                                 variant="outline"
                                 size="lg"
-                                className={`text-left justify-start p-4 h-auto ${
+                                className={`text-left justify-start p-4 h-auto whitespace-normal break-words w-full ${
                                   currentState.selectedChoice === option.letter
                                     ? option.correct
                                       ? 'bg-green-500/20 border-green-500 text-green-300'
@@ -3323,7 +3323,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
                                 <span className="font-bold mr-3 text-lg">
                                   {option.letter}.
                                 </span>
-                                <span className="text-lg">
+                                <span className="text-lg break-words">
                                   {fullSentence}
                                 </span>
                               </Button>

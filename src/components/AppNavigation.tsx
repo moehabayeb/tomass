@@ -422,7 +422,7 @@ export default function AppNavigation() {
 
       {/* Meetings Widget - Show on speaking page */}
       {currentMode === 'speaking' && (
-        <div className="fixed bottom-4 right-4 z-10 max-w-sm">
+        <div className="px-4 pb-4 max-w-sm mx-auto">
           <ErrorBoundary>
             <Suspense fallback={null}>
               <MeetingsWidget
