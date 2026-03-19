@@ -23,6 +23,12 @@ export function ModulesView({ selectedLevel, onBack, onSelectModule }: ModulesVi
 
   useEffect(() => {
     setCompletedModules(getCompletedModules());
+
+    const handleSyncComplete = () => {
+      setCompletedModules(getCompletedModules());
+    };
+    window.addEventListener('auth:sync-complete', handleSyncComplete);
+    return () => window.removeEventListener('auth:sync-complete', handleSyncComplete);
   }, []);
 
   let modules = MODULES_BY_LEVEL[selectedLevel] || [];

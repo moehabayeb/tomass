@@ -11,7 +11,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { indexedDBStore, type LessonCheckpoint } from '@/utils/indexedDBStore';
-import { getProgress as getLocalProgress, setProgress as setLocalProgress } from '@/utils/ProgressStore';
+import { getProgress as getLocalProgress, setProgress as setLocalProgress, getAllProgress } from '@/utils/ProgressStore';
 import type { ModuleProgress } from '@/utils/ProgressStore';
 import { logger } from '@/lib/logger';
 
@@ -555,6 +555,24 @@ class LessonProgressService {
         // Save to local storage
         await this.saveLocalProgress(checkpoint);
       }
+
+      // Rebuild completedModules array from ll_progress_v1 so ModulesView stays consistent
+      const allProgress = getAllProgress();
+      const completedModules: string[] = [];
+      try {
+        const existing = JSON.parse(localStorage.getItem('completedModules') || '[]');
+        if (Array.isArray(existing)) completedModules.push(...existing);
+      } catch {}
+
+      for (const p of allProgress) {
+        if (p.completed) {
+          const key = `module-${p.module}`;
+          if (!completedModules.includes(key)) {
+            completedModules.push(key);
+          }
+        }
+      }
+      localStorage.setItem('completedModules', JSON.stringify(completedModules));
 
       logger.log('[LessonProgress] Cloud progress loaded successfully');
     } catch (err) {
