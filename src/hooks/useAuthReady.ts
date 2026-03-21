@@ -16,6 +16,9 @@ export const useAuthReady = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
+    // Track user ID so we can sync on logout (session is null on SIGNED_OUT)
+    let lastUserId: string | null = null;
+
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
@@ -27,6 +30,7 @@ export const useAuthReady = () => {
         // PRODUCTION FIX: Handle login event - robust sync with verification
         if (event === 'SIGNED_IN' && session?.user) {
           const userId = session.user.id;
+          lastUserId = userId;
           logger.log('[Auth] User signed in, starting progress sync for:', userId);
 
           try {
@@ -143,6 +147,17 @@ export const useAuthReady = () => {
 
         // FIX #6: Handle logout event - clear localStorage for security
         if (event === 'SIGNED_OUT') {
+          // Last-chance sync: upload progress to server before clearing
+          if (lastUserId) {
+            try {
+              await lessonProgressService.syncAllProgressToCloud(lastUserId);
+              logger.log('[Auth] Progress synced to cloud before logout');
+            } catch (err) {
+              logger.warn('[Auth] Pre-logout sync failed (best effort):', err);
+            }
+            lastUserId = null;
+          }
+
           try {
             // Clear progress data for security/privacy (synchronous - fast)
             localStorage.removeItem('ll_progress_v1');

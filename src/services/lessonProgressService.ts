@@ -60,6 +60,9 @@ class LessonProgressService {
    * Non-blocking with automatic retry
    */
   async saveCheckpoint(checkpoint: LessonCheckpoint): Promise<void> {
+    // Always save locally immediately — never lose data to debounce
+    await this.saveLocalProgress(checkpoint);
+
     const key = this.getCheckpointKey(checkpoint);
 
     // Clear existing debounce timer
@@ -68,10 +71,20 @@ class LessonProgressService {
       clearTimeout(existingTimer);
     }
 
-    // Debounce saves to prevent spam
+    // Only debounce the server save
     const timer = setTimeout(async () => {
       this.debounceTimers.delete(key);
-      await this.saveCheckpointInternal(checkpoint);
+      if (checkpoint.user_id && this.isOnline) {
+        try {
+          await this.saveToServer(checkpoint);
+        } catch (error) {
+          if (this.config.enableOfflineQueue) {
+            await indexedDBStore.addCheckpoint(checkpoint);
+          }
+        }
+      } else if (checkpoint.user_id && this.config.enableOfflineQueue) {
+        await indexedDBStore.addCheckpoint(checkpoint);
+      }
     }, this.config.debounceMs);
 
     this.debounceTimers.set(key, timer);
@@ -267,12 +280,11 @@ class LessonProgressService {
       });
 
       if (error) {
-        // 🔧 EMERGENCY FIX: Log but don't throw - RPC might not exist
         if (import.meta.env.DEV) {
           logger.warn('Supabase RPC error (upsert_lesson_progress):', error.code, error.message);
         }
-        // Don't throw - allow fallback to local storage
-        return;
+        // Throw so caller can queue to IndexedDB as fallback
+        throw new Error(`RPC failed: ${error.message}`);
       }
 
       // Apple Store Compliance: Silent fail
