@@ -96,6 +96,34 @@ export const useAuthReady = () => {
               }
             }
 
+            // Step 2.5: Restore placement localStorage keys from database
+            // This fixes progress loss after logout/login — placement keys are cleared on
+            // logout but never restored, causing the unlock system to default to A1/module 1
+            try {
+              const { data: placementData } = await supabase
+                .from('speaking_test_results')
+                .select('recommended_level, id')
+                .eq('user_id', userId)
+                .order('created_at', { ascending: false })
+                .limit(1);
+
+              if (placementData && placementData.length > 0) {
+                const level = placementData[0].recommended_level || 'A1';
+                const levelToModule: Record<string, number> = {
+                  'A1': 1, 'A2': 51, 'B1': 101, 'B2': 151, 'C1': 201, 'C2': 217
+                };
+                const startModule = levelToModule[level] || 1;
+
+                localStorage.setItem('recommendedStartLevel', level);
+                localStorage.setItem('recommendedStartModule', String(startModule));
+                localStorage.setItem('userPlacement', JSON.stringify({ level, module: startModule }));
+                localStorage.setItem('unlocks', JSON.stringify({ [level]: true }));
+                logger.log('[Auth] Placement keys restored from DB:', level, 'module', startModule);
+              }
+            } catch (err) {
+              logger.warn('[Auth] Failed to restore placement keys:', err);
+            }
+
             // Step 3: Load existing progress from cloud (in case user has progress on other devices)
             try {
               await lessonProgressService.loadProgressFromCloud(userId);

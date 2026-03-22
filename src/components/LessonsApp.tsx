@@ -1868,28 +1868,23 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
       return true;
     }
 
-    // Phase 4: Block modules BEFORE placement (can't go backwards)
-    if (moduleId < placedModule) {
-      return false; // Locked: below your level
-    }
-
-    // Phase 5: Check previous module completion
-    const previousModuleId = moduleId - 1;
-
-    // Skip check for first modules of each level (but respect placement)
+    // Phase 4: Level-start modules at or below placement are always unlocked (for review)
     // Values match MODULE_RANGES: A1=1, A2=51, B1=101, B2=151, C1=201, C2=217
-    if (moduleId === 1 || moduleId === 51 || moduleId === 101 || moduleId === 151 || moduleId === 201 || moduleId === 217) {
-      // v43: Fixed logic - only unlock level starting points AT OR BELOW user's placement
-      // Was: moduleId >= placedModule (WRONG - unlocked higher levels)
-      // Now: moduleId <= placedModule (CORRECT - only unlocks at or below placement)
-      return moduleId <= placedModule;
+    const levelStarts = [1, 51, 101, 151, 201, 217];
+    if (levelStarts.includes(moduleId) && moduleId <= placedModule) {
+      return true;
     }
 
-    // Phase 6: Previous module must be completed
+    // Phase 5: Modules below placement — unlock if previous module is completed
+    // (allows users to review earlier content sequentially)
+    // Modules above placement — same sequential check
+    const previousModuleId = moduleId - 1;
     const isPreviousCompleted = completedModules.includes(`module-${previousModuleId}`);
 
+    // For non-level-start modules below placement, also unlock if they ARE a level start
+    // (already handled above) or if previous is completed
     if (!isPreviousCompleted) {
-      return false; // Locked: complete previous module first
+      return false;
     }
 
     return true;
@@ -3311,7 +3306,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
                                 onClick={() => handleMultipleChoiceSelect(option.letter, option.correct)}
                                 variant="outline"
                                 size="lg"
-                                className={`text-left justify-start p-4 h-auto whitespace-normal break-words w-full ${
+                                className={`text-left justify-start p-4 h-auto whitespace-normal break-words w-full overflow-hidden ${
                                   currentState.selectedChoice === option.letter
                                     ? option.correct
                                       ? 'bg-green-500/20 border-green-500 text-green-300'
@@ -3323,7 +3318,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
                                 <span className="font-bold mr-3 text-lg">
                                   {option.letter}.
                                 </span>
-                                <span className="text-lg break-words">
+                                <span className="text-lg" style={{ overflowWrap: 'anywhere' }}>
                                   {fullSentence}
                                 </span>
                               </Button>
