@@ -85,7 +85,7 @@ workflows:
       groups:
         - signing
       node: 20
-      java: 17
+      java: 21
 
     scripts:
       - name: Install dependencies
