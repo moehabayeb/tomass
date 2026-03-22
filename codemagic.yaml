@@ -82,6 +82,8 @@ workflows:
     instance_type: mac_mini_m2
 
     environment:
+      groups:
+        - signing
       node: 20
       java: 17
 
