@@ -113,6 +113,15 @@ workflows:
           storeFile=../tomass-release.keystore
           EOF
 
+      - name: Verify Android signing setup
+        script: |
+          echo "=== Keystore file size ==="
+          ls -la android/tomass-release.keystore
+          echo "=== Keystore aliases ==="
+          keytool -list -keystore android/tomass-release.keystore -storepass "$CM_KEYSTORE_PASSWORD" 2>&1 || echo "FAILED: wrong storepass or corrupted keystore"
+          echo "=== Properties file content ==="
+          sed 's/\(.\{3\}\).*/\1***/' android/keystore.properties
+
       - name: Build Android AAB
         script: |
           cd android
