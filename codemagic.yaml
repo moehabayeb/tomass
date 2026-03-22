@@ -105,7 +105,7 @@ workflows:
 
       - name: Set up Android signing
         script: |
-          echo $CM_KEYSTORE | base64 --decode > android/tomass-release.keystore
+          echo "$CM_KEYSTORE" | base64 --decode > android/tomass-release.keystore
           cat > android/keystore.properties <<EOF
           storePassword=$CM_KEYSTORE_PASSWORD
           keyPassword=$CM_KEY_PASSWORD
