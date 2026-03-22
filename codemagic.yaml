@@ -103,6 +103,16 @@ workflows:
           sed -i '' "s/versionCode [0-9]*/versionCode 103/" app/build.gradle
           sed -i '' 's/versionName "[^"]*"/versionName "1.2.1"/' app/build.gradle
 
+      - name: Set up Android signing
+        script: |
+          echo $CM_KEYSTORE | base64 --decode > android/tomass-release.keystore
+          cat > android/keystore.properties <<EOF
+          storePassword=$CM_KEYSTORE_PASSWORD
+          keyPassword=$CM_KEY_PASSWORD
+          keyAlias=$CM_KEY_ALIAS
+          storeFile=../tomass-release.keystore
+          EOF
+
       - name: Build Android AAB
         script: |
           cd android
