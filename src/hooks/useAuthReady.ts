@@ -110,7 +110,7 @@ export const useAuthReady = () => {
               if (placementData && placementData.length > 0) {
                 const level = placementData[0].recommended_level || 'A1';
                 const levelToModule: Record<string, number> = {
-                  'A1': 1, 'A2': 51, 'B1': 101, 'B2': 151, 'C1': 201, 'C2': 217
+                  'A1': 1, 'A2': 51, 'B1': 101, 'B2': 151, 'C1': 201, 'C2': 251
                 };
                 const startModule = levelToModule[level] || 1;
 

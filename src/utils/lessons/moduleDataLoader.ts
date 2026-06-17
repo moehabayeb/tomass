@@ -196,10 +196,13 @@ export function getModuleData(moduleId: number): ModuleData {
     return cached;
   }
 
-  // For modules 1-150, we'll need to load from inline data temporarily
-  // This will be replaced when we extract all modules to separate files
-  // For now, return a fallback to MODULE_1_DATA equivalent
-  // Apple Store Compliance: Silent operation
+  // This helper only pre-registers B2 (151-200) and C1 (201-213). The live UI
+  // loads modules via LessonsApp's own loadModuleData(); any call here for an
+  // unregistered id is a programming error. Make it loud in dev instead of
+  // silently returning placeholder content that looks like a real lesson.
+  if (import.meta.env.DEV) {
+    console.warn(`[moduleDataLoader] getModuleData(${moduleId}) has no registered data — returning placeholder. Use LessonsApp.loadModuleData() instead.`);
+  }
 
   // Fallback module data
   const fallbackData: ModuleData = {

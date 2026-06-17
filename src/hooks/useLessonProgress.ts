@@ -160,23 +160,15 @@ export function useLessonProgress(level?: string, moduleId?: number) {
     }
   }, [level, moduleId, user?.id, loadProgress]);
 
-  // Auto-sync on user login
-  // 🔧 EMERGENCY FIX: TEMPORARILY DISABLED to stop infinite loop
-  // This was triggering infinite Supabase calls - will re-enable after fixing
-  useEffect(() => {
-    if (isAuthenticated && user?.id) {
-      if (import.meta.env.DEV) logger.log('🔧 Auto-merge temporarily disabled to prevent infinite loop');
-      // try {
-      //   const hasLocalProgress = localStorage.getItem('ll_progress_v1');
-      //   if (hasLocalProgress) {
-      //     // Offer to merge progress
-      //     mergeProgressOnLogin();
-      //   }
-      // } catch (error) {
-      //   // Apple Store Compliance: Silent fail - Safari Private Mode support
-      // }
-    }
-  }, [isAuthenticated, user?.id]);
+  // Login merge is intentionally NOT run from this hook. The full login-sync
+  // sequence is orchestrated exactly once, in order, by useAuthReady:
+  //   loadProgressFromCloud (cloud→local) → mergeProgressOnLogin (local→cloud)
+  //   → dispatch 'auth:sync-complete'.
+  // Running merge here as well produced a duplicate, concurrent merge racing the
+  // auth-flow one on the same rows — the original "infinite loop"/contention.
+  // The `mergeProgressOnLogin` callback is still exported for manual/explicit use.
+  // This hook just listens for the auth-flow's completion event (effect below) to
+  // refresh the currently-open module's progress.
 
   // Re-load progress after cloud sync completes (fixes stale data after login)
   useEffect(() => {

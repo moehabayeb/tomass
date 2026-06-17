@@ -8,8 +8,8 @@ export const MODULE_RANGES = {
   A2: { start: 51, end: 100 },
   B1: { start: 101, end: 150 },
   B2: { start: 151, end: 200 },
-  C1: { start: 201, end: 216 },
-  C2: { start: 217, end: 250 }  // Future expansion
+  C1: { start: 201, end: 250 },
+  C2: { start: 251, end: 300 }
 } as const;
 
 export type Level = keyof typeof MODULE_RANGES;

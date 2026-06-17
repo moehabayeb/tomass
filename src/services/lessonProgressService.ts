@@ -432,12 +432,16 @@ class LessonProgressService {
           const retryCount = (checkpoint.retry_count || 0) + 1;
 
           if (retryCount >= this.config.retryAttempts) {
+            // Park the checkpoint instead of deleting it: progress stays on-device
+            // (recoverable / not silently lost) and getCheckpointsForRetry() stops
+            // retrying it once retry_count hits the park threshold.
             result.failed++;
-            result.errors.push(`Max retries exceeded for ${checkpoint.level}-${checkpoint.module_id}`);
-            await indexedDBStore.removeCheckpoint(checkpoint.level, checkpoint.module_id);
-          } else {
-            await indexedDBStore.updateRetryCount(checkpoint.level, checkpoint.module_id, retryCount);
+            result.errors.push(`Max retries exceeded (parked, not deleted) for ${checkpoint.level}-${checkpoint.module_id}`);
+            if (import.meta.env.DEV) {
+              console.warn(`[lessonProgress] checkpoint parked after ${retryCount} failed syncs:`, checkpoint.level, checkpoint.module_id, error);
+            }
           }
+          await indexedDBStore.updateRetryCount(checkpoint.level, checkpoint.module_id, retryCount);
         }
       }
 

@@ -222,6 +222,11 @@ type SpeakingPracticeItem = {
   question: string;
   answer: string;
   multipleChoice?: MultipleChoiceQuestion;
+  acceptedAlternatives?: string[];
+  // Open-response (sentence-starter) items: student composes their own sentence;
+  // graded on opener + grammar, not on matching `answer`.
+  openResponse?: boolean;
+  requiredOpeners?: string[];
 };
 
 // New phase for multiple choice selection
@@ -235,14 +240,14 @@ type QuestionState = {
 };
 
 // Import robust evaluator and progress system
-import { evaluateAnswer, evaluateAnswerDetailed, EvalOptions, EvaluationResult, GrammarCorrection } from '../utils/evaluator';
+import { evaluateAnswer, evaluateAnswerDetailed, evaluateOpenResponse, EvalOptions, EvaluationResult, GrammarCorrection } from '../utils/evaluator';
 import { save as saveProgress, resumeLastPointer, clearProgress as clearModuleProgress } from '../utils/progress';
 import { ProgressTrackerService } from '../services/progressTrackerService';
 import { detectGrammarErrors } from '../utils/grammarErrorDetector';
 import { useVoiceActivityDetection } from '../hooks/useVoiceActivityDetection';
 
 // Enhanced progress saving with new progress system
-function saveModuleProgress(userId: string | undefined, level: string, moduleId: number, phase: LessonPhaseType, questionIndex: number = 0) {
+function saveModuleProgress(userId: string | undefined, level: string, moduleId: number, phase: LessonPhaseType, questionIndex: number = 0, totalQuestions: number = 40) {
   const doSave = () => {
     // Save to both old and new systems for compatibility
     const progressData: StoreModuleProgress = {
@@ -253,7 +258,7 @@ function saveModuleProgress(userId: string | undefined, level: string, moduleId:
       speakingIndex: questionIndex,
       completed: phase === 'complete',
       totalListening: 0,
-      totalSpeaking: 40, // All modules have 40 questions
+      totalSpeaking: totalQuestions,
       updatedAt: Date.now(),
       v: 1
     };
@@ -262,7 +267,7 @@ function saveModuleProgress(userId: string | undefined, level: string, moduleId:
 
     // Save to new progress system for exact resume (requires auth)
     if (!userId) return; // Skip if not authenticated
-    const total = 40; // All modules have 40 questions
+    const total = totalQuestions; // Real per-module item count (defaults to 40)
     const correct = Math.min(questionIndex + 1, total); // questions answered correctly so far
     const completed = phase === 'complete';
 
@@ -1472,7 +1477,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
         level: selectedLevel,
         moduleId: selectedModule,
         questionIndex: speakingIndex,
-        totalQuestions: 40,
+        totalQuestions: currentModuleData?.speakingPractice?.length ?? 40,
         mcqChoice: selectedLetter,
         mcqCorrect: true
       });
@@ -1655,6 +1660,25 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
 
   // Enhanced answer checking with detailed feedback and grammar corrections
   function isAnswerCorrect(spokenRaw: string, targetRaw: string, questionItem?: { question: string; answer: string }): boolean {
+    // Open-response (sentence-starter) items grade on opener + grammar, NOT a
+    // fixed answer. Branch early so nothing else in this path is affected.
+    const openItem = questionItem as any;
+    if (openItem?.openResponse) {
+      const r = evaluateOpenResponse(spokenRaw, { requiredOpeners: openItem.requiredOpeners });
+      setEvaluationResult(r);
+      setGrammarCorrections(r.grammarCorrections || []);
+      if (r.isCorrect) {
+        setFeedback(r.feedback);
+        setFeedbackType('success');
+        setCurrentAttemptNumber(1);
+      } else {
+        setFeedback(r.hint ? `${r.feedback}\n\n${r.hint}` : r.feedback);
+        setFeedbackType('error');
+        setCurrentAttemptNumber(prev => prev + 1);
+      }
+      return r.isCorrect;
+    }
+
     // Create evaluation options
     const evalOptions: EvalOptions = {
       expected: targetRaw,
@@ -1832,7 +1856,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
         level: selectedLevel,
         moduleId: selectedModule,
         questionIndex: speakingIndex,
-        totalQuestions: 40
+        totalQuestions: currentModuleData?.speakingPractice?.length ?? 40
       });
     }
   }, [speakingIndex, currentPhase, selectedLevel, selectedModule, checkpoints.checkpointMCQShown]);
@@ -1869,8 +1893,8 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
     }
 
     // Phase 4: Level-start modules at or below placement are always unlocked (for review)
-    // Values match MODULE_RANGES: A1=1, A2=51, B1=101, B2=151, C1=201, C2=217
-    const levelStarts = [1, 51, 101, 151, 201, 217];
+    // Values match MODULE_RANGES: A1=1, A2=51, B1=101, B2=151, C1=201, C2=251
+    const levelStarts = [1, 51, 101, 151, 201, 251];
     if (levelStarts.includes(moduleId) && moduleId <= placedModule) {
       return true;
     }
@@ -1936,11 +1960,18 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
         ? { question: item, answer: item }
         : item as SpeakingPracticeItem;
 
-      // Generate MCQ with seeded shuffle using question index for deterministic ordering
-      const mcq = generateMultipleChoiceQuestion(
+      // Prefer an authored MCQ when the content ships one — this is the
+      // source of truth and keeps MCQ correctness decoupled from the
+      // English-answer regex engine. Fall back to the generator (seeded by
+      // index for a deterministic, stable shuffle) only when none is authored.
+      const authoredMcq = typeof item !== 'string' ? practiceItem.multipleChoice : undefined;
+      // Open-response items with no authored MCQ intentionally show NO MCQ
+      // (straight to free speaking) — never a runtime-generated one.
+      const isOpen = typeof item !== 'string' && (practiceItem as any).openResponse;
+      const mcq = authoredMcq ?? (isOpen ? null : generateMultipleChoiceQuestion(
         practiceItem.answer,
-        index // Use index as seed for deterministic, stable shuffle
-      );
+        index
+      ));
 
       cache[key] = mcq;
     });
@@ -2012,19 +2043,23 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
     // Run when module changes; restore once.
     if (!selectedModule || !currentModuleData || restoredOnceRef.current) return;
 
+    // Clamp restored positions to this module's real length — content counts vary
+    // per module, so a stale/shrunk saved index must never land out of range.
+    const maxIndex = totals.speaking > 0 ? totals.speaking - 1 : 0;
+
     // Priority 1: Check checkpoint system first — restore exact position
     const checkpointProgress = checkpoints.currentProgress;
     if (checkpointProgress && !checkpointProgress.is_module_completed && checkpointProgress.question_index > 0) {
       // Restore exact phase and position from checkpoint
       setCurrentPhase(checkpointProgress.phase || 'speaking');
-      setSpeakingIndex(checkpointProgress.question_index);
+      setSpeakingIndex(Math.min(checkpointProgress.question_index, maxIndex));
     } else {
       // Priority 2: Fallback to old system if no checkpoint data
       const saved = loadModuleProgress(String(selectedLevel), selectedModule);
       if (saved && saved.phase !== 'complete') {
         // restore from old system
         setCurrentPhase(saved.phase);
-        setSpeakingIndex(saved.questionIndex);
+        setSpeakingIndex(Math.min(saved.questionIndex, maxIndex));
       } else {
         // fresh start for this module
         setCurrentPhase('intro');
@@ -2073,7 +2108,8 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
         String(selectedLevel),
         selectedModule,
         currentPhase === 'speaking' ? 'speaking' as LessonPhaseType : 'intro',
-        speakingIndex
+        speakingIndex,
+        currentModuleData?.speakingPractice?.length ?? 40
       );
       autosaveTimeoutRef.current = null;
     }, 250);
@@ -2337,7 +2373,8 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
       String(selectedLevel),
       selectedModule,
       'complete',
-      speakingIndexRef.current
+      speakingIndexRef.current,
+      currentModuleData?.speakingPractice?.length ?? 40
     );
 
     // Save progress to completed modules
@@ -2437,7 +2474,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
     });
 
     // Save progress after each question (exact resume point)
-    saveModuleProgress(user?.id, String(selectedLevel), selectedModule!, 'speaking', curr + 1);
+    saveModuleProgress(user?.id, String(selectedLevel), selectedModule!, 'speaking', curr + 1, currentModuleData?.speakingPractice?.length ?? 40);
 
     // still inside the range → move to next question
     if (curr + 1 < total) {
@@ -2952,6 +2989,12 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
                       setAttempts(0);
                       setFeedback('');
                       setQuestionStates({}); // Clear MCQ state when switching modules
+                      // Reset restore guards so the comprehensive restore effect runs for THIS
+                      // module (mirrors the auto-advance path at the completion handler). Without
+                      // this, resume phase/position is skipped for any module opened after the
+                      // first one in a session, because restoredOnceRef stays true.
+                      restoredOnceRef.current = false;
+                      dialogShownRef.current = false;
                     }
                   }}
                 >
