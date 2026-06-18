@@ -254,7 +254,13 @@ const FILLER_DISTRACTORS = new Set([
 // Pure function words that must never be the (sole) blanked token for A1/A2.
 // NOTE: grammar targets like is/are/was/were/do/does/did/have/has/had are
 // intentionally NOT blocked — blanking them is the whole point at this level.
-const BLOCKED_BLANK = new Set(['the', 'a', 'an', 'and', 'of', 'to', 'in', 'on', 'at', 'for']);
+// Articles (a/an/the) and prepositions (in/on/at/to/of/for) are A1 grammar
+// targets in their own modules — a cloze blanking them WITH same-category
+// distractors (e.g. "I watch TV ___ night." [at|in|on]) is a valid MCQ, so they
+// are not blocked here. Distractor quality is enforced by the distinctness +
+// FILLER_DISTRACTORS checks and the per-item linguistic audit. Only "and" (never
+// a grammar-choice target) stays blocked.
+const BLOCKED_BLANK = new Set(['and']);
 const EMOJI_MARKUP_RE = /[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}]|<[^>]+>/u;
 
 function normText(s: string): string {
@@ -263,6 +269,19 @@ function normText(s: string): string {
     .replace(/[‘’]/g, "'")
     .replace(/[“”]/g, '"')
     .replace(/[.,!?;:"'’“”]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// Distinctness normalizer for OPTIONS only: case/quote/space-insensitive but
+// KEEPS the apostrophe so a contraction vs possessive (e.g. "It's" vs "Its",
+// "friend's" vs "friends") counts as two genuinely-different options. The
+// fully-stripped normText is still used for reconstruction (STT-tolerant).
+function normOption(s: string): string {
+  return (s ?? '')
+    .toLowerCase()
+    .replace(/[‘’]/g, "'")
+    .replace(/[“”]/g, '"')
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -291,7 +310,7 @@ export function validateMcqStrict(mcq: any, sourceAnswer: string): McqVerdict {
     if (t && EMOJI_MARKUP_RE.test(t)) reasons.push(`option ${i} emoji/markup`);
     if (t && FILLER_DISTRACTORS.has(normText(t))) reasons.push(`option ${i} generic filler "${t}"`);
   });
-  const normed = texts.map(normText);
+  const normed = texts.map(normOption);
   if (new Set(normed).size !== normed.length) reasons.push('duplicate options');
 
   const correct = correctOpts[0]?.text ?? '';
