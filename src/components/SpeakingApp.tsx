@@ -786,6 +786,17 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     return { id, seq, messageKey };
   };
 
+  // 🩺 TEMP self-diagnostic (S6): surface the exact reply-TTS path ON DEVICE so we can
+  // pinpoint why the conversational reply is silent without a Mac/Xcode console.
+  // Flip TTS_DIAG to false (or delete) once the cause is confirmed on TestFlight.
+  const TTS_DIAG = true;
+  const ttsDiag = (stage: string) => {
+    logger.log('[TTS-DIAG]', stage);
+    if (TTS_DIAG) {
+      try { toast({ title: 'TTS', description: stage, duration: 2500 }); } catch { /* non-critical */ }
+    }
+  };
+
   // B) Separate "append" vs "speak": Only speak existing messages, never append when speaking
   type SpeakOpts = { token?: string; serverBubbleExists?: boolean };
   const speakExistingMessage = async (
@@ -865,11 +876,13 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     // 🔧 GOD-TIER v7: Use REF for check (refs are synchronous, state is STALE in closures!)
     if (!ttsListenerActiveRef.current) {
       logger.log('[speakExistingMessage] ⛔ TTS skipped - ttsListenerActive is false');
+      ttsDiag('skip: listener inactive');
       return messageKey;
     }
-    
+
     // Turn token guard: Ensure we're still on the correct turn
     if (turnToken !== currentTurnToken) {
+      ttsDiag('skip: turn mismatch');
       return messageKey;
     }
     // D) Sound toggle compliance: Check if sound is enabled before TTS
@@ -877,6 +890,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       // 🎯 v41: TTS authority mutex - prevent overlapping speech
       if (ttsAuthorityMutexRef.current) {
         logger.log('[speakExistingMessage] v41: TTS authority mutex held, skipping');
+        ttsDiag('skip: mutex held');
         return messageKey;
       }
       ttsAuthorityMutexRef.current = true;
@@ -888,6 +902,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           ttsAuthorityMutexRef.current = false; // v41: Release mutex on early return
           // Show tooltip: "Tap Play to enable sound" but don't mark as complete
           setErrorMessage("Tap Play to enable sound");
+          ttsDiag('skip: audioContext not resumed');
           return messageKey;
         }
       }
@@ -922,12 +937,15 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       // 🔧 GOD-TIER v5: Use try-catch-finally instead of .finally() with async callback
       // .finally() does NOT await async callbacks - this was causing race conditions!
       try {
-        await TTSManager.speak(stripEmojisForTTS(text), { canSkip: false }); // 🚨 CRITICAL FIX: Disabled skip to prevent interruption
+        ttsDiag('reached speak');
+        const r = await TTSManager.speak(stripEmojisForTTS(text), { canSkip: false }); // 🚨 CRITICAL FIX: Disabled skip to prevent interruption
         // TTS completed successfully
-        logger.log('[speakExistingMessage] ✅ TTS completed successfully');
-      } catch (error) {
+        logger.log('[speakExistingMessage] ✅ TTS completed successfully', r);
+        ttsDiag(`speak done: completed=${(r as any)?.completed} skipped=${(r as any)?.skipped}`);
+      } catch (error: any) {
         // TTS error - log but continue to transition
         logger.warn('[speakExistingMessage] ⚠️ TTS error:', error);
+        ttsDiag('speak THREW: ' + (error?.message || String(error)).slice(0, 60));
       } finally {
         // 🔧 GOD-TIER v5: All cleanup and transition happens here, PROPERLY AWAITED
         resolved = true;

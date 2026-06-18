@@ -108,12 +108,19 @@ class UnifiedTTSServiceClass {
         this.isSpeakingNative = true;
         // Note: Don't pass voice parameter to native - let Android select best voice for language
         // The Capacitor plugin expects a numeric index, which is hard to manage across sessions
+        //
+        // category: 'playback' (iOS) — force the AVAudioSession to playback before
+        // speaking. Without it the plugin defaults to 'ambient', which is silenced
+        // by the mute switch AND cannot play over the `record` session the mic
+        // leaves behind — so the conversational reply (which fires right after STT)
+        // was silent while standalone TTS (e.g. Lessons "Listen") still worked.
         await TextToSpeech.speak({
           text,
           lang,
           rate,
           pitch,
-          volume
+          volume,
+          category: 'playback'
         });
         this.isSpeakingNative = false;
       } catch (error) {
