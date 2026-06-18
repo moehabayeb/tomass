@@ -787,7 +787,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
   };
 
   // B) Separate "append" vs "speak": Only speak existing messages, never append when speaking
-  type SpeakOpts = { token?: string };
+  type SpeakOpts = { token?: string; serverBubbleExists?: boolean };
   const speakExistingMessage = async (
     text: string, 
     messageKey: string, 
@@ -796,8 +796,12 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     opts: SpeakOpts = {}
   ) => {
     
-    // Use ghost only when there's no server bubble; otherwise highlight the real bubble
-    if (!hasServerAssistant(messageKey)) {
+    // Use ghost only when there's no server bubble; otherwise highlight the real
+    // bubble. `opts.serverBubbleExists` lets a caller that just committed the
+    // bubble (addAssistantMessage) bypass the stale-state hasServerAssistant check
+    // — otherwise `messages` is stale in this closure and BOTH the committed bubble
+    // and the ghost render, showing the reply twice while Tomas is speaking.
+    if (!opts.serverBubbleExists && !hasServerAssistant(messageKey)) {
       setEphemeralAssistant({ key: messageKey, text });
     } else {
       setSpeakingMessageKey(messageKey);
@@ -1020,7 +1024,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     });
 
     // Now speak this newly added message (refs are guaranteed to be updated)
-    await speakExistingMessage(message, messageKey, phase, false, { token: turnToken });
+    await speakExistingMessage(message, messageKey, phase, false, { token: turnToken, serverBubbleExists: true });
     logger.log('[addAssistantMessage] ✅ TTS complete, returning messageId:', messageId);
 
     return messageId;
