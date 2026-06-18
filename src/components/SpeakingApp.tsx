@@ -1673,21 +1673,17 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
       // Use the unified conversational-ai function
       // 🎯 AUTOMATIC DIFFICULTY: user_level is now synced with XP progression!
-      // Phase 1.1: Use Promise.race with 30s timeout to prevent indefinite hangs
-      const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('Request timeout')), 30000)
-      );
-
-      let data, error;
-      try {
-        logger.log('[executeTeacherLoop] 🌐 Making API call to conversational-ai...');
-        logger.log('[executeTeacherLoop] 📤 Payload:', {
-          userMessage: transcript.substring(0, 50) + '...',
-          userLevel: user_level,
-          hasConversationHistory: !!conversationContext
-        });
-
-        const response = await Promise.race([
+      // Resilience: a per-attempt timeout kept ABOVE the edge function's 15s
+      // OpenAI abort, so on slow turns the edge returns its graceful 200 fallback
+      // (which we render) rather than this client timeout firing. One automatic
+      // retry covers transient/fast network failures; we do NOT retry a full
+      // timeout (that would double the wait).
+      const TIMEOUT_MS = 30000;
+      const invokeOnce = () => {
+        const timeoutPromise = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Request timeout')), TIMEOUT_MS)
+        );
+        return Promise.race([
           supabase.functions.invoke('conversational-ai', {
             body: {
               userMessage: transcript,
@@ -1697,59 +1693,56 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           }),
           timeoutPromise
         ]);
-        data = response.data;
-        error = response.error;
+      };
 
-        logger.log('[executeTeacherLoop] 📥 API Response received:', {
-          hasData: !!data,
-          hasError: !!error,
-          errorMessage: error?.message,
-          responsePreview: data?.response?.substring(0, 50) || '(no response)'
-        });
-      } catch (err: any) {
-        if (err.message === 'Request timeout') {
-          // Phase 1.1: Handle timeout with user-friendly message
-          await addAssistantMessage("The request took too long. Please check your connection and try again.", 'feedback');
-          return;
+      logger.log('[executeTeacherLoop] 🌐 Making API call to conversational-ai...', {
+        userMessage: transcript.substring(0, 50) + '...',
+        userLevel: user_level,
+        hasConversationHistory: !!conversationContext
+      });
+
+      let data: any, error: any, timedOut = false;
+      for (let attempt = 1; attempt <= 2; attempt++) {
+        try {
+          const response: any = await invokeOnce();
+          data = response.data;
+          error = response.error;
+          logger.log(`[executeTeacherLoop] 📥 attempt ${attempt} response:`, {
+            hasData: !!data, hasError: !!error, errorMessage: error?.message,
+            responsePreview: data?.response?.substring(0, 50) || '(no response)'
+          });
+          if (!error && data?.response) break; // success → stop retrying
+        } catch (err: any) {
+          if (err?.message === 'Request timeout') { timedOut = true; break; } // don't retry a full timeout
+          error = err;
         }
-        // Re-throw other errors to be caught by outer catch
-        throw err;
+        if (attempt < 2) await new Promise(r => setTimeout(r, 800)); // brief backoff before one retry
       }
 
-      // 🔧 FIX #9: Comprehensive error handling with user-friendly messages
+      // 🔧 Keep the conversation flowing on every failure path (no dead-ends).
+      if (timedOut) {
+        await addAssistantMessage("I'm taking a little long to respond. Let's keep going — what would you like to talk about?", 'feedback');
+        return;
+      }
+
       if (error) {
-        // 🔧 iOS DEBUG: Log detailed error for debugging iOS-specific issues
-        logger.error('🔴 Supabase function error:', {
-          message: error.message,
-          name: error.name,
-          code: (error as any).code,
-          details: (error as any).details,
-          hint: (error as any).hint,
-          status: (error as any).status,
-          platform: Capacitor.getPlatform(),
-          isNative: Capacitor.isNativePlatform()
+        logger.error('🔴 Supabase function error (after retry):', {
+          message: error.message, name: error.name, status: (error as any).status,
+          platform: Capacitor.getPlatform(), isNative: Capacitor.isNativePlatform()
         });
-
-        // Apple Store Compliance: Silent fail with user-friendly error message
-
-        // Provide specific error messages based on error type
-        let errorMessage = "I couldn't process your message right now. ";
-
-        if (error.message?.includes('fetch')) {
-          errorMessage += "Please check your internet connection and try again.";
-        } else if (error.message?.includes('timeout')) {
-          errorMessage += "The request timed out. Please try again.";
-        } else {
-          errorMessage += "Please try again in a moment.";
-        }
-
-        await addAssistantMessage(errorMessage, 'feedback');
+        const offlineish = /fetch|network|failed to send|load failed/i.test(error.message || '');
+        await addAssistantMessage(
+          offlineish
+            ? "I couldn't reach the server. Please check your internet connection, then let's continue."
+            : "I had trouble responding just now. Let's keep going — what would you like to talk about?",
+          'feedback'
+        );
         return;
       }
 
       // 🔧 PHASE 2 FIX: Add null checks on Supabase response
       if (!data || !data.response) {
-        await addAssistantMessage("I couldn't generate a response. Please try again.", 'feedback');
+        await addAssistantMessage("Let's continue — what would you like to talk about?", 'feedback');
         return;
       }
 
@@ -2511,11 +2504,15 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         </div>
       )}
 
-      {/* Full-Screen Scrollable Chat Area - adjusted for floating header */}
+      {/* Full-Screen Scrollable Chat Area - adjusted for floating header.
+          The floating header is `pt-safe` + avatar + name + status badge, so the
+          top offset MUST include the safe-area inset; a flat 280px overlapped the
+          first bubbles on Dynamic Island devices (where the inset is ~59px). */}
       <div
         id="main-content"
-        className="flex-1 overflow-y-auto overflow-x-hidden pt-[280px] pb-24 px-4 z-[1]"
+        className="flex-1 overflow-y-auto overflow-x-hidden pb-24 px-4 z-[1]"
         style={{
+          paddingTop: 'calc(env(safe-area-inset-top, 0px) + 280px)',
           overscrollBehaviorY: 'contain',
           overscrollBehaviorX: 'none',
           touchAction: 'pan-y'

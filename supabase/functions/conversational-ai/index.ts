@@ -34,9 +34,11 @@ serve(async (req) => {
 
     console.log('Processing conversational AI request:', userMessage.substring(0, 50) + '...')
 
-    // Add 20s timeout to prevent indefinite hangs
+    // Add 15s timeout to prevent indefinite hangs. Kept comfortably below the
+    // client's request timeout so the graceful fallback below (HTTP 200) is what
+    // the client receives, instead of the client's own "took too long" message.
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 20000);
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -401,6 +403,10 @@ Return your response in this JSON format:
       ? "I'm taking a bit longer to think. Let's continue - what would you like to talk about?"
       : "That's interesting! Let's continue our conversation - what else would you like to talk about?";
 
+    // IMPORTANT: return HTTP 200 so supabase.functions.invoke surfaces this body
+    // (a non-2xx status makes invoke null out `data` and the friendly fallback is
+    // lost, leaving the user with a dead-end error). The `error` field below still
+    // carries the real cause for logging/telemetry; the conversation keeps flowing.
     return new Response(
       JSON.stringify({
         response: errorMessage,
@@ -410,10 +416,11 @@ Return your response in this JSON format:
         hasSuggestedPhrasing: false,
         suggestedPhrasing: '',
         conversationTopic: 'general conversation',
-        error: isTimeout ? 'timeout' : error.message
+        fallback: true,
+        error: isTimeout ? 'timeout' : (error.message || 'unknown')
       }),
       {
-        status: isTimeout ? 504 : 500, // 504 Gateway Timeout for timeouts
+        status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     )
