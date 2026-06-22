@@ -184,8 +184,8 @@ EXAMPLES OF CORRECT RESPONSES:
 Response: "Awesome! Pingpong is such a fun sport! 🏓 How long have you been playing?"
 JSON: { "hadGrammarIssue": false, "originalPhrase": "", "correctedPhrase": "", "hasSuggestedPhrasing": false, "suggestedPhrasing": "" }
 
-✅ User: "I would like to talk about animals" (PASSES ALL CHECKS - NO ERROR)
-Response: "Great! Animals are fascinating! 😊 What's your favorite animal?"
+✅ User: "I would like to talk about [their topic]" (PASSES ALL CHECKS - NO ERROR)
+Response: react warmly to THEIR exact topic, then ask one follow-up question about it. (e.g. topic "my hometown" → "Great! Tell me about your hometown. 😊 What do you like most about it?")
 JSON: { "hadGrammarIssue": false, "originalPhrase": "", "correctedPhrase": "", "hasSuggestedPhrasing": false, "suggestedPhrasing": "" }
 
 🎯 User: "my type favorite Apple of green" (AWKWARD PHRASING - Contextual improvement needed)
@@ -219,6 +219,8 @@ Before setting hadGrammarIssue=true, ask yourself:
 ${conversationHistory}
 
 User just said: "${userMessage}"
+
+🟢 TOPIC RULE (MANDATORY): Respond about the EXACT topic/subject of what the user JUST said ("${userMessage}"). If they introduce a NEW topic, switch to it immediately. NEVER substitute a different subject taken from the examples in these instructions (e.g. do NOT talk about animals unless the user actually mentioned animals) or carried over from an earlier turn. Your follow-up question must be about THEIR topic.
 
 🔴 CRITICAL INSTRUCTION: Before responding, check if "${userMessage}" appears in the NEVER CORRECT list above or uses contractions. If yes, you MUST set hadGrammarIssue=false.
 

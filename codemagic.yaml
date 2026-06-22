@@ -57,7 +57,10 @@ workflows:
       - name: Force iOS build number
         script: |
           cd ios/App
-          agvtool new-version -all 103
+          # Auto-increment & always stay above the old hard-coded 103, so App Store
+          # Connect never rejects the upload as a duplicate build number.
+          # $BUILD_NUMBER is Codemagic's per-build counter (monotonic).
+          agvtool new-version -all $(($BUILD_NUMBER + 103))
 
       - name: Build iOS app
         script: |
@@ -100,7 +103,9 @@ workflows:
       - name: Force Android version
         script: |
           cd android
-          sed -i '' "s/versionCode [0-9]*/versionCode 103/" app/build.gradle
+          # Auto-increment versionCode (monotonic, above old 103) so Google Play
+          # never rejects the AAB as a duplicate/lower version code.
+          sed -i '' "s/versionCode [0-9]*/versionCode $(($BUILD_NUMBER + 103))/" app/build.gradle
           sed -i '' 's/versionName "[^"]*"/versionName "1.2.1"/' app/build.gradle
 
       - name: Set up Android signing

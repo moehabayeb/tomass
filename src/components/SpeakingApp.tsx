@@ -786,10 +786,10 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     return { id, seq, messageKey };
   };
 
-  // 🩺 TEMP self-diagnostic (S6): surface the exact reply-TTS path ON DEVICE so we can
-  // pinpoint why the conversational reply is silent without a Mac/Xcode console.
-  // Flip TTS_DIAG to false (or delete) once the cause is confirmed on TestFlight.
-  const TTS_DIAG = true;
+  // 🩺 self-diagnostic (S6): surface the reply-TTS path ON DEVICE via toast to pinpoint
+  // why a reply is silent (no Mac/Xcode console available). MUST stay false in App Store
+  // builds — these toasts are for debugging only. Flip to true ONLY for a debug build.
+  const TTS_DIAG = false;
   const ttsDiag = (stage: string) => {
     logger.log('[TTS-DIAG]', stage);
     if (TTS_DIAG) {
@@ -1822,8 +1822,12 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       await addAssistantMessage(finalResponse, 'feedback');
       logger.log('[executeTeacherLoop] ✅ AI response added successfully');
 
-      // Update conversation context
-      setConversationContext(prev => `${prev}\nUser: ${transcript}\nAssistant: ${aiResponse.response}`.trim());
+      // Update conversation context — bounded to the last ~6 turns (12 lines) so an
+      // older topic can't dominate / drag the AI off the user's current subject.
+      setConversationContext(prev => {
+        const merged = `${prev}\nUser: ${transcript}\nAssistant: ${aiResponse.response}`.trim();
+        return merged.split('\n').slice(-12).join('\n');
+      });
 
       // Award XP for successful conversation turn
       const baseXP = 10; // Base XP per message
