@@ -49,11 +49,28 @@ describe('validateMcqStrict — the no-bullshit gate', () => {
     ] }, 'I did it.').ok).toBe(false);
   });
 
-  it('rejects blanking a pure stopword', () => {
-    const v = validateMcqStrict({ prompt: 'I went to ___ school.', options: [
-      { text: 'the', correct: true }, { text: 'a', correct: false }, { text: 'an', correct: false },
-    ] }, 'I went to the school.');
+  it('rejects blanking the conjunction "and" (never a grammar target)', () => {
+    const v = validateMcqStrict({ prompt: 'I like tea ___ coffee.', options: [
+      { text: 'and', correct: true }, { text: 'or', correct: false }, { text: 'but', correct: false },
+    ] }, 'I like tea and coffee.');
     expect(v.ok).toBe(false);
+  });
+
+  // Articles (a/an/the) and prepositions (in/on/at) ARE legitimate A1 grammar
+  // targets in their own modules, so blanking them with same-category distractors
+  // is allowed (BLOCKED_BLANK was deliberately narrowed to just "and").
+  it('allows blanking an article — the grammar target in article modules', () => {
+    const v = validateMcqStrict({ prompt: "It's ___ elephant.", options: [
+      { text: 'an', correct: true }, { text: 'a', correct: false }, { text: 'is', correct: false },
+    ] }, "It's an elephant.");
+    expect(v.ok).toBe(true);
+  });
+
+  it('allows blanking a preposition of time — the grammar target in prepositions modules', () => {
+    const v = validateMcqStrict({ prompt: 'I eat lunch ___ noon.', options: [
+      { text: 'at', correct: true }, { text: 'in', correct: false }, { text: 'on', correct: false },
+    ] }, 'I eat lunch at noon.');
+    expect(v.ok).toBe(true);
   });
 });
 

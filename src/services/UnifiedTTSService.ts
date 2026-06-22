@@ -109,11 +109,12 @@ class UnifiedTTSServiceClass {
         // Note: Don't pass voice parameter to native - let Android select best voice for language
         // The Capacitor plugin expects a numeric index, which is hard to manage across sessions
         //
-        // category: 'playback' (iOS) — force the AVAudioSession to playback before
-        // speaking. Without it the plugin defaults to 'ambient', which is silenced
-        // by the mute switch AND cannot play over the `record` session the mic
-        // leaves behind — so the conversational reply (which fires right after STT)
-        // was silent while standalone TTS (e.g. Lessons "Listen") still worked.
+        // category: 'playback' is honored on ANDROID only. On iOS, plugin v6.1.0
+        // IGNORES this param (it hardcodes .playback once in init()), so the real
+        // iOS fix — re-asserting .playback + setActive(true) right before each
+        // speak so the reply is audible after the mic's record session — is applied
+        // natively via patches/@capacitor-community+text-to-speech+6.1.0.patch
+        // (patch-package, runs on npm install). See that patch for the rationale.
         await TextToSpeech.speak({
           text,
           lang,
