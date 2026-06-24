@@ -15,7 +15,9 @@ workflows:
         XCODE_SCHEME: "App"
         BUNDLE_ID: "com.tomashoca.app"
       node: 20
-      xcode: 16.2
+      # Apple requires the iOS 26 SDK (Xcode 26+) for all App Store Connect uploads.
+      # `latest` = Codemagic's newest stable Xcode, so this stays valid as Apple bumps the SDK.
+      xcode: latest
       cocoapods: default
 
     scripts:
