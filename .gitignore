@@ -30,3 +30,11 @@ dist-ssr
 lesson-content-report.txt
 lesson-content-report.json
 mcq-gate-baseline.txt
+
+# Local AI-assistant workspace (was accidentally committed as a phantom
+# submodule gitlink, which broke recursive checkouts in CI with
+# "No url found for submodule path")
+.claude/
+
+# Stale nested copy of the repo (same phantom-gitlink problem)
+tomass-main/
