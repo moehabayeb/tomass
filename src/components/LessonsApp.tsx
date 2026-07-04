@@ -41,7 +41,7 @@ import { ResumeProgressDialog, SyncStatusIndicator } from './ResumeProgressDialo
 import { useAuthReady } from '../hooks/useAuthReady';
 // Storage keys for unified progress
 import { STORAGE_KEYS } from '@/constants/storageKeys';
-import { isValidModuleId } from '@/constants/moduleRanges';
+import { isValidModuleId, resolvePlacedStartModule } from '@/constants/moduleRanges';
 // 🔧 GOD-TIER v24: Use micEngine EXCLUSIVELY (removed unifiedSpeechRecognition which was causing issues)
 // micEngine.ts is the PROVEN working engine used by SpeakingApp
 import { startRecording as micStartRecording, stopRecording as micStopRecording, cleanup as micCleanup, releasePersistentStream } from '@/lib/audio/micEngine';
@@ -1882,10 +1882,15 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
       return false; // No modules accessible without placement test
     }
 
-    // Phase 2: Get placement test results
+    // Phase 2: Get placement test results.
+    // FIX: derive the placed module from the LEVEL when recommendedStartModule is
+    // missing or stale (legacy bug left it at '1' for users placed above A1, which
+    // locked their level's start module). resolvePlacedStartModule self-heals that.
     const placedLevel = safeLocalStorage().getItem('recommendedStartLevel') || 'A1';
-    const placedModuleStr = safeLocalStorage().getItem('recommendedStartModule') || '1';
-    const placedModule = parseInt(placedModuleStr);
+    const placedModule = resolvePlacedStartModule(
+      placedLevel,
+      safeLocalStorage().getItem('recommendedStartModule')
+    );
 
     // Phase 3: Always unlock the starting module from placement test
     if (moduleId === placedModule) {

@@ -188,7 +188,15 @@ export default function AppNavigation() {
     }));
 
     // Set up for lessons navigation
+    // FIX: LessonsApp.isModuleUnlocked reads recommendedStartModule; without it a user
+    // placed above A1 defaulted to module '1' and their level's start module stayed locked.
+    const startModule = getStartingModule(
+      (result.recommended_level && result.recommended_level in MODULE_RANGES
+        ? result.recommended_level
+        : 'A1') as Level
+    );
     safeLocalStorage.setItem('recommendedStartLevel', result.recommended_level);
+    safeLocalStorage.setItem('recommendedStartModule', String(startModule));
     safeLocalStorage.setItem('userPlacement', JSON.stringify({
       level: result.recommended_level,
       scores: result,
@@ -205,9 +213,11 @@ export default function AppNavigation() {
     if (!existingProgress) {
       // Create initial empty progress entry to signal placement is complete
       const initialProgress = {
-        [`${result.recommended_level}-1`]: {
+        // FIX: seed at the level's real start module (was hardcoded module 1 even for
+        // A2+ placements, which uploaded a bogus "module 1, total 0" row on login merge)
+        [`${result.recommended_level}-${startModule}`]: {
           level: result.recommended_level,
-          module: 1,
+          module: startModule,
           phase: 'intro' as const,
           listeningIndex: 0,
           speakingIndex: 0,
@@ -221,16 +231,9 @@ export default function AppNavigation() {
       safeLocalStorage.setItem(progressKey, JSON.stringify(initialProgress));
     }
 
-    // Enable access to the recommended level
-    const unlocksStr = safeLocalStorage.getItem('unlocks') || '{}';
-    try {
-      const unlocks = JSON.parse(unlocksStr);
-      unlocks[result.recommended_level] = true;
-      safeLocalStorage.setItem('unlocks', JSON.stringify(unlocks));
-    } catch {
-      // If parsing fails, create new object
-      safeLocalStorage.setItem('unlocks', JSON.stringify({ [result.recommended_level]: true }));
-    }
+    // NOTE: the legacy 'unlocks' localStorage object was written here but nothing in the
+    // app ever reads it for gating — removed. recommendedStartLevel/recommendedStartModule
+    // (above) are what LessonsApp.isModuleUnlocked actually consumes.
   };
 
   const handleGoToLessons = () => {
