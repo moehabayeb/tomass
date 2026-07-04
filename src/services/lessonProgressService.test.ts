@@ -286,6 +286,43 @@ describe('lessonProgressService — login sync safety', () => {
     expect(local!.is_module_completed).toBe(true);
   });
 
+  it('syncAllProgressToCloud goes through the guarded RPC per record and survives failures', async () => {
+    // Two real checkpoints + one empty seed (must be skipped)
+    localStorage.setItem('ll_progress_v1', JSON.stringify({
+      'A2-51': {
+        level: 'A2', module: 51, phase: 'speaking', listeningIndex: 0,
+        speakingIndex: 9, completed: false, totalListening: 0,
+        totalSpeaking: 40, updatedAt: 1000, v: 1,
+      },
+      'A2-52': {
+        level: 'A2', module: 52, phase: 'complete', listeningIndex: 0,
+        speakingIndex: 39, completed: true, totalListening: 0,
+        totalSpeaking: 40, updatedAt: 1000, v: 1,
+      },
+      'B1-101': { // empty seed
+        level: 'B1', module: 101, phase: 'intro', listeningIndex: 0,
+        speakingIndex: 0, completed: false, totalListening: 0,
+        totalSpeaking: 0, updatedAt: 1000, v: 1,
+      },
+    }));
+
+    // First RPC call fails, second succeeds — the loop must continue
+    mockedRpc
+      .mockResolvedValueOnce({ data: null, error: { code: '500', message: 'boom' } } as never)
+      .mockResolvedValueOnce({ data: { updated: true }, error: null } as never);
+
+    await service.syncAllProgressToCloud('user-1');
+
+    // RPC used (guard respected), direct .upsert NOT used, seed skipped → exactly 2 calls
+    expect(mockedRpc).toHaveBeenCalledTimes(2);
+    expect(mockedFrom).not.toHaveBeenCalled();
+    expect(mockedRpc).toHaveBeenCalledWith('upsert_lesson_progress', expect.objectContaining({
+      p_user_id: 'user-1',
+      p_module_id: 52,
+      p_is_module_completed: true,
+    }));
+  });
+
   it('mergeProgressOnLogin skips empty placement seeds (no junk uploads)', async () => {
     // Empty seed: index 0, total 0, not completed (what handleTestComplete writes)
     localStorage.setItem('ll_progress_v1', JSON.stringify({

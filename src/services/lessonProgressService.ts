@@ -653,39 +653,40 @@ class LessonProgressService {
 
       logger.log(`[LessonProgress] Found ${localCheckpoints.length} local checkpoints to sync`);
 
-      // Build batch records
-      const records = localCheckpoints.map(cp => ({
-        user_id: userId,
-        level: cp.level,
-        module_id: cp.module_id,
-        question_index: cp.question_index || 0,
-        total_questions: cp.total_questions || 0,
-        question_phase: cp.question_phase || 'MCQ',
-        mcq_selected_choice: cp.mcq_selected_choice || null,
-        mcq_is_correct: cp.mcq_is_correct || false,
-        is_module_completed: cp.is_module_completed || false,
-        device_id: cp.device_id || null,
-        updated_at: new Date(cp.timestamp || Date.now()).toISOString()
-      }));
+      // FIX: go through the upsert_lesson_progress RPC (per record) instead of a
+      // direct batch .upsert. The direct upsert bypassed the server's
+      // backwards-progress guard, so a stale local index at logout could overwrite
+      // a higher cloud position. N is small (modules touched on this device) and
+      // this path is already best-effort inside useAuthReady's try/catch.
+      let failures = 0;
+      for (const cp of localCheckpoints) {
+        // Skip empty placement seeds — nothing to sync, avoids junk rows
+        if (!cp.is_module_completed && cp.question_index === 0 &&
+            (cp.total_questions ?? 0) === 0) {
+          continue;
+        }
 
-      // Upsert in batches of 50
-      const batchSize = 50;
-      for (let i = 0; i < records.length; i += batchSize) {
-        const batch = records.slice(i, i + batchSize);
-
-        const { error } = await supabase
-          .from('lesson_progress')
-          .upsert(batch, { onConflict: 'user_id,level,module_id' });
+        const { error } = await supabase.rpc('upsert_lesson_progress', {
+          p_user_id: userId,
+          p_level: cp.level,
+          p_module_id: cp.module_id,
+          p_question_index: cp.question_index || 0,
+          p_total_questions: cp.total_questions || 0,
+          p_question_phase: cp.question_phase || 'MCQ',
+          p_mcq_selected_choice: cp.mcq_selected_choice || null,
+          p_mcq_is_correct: cp.mcq_is_correct || false,
+          p_is_module_completed: cp.is_module_completed || false,
+          p_device_id: cp.device_id || null
+        });
 
         if (error) {
-          logger.error('[LessonProgress] Batch upsert failed:', error);
-          // Continue with next batch instead of failing completely
-        } else {
-          logger.log(`[LessonProgress] Batch ${Math.floor(i / batchSize) + 1} synced successfully`);
+          failures++;
+          logger.error('[LessonProgress] Logout sync failed for', cp.level, cp.module_id, error);
+          // Continue with remaining records instead of failing completely
         }
       }
 
-      logger.log('[LessonProgress] Cloud sync complete');
+      logger.log(`[LessonProgress] Cloud sync complete (${failures} failed)`);
     } catch (err) {
       logger.error('[LessonProgress] Failed to sync to cloud:', err);
     }
