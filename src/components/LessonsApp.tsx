@@ -1010,6 +1010,20 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
     };
   }, [isAuthenticated]);
 
+  // SAFETY NET: if 'auth:sync-complete' never fires (sync crash/hang in the auth
+  // flow), don't leave the "Checking your progress..." spinner up forever — after
+  // 10s let checkPlacementTest proceed; the DB check has its own 30s timeout and
+  // the localStorage placement check already ran. Timer cancels when the real
+  // event lands (syncComplete flips) or on unmount.
+  useEffect(() => {
+    if (!isAuthenticated || syncComplete) return;
+    const t = window.setTimeout(() => {
+      logger.warn('[LessonsApp] auth:sync-complete not received after 10s — proceeding without it');
+      setSyncComplete(true);
+    }, 10000);
+    return () => window.clearTimeout(t);
+  }, [isAuthenticated, syncComplete]);
+
   // Phase 3.1: Check for placement test requirement
   // PRODUCTION FIX: Wait for sync to complete before checking database
   useEffect(() => {
@@ -1882,6 +1896,17 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
   };
   
   const [completedModules, setCompletedModules] = useState<string[]>(getCompletedModules);
+
+  // Re-read completion state whenever the modules list is shown: the localStorage
+  // array can change outside this component's setters (cloud rebuild in
+  // loadProgressFromCloud after login, another tab). Without this, the lock grid
+  // renders from a mount-time snapshot.
+  useEffect(() => {
+    if (viewState === 'modules') {
+      setCompletedModules(getCompletedModules());
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewState]);
 
   // Check if module is unlocked - GODLY LOCKDOWN SYSTEM
   const isModuleUnlocked = (moduleId: number): boolean => {
