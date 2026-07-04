@@ -1,0 +1,3 @@
+# patch-package patches MUST use LF — a CRLF patch fails to apply on Codemagic's
+# Linux runner (postinstall would red the build).
+patches/**.patch text eol=lf

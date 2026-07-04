@@ -41,7 +41,7 @@ import { ResumeProgressDialog, SyncStatusIndicator } from './ResumeProgressDialo
 import { useAuthReady } from '../hooks/useAuthReady';
 // Storage keys for unified progress
 import { STORAGE_KEYS } from '@/constants/storageKeys';
-import { isValidModuleId } from '@/constants/moduleRanges';
+import { isValidModuleId, resolvePlacedStartModule } from '@/constants/moduleRanges';
 // 🔧 GOD-TIER v24: Use micEngine EXCLUSIVELY (removed unifiedSpeechRecognition which was causing issues)
 // micEngine.ts is the PROVEN working engine used by SpeakingApp
 import { startRecording as micStartRecording, stopRecording as micStopRecording, cleanup as micCleanup, releasePersistentStream } from '@/lib/audio/micEngine';
@@ -222,6 +222,11 @@ type SpeakingPracticeItem = {
   question: string;
   answer: string;
   multipleChoice?: MultipleChoiceQuestion;
+  acceptedAlternatives?: string[];
+  // Open-response (sentence-starter) items: student composes their own sentence;
+  // graded on opener + grammar, not on matching `answer`.
+  openResponse?: boolean;
+  requiredOpeners?: string[];
 };
 
 // New phase for multiple choice selection
@@ -235,15 +240,21 @@ type QuestionState = {
 };
 
 // Import robust evaluator and progress system
-import { evaluateAnswer, evaluateAnswerDetailed, EvalOptions, EvaluationResult, GrammarCorrection } from '../utils/evaluator';
+import { evaluateAnswer, evaluateAnswerDetailed, evaluateOpenResponse, EvalOptions, EvaluationResult, GrammarCorrection } from '../utils/evaluator';
 import { save as saveProgress, resumeLastPointer, clearProgress as clearModuleProgress } from '../utils/progress';
 import { ProgressTrackerService } from '../services/progressTrackerService';
 import { detectGrammarErrors } from '../utils/grammarErrorDetector';
 import { useVoiceActivityDetection } from '../hooks/useVoiceActivityDetection';
 
 // Enhanced progress saving with new progress system
-function saveModuleProgress(userId: string | undefined, level: string, moduleId: number, phase: LessonPhaseType, questionIndex: number = 0) {
+function saveModuleProgress(userId: string | undefined, level: string, moduleId: number, phase: LessonPhaseType, questionIndex: number = 0, totalQuestions: number = 0) {
   const doSave = () => {
+    // Never fabricate a total (was default 40): if the caller doesn't know the real
+    // module length, preserve whatever an earlier save recorded instead of lying.
+    if (totalQuestions <= 0) {
+      totalQuestions = getProgress(level, moduleId)?.totalSpeaking ?? 0;
+    }
+
     // Save to both old and new systems for compatibility
     const progressData: StoreModuleProgress = {
       level: level,
@@ -253,7 +264,7 @@ function saveModuleProgress(userId: string | undefined, level: string, moduleId:
       speakingIndex: questionIndex,
       completed: phase === 'complete',
       totalListening: 0,
-      totalSpeaking: 40, // All modules have 40 questions
+      totalSpeaking: totalQuestions,
       updatedAt: Date.now(),
       v: 1
     };
@@ -262,7 +273,7 @@ function saveModuleProgress(userId: string | undefined, level: string, moduleId:
 
     // Save to new progress system for exact resume (requires auth)
     if (!userId) return; // Skip if not authenticated
-    const total = 40; // All modules have 40 questions
+    const total = totalQuestions; // Real per-module item count (0 = unknown)
     const correct = Math.min(questionIndex + 1, total); // questions answered correctly so far
     const completed = phase === 'complete';
 
@@ -999,6 +1010,20 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
     };
   }, [isAuthenticated]);
 
+  // SAFETY NET: if 'auth:sync-complete' never fires (sync crash/hang in the auth
+  // flow), don't leave the "Checking your progress..." spinner up forever — after
+  // 10s let checkPlacementTest proceed; the DB check has its own 30s timeout and
+  // the localStorage placement check already ran. Timer cancels when the real
+  // event lands (syncComplete flips) or on unmount.
+  useEffect(() => {
+    if (!isAuthenticated || syncComplete) return;
+    const t = window.setTimeout(() => {
+      logger.warn('[LessonsApp] auth:sync-complete not received after 10s — proceeding without it');
+      setSyncComplete(true);
+    }, 10000);
+    return () => window.clearTimeout(t);
+  }, [isAuthenticated, syncComplete]);
+
   // Phase 3.1: Check for placement test requirement
   // PRODUCTION FIX: Wait for sync to complete before checking database
   useEffect(() => {
@@ -1472,7 +1497,8 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
         level: selectedLevel,
         moduleId: selectedModule,
         questionIndex: speakingIndex,
-        totalQuestions: 40,
+        // 0 = unknown → the checkpoint hook skips the write instead of lying with 40
+        totalQuestions: currentModuleData?.speakingPractice?.length ?? 0,
         mcqChoice: selectedLetter,
         mcqCorrect: true
       });
@@ -1655,6 +1681,25 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
 
   // Enhanced answer checking with detailed feedback and grammar corrections
   function isAnswerCorrect(spokenRaw: string, targetRaw: string, questionItem?: { question: string; answer: string }): boolean {
+    // Open-response (sentence-starter) items grade on opener + grammar, NOT a
+    // fixed answer. Branch early so nothing else in this path is affected.
+    const openItem = questionItem as any;
+    if (openItem?.openResponse) {
+      const r = evaluateOpenResponse(spokenRaw, { requiredOpeners: openItem.requiredOpeners });
+      setEvaluationResult(r);
+      setGrammarCorrections(r.grammarCorrections || []);
+      if (r.isCorrect) {
+        setFeedback(r.feedback);
+        setFeedbackType('success');
+        setCurrentAttemptNumber(1);
+      } else {
+        setFeedback(r.hint ? `${r.feedback}\n\n${r.hint}` : r.feedback);
+        setFeedbackType('error');
+        setCurrentAttemptNumber(prev => prev + 1);
+      }
+      return r.isCorrect;
+    }
+
     // Create evaluation options
     const evalOptions: EvalOptions = {
       expected: targetRaw,
@@ -1832,7 +1877,8 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
         level: selectedLevel,
         moduleId: selectedModule,
         questionIndex: speakingIndex,
-        totalQuestions: 40
+        // 0 = unknown → the checkpoint hook skips the write instead of lying with 40
+        totalQuestions: currentModuleData?.speakingPractice?.length ?? 0
       });
     }
   }, [speakingIndex, currentPhase, selectedLevel, selectedModule, checkpoints.checkpointMCQShown]);
@@ -1851,6 +1897,17 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
   
   const [completedModules, setCompletedModules] = useState<string[]>(getCompletedModules);
 
+  // Re-read completion state whenever the modules list is shown: the localStorage
+  // array can change outside this component's setters (cloud rebuild in
+  // loadProgressFromCloud after login, another tab). Without this, the lock grid
+  // renders from a mount-time snapshot.
+  useEffect(() => {
+    if (viewState === 'modules') {
+      setCompletedModules(getCompletedModules());
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewState]);
+
   // Check if module is unlocked - GODLY LOCKDOWN SYSTEM
   const isModuleUnlocked = (moduleId: number): boolean => {
     // Phase 1: Check placement test requirement
@@ -1858,20 +1915,27 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
       return false; // No modules accessible without placement test
     }
 
-    // Phase 2: Get placement test results
+    // Phase 2: Get placement test results.
+    // FIX: derive the placed module from the LEVEL when recommendedStartModule is
+    // missing or stale (legacy bug left it at '1' for users placed above A1, which
+    // locked their level's start module). resolvePlacedStartModule self-heals that.
     const placedLevel = safeLocalStorage().getItem('recommendedStartLevel') || 'A1';
-    const placedModuleStr = safeLocalStorage().getItem('recommendedStartModule') || '1';
-    const placedModule = parseInt(placedModuleStr);
+    const placedModule = resolvePlacedStartModule(
+      placedLevel,
+      safeLocalStorage().getItem('recommendedStartModule')
+    );
 
     // Phase 3: Always unlock the starting module from placement test
     if (moduleId === placedModule) {
       return true;
     }
 
-    // Phase 4: Level-start modules at or below placement are always unlocked (for review)
-    // Values match MODULE_RANGES: A1=1, A2=51, B1=101, B2=151, C1=201, C2=217
-    const levelStarts = [1, 51, 101, 151, 201, 217];
-    if (levelStarts.includes(moduleId) && moduleId <= placedModule) {
+    // Phase 4: POLICY (July 2026, per owner): every level's FIRST module is always
+    // open once the placement test is taken — users can sample any level, including
+    // ones above their placement. Progression WITHIN a level stays sequential.
+    // Values match MODULE_RANGES: A1=1, A2=51, B1=101, B2=151, C1=201, C2=251
+    const levelStarts = [1, 51, 101, 151, 201, 251];
+    if (levelStarts.includes(moduleId)) {
       return true;
     }
 
@@ -1936,11 +2000,18 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
         ? { question: item, answer: item }
         : item as SpeakingPracticeItem;
 
-      // Generate MCQ with seeded shuffle using question index for deterministic ordering
-      const mcq = generateMultipleChoiceQuestion(
+      // Prefer an authored MCQ when the content ships one — this is the
+      // source of truth and keeps MCQ correctness decoupled from the
+      // English-answer regex engine. Fall back to the generator (seeded by
+      // index for a deterministic, stable shuffle) only when none is authored.
+      const authoredMcq = typeof item !== 'string' ? practiceItem.multipleChoice : undefined;
+      // Open-response items with no authored MCQ intentionally show NO MCQ
+      // (straight to free speaking) — never a runtime-generated one.
+      const isOpen = typeof item !== 'string' && (practiceItem as any).openResponse;
+      const mcq = authoredMcq ?? (isOpen ? null : generateMultipleChoiceQuestion(
         practiceItem.answer,
-        index // Use index as seed for deterministic, stable shuffle
-      );
+        index
+      ));
 
       cache[key] = mcq;
     });
@@ -2008,23 +2079,56 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
     speaking: currentModuleData?.speakingPractice?.length ?? 0,
   };
 
+  // FIX (resume race): only decide fresh-start vs resume once the async checkpoint
+  // load has SETTLED for this exact module. Previously the effect ran before the
+  // cloud/local load resolved, took the fresh-start branch, and burned
+  // restoredOnceRef — the real saved position arriving moments later was ignored.
+  const progressSettled = checkpoints.settledKey === `${selectedLevel}-${selectedModule}`;
+
   useEffect(() => {
     // Run when module changes; restore once.
     if (!selectedModule || !currentModuleData || restoredOnceRef.current) return;
+    if (!progressSettled) return; // wait for the checkpoint load to resolve (or fail)
 
-    // Priority 1: Check checkpoint system first — restore exact position
+    // Clamp restored positions to this module's real length — content counts vary
+    // per module, so a stale/shrunk saved index must never land out of range.
+    const maxIndex = totals.speaking > 0 ? totals.speaking - 1 : 0;
+
+    // Never yank the user backwards if they already advanced past the intro this
+    // session (fast users can act before a slow network load settles).
+    const userAdvanced = phaseRef.current !== 'intro' || speakingIndexRef.current > 0;
+
+    // Priority 1: Check checkpoint system first — restore exact position.
+    // Restore even at question_index === 0: a checkpoint row only exists once the
+    // user reached the first MCQ (past intro), so index 0 is real progress and
+    // must not replay the intro.
     const checkpointProgress = checkpoints.currentProgress;
-    if (checkpointProgress && !checkpointProgress.is_module_completed && checkpointProgress.question_index > 0) {
-      // Restore exact phase and position from checkpoint
-      setCurrentPhase(checkpointProgress.phase || 'speaking');
-      setSpeakingIndex(checkpointProgress.question_index);
-    } else {
+    if (checkpointProgress && !checkpointProgress.is_module_completed && !userAdvanced) {
+      const idx = Math.min(checkpointProgress.question_index, maxIndex);
+      // FIX: previous code read checkpointProgress.phase, a field that doesn't exist
+      // on LessonCheckpoint (it's question_phase) — always undefined → 'speaking'.
+      setCurrentPhase('speaking');
+      setSpeakingIndex(idx);
+      // Phase fidelity: MCQ already answered correctly → resume at the speaking step
+      if ((checkpointProgress.question_phase === 'SPEAK_READY' ||
+           checkpointProgress.question_phase === 'AWAITING_FEEDBACK') &&
+          checkpointProgress.mcq_is_correct) {
+        setQuestionStates(prev => ({
+          ...prev,
+          [idx]: {
+            selectedChoice: checkpointProgress.mcq_selected_choice ?? undefined,
+            choiceCorrect: true,
+            speechCompleted: false
+          }
+        }));
+      }
+    } else if (!userAdvanced) {
       // Priority 2: Fallback to old system if no checkpoint data
       const saved = loadModuleProgress(String(selectedLevel), selectedModule);
       if (saved && saved.phase !== 'complete') {
         // restore from old system
         setCurrentPhase(saved.phase);
-        setSpeakingIndex(saved.questionIndex);
+        setSpeakingIndex(Math.min(saved.questionIndex, maxIndex));
       } else {
         // fresh start for this module
         setCurrentPhase('intro');
@@ -2032,7 +2136,8 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
       }
     }
 
-    // Check if we should show resume dialog for checkpoint progress (ONCE per module load)
+    // Check if we should show resume dialog for checkpoint progress (ONCE per module load).
+    // Keep the index>0 gate here: at question 0 "resume" ≈ "start fresh", dialog is noise.
     if (checkpointProgress && !checkpointProgress.is_module_completed &&
         checkpointProgress.question_index > 0 && !dialogShownRef.current) {
       checkpoints.setShowResumeDialog(true);
@@ -2043,7 +2148,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
     // also cancel any stray timers/narration here
     narration.cancel?.();
     if (timeoutRef?.current) { clearTimeout(timeoutRef.current); timeoutRef.current = null; }
-  }, [selectedModule, currentModuleData, selectedLevel, checkpoints.currentProgress, checkpoints.setShowResumeDialog]);
+  }, [selectedModule, currentModuleData, selectedLevel, progressSettled, checkpoints.currentProgress, checkpoints.setShowResumeDialog]);
 
   // Reset processing state when entering speaking phase (but don't change speakingIndex)
   useEffect(() => {
@@ -2073,7 +2178,8 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
         String(selectedLevel),
         selectedModule,
         currentPhase === 'speaking' ? 'speaking' as LessonPhaseType : 'intro',
-        speakingIndex
+        speakingIndex,
+        currentModuleData?.speakingPractice?.length ?? 0
       );
       autosaveTimeoutRef.current = null;
     }, 250);
@@ -2337,7 +2443,8 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
       String(selectedLevel),
       selectedModule,
       'complete',
-      speakingIndexRef.current
+      speakingIndexRef.current,
+      currentModuleData?.speakingPractice?.length ?? 0
     );
 
     // Save progress to completed modules
@@ -2353,13 +2460,17 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
       }
 
       // FIX #1: Save module completion to database (fire-and-forget)
+      // Real length only (never fabricate 40); completion always runs with module
+      // data loaded, so the fallback to the current index covers the impossible case.
+      const completionTotal = currentModuleData?.speakingPractice?.length
+        ?? (speakingIndexRef.current + 1);
       if (user?.id) {
         lessonProgressService.saveCheckpoint({
           user_id: user.id,
           level: String(selectedLevel),
           module_id: selectedModule,
-          question_index: (currentModuleData?.speakingPractice?.length || 40) - 1,
-          total_questions: currentModuleData?.speakingPractice?.length || 40,
+          question_index: completionTotal - 1,
+          total_questions: completionTotal,
           question_phase: 'COMPLETED',
           is_module_completed: true,
           timestamp: Date.now()
@@ -2437,7 +2548,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
     });
 
     // Save progress after each question (exact resume point)
-    saveModuleProgress(user?.id, String(selectedLevel), selectedModule!, 'speaking', curr + 1);
+    saveModuleProgress(user?.id, String(selectedLevel), selectedModule!, 'speaking', curr + 1, currentModuleData?.speakingPractice?.length ?? 0);
 
     // still inside the range → move to next question
     if (curr + 1 < total) {
@@ -2952,6 +3063,12 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
                       setAttempts(0);
                       setFeedback('');
                       setQuestionStates({}); // Clear MCQ state when switching modules
+                      // Reset restore guards so the comprehensive restore effect runs for THIS
+                      // module (mirrors the auto-advance path at the completion handler). Without
+                      // this, resume phase/position is skipped for any module opened after the
+                      // first one in a session, because restoredOnceRef stays true.
+                      restoredOnceRef.current = false;
+                      dialogShownRef.current = false;
                     }
                   }}
                 >
@@ -3107,7 +3224,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
               // Progress restored successfully
             }
           }}
-          onStartFresh={() => checkpoints.startFromBeginning(selectedLevel, selectedModule)}
+          onStartFresh={() => checkpoints.startFromBeginning(selectedLevel, selectedModule, totals.speaking)}
         />
       )}
 

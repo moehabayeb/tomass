@@ -225,6 +225,8 @@ export function getNextRecommendedModule(currentLevel?: string): { moduleId: num
     return { moduleId: 151, reason: 'Start B2 level' };
   } else if (targetLevel === 'B2') {
     return { moduleId: 201, reason: 'Start C1 level' };
+  } else if (targetLevel === 'C1') {
+    return { moduleId: 251, reason: 'Start C2 level' };
   }
 
   return null; // All modules completed

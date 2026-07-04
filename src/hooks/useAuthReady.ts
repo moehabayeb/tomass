@@ -110,7 +110,7 @@ export const useAuthReady = () => {
               if (placementData && placementData.length > 0) {
                 const level = placementData[0].recommended_level || 'A1';
                 const levelToModule: Record<string, number> = {
-                  'A1': 1, 'A2': 51, 'B1': 101, 'B2': 151, 'C1': 201, 'C2': 217
+                  'A1': 1, 'A2': 51, 'B1': 101, 'B2': 151, 'C1': 201, 'C2': 251
                 };
                 const startModule = levelToModule[level] || 1;
 
@@ -124,16 +124,20 @@ export const useAuthReady = () => {
               logger.warn('[Auth] Failed to restore placement keys:', err);
             }
 
-            // Step 3: Load existing progress from cloud (in case user has progress on other devices)
+            // Step 3: Upload local (guest/offline) progress FIRST — newer-local wins.
+            // ORDER MATTERS: loadProgressFromCloud used to run first and overwrite
+            // local entries before the merge could compare timestamps, destroying
+            // guest progress made before sign-in (guest Q10 lost to cloud Q3).
+            const result = await lessonProgressService.mergeProgressOnLogin(userId);
+
+            // Step 4: Then pull cloud → local (cloud now already contains anything
+            // newer we just pushed; a timestamp guard inside also protects local).
             try {
               await lessonProgressService.loadProgressFromCloud(userId);
               logger.log('[Auth] Cloud progress loaded');
             } catch (err) {
               logger.log('[Auth] No cloud progress to load or load failed');
             }
-
-            // Step 4: Sync local progress to cloud
-            const result = await lessonProgressService.mergeProgressOnLogin(userId);
 
             // Step 5: Dispatch sync complete event for other components to listen
             window.dispatchEvent(new CustomEvent('auth:sync-complete', {

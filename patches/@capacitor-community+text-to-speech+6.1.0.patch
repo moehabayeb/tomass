@@ -1,0 +1,20 @@
+diff --git a/node_modules/@capacitor-community/text-to-speech/ios/Sources/TextToSpeechPlugin/TextToSpeech.swift b/node_modules/@capacitor-community/text-to-speech/ios/Sources/TextToSpeechPlugin/TextToSpeech.swift
+index 1111111..2222222 100644
+--- a/node_modules/@capacitor-community/text-to-speech/ios/Sources/TextToSpeechPlugin/TextToSpeech.swift
++++ b/node_modules/@capacitor-community/text-to-speech/ios/Sources/TextToSpeechPlugin/TextToSpeech.swift
+@@ -54,5 +54,15 @@
+             }
+         }
+
++        // [patch-package] Tomas Hoca: force a .playback audio session immediately
++        // before speaking so the conversational reply is audible right after the
++        // microphone's record session. STT leaves AVAudioSession in .playAndRecord
++        // and this plugin only sets .playback once in init(), so the reply would
++        // otherwise play into the leftover record session and be silent. Guarded
++        // so a session error can never break speaking.
++        do {
++            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: .duckOthers)
++            try AVAudioSession.sharedInstance().setActive(true)
++        } catch { print("[TTS patch] AVAudioSession error: \(error)") }
+         synthesizer.speak(utterance)
+     }

@@ -78,6 +78,12 @@ class LessonProgressService {
         try {
           await this.saveToServer(checkpoint);
         } catch (error) {
+          // Completion rows are the ones that gate module unlock — surface their
+          // failure loudly in DEV so a lost completion is never invisible.
+          if (import.meta.env.DEV && checkpoint.is_module_completed) {
+            logger.warn('[lessonProgress] completion row failed to persist; queued offline:',
+              checkpoint.level, checkpoint.module_id, error);
+          }
           if (this.config.enableOfflineQueue) {
             await indexedDBStore.addCheckpoint(checkpoint);
           }
@@ -148,6 +154,12 @@ class LessonProgressService {
 
       // 2. For each local checkpoint, check if server has newer data
       for (const localCP of localCheckpoints) {
+        // Skip empty placement seeds (index 0, no total, not completed) — nothing to
+        // merge, and uploading them creates junk "module started" rows server-side.
+        if (!localCP.is_module_completed && localCP.question_index === 0 &&
+            (localCP.total_questions ?? 0) === 0) {
+          continue;
+        }
         try {
           const serverCP = await this.loadServerProgress(userId, localCP.level, localCP.module_id);
 
@@ -265,35 +277,38 @@ class LessonProgressService {
       throw new Error('User ID required for server save');
     }
 
-    try {
-      const { data, error } = await supabase.rpc('upsert_lesson_progress', {
-        p_user_id: checkpoint.user_id,
-        p_level: checkpoint.level,
-        p_module_id: checkpoint.module_id,
-        p_question_index: checkpoint.question_index,
-        p_total_questions: checkpoint.total_questions,
-        p_question_phase: checkpoint.question_phase,
-        p_mcq_selected_choice: checkpoint.mcq_selected_choice || null,
-        p_mcq_is_correct: checkpoint.mcq_is_correct || false,
-        p_is_module_completed: checkpoint.is_module_completed || false,
-        p_device_id: checkpoint.device_id || null
-      });
+    // FIX: failures MUST propagate. A previous "emergency fix" wrapped this in a
+    // swallowing catch, which made every caller believe the save succeeded — the
+    // IndexedDB offline queue and the retry counter became dead code, and any real
+    // cloud failure (expired JWT, 5xx, RLS) silently lost the user's progress.
+    // Callers all handle rejection: saveCheckpoint queues to IndexedDB,
+    // mergeProgressOnLogin keeps the local copy, performSync counts the retry.
+    const { data, error } = await supabase.rpc('upsert_lesson_progress', {
+      p_user_id: checkpoint.user_id,
+      p_level: checkpoint.level,
+      p_module_id: checkpoint.module_id,
+      p_question_index: checkpoint.question_index,
+      p_total_questions: checkpoint.total_questions,
+      p_question_phase: checkpoint.question_phase,
+      p_mcq_selected_choice: checkpoint.mcq_selected_choice || null,
+      p_mcq_is_correct: checkpoint.mcq_is_correct || false,
+      p_is_module_completed: checkpoint.is_module_completed || false,
+      p_device_id: checkpoint.device_id || null
+    });
 
-      if (error) {
-        if (import.meta.env.DEV) {
-          logger.warn('Supabase RPC error (upsert_lesson_progress):', error.code, error.message);
-        }
-        // Throw so caller can queue to IndexedDB as fallback
-        throw new Error(`RPC failed: ${error.message}`);
-      }
-
-      // Apple Store Compliance: Silent fail
-    } catch (error) {
-      // 🔧 EMERGENCY FIX: Catch network/RPC errors - don't block saving
+    if (error) {
       if (import.meta.env.DEV) {
-        logger.warn('Supabase save failed - using local storage fallback:', error);
+        logger.warn('Supabase RPC error (upsert_lesson_progress):', error.code, error.message);
       }
-      // Don't re-throw - this is already handled by caller's offline queue
+      // Throw so caller can queue to IndexedDB as fallback
+      throw new Error(`RPC failed: ${error.message}`);
+    }
+
+    // DEV visibility: the RPC's backwards-progress guard keeps the newer server row
+    // and reports it via the 'updated' flag (v2 migration). Not a failure — no queue.
+    if (import.meta.env.DEV && data && (data as { updated?: boolean }).updated === false) {
+      logger.warn('[lessonProgress] server kept newer row (backwards-progress guard):',
+        checkpoint.level, checkpoint.module_id);
     }
   }
 
@@ -350,7 +365,12 @@ class LessonProgressService {
       totalListening: 0,
       totalSpeaking: checkpoint.total_questions,
       updatedAt: checkpoint.timestamp || Date.now(),
-      v: 1
+      v: 1,
+      // Checkpoint fidelity: keep the granular phase + MCQ answer locally so the
+      // exact position survives an app kill inside the 250ms server debounce.
+      questionPhase: checkpoint.question_phase,
+      mcqSelectedChoice: checkpoint.mcq_selected_choice ?? null,
+      mcqIsCorrect: checkpoint.mcq_is_correct ?? false
     };
 
     setLocalProgress(progressData);
@@ -371,7 +391,12 @@ class LessonProgressService {
         module_id: progressData.module,
         question_index: progressData.speakingIndex,
         total_questions: progressData.totalSpeaking,
-        question_phase: this.mapLegacyToPhase(progressData.phase, progressData.completed),
+        // Prefer the stored granular phase; mapLegacyToPhase is only the fallback
+        // for pre-fidelity records (it can't do better than 'MCQ'/'COMPLETED').
+        question_phase: progressData.questionPhase
+          ?? this.mapLegacyToPhase(progressData.phase, progressData.completed),
+        mcq_selected_choice: progressData.mcqSelectedChoice,
+        mcq_is_correct: progressData.mcqIsCorrect,
         is_module_completed: progressData.completed,
         timestamp: progressData.updatedAt
       };
@@ -401,7 +426,10 @@ class LessonProgressService {
           module_id: progress.module,
           question_index: progress.speakingIndex,
           total_questions: progress.totalSpeaking,
-          question_phase: this.mapLegacyToPhase(progress.phase, progress.completed),
+          question_phase: progress.questionPhase
+            ?? this.mapLegacyToPhase(progress.phase, progress.completed),
+          mcq_selected_choice: progress.mcqSelectedChoice,
+          mcq_is_correct: progress.mcqIsCorrect,
           is_module_completed: progress.completed,
           timestamp: progress.updatedAt
         });
@@ -432,12 +460,16 @@ class LessonProgressService {
           const retryCount = (checkpoint.retry_count || 0) + 1;
 
           if (retryCount >= this.config.retryAttempts) {
+            // Park the checkpoint instead of deleting it: progress stays on-device
+            // (recoverable / not silently lost) and getCheckpointsForRetry() stops
+            // retrying it once retry_count hits the park threshold.
             result.failed++;
-            result.errors.push(`Max retries exceeded for ${checkpoint.level}-${checkpoint.module_id}`);
-            await indexedDBStore.removeCheckpoint(checkpoint.level, checkpoint.module_id);
-          } else {
-            await indexedDBStore.updateRetryCount(checkpoint.level, checkpoint.module_id, retryCount);
+            result.errors.push(`Max retries exceeded (parked, not deleted) for ${checkpoint.level}-${checkpoint.module_id}`);
+            if (import.meta.env.DEV) {
+              console.warn(`[lessonProgress] checkpoint parked after ${retryCount} failed syncs:`, checkpoint.level, checkpoint.module_id, error);
+            }
           }
+          await indexedDBStore.updateRetryCount(checkpoint.level, checkpoint.module_id, retryCount);
         }
       }
 
@@ -564,6 +596,15 @@ class LessonProgressService {
           timestamp: new Date(row.updated_at || Date.now()).getTime()
         };
 
+        // Timestamp guard: never overwrite strictly-newer local progress with older
+        // cloud data (guest progress made before sign-in, or a slow multi-device
+        // echo). Completions always land — they gate module unlock.
+        const local = getLocalProgress(row.level, row.module_id);
+        if (local && !checkpoint.is_module_completed &&
+            local.updatedAt > new Date(row.updated_at || 0).getTime()) {
+          continue;
+        }
+
         // Save to local storage
         await this.saveLocalProgress(checkpoint);
       }
@@ -612,39 +653,40 @@ class LessonProgressService {
 
       logger.log(`[LessonProgress] Found ${localCheckpoints.length} local checkpoints to sync`);
 
-      // Build batch records
-      const records = localCheckpoints.map(cp => ({
-        user_id: userId,
-        level: cp.level,
-        module_id: cp.module_id,
-        question_index: cp.question_index || 0,
-        total_questions: cp.total_questions || 0,
-        question_phase: cp.question_phase || 'MCQ',
-        mcq_selected_choice: cp.mcq_selected_choice || null,
-        mcq_is_correct: cp.mcq_is_correct || false,
-        is_module_completed: cp.is_module_completed || false,
-        device_id: cp.device_id || null,
-        updated_at: new Date(cp.timestamp || Date.now()).toISOString()
-      }));
+      // FIX: go through the upsert_lesson_progress RPC (per record) instead of a
+      // direct batch .upsert. The direct upsert bypassed the server's
+      // backwards-progress guard, so a stale local index at logout could overwrite
+      // a higher cloud position. N is small (modules touched on this device) and
+      // this path is already best-effort inside useAuthReady's try/catch.
+      let failures = 0;
+      for (const cp of localCheckpoints) {
+        // Skip empty placement seeds — nothing to sync, avoids junk rows
+        if (!cp.is_module_completed && cp.question_index === 0 &&
+            (cp.total_questions ?? 0) === 0) {
+          continue;
+        }
 
-      // Upsert in batches of 50
-      const batchSize = 50;
-      for (let i = 0; i < records.length; i += batchSize) {
-        const batch = records.slice(i, i + batchSize);
-
-        const { error } = await supabase
-          .from('lesson_progress')
-          .upsert(batch, { onConflict: 'user_id,level,module_id' });
+        const { error } = await supabase.rpc('upsert_lesson_progress', {
+          p_user_id: userId,
+          p_level: cp.level,
+          p_module_id: cp.module_id,
+          p_question_index: cp.question_index || 0,
+          p_total_questions: cp.total_questions || 0,
+          p_question_phase: cp.question_phase || 'MCQ',
+          p_mcq_selected_choice: cp.mcq_selected_choice || null,
+          p_mcq_is_correct: cp.mcq_is_correct || false,
+          p_is_module_completed: cp.is_module_completed || false,
+          p_device_id: cp.device_id || null
+        });
 
         if (error) {
-          logger.error('[LessonProgress] Batch upsert failed:', error);
-          // Continue with next batch instead of failing completely
-        } else {
-          logger.log(`[LessonProgress] Batch ${Math.floor(i / batchSize) + 1} synced successfully`);
+          failures++;
+          logger.error('[LessonProgress] Logout sync failed for', cp.level, cp.module_id, error);
+          // Continue with remaining records instead of failing completely
         }
       }
 
-      logger.log('[LessonProgress] Cloud sync complete');
+      logger.log(`[LessonProgress] Cloud sync complete (${failures} failed)`);
     } catch (err) {
       logger.error('[LessonProgress] Failed to sync to cloud:', err);
     }
@@ -676,19 +718,15 @@ class LessonProgressService {
   }
 }
 
-// Import the missing function
-function getAllProgress() {
-  try {
-    const raw = localStorage.getItem('ll_progress_v1');
-    const map = raw ? JSON.parse(raw) : {};
-    return Object.values(map) as ModuleProgress[];
-  } catch {
-    return [];
-  }
-}
+// NOTE: a duplicate local `function getAllProgress()` used to live here, shadowing
+// the identical import from '@/utils/ProgressStore' (both read ll_progress_v1).
+// Removed — the import is the single source of truth.
 
 // Export singleton instance
 export const lessonProgressService = new LessonProgressService();
+
+// Export class for tests (construct isolated instances with custom config)
+export { LessonProgressService };
 
 // Export types
 export type { LessonCheckpoint, ProgressSyncResult };

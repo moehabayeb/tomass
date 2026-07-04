@@ -337,6 +337,56 @@ export function evaluateAnswerDetailed(userInput: string, opt: EvalOptions, atte
 }
 
 /**
+ * Open-response evaluation — for sentence-starter modules (A2 82–87) where the
+ * student composes THEIR OWN sentence rather than matching a fixed answer.
+ * Pass = a real (2+ word) sentence that (a) uses one of the required openers
+ * (when provided) and (b) has no critical subject–verb agreement error.
+ * Intentionally lenient: valid free answers must never be wrongly rejected.
+ */
+export function evaluateOpenResponse(
+  userInput: string,
+  opt: { requiredOpeners?: string[] } = {}
+): EvaluationResult {
+  const text = (userInput || '').trim();
+  if (!text || text.split(/\s+/).filter(Boolean).length < 2) {
+    return { isCorrect: false, confidence: 'retry', feedback: 'Try saying a full sentence.' };
+  }
+  const lower = text.toLowerCase();
+  // Apostrophe/STT-tolerant opener match: "Let's" ≈ "lets", "Why don't we" ≈ "why dont we".
+  const norm = (x: string) => x.toLowerCase().replace(/[’'`]/g, '').replace(/\s+/g, ' ').trim();
+  const normInput = norm(text);
+  const openers = (opt.requiredOpeners || []).map(o => o.trim()).filter(Boolean);
+  if (openers.length && !openers.some(o => normInput.includes(norm(o)))) {
+    return {
+      isCorrect: false,
+      confidence: 'retry',
+      feedback: 'Good attempt! Try starting your answer with one of these:',
+      hint: openers.join('  /  '),
+    };
+  }
+  const critical: Array<{ re: RegExp; fix: string }> = [
+    { re: /\bthey\s+is\b/i, fix: 'they are' },
+    { re: /\bwe\s+is\b/i, fix: 'we are' },
+    { re: /\bi\s+is\b/i, fix: 'I am' },
+    { re: /\byou\s+is\b/i, fix: 'you are' },
+    { re: /\bhe\s+are\b/i, fix: 'he is' },
+    { re: /\bshe\s+are\b/i, fix: 'she is' },
+    { re: /\bit\s+are\b/i, fix: 'it is' },
+  ];
+  for (const c of critical) {
+    if (c.re.test(lower)) {
+      return {
+        isCorrect: false,
+        confidence: 'retry',
+        feedback: `Almost! Check your grammar — it should be "${c.fix}".`,
+        grammarCorrections: [],
+      };
+    }
+  }
+  return { isCorrect: true, confidence: 'good', feedback: "Great! That's a correct sentence. 👏" };
+}
+
+/**
  * Detect grammar differences between user answer and expected answer
  */
 function detectGrammarDifferences(userAnswer: string, expectedAnswer: string): GrammarCorrection[] {

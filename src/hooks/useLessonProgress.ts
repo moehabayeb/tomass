@@ -23,6 +23,11 @@ export interface LessonProgressState {
   hasProgress: boolean;
   canResume: boolean;
 
+  // Which "level-moduleId" the last loadProgress call settled for (success OR failure).
+  // Lets consumers distinguish "load still in flight" from "loaded, no progress found" —
+  // restoring on null currentProgress before settlement caused the resume race.
+  settledKey: string | null;
+
   // Sync status
   isSyncing: boolean;
   isOnline: boolean;
@@ -61,6 +66,7 @@ export function useLessonProgress(level?: string, moduleId?: number) {
     isLoading: false,
     hasProgress: false,
     canResume: false,
+    settledKey: null,
     isSyncing: false,
     isOnline: true,
     lastSyncAt: null,
@@ -90,7 +96,8 @@ export function useLessonProgress(level?: string, moduleId?: number) {
         currentProgress: progress,
         hasProgress: !!progress,
         canResume: !!progress && !progress.is_module_completed,
-        isLoading: false
+        isLoading: false,
+        settledKey: `${targetLevel}-${targetModuleId}`
       }));
 
       return progress;
@@ -101,7 +108,8 @@ export function useLessonProgress(level?: string, moduleId?: number) {
         currentProgress: null,
         hasProgress: false,
         canResume: false,
-        isLoading: false
+        isLoading: false,
+        settledKey: `${targetLevel}-${targetModuleId}`
       }));
       return null;
     }
@@ -160,23 +168,15 @@ export function useLessonProgress(level?: string, moduleId?: number) {
     }
   }, [level, moduleId, user?.id, loadProgress]);
 
-  // Auto-sync on user login
-  // 🔧 EMERGENCY FIX: TEMPORARILY DISABLED to stop infinite loop
-  // This was triggering infinite Supabase calls - will re-enable after fixing
-  useEffect(() => {
-    if (isAuthenticated && user?.id) {
-      if (import.meta.env.DEV) logger.log('🔧 Auto-merge temporarily disabled to prevent infinite loop');
-      // try {
-      //   const hasLocalProgress = localStorage.getItem('ll_progress_v1');
-      //   if (hasLocalProgress) {
-      //     // Offer to merge progress
-      //     mergeProgressOnLogin();
-      //   }
-      // } catch (error) {
-      //   // Apple Store Compliance: Silent fail - Safari Private Mode support
-      // }
-    }
-  }, [isAuthenticated, user?.id]);
+  // Login merge is intentionally NOT run from this hook. The full login-sync
+  // sequence is orchestrated exactly once, in order, by useAuthReady:
+  //   loadProgressFromCloud (cloud→local) → mergeProgressOnLogin (local→cloud)
+  //   → dispatch 'auth:sync-complete'.
+  // Running merge here as well produced a duplicate, concurrent merge racing the
+  // auth-flow one on the same rows — the original "infinite loop"/contention.
+  // The `mergeProgressOnLogin` callback is still exported for manual/explicit use.
+  // This hook just listens for the auth-flow's completion event (effect below) to
+  // refresh the currently-open module's progress.
 
   // Re-load progress after cloud sync completes (fixes stale data after login)
   useEffect(() => {
@@ -242,15 +242,20 @@ export function useLessonProgress(level?: string, moduleId?: number) {
   /**
    * Start module from beginning
    */
-  const startFromBeginning = useCallback(async (targetLevel: string, targetModuleId: number) => {
+  const startFromBeginning = useCallback(async (targetLevel: string, targetModuleId: number, totalQuestions?: number) => {
     setShowResumeDialog(false);
+
+    // Never fabricate a total (was hardcoded 40): if the caller doesn't know the
+    // real module length yet, skip the checkpoint write — the first real answer
+    // checkpoints with the correct total.
+    if (!totalQuestions || totalQuestions <= 0) return;
 
     // Save a fresh checkpoint at question 0
     await saveCheckpoint({
       level: targetLevel,
       module_id: targetModuleId,
       question_index: 0,
-      total_questions: 40,
+      total_questions: totalQuestions,
       question_phase: 'MCQ',
       is_module_completed: false
     });
@@ -310,7 +315,8 @@ export function useLessonProgress(level?: string, moduleId?: number) {
   const getProgressPercentage = useCallback((progress: LessonCheckpoint | null): number => {
     if (!progress) return 0;
     if (progress.is_module_completed) return 100;
-    return Math.round((progress.question_index / progress.total_questions) * 100);
+    // Math.max guards legacy rows saved with total_questions = 0 (NaN%)
+    return Math.round((progress.question_index / Math.max(1, progress.total_questions)) * 100);
   }, []);
 
   /**

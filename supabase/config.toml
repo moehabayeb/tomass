@@ -5,3 +5,9 @@ verify_jwt = false
 
 [functions.feedback]
 verify_jwt = false
+
+# Speaking-practice conversation. Usable by guest/anon sessions (matches
+# transcribe/feedback). Without this it defaults to verify_jwt=true, which can
+# reject unauthenticated calls — inconsistent with the rest of the speaking flow.
+[functions.conversational-ai]
+verify_jwt = false

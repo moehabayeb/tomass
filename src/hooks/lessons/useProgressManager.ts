@@ -23,10 +23,11 @@ export function useProgressManager() {
 
   // Enhanced progress saving with new progress system
   const saveModuleProgress = useCallback((
-    level: string, 
-    moduleId: number, 
-    phase: LessonPhaseType, 
-    questionIndex: number = 0
+    level: string,
+    moduleId: number,
+    phase: LessonPhaseType,
+    questionIndex: number = 0,
+    totalQuestions: number = 40 // NOTE: not all modules have 40 items — callers should pass the real length
   ) => {
     try {
       // Save to both old and new systems for compatibility
@@ -38,16 +39,16 @@ export function useProgressManager() {
         speakingIndex: questionIndex,
         completed: phase === 'complete',
         totalListening: 0,
-        totalSpeaking: 40, // All modules have 40 questions
+        totalSpeaking: totalQuestions,
         updatedAt: Date.now(),
         v: 1
       };
-      
+
       setProgress(progressData);
 
       // Save to new progress system for exact resume
       const userId = 'guest'; // Note: Using guest ID for local progress tracking
-      const total = 40; // All modules have 40 questions
+      const total = totalQuestions;
       const correct = Math.min(questionIndex + 1, total); // questions answered correctly so far
       const completed = phase === 'complete';
       

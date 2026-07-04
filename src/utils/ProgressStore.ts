@@ -13,6 +13,12 @@ export interface ModuleProgress {
   totalSpeaking: number;         // snapshot of content length at save time
   updatedAt: number;             // epoch ms
   v: number;                     // schema version
+  // Optional checkpoint fidelity (backward-compatible; old records simply lack these).
+  // Without them the local layer collapsed all granular phases to 'speaking' and
+  // dropped the MCQ answer, so a kill-within-debounce lost the exact position.
+  questionPhase?: 'MCQ' | 'SPEAK_READY' | 'AWAITING_FEEDBACK' | 'COMPLETED';
+  mcqSelectedChoice?: 'A' | 'B' | 'C' | null;
+  mcqIsCorrect?: boolean;
 }
 
 const STORE_KEY = 'll_progress_v1'; // bump if schema changes

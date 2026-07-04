@@ -23,6 +23,10 @@ export interface LessonCheckpoint {
 const DB_NAME = 'tomass_offline_progress';
 const DB_VERSION = 1;
 const STORE_NAME = 'checkpoints';
+// Keep in sync with lessonProgressService `config.retryAttempts`. Beyond this a
+// checkpoint is "parked": preserved on-device (never deleted, so progress isn't
+// lost) but excluded from the retry loop so it can't drain battery forever.
+const MAX_SYNC_RETRIES = 5;
 
 class IndexedDBStore {
   private db: IDBDatabase | null = null;
@@ -223,6 +227,10 @@ class IndexedDBStore {
 
     return allCheckpoints.filter(checkpoint => {
       const retryCount = checkpoint.retry_count || 0;
+
+      // Parked (dead-lettered) checkpoints are preserved but no longer retried.
+      if (retryCount >= MAX_SYNC_RETRIES) return false;
+
       const lastRetry = checkpoint.last_retry || checkpoint.timestamp;
 
       // Exponential backoff: 1s, 2s, 4s, 8s, 16s, then 30s max

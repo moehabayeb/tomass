@@ -108,12 +108,20 @@ class UnifiedTTSServiceClass {
         this.isSpeakingNative = true;
         // Note: Don't pass voice parameter to native - let Android select best voice for language
         // The Capacitor plugin expects a numeric index, which is hard to manage across sessions
+        //
+        // category: 'playback' is honored on ANDROID only. On iOS, plugin v6.1.0
+        // IGNORES this param (it hardcodes .playback once in init()), so the real
+        // iOS fix — re-asserting .playback + setActive(true) right before each
+        // speak so the reply is audible after the mic's record session — is applied
+        // natively via patches/@capacitor-community+text-to-speech+6.1.0.patch
+        // (patch-package, runs on npm install). See that patch for the rationale.
         await TextToSpeech.speak({
           text,
           lang,
           rate,
           pitch,
-          volume
+          volume,
+          category: 'playback'
         });
         this.isSpeakingNative = false;
       } catch (error) {

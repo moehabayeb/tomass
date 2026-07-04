@@ -506,6 +506,23 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     interimCaptionRef.current = interimCaption;
   }, [interimCaption]);
 
+  // Auto-scroll the conversation to the newest message: fires when a message is
+  // appended (user or Tomas) and when the ephemeral "Tomas is speaking" ghost
+  // bubble appears — the user never has to scroll manually. rAF waits for the
+  // new bubble to be painted before measuring scrollHeight. Scrolls ONLY the
+  // chat container (container.scrollTo, not scrollIntoView) so the fixed page
+  // layout, floating header, and iOS safe-area padding are untouched.
+  // Deliberately NOT keyed on interimCaption (updates ~every 100ms while the
+  // mic runs → smooth-scroll jitter; the user is already at the bottom then).
+  const chatScrollRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = chatScrollRef.current;
+    if (!el) return;
+    requestAnimationFrame(() => {
+      el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+    });
+  }, [messages.length, ephemeralAssistant]);
+
   // Helper to check if server bubble exists for a given key
   const hasServerAssistant = (key: string) =>
     messages.some(m => m.role === 'assistant' && stableMessageKey(m.text, m.id) === key);
@@ -786,8 +803,19 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     return { id, seq, messageKey };
   };
 
+  // 🩺 self-diagnostic (S6): surface the reply-TTS path ON DEVICE via toast to pinpoint
+  // why a reply is silent (no Mac/Xcode console available). MUST stay false in App Store
+  // builds — these toasts are for debugging only. Flip to true ONLY for a debug build.
+  const TTS_DIAG = false;
+  const ttsDiag = (stage: string) => {
+    logger.log('[TTS-DIAG]', stage);
+    if (TTS_DIAG) {
+      try { toast({ title: 'TTS', description: stage, duration: 2500 }); } catch { /* non-critical */ }
+    }
+  };
+
   // B) Separate "append" vs "speak": Only speak existing messages, never append when speaking
-  type SpeakOpts = { token?: string };
+  type SpeakOpts = { token?: string; serverBubbleExists?: boolean };
   const speakExistingMessage = async (
     text: string, 
     messageKey: string, 
@@ -796,8 +824,12 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     opts: SpeakOpts = {}
   ) => {
     
-    // Use ghost only when there's no server bubble; otherwise highlight the real bubble
-    if (!hasServerAssistant(messageKey)) {
+    // Use ghost only when there's no server bubble; otherwise highlight the real
+    // bubble. `opts.serverBubbleExists` lets a caller that just committed the
+    // bubble (addAssistantMessage) bypass the stale-state hasServerAssistant check
+    // — otherwise `messages` is stale in this closure and BOTH the committed bubble
+    // and the ghost render, showing the reply twice while Tomas is speaking.
+    if (!opts.serverBubbleExists && !hasServerAssistant(messageKey)) {
       setEphemeralAssistant({ key: messageKey, text });
     } else {
       setSpeakingMessageKey(messageKey);
@@ -861,11 +893,13 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     // 🔧 GOD-TIER v7: Use REF for check (refs are synchronous, state is STALE in closures!)
     if (!ttsListenerActiveRef.current) {
       logger.log('[speakExistingMessage] ⛔ TTS skipped - ttsListenerActive is false');
+      ttsDiag('skip: listener inactive');
       return messageKey;
     }
-    
+
     // Turn token guard: Ensure we're still on the correct turn
     if (turnToken !== currentTurnToken) {
+      ttsDiag('skip: turn mismatch');
       return messageKey;
     }
     // D) Sound toggle compliance: Check if sound is enabled before TTS
@@ -873,6 +907,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       // 🎯 v41: TTS authority mutex - prevent overlapping speech
       if (ttsAuthorityMutexRef.current) {
         logger.log('[speakExistingMessage] v41: TTS authority mutex held, skipping');
+        ttsDiag('skip: mutex held');
         return messageKey;
       }
       ttsAuthorityMutexRef.current = true;
@@ -884,6 +919,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           ttsAuthorityMutexRef.current = false; // v41: Release mutex on early return
           // Show tooltip: "Tap Play to enable sound" but don't mark as complete
           setErrorMessage("Tap Play to enable sound");
+          ttsDiag('skip: audioContext not resumed');
           return messageKey;
         }
       }
@@ -918,12 +954,15 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       // 🔧 GOD-TIER v5: Use try-catch-finally instead of .finally() with async callback
       // .finally() does NOT await async callbacks - this was causing race conditions!
       try {
-        await TTSManager.speak(stripEmojisForTTS(text), { canSkip: false }); // 🚨 CRITICAL FIX: Disabled skip to prevent interruption
+        ttsDiag('reached speak');
+        const r = await TTSManager.speak(stripEmojisForTTS(text), { canSkip: false }); // 🚨 CRITICAL FIX: Disabled skip to prevent interruption
         // TTS completed successfully
-        logger.log('[speakExistingMessage] ✅ TTS completed successfully');
-      } catch (error) {
+        logger.log('[speakExistingMessage] ✅ TTS completed successfully', r);
+        ttsDiag(`speak done: completed=${(r as any)?.completed} skipped=${(r as any)?.skipped}`);
+      } catch (error: any) {
         // TTS error - log but continue to transition
         logger.warn('[speakExistingMessage] ⚠️ TTS error:', error);
+        ttsDiag('speak THREW: ' + (error?.message || String(error)).slice(0, 60));
       } finally {
         // 🔧 GOD-TIER v5: All cleanup and transition happens here, PROPERLY AWAITED
         resolved = true;
@@ -1020,7 +1059,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     });
 
     // Now speak this newly added message (refs are guaranteed to be updated)
-    await speakExistingMessage(message, messageKey, phase, false, { token: turnToken });
+    await speakExistingMessage(message, messageKey, phase, false, { token: turnToken, serverBubbleExists: true });
     logger.log('[addAssistantMessage] ✅ TTS complete, returning messageId:', messageId);
 
     return messageId;
@@ -1673,21 +1712,17 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
 
       // Use the unified conversational-ai function
       // 🎯 AUTOMATIC DIFFICULTY: user_level is now synced with XP progression!
-      // Phase 1.1: Use Promise.race with 30s timeout to prevent indefinite hangs
-      const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('Request timeout')), 30000)
-      );
-
-      let data, error;
-      try {
-        logger.log('[executeTeacherLoop] 🌐 Making API call to conversational-ai...');
-        logger.log('[executeTeacherLoop] 📤 Payload:', {
-          userMessage: transcript.substring(0, 50) + '...',
-          userLevel: user_level,
-          hasConversationHistory: !!conversationContext
-        });
-
-        const response = await Promise.race([
+      // Resilience: a per-attempt timeout kept ABOVE the edge function's 15s
+      // OpenAI abort, so on slow turns the edge returns its graceful 200 fallback
+      // (which we render) rather than this client timeout firing. One automatic
+      // retry covers transient/fast network failures; we do NOT retry a full
+      // timeout (that would double the wait).
+      const TIMEOUT_MS = 30000;
+      const invokeOnce = () => {
+        const timeoutPromise = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Request timeout')), TIMEOUT_MS)
+        );
+        return Promise.race([
           supabase.functions.invoke('conversational-ai', {
             body: {
               userMessage: transcript,
@@ -1697,59 +1732,56 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           }),
           timeoutPromise
         ]);
-        data = response.data;
-        error = response.error;
+      };
 
-        logger.log('[executeTeacherLoop] 📥 API Response received:', {
-          hasData: !!data,
-          hasError: !!error,
-          errorMessage: error?.message,
-          responsePreview: data?.response?.substring(0, 50) || '(no response)'
-        });
-      } catch (err: any) {
-        if (err.message === 'Request timeout') {
-          // Phase 1.1: Handle timeout with user-friendly message
-          await addAssistantMessage("The request took too long. Please check your connection and try again.", 'feedback');
-          return;
+      logger.log('[executeTeacherLoop] 🌐 Making API call to conversational-ai...', {
+        userMessage: transcript.substring(0, 50) + '...',
+        userLevel: user_level,
+        hasConversationHistory: !!conversationContext
+      });
+
+      let data: any, error: any, timedOut = false;
+      for (let attempt = 1; attempt <= 2; attempt++) {
+        try {
+          const response: any = await invokeOnce();
+          data = response.data;
+          error = response.error;
+          logger.log(`[executeTeacherLoop] 📥 attempt ${attempt} response:`, {
+            hasData: !!data, hasError: !!error, errorMessage: error?.message,
+            responsePreview: data?.response?.substring(0, 50) || '(no response)'
+          });
+          if (!error && data?.response) break; // success → stop retrying
+        } catch (err: any) {
+          if (err?.message === 'Request timeout') { timedOut = true; break; } // don't retry a full timeout
+          error = err;
         }
-        // Re-throw other errors to be caught by outer catch
-        throw err;
+        if (attempt < 2) await new Promise(r => setTimeout(r, 800)); // brief backoff before one retry
       }
 
-      // 🔧 FIX #9: Comprehensive error handling with user-friendly messages
+      // 🔧 Keep the conversation flowing on every failure path (no dead-ends).
+      if (timedOut) {
+        await addAssistantMessage("I'm taking a little long to respond. Let's keep going — what would you like to talk about?", 'feedback');
+        return;
+      }
+
       if (error) {
-        // 🔧 iOS DEBUG: Log detailed error for debugging iOS-specific issues
-        logger.error('🔴 Supabase function error:', {
-          message: error.message,
-          name: error.name,
-          code: (error as any).code,
-          details: (error as any).details,
-          hint: (error as any).hint,
-          status: (error as any).status,
-          platform: Capacitor.getPlatform(),
-          isNative: Capacitor.isNativePlatform()
+        logger.error('🔴 Supabase function error (after retry):', {
+          message: error.message, name: error.name, status: (error as any).status,
+          platform: Capacitor.getPlatform(), isNative: Capacitor.isNativePlatform()
         });
-
-        // Apple Store Compliance: Silent fail with user-friendly error message
-
-        // Provide specific error messages based on error type
-        let errorMessage = "I couldn't process your message right now. ";
-
-        if (error.message?.includes('fetch')) {
-          errorMessage += "Please check your internet connection and try again.";
-        } else if (error.message?.includes('timeout')) {
-          errorMessage += "The request timed out. Please try again.";
-        } else {
-          errorMessage += "Please try again in a moment.";
-        }
-
-        await addAssistantMessage(errorMessage, 'feedback');
+        const offlineish = /fetch|network|failed to send|load failed/i.test(error.message || '');
+        await addAssistantMessage(
+          offlineish
+            ? "I couldn't reach the server. Please check your internet connection, then let's continue."
+            : "I had trouble responding just now. Let's keep going — what would you like to talk about?",
+          'feedback'
+        );
         return;
       }
 
       // 🔧 PHASE 2 FIX: Add null checks on Supabase response
       if (!data || !data.response) {
-        await addAssistantMessage("I couldn't generate a response. Please try again.", 'feedback');
+        await addAssistantMessage("Let's continue — what would you like to talk about?", 'feedback');
         return;
       }
 
@@ -1807,8 +1839,12 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
       await addAssistantMessage(finalResponse, 'feedback');
       logger.log('[executeTeacherLoop] ✅ AI response added successfully');
 
-      // Update conversation context
-      setConversationContext(prev => `${prev}\nUser: ${transcript}\nAssistant: ${aiResponse.response}`.trim());
+      // Update conversation context — bounded to the last ~6 turns (12 lines) so an
+      // older topic can't dominate / drag the AI off the user's current subject.
+      setConversationContext(prev => {
+        const merged = `${prev}\nUser: ${transcript}\nAssistant: ${aiResponse.response}`.trim();
+        return merged.split('\n').slice(-12).join('\n');
+      });
 
       // Award XP for successful conversation turn
       const baseXP = 10; // Base XP per message
@@ -2511,11 +2547,16 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
         </div>
       )}
 
-      {/* Full-Screen Scrollable Chat Area - adjusted for floating header */}
+      {/* Full-Screen Scrollable Chat Area - adjusted for floating header.
+          The floating header is `pt-safe` + avatar + name + status badge, so the
+          top offset MUST include the safe-area inset; a flat 280px overlapped the
+          first bubbles on Dynamic Island devices (where the inset is ~59px). */}
       <div
         id="main-content"
-        className="flex-1 overflow-y-auto overflow-x-hidden pt-[280px] pb-24 px-4 z-[1]"
+        ref={chatScrollRef}
+        className="flex-1 overflow-y-auto overflow-x-hidden pb-24 px-4 z-[1]"
         style={{
+          paddingTop: 'calc(env(safe-area-inset-top, 0px) + 280px)',
           overscrollBehaviorY: 'contain',
           overscrollBehaviorX: 'none',
           touchAction: 'pan-y'
