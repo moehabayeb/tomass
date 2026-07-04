@@ -1930,10 +1930,12 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
       return true;
     }
 
-    // Phase 4: Level-start modules at or below placement are always unlocked (for review)
+    // Phase 4: POLICY (July 2026, per owner): every level's FIRST module is always
+    // open once the placement test is taken — users can sample any level, including
+    // ones above their placement. Progression WITHIN a level stays sequential.
     // Values match MODULE_RANGES: A1=1, A2=51, B1=101, B2=151, C1=201, C2=251
     const levelStarts = [1, 51, 101, 151, 201, 251];
-    if (levelStarts.includes(moduleId) && moduleId <= placedModule) {
+    if (levelStarts.includes(moduleId)) {
       return true;
     }
 
