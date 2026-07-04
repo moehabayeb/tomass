@@ -78,6 +78,12 @@ class LessonProgressService {
         try {
           await this.saveToServer(checkpoint);
         } catch (error) {
+          // Completion rows are the ones that gate module unlock — surface their
+          // failure loudly in DEV so a lost completion is never invisible.
+          if (import.meta.env.DEV && checkpoint.is_module_completed) {
+            logger.warn('[lessonProgress] completion row failed to persist; queued offline:',
+              checkpoint.level, checkpoint.module_id, error);
+          }
           if (this.config.enableOfflineQueue) {
             await indexedDBStore.addCheckpoint(checkpoint);
           }
@@ -265,35 +271,38 @@ class LessonProgressService {
       throw new Error('User ID required for server save');
     }
 
-    try {
-      const { data, error } = await supabase.rpc('upsert_lesson_progress', {
-        p_user_id: checkpoint.user_id,
-        p_level: checkpoint.level,
-        p_module_id: checkpoint.module_id,
-        p_question_index: checkpoint.question_index,
-        p_total_questions: checkpoint.total_questions,
-        p_question_phase: checkpoint.question_phase,
-        p_mcq_selected_choice: checkpoint.mcq_selected_choice || null,
-        p_mcq_is_correct: checkpoint.mcq_is_correct || false,
-        p_is_module_completed: checkpoint.is_module_completed || false,
-        p_device_id: checkpoint.device_id || null
-      });
+    // FIX: failures MUST propagate. A previous "emergency fix" wrapped this in a
+    // swallowing catch, which made every caller believe the save succeeded — the
+    // IndexedDB offline queue and the retry counter became dead code, and any real
+    // cloud failure (expired JWT, 5xx, RLS) silently lost the user's progress.
+    // Callers all handle rejection: saveCheckpoint queues to IndexedDB,
+    // mergeProgressOnLogin keeps the local copy, performSync counts the retry.
+    const { data, error } = await supabase.rpc('upsert_lesson_progress', {
+      p_user_id: checkpoint.user_id,
+      p_level: checkpoint.level,
+      p_module_id: checkpoint.module_id,
+      p_question_index: checkpoint.question_index,
+      p_total_questions: checkpoint.total_questions,
+      p_question_phase: checkpoint.question_phase,
+      p_mcq_selected_choice: checkpoint.mcq_selected_choice || null,
+      p_mcq_is_correct: checkpoint.mcq_is_correct || false,
+      p_is_module_completed: checkpoint.is_module_completed || false,
+      p_device_id: checkpoint.device_id || null
+    });
 
-      if (error) {
-        if (import.meta.env.DEV) {
-          logger.warn('Supabase RPC error (upsert_lesson_progress):', error.code, error.message);
-        }
-        // Throw so caller can queue to IndexedDB as fallback
-        throw new Error(`RPC failed: ${error.message}`);
-      }
-
-      // Apple Store Compliance: Silent fail
-    } catch (error) {
-      // 🔧 EMERGENCY FIX: Catch network/RPC errors - don't block saving
+    if (error) {
       if (import.meta.env.DEV) {
-        logger.warn('Supabase save failed - using local storage fallback:', error);
+        logger.warn('Supabase RPC error (upsert_lesson_progress):', error.code, error.message);
       }
-      // Don't re-throw - this is already handled by caller's offline queue
+      // Throw so caller can queue to IndexedDB as fallback
+      throw new Error(`RPC failed: ${error.message}`);
+    }
+
+    // DEV visibility: the RPC's backwards-progress guard keeps the newer server row
+    // and reports it via the 'updated' flag (v2 migration). Not a failure — no queue.
+    if (import.meta.env.DEV && data && (data as { updated?: boolean }).updated === false) {
+      logger.warn('[lessonProgress] server kept newer row (backwards-progress guard):',
+        checkpoint.level, checkpoint.module_id);
     }
   }
 
@@ -680,19 +689,15 @@ class LessonProgressService {
   }
 }
 
-// Import the missing function
-function getAllProgress() {
-  try {
-    const raw = localStorage.getItem('ll_progress_v1');
-    const map = raw ? JSON.parse(raw) : {};
-    return Object.values(map) as ModuleProgress[];
-  } catch {
-    return [];
-  }
-}
+// NOTE: a duplicate local `function getAllProgress()` used to live here, shadowing
+// the identical import from '@/utils/ProgressStore' (both read ll_progress_v1).
+// Removed — the import is the single source of truth.
 
 // Export singleton instance
 export const lessonProgressService = new LessonProgressService();
+
+// Export class for tests (construct isolated instances with custom config)
+export { LessonProgressService };
 
 // Export types
 export type { LessonCheckpoint, ProgressSyncResult };
