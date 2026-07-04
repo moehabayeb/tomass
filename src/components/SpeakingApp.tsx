@@ -506,6 +506,23 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
     interimCaptionRef.current = interimCaption;
   }, [interimCaption]);
 
+  // Auto-scroll the conversation to the newest message: fires when a message is
+  // appended (user or Tomas) and when the ephemeral "Tomas is speaking" ghost
+  // bubble appears — the user never has to scroll manually. rAF waits for the
+  // new bubble to be painted before measuring scrollHeight. Scrolls ONLY the
+  // chat container (container.scrollTo, not scrollIntoView) so the fixed page
+  // layout, floating header, and iOS safe-area padding are untouched.
+  // Deliberately NOT keyed on interimCaption (updates ~every 100ms while the
+  // mic runs → smooth-scroll jitter; the user is already at the bottom then).
+  const chatScrollRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = chatScrollRef.current;
+    if (!el) return;
+    requestAnimationFrame(() => {
+      el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+    });
+  }, [messages.length, ephemeralAssistant]);
+
   // Helper to check if server bubble exists for a given key
   const hasServerAssistant = (key: string) =>
     messages.some(m => m.role === 'assistant' && stableMessageKey(m.text, m.id) === key);
@@ -2536,6 +2553,7 @@ export default function SpeakingApp({ initialMessage }: SpeakingAppProps = {}) {
           first bubbles on Dynamic Island devices (where the inset is ~59px). */}
       <div
         id="main-content"
+        ref={chatScrollRef}
         className="flex-1 overflow-y-auto overflow-x-hidden pb-24 px-4 z-[1]"
         style={{
           paddingTop: 'calc(env(safe-area-inset-top, 0px) + 280px)',
