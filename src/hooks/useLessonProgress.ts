@@ -242,15 +242,20 @@ export function useLessonProgress(level?: string, moduleId?: number) {
   /**
    * Start module from beginning
    */
-  const startFromBeginning = useCallback(async (targetLevel: string, targetModuleId: number) => {
+  const startFromBeginning = useCallback(async (targetLevel: string, targetModuleId: number, totalQuestions?: number) => {
     setShowResumeDialog(false);
+
+    // Never fabricate a total (was hardcoded 40): if the caller doesn't know the
+    // real module length yet, skip the checkpoint write — the first real answer
+    // checkpoints with the correct total.
+    if (!totalQuestions || totalQuestions <= 0) return;
 
     // Save a fresh checkpoint at question 0
     await saveCheckpoint({
       level: targetLevel,
       module_id: targetModuleId,
       question_index: 0,
-      total_questions: 40,
+      total_questions: totalQuestions,
       question_phase: 'MCQ',
       is_module_completed: false
     });
@@ -310,7 +315,8 @@ export function useLessonProgress(level?: string, moduleId?: number) {
   const getProgressPercentage = useCallback((progress: LessonCheckpoint | null): number => {
     if (!progress) return 0;
     if (progress.is_module_completed) return 100;
-    return Math.round((progress.question_index / progress.total_questions) * 100);
+    // Math.max guards legacy rows saved with total_questions = 0 (NaN%)
+    return Math.round((progress.question_index / Math.max(1, progress.total_questions)) * 100);
   }, []);
 
   /**

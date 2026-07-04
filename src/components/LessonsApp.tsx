@@ -247,8 +247,14 @@ import { detectGrammarErrors } from '../utils/grammarErrorDetector';
 import { useVoiceActivityDetection } from '../hooks/useVoiceActivityDetection';
 
 // Enhanced progress saving with new progress system
-function saveModuleProgress(userId: string | undefined, level: string, moduleId: number, phase: LessonPhaseType, questionIndex: number = 0, totalQuestions: number = 40) {
+function saveModuleProgress(userId: string | undefined, level: string, moduleId: number, phase: LessonPhaseType, questionIndex: number = 0, totalQuestions: number = 0) {
   const doSave = () => {
+    // Never fabricate a total (was default 40): if the caller doesn't know the real
+    // module length, preserve whatever an earlier save recorded instead of lying.
+    if (totalQuestions <= 0) {
+      totalQuestions = getProgress(level, moduleId)?.totalSpeaking ?? 0;
+    }
+
     // Save to both old and new systems for compatibility
     const progressData: StoreModuleProgress = {
       level: level,
@@ -267,7 +273,7 @@ function saveModuleProgress(userId: string | undefined, level: string, moduleId:
 
     // Save to new progress system for exact resume (requires auth)
     if (!userId) return; // Skip if not authenticated
-    const total = totalQuestions; // Real per-module item count (defaults to 40)
+    const total = totalQuestions; // Real per-module item count (0 = unknown)
     const correct = Math.min(questionIndex + 1, total); // questions answered correctly so far
     const completed = phase === 'complete';
 
@@ -1477,7 +1483,8 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
         level: selectedLevel,
         moduleId: selectedModule,
         questionIndex: speakingIndex,
-        totalQuestions: currentModuleData?.speakingPractice?.length ?? 40,
+        // 0 = unknown → the checkpoint hook skips the write instead of lying with 40
+        totalQuestions: currentModuleData?.speakingPractice?.length ?? 0,
         mcqChoice: selectedLetter,
         mcqCorrect: true
       });
@@ -1856,7 +1863,8 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
         level: selectedLevel,
         moduleId: selectedModule,
         questionIndex: speakingIndex,
-        totalQuestions: currentModuleData?.speakingPractice?.length ?? 40
+        // 0 = unknown → the checkpoint hook skips the write instead of lying with 40
+        totalQuestions: currentModuleData?.speakingPractice?.length ?? 0
       });
     }
   }, [speakingIndex, currentPhase, selectedLevel, selectedModule, checkpoints.checkpointMCQShown]);
@@ -2144,7 +2152,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
         selectedModule,
         currentPhase === 'speaking' ? 'speaking' as LessonPhaseType : 'intro',
         speakingIndex,
-        currentModuleData?.speakingPractice?.length ?? 40
+        currentModuleData?.speakingPractice?.length ?? 0
       );
       autosaveTimeoutRef.current = null;
     }, 250);
@@ -2409,7 +2417,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
       selectedModule,
       'complete',
       speakingIndexRef.current,
-      currentModuleData?.speakingPractice?.length ?? 40
+      currentModuleData?.speakingPractice?.length ?? 0
     );
 
     // Save progress to completed modules
@@ -2425,13 +2433,17 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
       }
 
       // FIX #1: Save module completion to database (fire-and-forget)
+      // Real length only (never fabricate 40); completion always runs with module
+      // data loaded, so the fallback to the current index covers the impossible case.
+      const completionTotal = currentModuleData?.speakingPractice?.length
+        ?? (speakingIndexRef.current + 1);
       if (user?.id) {
         lessonProgressService.saveCheckpoint({
           user_id: user.id,
           level: String(selectedLevel),
           module_id: selectedModule,
-          question_index: (currentModuleData?.speakingPractice?.length || 40) - 1,
-          total_questions: currentModuleData?.speakingPractice?.length || 40,
+          question_index: completionTotal - 1,
+          total_questions: completionTotal,
           question_phase: 'COMPLETED',
           is_module_completed: true,
           timestamp: Date.now()
@@ -2509,7 +2521,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
     });
 
     // Save progress after each question (exact resume point)
-    saveModuleProgress(user?.id, String(selectedLevel), selectedModule!, 'speaking', curr + 1, currentModuleData?.speakingPractice?.length ?? 40);
+    saveModuleProgress(user?.id, String(selectedLevel), selectedModule!, 'speaking', curr + 1, currentModuleData?.speakingPractice?.length ?? 0);
 
     // still inside the range → move to next question
     if (curr + 1 < total) {
@@ -3185,7 +3197,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
               // Progress restored successfully
             }
           }}
-          onStartFresh={() => checkpoints.startFromBeginning(selectedLevel, selectedModule)}
+          onStartFresh={() => checkpoints.startFromBeginning(selectedLevel, selectedModule, totals.speaking)}
         />
       )}
 

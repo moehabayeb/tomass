@@ -31,12 +31,21 @@ export function useLessonCheckpoints(level?: string, moduleId?: number) {
     const key = `${options.level}-${options.moduleId}-${options.questionIndex}-MCQ`;
     if (lastCheckpointRef.current === key) return; // Prevent duplicate saves
 
+    // Never fabricate a total (was `|| 40`): a wrong total corrupts completion
+    // math and resume clamping. If the module data isn't loaded yet, skip the
+    // write — the next state change (data present) checkpoints correctly.
+    const total = options.totalQuestions ?? 0;
+    if (total <= 0) {
+      if (import.meta.env.DEV) console.warn('[checkpoint] skipped: unknown total_questions', options.level, options.moduleId);
+      return;
+    }
+
     try {
       await progress.saveCheckpoint({
         level: options.level,
         module_id: options.moduleId,
         question_index: options.questionIndex,
-        total_questions: options.totalQuestions || 40,
+        total_questions: total,
         question_phase: 'MCQ',
         is_module_completed: false
       });
@@ -55,12 +64,18 @@ export function useLessonCheckpoints(level?: string, moduleId?: number) {
     const key = `${options.level}-${options.moduleId}-${options.questionIndex}-SPEAK_READY`;
     if (lastCheckpointRef.current === key) return;
 
+    const total = options.totalQuestions ?? 0;
+    if (total <= 0) {
+      if (import.meta.env.DEV) console.warn('[checkpoint] skipped: unknown total_questions', options.level, options.moduleId);
+      return;
+    }
+
     try {
       await progress.saveCheckpoint({
         level: options.level,
         module_id: options.moduleId,
         question_index: options.questionIndex,
-        total_questions: options.totalQuestions || 40,
+        total_questions: total,
         question_phase: 'SPEAK_READY',
         mcq_selected_choice: options.mcqChoice,
         mcq_is_correct: options.mcqCorrect,
@@ -81,12 +96,18 @@ export function useLessonCheckpoints(level?: string, moduleId?: number) {
     const key = `${options.level}-${options.moduleId}-${options.questionIndex}-AWAITING_FEEDBACK`;
     if (lastCheckpointRef.current === key) return;
 
+    const total = options.totalQuestions ?? 0;
+    if (total <= 0) {
+      if (import.meta.env.DEV) console.warn('[checkpoint] skipped: unknown total_questions', options.level, options.moduleId);
+      return;
+    }
+
     try {
       await progress.saveCheckpoint({
         level: options.level,
         module_id: options.moduleId,
         question_index: options.questionIndex,
-        total_questions: options.totalQuestions || 40,
+        total_questions: total,
         question_phase: 'AWAITING_FEEDBACK',
         mcq_selected_choice: options.mcqChoice,
         mcq_is_correct: options.mcqCorrect,
@@ -104,8 +125,16 @@ export function useLessonCheckpoints(level?: string, moduleId?: number) {
    * Save checkpoint when advancing to next question
    */
   const checkpointQuestionComplete = useCallback(async (options: CheckpointOptions) => {
+    const total = options.totalQuestions ?? 0;
+    if (total <= 0) {
+      // A fabricated 40 here is the worst case: isLastQuestion would be wrong for
+      // any module whose real length isn't 40, breaking completion detection.
+      if (import.meta.env.DEV) console.warn('[checkpoint] skipped: unknown total_questions', options.level, options.moduleId);
+      return;
+    }
+
     const nextIndex = options.questionIndex + 1;
-    const isLastQuestion = nextIndex >= (options.totalQuestions || 40);
+    const isLastQuestion = nextIndex >= total;
 
     try {
       if (isLastQuestion) {
@@ -114,7 +143,7 @@ export function useLessonCheckpoints(level?: string, moduleId?: number) {
           level: options.level,
           module_id: options.moduleId,
           question_index: options.questionIndex,
-          total_questions: options.totalQuestions || 40,
+          total_questions: total,
           question_phase: 'COMPLETED',
           is_module_completed: true
         });
@@ -126,7 +155,7 @@ export function useLessonCheckpoints(level?: string, moduleId?: number) {
           level: options.level,
           module_id: options.moduleId,
           question_index: nextIndex,
-          total_questions: options.totalQuestions || 40,
+          total_questions: total,
           question_phase: 'MCQ',
           is_module_completed: false
         });
@@ -176,7 +205,8 @@ export function useLessonCheckpoints(level?: string, moduleId?: number) {
       totalQuestions: progress.currentProgress.total_questions,
       phase: progress.currentProgress.question_phase,
       canResume: progress.canResume,
-      progressPercentage: Math.round((progress.currentProgress.question_index / progress.currentProgress.total_questions) * 100)
+      // Math.max guards legacy rows saved with total_questions = 0 (NaN%)
+      progressPercentage: Math.round((progress.currentProgress.question_index / Math.max(1, progress.currentProgress.total_questions)) * 100)
     };
   }, [progress.currentProgress, progress.canResume]);
 
