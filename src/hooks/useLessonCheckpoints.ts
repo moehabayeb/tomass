@@ -227,8 +227,12 @@ export function useLessonCheckpoints(level?: string, moduleId?: number) {
     currentProgress: progress.currentProgress,
     canResume: progress.canResume,
     isLoading: progress.isLoading,
+    // Settlement marker: "<level>-<moduleId>" once loadProgress resolved (or failed)
+    // for that module — consumers must wait for it before deciding fresh-start vs resume.
+    settledKey: progress.settledKey,
     isSyncing: progress.isSyncing,
     isOnline: progress.isOnline,
+    lastSyncAt: progress.lastSyncAt,
     showResumeDialog: progress.showResumeDialog,
     setShowResumeDialog: progress.setShowResumeDialog,
 

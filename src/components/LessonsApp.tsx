@@ -2044,21 +2044,50 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
     speaking: currentModuleData?.speakingPractice?.length ?? 0,
   };
 
+  // FIX (resume race): only decide fresh-start vs resume once the async checkpoint
+  // load has SETTLED for this exact module. Previously the effect ran before the
+  // cloud/local load resolved, took the fresh-start branch, and burned
+  // restoredOnceRef — the real saved position arriving moments later was ignored.
+  const progressSettled = checkpoints.settledKey === `${selectedLevel}-${selectedModule}`;
+
   useEffect(() => {
     // Run when module changes; restore once.
     if (!selectedModule || !currentModuleData || restoredOnceRef.current) return;
+    if (!progressSettled) return; // wait for the checkpoint load to resolve (or fail)
 
     // Clamp restored positions to this module's real length — content counts vary
     // per module, so a stale/shrunk saved index must never land out of range.
     const maxIndex = totals.speaking > 0 ? totals.speaking - 1 : 0;
 
-    // Priority 1: Check checkpoint system first — restore exact position
+    // Never yank the user backwards if they already advanced past the intro this
+    // session (fast users can act before a slow network load settles).
+    const userAdvanced = phaseRef.current !== 'intro' || speakingIndexRef.current > 0;
+
+    // Priority 1: Check checkpoint system first — restore exact position.
+    // Restore even at question_index === 0: a checkpoint row only exists once the
+    // user reached the first MCQ (past intro), so index 0 is real progress and
+    // must not replay the intro.
     const checkpointProgress = checkpoints.currentProgress;
-    if (checkpointProgress && !checkpointProgress.is_module_completed && checkpointProgress.question_index > 0) {
-      // Restore exact phase and position from checkpoint
-      setCurrentPhase(checkpointProgress.phase || 'speaking');
-      setSpeakingIndex(Math.min(checkpointProgress.question_index, maxIndex));
-    } else {
+    if (checkpointProgress && !checkpointProgress.is_module_completed && !userAdvanced) {
+      const idx = Math.min(checkpointProgress.question_index, maxIndex);
+      // FIX: previous code read checkpointProgress.phase, a field that doesn't exist
+      // on LessonCheckpoint (it's question_phase) — always undefined → 'speaking'.
+      setCurrentPhase('speaking');
+      setSpeakingIndex(idx);
+      // Phase fidelity: MCQ already answered correctly → resume at the speaking step
+      if ((checkpointProgress.question_phase === 'SPEAK_READY' ||
+           checkpointProgress.question_phase === 'AWAITING_FEEDBACK') &&
+          checkpointProgress.mcq_is_correct) {
+        setQuestionStates(prev => ({
+          ...prev,
+          [idx]: {
+            selectedChoice: checkpointProgress.mcq_selected_choice ?? undefined,
+            choiceCorrect: true,
+            speechCompleted: false
+          }
+        }));
+      }
+    } else if (!userAdvanced) {
       // Priority 2: Fallback to old system if no checkpoint data
       const saved = loadModuleProgress(String(selectedLevel), selectedModule);
       if (saved && saved.phase !== 'complete') {
@@ -2072,7 +2101,8 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
       }
     }
 
-    // Check if we should show resume dialog for checkpoint progress (ONCE per module load)
+    // Check if we should show resume dialog for checkpoint progress (ONCE per module load).
+    // Keep the index>0 gate here: at question 0 "resume" ≈ "start fresh", dialog is noise.
     if (checkpointProgress && !checkpointProgress.is_module_completed &&
         checkpointProgress.question_index > 0 && !dialogShownRef.current) {
       checkpoints.setShowResumeDialog(true);
@@ -2083,7 +2113,7 @@ export default function LessonsApp({ onBack, onNavigateToPlacementTest, initialL
     // also cancel any stray timers/narration here
     narration.cancel?.();
     if (timeoutRef?.current) { clearTimeout(timeoutRef.current); timeoutRef.current = null; }
-  }, [selectedModule, currentModuleData, selectedLevel, checkpoints.currentProgress, checkpoints.setShowResumeDialog]);
+  }, [selectedModule, currentModuleData, selectedLevel, progressSettled, checkpoints.currentProgress, checkpoints.setShowResumeDialog]);
 
   // Reset processing state when entering speaking phase (but don't change speakingIndex)
   useEffect(() => {

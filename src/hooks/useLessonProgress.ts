@@ -23,6 +23,11 @@ export interface LessonProgressState {
   hasProgress: boolean;
   canResume: boolean;
 
+  // Which "level-moduleId" the last loadProgress call settled for (success OR failure).
+  // Lets consumers distinguish "load still in flight" from "loaded, no progress found" —
+  // restoring on null currentProgress before settlement caused the resume race.
+  settledKey: string | null;
+
   // Sync status
   isSyncing: boolean;
   isOnline: boolean;
@@ -61,6 +66,7 @@ export function useLessonProgress(level?: string, moduleId?: number) {
     isLoading: false,
     hasProgress: false,
     canResume: false,
+    settledKey: null,
     isSyncing: false,
     isOnline: true,
     lastSyncAt: null,
@@ -90,7 +96,8 @@ export function useLessonProgress(level?: string, moduleId?: number) {
         currentProgress: progress,
         hasProgress: !!progress,
         canResume: !!progress && !progress.is_module_completed,
-        isLoading: false
+        isLoading: false,
+        settledKey: `${targetLevel}-${targetModuleId}`
       }));
 
       return progress;
@@ -101,7 +108,8 @@ export function useLessonProgress(level?: string, moduleId?: number) {
         currentProgress: null,
         hasProgress: false,
         canResume: false,
-        isLoading: false
+        isLoading: false,
+        settledKey: `${targetLevel}-${targetModuleId}`
       }));
       return null;
     }
