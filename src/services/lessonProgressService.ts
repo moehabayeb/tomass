@@ -154,6 +154,12 @@ class LessonProgressService {
 
       // 2. For each local checkpoint, check if server has newer data
       for (const localCP of localCheckpoints) {
+        // Skip empty placement seeds (index 0, no total, not completed) — nothing to
+        // merge, and uploading them creates junk "module started" rows server-side.
+        if (!localCP.is_module_completed && localCP.question_index === 0 &&
+            (localCP.total_questions ?? 0) === 0) {
+          continue;
+        }
         try {
           const serverCP = await this.loadServerProgress(userId, localCP.level, localCP.module_id);
 
@@ -359,7 +365,12 @@ class LessonProgressService {
       totalListening: 0,
       totalSpeaking: checkpoint.total_questions,
       updatedAt: checkpoint.timestamp || Date.now(),
-      v: 1
+      v: 1,
+      // Checkpoint fidelity: keep the granular phase + MCQ answer locally so the
+      // exact position survives an app kill inside the 250ms server debounce.
+      questionPhase: checkpoint.question_phase,
+      mcqSelectedChoice: checkpoint.mcq_selected_choice ?? null,
+      mcqIsCorrect: checkpoint.mcq_is_correct ?? false
     };
 
     setLocalProgress(progressData);
@@ -380,7 +391,12 @@ class LessonProgressService {
         module_id: progressData.module,
         question_index: progressData.speakingIndex,
         total_questions: progressData.totalSpeaking,
-        question_phase: this.mapLegacyToPhase(progressData.phase, progressData.completed),
+        // Prefer the stored granular phase; mapLegacyToPhase is only the fallback
+        // for pre-fidelity records (it can't do better than 'MCQ'/'COMPLETED').
+        question_phase: progressData.questionPhase
+          ?? this.mapLegacyToPhase(progressData.phase, progressData.completed),
+        mcq_selected_choice: progressData.mcqSelectedChoice,
+        mcq_is_correct: progressData.mcqIsCorrect,
         is_module_completed: progressData.completed,
         timestamp: progressData.updatedAt
       };
@@ -410,7 +426,10 @@ class LessonProgressService {
           module_id: progress.module,
           question_index: progress.speakingIndex,
           total_questions: progress.totalSpeaking,
-          question_phase: this.mapLegacyToPhase(progress.phase, progress.completed),
+          question_phase: progress.questionPhase
+            ?? this.mapLegacyToPhase(progress.phase, progress.completed),
+          mcq_selected_choice: progress.mcqSelectedChoice,
+          mcq_is_correct: progress.mcqIsCorrect,
           is_module_completed: progress.completed,
           timestamp: progress.updatedAt
         });
@@ -576,6 +595,15 @@ class LessonProgressService {
           device_id: row.device_id,
           timestamp: new Date(row.updated_at || Date.now()).getTime()
         };
+
+        // Timestamp guard: never overwrite strictly-newer local progress with older
+        // cloud data (guest progress made before sign-in, or a slow multi-device
+        // echo). Completions always land — they gate module unlock.
+        const local = getLocalProgress(row.level, row.module_id);
+        if (local && !checkpoint.is_module_completed &&
+            local.updatedAt > new Date(row.updated_at || 0).getTime()) {
+          continue;
+        }
 
         // Save to local storage
         await this.saveLocalProgress(checkpoint);
